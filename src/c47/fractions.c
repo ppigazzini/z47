@@ -118,7 +118,8 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     *sign = 1;
   }
 
-  real_t delta, temp3;
+  real_t posr, delta, temp3;
+  realCopy(&temp0, &posr);
   realPlus(const_9999, &delta, &ctxtReal34);         // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
                                                      //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
                                                      //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
@@ -383,7 +384,8 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       int32ToReal(b + d, &temp1);
       realDivide(&mediant, &temp1, &mediant, &ctxtReal34);
 
-      realSubtract(&mediant, &temp0, &delta, &ctxtReal34);
+      realAdd(&mediant, &temp3, &temp1, &ctxtReal34);
+      realSubtract(&temp1, &posr, &delta, &ctxtReal34);
       if(realIsZero(&delta)) {
         exactValue = true;
         if(b + d <= denMax) {
