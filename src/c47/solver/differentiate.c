@@ -178,30 +178,30 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
   }
 }
 
-// Try to compute a single derivative estimate from a quadrature
-static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *quad, const real_t fxIn[],
+// Try to compute a single derivative estimate from a stencil
+static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[],
                            const real_t *h, real_t *r, realContext_t *realContext) {
-  uint16_t i, maxi = 2*quad->n+1;
+  uint16_t i, maxi = 2*stencil->n+1;
   real_t t, s;
-  const real_t *const fx = fxIn + MAX_ORDER - quad->n;
+  const real_t *const fx = fxIn + MAX_ORDER - stencil->n;
 
   // Check if all f(x) are defined or not
   for (i=0; i<maxi; i++)
-    if (quad->coeff[i] != 0 && realIsSpecial(fx + i))
+    if (stencil->coeff[i] != 0 && realIsSpecial(fx + i))
       return false;
 
   // All values are defined where required so calculate the weighted sum
   realZero(&s);
   for (i=0; i<maxi; i++)
-    if (quad->coeff[i] != 0) {
-      int32ToReal(fdValues[quad->coeff[i]], &t);
+    if (stencil->coeff[i] != 0) {
+      int32ToReal(fdValues[stencil->coeff[i]], &t);
       realFMA(fx+i, &t, &s, &s, realContext);
     }
   // Inefficiently factor in the derivative order
   // It's not a problem since the order can only be 1 or 2 currently
   // For larger orders we need to divide the result by h^order
-  uInt32ToReal(fdValues[quad->denom], &t);
-  for (i=0; i<quad->order; i++)
+  uInt32ToReal(fdValues[stencil->denom], &t);
+  for (i=0; i<stencil->order; i++)
     realMultiply(&t, h, &t, realContext);
   realDivide(&s, &t, r, realContext);
   return true;
@@ -221,7 +221,7 @@ static void calcFuncValues(calcRegister_t label, const real_t *x, real_t fx[MAX_
 }
 
 
-// Evaluate the function at quadrature points and compute "best" estimate
+// Evaluate the function at stencil points and compute "best" estimate
 static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff) {
   real_t x, h, fx[MAX_F_EVAL];
   int i;
