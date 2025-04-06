@@ -148,7 +148,7 @@ static void deriv_default_h(real_t *h) {
       return;
   }
   undo();
-  realCopy(const_1on10, h); /* default h = 0.1 */
+  realMultiply(h, const_1e_16, h, &ctxtReal39);
 }
 
 
