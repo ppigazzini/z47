@@ -1138,6 +1138,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_FRAC_MODE                              187
 #define X_INTEGER_MODE                           262 + 1 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_MATRIX_MODE                            X_INTEGER_MODE
+#define X_TVM_MODE                               X_INTEGER_MODE
 #define X_OVERFLOW_CARRY                         292 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_ALPHA_MODE                             300 + 3 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_HOURGLASS                              312 + 4 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time

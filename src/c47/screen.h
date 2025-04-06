@@ -155,6 +155,7 @@ char       letteredRegisterName(calcRegister_t regist);
    */
   uint32_t showStringEnhanced                 (const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, uint8_t boldString1, bool_t lf);
   uint32_t showString                         (const char *str,   const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols);
+  void getStringBounds                        (const char *string, const font_t *font, uint32_t *col, uint32_t *row);
 
   /**
    * Displays the first glyph of a string.
