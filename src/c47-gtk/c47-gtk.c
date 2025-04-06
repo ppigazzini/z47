@@ -189,8 +189,11 @@
         char ss[100];
         char sss[1000];
         stringToASCII(VERSION_STRING, ss);
+        printf("\n-------------------------------------------------------------\n");
         sprintf(sss, MODELTEXT " Sim " VERSION1 ", SHA %s.\n", ss);
-        printf("\n\n%s",sss);
+        printf("C47/R47 info to be found on 47calc.com\n");
+        printf("C47/R47 license GPL3, details on 47calc.com\n");
+        printf("\n%s",sss);
         printf("Activated: %s\n\n",argv[arg]);
         printf("c47 --background     : specify background picture\n");
         printf("c47 --functionkeys   : display function key labels\n\n");
@@ -212,7 +215,7 @@
         printf("c47 --hp35           : Setting profile: HP-35 tribute\n\n");
         printf("c47 --deadkeys       : typewriter style dead keys\n");
         printf("c47 --swapctrlcode   : ctrl fix for Swiss keyboards\n");
-        printf("c47 --mockup:        : output demo status bar layout\n");
+        printf("c47 --mockup         : output demo status bar layout\n");
         printf("c47 --writeexportall : output all PROGs (internal use)\n");
         printf("c47 --help           : list all SIM switches\n");
         printf("c47 --h              : see --help\n");
@@ -284,7 +287,7 @@
       time(&rawTime);
       timeInfo = localtime(&rawTime);
       strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
-      printf("\n\nOutput file save to: %s.\n\n",bmpFileName);
+      printf("\n\nOutput file saved to: %s.\n\n",bmpFileName);
       return 0;
     }
 
