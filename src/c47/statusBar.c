@@ -571,6 +571,8 @@ void drawBattery(uint16_t voltage);
 
       light_ASB_icon();                            //JM
       drawBattery(exponentLimit); //test battery indicator
+
+      calcMode = CM_GRAPH;
   }
 #endif //PC_BUILD
 

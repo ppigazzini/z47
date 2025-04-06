@@ -6,6 +6,7 @@
  ***********************************************/
 
 #include "c47.h"
+#include "version.h"
 
 #if defined(PC_BUILD)
   #include "gtkGui.h"
@@ -180,6 +181,16 @@
       }
 
       if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
+        #if (CALCMODEL == USER_R47)
+          #define MODELTEXT "R47"
+        #else
+          #define MODELTEXT "C47"
+        #endif
+        char ss[100];
+        char sss[1000];
+        stringToASCII(VERSION_STRING, ss);
+        sprintf(sss, MODELTEXT " Sim " VERSION1 ", SHA %s.\n", ss);
+        printf("\n\n%s",sss);
         printf("Activated: %s\n\n",argv[arg]);
         printf("c47 --background     : specify background picture\n");
         printf("c47 --functionkeys   : display function key labels\n\n");
@@ -263,9 +274,18 @@
     }
 
     if(mockup) {
-      fnExitAllMenus(NOPARAM);
+      fnReset(CONFIRMED);
+      clearScreen();
       mockupSB();
-      fnSNAP(NOPARAM);
+      fnScreenDump(NOPARAM);
+      char bmpFileName[22];
+      time_t rawTime;
+      struct tm *timeInfo;
+      time(&rawTime);
+      timeInfo = localtime(&rawTime);
+      strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
+      printf("\n\nOutput file save to: %s.\n\n",bmpFileName);
+      return 0;
     }
 
     //ramDump();
