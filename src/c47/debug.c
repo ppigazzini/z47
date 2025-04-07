@@ -689,6 +689,9 @@ void debugNIM(void) {
   }
 
 
+#endif //(DEBUG_PANEL == 1)
+#if ((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
+
   /********************************************//**
    * \brief Returns the name of a calc mode
    *
@@ -751,6 +754,8 @@ void debugNIM(void) {
     }
   }
 
+#endif //((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
+#if (DEBUG_PANEL == 1)
 
   /********************************************//**
    * \brief Returns the name of a TAM mode

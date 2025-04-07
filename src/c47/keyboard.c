@@ -2482,8 +2482,16 @@ RELEASE_END:
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
             refreshScreen(120);
           }
+          else if(lastErrorCode != 0) {
+            lastErrorCode = 0;
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(139);
+            keyActionProcessed = true;
+          }
+
           break;
         }
 
