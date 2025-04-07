@@ -746,7 +746,7 @@ uint32_t denMaxMem         = 0;
 
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
-      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
+      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d ti:%u er:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
 
