@@ -1642,12 +1642,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 
+#define RAM_SIZE_IN_BLOCKS_OLD_HW              (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+#define RAM_SIZE_IN_BLOCKS_NEW_HW              (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #elif defined(DMCP_BUILD) && !defined(NEW_HW) // DMCP
-  #define RAM_SIZE_IN_BLOCKS                   (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_OLD_HW
 #else // !DMCP_BUILD
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #endif // DMCP_BUILD
 
 #define CONFIG_SIZE_IN_BLOCKS                  TO_BLOCKS(sizeof(dtConfigDescriptor_t))
