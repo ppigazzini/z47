@@ -2484,6 +2484,13 @@ RELEASE_END:
             keyActionProcessed = true;
             refreshScreen(120);
           }
+          else if(lastErrorCode != 0) {
+            lastErrorCode = 0;
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(139);
+            keyActionProcessed = true;
+          }
+
           break;
         }
 
