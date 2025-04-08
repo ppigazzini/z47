@@ -949,8 +949,8 @@ uint32_t denMaxMem         = 0;
       x = showString("#BASE", &standardFont, x, L4, vmNormal, true, true);
 
       x = X_FRAC_MODE;                    //vJM
-        raiseString = 3;
-        x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
+      raiseString = 3;
+      x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
       raiseString = 9;
       x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2-2;
 

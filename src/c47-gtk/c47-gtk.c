@@ -278,7 +278,7 @@
 
     if(mockup) {
       fnReset(CONFIRMED);
-      clearScreen();
+      clearScreen(120);
       mockupSB();
       fnScreenDump(NOPARAM);
       char bmpFileName[22];
