@@ -245,15 +245,19 @@ void drawBattery(uint16_t voltage);
         raiseString = 3;
         x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
       }
-      lcd_fill_rect(x, 0, 7, 20, LCD_SET_VALUE);
+      lcd_fill_rect(x, 0, 7+15, 20, LCD_SET_VALUE);
       raiseString = 9;
-      x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2;
+      x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2-2;
+    } else {
+      lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
     }
 
     #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
     compressString = 1;
     int xx = x;
-    x = showString("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true);
+    x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
+    x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
+
     lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
 
     compressString = 1;
@@ -264,7 +268,7 @@ void drawBattery(uint16_t voltage);
     }
     xx = x;
     x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
-    lcd_fill_rect(xx, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
+    lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
       raiseString = 3;
@@ -281,7 +285,7 @@ void drawBattery(uint16_t voltage);
 
     if(getSystemFlag(FLAG_IRFRAC)) {
       strcpy(divStr,STD_IRRATIONAL_I);
-      lcd_fill_rect(--x, 0, 9, 20, LCD_SET_VALUE);
+      lcd_fill_rect(x, 0, 9, 20, LCD_SET_VALUE);
       raiseString = 1;
       x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
 
@@ -298,7 +302,7 @@ void drawBattery(uint16_t voltage);
 
     if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
       compressString = 1;
-      x = showString(STD_ALMOST_EQUAL, &standardFont, x - 1, 0, vmNormal, true, false);
+      x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
       if(x >= X_INTEGER_MODE - 1) {
         lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
       }
@@ -947,13 +951,15 @@ uint32_t denMaxMem         = 0;
       x = X_FRAC_MODE;                    //vJM
         raiseString = 3;
         x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
-      x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2;
+      raiseString = 9;
+      x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2-2;
 
     char divStr[10];
     #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
     compressString = 1;
     xx = x;
-    x = showString("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true);
+      x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
+      x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
     lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
 
     compressString = 1;
@@ -984,6 +990,8 @@ uint32_t denMaxMem         = 0;
     raiseString = 1;
     x = showString(divStr, &standardFont, --x  , L2, vmNormal, false, false) + 2;
 
+    compressString = 1;
+    x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
 
 
     sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
