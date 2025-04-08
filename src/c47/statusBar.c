@@ -155,6 +155,24 @@ void drawBattery(uint16_t voltage);
   }
 
 
+#if defined(WIP_STATUSBAR)
+//outstanding list:
+//=================
+
+//check why ypos-2 must be used to prevent clearing ofnthe ASM line.
+//check the "" in some showStringAndClear statements
+//automate the clearing
+//use didFlagChange1
+//look at the "", cases
+//Remove FLAGSETS method
+//'todo' items
+//'DUPLICATION' item
+// Returnning from a LI SHOW, stack not updated
+// Returning from USB DISK access, no statusbar update
+
+
+#endif
+
 
   void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
@@ -288,16 +306,6 @@ void drawBattery(uint16_t voltage);
       lcd_fill_rect(x, 0, 9, 20, LCD_SET_VALUE);
       raiseString = 1;
       x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
-
-      //TO USE REAL II FONT ABOVE. Previous spacing issue in font, fixed, keeping the old manual way for reference if needed
-      //   strcpy(divStr,"I");
-      //   raiseString = 1;
-      //   showString(divStr, &standardFont, x, 0, vmNormal, true, true);
-      //   raiseString = 1;
-      //   x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
-      //   for(uint16_t yy = 4; yy<=11; yy++) {
-      //     setWhitePixel(x - 5, yy);
-      //   }
     }
 
     if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {

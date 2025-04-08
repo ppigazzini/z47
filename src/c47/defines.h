@@ -152,14 +152,19 @@
 #undef    FN_TIME_DEBUG1
 
 
+//Testing WIP to improve the statusbar updates
+#define    MONITOR_CLRSCR
+#define    WIP_STATUSBAR
+
+
 
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
   #undef     VERBOSEKEYS_AUTOCASE
-  #define    MONITOR_CLRSCR
-  #undef     MONITOR_CLRSCR
+  //#define    MONITOR_CLRSCR
+  //#undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
   #define    VERBOSE_DETERMINEITEM
@@ -1136,7 +1141,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
 #define X_ANGULAR_MODE                           160
 #define X_FRAC_MODE                              187
-#define X_INTEGER_MODE                           262 + 1 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_INTEGER_MODE                           262 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_MATRIX_MODE                            X_INTEGER_MODE
 #define X_TVM_MODE                               X_INTEGER_MODE
 #define X_OVERFLOW_CARRY                         292 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time

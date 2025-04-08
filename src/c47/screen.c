@@ -4561,9 +4561,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     else {
       if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STATUSBAR\n");
+          printf("   >>> SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
-        lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
+
+#if !defined(WIP_STATUSBAR)
+  lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
+#endif //WIP_STATUSBAR
+//set lastProgramRunStop to undefined to force first refresh condition to be true
+
         lastProgramRunStop = PGM_UNDEFINED;
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
@@ -4890,9 +4895,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(programRunStop == PGM_STOPPED || programRunStop == PGM_WAITING) {
           hourGlassIconEnabled = false;
         }
+
+#if !defined(WIP_STATUSBAR)
         if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
           refreshStatusBar();
         }
+#else  //WIP_STATUSBAR
+printf( "GGGG: screenUpdatingMode %u\n", screenUpdatingMode);
+refreshStatusBar();
+#endif //WIP_STATUSBAR
+
         #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);
@@ -5028,23 +5040,27 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       case CM_ASSIGN:
       case CM_ERROR_MESSAGE:
       case CM_TIMER:
-//printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
+        //printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
         if(doRefreshSoftMenu && !SHOWMODE) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
-//printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
-        if(calcMode == CM_CONFIRMATION) {
+
+#if !defined(WIP_STATUSBAR)
+        //printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        if(last_CM != calcMode) {
           if(!SHOWMODE) screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
           screenUpdatingMode &= ~SCRUPD_MANUAL_STACK ;
-//printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+          //printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
         }
+#endif //WIP_STATUSBAR
+
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
         }
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
-//printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        //printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
 
 
         _refreshNormalScreen();
