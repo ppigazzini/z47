@@ -529,7 +529,7 @@
   /*-DMCP-*/    uint32_t tmp__32;                                                 //JM_CSV
   /*-DMCP-*/
   /*-DMCP-*/    tmp__32 = getUptimeMs();                                      //KEEP PERSISTENT FILE NAME FOR A PERIOD
-  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && !strcompare(filename_csv + (stringByteLength(filename_csv) - 9),fn  ))) {
+  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
   /*-DMCP-*/      //Create file name
   /*-DMCP-*/      check_create_dir("DATA");
   /*-DMCP-*/      make_date_filename(filename_csv, "DATA\\", fn);
@@ -831,7 +831,7 @@
       struct tm *timeInfo;
 
       tmp__32 = getUptimeMs();                                          //KEEP PERSISTENT FILE NAME FOR A PERIOD
-      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && !strcompare(filename_csv + (stringByteLength(filename_csv) - 9),fn  ) ) ) {
+      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
         //Create file name
         time(&rawTime);
         timeInfo = localtime(&rawTime);
