@@ -8,28 +8,6 @@
 
 #include "c47.h"
 
-#define XEQ_STR_LENGTH_LONG  TMP_STR_LENGTH // 3000 // note the limit is the tmpString limit
-
-bool_t strcompare(const char *in1, const char *in2) {
-  if(stringByteLength(in1) == stringByteLength(in2)) {
-    int16_t i = 0;
-    bool_t areEqual = true;
-    while(areEqual && in1[i] != 0) {
-      if(in1[i] != in2[i]) {
-        areEqual = false;
-        return false;
-      }
-      i++;
-    }
-    return areEqual;
-  }
-  else {
-    return false;
-  }
-}
-
-
-
 void fnXSWAP (uint16_t mode) {
   #define isEdit (mode > 0)
   #define isSwap (!isEdit)
@@ -114,7 +92,7 @@ void fnXSWAP (uint16_t mode) {
       }
     }
     else if(calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) != dtString) {
-      char line1[XEQ_STR_LENGTH_LONG];
+      char line1[TMP_STR_LENGTH];
       line1[0] = 0;
       strcpy(line1, " ");
       int16_t len = stringByteLength(line1);
