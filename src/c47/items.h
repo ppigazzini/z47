@@ -1902,8 +1902,8 @@
 #define KEY_COMPLEX                 1848
 #define ITM_toPOL2                  1849
 #define ITM_toREC2                  1850
-#define ITM_eRPN_ON                 1851
-#define ITM_eRPN_OFF                1852
+#define ITM_1851                    1851  //blank
+#define ITM_1852                    1852  //blank
 #define ITM_ERPN                    1853
 #define ITM_HOMEx3                  1854
 #define ITM_SHTIM                   1855
@@ -2098,12 +2098,12 @@
 #define ITM_ACTUSB                  2044
 #define MNU_CONVS                   2045
 #define MNU_CONVANG                 2046
-#define ITM_CPXRES1                 2047
-#define ITM_SPCRES1                 2048
-#define ITM_CPXRES0                 2049
-#define ITM_SPCRES0                 2050
-#define ITM_PRTACT1                 2051
-#define ITM_PRTACT0                 2052
+#define ITM_2047                    2047  //blank
+#define ITM_2048                    2048  //blank
+#define ITM_2049                    2049  //blank
+#define ITM_2050                    2050  //blank
+#define ITM_2051                    2051  //blank
+#define ITM_2052                    2052  //blank
 #define ITM_2TO10                   2053
 #define ITM_USER_HRESET             2054
 #define ITM_USER_PRESET             2055
