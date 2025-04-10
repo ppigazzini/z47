@@ -362,7 +362,7 @@ void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
-  watchIconEnabled = false;
+  clearSystemFlag(FLAG_WATCHICON);
   if(timerStartTime != TIMER_APP_STOPPED) {
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
       //#if defined(PC_BUILD)
@@ -419,7 +419,7 @@ void fnStopTimerApp(void) {
     fnTimerStop(TO_TIMER_APP);
   }
   clearSystemFlag(FLAG_RUNTIM);
-  watchIconEnabled = false;
+  clearSystemFlag(FLAG_WATCHICON);
 #endif // TESTSUITE_BUILD
 }
 
@@ -761,7 +761,11 @@ void fnLeaveTimerApp(void) {
   popSoftmenu();
   rbr1stDigit = true;
   calcMode = previousCalcMode;
-  watchIconEnabled = (timerStartTime != TIMER_APP_STOPPED);
+  if(timerStartTime != TIMER_APP_STOPPED) {
+    setSystemFlag(FLAG_WATCHICON);
+  } else {
+    clearSystemFlag(FLAG_WATCHICON);
+  }
   #endif // !TESTSUITE_BUILD
 }
 
