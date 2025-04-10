@@ -285,7 +285,7 @@ typedef struct {
   bool_t compatibility_bool18;              //Spare Byte
   uint8_t displayStackSHOIDISP;
   bool_t bcdDisplay;
-  bool_t topHex;
+  bool_t compatibility_bool24;
   uint8_t bcdDisplaySign;
   uint8_t DRG_Cycling;
   uint8_t DM_Cycling;

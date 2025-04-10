@@ -44,8 +44,6 @@ bool_t                 funcOK;
 bool_t                 keyActionProcessed;
 bool_t                 fnKeyInCatalog;
 bool_t                 hourGlassIconEnabled;
-bool_t                 watchIconEnabled;
-bool_t                 printerIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
 bool_t                 showContent;
@@ -54,7 +52,6 @@ bool_t                 updateDisplayValueX;
 bool_t                 thereIsSomethingToUndo;
 bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
-bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 secTick1;
 bool_t                 halfSecTick2;
@@ -232,7 +229,6 @@ bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
-bool_t                 topHex = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;

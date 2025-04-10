@@ -626,6 +626,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;

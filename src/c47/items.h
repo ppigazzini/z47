@@ -2328,10 +2328,10 @@
 #define SFL_US                      2272 // The SFL item names are not used
 #define SFL_MNUp1                   2273 // The SFL item names are not used
 #define SFL_SBwoy                   2274 // The SFL item names are not used
-#define SFL_2275                    2275 // The SFL item names are not used
-#define SFL_2276                    2276 // The SFL item names are not used
-#define SFL_2277                    2277 // The SFL item names are not used
-#define SFL_2278                    2278 // The SFL item names are not used
+#define SFL_WATCHICON               2275 // The SFL item names are not used
+#define SFL_SIOICON                 2276 // The SFL item names are not used
+#define SFL_PRINTERICON             2277 // The SFL item names are not used
+#define SFL_TOPHEX                  2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
 #define SFL_2281                    2281 // The SFL item names are not used

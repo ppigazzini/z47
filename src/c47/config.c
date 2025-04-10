@@ -205,6 +205,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            FLAG_SSIZE8,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
 3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
 3,                                   1,          xxx,                            xxx,             FLAG_ENGOVR,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
+3,                                   1,          FLAG_TOPHEX,                    xxx,             FLAG_TOPHEX,          FLAG_TOPHEX,            FLAG_TOPHEX,     xxx,             xxx,                  // Clear flag FLAG_TOPHEX
 
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
@@ -1232,7 +1233,6 @@ void resetOtherConfigurationStuff(void) {
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;
-  topHex = true;                                               //Hex keys enabled
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
@@ -1478,9 +1478,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     configCommon(CFG_DFLT);
 
     hourGlassIconEnabled = false;
-    watchIconEnabled = false;
-    serialIOIconEnabled = false;
-    printerIconEnabled = false;
     thereIsSomethingToUndo = false;
     pemCursorIsZerothStep = true;
     tam.alpha = false;

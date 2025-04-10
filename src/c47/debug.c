@@ -1378,7 +1378,7 @@ void debugNIM(void) {
       }
 
       if(row < DEBUG_LINES) {
-        sprintf(string, "watchIconEnabled                          = %6d = %s",    watchIconEnabled,     getBooleanName(watchIconEnabled));
+        sprintf(string, "FLAG_WATCHICON (watch icon)               = %s = %s",     getBooleanName(getSystemFlag(FLAG_WATCHICON)), getTimeFormatName(getSystemFlag(FLAG_WATCHICON)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
       }
@@ -1396,13 +1396,13 @@ void debugNIM(void) {
       }
 
       if(row < DEBUG_LINES) {
-        sprintf(string, "serialIOIconEnabled                       = %6d = %s",    serialIOIconEnabled,  getBooleanName(serialIOIconEnabled));
+        sprintf(string, "FLAG_SIOICON (serialIOIconEnabled)         = %s = %s",     getBooleanName(getSystemFlag(FLAG_SIOICON)), getTimeFormatName(getSystemFlag(FLAG_SIOICON)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
       }
 
       if(row < DEBUG_LINES) {
-        sprintf(string, "printerIconEnabled                        = %6d = %s",    printerIconEnabled,   getBooleanName(printerIconEnabled));
+        sprintf(string, "FLAG_PRINTERICON (printerIconEnabled)     = %s = %s",      getBooleanName(getSystemFlag(FLAG_PRINTERICON)), getTimeFormatName(getSystemFlag(FLAG_PRINTERICON)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
       }

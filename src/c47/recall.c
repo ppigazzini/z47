@@ -253,6 +253,7 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool22;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool23;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool24;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
@@ -319,7 +320,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);
-    recallFromDtConfigDescriptor(topHex);
+    recallFromDtConfigDescriptor(compatibility_bool24);
     recallFromDtConfigDescriptor(bcdDisplaySign);
     recallFromDtConfigDescriptor(DRG_Cycling);
     recallFromDtConfigDescriptor(DM_Cycling);

@@ -652,6 +652,12 @@
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
+#define FLAG_WATCHICON                        0x8058
+#define FLAG_SIOICON                          0x8059
+#define FLAG_PRINTERICON                      0x805A
+#define FLAG_TOPHEX                           0x805B
+
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
 
 #define NUMBER_OF_SYSTEM_FLAGS                 64+24 // We can have a maximum of 128 system flags
 

@@ -93,7 +93,6 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_GAUSS_FITTING       207
 #define JC_ORTHOGONAL_FITTING  208
 #define JC_BCD                 211
-#define JC_TOPHEX              212
 #define JC_SS                  214
 #define BCDu                   218  //BCD options
 #define BCD9c                  219
