@@ -659,7 +659,6 @@
 
 #define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+24 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
