@@ -243,7 +243,7 @@ void drawBattery(uint16_t voltage);
     uint32_t x = X_FRAC_MODE;
 
     if(lastIntegerBase != 0) {
-      if(topHex) {
+      if(getSystemFlag(FLAG_TOPHEX)) {
         x = showString("#KEY", &standardFont, x, 0 , vmNormal, true, true);
         lcd_fill_rect(x, 0, 26, 20, LCD_SET_VALUE);
         x = showString(STD_SUB_A STD_SUB_MINUS STD_SUB_F,  &standardFont, x, -4 , vmNormal, true, true);
@@ -715,7 +715,7 @@ void drawBattery(uint16_t voltage) {
   #endif // DMCP_BUILD
 
 
-#define FLAGSETS  (uint32_t)( (topHex    << (32- 1)) \
+#define FLAGSETS  (uint32_t)( \
                   + (scrLock             << (32- 2)) \
                   + (calcMode            << (32- 7)) \
                   + (fractionDigits      << (32-12)) \
