@@ -34,7 +34,7 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   longInteger_t tmp;
   bool_t res = false;
 
-  if (!getRegisterAsLongInt(res, tmp, NULL)) {
+  if (!getRegisterAsLongInt(reg, tmp, NULL)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -61,7 +61,7 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   }
 
   longIntegerFree(tmp);
-  return true;
+  return res;
 }
 
 static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
