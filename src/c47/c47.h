@@ -283,6 +283,9 @@
   extern bool_t                 keyActionProcessed;
   extern bool_t                 fnKeyInCatalog;
   extern bool_t                 hourGlassIconEnabled;
+  extern bool_t                 watchIconEnabled;
+  extern bool_t                 printerIconEnabled;
+  extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
   extern bool_t                 showContent;

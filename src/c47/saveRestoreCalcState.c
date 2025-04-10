@@ -455,6 +455,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
     saveStateValue(&alphaCase,                      sizeof(alphaCase),                                           "alphaCase",                      "uint8");
     saveStateValue(&hourGlassIconEnabled,           sizeof(hourGlassIconEnabled),                                "hourGlassIconEnabled",           "bool");
+    saveStateValue(&watchIconEnabled,               sizeof(watchIconEnabled),                                    "watchIconEnabled",               "bool");
+    saveStateValue(&serialIOIconEnabled,            sizeof(serialIOIconEnabled),                                 "serialIOIconEnabled",            "bool");
+    saveStateValue(&printerIconEnabled,             sizeof(printerIconEnabled),                                  "printerIconEnabled",             "bool");
     saveStateValue(&programRunStop,                 sizeof(programRunStop),                                      "programRunStop",                 "uint8");
     saveStateValue(&entryStatus,                    sizeof(entryStatus),                                         "entryStatus",                    "uint8");
     saveStateValue(&cursorEnabled,                  sizeof(cursorEnabled),                                       "cursorEnabled",                  "uint8");
@@ -1006,6 +1009,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
     restoreStateValue(&alphaCase,                      sizeof(alphaCase),                                           "alphaCase",                      "uint8");
     restoreStateValue(&hourGlassIconEnabled,           sizeof(hourGlassIconEnabled),                                "hourGlassIconEnabled",           "bool");
+    restoreStateValue(&watchIconEnabled,               sizeof(watchIconEnabled),                                    "watchIconEnabled",               "bool");
+    restoreStateValue(&serialIOIconEnabled,            sizeof(serialIOIconEnabled),                                 "serialIOIconEnabled",            "bool");
+    restoreStateValue(&printerIconEnabled,             sizeof(printerIconEnabled),                                  "printerIconEnabled",             "bool");
     restoreStateValue(&programRunStop,                 sizeof(programRunStop),                                      "programRunStop",                 "uint8");
     restoreStateValue(&entryStatus,                    sizeof(entryStatus),                                         "entryStatus",                    "uint8");
     restoreStateValue(&cursorEnabled,                  sizeof(cursorEnabled),                                       "cursorEnabled",                  "uint8");

@@ -11,10 +11,6 @@ void drawBattery(uint16_t voltage);
 
 #if !defined(TESTSUITE_BUILD)
 
-#define watchIconEnabled     (getSystemFlag(FLAG_WATCHICON))
-#define printerIconEnabled   (getSystemFlag(FLAG_PRINTERICON))
-#define serialIOIconEnabled  (getSystemFlag(FLAG_SIOICON  ))
-#define topHex               (getSystemFlag(FLAG_TOPHEX   ))
 
   bool_t timeChanged(void) {
     char timeString[8];

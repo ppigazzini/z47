@@ -1478,6 +1478,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     configCommon(CFG_DFLT);
 
     hourGlassIconEnabled = false;
+    watchIconEnabled = false;
+    serialIOIconEnabled = false;
+    printerIconEnabled = false;
     thereIsSomethingToUndo = false;
     pemCursorIsZerothStep = true;
     tam.alpha = false;
