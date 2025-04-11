@@ -654,7 +654,7 @@
   int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
     FILE *outfile;
     char dirfile[40];
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
 
     strcpy(dirfile, dirname);
@@ -675,17 +675,17 @@
     }
 
     sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
-    fr = fputs(tmpString, outfile);
-    if(fr) {
-      sprintf(line, "Write error ID009 --> %d    \n", fr);
+    frr = fputs(tmpString, outfile);
+    if(frr == EOF) {
+      sprintf(line, "Write error ID009 --> %i    \n", frr);
       //print_linestr(line,false);
       printf("%s", line1);
       fflush(stdout);
       if(outfile != NULL) fclose(outfile);
-      return (int)fr;
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", dirfile, line1);
+      printf("Exported %i chars to %s: %s\n", frr, dirfile, line1);
       fflush(stdout);
       fclose(outfile);
     }
@@ -809,6 +809,19 @@
   int16_t export_append_line(const char *inputstring) {
     FILE *outfile;
 
+    printf("EOF1 value: %d\n", EOF);
+
+    FILE *fp = fopen("nonexistent_file", "ab"); // Deliberately cause an error
+    printf("Actual fopen() return value: %i\n", fp == NULL);
+    int result = fputs("Test", fp); // Will fail because file isn't open
+    fclose(fp);
+    printf("Actual fputs() return value: %d\n", result);
+    printf("EOF value: %d\n", EOF);
+    fflush(stdout);
+
+
+
+
     //strcpy(dirfile, "PROGRAMS/C47_LOG.TXT");
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
@@ -816,20 +829,20 @@
       fflush(stdout);
       return 1;
     }
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
-    fr = fputs(inputstring, outfile);
-    if(fr) {
-      sprintf(line,"Write error ID012 --> %d %s\n", fr, inputstring);
+    frr = fputs(inputstring, outfile);
+    if(frr == EOF) {
+      sprintf(line,"Write error ID012 --> %i %s\n", frr, inputstring);
       fflush(stdout);
       //print_linestr(line, false);
       printf("%s", line);
       fflush(stdout);
       if(outfile != NULL) fclose(outfile);
-      return (int)fr;
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", filename_csv, inputstring);
+      printf("Exported %i chars to %s: %s\n", frr, filename_csv, inputstring);
       fflush(stdout);
       fclose(outfile);
     }
