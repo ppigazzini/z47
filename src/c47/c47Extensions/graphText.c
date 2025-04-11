@@ -809,19 +809,6 @@
   int16_t export_append_line(const char *inputstring) {
     FILE *outfile;
 
-    printf("EOF1 value: %d\n", EOF);
-
-    FILE *fp = fopen("nonexistent_file", "ab"); // Deliberately cause an error
-    printf("Actual fopen() return value: %i\n", fp == NULL);
-    int result = fputs("Test", fp); // Will fail because file isn't open
-    fclose(fp);
-    printf("Actual fputs() return value: %d\n", result);
-    printf("EOF value: %d\n", EOF);
-    fflush(stdout);
-
-
-
-
     //strcpy(dirfile, "PROGRAMS/C47_LOG.TXT");
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
