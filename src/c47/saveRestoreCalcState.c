@@ -1278,6 +1278,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         clearSystemFlag(FLAG_PFX_ALL);
       }
     }
+    clearScreen(210); // implicit forceSBupdate();
 
 
 
@@ -2898,6 +2899,7 @@ int64_t stringToInt64(const char *str) {
     #if defined(LOADDEBUG)
       debugPrintf(18, "END2", "");
     #endif // LOADDEBUG
+    clearScreen(211); // implicit forceSBupdate();
   }
 #endif // !TESTSUITE_BUILD
 

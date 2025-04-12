@@ -27,6 +27,9 @@
   void   setSystemFlag           (unsigned int sf);
   void   clearSystemFlag         (unsigned int sf);
   bool_t getSystemFlag           (int32_t sf);
+  bool_t didSystemFlagChange     (int32_t sf);
+  void   setAllSystemFlagChanged (void);
+  void   setSystemFlagChanged    (int32_t sf);
   void   flipSystemFlag          (unsigned int sf);
   void   forceSystemFlag         (unsigned int sf, int set);
 

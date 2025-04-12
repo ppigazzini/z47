@@ -656,6 +656,15 @@
 
 #define NUMBER_OF_SYSTEM_FLAGS                 64+25 // We can have a maximum of 128 system flags
 
+                                                     // only used as bit count for setting change detection
+#define SETTING_AMODE                         0x0080 // current angle mode
+#define SETTING_DMX                           0x0081 // denMax
+#define SETTING_SINT_WS                       0x0082 // shortIntegerWordSize
+#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode 
+#define SETTING_WATCHICON                     0x0084 // the bit controlling the watch face icon
+#define SETTING_SIOICON                       0x0085 // the bit controlling the serial i/o activity icon
+#define SETTING_PRINTERICON                   0x0086 // the bit controlling the IR printer icon
+
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1143,12 +1152,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
 #define X_ANGULAR_MODE                           160
 #define X_FRAC_MODE                              187
+#define X_BASE_MODE                              X_FRAC_MODE
 #define X_INTEGER_MODE                           262 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_MATRIX_MODE                            X_INTEGER_MODE
 #define X_TVM_MODE                               X_INTEGER_MODE
 #define X_OVERFLOW_CARRY                         292 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_ALPHA_MODE                             300 + 3 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_HOURGLASS                              312 + 4 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_ALPHA_MODE                             300 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_HOURGLASS                              312 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_SSIZE_BEGIN                            325 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_ASM                                    334 + 7 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_STOPWATCH                              337 + 8 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time

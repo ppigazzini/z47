@@ -4754,7 +4754,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEACTIVE) {
-          showFracMode();
+          showBaseMode();
 //          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         }
         if(calcMode == CM_CONFIRMATION) {

@@ -17,6 +17,7 @@
   /**
    * Refreshes the status bar.
    */
+  void forceSBupdate          (void);
   void refreshStatusBar       (void);
 
   /**
@@ -44,6 +45,7 @@
    * Displays the faction mode in the status bar.
    */
   void showFracMode           (void);
+  void showBaseMode           (void);
 
   /**
    * Displays the integer mode icon in the status bar.

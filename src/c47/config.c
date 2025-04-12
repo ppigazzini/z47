@@ -528,6 +528,9 @@ void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
 
 
 void fnIntegerMode(uint16_t mode) {
+  if(shortIntegerMode != mode) {
+    setSystemFlagChanged(SETTING_SINT_MODE);
+  }
   shortIntegerMode = mode;
   fnRefreshState();
 }
@@ -619,6 +622,11 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetWordSize(uint16_t WS) {
+  if(shortIntegerWordSize != WS) {
+    setSystemFlagChanged(SETTING_SINT_WS);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+  }
+
   bool_t reduceWordSize;
   if(WS == 0) {
     WS = 64;
@@ -758,6 +766,9 @@ void fnRoundingMode(uint16_t RM) {
 
 
 void fnAngularMode(uint16_t am) {
+  if(am != currentAngularMode) {
+    setSystemFlagChanged(SETTING_AMODE);
+  }
   currentAngularMode = am;
   fnRefreshState();
 }
@@ -1471,6 +1482,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     systemFlags0 = 0;
     systemFlags1 = 0;
+    clearScreen(202); // implicit forceSBupdate();
 
     Sett(_Reset);
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
@@ -1830,6 +1842,7 @@ void runDMCPmenu(uint16_t confirmation) {
 //        fnOff(NOPARAM);
 //      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
+      clearScreen(200);
     }
   #endif //!PC_BUILD
 }
@@ -1842,6 +1855,7 @@ void activateUSBdisk(uint16_t confirmation) {
     else {
       cancelFilename = true;
       run_menu_item_sys(MI_MSC);
+      clearScreen(201);
     }
   #endif //!PC_BUILD
 }
