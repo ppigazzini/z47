@@ -50,13 +50,11 @@ void fnVarMnu(uint16_t label) {
 void fnPause(uint16_t dur) {
   int32_t duration = dur;
     if(duration == 99) {      //99 signifies infinity, which is 2 hours on battery, and (2^31-1)/10 seconds = 59652 hours on USB. Note that this is determined at the start of pause, not changing during timing
-      if(!getSystemFlag(FLAG_USB)) {
+      if(!runningOnSimOrUSB) {
         duration = 2*60*60*10; //2 hours
-        duration = 50;
       }
       else {
         duration = 0x7FFFFFFF; //maximum counter value of 59652 hours
-        duration = 100;
       }
     }
 
