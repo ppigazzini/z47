@@ -654,7 +654,7 @@
   int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
     FILE *outfile;
     char dirfile[40];
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
 
     strcpy(dirfile, dirname);
@@ -670,20 +670,23 @@
 
     if(outfile == NULL) {
       printf("Cannot open ID008: %s %s\n", dirfile, line1);
+      fflush(stdout);
       return 1;
     }
 
     sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
-    fr = fputs(tmpString, outfile);
-    if(fr == 0) {
-      sprintf(line, "Write error ID009 --> %d    \n", fr);
+    frr = fputs(tmpString, outfile);
+    if(frr == EOF) {
+      sprintf(line, "Write error ID009 --> %i    \n", frr);
       //print_linestr(line,false);
       printf("%s", line1);
-      fclose(outfile);
-      return (int)fr;
+      fflush(stdout);
+      if(outfile != NULL) fclose(outfile);
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", dirfile, line1);
+      printf("Exported %i chars to %s: %s\n", frr, dirfile, line1);
+      fflush(stdout);
       fclose(outfile);
     }
     return 0;
@@ -718,6 +721,7 @@
       #if (VERBOSE_LEVEL >= 1)
         #if defined(PC_BUILD)
           printf("Cannot load ID010 %s\n", dirfile);
+          fflush(stdout);
         #endif // PC_BUILD
         print_inlinestr("Not open. ", true);
       #endif // VERBOSE_LEVEL >= 1
@@ -738,6 +742,7 @@
           #if (VERBOSE_LEVEL >= 1)
             #if defined(PC_BUILD)
               printf("Cannot load %s\n", dirfile);
+              fflush(stdout);
             #endif // PC_BUILD
             print_inlinestr("Fallback.", true);
           #endif // VERBOSE_LEVEL >= 1
@@ -749,6 +754,7 @@
         #if (VERBOSE_LEVEL >= 1)
           #if defined(PC_BUILD)
             printf("Cannot load %s\n", dirfile);
+            fflush(stdout);
           #endif // PC_BUILD
           print_inlinestr("Fallback.", true);
         #endif // VERBOSE_LEVEL >= 1
@@ -772,6 +778,7 @@
     #if (VERBOSE_LEVEL >= 1)
       #if defined(PC_BUILD)
         printf("Loaded >>> %s\n", dirfile);
+        fflush(stdout);
       #endif // PC_BUILD
       print_inlinestr("read:", true);
       print_inlinestr(line1, true);
@@ -780,6 +787,7 @@
     #if (VERBOSE_LEVEL >= 2)
       #if defined(PC_BUILD)
         printf("Loaded %s |%s|\n", dirfile, line1);
+        fflush(stdout);
       #endif // PC_BUILD
     #endif // VERBOSE_LEVEL >= 2
 
@@ -790,6 +798,7 @@
         print_inlinestr("ERROR too long file using fallback", true);
       #endif // VERBOSE_LEVEL >= 1
       printf("ERROR too long file using fallback\n");
+      fflush(stdout);
       return 1;
     }
 
@@ -804,21 +813,24 @@
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
       printf("Cannot open to append ID011: %s %s\n", filename_csv, inputstring);
+      fflush(stdout);
       return 1;
     }
-
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
-    fr = fputs(inputstring, outfile);
-    if(fr == 0) {
-      sprintf(line,"Write error ID012 --> %d %s\n", fr, inputstring);
+    frr = fputs(inputstring, outfile);
+    if(frr == EOF) {
+      sprintf(line,"Write error ID012 --> %i %s\n", frr, inputstring);
+      fflush(stdout);
       //print_linestr(line, false);
       printf("%s", line);
-      fclose(outfile);
-      return (int)fr;
+      fflush(stdout);
+      if(outfile != NULL) fclose(outfile);
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", filename_csv, inputstring);
+      printf("Exported %i chars to %s: %s\n", frr, filename_csv, inputstring);
+      fflush(stdout);
       fclose(outfile);
     }
     return 0;
@@ -860,6 +872,7 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
   #if defined (PC_BUILD)
     if(ttt==0) ttt = (uint32_t)(g_get_monotonic_time());
     printf("Status: %10u, %s\n", (uint32_t)(g_get_monotonic_time())-ttt, line1);
+    fflush(stdout);
   #endif //PC_BUILD
   #if !defined(TESTSUITE_BUILD)
     int16_t g_line_x, g_line_y;
