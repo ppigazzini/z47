@@ -24,7 +24,8 @@ void fnPrompt                          (uint16_t regist);
 typedef enum {
   NOIRFRAC    = 0,
   LIMITIRFRAC = 1,
-  FULLIRFRAC  = 2
+  LIGHTIRFRAC = 2,
+  FULLIRFRAC  = 3
 } irfracOption_t;
 #define LIMITEXP    true
 #define FRONTSPACE  true

@@ -380,18 +380,18 @@ overRange:
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-printReal34ToConsole(real34, "Irfrac: ","\n");
-  if(limitIrfrac >= LIMITIRFRAC) {
-    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {
+  //printReal34ToConsole(real34, "Irfrac: ","\n");
+  if(limitIrfrac != NOIRFRAC) {
+    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
       real_t toleranceIrrational;
       realCopy(const_1e_24, &toleranceIrrational);
       if(checkForAndChange(    displayString, real34, const_1,     &toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
-      if((limitIrfrac >= LIMITIRFRAC && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC) {
+      if((limitIrfrac >= LIMITIRFRAC && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC) {                                                                       // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/   /SIM; FULLIRFRAC [Real, Complex] : √3, pi, e, √2
         if(checkForAndChange(  displayString, real34, const_rt3,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3,          frontSpace, complex)) return_fr;
         if(checkForAndChange(  displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                             frontSpace, complex)) return_fr;
-        if(checkForAndChange(  displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
         if(checkForAndChange(  displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2,          frontSpace, complex)) return_fr;
-        if(limitIrfrac == FULLIRFRAC) {
+        if((limitIrfrac >= LIGHTIRFRAC && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC) {                                                                     //                                                 LIGHTIRFRAC [Vectors] for USB/   /SIM; FULLIRFRAC [Real, Complex] : phi, √5, √7, √𝝅, 1/𝝅, 1/e
+          if(checkForAndChange(  displayString, real34, const_eE,  &toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
           if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi_m,                          frontSpace, complex)) return_fr;
           if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
           if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
