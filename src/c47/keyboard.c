@@ -734,32 +734,16 @@ bool_t lastshiftG = false;
     switch(-currentMenu()) {
       case MNU_MyMenu: {
         assignToMyMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(103);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_MyAlpha: {
         assignToMyAlpha((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(104);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_DYNAMIC: {
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(105);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
-
       case MNU_HOME: {
         if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
           #if defined(PC_BUILD)
@@ -768,12 +752,7 @@ bool_t lastshiftG = false;
           return false;
         }
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(102);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_PFN: {
         if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
@@ -783,14 +762,8 @@ bool_t lastshiftG = false;
           return false;
         }
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(102);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
-
       case MNU_CATALOG:
       case MNU_ALPHA: //JM
       case MNU_CHARS:
@@ -805,10 +778,13 @@ bool_t lastshiftG = false;
         #if defined(PC_BUILD)
           moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-currentMenu()].itemCatalogName, "is write-protected.");
         #endif // PC_BUILD
+endReturnTrue:
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
         _closeCatalog();
-        refreshScreen(106);
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        refreshScreen(103);
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return true;
       }
