@@ -1867,7 +1867,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
 
 
-    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
+    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers && smallestDenom != 1) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
       cStr[0] = 0;
     }
     else {
@@ -1889,8 +1889,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
+//                                printf("  useMixedNumbers = %u\n", useMixedNumbers);
 
-      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom;
+      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers && smallestDenom != 1) {   // Numer > Denom;
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);

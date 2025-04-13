@@ -376,8 +376,23 @@ overRange:
   // IRFRAC multiples and fractions of constants
   //   Not checked for reals smaller than 1x10^-6 and integers
   //   Fractions are switched off id MULTPI is used
-  //   Checking for root(3), pi, e, root(2), phi, root(5), root(7) in this sequence
+  //   Checking and showing pure fractions, see table below
+  //   Checking and showing fractions with √3, pi, e, √2, see table below
+  //   Checking and showing fractions with ɸ, √5, √7, √𝝅, 1/𝝅, 1/e, see table below
   real_t value;
+
+//#define oneOverPi "(" STD_pi STD_SUP_MINUS STD_SUP_1 ")"                 //OPT1
+//#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1                         //OPT2 (original)
+#define oneOverPi "(" STD_SUP_1 "/" STD_pi ")"                           //OPT3
+//#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM      //OPT4
+  //#define oneOverPi "(1/" STD_pi ")"
+  //#define oneOverPi "(" STD_SUP_1 "/" STD_SUB_pi ")"   //really not nice
+//#define oneOverE "(" STD_EulerE STD_SUP_MINUS STD_SUP_1 ")"              //OPT1
+//#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1                      //OPT2 (original)
+#define oneOverE "(" STD_SUP_1 "/" STD_EulerE ")"                        //OPT3
+//#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM   //OPT4
+  //#define oneOverE "(1/" STD_EulerE ")"
+  //#define oneOverE "(" STD_SUP_1 "/" STD_SUB_e ")"     //really ungly
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(getSystemFlag(FLAG_IRFRAC) &&
@@ -394,12 +409,12 @@ overRange:
     if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,             frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_1onpi, &toleranceIrrational, STD_pi STD_SUP_MINUS STD_SUP_1,     frontSpace, complex)) return_fr;  //"(" STD_SUP_1 "/" STD_SUB_PI ")"
+    if(checkForAndChange(displayString, real34, const_1onpi, &toleranceIrrational, oneOverPi,                          frontSpace, complex)) return_fr;
     real_t tmp;
     realCopy(const__1oneE,&tmp);
-    realSetNegativeSign(&tmp);
-    if(checkForAndChange(displayString, real34, &tmp,        &toleranceIrrational, STD_EulerE STD_SUP_MINUS STD_SUP_1, frontSpace, complex)) return_fr;  //"(" STD_SUP_1 "/" STD_e  ")"
-  }
+    realSetPositiveSign(&tmp);
+    if(checkForAndChange(displayString, real34, &tmp,        &toleranceIrrational, oneOverE,                           frontSpace, complex)) return_fr;
+   }
   IrFractionsCurrentStatus = CF_NORMAL;
 
 
