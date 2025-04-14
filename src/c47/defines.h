@@ -154,6 +154,7 @@
 
 //Testing WIP to improve the statusbar updates
 #define    MONITOR_CLRSCR
+#undef     MONITOR_CLRSCR
 #define    WIP_STATUSBAR
 
 

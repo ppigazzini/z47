@@ -343,7 +343,9 @@ void fnRecallConfig(uint16_t regist) {
       moreInfoOnError("In function fnRecallConfig:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  forceSBupdate();
+  #if !defined(TESTSUITE_BUILD)
+    forceSBupdate();
+  #endif //TESTSUITE_BUILD
 }
 
 
