@@ -347,7 +347,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 
   if(longIntegerCompareUInt(primeCandidate, 212) <= 0) {
     longIntegerToUInt32(primeCandidate, pc);
-    for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
+    for(i=0; i<nbrOfElements(smallPrimes); i++) {
       if(smallPrimes[i] == pc) {
         return true;
       }
@@ -355,7 +355,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
     return false;
   }
 
-  for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
+  for(i=0; i<nbrOfElements(smallPrimes); i++) {
     if(longIntegerModuloUInt(primeCandidate, smallPrimes[i]) == 0) {
       return false;
     }
@@ -366,7 +366,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
     i = 211;
     longIntegerToUInt32(primeCandidate, pc);
     while(i*i < pc) {
-      for(j=0; j<sizeof(offsets)/sizeof(offsets[0]); j++) {
+      for(j=0; j<nbrOfElements(offsets); j++) {
         i += offsets[j];
         if(pc % i == 0) {
           return false;
@@ -419,7 +419,7 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
   if(longIntegerCompareUInt(currentNumber, 212) < 0) {
     while(true) {
       longIntegerToUInt32(currentNumber, cn);
-      for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
+      for(i=0; i<nbrOfElements(smallPrimes); i++) {
         if(smallPrimes[i] == cn) {
           uInt32ToLongInteger(cn, nextPrime);
           return;

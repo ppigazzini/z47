@@ -141,7 +141,7 @@ static void deriv_default_h(real_t *h) {
   fnFillStack(NOPARAM);
 
   dynamicMenuItem = -1;
-  for (i=0; i<sizeof(lbls)/sizeof(*lbls); i++)
+  for (i=0; i<nbrOfElements(lbls); i++)
     if ((deltaX = findNamedLabel(lbls[i])) != INVALID_VARIABLE) {
       deriv_found_lbl(deltaX, h);
       undo();

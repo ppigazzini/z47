@@ -417,7 +417,7 @@ overRange:
           { const_1oneE,    oneOverE,                   LIGHTIRFRAC },
       };
 
-      for (unsigned int i=0; i<sizeof(replacements)/sizeof(*replacements); i++)
+      for (unsigned int i=0; i<nbrOfElements(replacements); i++)
         if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
           if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex))
             return_fr;
