@@ -399,21 +399,22 @@ overRange:
     if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
       const real_t *toleranceIrrational = const_1e_24;
       TO_QSPI static const struct {
-        const real_t *cnst;
-        const char name[7];
-        const unsigned char option;   /* irfracOption_t */
+        const real_t *cnst;         // 4 bytes
+        const char name[10];        // 14 bytes
+        char terminator;            // 15 bytes
+        const unsigned char option; // 16 bytes containts an irfracOption_t
       } replacements[] = {
-          { const_1,        "",                         NOIRFRAC },
-          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  LIMITIRFRAC },
-          { const_pi,       STD_pi,                     LIMITIRFRAC },
-          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  LIMITIRFRAC },
-          { const_eE,       STD_EulerE,                 LIGHTIRFRAC },
-          { const_PHI,      STD_phi_m,                  LIGHTIRFRAC },
-          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  LIGHTIRFRAC },
-          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,  LIGHTIRFRAC },
-          { const_rtpi,     STD_SQUARE_ROOT STD_pi,     LIGHTIRFRAC },
-          { const_1onpi,    oneOverPi,                  LIGHTIRFRAC },
-          { const_1oneE,    oneOverE,                   LIGHTIRFRAC },
+          { const_1,        "",                         0, NOIRFRAC },
+          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  0, LIMITIRFRAC },
+          { const_pi,       STD_pi,                     0, LIMITIRFRAC },
+          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  0, LIMITIRFRAC },
+          { const_eE,       STD_EulerE,                 0, LIGHTIRFRAC },
+          { const_PHI,      STD_phi_m,                  0, LIGHTIRFRAC },
+          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  0, LIGHTIRFRAC },
+          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,  0, LIGHTIRFRAC },
+          { const_rtpi,     STD_SQUARE_ROOT STD_pi,     0, LIGHTIRFRAC },
+          { const_1onpi,    oneOverPi,                  0, LIGHTIRFRAC },
+          { const_1oneE,    oneOverE,                   0, LIGHTIRFRAC },
       };
 
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)
