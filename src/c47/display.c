@@ -399,22 +399,28 @@ overRange:
   if(limitIrfrac != NOIRFRAC) {
     if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
       const real_t *toleranceIrrational = const_1e_24;
+      TO_QSPI static const struct {
+        const real_t *cnst;
+        const char name[7];
+        const unsigned char option;   /* irfracOption_t */
+      } replacements[] = {
+          { const_1,        "",                         NOIRFRAC },
+          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  LIMITIRFRAC },
+          { const_pi,       STD_pi,                     LIMITIRFRAC },
+          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  LIMITIRFRAC },
+          { const_eE,       STD_EulerE,                 LIGHTIRFRAC },
+          { const_PHI,      STD_phi_m,                  LIGHTIRFRAC },
+          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  LIGHTIRFRAC },
+          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,  LIGHTIRFRAC },
+          { const_rtpi,     STD_SQUARE_ROOT STD_pi,     LIGHTIRFRAC },
+          { const_1onpi,    oneOverPi,                  LIGHTIRFRAC },
+          { const_1oneE,    oneOverE,                   LIGHTIRFRAC },
+      };
 
-      if(checkForAndChange(    displayString, real34, const_1,     toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
-      if((limitIrfrac >= LIMITIRFRAC && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC) {                                                                       // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/   /SIM; FULLIRFRAC [Real, Complex] : √3, pi, e, √2
-        if(checkForAndChange(  displayString, real34, const_rt3,   toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3,          frontSpace, complex)) return_fr;
-        if(checkForAndChange(  displayString, real34, const_pi,    toleranceIrrational, STD_pi,                             frontSpace, complex)) return_fr;
-        if(checkForAndChange(  displayString, real34, const_root2, toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2,          frontSpace, complex)) return_fr;
-        if((limitIrfrac >= LIGHTIRFRAC && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC) {                                                                     //                                                 LIGHTIRFRAC [Vectors] for USB/   /SIM; FULLIRFRAC [Real, Complex] : phi, √5, √7, √𝝅, 1/𝝅, 1/e
-          if(checkForAndChange(  displayString, real34, const_eE,  toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_PHI,   toleranceIrrational, STD_phi_m,                          frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_rt5,   toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_rt7,   toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_rtpi,  toleranceIrrational, STD_SQUARE_ROOT STD_pi,             frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_1onpi, toleranceIrrational, oneOverPi,                          frontSpace, complex)) return_fr;
-          if(checkForAndChange(displayString, real34, const_1oneE, toleranceIrrational, oneOverE,                           frontSpace, complex)) return_fr;
-        }
-      }
+      for (unsigned int i=0; i<sizeof(replacements)/sizeof(*replacements); i++)
+        if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
+          if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex))
+            return_fr;
     }
   }
   IrFractionsCurrentStatus = CF_NORMAL;
