@@ -31,7 +31,7 @@
   #define STD_NOCHAR                    1
 
 
-  //<------------ Numeric font glyphs -----------> Not used for now
+  //<------------ Numeric font glyphs -----------> Experimentally used by IRFRAC
   #define NUM_0_b                       "\xa4\x73"
   #define NUM_1_b                       "\xa4\x74"
   #define NUM_2_b                       "\xa4\x75"

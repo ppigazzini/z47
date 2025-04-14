@@ -396,8 +396,8 @@ overRange:
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   //printReal34ToConsole(real34, "Irfrac: ","\n");
   if(limitIrfrac != NOIRFRAC) {
-    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
-      const real_t *toleranceIrrational = const_1e_24;
+    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_27) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
+      const real_t *toleranceIrrational = const_1e_27;
       TO_QSPI static const struct {
         const real_t *cnst;         // 4 bytes
         const char name[10];        // 14 bytes
@@ -406,8 +406,8 @@ overRange:
       } replacements[] = {
           { const_1,        "",                         0, NOIRFRAC },
           { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  0, LIMITIRFRAC },
-          { const_pi,       STD_pi,                     0, LIMITIRFRAC },
           { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  0, LIMITIRFRAC },
+          { const_pi,       STD_pi,                     0, LIMITIRFRAC },
           { const_eE,       STD_EulerE,                 0, LIGHTIRFRAC },
           { const_PHI,      STD_phi_m,                  0, LIGHTIRFRAC },
           { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  0, LIGHTIRFRAC },
@@ -415,6 +415,8 @@ overRange:
           { const_rtpi,     STD_SQUARE_ROOT STD_pi,     0, LIGHTIRFRAC },
           { const_1onpi,    oneOverPi,                  0, LIGHTIRFRAC },
           { const_1oneE,    oneOverE,                   0, LIGHTIRFRAC },
+          { const_ln2,      "ln" NUM_2_b STD_SPACE_4_PER_EM,          0, FULLIRFRAC },
+          { const_ln10,     "ln" NUM_1_b NUM_0_b STD_SPACE_4_PER_EM,  0, FULLIRFRAC },
       };
 
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)
