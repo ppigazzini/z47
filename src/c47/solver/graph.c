@@ -1426,6 +1426,10 @@ void fnEqSolvGraph (uint16_t func) {
       initialize_function();
       graph_eqn(noInitDrwMx);
 
+      if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+        setSystemFlag(FLAG_PLINE);
+      }
+
       reDraw = true;
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(239);
