@@ -7,13 +7,19 @@
 
 #include "c47.h"
 
+static real_t *get_1oneE(real_t *a) {
+  realCopy(const_1oneE, a);
+  realSetNegativeSign(a);
+  return a;
+}
+
 static void wNegReal(void) {
   real_t x, res;
 
   if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
-  if(realCompareGreaterEqual(&x, const__1oneE) && realCompareLessEqual(&x, const_0)) {
+  if(realCompareGreaterEqual(&x, get_1oneE(&res)) && realCompareLessEqual(&x, const_0)) {
     WP34S_LambertW(&x, &res, true, &ctxtReal39);
     convertRealToResultRegister(&res, REGISTER_X, amNone);
   }
@@ -32,7 +38,7 @@ static void wNegCplx(void) {
     return;
 
   if(realIsZero(&xi)) {
-    if(realCompareGreaterEqual(&xr, const__1oneE) && realCompareLessEqual(&xr, const_0)) {
+    if(realCompareGreaterEqual(&xr, get_1oneE(&res)) && realCompareLessEqual(&xr, const_0)) {
       WP34S_LambertW(&xr, &res, true, &ctxtReal39);
       convertComplexToResultRegister(&res, const_0, REGISTER_X);
     }
