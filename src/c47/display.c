@@ -272,7 +272,6 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 }
 
 
-#define return_fr do { IrFractionsCurrentStatus = CF_NORMAL; return; } while(0)
 /********************************************//**
  * \brief Formats a real
  *
@@ -419,8 +418,10 @@ overRange:
 
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)
         if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
-          if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex))
-            return_fr;
+          if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex)) {
+            IrFractionsCurrentStatus = CF_NORMAL;
+            return;
+          }
     }
   }
   IrFractionsCurrentStatus = CF_NORMAL;
