@@ -5,8 +5,8 @@
 
 #define isComplex true
 #define isReal    false
-static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
-static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex, irfracOption_t limitIrfrac);
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar, irfracOption_t limitIrfrac);
 static void insertSepsIntoIntegerText(char *displayString);
 
 
@@ -226,7 +226,7 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 }
 
 
-void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
+void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
   #if (REAL34_WIDTH_TEST == 1)
@@ -243,10 +243,10 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 
   do {
     if(tag == amNone) {
-      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
+      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal, limitIrfrac);
     }
     else {
-      angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
+      angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace, limitIrfrac);
     }
 
     if(displayFormat == DF_ALL || displayFormat == DF_SF) {
@@ -272,7 +272,6 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 }
 
 
-#define return_fr do { IrFractionsCurrentStatus = CF_NORMAL; return; } while(0)
 /********************************************//**
  * \brief Formats a real
  *
@@ -280,7 +279,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
  * \param[in]  x const real34_t*  Value to format
  * \return void
  ***********************************************/
-static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex, irfracOption_t limitIrfrac) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
   #define exponentUNlimit1024max 5 //1024^5 is the maximum UNIT_1024^n before skipping over to standard unit presentation
@@ -395,26 +394,39 @@ overRange:
   //#define oneOverE "(" STD_SUP_1 "/" STD_SUB_e ")"     //really ungly
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(getSystemFlag(FLAG_IRFRAC) &&
-      IrFractionsCurrentStatus != CF_OFF &&
-      !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {
-    real_t toleranceIrrational;
-    realCopy(const_1e_24, &toleranceIrrational);
-    if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3,          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                             frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2,          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi_m,                          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,             frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_1onpi, &toleranceIrrational, oneOverPi,                          frontSpace, complex)) return_fr;
-    real_t tmp;
-    realCopy(const__1oneE,&tmp);
-    realSetPositiveSign(&tmp);
-    if(checkForAndChange(displayString, real34, &tmp,        &toleranceIrrational, oneOverE,                           frontSpace, complex)) return_fr;
-   }
+  //printReal34ToConsole(real34, "Irfrac: ","\n");
+  if(limitIrfrac != NOIRFRAC) {
+    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_27) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
+      const real_t *toleranceIrrational = const_1e_27;
+      TO_QSPI static const struct {
+        const real_t *cnst;         // 4 bytes
+        const char name[10];        // 14 bytes
+        char terminator;            // 15 bytes
+        const unsigned char option; // 16 bytes containts an irfracOption_t
+      } replacements[] = {
+          { const_1,        "",                         0, NOIRFRAC },
+          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  0, LIMITIRFRAC },
+          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  0, LIMITIRFRAC },
+          { const_pi,       STD_pi,                     0, LIMITIRFRAC },
+          { const_eE,       STD_EulerE,                 0, LIGHTIRFRAC },
+          { const_PHI,      STD_phi_m,                  0, LIGHTIRFRAC },
+          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  0, LIGHTIRFRAC },
+          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,  0, LIGHTIRFRAC },
+          { const_rtpi,     STD_SQUARE_ROOT STD_pi,     0, LIGHTIRFRAC },
+          { const_1onpi,    oneOverPi,                  0, LIGHTIRFRAC },
+          { const_1oneE,    oneOverE,                   0, LIGHTIRFRAC },
+          { const_ln2,      "ln" NUM_2_b STD_SPACE_4_PER_EM,          0, FULLIRFRAC },
+          { const_ln10,     "ln" NUM_1_b NUM_0_b STD_SPACE_4_PER_EM,  0, FULLIRFRAC },
+      };
+
+      for (unsigned int i=0; i<nbrOfElements(replacements); i++)
+        if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
+          if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex)) {
+            IrFractionsCurrentStatus = CF_NORMAL;
+            return;
+          }
+    }
+  }
   IrFractionsCurrentStatus = CF_NORMAL;
 
 
@@ -1252,7 +1264,7 @@ overRange:
 }
 
 
-void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
+void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, const uint16_t tagAngle, const bool_t tagPolar) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
   uint8_t saveddisplayFormat       = displayFormat;
 
@@ -1262,7 +1274,7 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
     displayValueX[0] = 0;
   }
 
-  complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
+  complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
   bool noFix = false;
   // bool overflown = false;
   int16_t overflow = stringWidth(displayString, font, true, true) - maxWidth;
@@ -1303,7 +1315,7 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
       displayValueX[0] = 0;
     }
 
-    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
+    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
     overflow = stringWidth(displayString, font, true, true) - maxWidth;
   }
   // if (overflown && overflow < -3 * digitWidth) {
@@ -1359,7 +1371,7 @@ void strPrepend(char*dest, char*prefix) {
   }
 #endif //PC_BUILD_TELLTALE
 
-static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar, irfracOption_t limitIrfrac) {
   int16_t imagOffset = 100;
   real34_t real34, imag34, absimag34;
   real_t real, imagIc;
@@ -1381,7 +1393,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     real34Copy(VARIABLE_IMAG34_DATA(complex34), &imag34);
   }
 
-  real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isComplex);
+  real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isComplex, limitIrfrac);
 
   if(updateDisplayValueX) {                //This is used by ROUND only and it does not seem to work.
     if(tagPolar) {
@@ -1392,7 +1404,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     }
   }
 
-  real34ToDisplayString2(&imag34, displayString + imagOffset, displayHasNDigits, limitExponent, false, false, isComplex);
+  real34ToDisplayString2(&imag34, displayString + imagOffset, displayHasNDigits, limitExponent, false, !FRONTSPACE, isComplex, limitIrfrac);
 
   #if defined(PC_BUILD_TELLTALE)
     printTempDisplayString(displayString, displayString + imagOffset);
@@ -1417,7 +1429,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   if(tagPolar) { // polar mode
     strcat(displayString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
     uint16_t kk = stringByteLength(displayString);
-    angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, displayString + kk, displayHasNDigits, limitExponent, false);
+    angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, displayString + kk, displayHasNDigits, limitExponent, false, limitIrfrac);
     if(strncmp(displayString + kk, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
       displayString[kk] = STD_NOCHAR;    //0x01 is the new 'no char' character
       displayString[kk+1] = STD_NOCHAR;  //0x01 is the new 'no char' character
@@ -1659,7 +1671,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 }
 
 
-void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
+void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   if(mode == amDMS) {
     char degStr[27];
     uint32_t m, s, fs;
@@ -1729,11 +1741,11 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
   }
   else if(mode == amMultPi) {
     IrFractionsCurrentStatus = CF_OFF;        //JM
-    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal);
+    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal, limitIrfrac);
     strcat(displayString, STD_SUP_pir);
   }
   else {
-    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal);
+    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal, limitIrfrac);
 
     if(mode == amRadian) {
       strcat(displayString, STD_SUP_BOLD_r);
@@ -2195,7 +2207,7 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
-    real34ToDisplayString (&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, 100,        false);
+    real34ToDisplayString(&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
 
     if(removeTrailingRadix) {
@@ -2535,7 +2547,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
       displayFormat = getSystemFlag(FLAG_ENGOVR) ? DF_ENG : DF_SCI;
       displayFormatDigits = 3;
     }
-    real34ToDisplayString(REGISTER_REAL34_DATA(regist), amSecond, displayString, &standardFont, 2000, ignoreTDisp ? 34 : 16, false, false);
+    real34ToDisplayString(REGISTER_REAL34_DATA(regist), amSecond, displayString, &standardFont, 2000, ignoreTDisp ? 34 : 16, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
     displayFormatDigits = savedDisplayFormatDigits;
     displayFormat = savedDisplayFormat;
     return;
@@ -2741,7 +2753,7 @@ static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
   real34_t real34;
 
   // Real part
-  real34ToDisplayString(r, amNone, tmpString, &standardFont, 2000, 34, false, false);
+  real34ToDisplayString(r, amNone, tmpString, &standardFont, 2000, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
   // +/- i×
   real34Copy(i, &real34);
@@ -2755,7 +2767,7 @@ static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
 
   // Imaginary part
   real34SetPositiveSign(&real34);
-  real34ToDisplayString(&real34, amNone, tmpString + 2*SHOWLineSize, &standardFont, 2000, 34, false, false);
+  real34ToDisplayString(&real34, amNone, tmpString + 2*SHOWLineSize, &standardFont, 2000, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
   if(stringWidth(tmpString + SHOWLineSize, &standardFont, true, true) + stringWidth(tmpString + 2*SHOWLineSize, &standardFont, true, true) <= SCREEN_WIDTH) {
     last = SHOWLineSize;
@@ -2797,7 +2809,7 @@ void mimShowElement(void) {
     temporaryInformation = TI_SHOW_REGISTER;
 
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], amNone, tmpString, &standardFont, 2000, 34, false, false);
+      real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], amNone, tmpString, &standardFont, 2000, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
     }
 
     else {
@@ -2854,10 +2866,10 @@ static void printXSHOW(int16_t am, int16_t d, int16_t df, int16_t dfd, int16_t d
     real34_t real34;
     real34Copy(REGISTER_REAL34_DATA(showRegis), &real34);
     convertAngle34FromTo(&real34, getRegisterAngularMode(showRegis), am);
-    real34ToDisplayString(&real34, am, tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH - ww - 8*2, 34, false, false);
+    real34ToDisplayString(&real34, am, tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH - ww - 8*2, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
   }
   else if(dt == dtComplex34) {
-    complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont,SCREEN_WIDTH - ww - 8*2, 34 ,false, false, getComplexRegisterAngularMode(showRegis), tagPolar);
+    complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont,SCREEN_WIDTH - ww - 8*2, 34 ,!LIMITEXP, !FRONTSPACE, NOIRFRAC, getComplexRegisterAngularMode(showRegis), tagPolar);
   }
 
 
@@ -3222,7 +3234,7 @@ goBreak1:
         temporaryInformation = TI_SHOW_REGISTER_BIG;
         int16_t angleM = getRegisterAngularMode(showRegis);
         if(angleM == amDMS) angleM = amDegree;
-        real34ToDisplayString(REGISTER_REAL34_DATA(showRegis), angleM, tmpString + 2100+stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH * 2, 34, false, false);
+        real34ToDisplayString(REGISTER_REAL34_DATA(showRegis), angleM, tmpString + 2100+stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH * 2, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
         last = 2100 + stringByteLength(tmpString + 2100);
         source = 2100;
         for(d=0; d<=3*SHOWLineSize ; d+=SHOWLineSize) {
@@ -3288,7 +3300,7 @@ goBreak1:
         #endif // VERBOSE_SCREEN && PC_BUILD
         temporaryInformation = TI_SHOW_REGISTER_BIG;
 
-        complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString, &numericFont,2000, 34 ,true, true, getComplexRegisterAngularMode(showRegis), getComplexRegisterPolarMode(showRegis));
+        complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString, &numericFont,2000, 34, LIMITEXP, FRONTSPACE, NOIRFRAC, getComplexRegisterAngularMode(showRegis), getComplexRegisterPolarMode(showRegis));
         for(i=stringByteLength(tmpString) - 1; i>0; i--) {
           if(tmpString[i] == 0x08) { //change punctuation space to EM4
             tmpString[i] = 0x05;

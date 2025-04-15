@@ -28,13 +28,13 @@
         displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
         if(!cpx) {
           realToReal34(a, &a34);
-          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
         else {
           realToReal34(a, &a34);
           realToReal34(ai, &ai34);
-          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           uint32_t x = 0;
           if(real34CompareGreaterEqual(&ai34,const34_0)) {
@@ -43,7 +43,7 @@
           else {
             x = showString(" ", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           }
-          real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           strcat(tmpString, COMPLEX_UNIT);
           showString(tmpString, &standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
