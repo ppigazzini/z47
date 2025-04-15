@@ -3492,7 +3492,7 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnMenuDump(uint16_t menu, uint16_t item) {                              //JMvv procedure to dump all menus. First page only. To mod todump all pages
+void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat) {                              //JMvv procedure to dump all menus. First page only. To mod todump all pages
 #if defined(PC_BUILD)
   doRefreshSoftMenu = true;
   showSoftmenu(softmenu[menu].menuItem);
@@ -3514,13 +3514,23 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
   //printf(">>> %s\n",indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName);
   char asciiString[448];
   char asciiMenuName[448];
-  stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
-  //printf(">>> Menustring:%s|",asciiMenuName);
-  stringToFileNameChars(asciiMenuName, asciiString);
-  //printf(">>> Menustring:%s|",asciiString);
 
-  sprintf(bmpFileName,"Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
-  printf(">>> filename:%s|\n",bmpFileName);
+  if(newFilenameformat == 2) {
+    stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName,"%s.%d.bmp", asciiString, (int)(item/18)+1);
+    printf(">>> filename:%s|\n",bmpFileName);
+  } else   if(newFilenameformat == 1) {
+    stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);    
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName,"Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
+    printf(">>> filename:%s|\n",bmpFileName);
+  }
+
 
   bmp = fopen(bmpFileName, "wb");
 
@@ -3624,7 +3634,7 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
 }
 
 
-void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //JM
+void fnDumpMenus(uint16_t newFilenameformat) {                      //JM
 #if defined(PC_BUILD)
   int cc = currentSolverStatus;
   currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
@@ -3634,7 +3644,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
     while(softmenu[m].menuItem != 0) {
       n=0;
       while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
-        printf("m=%d n=%d softmenu[%u].numItems=%u\n",m,n,m,softmenu[m].numItems);
+        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n",m,n,m,softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :
@@ -3644,7 +3654,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
           case MNU_SHOW     :
             break;
           default:
-           fnMenuDump(m, n);
+           fnMenuDump(m, n, newFilenameformat);
          }
         n += 18;
       }
