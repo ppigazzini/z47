@@ -526,7 +526,9 @@ void drawBattery(uint16_t voltage);
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     //compressString = 1; //do not use compress, as the far edges of the letter get cut off
     showStringAndClear(asmBuffer, &standardFont, X_ASM, 0, X_SERIAL_IO - X_ASM, 20, vmNormal, true, false);
-    force_refresh(force);
+    if(programRunStop != PGM_RUNNING) {
+      force_refresh(force);
+    }
   }
 
 
@@ -534,7 +536,9 @@ void drawBattery(uint16_t voltage);
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
-    force_refresh(force);
+    if(programRunStop != PGM_RUNNING) {
+      force_refresh(force);
+    }
   }
 
 
