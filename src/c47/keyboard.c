@@ -4507,11 +4507,15 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuUp();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
@@ -4728,11 +4732,15 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuDown();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
