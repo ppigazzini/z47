@@ -4556,6 +4556,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         printf("   >>> lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
       clearScreenExcludingStatusBar(6);
+refreshStatusBar();
       refreshNIMdone = false;
     }
     else {

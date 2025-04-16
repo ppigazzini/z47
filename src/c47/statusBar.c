@@ -493,7 +493,7 @@ void drawBattery(uint16_t voltage);
     }
 
     //statusMessage is now 0/!/P/H
-    if(!(SBhourglassShown[0] == statusMessage[0] || SBhourglassShown[1] == statusMessage[1])  ) {
+    if((SBhourglassShown[0] != statusMessage[0] || SBhourglassShown[1] != statusMessage[1])  ) {
       SBhourglassShown[0] = statusMessage[0];
       SBhourglassShown[1] = statusMessage[1];
       if(statusMessage[0] != 0) {
