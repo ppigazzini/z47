@@ -465,41 +465,33 @@ void drawBattery(uint16_t voltage);
       }
     }
 
-    #define XX (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS)
-    #define XXX (GRAPHMODE ? ((SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ)) : X_SSIZE_BEGIN)
-    int32_t x = XX;
     char statusMessage[3];
     statusMessage[0]=0;
     statusMessage[1]=0;
     switch(programRunStop) {
       case PGM_WAITING: {
         strcpy(statusMessage,STD_NEG_EXCLAMATION_MARK);
-        x--;
         break;
       }
       case PGM_RUNNING: {
         strcpy(statusMessage,STD_P);
-        x++;
         break;
       }
       default: {
         if(hourGlassIconEnabled) {
           strcpy(statusMessage,STD_HOURGLASS);
         }
-        else {
-          x--;
-        }
       }
     }
-
     //statusMessage is now 0/!/P/H
+    #define XX  (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS)
+    #define XXX (GRAPHMODE ? ((SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ)) : X_SSIZE_BEGIN)
     if((SBhourglassShown[0] != statusMessage[0] || SBhourglassShown[1] != statusMessage[1])  ) {
       SBhourglassShown[0] = statusMessage[0];
       SBhourglassShown[1] = statusMessage[1];
+
       if(statusMessage[0] != 0) {
-        x = showGlyph(statusMessage, &standardFont, x, 0, vmNormal, true, false, false);
-      } else {
-        lcd_fill_rect(x, 0, XXX - x, 20, LCD_SET_VALUE);
+        showStringAndClear(statusMessage, &standardFont, XX, 0, XXX - XX, 20, vmNormal, true, true);
       }
       force_refresh(force);
     }
