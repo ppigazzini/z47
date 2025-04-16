@@ -379,15 +379,15 @@ overRange:
   //   Checking and showing fractions with ɸ, √5, √7, √𝝅, 1/𝝅, 1/e, see table below
   real_t value;
 
-//#define oneOverPi "(" STD_pi STD_SUP_MINUS STD_SUP_1 ")"                 //OPT1
+#define oneOverPi "(" STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")"                 //OPT1
 //#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1                         //OPT2 (original)
-#define oneOverPi "(" STD_SUP_1 "/" STD_pi ")"                           //OPT3
+//#define oneOverPi "(" STD_SUP_1 "/" STD_pi ")"                           //OPT3
 //#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM      //OPT4
   //#define oneOverPi "(1/" STD_pi ")"
   //#define oneOverPi "(" STD_SUP_1 "/" STD_SUB_pi ")"   //really not nice
-//#define oneOverE "(" STD_EulerE STD_SUP_MINUS STD_SUP_1 ")"              //OPT1
+#define oneOverE "(" STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")"              //OPT1
 //#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1                      //OPT2 (original)
-#define oneOverE "(" STD_SUP_1 "/" STD_EulerE ")"                        //OPT3
+//#define oneOverE "(" STD_SUP_1 "/" STD_EulerE ")"                        //OPT3
 //#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM   //OPT4
   //#define oneOverE "(1/" STD_EulerE ")"
   //#define oneOverE "(" STD_SUP_1 "/" STD_SUB_e ")"     //really ungly
@@ -395,27 +395,27 @@ overRange:
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   //printReal34ToConsole(real34, "Irfrac: ","\n");
   if(limitIrfrac != NOIRFRAC) {
-    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_27) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
-      const real_t *toleranceIrrational = const_1e_27;
+    if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
+      const real_t *toleranceIrrational = const_1e_24;
       TO_QSPI static const struct {
         const real_t *cnst;         // 4 bytes
-        const char name[10];        // 14 bytes
+        const char name[12];        // 14 bytes
         char terminator;            // 15 bytes
         const unsigned char option; // 16 bytes containts an irfracOption_t
       } replacements[] = {
-          { const_1,        "",                         0, NOIRFRAC },
-          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,  0, LIMITIRFRAC },
-          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,  0, LIMITIRFRAC },
-          { const_pi,       STD_pi,                     0, LIMITIRFRAC },
-          { const_eE,       STD_EulerE,                 0, LIGHTIRFRAC },
-          { const_PHI,      STD_phi_m,                  0, LIGHTIRFRAC },
-          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,  0, LIGHTIRFRAC },
-          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,  0, LIGHTIRFRAC },
-          { const_rtpi,     STD_SQUARE_ROOT STD_pi,     0, LIGHTIRFRAC },
-          { const_1onpi,    oneOverPi,                  0, LIGHTIRFRAC },
-          { const_1oneE,    oneOverE,                   0, LIGHTIRFRAC },
-          { const_ln2,      "ln" NUM_2_b STD_SPACE_4_PER_EM,          0, FULLIRFRAC },
-          { const_ln10,     "ln" NUM_1_b NUM_0_b STD_SPACE_4_PER_EM,  0, FULLIRFRAC },
+          { const_1,        "",                           0, NOIRFRAC },
+          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,    0, LIMITIRFRAC },
+          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,    0, LIMITIRFRAC },
+          { const_pi,       STD_pi,                       0, LIMITIRFRAC },
+          { const_eE,       STD_EulerE,                   0, LIGHTIRFRAC },
+          { const_PHI,      STD_phi_m,                    0, LIGHTIRFRAC },
+          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,    0, LIGHTIRFRAC },
+          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,    0, LIGHTIRFRAC },
+          { const_rtpi,     STD_SQUARE_ROOT STD_pi,       0, LIGHTIRFRAC },
+          { const_1onpi,    oneOverPi,                    0, LIGHTIRFRAC },
+          { const_1oneE,    oneOverE,                     0, LIGHTIRFRAC },
+          { const_pisq,     "(" STD_pi STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
+          { const_esq,      "(" STD_EulerE STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
       };
 
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)
