@@ -465,7 +465,6 @@ void drawBattery(uint16_t voltage);
       }
     }
 
-//todo check and remove legacy lastProgramRunStop
     #define XX (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS)
     #define XXX (GRAPHMODE ? ((SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ)) : X_SSIZE_BEGIN)
     int32_t x = XX;
@@ -479,18 +478,12 @@ void drawBattery(uint16_t voltage);
         break;
       }
       case PGM_RUNNING: {
-        //if((lastProgramRunStop & PGM_DEFINED_MASK) != PGM_RUNNING) {
-        //  lcd_fill_rect(x - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
-        //}
         strcpy(statusMessage,STD_P);
         x++;
         break;
       }
       default: {
         if(hourGlassIconEnabled) {
-          //if((lastProgramRunStop  & PGM_DEFINED_MASK) == PGM_RUNNING || (lastProgramRunStop & PGM_DEFINED_MASK) == PGM_WAITING) {
-          //  lcd_fill_rect(x - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
-          //}
           strcpy(statusMessage,STD_HOURGLASS);
         }
         else {
@@ -510,14 +503,6 @@ void drawBattery(uint16_t voltage);
       }
       force_refresh(force);
     }
-
-//todo
-//    uint8_t tmpb = (programRunStop & PGM_DEFINED_MASK) | (hourGlassIconEnabled ? !PGM_DEFINED_MASK : 0); //force undefined bit, which forces the hourglass/P indicator update
-//    force_refresh((lastProgramRunStop != tmpb || lastProgramRunStop == PGM_UNDEFINED) ? force : timed);
-    //#if defined (PC_BUILD)
-    //  if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
-    //#endif //PC_BUILD
-//    lastProgramRunStop = tmpb;
   }
 
 
@@ -697,9 +682,6 @@ printf("EEEE\n");
 //           systemFlags0Mem  = systemFlags0;
 //           systemFlags1Mem  = systemFlags1;
 //           denMaxMem        = denMax;
-//           if(lastProgramRunStop != PGM_UNDEFINED) { 
-//             //  printf("###      RETURNING\n");
-//             return;
 //           }
 //      }
 

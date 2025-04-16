@@ -1555,7 +1555,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PGM_RESUMING                               5
 #define PGM_SINGLE_STEP                            6
 #define PGM_UNDEFINED                            255
-#define PGM_DEFINED_MASK                        0x7f
 
 // Save mode
 #define SM_MANUAL_SAVE                             0

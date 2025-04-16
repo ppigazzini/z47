@@ -173,7 +173,6 @@ uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
-uint8_t                lastProgramRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                keyStateCode;

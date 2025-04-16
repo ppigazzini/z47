@@ -420,7 +420,6 @@
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
-  extern uint8_t                lastProgramRunStop;
   extern uint8_t                currentKeyCode;
   extern uint8_t                lastKeyCode;
   extern uint8_t                keyStateCode;

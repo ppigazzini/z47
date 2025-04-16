@@ -4567,9 +4567,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 #if !defined(WIP_STATUSBAR)
   lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
 #endif //WIP_STATUSBAR
-//set lastProgramRunStop to undefined to force first refresh condition to be true
 
-        lastProgramRunStop = PGM_UNDEFINED;
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)

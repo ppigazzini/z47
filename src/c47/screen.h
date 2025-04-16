@@ -80,11 +80,11 @@ char       letteredRegisterName(calcRegister_t regist);
       #define clearScreenExcludingStatusBar(cnt)      do { } while(0)
   #else //!TESTSUITE_BUILD
     #if defined(MONITOR_CLRSCR)
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate(); lastProgramRunStop = PGM_UNDEFINED; printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul(); forceSBupdate(); lastProgramRunStop = PGM_UNDEFINED; printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul(); forceSBupdate(); printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
     #else //!MONITOR_CLRSCR
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate(); lastProgramRunStop = PGM_UNDEFINED;} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul(); forceSBupdate(); lastProgramRunStop = PGM_UNDEFINED;} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul(); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
     #endif //MONITOR_CLRSCR
   #endif //!TESTSUITE_BUILD
 
