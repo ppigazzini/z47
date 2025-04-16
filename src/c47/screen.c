@@ -5070,31 +5070,33 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         _refreshNormalScreen();
         break;
 
-      case CM_LISTXY:                     //JM
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+      case CM_LISTXY:
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
-        }
+ //       }
         break;
 
       case CM_GRAPH:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graph_plotmem();
           displayShiftAndTamBuffer();
@@ -5104,17 +5106,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       case CM_PLOT_STAT:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//      if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graphPlotstat(plotSelection);
           displayShiftAndTamBuffer();
@@ -5132,7 +5135,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       default: ;
