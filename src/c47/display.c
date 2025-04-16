@@ -379,13 +379,13 @@ overRange:
   //   Checking and showing fractions with ɸ, √5, √7, √𝝅, 1/𝝅, 1/e, see table below
   real_t value;
 
-#define oneOverPi "(" STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")"                 //OPT1
+#define oneOverPi "(" STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")"    //OPT1
 //#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1                         //OPT2 (original)
 //#define oneOverPi "(" STD_SUP_1 "/" STD_pi ")"                           //OPT3
 //#define oneOverPi STD_pi STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM      //OPT4
   //#define oneOverPi "(1/" STD_pi ")"
   //#define oneOverPi "(" STD_SUP_1 "/" STD_SUB_pi ")"   //really not nice
-#define oneOverE "(" STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")"              //OPT1
+#define oneOverE "(" STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_HAIR ")" //OPT1
 //#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1                      //OPT2 (original)
 //#define oneOverE "(" STD_SUP_1 "/" STD_EulerE ")"                        //OPT3
 //#define oneOverE STD_EulerE STD_SUP_MINUS STD_SUP_1 STD_SPACE_4_PER_EM   //OPT4
@@ -399,7 +399,7 @@ overRange:
       const real_t *toleranceIrrational = const_1e_24;
       TO_QSPI static const struct {
         const real_t *cnst;         // 4 bytes
-        const char name[12];        // 14 bytes
+        const char name[14];        // 14 bytes
         char terminator;            // 15 bytes
         const unsigned char option; // 16 bytes containts an irfracOption_t
       } replacements[] = {
@@ -415,7 +415,9 @@ overRange:
           { const_1onpi,    oneOverPi,                    0, LIGHTIRFRAC },
           { const_1oneE,    oneOverE,                     0, LIGHTIRFRAC },
           { const_pisq,     "(" STD_pi STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
-          { const_esq,      "(" STD_EulerE STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
+          { const_eEsq,     "(" STD_EulerE STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
+          { const_1onpisq,  "(" STD_pi STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
+          { const_1oneEsq,  "(" STD_EulerE STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
       };
 
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)

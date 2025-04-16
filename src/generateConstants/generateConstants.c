@@ -471,7 +471,9 @@ void generateAllConstants(void) {
   generateConstantArray("rtpi",          "+1.772453850905516027298167483341145182797549456122387128e+00");
   generateConstantArray("1onpi",         "+3.183098861837906715377675267450287240689192914809128975e-01");
   generateConstantArray("pisq",          "+9.869604401089358618834490999876151135313699407240790626e+00");
-  generateConstantArray("esq",           "+7.389056098930650227230427460575007813180315570551847324e+00");
+  generateConstantArray("eEsq",          "+7.389056098930650227230427460575007813180315570551847324e+00");
+  generateConstantArray("1onpisq",       "+1.013211836423377714438794632097276389043587746722465488e-01");
+  generateConstantArray("1oneEsq",       "+1.353352832366126918939994949724844034076315459095758815e-01");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
