@@ -197,8 +197,10 @@ void modLonIReal(void) {
 
   real_t x, r;
   real1071_t y;
+  realContext_t c = ctxtReal39;
 
-  convertLongIntegerRegisterToReal(REGISTER_Y, (real_t *)&y, &ctxtReal1071);
+  c.digits = 1071;
+  convertLongIntegerRegisterToReal(REGISTER_Y, (real_t *)&y, &c);
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
 
   WP34S_BigMod((real_t *)&y, &x, &r, &ctxtReal39);
@@ -220,8 +222,10 @@ void modLonIReal(void) {
  ***********************************************/
 void modRealLonI(void) {
   real1071_t x;
+  realContext_t c = ctxtReal39;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, (real_t *)&x, &ctxtReal1071);
+  c.digits = 1071;
+  convertLongIntegerRegisterToReal(REGISTER_X, (real_t *)&x, &c);
   if(realIsZero(&x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
