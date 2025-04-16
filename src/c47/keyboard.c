@@ -893,6 +893,7 @@ int16_t lastItem = 0;
         refreshRegisterLine(REGISTER_T);
       }
     }
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; //Ensure status bar is always checked after fn key release. The new statusbar code does not clear the entire statusbar, it only updates if a setting changed
 
     fnTimerStop(TO_3S_CTFF);      //dr
     fnTimerStop(TO_CL_LONG);      //dr
@@ -2083,7 +2084,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
-      screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+printf("AAAA\n");
+//      screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
@@ -2256,8 +2258,10 @@ RELEASE_END:
         screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
       }
 
+
+//moved up
+//screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; //Ensure status bar is always checked after fn key release. The new statusbar code does not clear the entire statusbar, it only updates if a setting changed
   
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; //Ensure status bar is always checked after fn key release. The new statusbar code does not clear the entire statusbar, it only updates if a setting changed
 
 
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
@@ -2392,6 +2396,9 @@ RELEASE_END:
           if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
             temporaryInformation = TI_NO_INFO;
             refreshRegisterLine(NIM_REGISTER_LINE); }
+          else if(tam.mode) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+          }
           else {
             //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
             keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP

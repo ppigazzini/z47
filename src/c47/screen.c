@@ -4566,7 +4566,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 #if !defined(WIP_STATUSBAR)
   lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
-#endif //WIP_STATUSBAR
+#else //!WIP_STATUSBAR
+  forceSBupdate();
+#endif //!WIP_STATUSBAR
+
 
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
