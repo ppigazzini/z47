@@ -766,7 +766,7 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
-    printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
+    //printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
