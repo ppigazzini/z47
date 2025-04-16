@@ -143,7 +143,7 @@ TO_QSPI const int16_t menu_MATX[]        = {
 
 TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_CPXtoV,               ITM_VtoCPX,            ITM_STKtoV3,                 ITM_V3toSTK,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_REGtoVEC,                ITM_VECtoREG,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_VECtoSTK,          ITM_NULL,                    ITM_NULL                      };
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL /*_VECtoSTK*/, ITM_NULL,                    ITM_NULL                      };
 
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?

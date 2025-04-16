@@ -1670,7 +1670,6 @@ int16_t lastItem = 0;
       uint8_t itm2a;
       uint8_t itm3;
       uint8_t itm4;
-      uint8_t itm5;
     } circ_t;
 
     uint8_t circPtr0 =  0;
@@ -1679,19 +1678,18 @@ int16_t lastItem = 0;
     uint8_t circPtr2a = 0;
     uint8_t circPtr3 = 0;
     uint8_t circPtr4 = 0;
-    uint8_t circPtr5 = 0;
     TO_QSPI const circ_t circ[] = {               //Circular special command buffer - key numbers, arranged in columns for each command
                                                   //       R47   R47
-                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0    H  H  C  R  C  C  C
-                  {18, 20, 23, 23, 23, 23, 23},   //1    P  P  4  4  4  4  4
-                  {30, 30, 18, 18, 18, 18, 18},   //2    3  3  7  7  7  7  7
-                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M
-                  {12, 12, 29, 29, 13, 9 , 4 },   //4    EN EN 2  2  M  J  E
-                  {28, 28, 33, 33, 0,  0 , 14},   //5    1  1  0  0        N
-                  {20, 20, 29, 29, 0 , 0 , 24},   //6    9  9  2  2        U
-                  {18, 18, 30, 30, 0 , 0 , 0 },   //7    7  7  3  3
-                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8    2  2
-                  {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
+                  {7 , 7 , 2 , 23, 2 , 2 },   //0    H  H  C  R  C  C
+                  {18, 20, 23, 23, 23, 23},   //1    P  P  4  4  4  4
+                  {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
+                  {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
+                  {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
+                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0      
+                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2      
+                  {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
+                  {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
+                  {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
     bool_t checkNumber(uint8_t keyCode) {
@@ -1771,18 +1769,6 @@ int16_t lastItem = 0;
       }
       else {
         circPtr4 = 0;
-      }
-      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) {
-        circPtr5 = 0; //C47MENU
-      }
-      if(circ[circPtr5].itm5==keyCode) {
-        if(circ[++circPtr5].itm5==0) {
-          fnDumpMenus(0);
-          return true;
-        }
-      }
-      else {
-        circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
