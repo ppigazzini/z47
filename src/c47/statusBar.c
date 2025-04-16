@@ -497,18 +497,18 @@ void drawBattery(uint16_t voltage);
           x--;
         }
       }
+    }
 
-      //statusMessage is now 0/!/P/H
-      if(!(SBhourglassShown[0] == statusMessage[0] || SBhourglassShown[1] == statusMessage[1])  ) {
-        SBhourglassShown[0] = statusMessage[0];
-        SBhourglassShown[1] = statusMessage[1];
-        if(statusMessage[0] != 0) {
-          x = showGlyph(statusMessage, &standardFont, x, 0, vmNormal, true, false, false);
-        } else {
-          lcd_fill_rect(x, 0, XXX - x, 20, LCD_SET_VALUE);
-        }
-        force_refresh(force);
+    //statusMessage is now 0/!/P/H
+    if(!(SBhourglassShown[0] == statusMessage[0] || SBhourglassShown[1] == statusMessage[1])  ) {
+      SBhourglassShown[0] = statusMessage[0];
+      SBhourglassShown[1] = statusMessage[1];
+      if(statusMessage[0] != 0) {
+        x = showGlyph(statusMessage, &standardFont, x, 0, vmNormal, true, false, false);
+      } else {
+        lcd_fill_rect(x, 0, XXX - x, 20, LCD_SET_VALUE);
       }
+      force_refresh(force);
     }
 
 //todo
