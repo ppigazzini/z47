@@ -2104,6 +2104,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         goto RELEASE_END;
       }
 
+    if(calcMode == CM_LISTXY) {
+      return;
+    }
 
       //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
@@ -2477,7 +2480,7 @@ RELEASE_END:
         }
 
         case ITM_EXIT1: {
-          if(SHOWMODE) {    //do action on press, instead of release
+          if(SHOWMODE || calcMode == CM_LISTXY) {    //do action on press, instead of release
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
@@ -3854,8 +3857,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         calcMode = CM_GRAPH;
+        reDraw = true;
         keyActionProcessed = true;
-        fnEqSolvGraph(EQ_PLOT_LU);
+        fnRefreshState();                //jm
         break;
       }
 
@@ -4505,16 +4509,21 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         ListXYposition += 10;
+        keyActionProcessed = true;
         break;
       }
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuUp();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
@@ -4725,16 +4734,21 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         ListXYposition -= 10;
+        keyActionProcessed = true;
         break;
       }
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuDown();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
