@@ -1959,6 +1959,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
 #define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
 
+#if defined(DMCP_BUILD)
+  #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
+#else //!DMCP_BUILD
+  #define runningOnSimOrUSB true
+#endif //!DMCP_BUILD
+
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
 #endif // !PC_BUILD && !DMCP_BUILD

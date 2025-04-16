@@ -13,7 +13,6 @@ static void insertSepsIntoIntegerText(char *displayString);
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
   clearSystemFlag(FLAG_FRACT);
-  clearSystemFlag(FLAG_IRFRAC);
   DM_Cycling = 0;
 }
 

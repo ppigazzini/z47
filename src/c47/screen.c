@@ -2457,7 +2457,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+          !runningOnSimOrUSB &&                                   // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
@@ -4686,7 +4686,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       skippedStackLines = false;                                    // See timer.c skippedStackLines
       #if defined(DMCP_BUILD)
         keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-        if( !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+        if( !runningOnSimOrUSB &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
             !emptyKeyBuffer() &&
             key_empty() == 1
             ) {
@@ -4696,7 +4696,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #endif //DMCP_BUILD
 
       #if defined(DMCP_BUILD)
-        if(!getSystemFlag(FLAG_USB)) {
+        if(!runningOnSimOrUSB) {
           // partial clearscreen, no menu update, no statusbar update on battery
           if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
@@ -5070,31 +5070,33 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         _refreshNormalScreen();
         break;
 
-      case CM_LISTXY:                     //JM
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+      case CM_LISTXY:
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
-        }
+ //       }
         break;
 
       case CM_GRAPH:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graph_plotmem();
           displayShiftAndTamBuffer();
@@ -5104,17 +5106,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       case CM_PLOT_STAT:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//      if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graphPlotstat(plotSelection);
           displayShiftAndTamBuffer();
@@ -5132,7 +5135,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       default: ;
