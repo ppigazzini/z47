@@ -23,6 +23,11 @@
     static inline void _lcdRefresh(void) {
       lcd_forced_refresh();
     }
+    static inline void _lcdSBRefresh(void) {
+      lcd_refresh_lines(0,20);
+    }
+
+
   #else
     #define LCD_SET_VALUE   0   // Black pixel
     #define LCD_EMPTY_VALUE 255 // White (or empty) pixel
@@ -43,6 +48,7 @@
      * Refresh the LCD with the draw buffer contents.
      */
     void _lcdRefresh   (void);
+    void _lcdSBRefresh(void);
 
     /**
      * Sets a single black pixel on the screen.

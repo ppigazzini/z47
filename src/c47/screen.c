@@ -1538,27 +1538,34 @@ return res;
   }
 
 
-
+#define blockForcedRefreshes false
 #define ANALYSE_REFRESH
 #undef  ANALYSE_REFRESH
 
-  void force_refresh(uint8_t mode) {
-    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-      printf("#%i",mode == force);
-    #endif //ANALYSE_REFRESH
+#if defined(ANALYSE_REFRESH)
+  #include <execinfo.h>
+#endif //ANALYSE_REFRESH
 
-    uint16_t now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
-    bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1;     // ms/1024, that is every second, flips secTick1
-    if(itIsTime) {
-      secTick1 = !secTick1;
+
+  static bool_t _force_refresh(uint8_t mode) {
+    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+      printf("# force = %i",mode == force);
+    #endif //ANALYSE_REFRESH
+    uint16_t now = 0;
+    bool_t itIsTime = false;
+    if(mode != force || blockForcedRefreshes) {
+      now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
+      itIsTime = ((now >> 6) & 0x0001) == secTick1;     // ms/1024, that is every second, flips secTick1
+      if(itIsTime) {
+        secTick1 = !secTick1;
+      }
     }
 
-    if((mode == force || itIsTime) && getSystemFlag(FLAG_MONIT)) {  //Restrict refresh to once per period. Use this minimally, due to extreme slow response.
+    if(((mode == force && !blockForcedRefreshes) || itIsTime) && getSystemFlag(FLAG_MONIT)) {  //Restrict refresh to once per period. Use this minimally, due to extreme slow response.
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
         printf("-\n");
       #endif //ANALYSE_REFRESH
-
-      _lcdRefresh();
+      return true;
     }
 
     else {
@@ -1566,13 +1573,44 @@ return res;
         printf("not updated =%i %i\n", now, itIsTime);
       #endif //ANALYSE_REFRESH
     }
+    return false;
   }
+
+
+  void force_refresh(uint8_t mode) {
+    #if defined(ANALYSE_REFRESH)
+      void *callstack[128];
+      int frames = backtrace(callstack, 128);
+      char **strs = backtrace_symbols(callstack, frames);
+      printf("force_refresh called from function: %s\n", strs[1]);
+      free(strs);
+    #endif //ANALYSE_REFRESH
+    if(_force_refresh(mode)) {
+      _lcdRefresh();
+    }
+    return;
+  }
+
+  void force_SBrefresh(uint8_t mode) {
+    #if defined(ANALYSE_REFRESH)
+      void *callstack[128];
+      int frames = backtrace(callstack, 128);
+      char **strs = backtrace_symbols(callstack, frames);
+      printf("force_SBrefresh called from function: %s\n", strs[1]);
+      free(strs);
+    #endif //ANALYSE_REFRESH
+    if(_force_refresh(mode)) {
+      _lcdSBRefresh();
+    }
+    return;
+  }
+
 
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
 
-    if((mode != timed) || ((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick3) { //1.024 second refresh interval
+    if((mode != timed && !blockForcedRefreshes) || ((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick3) { //1.024 second refresh interval
       halfSecTick3 = !halfSecTick3;
       ret_value = true;
 
@@ -4551,6 +4589,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
   void reallyClearStatusBar(uint8_t info) {
     lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
+    force_SBrefresh(force);
     forceSBupdate();
     refreshStatusBar();
   }
