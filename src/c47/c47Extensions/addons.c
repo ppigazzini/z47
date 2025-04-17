@@ -1767,7 +1767,7 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
 }
 
 
-bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
+bool_t checkForAndChange(char *displayString, const real_t *valueReal, const real_t *valueRealAbs, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
     realContext_t ctxtReal27 = ctxtReal39;
@@ -1778,9 +1778,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
     //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
-    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, valueRealAbs, valueReal, multConstant;
-    real34ToReal(value34,&valueReal);
-    realCopyAbs(&valueReal,&valueRealAbs);
+    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, multConstant;
 
     char denomStr[20], wholePart[30], resultingIntStr[100], tmpstr[50];
     tmpstr[0]=0;
@@ -1790,7 +1788,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     int32_t multipleOfNewConstantInteger = 0;
     char sign[2];
 
-    if(realIsPositive(&valueReal)) {
+    if(realIsPositive(valueReal)) {
       strcpy(sign, "+");
     }
     else {
@@ -1798,11 +1796,11 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     }
 
     //Returning: Real is too small
-    if(realCompareLessThan(&valueRealAbs, const_1e_16)) {
+    if(realCompareLessThan(valueRealAbs, const_1e_16)) {
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
       return false;
     }
@@ -1832,7 +1830,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(&valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal12);                               //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal12);                               //TRYOUT 12 instead of 27
     realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal12);     //TRYOUT 12 instead of 27
     realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal12);    //TRYOUT 12 instead of 27
     multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
@@ -1849,7 +1847,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 
 //                                printRealToConsole(constant,"\n\nconstant=","\n");
-//                                printRealToConsole(&valueReal,"valueReal=","\n");
+//                                printRealToConsole(valueReal,"valueReal=","\n");
 //                                printRealToConsole(&multConstant,"multConstant=","\n");
 //                                printf("smallestDenom:%i\n",smallestDenom);
 //                                printRealToConsole(&newConstant,"newConstant=","\n");
@@ -1879,7 +1877,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       strcpy(cStr,constantStr);
     }
 
-//                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
+//                                printRealToConsole(valueReal,"\n\nInputvalue: valueReal=","\n");
 //                                printRealToConsole(constant,"    constant=","\n");
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
