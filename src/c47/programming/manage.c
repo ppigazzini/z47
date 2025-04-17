@@ -462,7 +462,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
       #if defined(DMCP_BUILD)                                                      // vvv
-        if( !(!getSystemFlag(FLAG_USB) && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
+        if( !(!runningOnSimOrUSB && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
       #endif
 
         lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);

@@ -126,7 +126,7 @@
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
 #define significantDigitsForEqnGraphs (significantDigits == 0 ? 12 : significantDigits)   //If 6 is chosen by user, all four types are changes as follows: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+6; 75 to SDIGS+9
-#define significantDigitsForScreen    4                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
+#define significantDigitsForScreen    3                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
 
 
 //Testing and debugging
@@ -1826,9 +1826,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
-// The number of elements in an array
-#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
-
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
@@ -1977,6 +1974,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
 #define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
 #define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+
+#if defined(DMCP_BUILD)
+  #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
+#else //!DMCP_BUILD
+  #define runningOnSimOrUSB true
+#endif //!DMCP_BUILD
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined

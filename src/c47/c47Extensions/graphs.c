@@ -338,7 +338,7 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if((plotStatMx[0]=='S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+  if((plotStatMx[0]=='D' ? (drawMxN() >= 1) : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
     }
@@ -1435,27 +1435,10 @@ void fnStatList() {
     clearScreen(1);
     refreshStatusBar();
 
-    if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
-      plotmode = _VECT;
-    }
-    else {
-      plotmode = _SCAT;
-    }
-
-    if(regStatsXY != INVALID_VARIABLE &&
-      ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
-
-      if(plotStatMx[0] == 'S') {
-        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time
-      }
-      else {
-        statnum = drawMxN();
-      }
-
+    if(regStatsXY != INVALID_VARIABLE && (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+      statnum = drawMxN();
       fnStatSum(0);
-      //      runFunction(ITM_NSIGMA);
-      sprintf(tmpString, "Stat data: N = %d", statnum);
-      //      runFunction(ITM_DROP);
+      sprintf(tmpString, "Graph data: N = %d", statnum);
       print_linestr(tmpString, true);
 
                                   #if defined(STATDEBUG)

@@ -1674,7 +1674,7 @@ return res;
     if(getRegisterAsRealQuiet(reg, &t)) {
       angleMode = getRegisterDataType(reg) == dtReal34 ? getRegisterAngularMode(reg) : amNone;
       realToReal34(&t, &u);
-      real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+      real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC);
       p = tmpString;
     }
     else {
@@ -2210,7 +2210,7 @@ void createSubstrings(uint8_t number) {
         fractionToDisplayString(REGISTER_X, tmpString);
       }
       else {
-        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
       }
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -2218,7 +2218,7 @@ void createSubstrings(uint8_t number) {
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
       clearRegisterLine(REGISTER_X, true, true);
-      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
+      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       showString(tmpString, &numericFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE, vmNormal, false, true);
@@ -2439,7 +2439,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+          !runningOnSimOrUSB &&                                   // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
@@ -3867,7 +3867,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
                                                                       //JM EE ^
 
-          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -3952,7 +3952,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
                                                                        //JM EE ^
-          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
+          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -4675,7 +4675,7 @@ refreshStatusBar();
       skippedStackLines = false;                                    // See timer.c skippedStackLines
       #if defined(DMCP_BUILD)
         keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-        if( !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+        if( !runningOnSimOrUSB &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
             !emptyKeyBuffer() &&
             key_empty() == 1
             ) {
@@ -4685,7 +4685,7 @@ refreshStatusBar();
       #endif //DMCP_BUILD
 
       #if defined(DMCP_BUILD)
-        if(!getSystemFlag(FLAG_USB)) {
+        if(!runningOnSimOrUSB) {
           // partial clearscreen, no menu update, no statusbar update on battery
           if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
@@ -5068,31 +5068,33 @@ refreshStatusBar();
         _refreshNormalScreen();
         break;
 
-      case CM_LISTXY:                     //JM
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+      case CM_LISTXY:
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
-        }
+ //       }
         break;
 
       case CM_GRAPH:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graph_plotmem();
           displayShiftAndTamBuffer();
@@ -5102,17 +5104,18 @@ refreshStatusBar();
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       case CM_PLOT_STAT:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//      if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graphPlotstat(plotSelection);
           displayShiftAndTamBuffer();
@@ -5130,7 +5133,7 @@ refreshStatusBar();
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       default: ;

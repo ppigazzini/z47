@@ -751,7 +751,7 @@ void fnSetFractionDigits(uint16_t S) {
 
 
 void fnRoundingMode(uint16_t RM) {
-  if(RM < sizeof(roundingModeTable) / sizeof(*roundingModeTable)) {
+  if(RM < nbrOfElements(roundingModeTable)) {
     roundingMode = RM;
     ctxtReal34.round = roundingModeTable[RM];
   }
@@ -1437,18 +1437,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emax   = 999999;
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
-
-    decContextDefault(&ctxtReal1071,  DEC_INIT_DECQUAD);
-    ctxtReal1071.digits = 1071;
-    ctxtReal1071.emax   = 999999;
-    ctxtReal1071.emin   = -999999;
-    ctxtReal1071.traps  = 0;
-
-    decContextDefault(&ctxtReal2139,  DEC_INIT_DECQUAD);
-    ctxtReal2139.digits = 2139;
-    ctxtReal2139.emax   = 999999;
-    ctxtReal2139.emin   = -999999;
-    ctxtReal2139.traps  = 0;
 
     resetOtherConfigurationStuff();
 
