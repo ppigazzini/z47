@@ -397,6 +397,7 @@ overRange:
   if(limitIrfrac != NOIRFRAC) {
     if(getSystemFlag(FLAG_IRFRAC) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {      // LIMITIRFRAC [Real Matrixes, Complex Matrixes] & LIGHTIRFRAC [Vectors] for USB/BAT/SIM; FULLIRFRAC [Real, Complex] : pure fractions
       const real_t *toleranceIrrational = const_1e_24;
+      real_t valueReal, valueRealAbs;
       TO_QSPI static const struct {
         const real_t *cnst;         // 4 bytes
         const char name[14];        // 14 bytes
@@ -420,9 +421,11 @@ overRange:
           { const_1oneEsq,  "(" STD_EulerE STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
       };
 
+      real34ToReal(real34,&valueReal);
+      realCopyAbs(&valueReal,&valueRealAbs);
       for (unsigned int i=0; i<nbrOfElements(replacements); i++)
         if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
-          if(checkForAndChange(displayString, real34, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex)) {
+          if(checkForAndChange(displayString, &valueReal, &valueRealAbs, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex)) {
             IrFractionsCurrentStatus = CF_NORMAL;
             return;
           }
