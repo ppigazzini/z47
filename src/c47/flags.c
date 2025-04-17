@@ -95,7 +95,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               fnRefreshState();
               break;
 
-    case FLAG_SBdate:
+    case FLAG_SBdate:       //these flags need to clear the statusbar and start SB again
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
@@ -109,14 +109,24 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBprn :
     case FLAG_SBbatV:
     case FLAG_SBshfR:
+    case FLAG_SBfrac:
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+    case FLAG_FRACT:
+    case FLAG_IRFRAC:
+    case FLAG_IRFRQ:
+              reallyClearStatusBar(201);
               fnRefreshState();
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
+    default: break;
+  }
+
+
+  switch(systemFlag) {
     case FLAG_SBfrac:
-              fnRefreshState();
               lastIntegerBase = 0; //needed to reset the annunciator
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
     case FLAG_SBwoy :
@@ -127,8 +137,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
                 _clearSystemFlag(FLAG_SBtime);
               }
-              fnRefreshState();
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break; 
           
     case FLAG_FRACT:
@@ -136,7 +144,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_IRFRAC);
                 _clearSystemFlag(FLAG_IRFRQ);
               }
-              fnRefreshState();
               break;
 
     case FLAG_IRFRAC:
@@ -144,7 +151,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRQ);
               }
-              fnRefreshState();
               break;
 
      case FLAG_IRFRQ:
@@ -152,7 +158,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRAC);
               }
-              fnRefreshState();
               break;
 
     default: break;

@@ -4549,6 +4549,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
+  void reallyClearStatusBar(uint8_t info) {
+    lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
+    forceSBupdate();
+    refreshStatusBar();
+  }
+
 
   static void _selectiveClearScreen(void) {
     if(screenUpdatingMode == SCRUPD_AUTO) {
