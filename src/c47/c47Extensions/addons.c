@@ -190,7 +190,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
         copyRegisterToClipboardString2(REGISTER_X, tmpString100);
       }
       if(temporaryInformation == TI_FROM_MS_DEG) {
-        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, true);
+        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC);
         int16_t tmp_i = 0;
         while(tmpString100[tmp_i] != 0 && tmpString100[tmp_i+1] != 0) { //pre-condition the dd.mmssss to replaxce spaces with zeroes
           //printf("%c %d", tmpString100[tmp_i], tmpString100[tmp_i]);
@@ -1770,6 +1770,11 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
 bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
+    realContext_t ctxtReal27 = ctxtReal39;
+    ctxtReal27.digits = 27;
+    realContext_t ctxtReal12 = ctxtReal39;
+    ctxtReal12.digits = 12;
+
     char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
     //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
@@ -1797,7 +1802,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal39);
+    realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
       return false;
     }
@@ -1827,9 +1832,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(&valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal39);
-    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal39);
-    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal39);
+    realDivide(&valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal12);                               //TRYOUT 12 instead of 27
+    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal12);     //TRYOUT 12 instead of 27
+    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal12);    //TRYOUT 12 instead of 27
     multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
 
     //See if the ip is out of range
@@ -1838,7 +1843,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     }
 
   real_t findingIrrationalTolerance1;
-  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal39);         // do relative convergence
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence
 
 
 
@@ -1867,7 +1872,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
 
 
-    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
+    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers && smallestDenom != 1) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
       cStr[0] = 0;
     }
     else {
@@ -1889,8 +1894,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
+//                                printf("  useMixedNumbers = %u\n", useMixedNumbers);
 
-      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom;
+      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers && smallestDenom != 1) {   // Numer > Denom;
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);

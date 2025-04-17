@@ -743,7 +743,7 @@ void fnSetFractionDigits(uint16_t S) {
 
 
 void fnRoundingMode(uint16_t RM) {
-  if(RM < sizeof(roundingModeTable) / sizeof(*roundingModeTable)) {
+  if(RM < nbrOfElements(roundingModeTable)) {
     roundingMode = RM;
     ctxtReal34.round = roundingModeTable[RM];
   }
