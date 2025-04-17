@@ -492,7 +492,7 @@ void drawBattery(uint16_t voltage);
       SBhourglassShown[0] = statusMessage[0];
       SBhourglassShown[1] = statusMessage[1];
       showStringAndClear(statusMessage, &standardFont, XX, 0, XXX - XX, 20, vmNormal, true, true);
-      force_refresh(force);
+      force_SBrefresh(force);
     }
   }
 
@@ -503,7 +503,7 @@ void drawBattery(uint16_t voltage);
     //compressString = 1; //do not use compress, as the far edges of the letter get cut off
     showStringAndClear(asmBuffer, &standardFont, X_ASM, 0, X_SERIAL_IO - X_ASM, 20, vmNormal, true, false);
     if(programRunStop != PGM_RUNNING) {
-      force_refresh(force);
+      force_SBrefresh(force);
     }
   }
 
@@ -513,7 +513,7 @@ void drawBattery(uint16_t voltage);
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
     if(programRunStop != PGM_RUNNING) {
-      force_refresh(force);
+      force_SBrefresh(force);
     }
   }
 
