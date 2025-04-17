@@ -141,7 +141,7 @@ fgLongPressSetting,                  xxx,        xxx,                           
 
 
 
-DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,
+DenMaX,                              xxx,        64,                             xxx,             120,                  999,                    64,              xxx,             xxx,
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges

@@ -4801,7 +4801,7 @@ refreshStatusBar();
         }
 
         if(BASEMODEACTIVE) {
-          showBaseMode();
+          showFracMode();
 //          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         }
         if(calcMode == CM_CONFIRMATION) {
@@ -4948,7 +4948,7 @@ refreshStatusBar();
           refreshStatusBar();
         }
 #else  //WIP_STATUSBAR
-printf( "GGGG: screenUpdatingMode %u\n", screenUpdatingMode);
+printf( "GGGG: refreshStatusBar always: screenUpdatingMode %u\n", screenUpdatingMode);
 refreshStatusBar();
 #endif //WIP_STATUSBAR
 

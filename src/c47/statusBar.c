@@ -98,9 +98,7 @@ void drawBattery(uint16_t voltage);
 //check why ypos-2 must be used to prevent clearing ofnthe ASM line.
 //check the "" in some showStringAndClear statements
 //look at the "", cases
-//Remove FLAGSETS method
 //'todo' items
-//'DUPLICATION' item
 // Returnning from a LI SHOW, stack not updated
 // Returning from USB DISK access, no statusbar update
 // check hourglass/program mode indicators
@@ -163,18 +161,18 @@ void drawBattery(uint16_t voltage);
 
 
   //Share Frac Mode space
-  void showBaseMode(void) {
-    if(!(SBARUPD_FractionModeAndBaseMode)) return;
-    bool_t  SBchanged = false;
+  static bool_t showBaseMode(void) {
+    if(!(SBARUPD_FractionModeAndBaseMode)) return false;
 
-    if(lastIntegerBase != SBlastIntegerBaseShown) {
-      SBlastIntegerBaseShown = lastIntegerBase;
+    bool_t  SBchanged = false;
+    if(lastIntegerBase + ((lastIntegerBase >= 2 && didSystemFlagChange(FLAG_TOPHEX)) ? 0x40 : 0) != SBlastIntegerBaseShown) {
+      SBlastIntegerBaseShown = lastIntegerBase + ((lastIntegerBase >= 2 && didSystemFlagChange(FLAG_TOPHEX)) ? 0x40 : 0);
       SBchanged = true;
     }
 
-    if(didSystemFlagChange(FLAG_TOPHEX) || SBchanged) {
+    if(SBchanged) {
       uint32_t x = X_BASE_MODE;
-      if(lastIntegerBase != 0) {
+      if(lastIntegerBase >= 2) {
         if(getSystemFlag(FLAG_TOPHEX)) {
           x = showString("#KEY", &standardFont, x, 0 , vmNormal, true, true);
           lcd_fill_rect(x, 0, 26, 20, LCD_SET_VALUE);
@@ -184,18 +182,23 @@ void drawBattery(uint16_t voltage);
           x = showString("#BASE", &standardFont, x, 0, vmNormal, true, true);
         }
         lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
+        return true;
       }
     }
+    return false;
   }
 
 
   void showFracMode(void) {
-//todo
-//printf("showFracMode\n");
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
+
+    if(lastIntegerBase >= 2) {
+      showBaseMode();
+      return;
+    }
+
     if(didSystemFlagChange(FLAG_FRACT)  || didSystemFlagChange(FLAG_IRFRAC) || didSystemFlagChange(FLAG_PROPFR) || 
        didSystemFlagChange(SETTING_DMX) || didSystemFlagChange(FLAG_DENFIX) || didSystemFlagChange(FLAG_DENANY)) {
-//printf("showFracMode1\n");
 
       char statusMessage[20];
       uint32_t x = X_FRAC_MODE;
@@ -215,51 +218,51 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
       }
 
-    #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
-    compressString = 1;
-    int xx = x;
-    x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
-    x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
-
-    lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
-
-    compressString = 1;
-    if(denMax == 0 || denMax > MAX_DENMAX) {
-      sprintf(statusMessage,"max");
-    } else {
-      sprintf(statusMessage, "%" PRIu32,denMax);
-    }
-    xx = x;
-    x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
-    lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
-
-    if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
-      raiseString = 3;
-      lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
-      x = showString(STD_SUB_f, &standardFont, x, lowerUnderLine, vmNormal, true, true);
-    }
-
-    if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
-      strcpy(divStr,PRODUCT_SIGN);
-      lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
-      raiseString = 2;
-      x = showString(divStr, &standardFont, x, lowerUnderLine, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
-    }
-
-    if(getSystemFlag(FLAG_IRFRAC)) {
-      strcpy(divStr,STD_IRRATIONAL_I);
-      lcd_fill_rect(x, 0, 9, 20, LCD_SET_VALUE);
-      raiseString = 1;
-      x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
-    }
-
-    if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
+      #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
       compressString = 1;
-      x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
-      if(x >= X_INTEGER_MODE - 1) {
-        lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+      int xx = x;
+      x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
+      x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
+
+      lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
+
+      compressString = 1;
+      if(denMax == 0 || denMax > MAX_DENMAX) {
+        sprintf(statusMessage,"max");
+      } else {
+        sprintf(statusMessage, "%" PRIu32,denMax);
       }
-    }
+      xx = x;
+      x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
+      lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
+
+      if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
+        raiseString = 3;
+        lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
+        x = showString(STD_SUB_f, &standardFont, x, lowerUnderLine, vmNormal, true, true);
+      }
+
+      if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
+        strcpy(divStr,PRODUCT_SIGN);
+        lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
+        raiseString = 2;
+        x = showString(divStr, &standardFont, x, lowerUnderLine, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
+      }
+
+      if(getSystemFlag(FLAG_IRFRAC)) {
+        strcpy(divStr,STD_IRRATIONAL_I);
+        lcd_fill_rect(x, 0, 9, 20, LCD_SET_VALUE);
+        raiseString = 1;
+        x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
+      }
+
+      if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
+        compressString = 1;
+        x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
+        if(x >= X_INTEGER_MODE - 1) {
+          lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+        }
+      }
 
       if(x <= X_INTEGER_MODE) {
         lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
@@ -442,7 +445,6 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-//todo check this logic and possibly flip it to the allowed modes
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
       switch(calcMode) {
         case CM_PEM:
@@ -617,21 +619,7 @@ void drawBattery(uint16_t voltage) {
   #endif // DMCP_BUILD
 
 
-#define FLAGSETS  (uint32_t)( \
-                  + (calcMode            << (32- 7)) \
-                  + (fractionDigits      << (32-12)) \
-                  + (shortIntegerWordSize<< (32-14)) \
-                  + (programRunStop      << (32-18)) )
-
-uint32_t flagsSettingsOld  = 0;
-uint32_t flagsSettingsTest = 0;
-uint32_t systemFlags0Mem   = 0;
-uint32_t systemFlags1Mem   = 0;
-uint32_t denMaxMem         = 0;
-
   void refreshStatusBar(void) {
-//todo
-printf("DDDD\n");
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
@@ -654,25 +642,11 @@ printf("DDDD\n");
       }
     }
 
-//todo
-printf("EEEE\n");
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
       sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d ti:%u er:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
-
-
-//todo remove this and associated code
-//      //This sub-section returns, with no statusbar updates if none of the settings changed. 
-//      flagsSettingsTest = FLAGSETS;
-//      if(!(systemFlags0 == systemFlags0Mem && systemFlags1 == systemFlags1Mem && denMax == denMaxMem && flagsSettingsOld == flagsSettingsTest)) {
-//           flagsSettingsOld = flagsSettingsTest;
-//           systemFlags0Mem  = systemFlags0;
-//           systemFlags1Mem  = systemFlags1;
-//           denMaxMem        = denMax;
-//           }
-//      }
 
 
       if(GRAPHMODE) {
@@ -689,7 +663,6 @@ printf("EEEE\n");
       showRealComplexResult();
       showComplexMode();
       showAngularMode();
-      showBaseMode();
       showFracMode();
       if(calcMode == CM_MIM) {
         showMatrixMode();
