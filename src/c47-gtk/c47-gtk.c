@@ -304,7 +304,7 @@
 
     if(dumpMenus > 0) {
       fnReset(CONFIRMED);
-      clearScreen();
+      clearScreen(121);
       fnDumpMenus(dumpMenus);
       printf("\n\nOutput menus saved.\n");
       return 0;

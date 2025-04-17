@@ -116,7 +116,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_IRFRAC:
     case FLAG_IRFRQ:
             #if !defined(TESTSUITE_BUILD)
-              reallyClearStatusBar(201);
+     //         reallyClearStatusBar(201);
               fnRefreshState();
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;

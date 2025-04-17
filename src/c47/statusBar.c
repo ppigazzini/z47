@@ -25,22 +25,24 @@ void drawBattery(uint16_t voltage);
   }
 
 
+  #define timeHasChanged true
   bool_t timeChanged(void) {
     char timeString[8];
     getTimeString(timeString);
-    if(strcmp(timeString, oldTime)) {
+    if(strcmp(timeString, oldTime) != 0 || oldTime[0] == 0) {     // not equal
       strcpy(oldTime, timeString);
-      return true;
+      return timeHasChanged;
     } else {
-      return false;                            // returns the strcmp(dateTimeString, oldTime) comparison
+      return !timeHasChanged;                  // returns the strcmp(dateTimeString, oldTime) comparison
     }
   }
 
 
   bool_t showDateTime(void) {
-    if(!timeChanged()) {                       // creates oldTime here
+    if(timeChanged() == !timeHasChanged) {     // creates oldTime here
       return false;
     }
+
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return false;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
@@ -54,25 +56,28 @@ void drawBattery(uint16_t voltage);
     if(SBARUPD_Date || SBARUPD_WoY) {
       getDateString(dateTimeString);
     }
-    if(SBARUPD_Date) {
-      x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
-    }
-    else {
-      lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
-      x = X_TIME;
+
+    if((dateTimeString[0] >= '0' || dateTimeString[0] <= '9')) {                      // not yet initialized, senseless to continue
+      if(SBARUPD_Date) {
+        x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
+      }
+      else {
+        lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
+        x = X_TIME;
+      }
+      if(SBARUPD_Time) {
+        x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
+        x = showString(oldTime, &standardFont, x, 0, vmNormal, true, false);
+      }
+      if(SBARUPD_WoY) {
+        x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
+        getWeekOfYearString(dateTimeString);
+        x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      }
     }
 
-    if(SBARUPD_Time) {
-      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
-      x = showString(oldTime, &standardFont, x, 0, vmNormal, true, false);
-    }
-
-    if(SBARUPD_WoY) {
-      x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
-      getWeekOfYearString(dateTimeString);
-      x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
-    }
     lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
+
 
     if(Y_SHIFT == 0 && X_SHIFT < 200) {
       showShiftState();
