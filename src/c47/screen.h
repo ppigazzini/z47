@@ -141,6 +141,7 @@ char       letteredRegisterName(calcRegister_t regist);
   void     clear_fg_jm                        (void);
   void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
   void     force_refresh                      (uint8_t mode);
+  void     force_SBrefresh                    (uint8_t mode);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
