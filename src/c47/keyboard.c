@@ -159,18 +159,20 @@ static void executeFunction(const char *data, int16_t item_);
         break;
       }
 
+      //VARS MENU
+      case MNU_CONFIGS:
       case MNU_MATRS:
-      case MNU_STRINGS:
       case MNU_DATES:
       case MNU_TIMES:
-      case MNU_ANGLES:
       case MNU_SINTS:
-      case MNU_LINTS:
-      case MNU_REALS:
+      case MNU_STRINGS:
       case MNU_NUMBRS:
-      case MNU_CONFIGS:
-      case MNU_ALLVARS:
-      case MNU_CPXS: {
+      case MNU_CPXS:
+      case MNU_REALS:
+      case MNU_ANGLES:
+      case MNU_LINTS:
+      case MNU_ALLVARS: 
+      {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
         break;
@@ -272,19 +274,25 @@ static void executeFunction(const char *data, int16_t item_);
                     #endif //VERBOSEKEYS
           return findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_LABEL + ASSIGN_LABELS;
         }
+
         case MNU_VAR:
+
+        //VARS MENU
+        case MNU_CONFIGS:
         case MNU_MATRS:
-        case MNU_STRINGS:
         case MNU_DATES:
         case MNU_TIMES:
-        case MNU_ANGLES:
         case MNU_SINTS:
-        case MNU_LINTS:
-        case MNU_REALS:
-        case MNU_CPXS:
+        case MNU_STRINGS:
         case MNU_NUMBRS:
-        case MNU_ALLVARS:
-        case MNU_CONFIGS: {
+        case MNU_CPXS:
+        case MNU_REALS:
+        case MNU_ANGLES:
+        case MNU_LINTS:
+        case MNU_ALLVARS: 
+
+
+         {
           return findNamedVariable((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
         }
         case MNU_MENUS: {
@@ -389,28 +397,33 @@ static void executeFunction(const char *data, int16_t item_);
 
     static void closeAllCatalogMenus(void) {
         switch(-currentMenu()) {
-          //          case MNU_CATALOG :  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
-          case MNU_VARS :
-          case MNU_PROGS :
-          case MNU_CHARS :
-          case MNU_ANGLES :
-          case MNU_CPXS :
-          case MNU_DATES :
-          case MNU_FCNS :
-          case MNU_LINTS :
-          case MNU_MATRS :
-          case MNU_MENUS :
-          case MNU_REALS :
-          case MNU_SINTS :
-          case MNU_STRINGS :
-          case MNU_TIMES :
-          case MNU_ALPHA_OMEGA :
-          case MNU_ALPHAMISC :
-          case MNU_ALPHA :
-          case MNU_CONST :
+          //          case MNU_CATALOG:  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
+          case MNU_ALPHA_OMEGA:
+          case MNU_ALPHAMISC:
+          case MNU_ALPHA:
+
+          //CAT MENU
+          case MNU_FCNS:
+          case MNU_CONST:
+          case MNU_CHARS:
+          case MNU_PROGS:
+          case MNU_VARS:
+          case MNU_MENUS:
+
+          //VARS MENU
+          case MNU_CONFIGS:
+          case MNU_MATRS:
+          case MNU_DATES:
+          case MNU_TIMES:
+          case MNU_SINTS:
+          case MNU_STRINGS:
           case MNU_NUMBRS:
-          case MNU_ALLVARS:
-          case MNU_CONFIGS: {
+          case MNU_CPXS:
+          case MNU_REALS:
+          case MNU_ANGLES:
+          case MNU_LINTS:
+          case MNU_ALLVARS: 
+          {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
           }

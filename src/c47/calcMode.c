@@ -164,6 +164,18 @@
         catalog = CATALOG_CPXS;
         break;
       }
+      case MNU_CONFIGS: {
+        catalog = CATALOG_CONFIGS;
+        break;
+      }
+      case MNU_ALLVARS: {
+        catalog = CATALOG_ALLVARS;
+        break;
+      }
+      case MNU_NUMBRS: {
+        catalog = CATALOG_NUMBRS;
+        break;
+      }
       case MNU_Solver  :
       case MNU_Grapher :
       case MNU_Sf      :
