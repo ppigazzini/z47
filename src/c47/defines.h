@@ -1523,7 +1523,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_REALS                             16
 #define CATALOG_CPXS                              17
 #define CATALOG_MVAR                              18
-#define NUMBER_OF_CATALOGS                        19
+#define CATALOG_CONFIGS                           19
+#define CATALOG_ALLVARS                           20
+#define CATALOG_NUMBRS                            21
+#define NUMBER_OF_CATALOGS                        22
 
 // String comparison type
 #define CMP_BINARY                                 0

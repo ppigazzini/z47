@@ -53,6 +53,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_VOLMINUS :
       case ITM_VOLPLUS  :
       case ITM_VOLQ     :
+      case ITM_BATT     :
              #if (VERBOSE_LEVEL >= 0)
                printf("Item %i Softkey item not available, not executing and/or struck through.\n",itemNr);
              #endif
