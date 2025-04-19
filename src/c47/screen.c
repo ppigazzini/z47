@@ -3,6 +3,9 @@
 
 #include "c47.h"
 #include "version.h"
+#if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+  #include <execinfo.h>
+#endif //PC_BUILD
 
 //#define DEBUGCLEARS
 
@@ -4782,10 +4785,14 @@ refreshStatusBar();
 
 
   static void _refreshNormalScreen(void) {
-        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
-        #endif // PC_BUILD &&MONITOR_CLRSCR
-
+                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
+                                void *callstack[128];
+                                int frames = backtrace(callstack, 128);
+                                char **strs = backtrace_symbols(callstack, frames);
+                                printf("_refreshNormalScreen called from function: %s\n", strs[1]);
+                                free(strs);
+                              #endif // PC_BUILD &&MONITOR_CLRSCR
         if(calcMode != CM_NIM) refreshNIMdone = false;
 
         if(calcMode == CM_NORMAL && screenUpdatingMode != SCRUPD_AUTO && temporaryInformation == TI_SHOWNOTHING) {
@@ -4972,6 +4979,14 @@ refreshStatusBar();
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint8_t source) {
+                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                void *callstack[128];
+                                int frames = backtrace(callstack, 128);
+                                char **strs = backtrace_symbols(callstack, frames);
+                                printf("\refreshScreen called from function: %s\n", strs[1]);
+                                free(strs);
+                              #endif // PC_BUILD
+
     //Special test function to click every time refresh screen is called
     #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
       start_buzzer_freq(100000);
