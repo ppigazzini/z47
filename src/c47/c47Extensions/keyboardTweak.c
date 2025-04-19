@@ -1251,6 +1251,10 @@ bool_t fullKeyBuffer(void) {
 bool_t emptyKeyBuffer(void) {
   return buffer.read == buffer.write;
 }
+
+void clearKeyBuffer(void) {
+  buffer.read = buffer.write;
+}
 #endif // DMCP_BUILD                                                    //^^
 
 

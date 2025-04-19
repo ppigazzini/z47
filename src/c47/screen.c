@@ -2476,7 +2476,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
     char prefix[200], lastBase[20];
 
-    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&

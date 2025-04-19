@@ -1669,6 +1669,18 @@ int16_t lastItem = 0;
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
+    #if defined(DMCP_BUILD)
+    static void waitForTimer(void) {
+      if(!skippedStackLines) return;
+      int32_t i = 27;
+      while(i > 0) {
+        if(fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING || !skippedStackLines) break;
+        sys_delay(100);
+        i--;
+      }
+    }
+    #endif //DMCP_BUILD
+
     bool_t checkNumber(uint8_t keyCode) {
       if(calcModel == USER_C47) {
         if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) {
@@ -1676,6 +1688,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr0].itm0==keyCode) {
           if(circ[++circPtr0].itm0==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1688,6 +1704,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2].itm2==keyCode) {
           if(circ[++circPtr2].itm2==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1702,6 +1722,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr1].itm1==keyCode) {
           if(circ[++circPtr1].itm1==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1714,6 +1738,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2a].itm2a==keyCode) {
           if(circ[++circPtr2a].itm2a==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1728,6 +1756,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr3].itm3==keyCode) {
         if(circ[++circPtr3].itm3==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetJM(0);
           return true;
         }
@@ -1740,6 +1772,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr4].itm4==keyCode) {
         if(circ[++circPtr4].itm4==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetRJ(0);
           return true;
         }
