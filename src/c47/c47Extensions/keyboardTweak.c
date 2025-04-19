@@ -1382,6 +1382,7 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
    fnKeyBackspace(0);
    setSystemFlag(FLAG_ASLIFT);
    screenUpdatingMode = SCRUPD_AUTO;
+   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 //   refreshScreen();
   #endif // !TESTSUITE_BUILD
 }

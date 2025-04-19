@@ -13,6 +13,7 @@ void setLastintegerBasetoZero(void) {
   if(lastIntegerBase != 0) {
     lastIntegerBase = 0;
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     refreshNIMdone = false;
     refreshScreen(56);
   }
@@ -4603,24 +4604,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
         printf("   >>> lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
-      clearScreenExcludingStatusBar(6);
-refreshStatusBar();
+      clearScreen(6);
+      refreshStatusBar();
       refreshNIMdone = false;
     }
     else {
-      if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+      if(!(screenUpdatingMode & (SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
-
-#if !defined(WIP_STATUSBAR)
-  lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
-#else //!WIP_STATUSBAR
-  forceSBupdate();
-#endif //!WIP_STATUSBAR
-
-
+        clearScreenStatusBar(7);
       }
+      else if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+        refreshStatusBar();
+      }
+
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
@@ -4813,9 +4811,11 @@ refreshStatusBar();
         }
         if(calcMode == CM_CONFIRMATION) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
@@ -5051,7 +5051,9 @@ refreshStatusBar();
       case -MNU_GEOM:
       case -MNU_HYPER:
       case -MNU_LOGIS:
-      case -MNU_NORML: screenUpdatingMode = SCRUPD_AUTO; break;
+      case -MNU_NORML: screenUpdatingMode = SCRUPD_AUTO;
+                       screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                       break;
       default: ;
     }
 
@@ -5118,6 +5120,7 @@ refreshStatusBar();
 
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;

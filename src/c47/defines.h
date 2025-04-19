@@ -1576,7 +1576,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SCRUPD_MANUAL_STACK                     0x02       //0000 0010
 #define SCRUPD_MANUAL_MENU                      0x04       //0000 0100
 #define SCRUPD_MANUAL_SHIFT_STATUS              0x08       //0000 1000
-//#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10     //0001 0000   16d
+#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10       //0001 0000   16d
 #define SCRUPD_SKIP_STACK_ONE_TIME              0x20       //0010 0000   32d
 #define SCRUPD_SKIP_MENU_ONE_TIME               0x40       //0100 0000   64d
 //#define SCRUPD_SHIFT_STATUS                     0x80
