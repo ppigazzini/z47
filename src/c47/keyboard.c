@@ -1682,6 +1682,18 @@ int16_t lastItem = 0;
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
+    #if defined(DMCP_BUILD)
+    static void waitForTimer(void) {
+      if(!skippedStackLines) return;
+      int32_t i = 27;
+      while(i > 0) {
+        if(fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING || !skippedStackLines) break;
+        sys_delay(100);
+        i--;
+      }
+    }
+    #endif //DMCP_BUILD
+
     bool_t checkNumber(uint8_t keyCode) {
       if(calcModel == USER_C47) {
         if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) {
@@ -1689,6 +1701,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr0].itm0==keyCode) {
           if(circ[++circPtr0].itm0==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1701,6 +1717,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2].itm2==keyCode) {
           if(circ[++circPtr2].itm2==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1715,6 +1735,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr1].itm1==keyCode) {
           if(circ[++circPtr1].itm1==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1727,6 +1751,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2a].itm2a==keyCode) {
           if(circ[++circPtr2a].itm2a==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1741,6 +1769,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr3].itm3==keyCode) {
         if(circ[++circPtr3].itm3==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetJM(0);
           return true;
         }
@@ -1753,6 +1785,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr4].itm4==keyCode) {
         if(circ[++circPtr4].itm4==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetRJ(0);
           return true;
         }
@@ -1933,6 +1969,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       }
       else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(126);
       }
 
@@ -2099,6 +2136,7 @@ printf("AAAA\n");
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(116);
       }
       else if(showFunctionNameItem != 0) {
@@ -2329,6 +2367,7 @@ RELEASE_END:
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       refreshScreen(138);
     }
 
@@ -2346,6 +2385,7 @@ RELEASE_END:
       }
       temporaryInformation = TI_NO_INFO;
       screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     }
 
     if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
@@ -3646,6 +3686,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(temporaryInformation == TI_VIEW_REGISTER) {
           temporaryInformation = TI_NO_INFO;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
           temporaryInformation = TI_NO_INFO;
@@ -3738,6 +3779,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             updateMatrixHeightCache();
           }
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           popSoftmenu(); // close softmenu dedicated for the MIM
         }
         break;
@@ -4094,6 +4136,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           return;
         }
         else
@@ -4114,6 +4157,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
             screenUpdatingMode = SCRUPD_AUTO;
+            screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
             if(lastErrorCode != 0) {
               lastErrorCode = 0;
             }
@@ -4400,6 +4444,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(calcMode == CM_NIM) {
             closeNim();
           }
@@ -4624,6 +4669,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(calcMode == CM_NIM) {
             closeNim();
           }

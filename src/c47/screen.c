@@ -3,6 +3,9 @@
 
 #include "c47.h"
 #include "version.h"
+#if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+  #include <execinfo.h>
+#endif //PC_BUILD
 
 //#define DEBUGCLEARS
 
@@ -10,6 +13,7 @@ void setLastintegerBasetoZero(void) {
   if(lastIntegerBase != 0) {
     lastIntegerBase = 0;
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     refreshNIMdone = false;
     refreshScreen(56);
   }
@@ -2472,7 +2476,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
     char prefix[200], lastBase[20];
 
-    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
@@ -4600,24 +4603,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
         printf("   >>> lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
-      clearScreenExcludingStatusBar(6);
-refreshStatusBar();
+      clearScreen(6);
+      refreshStatusBar();
       refreshNIMdone = false;
     }
     else {
-      if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+      if(!(screenUpdatingMode & (SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
-
-#if !defined(WIP_STATUSBAR)
-  lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
-#else //!WIP_STATUSBAR
-  forceSBupdate();
-#endif //!WIP_STATUSBAR
-
-
+        clearScreenStatusBar(7);
       }
+      else if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+        refreshStatusBar();
+      }
+
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
@@ -4782,10 +4782,14 @@ refreshStatusBar();
 
 
   static void _refreshNormalScreen(void) {
-        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
-        #endif // PC_BUILD &&MONITOR_CLRSCR
-
+                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
+                                void *callstack[128];
+                                int frames = backtrace(callstack, 128);
+                                char **strs = backtrace_symbols(callstack, frames);
+                                printf("_refreshNormalScreen called from function: %s\n", strs[1]);
+                                free(strs);
+                              #endif // PC_BUILD &&MONITOR_CLRSCR
         if(calcMode != CM_NIM) refreshNIMdone = false;
 
         if(calcMode == CM_NORMAL && screenUpdatingMode != SCRUPD_AUTO && temporaryInformation == TI_SHOWNOTHING) {
@@ -4806,9 +4810,11 @@ refreshStatusBar();
         }
         if(calcMode == CM_CONFIRMATION) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
@@ -4972,6 +4978,14 @@ refreshStatusBar();
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint8_t source) {
+                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                void *callstack[128];
+                                int frames = backtrace(callstack, 128);
+                                char **strs = backtrace_symbols(callstack, frames);
+                                printf("\refreshScreen called from function: %s\n", strs[1]);
+                                free(strs);
+                              #endif // PC_BUILD
+
     //Special test function to click every time refresh screen is called
     #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
       start_buzzer_freq(100000);
@@ -5036,7 +5050,9 @@ refreshStatusBar();
       case -MNU_GEOM:
       case -MNU_HYPER:
       case -MNU_LOGIS:
-      case -MNU_NORML: screenUpdatingMode = SCRUPD_AUTO; break;
+      case -MNU_NORML: screenUpdatingMode = SCRUPD_AUTO;
+                       screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                       break;
       default: ;
     }
 
@@ -5103,6 +5119,7 @@ refreshStatusBar();
 
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;

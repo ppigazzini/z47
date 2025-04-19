@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
+//#define ANALYSE
+
+
 #include "c47.h"
+#if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
+  #include <execinfo.h>
+#endif // PC_BUILD &&MONITOR_CLRSCR
+
+
 
 void drawBattery(uint16_t voltage);
 
@@ -16,6 +24,13 @@ void drawBattery(uint16_t voltage);
   char     SBhourglassShown[2];
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
+                                #if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("forceSBupdate called from function: %s\n", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD &&MONITOR_CLRSCR
     setAllSystemFlagChanged();
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
@@ -278,6 +293,11 @@ void drawBattery(uint16_t voltage);
 
   int32_t showStringAndClear(const char *str, const font_t *font, uint32_t x, int32_t y,  uint32_t dx, uint32_t dy, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
      //raiseString = raise;
+
+     if(str[0] == 0) {
+       lcd_fill_rect(x, 0, dx, 20, LCD_SET_VALUE);
+     }
+
      uint32_t col, row;
      getStringBounds(str, font, &col, &row);
 
@@ -296,6 +316,14 @@ void drawBattery(uint16_t voltage);
      else if(y > 0) {
        lcd_fill_rect(x, 0, dx, y-0, LCD_SET_VALUE);
      }
+                                #if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
+                                  printf("x=%4u dx=%4u x+dx-1=%4u xx=%4u  ",x,dx,x+dx-1,xx);
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("showStringAndClear called from function: %s\n", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD &&MONITOR_CLRSCR
      return xx;
   }
 
@@ -356,11 +384,11 @@ void drawBattery(uint16_t voltage);
 
   void showHideAlphaMode(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    uint16_t SBAlphaMode = SETT_AlphaMode;
-    bool_t   SBchanged = false;
-    if(SBAlphaMode != SBAlphaModeLastShown) {
-      SBAlphaModeLastShown = SBAlphaMode;
-      SBchanged = true;
+    bool_t SBchanged;
+    SBchanged = false;
+    if(SBAlphaModeLastShown != SETT_AlphaMode) {
+       SBAlphaModeLastShown = SETT_AlphaMode;
+       SBchanged = true;
     }
     if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged) {
 
@@ -546,7 +574,7 @@ void drawBattery(uint16_t voltage);
   void showHideWatch(void) {
     if(!(SBARUPD_StopWatch)) return;
     if(didSystemFlagChange(SETTING_WATCHICON)) {
-        showStringAndClear(watchIconEnabled ? STD_TIMER : "", &standardFont, X_STOPWATCH, 0, X_SSIZE_BEGIN - X_STOPWATCH, 20, vmNormal, true, false );
+        showStringAndClear(watchIconEnabled ? STD_TIMER : "", &standardFont, X_STOPWATCH, 0, X_SERIAL_IO - X_STOPWATCH, 20, vmNormal, true, false );
     }
   }
 

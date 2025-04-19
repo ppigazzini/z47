@@ -250,9 +250,10 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     }
 
-    hourGlassIconEnabled = false;
-    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    showHideHourGlass();
+//Test: Remove clearing of hourgalss from here - it is too early.
+//    hourGlassIconEnabled = false;
+//    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw

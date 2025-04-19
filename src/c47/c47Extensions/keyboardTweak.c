@@ -1251,6 +1251,10 @@ bool_t fullKeyBuffer(void) {
 bool_t emptyKeyBuffer(void) {
   return buffer.read == buffer.write;
 }
+
+void clearKeyBuffer(void) {
+  buffer.read = buffer.write;
+}
 #endif // DMCP_BUILD                                                    //^^
 
 
@@ -1382,6 +1386,7 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
    fnKeyBackspace(0);
    setSystemFlag(FLAG_ASLIFT);
    screenUpdatingMode = SCRUPD_AUTO;
+   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 //   refreshScreen();
   #endif // !TESTSUITE_BUILD
 }
