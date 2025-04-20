@@ -4943,14 +4943,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
         }
 
-#if !defined(WIP_STATUSBAR)
-        if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
-          refreshStatusBar();
-        }
-#else  //WIP_STATUSBAR
-printf( "GGGG: refreshStatusBar always: screenUpdatingMode %u\n", screenUpdatingMode);
-refreshStatusBar();
-#endif //WIP_STATUSBAR
+        //if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+        //  refreshStatusBar();
+        //}
+        refreshStatusBar();
 
         #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
@@ -5102,14 +5098,13 @@ refreshStatusBar();
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
 
-#if !defined(WIP_STATUSBAR)
-        //printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
-        if(last_CM != calcMode) {
-          if(!SHOWMODE) screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK ;
-          //printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
-        }
-#endif //WIP_STATUSBAR
+
+        ////printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        //if(last_CM != calcMode) {
+        //  if(!SHOWMODE) screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
+        //  screenUpdatingMode &= ~SCRUPD_MANUAL_STACK ;
+        //  //printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        //}
 
         else if(calcMode == CM_MIM) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
@@ -5125,32 +5120,15 @@ refreshStatusBar();
         break;
 
       case CM_LISTXY:
-//start removing the old refresh system. Keep until no malops found.
-//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-//          if(last_CM == 252) {
-//            last_CM--;
-//          }
-//          else {
-//            last_CM = 252; //calcMode;
-//          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
- //       }
         break;
 
       case CM_GRAPH:
-//start removing the old refresh system. Keep until no malops found.
-//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-//          if(last_CM == 252) {
-//            last_CM--;
-//          }
-//          else {
-//            last_CM = 252; //calcMode;
-//          }
           doRefreshSoftMenu = false;
           graph_plotmem();
           displayShiftAndTamBuffer();
@@ -5160,18 +5138,9 @@ refreshStatusBar();
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-//        }
         break;
 
       case CM_PLOT_STAT:
-//start removing the old refresh system. Keep until no malops found.
-//      if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-//          if(last_CM == 252) {
-//            last_CM--;
-//          }
-//          else {
-//            last_CM = 252; //calcMode;
-//          }
           doRefreshSoftMenu = false;
           graphPlotstat(plotSelection);
           displayShiftAndTamBuffer();
@@ -5189,7 +5158,6 @@ refreshStatusBar();
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-//        }
         break;
 
       default: ;

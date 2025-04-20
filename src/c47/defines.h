@@ -151,24 +151,15 @@
 #define   FN_TIME_DEBUG1
 #undef    FN_TIME_DEBUG1
 
-
-//Testing WIP to improve the statusbar updates
-#define    MONITOR_CLRSCR
-#undef     MONITOR_CLRSCR
-#define    WIP_STATUSBAR
-
-#define    ANALYSE_REFRESH
-#undef     ANALYSE_REFRESH
-
-
-
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
   #undef     VERBOSEKEYS_AUTOCASE
-  //#define    MONITOR_CLRSCR
-  //#undef     MONITOR_CLRSCR
+  #define    MONITOR_CLRSCR
+  #undef     MONITOR_CLRSCR
+  #define    ANALYSE_REFRESH
+  #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
   #define    VERBOSE_DETERMINEITEM
