@@ -30,6 +30,9 @@ void drawBattery(uint16_t voltage);
   uint8_t  SBlastIntegerBaseShown = 0xFF;
   uint16_t SBAlphaModeLastShown = 0xFFFF;
   char     SBhourglassShown[2];
+  char     alphaOutput[3];
+  bool_t   reInstateIntegerModeDisplay;
+  bool_t   reInstateOCModeDisplay;
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
                                 #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
@@ -45,6 +48,11 @@ void drawBattery(uint16_t voltage);
     SBhourglassShown[0]  = 0xFF;
     SBhourglassShown[1]  = 0xFF;               // note terminating 0 never used. Byte comparison done on content only.
     oldTime[0] = 0;
+    alphaOutput[0] = 0xFF;
+    alphaOutput[1] = 0xFF;
+    alphaOutput[2] = 0;
+    reInstateIntegerModeDisplay = false;
+    reInstateOCModeDisplay = false;
   }
 
 
@@ -325,7 +333,8 @@ void drawBattery(uint16_t voltage);
 
   void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
-    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE)) {
+    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE) || reInstateIntegerModeDisplay) {
+      reInstateIntegerModeDisplay = false;
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
       showStringAndClear(statusMessage, &standardFont, X_INTEGER_MODE, 0, X_OVERFLOW_CARRY - X_INTEGER_MODE, 20, vmNormal, true, true);
@@ -337,6 +346,8 @@ void drawBattery(uint16_t voltage);
 //sharing space with Integermode
   void showMatrixMode(void) {
     if(!(SBARUPD_MatrixMode)) return;
+    reInstateIntegerModeDisplay = true;
+    reInstateOCModeDisplay      = true;
     if (didSystemFlagChange(FLAG_GROW)) {
         compressString = 1;
         showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_MATRIX_MODE, 0, X_OVERFLOW_CARRY - X_MATRIX_MODE, 20, vmNormal, true, true);
@@ -348,6 +359,8 @@ void drawBattery(uint16_t voltage);
 //sharing space with Integermode
   void showTvmMode(void) {
     if(!(SBARUPD_TVMMode)) return;
+    reInstateIntegerModeDisplay = true;
+    reInstateOCModeDisplay      = true;
     if (didSystemFlagChange(FLAG_ENDPMT)) {
         compressString = 1;
         showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_TVM_MODE, 0, X_OVERFLOW_CARRY - X_TVM_MODE, 20, vmNormal, true, true);
@@ -357,7 +370,8 @@ void drawBattery(uint16_t voltage);
 
   void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
-    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY)) {
+    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY) || reInstateOCModeDisplay) {
+      reInstateOCModeDisplay = false;
       showStringAndClear(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, 6 /*X_ALPHA_MODE - X_OVERFLOW_CARRY*/, 20, vmNormal, true, true);
 
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
@@ -378,6 +392,9 @@ void drawBattery(uint16_t voltage);
                                   + (shiftG       << 7) )
 
   void showHideAlphaMode(void) {
+    bool_t textModeIconDisplay = ((plainTextMode || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha)));
+    bool_t toSwitchOff         = !textModeIconDisplay && alphaOutput[0] != 0;
+
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     bool_t SBchanged;
     SBchanged = false;
@@ -385,7 +402,7 @@ void drawBattery(uint16_t voltage);
        SBAlphaModeLastShown = SETT_AlphaMode;
        SBchanged = true;
     }
-    if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged) {
+    if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged || toSwitchOff) {
 
       int status=0;
       uint8_t nChar;
@@ -395,7 +412,7 @@ void drawBattery(uint16_t voltage);
       else {
         nChar = scrLock;
       }
-      if(((plainTextMode || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha)))) {
+      if(textModeIconDisplay) {
 
       #if defined (PC_BUILD)
         if(deadKey != 0) {
@@ -439,27 +456,26 @@ void drawBattery(uint16_t voltage);
 
       }
       int32_t ypos = 0;
-      char statusMessage[5];
-      statusMessage[0]=0;
+      alphaOutput[0]=0;
       switch(status) {
-        case  1: strcpy(statusMessage, STD_SUB_N); ypos =  -2; break;
-        case  2: strcpy(statusMessage, STD_SUB_N); ypos = -11; break;
-        case  3: strcpy(statusMessage, STD_num  ); ypos =   0; break;
-        case  4: strcpy(statusMessage, STD_SUB_n); ypos =  -2; break;
-        case  5: strcpy(statusMessage, STD_SUB_n); ypos = -11; break;
-        case  6: strcpy(statusMessage, STD_n    ); ypos =   0; break;
-        case 10: strcpy(statusMessage, STD_SUB_A); ypos =  -2; break;
-        case 11: strcpy(statusMessage, STD_SUB_A); ypos = -11; break;
-        case 12: strcpy(statusMessage, STD_A    ); ypos =   0; break;
-        case 16: strcpy(statusMessage, STD_SUB_a); ypos =  -2; break;
-        case 17: strcpy(statusMessage, STD_SUB_a); ypos = -11; break;
-        case 18: strcpy(statusMessage, STD_a    ); ypos =   0; break;
+        case  1: strcpy(alphaOutput, STD_SUB_N); ypos =  -2; break;
+        case  2: strcpy(alphaOutput, STD_SUB_N); ypos = -11; break;
+        case  3: strcpy(alphaOutput, STD_num  ); ypos =   0; break;
+        case  4: strcpy(alphaOutput, STD_SUB_n); ypos =  -2; break;
+        case  5: strcpy(alphaOutput, STD_SUB_n); ypos = -11; break;
+        case  6: strcpy(alphaOutput, STD_n    ); ypos =   0; break;
+        case 10: strcpy(alphaOutput, STD_SUB_A); ypos =  -2; break;
+        case 11: strcpy(alphaOutput, STD_SUB_A); ypos = -11; break;
+        case 12: strcpy(alphaOutput, STD_A    ); ypos =   0; break;
+        case 16: strcpy(alphaOutput, STD_SUB_a); ypos =  -2; break;
+        case 17: strcpy(alphaOutput, STD_SUB_a); ypos = -11; break;
+        case 18: strcpy(alphaOutput, STD_a    ); ypos =   0; break;
         #if defined(PC_BUILD)
-        case 20: strcpy(statusMessage, STD_BOX  ); ypos =   0; break;
+        case 20: strcpy(alphaOutput, STD_BOX  ); ypos =   0; break;
         #endif //PC_BUILD
           default:;
       }
-      showStringAndClear(statusMessage, &standardFont, X_ALPHA_MODE, ypos, X_HOURGLASS - X_ALPHA_MODE, 18, vmNormal, true, true);
+      showStringAndClear(alphaOutput, &standardFont, X_ALPHA_MODE, ypos, X_HOURGLASS - X_ALPHA_MODE, 18, vmNormal, true, true);
     }
   }
 
@@ -498,18 +514,22 @@ void drawBattery(uint16_t voltage);
     char statusMessage[3];
     statusMessage[0]=0;
     statusMessage[1]=0;
+    int32_t offs = 0;
     switch(programRunStop) {
       case PGM_WAITING: {
         strcpy(statusMessage,STD_NEG_EXCLAMATION_MARK);
+        offs = 0;
         break;
       }
       case PGM_RUNNING: {
         strcpy(statusMessage,STD_P);
+        offs = +2;
         break;
       }
       default: {
         if(hourGlassIconEnabled) {
           strcpy(statusMessage,STD_HOURGLASS);
+          offs = +1;
         }
       }
     }
@@ -519,7 +539,7 @@ void drawBattery(uint16_t voltage);
     if((SBhourglassShown[0] != statusMessage[0] || SBhourglassShown[1] != statusMessage[1])  ) {
       SBhourglassShown[0] = statusMessage[0];
       SBhourglassShown[1] = statusMessage[1];
-      showStringAndClear(statusMessage, &standardFont, XX, 0, XXX - XX, 20, vmNormal, true, true);
+      showStringAndClear(statusMessage, &standardFont, XX + offs, 0, XXX - XX, 20, vmNormal, false, false);
       force_SBrefresh(force);
     }
   }
@@ -840,8 +860,9 @@ void drawBattery(uint16_t voltage) {
       getWeekOfYearString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, L3, vmNormal, true, false);
 
-      showGlyph(STD_MODE_F, &standardFont, X_SHIFT_L, L5, vmNormal, true, true, false);   // f is pixel 4+8+3 wide
-      showGlyph(STD_MODE_G, &standardFont, X_SHIFT_R, L5, vmNormal, true, true, false);   // g is pixel 4+10+1 wide
+      showGlyph(STD_MODE_F, &standardFont, X_SHIFT_L, L0, vmNormal, true, true, false);   // f is pixel 4+8+3 wide
+      showGlyph(STD_MODE_F, &standardFont, X_SHIFT_L, L2, vmNormal, true, true, false);   // f is pixel 4+8+3 wide
+      showGlyph(STD_MODE_G, &standardFont, X_SHIFT_R, L0, vmNormal, true, true, false);   // g is pixel 4+10+1 wide
 
       x = X_REAL_COMPLEX;
       x = showGlyph(STD_COMPLEX_C, &standardFont, x, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
@@ -856,12 +877,13 @@ void drawBattery(uint16_t voltage) {
       showGlyph(STD_RIGHT_ANGLE, &standardFont, x, L4, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
 
       x = X_ANGULAR_MODE;
-      showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
+      x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, L0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
+      showGlyph(STD_SUP_pir,            &standardFont, x, L0, vmNormal, true, false, false); // pi is 0+9 pixel wide
       showGlyph(STD_SUP_BOLD_r,         &standardFont, x, L1, vmNormal, true, false, false); // r  is 0+6 pixel wide
-      showGlyph(STD_SUP_pir,            &standardFont, x, L2, vmNormal, true, false, false); // pi is 0+9 pixel wide
-      showGlyph(STD_SUP_BOLD_g,         &standardFont, x, L3, vmNormal, true, false, false); // g  is 0+6 pixel wide
-      showGlyph(STD_DEGREE,             &standardFont, x, L4, vmNormal, true, false, false); // °  is 0+6 pixel wide
-      showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, L5, vmNormal, true, false, false); // "  is 0+6 pixel wide
+      showGlyph(STD_SUP_BOLD_g,         &standardFont, x, L2, vmNormal, true, false, false); // g  is 0+6 pixel wide
+      showGlyph(STD_DEGREE,             &standardFont, x, L3, vmNormal, true, false, false); // °  is 0+6 pixel wide
+      showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, L4, vmNormal, true, false, false); // "  is 0+6 pixel wide
+      showGlyph(STD_SUP_pir,            &standardFont, x, L5, vmNormal, true, false, false); // pi is 0+9 pixel wide
 
       x = X_FRAC_MODE;
       x = showString("#KEY", &standardFont, x, L5 , vmNormal, true, true);
@@ -924,6 +946,10 @@ void drawBattery(uint16_t voltage) {
     x = X_MATRIX_MODE;
     compressString = 1;
     x = showString("wrap", &standardFont, x, L2, vmNormal, true, true);
+    compressString = 1;
+    showString("END"    , &standardFont, X_TVM_MODE,  L3, vmNormal, true, true);   //normal
+    compressString = 1;
+    showString("BEG"    , &standardFont, X_TVM_MODE,  L4, vmNormal, true, true);   //normal
 
     showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
@@ -936,12 +962,12 @@ void drawBattery(uint16_t voltage) {
     showString(STD_SUB_N, &standardFont, X_ALPHA_MODE,  L7, vmNormal, true, false);   //normal
     showString(STD_n,     &standardFont, X_ALPHA_MODE,  L8, vmNormal, true, false);   //normal
 
-    showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS     ,     L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
-    showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, X_HOURGLASS - 1 ,     L3, vmNormal, true, false, false);
-    showGlyph(STD_P,                    &standardFont, X_HOURGLASS + 1 ,     L2, vmNormal, true, false, false);
+    showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS  +1   ,     L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+    showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, X_HOURGLASS       ,     L3, vmNormal, true, false, false);
+    showGlyph(STD_P,                    &standardFont, X_HOURGLASS  +2   ,     L2, vmNormal, true, false, false);
     showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS_GRAPHS  , L2, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
 
-    strcpy(asmBuffer,"XX");
+    strcpy(asmBuffer,"MM");
     compressString = 1;             //^JM
     showString(asmBuffer, &standardFont, X_ASM, L1, vmNormal, true, false);
     asmBuffer[0]=0;
@@ -950,16 +976,22 @@ void drawBattery(uint16_t voltage) {
     x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
     x = showGlyph(STD_4, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
     x = X_SSIZE_BEGIN;
-    x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, L1, vmReverse, false, true, false); // is 0+6+2 pixel wide
-    x = showGlyph(STD_8, &standardFont, x, L1, vmReverse, false, true, false); // is 0+6+2 pixel wide
+    char dd[6];
+    sprintf(dd,STD_SPACE_6_PER_EM STD_8);
+    showString(dd, &standardFont, x, L1, vmReverse, false, true);
+    showString(dd, &standardFont, x, L2, vmReverse, false, true);
+    showString(dd, &standardFont, x, L3, vmReverse, false, true);
 
-      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER,     &standardFont, X_STOPWATCH, L2, vmNormal, true, false, false); // is 0+13+1 pixel wide
       showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, L1, vmNormal, true, false, false); // is 0+8+3 pixel wide
-      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
-      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER,   L2, vmNormal, true, false, false); // is 0+12+3 pixel wide
+      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, L0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, L1, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, L2, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
 
       light_ASB_icon();
       drawBattery(exponentLimit); //test battery indicator
+      showGlyph(STD_BATTERY, &standardFont, X_BATTERY, L1, vmNormal, true, false, false); // is 0+10+1 pixel wide
       calcMode = CM_GRAPH;
   }
 #endif //PC_BUILD

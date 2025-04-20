@@ -1140,32 +1140,32 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 // Horizontal offsets in the status bar
 #define X_DATE                           ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
-#define X_TIME                                     45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
-#define X_REAL_COMPLEX        (X_TIME             +91)//               136  // note: this is for both dow or time, not both
-#define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//               140
-#define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//               146
-#define X_COMPLEX_MODE_ADJ               -8  // note:)auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)//               160
-#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)//               187
+#define X_TIME                                     45 // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
+#define X_REAL_COMPLEX        (X_TIME             +91)// note: this is for both dow or time, not both
+#define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
+#define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
+#define X_COMPLEX_MODE_ADJ               -8           // note: auto moved left if REAL_COMPLEX is not present
+#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
+#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
 #define X_BASE_MODE           (X_FRAC_MODE        + 0)//
-#define X_INTEGER_MODE        (X_BASE_MODE        +77)//               264//    262 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_INTEGER_MODE        (X_BASE_MODE        +77)//
 #define X_MATRIX_MODE         (X_INTEGER_MODE     + 0)//
 #define X_TVM_MODE            (X_MATRIX_MODE      + 0)//
-#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)//               294//    292 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +11)//               305//    300 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_HOURGLASS           (X_ALPHA_MODE       +12)//               317//    312 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)//               331//    325 + 6 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_ASM                 (X_SSIZE_BEGIN      +10)//               341//    334 + 7 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_STOPWATCH           (X_ASM              + 4)//               345//    337 + 8 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_SERIAL_IO           (X_STOPWATCH        +17)//               362//    353 + 9 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
-#define X_PRINTER             (X_SERIAL_IO        + 0)//               362
-#define X_USER_MODE           (X_PRINTER          +13)//               375
-#define X_BATTERY             (X_USER_MODE        +14)//               389
+#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)// 
+#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
+#define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
+#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
+#define X_ASM                 (X_SSIZE_BEGIN      +11)// 
+#define X_STOPWATCH           (X_ASM              + 4)//
+#define X_SERIAL_IO           (X_STOPWATCH        +18)// note: I/O and Printing (soft or hard) cannot happen at the same time
+#define X_PRINTER             (X_SERIAL_IO        + 0)//
+#define X_USER_MODE           (X_PRINTER          +14)//
+#define X_BATTERY             (X_USER_MODE        +13)//
 #define DX_BATTERY                                  8  // <=2.054 V - minimum bar (one fine line)
 #define DY_BATTERY                                 20  // >=3.045 V - maximum bars (tip of battery against the edge)
                                                        // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
 #define X_SHIFT_L                                   0
-#define X_SHIFT_R                                (X_USER_MODE - 15)
+#define X_SHIFT_R                                (X_PRINTER - 1)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
 #define Y_SHIFT                                  (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
