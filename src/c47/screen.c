@@ -1993,7 +1993,11 @@ void createSubstrings(uint8_t number) {
       if(refreshRegist == REGISTER_T) {
         char *string1 = "";
         string1 = (char *)getNthString((uint8_t *)tmpString,0);
-        xcopy(tmpString, string1, stringByteLength(string1) + 1);
+        xcopy(tmpString + (Y_SHIFT > 0 ? 2 : 0), string1, stringByteLength(string1) + 1);
+        if(Y_SHIFT > 0) {
+          tmpString[0] = 32;
+          tmpString[1] = 32;
+        }
         //printStringToConsole(tmpString,"--userTI substring 0: ","\n");
       }
       else if(refreshRegist == REGISTER_X) {
@@ -2330,7 +2334,12 @@ void createSubstrings(uint8_t number) {
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
     if(regist == REGISTER_T) {
-      strcpy(prefix, "Result Code =");
+      if(Y_SHIFT > 0) {
+        strcpy(prefix,"  ");
+      } else {
+        prefix[0]=0;
+      }
+      strcat(prefix, "Result Code =");
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
   }
@@ -3499,7 +3508,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_T) {
-              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix,STD_UP_ARROW "  Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
@@ -4111,15 +4120,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getRegisterDataType(regist) == dtShortInteger) {
           {
             shortIntegerToDisplayString(regist, tmpString, true);
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
-
+            showString(tmpString, fontForShortInteger, 
+              SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
             if(regist == REGISTER_X) {
               displayBaseMode(regist);
               displayTrueFalse(regist);
             }
-
+            if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
+              lcd_fill_rect(0,Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+            }
           }
-
 
           prefixWidth = 0;
           tmpString[0]=0;
@@ -4156,12 +4166,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
+              showString(prefix, &standardFont, 1, 
+                baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
+            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
           }
       }
 
