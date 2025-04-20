@@ -1303,13 +1303,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
          tmpString        = aux_buf_ptr();   // 2560 byte buffer provided by DMCP
          errorMessage     = write_buf_ptr(); // 4096 byte buffer provided by DMCP
        #else // !DMCP_BUILD
-         tmpString        = (char *)malloc(TMP_STR_LENGTH);
-         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);
+         tmpString        = (char *)malloc(TMP_STR_LENGTH);    // 2560
+         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);  // 4096
        #endif // DMCP_BUILD
 
-       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;    // + 512
-       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;          // + 400
-       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;   // + 200 + 32
+                                                                              // errorMessage     from    0 to (4095       )
+       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;   // + 512     // aimBuffer        from  512 to (512  + 1024) or 1536
+       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;         // +1024     // nimBufferDisplay from 1536 to (1536 +  200) or 1736
+       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;  // + 200     // tamBuffer        from 1736 to (1736 +   32) or 1768
+                                          // TAM_BUFFER_LENGTH   // +  32
 
        tmpStringLabelOrVariableName = tmpString + 1000;
     }
