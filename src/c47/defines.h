@@ -157,6 +157,9 @@
 #undef     MONITOR_CLRSCR
 #define    WIP_STATUSBAR
 
+#define    ANALYSE_REFRESH
+#undef     ANALYSE_REFRESH
+
 
 
 //Verbose options
