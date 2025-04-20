@@ -191,29 +191,19 @@ void drawBattery(uint16_t voltage);
     if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
       strcpy(divStr,PRODUCT_SIGN);
       raiseString = 2;
-      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
+      x = showString(divStr, &standardFont, x + (getSystemFlag(FLAG_IRFRAC) ? 0 : 1), 0, vmNormal, true, true) - (getSystemFlag(FLAG_IRFRAC) ? 0 : 1);
     }
 
     if(getSystemFlag(FLAG_IRFRAC)) {
 
-//TO USE REAL II FONT HERE. spacing issue in font, to fix, keeping the old manual way
-//strcpy(divStr,STD_IRRATIONAL_I);
-//x = showString(divStr, &standardFont, x, -2, vmNormal, true, true);
+    strcpy(divStr,STD_IRRATIONAL_I);
+    x = showString(divStr, &standardFont, x-1, -1, vmNormal, true, true) - 8;
 
-      strcpy(divStr,"I");
-      raiseString = 1;
-      showString(divStr, &standardFont, x, 0, vmNormal, true, true);
-      raiseString = 1;
-      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
-      x -= 5;
-      for(uint16_t yy = 4; yy<=11; yy++) {
-        setWhitePixel(x, yy);
-      }
     }
 
     if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
       compressString = 1;
-      x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, 0, vmNormal, true, false);
+      x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, -1, vmNormal, true, false);
     }
   }
 

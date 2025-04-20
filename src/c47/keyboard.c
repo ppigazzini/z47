@@ -1946,6 +1946,17 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         refreshScreen(126);
       }
 
+      switch(tam.function) {  // ensure TAM input update the status bar
+        //case ITM_SETSDIGS:
+        //case ITM_RNG   :
+        case ITM_DENMAX2 :
+        case ITM_WSIZE   :
+        case ITM_SETFDIGS: {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          refreshStatusBar();
+        }
+      }
+
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         shiftF = f;
@@ -2061,7 +2072,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
 
-//      screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME; //JMNEWSPEEDUP
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
       int16_t item;
@@ -2074,13 +2084,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
-    if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
-      fnAsnDisplayUSER = true;
-      lastItem = 0;
-//      refreshScreen();
-      goto RELEASE_END;
-      return;
-    }
+      if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
+        fnAsnDisplayUSER = true;
+        lastItem = 0;
+        goto RELEASE_END;
+      }
 
     if(calcMode == CM_LISTXY) {
       return;
