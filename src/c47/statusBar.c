@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-//#define ANALYSE
-
 
 #include "c47.h"
-#if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
+#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
   #include <execinfo.h>
 #endif // PC_BUILD &&MONITOR_CLRSCR
 
@@ -24,13 +22,13 @@ void drawBattery(uint16_t voltage);
   char     SBhourglassShown[2];
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
-                                #if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
+                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                   void *callstack[128];
                                   int frames = backtrace(callstack, 128);
                                   char **strs = backtrace_symbols(callstack, frames);
-                                  printf("forceSBupdate called from function: %s\n", strs[1]);
+                                  printf("%30s%42s%s\n", "", "forceSBupdate called from: ", strs[1]);
                                   free(strs);
-                                #endif // PC_BUILD &&MONITOR_CLRSCR
+                                #endif // PC_BUILD && ANALYSE_REFRESH
     setAllSystemFlagChanged();
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
@@ -296,6 +294,7 @@ void drawBattery(uint16_t voltage);
 
      if(str[0] == 0) {
        lcd_fill_rect(x, 0, dx, 20, LCD_SET_VALUE);
+       return x;
      }
 
      uint32_t col, row;
@@ -305,8 +304,9 @@ void drawBattery(uint16_t voltage);
      uint32_t xx = showString(str, font, x, y, videoMode, showLeadingCols, showEndingCols);
 
      //clear right of message to end of allocated space
-     if(xx <= x+dx) {
-       lcd_fill_rect(xx, max(0,y/*-raise*/), x+dx-1 - xx - 1, max(row,dy)/*-raise*/ + min(0,y), LCD_SET_VALUE);
+     if(xx < x+dx) {
+       lcd_fill_rect(xx, max(0,y/*-raise*/), x+dx -xx, max(row,dy)/*-raise*/ + min(0,y), LCD_SET_VALUE);
+       //printf("%s ### x=%u y=%i dx=%u dy=%u   xx=%u dd=%i \n", str, x, y, dx, dy, xx, x+dx -xx);
      }
      //clear slither below lifted text
      if(y < 0) {
@@ -316,14 +316,13 @@ void drawBattery(uint16_t voltage);
      else if(y > 0) {
        lcd_fill_rect(x, 0, dx, y-0, LCD_SET_VALUE);
      }
-                                #if defined(PC_BUILD) && (defined(MONITOR_CLRSCR) || defined(ANALYSE))
-                                  printf("x=%4u dx=%4u x+dx-1=%4u xx=%4u  ",x,dx,x+dx-1,xx);
+                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                   void *callstack[128];
                                   int frames = backtrace(callstack, 128);
                                   char **strs = backtrace_symbols(callstack, frames);
-                                  printf("showStringAndClear called from function: %s\n", strs[1]);
+                                  printf("%30s%42s%s\n", "", "showStringAndClear called from: ", strs[1]);
                                   free(strs);
-                                #endif // PC_BUILD &&MONITOR_CLRSCR
+                                #endif // PC_BUILD && ANALYSE_REFRESH
      return xx;
   }
 
@@ -530,51 +529,52 @@ void drawBattery(uint16_t voltage);
   }
 
 
+  void showStackSize(void) {
+    if(!(SBARUPD_StackSize)) return;
+    if(didSystemFlagChange(FLAG_SSIZE8)) {
+      showStringAndClear(getSystemFlag(FLAG_SSIZE8) ? STD_SPACE_6_PER_EM STD_8 : STD_SPACE_6_PER_EM STD_4, &standardFont, X_SSIZE_BEGIN, 0, X_ASM - X_SSIZE_BEGIN, 20, getSystemFlag(FLAG_ERPN) ? vmNormal : vmReverse, false, true);
+    }
+  }
+
+//sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void light_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     //compressString = 1; //do not use compress, as the far edges of the letter get cut off
-    showStringAndClear(asmBuffer, &standardFont, X_ASM, 0, X_SERIAL_IO - X_ASM, 20, vmNormal, true, false);
+    if(!watchIconEnabled) {
+      showStringAndClear(asmBuffer, &standardFont, X_ASM, 0, X_SERIAL_IO - X_ASM, 20, vmNormal, true, false);
+    }
     if(programRunStop != PGM_RUNNING) {
       force_SBrefresh(force);
     }
   }
 
 
+//sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void kill_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
-    lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
+    if(!watchIconEnabled) {
+      lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
+    }
     if(programRunStop != PGM_RUNNING) {
       force_SBrefresh(force);
-    }
-  }
-
-
-//todo make it bypass if nothing has changed
-  static void showHideASB(void) {
-    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    if(fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING && (plainTextMode || labelText || catalog) ) {
-      light_ASB_icon();
-    }
-    else {
-      kill_ASB_icon();
-    }
-  }
-
-
-  void showStackSize(void) {
-    if(!(SBARUPD_StackSize)) return;
-    if(didSystemFlagChange(FLAG_SSIZE8)) {
-        showStringAndClear(getSystemFlag(FLAG_SSIZE8) ? STD_SPACE_6_PER_EM STD_8 : STD_SPACE_6_PER_EM STD_4, &standardFont, X_SSIZE_BEGIN, 0, X_ASM - X_SSIZE_BEGIN, 20, getSystemFlag(FLAG_ERPN) ? vmNormal : vmReverse, false, true);
     }
   }
 
 
   void showHideWatch(void) {
     if(!(SBARUPD_StopWatch)) return;
+
+    #if !defined(TESTSUITE_BUILD)
+      if(watchIconEnabled != (timerStartTime != TIMER_APP_STOPPED)) {
+        setSystemFlagChanged(SETTING_WATCHICON);
+        watchIconEnabled = !watchIconEnabled;
+      }
+    #endif // !TESTSUITE_BUILD
+
     if(didSystemFlagChange(SETTING_WATCHICON)) {
-        showStringAndClear(watchIconEnabled ? STD_TIMER : "", &standardFont, X_STOPWATCH, 0, X_SERIAL_IO - X_STOPWATCH, 20, vmNormal, true, false );
+      showStringAndClear(watchIconEnabled ? STD_TIMER : "", &standardFont, X_STOPWATCH, 0, X_SERIAL_IO - X_STOPWATCH, 20, vmNormal, true, false );
     }
   }
 
@@ -653,6 +653,13 @@ void drawBattery(uint16_t voltage) {
 
 
   void refreshStatusBar(void) {
+                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "refreshStatusBar called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
@@ -711,7 +718,12 @@ void drawBattery(uint16_t voltage) {
       showHideHourGlass();
       showStackSize();
       showHideWatch();
-      showHideASB();
+      if(fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING && (plainTextMode || labelText || catalog) ) {
+        light_ASB_icon();
+      }
+      else {
+        kill_ASB_icon();
+      }
       showHideSerialIO();
       showHidePrinter();
       if(Y_SHIFT==0 && X_SHIFT >300) {

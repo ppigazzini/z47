@@ -86,14 +86,17 @@
         }
     }
 
-
-    //#include <execinfo.h>
+    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+      #include <execinfo.h>
+    #endif //ANALYSE_REFRESH
     void _lcdRefresh(void) {              //called by force_refresh() and _printHalfSecUpdate_Integer()
-        //void *callstack[128];
-        //int frames = backtrace(callstack, 128);
-        //char **strs = backtrace_symbols(callstack, frames);
-        //printf("_lcdRefresh called from function: %s\n", strs[1]);
-        //free(strs);
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
         if(screenChange) {
           gtk_widget_queue_draw(screen);
           #if defined(FULLUPDATE) // (UGLY)
@@ -104,11 +107,13 @@
 
 
     void _lcdSBRefresh(void) {
-        //void *callstack[128];
-        //int frames = backtrace(callstack, 128);
-        //char **strs = backtrace_symbols(callstack, frames);
-        //printf("_lcdSBRefresh called from function: %s\n", strs[1]);
-        //free(strs);
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdSBRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
         if(screenChange) {
           gtk_widget_queue_draw_area(screen, 0, 0, 400, 20);
           #if defined(FULLUPDATE) // (UGLY)

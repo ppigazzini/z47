@@ -3,7 +3,8 @@
 
 #include "c47.h"
 #include "version.h"
-#if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+
+#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
   #include <execinfo.h>
 #endif //PC_BUILD
 
@@ -1543,13 +1544,6 @@ return res;
 
 
 #define blockForcedRefreshes false
-#define ANALYSE_REFRESH
-#undef  ANALYSE_REFRESH
-
-#if defined(ANALYSE_REFRESH)
-  #include <execinfo.h>
-#endif //ANALYSE_REFRESH
-
 
   static bool_t _force_refresh(uint8_t mode) {
     #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
@@ -1582,13 +1576,13 @@ return res;
 
 
   void force_refresh(uint8_t mode) {
-    #if defined(ANALYSE_REFRESH)
-      void *callstack[128];
-      int frames = backtrace(callstack, 128);
-      char **strs = backtrace_symbols(callstack, frames);
-      printf("force_refresh called from function: %s\n", strs[1]);
-      free(strs);
-    #endif //ANALYSE_REFRESH
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "force_refresh called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdRefresh();
     }
@@ -1596,13 +1590,13 @@ return res;
   }
 
   void force_SBrefresh(uint8_t mode) {
-    #if defined(ANALYSE_REFRESH)
-      void *callstack[128];
-      int frames = backtrace(callstack, 128);
-      char **strs = backtrace_symbols(callstack, frames);
-      printf("force_SBrefresh called from function: %s\n", strs[1]);
-      free(strs);
-    #endif //ANALYSE_REFRESH
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "force_SBrefresh called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdSBRefresh();
     }
@@ -4782,12 +4776,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   static void _refreshNormalScreen(void) {
-                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                              #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                                 void *callstack[128];
                                 int frames = backtrace(callstack, 128);
                                 char **strs = backtrace_symbols(callstack, frames);
-                                printf("_refreshNormalScreen called from function: %s\n", strs[1]);
+                                printf("%30s%42s%s\n", "", "_refreshNormalScreen called from: ", strs[1]);
                                 free(strs);
                               #endif // PC_BUILD &&MONITOR_CLRSCR
         if(calcMode != CM_NIM) refreshNIMdone = false;
@@ -4978,11 +4972,11 @@ refreshStatusBar();
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint8_t source) {
-                              #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                              #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 void *callstack[128];
                                 int frames = backtrace(callstack, 128);
                                 char **strs = backtrace_symbols(callstack, frames);
-                                printf("\refreshScreen called from function: %s\n", strs[1]);
+                                printf("%30s%42s%s\n", "", "refreshScreen called from: ", strs[1]);
                                 free(strs);
                               #endif // PC_BUILD
 
