@@ -2,6 +2,16 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
+//outstanding list:
+//=================
+//check why ypos-2 must be used to prevent clearing ofnthe ASM line.
+//check the "" in some showStringAndClear statements
+//look at the "", cases
+//'todo' items
+// Returnning from a LI SHOW, stack not updated
+
+
+
 #include "c47.h"
 #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
   #include <execinfo.h>
@@ -107,20 +117,6 @@ void drawBattery(uint16_t voltage);
       lcd_fill_rect(x, 0, (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x, 20, LCD_SET_VALUE);
     }
   }
-
-
-#if defined(WIP_STATUSBAR)
-//outstanding list:
-//=================
-
-//check why ypos-2 must be used to prevent clearing ofnthe ASM line.
-//check the "" in some showStringAndClear statements
-//look at the "", cases
-//'todo' items
-// Returnning from a LI SHOW, stack not updated
-// Returning from USB DISK access, no statusbar update
-// check hourglass/program mode indicators
-#endif
 
 
   void showComplexMode(void) {
