@@ -2723,7 +2723,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 }
 
 
-void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) {
+void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) { // [n×n Matrix]
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
   sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
 }
@@ -2741,10 +2741,11 @@ bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
     if(isMatrixVector(matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
       real34Matrix_t matrix;
-      int16_t ww= 0;
+      int16_t prefixWidth = 0;
       linkToRealMatrixRegister(regist, &matrix);
-      showRealMatrix(&matrix, ww,!toDisplayVectorMatrix);
+      showRealMatrix(&matrix, prefixWidth, !toDisplayVectorMatrix);
       sprintf(displayString, "%s", errorMessage);
+      //if(stringWidth(tmpString, &numericFont, true, true) + 1 > SCREEN_WIDTH) return false;     //this is to revert to [4x4 Matrix] if the digits in the default standard font is too wide. Not needed as it is managed by reducing the font
       return true;
     }
   }
