@@ -1517,7 +1517,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_REALS                             16
 #define CATALOG_CPXS                              17
 #define CATALOG_MVAR                              18
-#define NUMBER_OF_CATALOGS                        19
+#define CATALOG_CONFIGS                           19
+#define CATALOG_ALLVARS                           20
+#define CATALOG_NUMBRS                            21
+#define NUMBER_OF_CATALOGS                        22
 
 // String comparison type
 #define CMP_BINARY                                 0
@@ -2043,13 +2046,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 /* Turn off -Wunused-result for a specific function call */
 #define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
-#if defined(DMCP_BUILD)
-  #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
-#else // !DMCP_BUILD
-  #define TMP_STR_LENGTH     2560 //2560 //JMMAX ORG:2560, changed back from 3000; 2023-09-26
-#endif // DMCP_BUILD
+#define TMP_STR_LENGTH         2560
 #define WRITE_BUFFER_LEN       4096
-#define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
+#define ERROR_MESSAGE_LENGTH    512
 #define DISPLAY_VALUE_LEN        80
 
 #define FILENAMELEN              40
