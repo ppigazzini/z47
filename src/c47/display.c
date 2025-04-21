@@ -3072,9 +3072,9 @@ void fnC47Show(uint16_t fnShow_param) {
                }
                else {
                  if(showRegis >= FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1) {
-                   showRegis = 0;
+                   showRegis = FIRST_GLOBAL_REGISTER;
                  }
-                 else if(showRegis == REGISTER_S) {
+                 else if(showRegis == LAST_SPARE_REGISTER) {
                    showRegis = FIRST_NAMED_VARIABLE;
                  }
                  else {
@@ -3098,16 +3098,16 @@ void fnC47Show(uint16_t fnShow_param) {
                  showRegis = REGISTER_X;
                }
                else {
-                 if(showRegis == 0) {
+                 if(showRegis == FIRST_GLOBAL_REGISTER) {
                    showRegis = FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1;
                  }
                  else if(showRegis == FIRST_NAMED_VARIABLE) {
-                   showRegis = REGISTER_S;
+                   showRegis = LAST_SPARE_REGISTER;
                  }
                  else {
                    showRegis--;
                  }
-                 while(!regInRange(showRegis) && showRegis != 0) {
+                 while(!regInRange(showRegis) && showRegis != FIRST_GLOBAL_REGISTER) {
                    showRegis--;
                  }
                }
