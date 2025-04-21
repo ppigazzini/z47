@@ -4399,7 +4399,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
             w = stringWidth(tmpString, &numericFont, false, true);
             lineWidth = w;
-            showString(tmpString, &numericFont, SCREEN_WIDTH - w - 2, baseY, vmNormal, false, true);
+            if(w > SCREEN_WIDTH - 1) {
+              w = stringWidth(tmpString, &standardFont, false, true);
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
+              showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
+            } else {
+              showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
+            }
           }
 
           if(temporaryInformation == TI_INACCURATE && regist == REGISTER_X) {
