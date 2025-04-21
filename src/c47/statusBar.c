@@ -386,11 +386,12 @@ void drawBattery(uint16_t voltage);
 
 
 //todo remove SETT_AlphaMode replace with didSystemFlagChange
-  #define SETT_AlphaMode (uint16_t)((scrLock      << 2) \
-                                  + (alphaCase    << 4) \
-                                  + (shiftF       << 6) \
-                                  + (shiftG       << 7) )
-
+  #define SETT_AlphaMode (uint16_t)((nextChar         ) \
+                                  + (scrLock      << 10) \
+                                  + (alphaCase    << 12) \
+                                  + (shiftF       << 13) \
+                                  + (shiftG       << 14))
+ 
   void showHideAlphaMode(void) {
     bool_t textModeIconDisplay = ((plainTextMode || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha)));
     bool_t toSwitchOff         = !textModeIconDisplay && alphaOutput[0] != 0;
@@ -413,20 +414,19 @@ void drawBattery(uint16_t voltage);
         nChar = scrLock;
       }
       if(textModeIconDisplay) {
+        #if defined (PC_BUILD)
+          if(deadKey != 0) {
+            status = 20;
+          } else
+        #endif
 
-      #if defined (PC_BUILD)
-        if(deadKey != 0) {
-          status = 20;
-        } else
-      #endif
-
-      if(plainTextMode) {                  //TODO this flag's purpose must be checked
-        if(alphaCase == AC_UPPER) {
-          setSystemFlag(FLAG_alphaCAP);
-        } else {
-          clearSystemFlag(FLAG_alphaCAP);
+        if(plainTextMode) {                  //TODO this flag's purpose must be checked
+          if(alphaCase == AC_UPPER) {
+            setSystemFlag(FLAG_alphaCAP);
+          } else {
+            clearSystemFlag(FLAG_alphaCAP);
+          }
         }
-      }
 
         if (getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
           if (alphaCase == AC_UPPER) {
@@ -453,25 +453,24 @@ void drawBattery(uint16_t voltage);
             }
           }
         }
-
       }
       int32_t ypos = 0;
       alphaOutput[0]=0;
       switch(status) {
         case  1: strcpy(alphaOutput, STD_SUB_N); ypos =  -2; break;
-        case  2: strcpy(alphaOutput, STD_SUB_N); ypos = -11; break;
+        case  2: strcpy(alphaOutput, STD_SUP_N); ypos =   0; break;
         case  3: strcpy(alphaOutput, STD_num  ); ypos =   0; break;
         case  4: strcpy(alphaOutput, STD_SUB_n); ypos =  -2; break;
-        case  5: strcpy(alphaOutput, STD_SUB_n); ypos = -11; break;
+        case  5: strcpy(alphaOutput, STD_SUP_n); ypos =  -2; break;
         case  6: strcpy(alphaOutput, STD_n    ); ypos =   0; break;
         case 10: strcpy(alphaOutput, STD_SUB_A); ypos =  -2; break;
-        case 11: strcpy(alphaOutput, STD_SUB_A); ypos = -11; break;
+        case 11: strcpy(alphaOutput, STD_SUP_A); ypos =   0; break;
         case 12: strcpy(alphaOutput, STD_A    ); ypos =   0; break;
         case 16: strcpy(alphaOutput, STD_SUB_a); ypos =  -2; break;
-        case 17: strcpy(alphaOutput, STD_SUB_a); ypos = -11; break;
+        case 17: strcpy(alphaOutput, STD_SUP_a); ypos =  -2; break;
         case 18: strcpy(alphaOutput, STD_a    ); ypos =   0; break;
         #if defined(PC_BUILD)
-        case 20: strcpy(alphaOutput, STD_BOX  ); ypos =   0; break;
+        case 20: strcpy(alphaOutput, STD_BOX  ); ypos =   0; break; //deadkey
         #endif //PC_BUILD
           default:;
       }
@@ -844,6 +843,8 @@ void drawBattery(uint16_t voltage) {
     #define L6 120
     #define L7 140
     #define L8 160
+    #define L9 200
+    #define L10 220
 
     //All status bar printing functions copied frm the individual sections to creat a statusbar mockup
 
@@ -953,14 +954,15 @@ void drawBattery(uint16_t voltage) {
 
     showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
-    showString(STD_A    , &standardFont, X_ALPHA_MODE,  L1, vmNormal, true, false);   //normal
-    showString(STD_SUB_A, &standardFont, X_ALPHA_MODE,  L2, vmNormal, true, false);   //normal
-    showString(STD_SUB_n, &standardFont, X_ALPHA_MODE,  L3, vmNormal, true, false);   //normal
+    showString(STD_A    , &standardFont, X_ALPHA_MODE,  L0, vmNormal, true, false);   //normal
+    showString(STD_SUB_A, &standardFont, X_ALPHA_MODE,  L1, vmNormal, true, false);   //normal
+    showString(STD_SUP_A, &standardFont, X_ALPHA_MODE,  L2, vmNormal, true, false);   //normal
+    showString(STD_a,     &standardFont, X_ALPHA_MODE,  L3, vmNormal, true, false);   //normal
     showString(STD_SUB_a, &standardFont, X_ALPHA_MODE,  L4, vmNormal, true, false);   //normal
-    showString(STD_a,     &standardFont, X_ALPHA_MODE,  L5, vmNormal, true, false);   //normal
-    showString(STD_num,   &standardFont, X_ALPHA_MODE,  L6, vmNormal, true, false);   //normal
-    showString(STD_SUB_N, &standardFont, X_ALPHA_MODE,  L7, vmNormal, true, false);   //normal
-    showString(STD_n,     &standardFont, X_ALPHA_MODE,  L8, vmNormal, true, false);   //normal
+    showString(STD_SUP_a, &standardFont, X_ALPHA_MODE,  L5, vmNormal, true, false);   //normal
+    showString(STD_num STD_SUB_N STD_SUP_N,   &standardFont, X_ALPHA_MODE,  L6, vmNormal, true, false);   //normal
+    showString(STD_n STD_SUB_n STD_SUP_n,     &standardFont, X_ALPHA_MODE,  L7, vmNormal, true, false);   //normal
+    showString(STD_BOX,   &standardFont, X_ALPHA_MODE,  L8, vmNormal, true, false);   //normal
 
     showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS  +1   ,     L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
     showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, X_HOURGLASS       ,     L3, vmNormal, true, false, false);
