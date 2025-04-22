@@ -26,7 +26,11 @@
   char  *getBooleanName                     (bool_t b);
   char  *getRbrModeName                     (uint16_t mode);
   char  *getRoundingModeName                (uint16_t rm);
+#endif //(DEBUG_PANEL == 1)
+#if ((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
   char  *getCalcModeName                    (uint16_t cm);
+#endif //((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
+#if (DEBUG_PANEL == 1)
   char  *getNextCharName                    (uint16_t nc);
   char  *getComplexUnitName                 (bool_t cu);
   char  *getProductSignName                 (bool_t ps);

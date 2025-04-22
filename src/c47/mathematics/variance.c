@@ -221,9 +221,9 @@ void fnStatSMI(real_t *SMI){
 }
 
 void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
-  real_t SMI,RR,aa0,aa1,aa2,const_30;
-  uInt32ToReal(30,&const_30);
-  if(checkMinimumDataPoints(&const_30)) {
+  real_t SMI,RR,aa0,aa1,aa2,n30;
+  uInt32ToReal(30,&n30);
+  if(checkMinimumDataPoints(&n30)) {
     lrChosen = CF_ORTHOGONAL_FITTING;                      //force to ORTHOF only
     lrSelection = CF_ORTHOGONAL_FITTING;
     processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);

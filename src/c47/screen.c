@@ -1694,7 +1694,7 @@ return res;
     if(getRegisterAsRealQuiet(reg, &t)) {
       angleMode = getRegisterDataType(reg) == dtReal34 ? getRegisterAngularMode(reg) : amNone;
       realToReal34(&t, &u);
-      real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+      real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC);
       p = tmpString;
     }
     else {
@@ -2004,7 +2004,11 @@ void createSubstrings(uint8_t number) {
       if(refreshRegist == REGISTER_T) {
         char *string1 = "";
         string1 = (char *)getNthString((uint8_t *)tmpString,0);
-        xcopy(tmpString, string1, stringByteLength(string1) + 1);
+        xcopy(tmpString + (Y_SHIFT > 0 ? 2 : 0), string1, stringByteLength(string1) + 1);
+        if(Y_SHIFT > 0) {
+          tmpString[0] = 32;
+          tmpString[1] = 32;
+        }
         //printStringToConsole(tmpString,"--userTI substring 0: ","\n");
       }
       else if(refreshRegist == REGISTER_X) {
@@ -2239,7 +2243,7 @@ void createSubstrings(uint8_t number) {
         fractionToDisplayString(REGISTER_X, tmpString);
       }
       else {
-        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
       }
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -2247,7 +2251,7 @@ void createSubstrings(uint8_t number) {
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
       clearRegisterLine(REGISTER_X, true, true);
-      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
+      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       showString(tmpString, &numericFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE, vmNormal, false, true);
@@ -2341,7 +2345,12 @@ void createSubstrings(uint8_t number) {
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
     if(regist == REGISTER_T) {
-      strcpy(prefix, "Result Code =");
+      if(Y_SHIFT > 0) {
+        strcpy(prefix,"  ");
+      } else {
+        prefix[0]=0;
+      }
+      strcat(prefix, "Result Code =");
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
   }
@@ -2468,7 +2477,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+          !runningOnSimOrUSB &&                                   // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
@@ -3510,7 +3519,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_T) {
-              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix,STD_UP_ARROW "  Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
@@ -3896,7 +3905,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
                                                                       //JM EE ^
 
-          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -3981,7 +3990,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
                                                                        //JM EE ^
-          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
+          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -4122,15 +4131,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getRegisterDataType(regist) == dtShortInteger) {
           {
             shortIntegerToDisplayString(regist, tmpString, true);
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
-
+            showString(tmpString, fontForShortInteger, 
+              SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
             if(regist == REGISTER_X) {
               displayBaseMode(regist);
               displayTrueFalse(regist);
             }
-
+            if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
+              lcd_fill_rect(0,Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+            }
           }
-
 
           prefixWidth = 0;
           tmpString[0]=0;
@@ -4167,12 +4177,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
+              showString(prefix, &standardFont, 1, 
+                baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
+            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
           }
       }
 
@@ -4382,7 +4393,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
             w = stringWidth(tmpString, &numericFont, false, true);
             lineWidth = w;
-            showString(tmpString, &numericFont, SCREEN_WIDTH - w - 2, baseY, vmNormal, false, true);
+            if(w > SCREEN_WIDTH - 1) {
+              w = stringWidth(tmpString, &standardFont, false, true);
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
+              showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
+            } else {
+              showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
+            }
           }
 
           if(temporaryInformation == TI_INACCURATE && regist == REGISTER_X) {
@@ -4697,7 +4714,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       skippedStackLines = false;                                    // See timer.c skippedStackLines
       #if defined(DMCP_BUILD)
         keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-        if( !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+        if( !runningOnSimOrUSB &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
             !emptyKeyBuffer() &&
             key_empty() == 1
             ) {
@@ -4707,7 +4724,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #endif //DMCP_BUILD
 
       #if defined(DMCP_BUILD)
-        if(!getSystemFlag(FLAG_USB)) {
+        if(!runningOnSimOrUSB) {
           // partial clearscreen, no menu update, no statusbar update on battery
           if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
@@ -5082,31 +5099,33 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         _refreshNormalScreen();
         break;
 
-      case CM_LISTXY:                     //JM
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+      case CM_LISTXY:
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
-        }
+ //       }
         break;
 
       case CM_GRAPH:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graph_plotmem();
           displayShiftAndTamBuffer();
@@ -5116,17 +5135,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       case CM_PLOT_STAT:
-        if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          if(last_CM == 252) {
-            last_CM--;
-          }
-          else {
-            last_CM = 252; //calcMode;
-          }
+//start removing the old refresh system. Keep until no malops found.
+//      if((last_CM != calcMode) || (doRefreshSoftMenu)) {
+//          if(last_CM == 252) {
+//            last_CM--;
+//          }
+//          else {
+//            last_CM = 252; //calcMode;
+//          }
           doRefreshSoftMenu = false;
           graphPlotstat(plotSelection);
           displayShiftAndTamBuffer();
@@ -5144,7 +5164,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
-        }
+//        }
         break;
 
       default: ;
@@ -5166,22 +5186,25 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   refreshScreen(80);
 
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
-    xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
+    xcopy(tmpString, errorMessage, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+    xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
   #elif defined(DMCP_BUILD)
     standardScreenDump();
   #endif
 
+  char ss[TAM_BUFFER_LENGTH];
+  xcopy(ss, tamBuffer, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
   if(calcMode == CM_AIM) {
     fnP_Alpha();     //print alpha
   }
   else {
     fnP_All_Regs(PRN_STK); //print stack
   }
+  xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
+
 
   screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
-
 }
 
 

@@ -71,8 +71,6 @@ realContext_t          ctxtReal34;   //   34 digits
 realContext_t          ctxtReal39;   //   39 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal51;   //   51 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
-realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
-realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
 subroutineLevels_t       allSubroutineLevels;
 subroutineLevelHeader_t *currentSubroutineLevelData;

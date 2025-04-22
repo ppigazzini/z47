@@ -634,15 +634,6 @@ void SetSetting(uint16_t jmConfig) {
       fnFlipFlag(FLAG_FRACT);
       break;
 
-//SUSPECT!! remove with XEQM
-    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break;
-    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break;
-    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break;
-    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break;
-    case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
-    case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
-
-
     case ITM_DREAL:
       fnFlipFlag(FLAG_DREAL);
       if(getSystemFlag(FLAG_DREAL)) {
