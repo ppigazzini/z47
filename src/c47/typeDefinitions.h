@@ -224,86 +224,84 @@ typedef enum {
  * Configuration for STOCFG and RCLCFG.
  */
 typedef struct {
-  uint8_t       shortIntegerMode;
-  uint8_t       shortIntegerWordSize;
-  uint8_t       displayFormat;
-  uint8_t       displayFormatDigits;
-  uint16_t        gapItemLeft;
-  uint16_t        gapItemRight;
-  uint16_t        gapItemRadix;
-  uint8_t         grpGroupingLeft;
-  uint8_t         grpGroupingGr1LeftOverflow;
-  uint8_t         grpGroupingGr1Left;
-  uint8_t         grpGroupingRight;
-  uint8_t       displayStack;
-  uint8_t       roundingMode;
-  uint8_t       timeDisplayFormatDigits;
-  uint8_t       reservedForPossibleFutureUse[3];
-  angularMode_t currentAngularMode;
-  uint16_t      lrSelection;
-  uint16_t      lrChosen;
-  uint32_t      denMax;
-  uint32_t      firstGregorianDay;
-  uint64_t      systemFlags0;
-  uint64_t      systemFlags1;
-  calcKey_t     kbd_usr[37];
-  uint8_t fgLN;
-  bool_t compatibility_bool19;
-  bool_t HOME3;
-  bool_t ShiftTimoutMode;
-  bool_t compatibility_bool21;              //Spare Byte
-  bool_t BASE_HOME;
-  bool_t compatibility_bool0;               //Spare Byte
-  int16_t compatibility_int1;               //Spare Word
-  uint8_t Input_Default;
-  bool_t compatibility_bool00;              //Spare Byte
-  bool_t BASE_MYM;
-  bool_t jm_G_DOUBLETAP;
-  float  compatibility_float1;              //Spare float
-  float  compatibility_float2;              //Spare float
-  normKey_t Norm_Key_00;
-  bool_t compatibility_bool2;               //Spare Byte
-  bool_t compatibility_bool3;               //Spare Byte
-  bool_t compatibility_bool4;               //Spare Byte
-  bool_t compatibility_bool5;               //Spare Byte
-  bool_t compatibility_bool6;               //Spare Byte
-  bool_t compatibility_bool7;               //Spare Byte
-  bool_t compatibility_bool8;               //Spare Byte
-  bool_t compatibility_bool9;               //Spare Byte
-  bool_t compatibility_bool10;              //Spare Byte
-  bool_t compatibility_bool11;              //Spare Byte
-  bool_t compatibility_bool12;              //Spare Byte
-  bool_t compatibility_bool13;              //Spare Byte
-  bool_t compatibility_bool14;              //Spare Byte
-  bool_t compatibility_bool15;              //Spare Byte
-  int8_t fractionDigits;
-  int8_t compatibility_bool23;
-  bool_t compatibility_bool16;              //Spare Byte
-  bool_t compatibility_bool20;              //Spare Byte
-  bool_t compatibility_bool17;              //Spare Byte
-  uint8_t IrFractionsCurrentStatus;
-  bool_t compatibility_bool18;              //Spare Byte
-  uint8_t displayStackSHOIDISP;
-  bool_t bcdDisplay;
-  bool_t topHex;
-  uint8_t bcdDisplaySign;
-  uint8_t DRG_Cycling;
-  uint8_t DM_Cycling;
-  bool_t compatibility_bool22;
-  bool_t LongPressM;
-  bool_t LongPressF;
-
-  //Added 2023-09-12
-  //Note: Do not change entries going forward to maintain compatibility
-  //Should any be added, ensure that the defaults are appropriately added when reading the state file
+  uint8_t        shortIntegerMode;
+  uint8_t        shortIntegerWordSize;
+  uint8_t        displayFormat;
+  uint8_t        displayFormatDigits;
+  uint16_t       gapItemLeft;
+  uint16_t       gapItemRight;
+  uint16_t       gapItemRadix;
+  uint8_t        grpGroupingLeft;
+  uint8_t        grpGroupingGr1LeftOverflow;
+  uint8_t        grpGroupingGr1Left;
+  uint8_t        grpGroupingRight;
+  angularMode_t  currentAngularMode;
+  uint16_t       lrSelection;
+  uint16_t       lrChosen;
+  uint32_t       denMax;
+  uint8_t        displayStack;
+  uint32_t       firstGregorianDay;
+  uint8_t        roundingMode;
+  uint64_t       systemFlags0;
+  uint64_t       systemFlags1;
+  calcKey_t      kbd_usr[37];
+  uint8_t        fgLN;
+  bool_t         compatibility_byte19;
+  bool_t         HOME3;
+  bool_t         ShiftTimoutMode;
+  bool_t         compatibility_byte21;              //Spare Byte
+  bool_t         BASE_HOME;
+  bool_t         compatibility_byte00;               //Spare Byte
+  int16_t        compatibility_int1;               //Spare Word
+  uint8_t        Input_Default;
+  bool_t         compatibility_byte0;              //Spare Byte
+  bool_t         BASE_MYM;
+  bool_t         jm_G_DOUBLETAP;
+  float          compatibility_float1;              //Spare float
+  float          compatibility_float2;              //Spare float
+  normKey_t      Norm_Key_00;
+  bool_t         compatibility_byte2;               //Spare Byte
+  bool_t         compatibility_byte3;               //Spare Byte
+  bool_t         compatibility_byte4;               //Spare Byte
+  bool_t         compatibility_byte5;               //Spare Byte
+  bool_t         compatibility_byte6;               //Spare Byte
+  bool_t         compatibility_byte7;               //Spare Byte
+  bool_t         compatibility_byte8;               //Spare Byte
+  bool_t         compatibility_byte9;               //Spare Byte
+  bool_t         compatibility_byte10;              //Spare Byte
+  bool_t         compatibility_byte11;              //Spare Byte
+  bool_t         compatibility_byte12;              //Spare Byte
+  bool_t         compatibility_byte13;              //Spare Byte
+  bool_t         compatibility_byte14;              //Spare Byte
+  bool_t         compatibility_byte15;              //Spare Byte
+  int8_t         fractionDigits;
+  int8_t         compatibility_byte23;
+  bool_t         compatibility_byte16;              //Spare Byte
+  bool_t         compatibility_byte20;              //Spare Byte
+  bool_t         compatibility_byte17;              //Spare Byte
+  uint8_t        IrFractionsCurrentStatus;
+  bool_t         compatibility_byte18;              //Spare Byte
+  uint8_t        displayStackSHOIDISP;
+  bool_t         bcdDisplay;
+  bool_t         topHex;
+  uint8_t        bcdDisplaySign;
+  uint8_t        DRG_Cycling;
+  uint8_t        DM_Cycling;
+  bool_t         compatibility_byte22;
+  uint8_t        LongPressM;
+  uint8_t        LongPressF;
   uint32_t       lastDenominator;
   uint8_t        significantDigits;
   pcg32_random_t pcg32_global;
   int16_t        exponentLimit;
   int16_t        exponentHideLimit;
   uint32_t       lastIntegerBase;
-  bool_t MYM3;
-
+  bool_t         MYM3;
+  uint8_t        timeDisplayFormatDigits;
+  uint8_t        reservedForPossibleFutureUse[6]; //additional buffer to pad up to 840 bytes for the descriptor record
+  //2025-04-21 Verified all variables above, and in recall.c and store.c
+  //Note: Do not change entries going forward to maintain compatibility
+  //Should any be added, ensure that the defaults are appropriately added when reading the state file
 } dtConfigDescriptor_t;
 
 

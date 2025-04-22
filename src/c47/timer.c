@@ -181,7 +181,7 @@ void fnTimerEndOfActivity(uint16_t param) {
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 #if defined(DMCP_BUILD)
-  if(skippedStackLines && !getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+  if(skippedStackLines && !runningOnSimOrUSB) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
     if(calcMode == CM_PEM) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
