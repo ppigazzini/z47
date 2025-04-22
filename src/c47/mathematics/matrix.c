@@ -30,70 +30,47 @@
   }
 #endif // !TESTSUITE_BUILD
 
+static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
+  longInteger_t tmp;
+  bool_t res = false;
+
+  longIntegerInit(tmp);
+
+  if (!getRegisterAsLongInt(reg, tmp, NULL)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "invalid data type %s for %s", getRegisterDataTypeName(reg, true, false), reg == REGISTER_X ? "columns" : "rows");
+        moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif // !TESTSUITE_BUILD
+    longIntegerFree(tmp);
+    return false;
+  }
+
+  if(longIntegerIsNegativeOrZero(tmp)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        char strbuf[32];
+        longIntegerToAllocatedString(tmp, strbuf, 32);
+        sprintf(errorMessage, "invalid number of %s", reg == REGISTER_X ? "columns" : "rows");
+        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif // !TESTSUITE_BUILD
+  } else {
+    longIntegerToUInt32(tmp, *d);
+    res = true;
+  }
+
+  longIntegerFree(tmp);
+  return res;
+}
+
 static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
-  longInteger_t tmp_lgInt1;
-  longInteger_t tmp_lgInt2;
-
   //Get Size from REGISTER_X and REGISTER_Y
-  if(   ((getRegisterDataType(REGISTER_X) != dtLongInteger) && (getRegisterDataType(REGISTER_X) != dtReal34))
-     || ((getRegisterDataType(REGISTER_Y) != dtLongInteger) && (getRegisterDataType(REGISTER_Y) != dtReal34))) {
-      #if !defined(TESTSUITE_BUILD)
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-          moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      #endif // !TESTSUITE_BUILD
-    return false;
-  }
-
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt1);
-  }
-  else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt1, DEC_ROUND_DOWN);
-  }
-
-  if(longIntegerIsNegativeOrZero(tmp_lgInt1)) {
-    #if !defined(TESTSUITE_BUILD)
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt1, strbuf, 32);
-        sprintf(errorMessage, "invalid number of columns");
-        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #endif // !TESTSUITE_BUILD
-    longIntegerFree(tmp_lgInt1);
-    return false;
-  }
-  longIntegerToUInt32(tmp_lgInt1, *cols);
-  longIntegerFree(tmp_lgInt1);
-
-  if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
-  }
-  else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt2, DEC_ROUND_DOWN);
-  }
-
-  if(longIntegerIsNegativeOrZero(tmp_lgInt2)) {
-    #if !defined(TESTSUITE_BUILD)
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt2, strbuf, 32);
-        sprintf(errorMessage, "invalid number of rows");
-        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #endif // !TESTSUITE_BUILD
-    longIntegerFree(tmp_lgInt2);
-    return false;
-  }
-  longIntegerToUInt32(tmp_lgInt2, *rows);
-  longIntegerFree(tmp_lgInt2);
-
-  return true;
+  return getSingleDimension(REGISTER_X, cols) &&
+         getSingleDimension(REGISTER_Y, rows);
 }
 
 
@@ -904,7 +881,7 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if defined(PC_BUILD)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-      moreInfoOnError("In function _fnEuclideanNorm:", errorMessage, "is not a matrix.", "");
+      moreInfoOnError("In function fnInvertMatrix:", errorMessage, "is not a matrix.", "");
     #endif // PC_BUILD
   }
 
@@ -918,26 +895,9 @@ void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 }
 
 
-bool_t isDyadicMatrices(void) {
- return ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) && (getRegisterDataType(REGISTER_Y) == dtReal34Matrix) && \
-         (REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_Y)->matrixRows) && \
-         (REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns));
-}
-
 void fnVectorDist(uint16_t unusedParamButMandatory) {
-  if(isDyadicMatrices()) {
-    if(saveLastX()) {
-      fnSubtract(NOPARAM);
-      _fnEuclideanNorm(NOPARAM);
-    }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "invalid data type/size %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnEuclideanNorm:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  }
+  fnSubtract(NOPARAM);
+  _fnEuclideanNorm(NOPARAM);
 }
 
 

@@ -12,7 +12,6 @@
 #define XEDIT 1
 #define XSWAP 0
 
-bool_t strcompare            (const char *in1, const char *in2);
 void fnXSWAP                 (uint16_t unusedButMandatoryParameter);
 
 #endif // !XEQM_H

@@ -229,30 +229,30 @@ void fnRecallMax(uint16_t regist) {
 
 void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool00;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool0 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool2 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool3 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool4 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool5 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool6 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool7 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool8 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool9 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool10;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool11;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool12;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool13;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool14;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool15;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool16;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool17;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool18;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool19;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool20;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool22;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool23;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte00;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte0 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte2 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte3 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte4 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte5 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte6 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte7 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte8 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte9 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte10;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte11;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte12;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte13;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte14;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte15;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte16;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte17;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte18;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte19;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte20;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte21;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte22;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte23;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
@@ -280,50 +280,50 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(systemFlags1);
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
     recallFromDtConfigDescriptor(fgLN);
-    recallFromDtConfigDescriptor(compatibility_bool19);
+    recallFromDtConfigDescriptor(    compatibility_byte19);
     recallFromDtConfigDescriptor(HOME3);
     recallFromDtConfigDescriptor(ShiftTimoutMode);
-    recallFromDtConfigDescriptor(compatibility_bool21);
-    recallFromDtConfigDescriptor(compatibility_bool18);
-    recallFromDtConfigDescriptor(compatibility_bool00);   //spare
-    recallFromDtConfigDescriptor(compatibility_int1);     //spare
+    recallFromDtConfigDescriptor(    compatibility_byte21);
+    recallFromDtConfigDescriptor(BASE_HOME);                       //fixed!
+    recallFromDtConfigDescriptor(    compatibility_byte00);   //spare
+    recallFromDtConfigDescriptor(    compatibility_int1);     //spare
     recallFromDtConfigDescriptor(Input_Default);
-    recallFromDtConfigDescriptor(compatibility_bool0);    //spare
+    recallFromDtConfigDescriptor(    compatibility_byte0);    //spare
     recallFromDtConfigDescriptor(BASE_MYM);
     recallFromDtConfigDescriptor(jm_G_DOUBLETAP);
-    recallFromDtConfigDescriptor(compatibility_float1);   //spare
-    recallFromDtConfigDescriptor(compatibility_float2);   //spare
+    recallFromDtConfigDescriptor(    compatibility_float1);   //spare
+    recallFromDtConfigDescriptor(    compatibility_float2);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00.func);
     xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
     recallFromDtConfigDescriptor(Norm_Key_00.used);
-    recallFromDtConfigDescriptor(compatibility_bool2);
-    recallFromDtConfigDescriptor(compatibility_bool3);
-    recallFromDtConfigDescriptor(compatibility_bool4);
-    recallFromDtConfigDescriptor(compatibility_bool5);
-    recallFromDtConfigDescriptor(compatibility_bool6);
-    recallFromDtConfigDescriptor(compatibility_bool7);
-    recallFromDtConfigDescriptor(compatibility_bool8);
-    recallFromDtConfigDescriptor(compatibility_bool9);
-    recallFromDtConfigDescriptor(compatibility_bool10);
-    recallFromDtConfigDescriptor(compatibility_bool11);
-    recallFromDtConfigDescriptor(compatibility_bool12);
-    recallFromDtConfigDescriptor(compatibility_bool13);
-    recallFromDtConfigDescriptor(compatibility_bool14);
-    recallFromDtConfigDescriptor(compatibility_bool15);
+    recallFromDtConfigDescriptor(    compatibility_byte2);
+    recallFromDtConfigDescriptor(    compatibility_byte3);
+    recallFromDtConfigDescriptor(    compatibility_byte4);
+    recallFromDtConfigDescriptor(    compatibility_byte5);
+    recallFromDtConfigDescriptor(    compatibility_byte6);
+    recallFromDtConfigDescriptor(    compatibility_byte7);
+    recallFromDtConfigDescriptor(    compatibility_byte8);
+    recallFromDtConfigDescriptor(    compatibility_byte9);
+    recallFromDtConfigDescriptor(    compatibility_byte10);
+    recallFromDtConfigDescriptor(    compatibility_byte11);
+    recallFromDtConfigDescriptor(    compatibility_byte12);
+    recallFromDtConfigDescriptor(    compatibility_byte13);
+    recallFromDtConfigDescriptor(    compatibility_byte14);
+    recallFromDtConfigDescriptor(    compatibility_byte15);
     recallFromDtConfigDescriptor(fractionDigits);
-    recallFromDtConfigDescriptor(compatibility_bool23);
-    recallFromDtConfigDescriptor(compatibility_bool16);    //spare
-    recallFromDtConfigDescriptor(compatibility_bool20);
-    recallFromDtConfigDescriptor(compatibility_bool17);
+    recallFromDtConfigDescriptor(    compatibility_byte23);
+    recallFromDtConfigDescriptor(    compatibility_byte16);    //spare
+    recallFromDtConfigDescriptor(    compatibility_byte20);
+    recallFromDtConfigDescriptor(    compatibility_byte17);
     recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
-    recallFromDtConfigDescriptor(compatibility_bool18);
+    recallFromDtConfigDescriptor(    compatibility_byte18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);
     recallFromDtConfigDescriptor(topHex);
     recallFromDtConfigDescriptor(bcdDisplaySign);
     recallFromDtConfigDescriptor(DRG_Cycling);
     recallFromDtConfigDescriptor(DM_Cycling);
-    recallFromDtConfigDescriptor(compatibility_bool22);
+    recallFromDtConfigDescriptor(    compatibility_byte22);
     recallFromDtConfigDescriptor(LongPressM);
     recallFromDtConfigDescriptor(LongPressF);
     recallFromDtConfigDescriptor(lastDenominator);
@@ -333,6 +333,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(exponentHideLimit);
     recallFromDtConfigDescriptor(lastIntegerBase);
     recallFromDtConfigDescriptor(HOME3);
+    recallFromDtConfigDescriptor(timeDisplayFormatDigits);
   }
 
   else {

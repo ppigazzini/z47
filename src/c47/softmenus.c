@@ -143,7 +143,7 @@ TO_QSPI const int16_t menu_MATX[]        = {
 
 TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_CPXtoV,               ITM_VtoCPX,            ITM_STKtoV3,                 ITM_V3toSTK,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_REGtoVEC,                ITM_VECtoREG,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_VECtoSTK,          ITM_NULL,                    ITM_NULL                      };
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL /*_VECtoSTK*/, ITM_NULL,                    ITM_NULL                      };
 
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?
@@ -552,9 +552,9 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_N
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,
                                              ITM_EQ_DEL,                ITM_NULL,                   ITM_NULL,                 ITM_NULL,                 ITM_NULL,                   -MNU_Grapher              };
 
-TO_QSPI const int16_t menu_ADV[]         = { ITM_SOLVE,                 ITM_SLVQ,                   ITM_FQX,                  ITM_PIn,                  ITM_SIGMAn,                 -MNU_Sfdx,
-                                             ITM_PGMSLV,                ITM_SLVC,                   ITM_FDQX,                 ITM_iPIn,                 ITM_iSIGMAn,                ITM_PGMINT                };
-
+TO_QSPI const int16_t menu_ADV[]         = { ITM_PIn,                  ITM_SIGMAn,                  ITM_FDQX,                 ITM_FQX,                  -MNU_Sfdx,                  ITM_SOLVE,
+                                             ITM_iPIn,                 ITM_iSIGMAn,                 ITM_SLVC,                 ITM_SLVQ,                 ITM_PGMINT,                 ITM_PGMSLV,
+                                             ITM_NULL,                 ITM_NULL,                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
 
 TO_QSPI const int16_t menu_1stDeriv[]    = { ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                 -MNU_GRAPHS,                ITM_FPHERE                };
 //note: the items in here are dynamically assigned, including the static ones
@@ -598,8 +598,8 @@ TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_
                                             ITM_PRTACT,                     ITM_PRINTERADV,             ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG                      };
 
 TO_QSPI const int16_t menu_TamAlpha[]    = { -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,            -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_NULL,                        //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -3492,7 +3492,7 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnMenuDump(uint16_t menu, uint16_t item) {                              //JMvv procedure to dump all menus. First page only. To mod todump all pages
+void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat) {                              //JMvv procedure to dump all menus. First page only. To mod todump all pages
 #if defined(PC_BUILD)
   doRefreshSoftMenu = true;
   showSoftmenu(softmenu[menu].menuItem);
@@ -3514,13 +3514,23 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
   //printf(">>> %s\n",indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName);
   char asciiString[448];
   char asciiMenuName[448];
-  stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
-  //printf(">>> Menustring:%s|",asciiMenuName);
-  stringToFileNameChars(asciiMenuName, asciiString);
-  //printf(">>> Menustring:%s|",asciiString);
 
-  sprintf(bmpFileName,"Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
-  printf(">>> filename:%s|\n",bmpFileName);
+  if(newFilenameformat == 2) {
+    stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName,"%s.%d.bmp", asciiString, (int)(item/18)+1);
+    printf(">>> filename:%s|\n",bmpFileName);
+  } else   if(newFilenameformat == 1) {
+    stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);    
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName,"Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
+    printf(">>> filename:%s|\n",bmpFileName);
+  }
+
 
   bmp = fopen(bmpFileName, "wb");
 
@@ -3624,7 +3634,7 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
 }
 
 
-void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //JM
+void fnDumpMenus(uint16_t newFilenameformat) {                      //JM
 #if defined(PC_BUILD)
   int cc = currentSolverStatus;
   currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
@@ -3634,7 +3644,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
     while(softmenu[m].menuItem != 0) {
       n=0;
       while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
-        printf("m=%d n=%d softmenu[%u].numItems=%u\n",m,n,m,softmenu[m].numItems);
+        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n",m,n,m,softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :
@@ -3644,7 +3654,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
           case MNU_SHOW     :
             break;
           default:
-           fnMenuDump(m, n);
+           fnMenuDump(m, n, newFilenameformat);
          }
         n += 18;
       }
