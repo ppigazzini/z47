@@ -13,6 +13,7 @@
 
   char modelString[50];
   bool_t              mockup = false;
+  uint16_t            dumpMenus = 0;
   bool_t              writeExportAll = false;
   uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;
@@ -179,6 +180,14 @@
         printf("Activated: %s\n",argv[arg]);
         mockup = true;
       }
+      if(strcmp(argv[arg], "--dumpMenus1") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        dumpMenus = 1;
+      }
+      if(strcmp(argv[arg], "--dumpMenus2") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        dumpMenus = 2;
+      }
 
       if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
         #if (CALCMODEL == USER_R47)
@@ -189,8 +198,11 @@
         char ss[100];
         char sss[1000];
         stringToASCII(VERSION_STRING, ss);
+        printf("\n-------------------------------------------------------------\n");
         sprintf(sss, MODELTEXT " Sim " VERSION1 ", SHA %s.\n", ss);
-        printf("\n\n%s",sss);
+        printf("C47/R47 info to be found on 47calc.com\n");
+        printf("C47/R47 license GPL3, details on 47calc.com\n");
+        printf("\n%s",sss);
         printf("Activated: %s\n\n",argv[arg]);
         printf("c47 --background     : specify background picture\n");
         printf("c47 --functionkeys   : display function key labels\n\n");
@@ -212,7 +224,9 @@
         printf("c47 --hp35           : Setting profile: HP-35 tribute\n\n");
         printf("c47 --deadkeys       : typewriter style dead keys\n");
         printf("c47 --swapctrlcode   : ctrl fix for Swiss keyboards\n");
-        printf("c47 --mockup:        : output demo status bar layout\n");
+        printf("c47 --mockup         : output demo status bar layout\n");
+        printf("c47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n");
+        printf("c47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n");
         printf("c47 --writeexportall : output all PROGs (internal use)\n");
         printf("c47 --help           : list all SIM switches\n");
         printf("c47 --h              : see --help\n");
@@ -284,9 +298,18 @@
       time(&rawTime);
       timeInfo = localtime(&rawTime);
       strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
-      printf("\n\nOutput file save to: %s.\n\n",bmpFileName);
+      printf("\n\nOutput file saved to: %s.\n\n",bmpFileName);
       return 0;
     }
+
+    if(dumpMenus > 0) {
+      fnReset(CONFIRMED);
+      clearScreen();
+      fnDumpMenus(dumpMenus);
+      printf("\n\nOutput menus saved.\n");
+      return 0;
+    }
+
 
     //ramDump();
     refreshScreen(190);

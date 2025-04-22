@@ -159,18 +159,20 @@ static void executeFunction(const char *data, int16_t item_);
         break;
       }
 
+      //VARS MENU
+      case MNU_CONFIGS:
       case MNU_MATRS:
-      case MNU_STRINGS:
       case MNU_DATES:
       case MNU_TIMES:
-      case MNU_ANGLES:
       case MNU_SINTS:
-      case MNU_LINTS:
-      case MNU_REALS:
+      case MNU_STRINGS:
       case MNU_NUMBRS:
-      case MNU_CONFIGS:
-      case MNU_ALLVARS:
-      case MNU_CPXS: {
+      case MNU_CPXS:
+      case MNU_REALS:
+      case MNU_ANGLES:
+      case MNU_LINTS:
+      case MNU_ALLVARS: 
+      {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
         break;
@@ -272,19 +274,25 @@ static void executeFunction(const char *data, int16_t item_);
                     #endif //VERBOSEKEYS
           return findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_LABEL + ASSIGN_LABELS;
         }
+
         case MNU_VAR:
+
+        //VARS MENU
+        case MNU_CONFIGS:
         case MNU_MATRS:
-        case MNU_STRINGS:
         case MNU_DATES:
         case MNU_TIMES:
-        case MNU_ANGLES:
         case MNU_SINTS:
-        case MNU_LINTS:
-        case MNU_REALS:
-        case MNU_CPXS:
+        case MNU_STRINGS:
         case MNU_NUMBRS:
-        case MNU_ALLVARS:
-        case MNU_CONFIGS: {
+        case MNU_CPXS:
+        case MNU_REALS:
+        case MNU_ANGLES:
+        case MNU_LINTS:
+        case MNU_ALLVARS: 
+
+
+         {
           return findNamedVariable((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
         }
         case MNU_MENUS: {
@@ -389,28 +397,33 @@ static void executeFunction(const char *data, int16_t item_);
 
     static void closeAllCatalogMenus(void) {
         switch(-currentMenu()) {
-          //          case MNU_CATALOG :  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
-          case MNU_VARS :
-          case MNU_PROGS :
-          case MNU_CHARS :
-          case MNU_ANGLES :
-          case MNU_CPXS :
-          case MNU_DATES :
-          case MNU_FCNS :
-          case MNU_LINTS :
-          case MNU_MATRS :
-          case MNU_MENUS :
-          case MNU_REALS :
-          case MNU_SINTS :
-          case MNU_STRINGS :
-          case MNU_TIMES :
-          case MNU_ALPHA_OMEGA :
-          case MNU_ALPHAMISC :
-          case MNU_ALPHA :
-          case MNU_CONST :
+          //          case MNU_CATALOG:  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
+          case MNU_ALPHA_OMEGA:
+          case MNU_ALPHAMISC:
+          case MNU_ALPHA:
+
+          //CAT MENU
+          case MNU_FCNS:
+          case MNU_CONST:
+          case MNU_CHARS:
+          case MNU_PROGS:
+          case MNU_VARS:
+          case MNU_MENUS:
+
+          //VARS MENU
+          case MNU_CONFIGS:
+          case MNU_MATRS:
+          case MNU_DATES:
+          case MNU_TIMES:
+          case MNU_SINTS:
+          case MNU_STRINGS:
           case MNU_NUMBRS:
-          case MNU_ALLVARS:
-          case MNU_CONFIGS: {
+          case MNU_CPXS:
+          case MNU_REALS:
+          case MNU_ANGLES:
+          case MNU_LINTS:
+          case MNU_ALLVARS: 
+          {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
           }
@@ -1670,7 +1683,6 @@ int16_t lastItem = 0;
       uint8_t itm2a;
       uint8_t itm3;
       uint8_t itm4;
-      uint8_t itm5;
     } circ_t;
 
     uint8_t circPtr0 =  0;
@@ -1679,19 +1691,18 @@ int16_t lastItem = 0;
     uint8_t circPtr2a = 0;
     uint8_t circPtr3 = 0;
     uint8_t circPtr4 = 0;
-    uint8_t circPtr5 = 0;
     TO_QSPI const circ_t circ[] = {               //Circular special command buffer - key numbers, arranged in columns for each command
                                                   //       R47   R47
-                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0    H  H  C  R  C  C  C
-                  {18, 20, 23, 23, 23, 23, 23},   //1    P  P  4  4  4  4  4
-                  {30, 30, 18, 18, 18, 18, 18},   //2    3  3  7  7  7  7  7
-                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M
-                  {12, 12, 29, 29, 13, 9 , 4 },   //4    EN EN 2  2  M  J  E
-                  {28, 28, 33, 33, 0,  0 , 14},   //5    1  1  0  0        N
-                  {20, 20, 29, 29, 0 , 0 , 24},   //6    9  9  2  2        U
-                  {18, 18, 30, 30, 0 , 0 , 0 },   //7    7  7  3  3
-                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8    2  2
-                  {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
+                  {7 , 7 , 2 , 23, 2 , 2 },   //0    H  H  C  R  C  C
+                  {18, 20, 23, 23, 23, 23},   //1    P  P  4  4  4  4
+                  {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
+                  {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
+                  {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
+                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0      
+                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2      
+                  {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
+                  {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
+                  {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
     bool_t checkNumber(uint8_t keyCode) {
@@ -1771,18 +1782,6 @@ int16_t lastItem = 0;
       }
       else {
         circPtr4 = 0;
-      }
-      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) {
-        circPtr5 = 0; //C47MENU
-      }
-      if(circ[circPtr5].itm5==keyCode) {
-        if(circ[++circPtr5].itm5==0) {
-          fnDumpMenus(0);
-          return true;
-        }
-      }
-      else {
-        circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
@@ -1960,6 +1959,17 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         refreshScreen(126);
       }
 
+      switch(tam.function) {  // ensure TAM input update the status bar
+        //case ITM_SETSDIGS:
+        //case ITM_RNG   :
+        case ITM_DENMAX2 :
+        case ITM_WSIZE   :
+        case ITM_SETFDIGS: {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          refreshStatusBar();
+        }
+      }
+
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         shiftF = f;
@@ -2075,7 +2085,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
 
-//      screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME; //JMNEWSPEEDUP
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
       int16_t item;
@@ -2088,14 +2097,15 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
-    if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
-      fnAsnDisplayUSER = true;
-      lastItem = 0;
-//      refreshScreen();
-      goto RELEASE_END;
+      if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
+        fnAsnDisplayUSER = true;
+        lastItem = 0;
+        goto RELEASE_END;
+      }
+
+    if(calcMode == CM_LISTXY) {
       return;
     }
-
 
       //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
@@ -2469,7 +2479,7 @@ RELEASE_END:
         }
 
         case ITM_EXIT1: {
-          if(SHOWMODE) {    //do action on press, instead of release
+          if(SHOWMODE || calcMode == CM_LISTXY) {    //do action on press, instead of release
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
@@ -2482,8 +2492,16 @@ RELEASE_END:
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
             refreshScreen(120);
           }
+          else if(lastErrorCode != 0) {
+            lastErrorCode = 0;
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(139);
+            keyActionProcessed = true;
+          }
+
           break;
         }
 
@@ -3838,8 +3856,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         calcMode = CM_GRAPH;
+        reDraw = true;
         keyActionProcessed = true;
-        fnEqSolvGraph(EQ_PLOT_LU);
+        fnRefreshState();                //jm
         break;
       }
 
@@ -4489,16 +4508,21 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         ListXYposition += 10;
+        keyActionProcessed = true;
         break;
       }
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuUp();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
@@ -4709,16 +4733,21 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_LISTXY: {
         ListXYposition -= 10;
+        keyActionProcessed = true;
         break;
       }
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && (catalog || (currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL))) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS
-          keyActionProcessed = false;
+          if(currentSoftmenuScrolls() && catalog) {
+            menuDown();
+          } else {
+            keyActionProcessed = false;
+          }
         #endif // NOMATRIXCURSORS
         break;
       }
