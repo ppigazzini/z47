@@ -751,7 +751,7 @@ void fnSetFractionDigits(uint16_t S) {
 
 
 void fnRoundingMode(uint16_t RM) {
-  if(RM < sizeof(roundingModeTable) / sizeof(*roundingModeTable)) {
+  if(RM < nbrOfElements(roundingModeTable)) {
     roundingMode = RM;
     ctxtReal34.round = roundingModeTable[RM];
   }
@@ -1312,13 +1312,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
          tmpString        = aux_buf_ptr();   // 2560 byte buffer provided by DMCP
          errorMessage     = write_buf_ptr(); // 4096 byte buffer provided by DMCP
        #else // !DMCP_BUILD
-         tmpString        = (char *)malloc(TMP_STR_LENGTH);
-         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);
+         tmpString        = (char *)malloc(TMP_STR_LENGTH);    // 2560
+         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);  // 4096
        #endif // DMCP_BUILD
 
-       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;    // + 512
-       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;          // + 400
-       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;   // + 200 + 32
+                                                                              // errorMessage     from    0 to (4095       )
+       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;   // + 512     // aimBuffer        from  512 to (512  + 1024) or 1536
+       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;         // +1024     // nimBufferDisplay from 1536 to (1536 +  200) or 1736
+       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;  // + 200     // tamBuffer        from 1736 to (1736 +   32) or 1768
+                                          // TAM_BUFFER_LENGTH   // +  32
 
        tmpStringLabelOrVariableName = tmpString + 1000;
     }
@@ -1436,18 +1438,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emax   = 999999;
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
-
-    decContextDefault(&ctxtReal1071,  DEC_INIT_DECQUAD);
-    ctxtReal1071.digits = 1071;
-    ctxtReal1071.emax   = 999999;
-    ctxtReal1071.emin   = -999999;
-    ctxtReal1071.traps  = 0;
-
-    decContextDefault(&ctxtReal2139,  DEC_INIT_DECQUAD);
-    ctxtReal2139.digits = 2139;
-    ctxtReal2139.emax   = 999999;
-    ctxtReal2139.emin   = -999999;
-    ctxtReal2139.traps  = 0;
 
     resetOtherConfigurationStuff();
 

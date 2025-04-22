@@ -311,8 +311,6 @@
   extern realContext_t          ctxtReal39;   //   39 digits: used for 34 digits intermediate calculations
   extern realContext_t          ctxtReal51;   //   51 digits: used for 34 digits intermediate calculations
   extern realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
-  extern realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
-  extern realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
