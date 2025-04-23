@@ -978,8 +978,8 @@ return res;
         if(byte & 0x80 && !noShow) { // MSB set
           uint32_t x1 = x+((((doubling * (xGlyph+col)) >> miniC)) >> 3);
           uint32_t x2 = x1;
-          uint32_t y1 = min(SCREEN_HEIGHT-1, yy + min(yNewMaxDx,  ((y-y0) >> miniC)));
-          uint32_t y2 = min(SCREEN_HEIGHT-1, yy + min(yNewMaxDx,1+((y-y0) >> miniC)));
+          uint32_t y1 = min(SCREEN_HEIGHT-1, max(0,yy + (int32_t)min(yNewMaxDx,  ((y-y0) >> miniC))));
+          uint32_t y2 = min(SCREEN_HEIGHT-1, max(0,yy + (int32_t)min(yNewMaxDx,1+((y-y0) >> miniC))));
           if(x2 > 0) {
             x2--;
           }
