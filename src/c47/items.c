@@ -233,12 +233,15 @@ bool_t itemNotAvail(int16_t itemNr) {
 */
 
     screenUpdatingMode = SCRUPD_AUTO;
-    }
-    #if defined(PC_BUILD)
-      else {
-        force_refresh(timed); //Added this to enable 0.5 second refresh and break during running
+    } else {
+      if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        showHideHourGlass();
       }
-    #endif //PC_BUILD
+      #if defined(PC_BUILD)
+        force_refresh(timed); //Added this to enable 0.5 second refresh and break during running
+      #endif //PC_BUILD
+    }
 
     #if defined(PC_BUILD)// || defined(DEBUG_EXECUTE)
       char ss1[30], ss2[30];
