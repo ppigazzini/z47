@@ -189,11 +189,33 @@ bool_t itemNotAvail(int16_t itemNr) {
         //printf("---#### Before function %s\n",tmp);
       #endif // PC_BUILD
 
-      if(func != ITM_SNAP) {
-        hourGlassIconEnabled = true;
+      switch(func) {
+        case ITM_SNAP:
+        case ITM_ENTER:
+        case ITM_STO:
+        case ITM_RCL:
+        case ITM_Rdown:
+        case ITM_Rup:
+        case ITM_XexY:
+        case ITM_CHS:
+        case ITM_EXPONENT:
+        case ITM_BACKSPACE:
+        case ITM_UP1:
+        case ITM_DOWN1:
+        case ITM_EXIT1:
+        case ITM_LASTX:
+        case ITM_USERMODE:
+        case ITM_CONSTpi:
+        case ITM_op_j:
+        case ITM_op_j_pol:
+        case ITM_DRG:
+        case ITM_ASSIGN: break;
+        default: {
+          hourGlassIconEnabled = true;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          showHideHourGlass();
+        }
       }
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      showHideHourGlass();
 
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
         while(currentSubroutineLevel > 0) {
@@ -250,6 +272,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     }
 
+//a few exceptions may switch on the hourglass in the dispatched code, hence we must make sure we switch it off again
 //Test: Remove clearing of hourgalss from here - it is too early.
 //    hourGlassIconEnabled = false;
 //    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
