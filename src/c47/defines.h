@@ -727,13 +727,13 @@ typedef enum {
 #define TAM_MAX_MASK                          0x3fff
 
 // Stack Lift Status (2 bits)
-#define SLS_STATUS                            0x0003
+#define SLS_STATUS                            0x0003 // 0000 0011
 #define SLS_ENABLED                        ( 0 << 0) // Stack lift enabled after item execution
 #define SLS_DISABLED                       ( 1 << 0) // Stack lift disabled after item execution
 #define SLS_UNCHANGED                      ( 2 << 0) // Stack lift unchanged after item execution
 
 // Undo Status (2 bits)
-#define US_STATUS                             0x000c
+#define US_STATUS                             0x000c // 0000 1100
 #define US_ENABLED                         ( 0 << 2) // The command saves the stack, the statistical sums, and the system flags for later UNDO
 #define US_CANCEL                          ( 1 << 2) // The command cancels the last UNDO data
 #define US_UNCHANGED                       ( 2 << 2) // The command leaves the existing UNDO data as is
@@ -759,7 +759,7 @@ typedef enum {
 #define EIM_ENABLED                         (1 << 8) // Function enabled in EIM
 
 // Parameter Type in Program status (4 bit)
-#define PTP_STATUS                            0x1e00
+#define PTP_STATUS                            0x1e00 // 0001 1110 0000 0000
 #define PTP_NONE                           ( 0 << 9) // No parameters
 #define PTP_DECLARE_LABEL                  ( 1 << 9) // These
 #define PTP_LABEL                          ( 2 << 9) //   parameter
@@ -776,6 +776,12 @@ typedef enum {
 #define PTP_LITERAL                        (13 << 9) // Literal
 #define PTP_REM                            (14 << 9) //
 #define PTP_DISABLED                       (15 << 9) // Not programmable
+
+// Hourglass enable (2 bits)
+#define HG_STATUS                            0x6000  // 0110 0000 0000 0000
+#define HG_ENABLED                         ( 0 << 13 ) // Hourglass enabled
+#define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
+#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked 
 
 
 #define INC_FLAG                                   0
