@@ -2548,10 +2548,6 @@ screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER) {
             keyActionProcessed = true;
           }
-          else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
-            addStepInProgram(ITM_toREAL);
-            keyActionProcessed = true;
-          }
           break;
         }
 
@@ -3115,6 +3111,10 @@ screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
                 }
                 else if(item == ITM_RS) {
                   addStepInProgram(ITM_STOP);
+                  keyActionProcessed = true;
+                }
+                else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
+                  addStepInProgram(ITM_toREAL);
                   keyActionProcessed = true;
                 }
                 break;
