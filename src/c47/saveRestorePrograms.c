@@ -319,8 +319,10 @@ void _fnExportProgram(ioFilePath_t path) {
 }
 
 
-void _selectProgram(uint16_t label) {
+static void _selectProgram(uint16_t label) {
   #if !defined(TESTSUITE_BUILD)
+    dynamicMenuItem = -1;
+    lastProgramRunStop = PGM_UNDEFINED;
     // Find program boundaries
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
@@ -376,12 +378,10 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     #endif // DMCP_BUILD
 
     _selectProgram(label);
-
     _fnExportProgram(path);
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;
-
     temporaryInformation = TI_SAVED;
 }
 
@@ -472,6 +472,10 @@ void fnSaveProgram(uint16_t label) {
 
 void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
+    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
+    uint16_t savedCurrentProgramNumber = currentProgramNumber;
+    uint16_t oldCurrentProgramNumber;
+
     uint16_t label;
     char labelName[16];
         for(int i=0; i<numberOfLabels; i++) {
@@ -480,11 +484,20 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
             labelName[labelList[i].labelPointer[0]]=0;
             label = findNamedLabel(labelName);
             //printf("#### labelnumber=%i, labelname=%s\n",label, labelName);
+            oldCurrentProgramNumber = currentProgramNumber;
 
-             _saveProgram  (label, ioPathSaveAllPrograms);
-             _exportProgram(label, ioPathExportRTFAllPrograms);
+            _selectProgram(label);
+
+            //printf("----X %u %u\n",currentProgramNumber, oldCurrentProgramNumber);
+            if(currentProgramNumber != oldCurrentProgramNumber) {
+              printf("Export & saving: Labelnumber=%i, Labelname=%s\n",label, labelName);
+              _saveProgram  (label, ioPathSaveAllPrograms);
+              _exportProgram(label, ioPathExportRTFAllPrograms);
+            }
           }
         }
+    currentLocalStepNumber = savedCurrentLocalStepNumber;
+    currentProgramNumber = savedCurrentProgramNumber;
   #endif //PC_BUILD
 }
 

@@ -283,6 +283,7 @@
     }
 
     if(writeExportAll) {
+      fnReset(CONFIRMED);
       fnSaveAllPrograms(NOPARAM);
       return 0;
     }
