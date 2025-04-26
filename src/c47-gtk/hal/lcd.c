@@ -4,12 +4,11 @@
 
 #include "c47.h"
 
-    void setBlackPixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
 #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
   #include <execinfo.h>
 #endif //PC_BUILD
 
+    void setBlackPixel(uint32_t x, uint32_t y) {
       if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
         printf("In function setBlackPixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)(x), y, (int32_t)(y) );
         return;
@@ -21,8 +20,6 @@
 
 
     void setWhitePixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
-
       if(x>=SCREEN_WIDTH || y>=SCREEN_HEIGHT) {
         printf("In function setWhitePixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)x, y, (int32_t)y);
         return;
@@ -48,10 +45,6 @@
     int16_t clearScreenCounter = 0;                       //JM ClearScreen Test
     void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
       uint32_t line, col, pixelColor, *pixel, endX = x + dx, endY = y + dy;
-
-      //if(y >= (uint32_t)(-100)) { //JM allowing -100 to measure the size in pixels; allowing -1..-5 for top row text
-      //  return;
-      //}
 
       if(x == 0 && y == 0 && dx == SCREEN_WIDTH && dy == SCREEN_HEIGHT) {  //JMTOCHECK is this needed?
         #if defined(MONITOR_CLRSCR)
