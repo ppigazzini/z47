@@ -4,7 +4,7 @@
 #include "c47.h"
 #include "version.h"
 
-#if defined(PC_BUILD)
+#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
   #include <execinfo.h>
 #endif //PC_BUILD
 
@@ -2904,18 +2904,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       else if((restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
         prefixWidth = 0;
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
-
                                         #if defined(PC_BUILD)
                                         if(baseY < 0) {
                                           printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
-                                          free(strs);
+                                          #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                            void *callstack[128];
+                                            int frames = backtrace(callstack, 128);
+                                            char **strs = backtrace_symbols(callstack, frames);
+                                            printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
+                                            free(strs);
+                                          #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
                                         #endif //PC_BUILD          
-
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
