@@ -378,7 +378,6 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     #endif // DMCP_BUILD
 
     _selectProgram(label);
-
     _fnExportProgram(path);
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
@@ -485,12 +484,7 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
             labelName[labelList[i].labelPointer[0]]=0;
             label = findNamedLabel(labelName);
             //printf("#### labelnumber=%i, labelname=%s\n",label, labelName);
-
             oldCurrentProgramNumber = currentProgramNumber;
-
-            //dynamicMenuItem = -1;
-            //lastProgramRunStop = PGM_UNDEFINED;
-            //fnGoto(label);
 
             _selectProgram(label);
 
