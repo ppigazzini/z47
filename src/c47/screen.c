@@ -4,9 +4,12 @@
 #include "c47.h"
 #include "version.h"
 
-#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+#if defined(PC_BUILD)
   #include <execinfo.h>
 #endif //PC_BUILD
+
+void refreshRegisterLineRestoreT(void);
+
 
 //#define DEBUGCLEARS
 
@@ -676,7 +679,7 @@ void execTimerApp(uint16_t timerType) {
     shiftG = false;
     showShiftState();
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     char *varCatalogItem = "SF:F";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
@@ -695,7 +698,7 @@ void execTimerApp(uint16_t timerType) {
     shiftG = true;
     showShiftState();
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     char *varCatalogItem = "SF:G";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
@@ -711,7 +714,7 @@ void execTimerApp(uint16_t timerType) {
 
   void FN_handler_StepToNOP(void) {
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     showFunctionName(ITM_NOP, 0, "SF:N");
     FN_timed_out_to_NOP = true;
@@ -948,7 +951,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx + (min(0,yy)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -1604,6 +1607,28 @@ return res;
   }
 
 
+  static void force_Registerrefresh(calcRegister_t regist, bool_t clearTop, bool_t clearBottom) {
+    if(REGISTER_X <= regist && regist <= REGISTER_T) {
+      uint32_t yStart = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X);
+      uint32_t height = 32;
+
+      if(clearTop) {
+        yStart -= 4;
+        height += 4;
+      }
+
+      if(clearBottom) {
+        height += 4;
+        if(regist == REGISTER_X) {
+          height += 3;
+        }
+      }
+
+      _lcdBandRefresh(yStart, height);
+    }
+  }
+
+
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
@@ -1823,11 +1848,13 @@ return res;
   void hideFunctionName(void) {
     if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
-        refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+        refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+        force_Registerrefresh(REGISTER_T, true, true);
       }
-      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-        refreshRegisterLine(REGISTER_X);
-      }
+// this seems to cause an undue delay for large matrices, and I cannot see why it should be reprinted (and the cached heights updated
+//      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+//        refreshRegisterLine(REGISTER_X);
+//      }
     }
     showFunctionNameItem = 0;
     showFunctionNameCounter = 0;
@@ -2469,7 +2496,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
-  void refreshRegisterLine(calcRegister_t regist) {
+
+  #define RESTORE_T true
+
+  static void _refreshRegisterLine(calcRegister_t regist, bool_t restoreRegisterT) {
     int32_t w;
     int16_t wLastBaseNumeric, wLastBaseStandard, prefixWidth = 0, lineWidth = 0;
     bool_t prefixPre = true;
@@ -2492,9 +2522,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
     #endif //DMCP
 
-    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-      printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
-    #endif // PC_BUILD &&MONITOR_CLRSCR
+                                      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                        printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
+                                      #endif // PC_BUILD &&MONITOR_CLRSCR
 
     if(BASEMODEREGISTERX && !SHOWMODE && displayStack != 4-displayStackSHOIDISP) { //JMSHOI
       fnDisplayStack(4-displayStackSHOIDISP);
@@ -2864,10 +2901,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             showBottomLine();
           }
       }
-
-      else if(regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+      else if((restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
         prefixWidth = 0;
-        const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0));
+        const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
+
+                                        #if defined(PC_BUILD)
+                                        if(baseY < 0) {
+                                          printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
+                                          free(strs);
+                                        }
+                                        #endif //PC_BUILD          
+
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -4482,6 +4530,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     }
   }
 
+  void refreshRegisterLine(calcRegister_t regist) {
+    _refreshRegisterLine(regist, !RESTORE_T);
+  }
+
+  void refreshRegisterLineRestoreT(void) {
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
+  }
+
 
   void displayNim(const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard) {
     int16_t w;
@@ -4612,7 +4668,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   static void _selectiveClearScreen(void) {
     if(screenUpdatingMode == SCRUPD_AUTO) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf("   >>> lcd_fill_rect clear all\n");
+        printf("   >>> _selectiveClearScreen: lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
       clearScreen(6);
       refreshStatusBar();
@@ -4621,7 +4677,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     else {
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> SCRUPD_MANUAL_STATUSBAR\n");
+          printf("   >>> _selectiveClearScreen: SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
         clearScreenStatusBar(7);
       }
@@ -4629,27 +4685,39 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         refreshStatusBar();
       }
 
+      
+      //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
+      #define LeftGraphInfoX       0
+      #define topLeftGraphInfoY    Y_POSITION_OF_REGISTER_T_LINE-4
+      #define widthGraphInfoBox    SCREEN_WIDTH - 240 - 2
+      #define heightGraphInfoBox   240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4
+      #define widthGraphInclBorder 240 + 2
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
+          printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH - 240 - 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
+        lcd_fill_rect(  LeftGraphInfoX,    topLeftGraphInfoY,          widthGraphInfoBox,    heightGraphInfoBox,   LCD_SET_VALUE);
         refreshNIMdone = false;
-        if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
-          lcd_fill_rect(SCREEN_WIDTH - 240 - 2, Y_POSITION_OF_REGISTER_T_LINE-4, 240 + 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
-        } //C47 had 0,-4,0,+4 to clear from y=20, not y=24.
+        if(!GRAPHMODE) {                                                                                                                   // in GRAPHMODE, protect the square graph area
+          lcd_fill_rect(widthGraphInfoBox, topLeftGraphInfoY,          widthGraphInclBorder, heightGraphInfoBox,   LCD_SET_VALUE);
+        }
       }
+
+
+      //now clear menu area, first the left graph info area, then the actual area covered by the graph if not in graph mode
+      #define menuHeightInclBorder   SOFTMENU_HEIGHT * 3
+      #define topLeftMenuInclBorderY 240 - menuHeightInclBorder
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
+          printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
-        lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
-        clear_ul(); //JMUL
-        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus
-          lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
+        lcd_fill_rect(  LeftGraphInfoX,    topLeftMenuInclBorderY,     widthGraphInfoBox,    menuHeightInclBorder, LCD_SET_VALUE);
+        clear_ul();
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) {                                                                                      // not in GRAPHMODE, clear the little triangle area indicating more menus
+          lcd_fill_rect(LeftGraphInfoX,    topLeftMenuInclBorderY - 3, 20,                   6,                    LCD_SET_VALUE);
         }
-         if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
-          lcd_fill_rect(SCREEN_WIDTH - 240 - 2, 240 - SOFTMENU_HEIGHT * 3, 240 + 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
+        if(!GRAPHMODE) {                                                                                                                   // in GRAPHMODE, protect the square graph area
+          lcd_fill_rect(widthGraphInfoBox, topLeftMenuInclBorderY,     widthGraphInclBorder, menuHeightInclBorder, LCD_SET_VALUE);
         }
       }
     }
@@ -5110,7 +5178,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       case CM_ASSIGN:
       case CM_ERROR_MESSAGE:
       case CM_TIMER:
-        //printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
+//printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
         if(doRefreshSoftMenu && !SHOWMODE) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
@@ -5130,7 +5198,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
-        //printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+//printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
 
 
         _refreshNormalScreen();
