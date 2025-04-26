@@ -532,7 +532,6 @@ char letteredRegisterName(calcRegister_t regist) {
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
 
       dmcpResetAutoOff();
-
       fnPollTimerApp();
     }
     checkBattery();
@@ -949,6 +948,7 @@ return res;
       return 0;
     }
 
+    int32_t yy = ((int32_t)(y+1000))-(int32_t)1000; //get unsigned integer that was negative, back to signed integer negative
     data = (int8_t *)glyph->data;
     uint32_t y0 = y;                                                   //JMmini 0-reference
     xGlyph      = showLeadingCols ? glyph->colsBeforeGlyph : 0;
@@ -961,7 +961,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, y, (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -4588,7 +4588,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   static void _selectiveClearScreen(void) {
     if(screenUpdatingMode == SCRUPD_AUTO) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf("   >>> lcd_fill_rect clear all\n");
+        printf("   >>> _selectiveClearScreen: lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
       clearScreen();
       refreshNIMdone = false;
@@ -4596,32 +4596,48 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     else {
       if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STATUSBAR\n");
+          printf("   >>> _selectiveClearScreen: SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
         lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
         lastProgramRunStop = PGM_UNDEFINED;
       }
+      else if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
+        refreshStatusBar();
+      }
+
+      
+      //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
+      #define LeftGraphInfoX       0
+      #define topLeftGraphInfoY    Y_POSITION_OF_REGISTER_T_LINE-4
+      #define widthGraphInfoBox    SCREEN_WIDTH - 240 - 2
+      #define heightGraphInfoBox   240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4
+      #define widthGraphInclBorder 240 + 2
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
+          printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH - 240 - 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
+        lcd_fill_rect(  LeftGraphInfoX,    topLeftGraphInfoY,          widthGraphInfoBox,    heightGraphInfoBox,   LCD_SET_VALUE);
         refreshNIMdone = false;
-        if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
-          lcd_fill_rect(SCREEN_WIDTH - 240 - 2, Y_POSITION_OF_REGISTER_T_LINE-4, 240 + 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
-        } //C47 had 0,-4,0,+4 to clear from y=20, not y=24.
+        if(!GRAPHMODE) {                                                                                                                   // in GRAPHMODE, protect the square graph area
+          lcd_fill_rect(widthGraphInfoBox, topLeftGraphInfoY,          widthGraphInclBorder, heightGraphInfoBox,   LCD_SET_VALUE);
+        }
       }
+
+
+      //now clear menu area, first the left graph info area, then the actual area covered by the graph if not in graph mode
+      #define menuHeightInclBorder   SOFTMENU_HEIGHT * 3
+      #define topLeftMenuInclBorderY 240 - menuHeightInclBorder
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
+          printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
-        lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
-        clear_ul(); //JMUL
-        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus
-          lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
+        lcd_fill_rect(  LeftGraphInfoX,    topLeftMenuInclBorderY,     widthGraphInfoBox,    menuHeightInclBorder, LCD_SET_VALUE);
+        clear_ul();
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) {                                                                                      // not in GRAPHMODE, clear the little triangle area indicating more menus
+          lcd_fill_rect(LeftGraphInfoX,    topLeftMenuInclBorderY - 3, 20,                   6,                    LCD_SET_VALUE);
         }
-         if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
-          lcd_fill_rect(SCREEN_WIDTH - 240 - 2, 240 - SOFTMENU_HEIGHT * 3, 240 + 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
+        if(!GRAPHMODE) {                                                                                                                   // in GRAPHMODE, protect the square graph area
+          lcd_fill_rect(widthGraphInfoBox, topLeftMenuInclBorderY,     widthGraphInclBorder, menuHeightInclBorder, LCD_SET_VALUE);
         }
       }
     }
@@ -5065,7 +5081,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       case CM_ASSIGN:
       case CM_ERROR_MESSAGE:
       case CM_TIMER:
-//printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
+        //printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
         if(doRefreshSoftMenu && !SHOWMODE) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
@@ -5081,7 +5097,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(calcMode == CM_TIMER) {
           screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
-//printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        //printf("screenUpdatingMode4=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
 
 
         _refreshNormalScreen();
