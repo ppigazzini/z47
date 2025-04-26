@@ -6,6 +6,9 @@
 
     void setBlackPixel(uint32_t x, uint32_t y) {
       //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
+#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+  #include <execinfo.h>
+#endif //PC_BUILD
 
       if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
         printf("In function setBlackPixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)(x), y, (int32_t)(y) );
@@ -60,6 +63,13 @@
       if(endX > SCREEN_WIDTH || endY > SCREEN_HEIGHT) {
         #if defined(MONITOR_CLRSCR)
           printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "lcd_fill_rect called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
         #endif
         return;
       }
@@ -122,3 +132,19 @@
         }
     }
 
+
+    void _lcdBandRefresh(uint32_t y, uint32_t dy) {
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdBandRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
+        if(screenChange) {
+          gtk_widget_queue_draw_area(screen, 0, y, 400, dy);
+          #if defined(FULLUPDATE) // (UGLY)
+            refresh_gui();
+          #endif // FULLUPDATE (UGLY)
+        }
+    }

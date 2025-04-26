@@ -26,6 +26,9 @@
     static inline void _lcdSBRefresh(void) {
       lcd_refresh_lines(0,20);
     }
+    static inline void _lcdBandRefresh(uint32_t y, uint32_t dy) {
+      lcd_refresh_lines(y,dy);
+    }
 
 
   #else
@@ -47,8 +50,9 @@
     /**
      * Refresh the LCD with the draw buffer contents.
      */
-    void _lcdRefresh   (void);
-    void _lcdSBRefresh(void);
+    void _lcdRefresh    (void);
+    void _lcdSBRefresh  (void);
+    void _lcdBandRefresh(uint32_t y, uint32_t dy);
 
     /**
      * Sets a single black pixel on the screen.

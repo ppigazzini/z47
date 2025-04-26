@@ -4,9 +4,12 @@
 #include "c47.h"
 #include "version.h"
 
-#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+#if defined(PC_BUILD)
   #include <execinfo.h>
 #endif //PC_BUILD
+
+void refreshRegisterLineRestoreT(void);
+
 
 //#define DEBUGCLEARS
 
@@ -676,7 +679,7 @@ void execTimerApp(uint16_t timerType) {
     shiftG = false;
     showShiftState();
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     char *varCatalogItem = "SF:F";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
@@ -695,7 +698,7 @@ void execTimerApp(uint16_t timerType) {
     shiftG = true;
     showShiftState();
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     char *varCatalogItem = "SF:G";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
@@ -711,7 +714,7 @@ void execTimerApp(uint16_t timerType) {
 
   void FN_handler_StepToNOP(void) {
     if(calcMode != CM_PEM) {
-      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+      refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     showFunctionName(ITM_NOP, 0, "SF:N");
     FN_timed_out_to_NOP = true;
@@ -1604,6 +1607,28 @@ return res;
   }
 
 
+  static void force_Registerrefresh(calcRegister_t regist, bool_t clearTop, bool_t clearBottom) {
+    if(REGISTER_X <= regist && regist <= REGISTER_T) {
+      uint32_t yStart = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X);
+      uint32_t height = 32;
+
+      if(clearTop) {
+        yStart -= 4;
+        height += 4;
+      }
+
+      if(clearBottom) {
+        height += 4;
+        if(regist == REGISTER_X) {
+          height += 3;
+        }
+      }
+
+      _lcdBandRefresh(yStart, height);
+    }
+  }
+
+
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
@@ -1823,11 +1848,13 @@ return res;
   void hideFunctionName(void) {
     if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
-        refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+        refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+        force_Registerrefresh(REGISTER_T, true, true);
       }
-      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-        refreshRegisterLine(REGISTER_X);
-      }
+// this seems to cause an undue delay for large matrices, and I cannot see why it should be reprinted (and the cached heights updated
+//      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+//        refreshRegisterLine(REGISTER_X);
+//      }
     }
     showFunctionNameItem = 0;
     showFunctionNameCounter = 0;
@@ -2469,7 +2496,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
-  void refreshRegisterLine(calcRegister_t regist) {
+
+  #define RESTORE_T true
+
+  static void _refreshRegisterLine(calcRegister_t regist, bool_t restoreRegisterT) {
     int32_t w;
     int16_t wLastBaseNumeric, wLastBaseStandard, prefixWidth = 0, lineWidth = 0;
     bool_t prefixPre = true;
@@ -2492,9 +2522,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
     #endif //DMCP
 
-    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-      printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
-    #endif // PC_BUILD &&MONITOR_CLRSCR
+                                      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                        printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
+                                      #endif // PC_BUILD &&MONITOR_CLRSCR
 
     if(BASEMODEREGISTERX && !SHOWMODE && displayStack != 4-displayStackSHOIDISP) { //JMSHOI
       fnDisplayStack(4-displayStackSHOIDISP);
@@ -2864,10 +2901,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             showBottomLine();
           }
       }
-
-      else if(regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+      else if((restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
         prefixWidth = 0;
-        const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0));
+        const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
+
+                                        #if defined(PC_BUILD)
+                                        if(baseY < 0) {
+                                          printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
+                                          free(strs);
+                                        }
+                                        #endif //PC_BUILD          
+
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -4480,6 +4528,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix || calcMode == CM_MIM || distModeActive || BASEMODEACTIVE) {
       displayStack = origDisplayStack;
     }
+  }
+
+  void refreshRegisterLine(calcRegister_t regist) {
+    _refreshRegisterLine(regist, !RESTORE_T);
+  }
+
+  void refreshRegisterLineRestoreT(void) {
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
   }
 
 
