@@ -1849,7 +1849,8 @@ typedef struct {
                (tmplen == 8 && (isValidNumber(aimBuffer, "sdd.dddd")))                                //+11.1123
             || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120
              )) {
-            stringCopy(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
+            aimBuffer[tmplen] = aimBuffer[tmplen - 2];
+            aimBuffer[tmplen+1] = aimBuffer[tmplen - 1];
             aimBuffer[tmplen - 2] = '0';
             aimBuffer[tmplen - 1] = '0';
             aimBuffer[tmplen + 2] = 0;
