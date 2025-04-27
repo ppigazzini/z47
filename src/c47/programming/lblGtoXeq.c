@@ -218,7 +218,6 @@ void fnReturn(uint16_t skip) {
   if(currentInputVariable != INVALID_VARIABLE) {
     currentInputVariable = INVALID_VARIABLE;
     screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
-    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     refreshScreen(3);
     #if defined(DMCP_BUILD)
       lcd_refresh();
@@ -720,6 +719,7 @@ int16_t executeOneStep(uint8_t *step) {
     }
 
     case 0x7fff: {        // 32767  .END.
+      screenUpdatingMode = SCRUPD_AUTO;
       fnReturn(0);
       return 0;
     }
