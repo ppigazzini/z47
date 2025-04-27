@@ -505,7 +505,7 @@ typedef struct {
   uint16_t tamMinMax;         ///< Minimal value (2 bits) and maximal value (14 bits) for TAM argument
   //uint16_t tamMin;            ///< Minimal value for TAM argument
   //uint16_t tamMax;            ///< Maximal value for TAM argument
-  uint16_t status;            ///< Catalog, stack lift status and undo status
+  uint16_t status;            ///< Catalog, stack lift status, undo status and hourglass status
   //char     catalog;           ///< Catalog in which the item is located: see #define CAT_* in defines.h
   //uint8_t  stackLiftStatus;   ///< Stack lift status after item execution.
   //uint8_t  undoStatus;        ///< Undo status after item execution.

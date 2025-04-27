@@ -514,6 +514,7 @@ void drawBattery(uint16_t voltage);
     statusMessage[0]=0;
     statusMessage[1]=0;
     int32_t offs = 0;
+    int32_t yoffs = 0;
     switch(programRunStop) {
       case PGM_WAITING: {
         strcpy(statusMessage,STD_NEG_EXCLAMATION_MARK);
@@ -527,8 +528,9 @@ void drawBattery(uint16_t voltage);
       }
       default: {
         if(hourGlassIconEnabled) {
-          strcpy(statusMessage,STD_HOURGLASS);
+          strcpy(statusMessage,STD_HOURGLASS_WH);
           offs = +1;
+          yoffs = +5;
         }
       }
     }
@@ -538,7 +540,7 @@ void drawBattery(uint16_t voltage);
     if((SBhourglassShown[0] != statusMessage[0] || SBhourglassShown[1] != statusMessage[1])  ) {
       SBhourglassShown[0] = statusMessage[0];
       SBhourglassShown[1] = statusMessage[1];
-      showStringAndClear(statusMessage, &standardFont, XX + offs, 0, XXX - XX, 20, vmNormal, false, false);
+      showStringAndClear(statusMessage, &standardFont, XX + offs, yoffs, XXX - XX, 20, vmNormal, false, false);
       force_SBrefresh(force);
     }
   }
@@ -964,10 +966,10 @@ void drawBattery(uint16_t voltage) {
     showString(STD_n STD_SUB_n STD_SUP_n,     &standardFont, X_ALPHA_MODE,  L7, vmNormal, true, false);   //normal
     showString(STD_BOX,   &standardFont, X_ALPHA_MODE,  L8, vmNormal, true, false);   //normal
 
-    showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS  +1   ,     L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+    showGlyph(STD_HOURGLASS_WH,            &standardFont, X_HOURGLASS  +1   ,     L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
     showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, X_HOURGLASS       ,     L3, vmNormal, true, false, false);
     showGlyph(STD_P,                    &standardFont, X_HOURGLASS  +2   ,     L2, vmNormal, true, false, false);
-    showGlyph(STD_HOURGLASS,            &standardFont, X_HOURGLASS_GRAPHS  , L2, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+    showGlyph(STD_HOURGLASS_WH,            &standardFont, X_HOURGLASS_GRAPHS  , L2, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
 
     strcpy(asmBuffer,"MM");
     compressString = 1;             //^JM
