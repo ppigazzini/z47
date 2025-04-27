@@ -1408,16 +1408,9 @@ return res;
         yincr = 1;
       }
 
-//      if(lines == editlines || lg == 0) {
-  //      last_CM = 253; //Force redraw if
-    //  }
-
       orglastlines = lastline;
 
       if(lastline > yMultiLineEdOffset) {
-        if(!noshow1) {
-//          clearScreenOld(false, true,false);
-        }
         x = xMultiLineEdOffset;
         y = (yincr-1) + yMultiLineEdOffset * (yincr-1);
       }
@@ -4743,9 +4736,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
   #if !defined(TESTSUITE_BUILD)  //clearScreenOld(clrStatusBar, clrRegisterLines, clrSoftkeys);
     void clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys) {  //clrStatusBar, clrRegisterLines, clrSoftkeys
-      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
-      #endif // PC_BUILD &&MONITOR_CLRSCR
+                                        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                          printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
+                                        #endif // PC_BUILD &&MONITOR_CLRSCR
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "clearScreenOld called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
       screenUpdatingMode = SCRUPD_AUTO;
       if(clearStatusBar) {

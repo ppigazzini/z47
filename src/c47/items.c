@@ -183,7 +183,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       thereIsSomethingToUndo = false;
     }
 
-    if(programRunStop != PGM_RUNNING) {
+    if(programRunStop != PGM_RUNNING) { //NORMAL MODE
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^reallyRunFunction func=%d param=%d\n",func, param); jm_show_comment(tmp);
         //printf("---#### Before function %s\n",tmp);
@@ -201,17 +201,17 @@ bool_t itemNotAvail(int16_t itemNr) {
         }
         fnReturn(0); // 1 more time to clean local registers
       }
+              /* Full refresh included in showHideHourGlass above, so removinf it here to save time
+                    #if defined(DMCP_BUILD)
+                      lcd_refresh();
+                    #else // !DMCP_BUILD
+                      refreshLcd(NULL);
+                    #endif // DMCP_BUILD
+              */
+      screenUpdatingMode = SCRUPD_AUTO;
+    }
 
-/* Full refresh included in showHideHourGlass above, so removinf it here to save time
-      #if defined(DMCP_BUILD)
-        lcd_refresh();
-      #else // !DMCP_BUILD
-        refreshLcd(NULL);
-      #endif // DMCP_BUILD
-*/
-
-    screenUpdatingMode = SCRUPD_AUTO;
-    } else {
+    else { //PGM_RUNNING MODE
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         showHideHourGlass();
@@ -221,14 +221,14 @@ bool_t itemNotAvail(int16_t itemNr) {
       #endif //PC_BUILD
     }
 
+
+
     #if defined(PC_BUILD)// || defined(DEBUG_EXECUTE)
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
-      printf("   >>>   reallyRunFunction: %5i%8s§%8s  %5i\n",func, ss1, ss2, param);
+      printf("   >>    reallyRunFunction: %5i%8s§%8s  %5i  SBI:%s\n",func, ss1, ss2, param, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
     #endif // PC_BUILD
-
-
 
     if((programRunStop != PGM_RUNNING && func != ITM_LASTT) || func == ITM_XEQ || timeLastOp0 == 0) {    //The first manual command and XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);                                                                          //    You don't want the timer to always be read before every command when in a program. It would be wasteful. During program execution, LASTT? laps the counter.
@@ -246,18 +246,22 @@ bool_t itemNotAvail(int16_t itemNr) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>   reallyRunFunction:                                SBI:%s\n", programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
+    #endif // PC_BUILD
 
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
-    } else {
-
+    }
+    
+    if(func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1) {
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+      if(currentSubroutineLevel == 0) {
+        forceSBupdate();
+        screenUpdatingMode = SCRUPD_AUTO;
+      }
     }
 
-//a few exceptions may switch on the hourglass in the dispatched code, hence we must make sure we switch it off again
-//Test: Remove clearing of hourgalss from here - it is too early.
-//    hourGlassIconEnabled = false;
-//    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-//    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw

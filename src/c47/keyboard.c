@@ -2521,7 +2521,11 @@ RELEASE_END:
             refreshScreen(139);
             keyActionProcessed = true;
           }
-
+          else if(temporaryInformation == TI_NO_INFO) {
+            screenUpdatingMode = SCRUPD_AUTO;
+            forceSBupdate();
+            refreshScreen(139);
+          }
           break;
         }
 
@@ -3931,6 +3935,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           restoreStats();
         }
         screenUpdatingMode = SCRUPD_AUTO;
+        forceSBupdate();
         break;
       }
 
