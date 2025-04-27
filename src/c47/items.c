@@ -257,7 +257,9 @@ bool_t itemNotAvail(int16_t itemNr) {
     if(func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
-        forceSBupdate();
+        #if !defined(TESTSUITE_BUILD)
+          forceSBupdate();
+        #endif //TESTSUITE_BUILD
         screenUpdatingMode = SCRUPD_AUTO;
       }
     }
