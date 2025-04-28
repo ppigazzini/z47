@@ -2527,10 +2527,10 @@ RELEASE_END:
             refreshScreen(139);
             keyActionProcessed = true;
           }
-          else if(temporaryInformation == TI_NO_INFO) {
-            screenUpdatingMode = SCRUPD_AUTO;
-            forceSBupdate();
-            refreshScreen(139);
+          else if(temporaryInformation == TI_NO_INFO && softmenuStack[0].softmenuId == 0) {
+            //Test to see if the statusbar flicker speed is hig enough. Exit only refreshes the statusbar when MyM is up and no TI
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+            refreshScreen(140);
           }
           break;
         }
