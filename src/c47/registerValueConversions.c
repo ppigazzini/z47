@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+static float fnRealToFloat(const real_t *r);
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t regist) {
   uint16_t sizeInBytes = longIntegerSizeInBytes(lgInt);
 
@@ -356,6 +358,13 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   convertRealToImag34ResultRegister(imag, dest);
 }
 
+void convertComplexToResultRegisterRPangle(const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag) {
+  reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, angl);
+  convertRealToReal34ResultRegister(real, dest);
+  convertRealToImag34ResultRegister(imag, dest);
+  setComplexRegisterPolarMode(dest, polarTag);
+}
+
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   real34_t real34, value34;
   real34Copy(REGISTER_REAL34_DATA(source), &real34);
@@ -421,14 +430,14 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
   isNegative = real34IsNegative(REGISTER_REAL34_DATA(source));
   real34CopyAbs(REGISTER_REAL34_DATA(source), &part2);
-  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);            //Y D or M
   real34Subtract(&part2, &part1, &part2);
   int32ToReal34(100, &val), real34Multiply(&part2, &val, &part2);
 
   real34Copy(&part2, &part3);
-  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);            //M M or D
   real34Subtract(&part3, &part2, &part3);
-  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);
+  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);  // dd yyyy or yyyy
   real34ToIntegralValue(&part3, &part3, DEC_ROUND_DOWN);
 
   if(isNegative) {
@@ -723,29 +732,9 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
 
 
 double convertRegisterToDouble(calcRegister_t regist) {
-  double y;
-  real_t tmpy;
+  real_t regReal, regImag;
 
-  switch(getRegisterDataType(regist)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
-      break;
-    }
-    case dtReal34:
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(regist), &tmpy);
-      break;
-    }
-    default: {
-      #if defined(PC_BUILD)
-        printf("ERROR IN convertRegisterToDouble\n");
-      #endif
-      return DOUBLE_NOT_INIT;
-      break;
-    }
-  }
-  realToDouble(&tmpy, &y);
-  return y;
+  return getRegisterAsComplex(regist, &regReal, &regImag) ? fnRealToFloat(&regReal) : DOUBLE_NOT_INIT;
 }
 
 
@@ -990,16 +979,16 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
         if(!of)
           switch (shortIntegerMode) {
             case SIM_UNSIGN:
-              of = realCompareLessThan(&rval, const_2p64);
+              of = realCompareGreaterEqual(&rval, const_2p64);
               break;
             case SIM_2COMPL:
               if(*sign)
-                of = realCompareLessEqual(&rval, const_2p63);
+                of = realCompareGreaterThan(&rval, const_2p63);
               else
                 /* fall through */
             case SIM_1COMPL:
             case SIM_SIGNMT:
-              of = realCompareLessThan(&rval, const_2p63);
+              of = realCompareGreaterEqual(&rval, const_2p63);
               break;
           }
         *val = u64;
@@ -1016,6 +1005,31 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
     *overflow = of;
   if(fractional != NULL)
     *fractional = frac;
+  return true;
+}
+
+bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base) {
+  bool_t sign, overflow, fractional;
+  uint64_t v;
+  uint32_t b;
+
+  if (getRegisterDataType(reg) == dtShortInteger) {
+    v = *REGISTER_SHORT_INTEGER_DATA(reg);
+    b = getRegisterShortIntegerBase(reg);
+    goto finish;
+  }
+  if (!getRegisterAsShortInt(reg, &sign, &v, &overflow, &fractional))
+    return false;
+  if (overflow || fractional) {
+    badDomainError(reg);
+    return false;
+  }
+  v = (uint64_t)WP34S_build_value(v, sign);
+  b = lastIntegerBase != 0 ? lastIntegerBase : 10;
+finish:
+  if (base != NULL)
+    *base = b;
+  *val = v;
   return true;
 }
 

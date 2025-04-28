@@ -26,18 +26,19 @@ TO_QSPI static const struct {
     unsigned gapr : 16;
     unsigned gaprx : 16;
     unsigned us   : 1;
+    unsigned woy : 16;
 
 
 } configSettings[] = {
                 /*                         gapl                     gprl  gpr1x  gpr1  gprr     gapr                                   */
                 /*   24  D M Y  Gregorian  GAP char                 GRP   GRPx   GRP1  FP.GRP   FP.GAP char               New Radix    */
-    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0},    /* 14 Sep 1752 */
-    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0},    /*  1 Oct 1949 */
-    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0},    /* 15 Oct 1582 */
-    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
-    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /*  1 Jan 1873 */
-    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
-    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1},    /* 14 Sep 1752 */
+    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
+    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /*  1 Oct 1949 */
+    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0, ITM_WOY_ISO},    /* 15 Oct 1582 */
+    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_US},    /* 14 Sep 1752 */
+    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_US},    /*  1 Jan 1873 */
+    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
+    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
 };
 
 void configCommon(uint16_t idx) {
@@ -52,7 +53,8 @@ void configCommon(uint16_t idx) {
   forceSystemFlag(FLAG_MDY, configSettings[idx].mdy);
   forceSystemFlag(FLAG_YMD, configSettings[idx].ymd);
   firstGregorianDay = configSettings[idx].gregorianDay;
-  temporaryInformation = TI_DISP_JULIAN;
+  fnSetWeekOfYearRule(configSettings[idx].woy);
+  temporaryInformation = TI_DISP_JULIAN_WOY;
 
   fnSetGapChar (0 + configSettings[idx].gapl);
   grpGroupingLeft            = configSettings[idx].gprl ;
@@ -127,8 +129,8 @@ fgLongPressSetting,                  xxx,        xxx,                           
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
-3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
+3,                                   0,          FLAG_IRFRQ,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_IRFRQ,           FLAG_IRFRQ,             xxx,             xxx,             xxx,
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
@@ -174,8 +176,8 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          FLAG_SBtvm,                     xxx,             xxx,                  xxx,                    xxx,             FLAG_SBtvm,      xxx,                  // Set flag  FLAG_SBtvm
 3,                                   1,          FLAG_SBoc,                      xxx,             xxx,                  xxx,                    xxx,             FLAG_SBoc,       xxx,                  // Set flag  FLAG_SBoc
 3,                                   0,          FLAG_SBss,                      xxx,             xxx,                  xxx,                    xxx,             FLAG_SBss,       xxx,                  // Clear flag FLAG_SBss
-3,                                   1,          FLAG_SBclk,                     xxx,             xxx,                  xxx,                    xxx,             FLAG_SBclk,      xxx,                  // Set flag  FLAG_SBclk
-3,                                   0,          xxx,                            xxx,             xxx,                  FLAG_SBclk,             xxx,             xxx,             xxx,                  // Clear flag FLAG_SBclk
+3,                                   1,          FLAG_SBstpw,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBstpw,     xxx,                  // Set flag  FLAG_SBstpw
+3,                                   0,          xxx,                            xxx,             xxx,                  FLAG_SBstpw,            xxx,             xxx,             xxx,                  // Clear flag FLAG_SBstpw
 3,                                   1,          FLAG_SBser,                     xxx,             xxx,                  xxx,                    xxx,             FLAG_SBser,      xxx,                  // Set flag  FLAG_SBser
 3,                                   1,          FLAG_SBprn,                     xxx,             xxx,                  xxx,                    xxx,             FLAG_SBprn,      xxx,                  // Set flag  FLAG_SBprn
 3,                                   0,          FLAG_SBbatV,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBbatV,     xxx,                  // Clear flag FLAG_SBbatV
@@ -183,11 +185,12 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_SBshfR,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBshfR,     xxx,                  // Clear flag FLAG_SBshfR
 3,                                   1,          FLAG_MULTx,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
 3,                                   0,          xxx,                            xxx,             FLAG_MULTx,           xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
-
 3,                                   1,          FLAG_AUTOFF,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_AUTOFF
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_ENDPMT
 3,                                   1,          FLAG_HPRP,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPRP
 3,                                   0,          xxx,                            xxx,             FLAG_HPRP,            FLAG_HPRP,              xxx,             xxx,             xxx,                  // Clear flag FLAG_HPRP
+3,                                   1,          FLAG_MNUp1,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MNUp1
+3,                                   0,          xxx,                            xxx,             FLAG_MNUp1,           FLAG_MNUp1,             xxx,             xxx,             xxx,                  // Clear flag FLAG_MNUp1
 3,                                   1,          FLAG_HPBASE,                    xxx,             FLAG_HPBASE,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPBASE
 3,                                   0,          xxx,                            xxx,             xxx,                  FLAG_HPBASE,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPBASE
 3,                                   0,          FLAG_2TO10,                     xxx,             FLAG_2TO10,           FLAG_2TO10,             xxx,             xxx,             xxx,                  // Clear flag FLAG_2TO10
@@ -421,7 +424,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #endif // PC_BUILD
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
-    clearSystemFlag(FLAG_IRF_ON);
+    clearSystemFlag(FLAG_FRACT);
+    clearSystemFlag(FLAG_IRFRAC);
     clearSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
     programRunStop = PGM_STOPPED;
@@ -739,7 +743,7 @@ void fnSetFractionDigits(uint16_t S) {
 
 
 void fnRoundingMode(uint16_t RM) {
-  if(RM < sizeof(roundingModeTable) / sizeof(*roundingModeTable)) {
+  if(RM < nbrOfElements(roundingModeTable)) {
     roundingMode = RM;
     ctxtReal34.round = roundingModeTable[RM];
   }
@@ -764,9 +768,9 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   #define STATE_bc       0b0001  //1
   #define STATE_offabc   0b0010  // B
   #define STATE_abc      0b0011  //3
-//                         0100  B
+  #define STATE_offr_bc  0b0100  //12
 //                         0101    C if b8==0 the b4=0
-//                         0110  B
+  #define STATE_offr_abc 0b0110  //14
 //                         0111    C if b8==0 the b4=0
 //                         1000  A
 //                         1001
@@ -777,46 +781,35 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   #define STATE_exfr_abc 0b1110  //14
 //                         1111
   #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8:0) +  \
-                         (getSystemFlag(FLAG_IRF_ON) ? 4:0) +  \
+                         (getSystemFlag(FLAG_IRFRQ ) ? 4:0) +  \
                          (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
   //printf("%u ",state);
 
   if(getSystemFlag(FLAG_FRCYC)) {
-    if(!getSystemFlag(FLAG_FRACT) && getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_IRF_ON)) { // 10x0 --> 11x0 A
-      setSystemFlag(FLAG_IRF_ON);
-      return;
-    }
-    else {
-      if(!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
-        flipSystemFlag(FLAG_FRACT);
-        return;
-      }
-    }
     switch(state) {
+      case STATE_offbc       : state = STATE_bc;        break;
+      case STATE_offabc      : state = STATE_abc;       break;
+      case STATE_offr_bc     : state = STATE_exfr_bc;   break;
+      case STATE_offr_abc    : state = STATE_exfr_abc;  break;
+
       case STATE_bc          : state = STATE_exfr_abc;  break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_bc;        break;                    // 0b0011 -->
       case STATE_exfr_bc     : state = STATE_abc;       break;                    // 0b1100 -->
       case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 -->
       default                : state = STATE_abc;       break;                    //
     }
-  }
-  else if(getSystemFlag(FLAG_IRFRAC)) {
-    flipSystemFlag(FLAG_IRF_ON);
-    return;
-  }
-  else if(!getSystemFlag(FLAG_IRFRAC)) {
-    clearSystemFlag(FLAG_IRF_ON);
-    flipSystemFlag(FLAG_FRACT);
-    return;
-  }
 
-  if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
-  if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
-  if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
-  if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
-  //printf("--> %u --> %u\n",state, STATE);
+    if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
+    if((state & 4)) setSystemFlag(FLAG_IRFRQ ); else clearSystemFlag(FLAG_IRFRQ );
+    if((state & 2)) setSystemFlag(FLAG_PROPFR); else clearSystemFlag(FLAG_PROPFR);
+    if((state & 1)) setSystemFlag(FLAG_FRACT);  else clearSystemFlag(FLAG_FRACT);
+    //printf("--> %u --> %u\n",state, STATE);
+  }
+  else {
+    flipSystemFlag(getSystemFlag(FLAG_IRFRQ ) ? FLAG_IRFRAC : FLAG_FRACT);
+  }
 }
 
 
@@ -932,19 +925,19 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 void initSimEqMatABX(void) {
   matrixHeader_t *matrixHeader;
 
-  allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
   real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
-  allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
   real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
-  allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
@@ -1049,9 +1042,9 @@ void addTestPrograms(void) {
   #else // !DMCP_BUILD
     FILE *testPgms;
 
-    testPgms = fopen("res/dmcp/testPgms.bin", "rb");
+    testPgms = fopen("res/testPgms/testPgms.bin", "rb");
     if(testPgms == NULL) {
-      printf("Cannot open file res/dmcp/testPgms.bin\n");
+      printf("Cannot open file res/testPgms/testPgms.bin\n");
       *(beginOfProgramMemory)     = 255; // .END.
       *(beginOfProgramMemory + 1) = 255; // .END.
       firstFreeProgramByte = beginOfProgramMemory;
@@ -1310,13 +1303,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
          tmpString        = aux_buf_ptr();   // 2560 byte buffer provided by DMCP
          errorMessage     = write_buf_ptr(); // 4096 byte buffer provided by DMCP
        #else // !DMCP_BUILD
-         tmpString        = (char *)malloc(TMP_STR_LENGTH);
-         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);
+         tmpString        = (char *)malloc(TMP_STR_LENGTH);    // 2560
+         errorMessage     = (char *)malloc(WRITE_BUFFER_LEN);  // 4096
        #endif // DMCP_BUILD
 
-       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;    // + 512
-       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;          // + 400
-       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;   // + 200 + 32
+                                                                              // errorMessage     from    0 to (4095       )
+       aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;   // + 512     // aimBuffer        from  512 to (512  + 1024) or 1536
+       nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;         // +1024     // nimBufferDisplay from 1536 to (1536 +  200) or 1736
+       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;  // + 200     // tamBuffer        from 1736 to (1736 +   32) or 1768
+                                          // TAM_BUFFER_LENGTH   // +  32
 
        tmpStringLabelOrVariableName = tmpString + 1000;
     }
@@ -1434,18 +1429,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emax   = 999999;
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
-
-    decContextDefault(&ctxtReal1071,  DEC_INIT_DECQUAD);
-    ctxtReal1071.digits = 1071;
-    ctxtReal1071.emax   = 999999;
-    ctxtReal1071.emin   = -999999;
-    ctxtReal1071.traps  = 0;
-
-    decContextDefault(&ctxtReal2139,  DEC_INIT_DECQUAD);
-    ctxtReal2139.digits = 2139;
-    ctxtReal2139.emax   = 999999;
-    ctxtReal2139.emin   = -999999;
-    ctxtReal2139.traps  = 0;
 
     resetOtherConfigurationStuff();
 

@@ -214,6 +214,54 @@ Added the following:
     21E3 downwardsdashedarrow                       STD_DOWN_DASHARROW            "\xa1\xe3"
 
 -------
+
+Approximate time for the following edits:
+
+    Fixed $21 exclam
+    Fixed $22 & $27 quote and doublequote (Straitened)
+    Fixed $2018 quoteleft (wrong orientation)
+    Fixed $220F naryproduct in STD font.
+    Fixed $208F superscript asterisk in NUM
+    Fixed %2A asterisk in NUM
+
+    Added $24 Dollar. FreeSans squashed.
+    Added $26 Ampersand. FreeSans squashed.
+    Added $40 At. FreeSans squashed.
+    Added $5C Backslash (copy from /).
+    Added %A2 cent. SourceSans3 squashed.
+    Added %A3 pound. SourceSans3 squashed.
+    Added %A5 yen. SourceSans3 squashed.
+    Added %A7 section. FreeSans squashed.
+
+    Added %A1 exclamdown. (copy from !)
+    Added $BF questiondown. (copy from !)
+    Added $D8 Oslash (made from O)
+    Added $2205 emptyset (made from o)
+    Added $201C quotedblleft (copied and edited)
+    Added $201D quotedblright (copied and edited)
+    Added $220F naryproduct. Drew fresh.
+
+Both fonts:
+    Added $2211 narysummation. Drew it fresh.
+
+STD only:
+    Added $2194 leftrightarrow. Drew it fresh. copy arrow heads.
+
+STD only:
+    Added $2282 SUBSET OF       ⊂
+    Added $2284 NOT A SUBSET OF ⊄
+
+Added both fonts
+    $23e6 AC CURRENT            ⏦
+    $2393 DIRECT CURRENT FORM 2 ⎓
+
+Fixed the parallel and non-parallel icons to be wider spaced
+Fixed the asterisk (norm+subscript) in NUM font only. STD font has too few pixels.
+Added I to both fonts (ITM_IRRATIONAL_I and STD...)
+Added QRNZ to NUM font
+-------
+
+
 2023-06-12 Change both fonts i and j to
     $2148 i
     $2149 j
@@ -233,19 +281,19 @@ Added the following:
     $1E9F g                                         STD_MODE_G                    "\x9E\x9F"  //1E9F
 
 2023-08-21 Numeric font: Add HP35 seven segment font
-    $2024 PERIOD                    "\xa0\x24"     //
-    $24ea 0                         "\xa4\xea"     //
-    $24f5 1                         "\xa4\xf5"     //
-2                         "\xa4\xf6"
-3                         "\xa4\xf7"
-4                         "\xa4\xf8"
-5                         "\xa4\xf9"
-6                         "\xa4\xfa"
-7                         "\xa4\xfb"
-8                         "\xa4\xfc"
-9                         "\xa4\xfd"
-MINUS                     "\xa4\xfe"
-PLUS                      "\xa4\xff"
+    $2024 PERIOD                    "\xa0\x24"
+    $24ea 0                         "\xa4\xea"
+    $24f5 1                         "\xa4\xf5"
+          2                         "\xa4\xf6"
+          3                         "\xa4\xf7"
+          4                         "\xa4\xf8"
+          5                         "\xa4\xf9"
+          6                         "\xa4\xfa"
+          7                         "\xa4\xfb"
+          8                         "\xa4\xfc"
+          9                         "\xa4\xfd"
+          MINUS                     "\xa4\xfe"
+          PLUS                      "\xa4\xff"
 
 
 2023-09-24 Numeric font - fixed spacing of the subscript 0 glyph
@@ -256,7 +304,7 @@ PLUS                      "\xa4\xff"
     $29F0 yx              "\xa9\xf0"     // Integration limits
 
 
-2924096023 Add two boxes
+2924-06-23 Add two boxes
     $25A2 box        "\xa5\xa2"     // Box with rounded corners
     $25A6 boxfilled  "\xa5\xa6"     // Box with hatched fill
 
@@ -276,4 +324,97 @@ PLUS                      "\xa4\xff"
 
 2024-12-09 Add litre ℓ
     $2113  Script Small L      "\xa1\x13"         STD_litre
- 
+
+2024-12-17 Add all Num font sup/sub a-z, A-Z
+
+2024-12-18 Add hourglass triangle sign to both fonts
+    $29d6  U+29D6 White Hourglass "\xa9\xd6"      STD_HOURGLASS_WH
+
+2024-12-18 Add U+23F1 Stopwatch to NUM font, in SUP
+
+2024-12-21 Add double struck D in Num font $2145
+
+
+2024-12-24 Remove from Std font and remove STD_codes
+    U+2308 LEFT CEILING
+    U+2309 RIGHT CEILING
+    U+230a LEFT FLOOR
+    U+230b RIGHT FLOOR
+
+2025-01-11 Add Block arrows to Std font
+    U+2B60 LEFT_BLOCKARROW
+    U+2B61 UP_BLOCKARROW
+    U+2B62 RIGHT_BLOCKARROW
+    U+2B63 DOWN_BLOCKARROW
+    U+23FB POWER_SYMBOL
+
+2025-01-13 Reworked the 3 fonts to reduce drastically in each glyph the number of polygons thus reducing the size of the ttf files
+
+2025-01-13 Rework:
+
+    Martin merged above two commits from 2025-01-11 into the Std font.
+
+    Changed ttf2RasterFonts.c to ignore all code points below 32.
+      This improves the compatibility problem of different softwares saving the the initial empty and control glyphs differently.
+
+    Add Arrows to NUM fonts
+      U+2190
+      U+2191
+      U+2192
+      U+2193
+
+    Add Block arrows to NUM & TINY fonts
+      U+2B60 LEFT_BLOCKARROW
+      U+2B61 UP_BLOCKARROW
+      U+2B62 RIGHT_BLOCKARROW
+      U+2B63 DOWN_BLOCKARROW
+
+    Modify the shapes of the standard font arrows and block arrows
+
+2025-01-13 Use FontCreator to process all font files.
+    Removed the FontCreator license text from the ttf files, as FontCreator 15 now does not prohibit commercial use (already from 2022) when using the latest version. It could be possible that the license condition change from High-Logic could be retrospective, but is not necessary as Jaco bought Version 15 Home.
+    Copyright message removed. Additional glyphs are 'Joined Union' to be similar as the FontForge effort.
+    FontCreator 15
+
+2025-01-23 Moved 5 glyphs
+    U+0100 moved to U+017F Ā
+    U+2200 moved to U+2C6F ∀
+    U+2dea moved to U+2c64 sub π
+    U+2deb moved to U+2c65 sup π
+    U+2dec moved to U+2c66 sup πr
+
+2025-01-25 Moved U+033A to U+23B5
+
+2025-01-27 In numeric font:
+              - removed U+2072 ^-1
+              - moved _π, ^π and ^πr
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In standard font:
+              - removed U+2072 ^-1
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In tiny font:
+              - removed U+2072 ^-1
+
+
+2025-03-09 In both Number and Standard Fonts, add:
+    U+0380 STD_u_BAR                   
+    U+0381 STD_v_BAR                   
+    U+0382 STD_w_BAR                   
+    U+0383 STD_z_BAR                   
+    U+038B STD_v_CIRC                  
+    U+038D STD_z_CIRC                  
+    U+03A2 STD_u_CIRC2                 
+
+
+2025-03-19 In both Number and Standard Fonts, add:
+    U+0135 STD_j_CIRC 
+    U+0137 STD_k_CIRC 
+    U+03b8 STD_theta_m
+    Change existing STD_theta from U+03b8 to U+03d1 (theta-script) and populate the proper U+03b8 (theta) as STD_theta_m
+    U+03D5 STD_phi_m
+
+2025-04-01 Add in Std font
+    U+24EA STD_BASE_0
+    

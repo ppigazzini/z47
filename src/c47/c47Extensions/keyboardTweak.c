@@ -80,6 +80,7 @@ void showShiftState(void) {
         clearShiftState();
         clear_fg_jm();
         showHideAlphaMode();
+        cleanupAfterShift = true;
       }
     }
   #endif // !TESTSUITE_BUILD
@@ -151,30 +152,32 @@ void resetKeytimers(void) {
       }
       #endif // PC_BUILD
 
-      if(HOME3 && currentMenu() == -MNU_HOME) {                    //JM shifts
+      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME); 
+      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu); 
+
+      if(HOME3 && currentMenu() == target_HOME) {
         if(situation == keypress_fff) {
-          //printf("popping\n");
-          popSoftmenu();                                                    //JM shifts
+          popSoftmenu();
         }
       }
       else {
-        if(/*calcMode == CM_AIM || calcMode == CM_EIM*/getSystemFlag(FLAG_ALPHA)) {                    //JM shifts
+        if(getSystemFlag(FLAG_ALPHA)) {
           showSoftmenu(-MNU_MyAlpha);
         }
-        else {                                                            //JM SHIFTS
+        else {
           if(HOME3) {
-            showSoftmenu(-MNU_HOME);
+            showSoftmenu(target_HOME);
           }
           else if(MYM3) {
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
-            showSoftmenu(-MNU_MyMenu);
-          }                             //If none selected, do not display any menu, keep the screen blank
-        }                                                                 //JM shifts
-      }                                                                   //JM shifts
+            showSoftmenu(target_MYM);
+          } //If none selected, do not display any menu, keep the screen blank
+        }
+      }
       showSoftmenuCurrentPart();
-    }                                                                     //JM shifts
+    }
   }
 
   void fg_processing_jm(void) {
@@ -250,7 +253,11 @@ void resetKeytimers(void) {
 
 
 #define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-
+//Note:
+// ITM_BASEMENU is used by the LongpressEXIT1 macro, which does some logic to determine what EXIT must do.
+// LongpressEXIT1 has an item number as output, which is fed into the longpress/command preview/runFunction systems, to open a menu. The menu is opened by fnBaseMenu(), 
+// and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose. 
+// fnBaseMenu() opens MNU_MyMenu, and due to the reasons given, MNU_MyMenu cannot be used directly, as it needs to first set some flags, hence in a way it is like an invisible pseudo-menu, opened by an item.
 
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
     int16_t longpressDelayedkey1 = 0;                                   //To Setup the timer locally for the next timed stage
@@ -277,26 +284,26 @@ void resetKeytimers(void) {
       }
     }                                                                   //yellow and blue function keys ^^
 
-#undef ALL_AIM_LP_CYCLE
-#if defined(ALL_AIM_LP_CYCLE)
-    else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-15
-      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
-      tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
-      tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
-      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
-        ) {
-        if(!shiftF && !shiftG) {
-          longpressDelayedkey1 = tmpf_;
-          tmpf = tmpf_;
-          if(LongPressM == RBX_M1234) {
-            longpressDelayedkey3 = tmpg_;
-            tmpg = tmpg_;
+    #undef ALL_AIM_LP_CYCLE
+
+    #if defined(ALL_AIM_LP_CYCLE)
+      else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-15
+        tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+        tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
+        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+        if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+          ) {
+          if(!shiftF && !shiftG) {
+            longpressDelayedkey1 = tmpf_;
+            tmpf = tmpf_;
+            if(LongPressM == RBX_M1234) {
+              longpressDelayedkey3 = tmpg_;
+              tmpg = tmpg_;
+            }
           }
         }
-      }
-    }                                                                   //yellow and blue function keys ^^
-#endif //ALL_AIM_LP_CYCLE
-
+      }                                                                   //yellow and blue function keys ^^
+    #endif //ALL_AIM_LP_CYCLE
 
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
@@ -306,11 +313,13 @@ void resetKeytimers(void) {
       longpressDelayedkey2 = -MNU_HOME;
       longpressDelayedkey3 = -MNU_PFN;
     }
+
     else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && topHex) {
        longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].primary  : kbd_std[*result - ITM_A].primary;
        longpressDelayedkey2 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].fShifted : kbd_std[*result - ITM_A].fShifted;
        longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].gShifted : kbd_std[*result - ITM_A].gShifted;
     }
+
     else if(  (( (calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_XEQ) && tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) ) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
       if(getSystemFlag(FLAG_SH_LONGPRESS)) {
         if(tmpp_ == ITM_XEQ && tmpf == ITM_AIM) {
@@ -338,14 +347,17 @@ void resetKeytimers(void) {
         }
       }
     }
+
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey2 = longpressDelayedkey1;
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
     }
+
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
       longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
       longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
     }
+
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_DRG) {
       longpressDelayedkey1 = 0;
       longpressDelayedkey2 = 0;
@@ -368,10 +380,95 @@ void resetKeytimers(void) {
         }
       }
     }
-    else if(calcMode == CM_NIM && *result == ITM_BACKSPACE && tam.mode == 0) {
-      longpressDelayedkey1 = ITM_CLN;      //BACKSPACE longpress clears input buffer
+
+    else {
+      switch(calcMode) {
+        case CM_NIM : {
+          if(*result == ITM_BACKSPACE && tam.mode == 0) {
+            longpressDelayedkey1 = ITM_CLN;      //BACKSPACE longpress clears input buffer
+          }
+          break;
+        }
+
+        case CM_AIM : {
+          switch(*result) {
+            case ITM_BACKSPACE:
+              if(tam.mode == 0) {
+                  longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                }
+              break;
+            case ITM_EXIT1:
+              longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+              longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
+              break;
+
+              #if !defined(ALL_AIM_LP_CYCLE)
+                case ITM_ENTER:
+                  if(tam.mode == 0) {
+                    longpressDelayedkey1 = ITM_XEDIT;
+                    longpressDelayedkey3 = ITM_CR;
+                  }
+                  break;
+               #endif //ALL_AIM_LP_CYCLE
+            default:;
+          }
+          break;
+        }
+
+        case CM_EIM : {
+          switch(*result) {
+            case ITM_BACKSPACE:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+              }
+              break;
+            case ITM_EXIT1:
+              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              break;
+              #if !defined(ALL_AIM_LP_CYCLE)
+                case ITM_ENTER:
+                  if(tam.mode == 0) {
+                    longpressDelayedkey1 = ITM_XEDIT;
+                    longpressDelayedkey3 = ITM_CR;
+                  }
+                  break;
+              #endif //ALL_AIM_LP_CYCLE
+            default:;
+          }
+          break;
+        }
+
+        case CM_PEM : {
+          switch(*result) {
+            case ITM_EXIT1:
+              longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+              longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
+              longpressDelayedkey1 = -MNU_PFN;
+              break;
+            case ITM_ENTER:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_CR;   //XEDIT removed, as it makes no sense and does not work in PEM
+              }
+              break;
+            default:;
+          }
+          break;
+        }
+
+        default : {
+          switch(*result) {
+            case ITM_EXIT1    :
+              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              break;
+            default:;
+          }
+          break;
+        }
+
+      }
     }
 
+//  ----------
 
     if(calcMode == CM_NIM) {
       if( (*result == ITM_ms       || longpressDelayedkey1 == ITM_ms       || longpressDelayedkey2 == ITM_ms       || longpressDelayedkey3 == ITM_ms   )   || //.ms needs NIM mode to be open if the user intends it to be open.
@@ -379,79 +476,6 @@ void resetKeytimers(void) {
           (*result == ITM_op_j     || longpressDelayedkey1 == ITM_op_j     || longpressDelayedkey2 == ITM_op_j     || longpressDelayedkey3 == ITM_op_j )   ||
           (*result == ITM_op_j_pol || longpressDelayedkey1 == ITM_op_j_pol || longpressDelayedkey2 == ITM_op_j_pol || longpressDelayedkey3 == ITM_op_j_pol )) {
         delayCloseNim = true;
-      }
-    }
-
-    switch(calcMode) {
-      case CM_AIM : {
-        switch(*result) {
-          case ITM_BACKSPACE:
-            if(tam.mode == 0) {
-                longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
-              }
-            break;
-          case ITM_EXIT1:
-            longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-            longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-            break;
-#if !defined(ALL_AIM_LP_CYCLE)
-          case ITM_ENTER:
-            if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_XEDIT;
-              longpressDelayedkey3 = ITM_CR;
-            }
-            break;
-#endif //ALL_AIM_LP_CYCLE
-          default:;
-        }
-        break;
-      }
-      case CM_EIM : {
-        switch(*result) {
-          case ITM_BACKSPACE:
-            if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
-            }
-            break;
-          case ITM_EXIT1:
-            longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-            break;
-#if !defined(ALL_AIM_LP_CYCLE)
-          case ITM_ENTER:
-            if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_XEDIT;
-              longpressDelayedkey3 = ITM_CR;
-            }
-            break;
-#endif //ALL_AIM_LP_CYCLE
-          default:;
-        }
-        break;
-      }
-      case CM_PEM : {
-        switch(*result) {
-          case ITM_EXIT1:
-            longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-            longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-            longpressDelayedkey1 = -MNU_PFN;
-            break;
-          case ITM_ENTER:
-            if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_CR;   //XEDIT removed, as it makes no sense and does not work in PEM
-            }
-            break;
-          default:;
-        }
-        break;
-      }
-      default : {
-        switch(*result) {
-          case ITM_EXIT1    :
-            longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-            break;
-          default:;
-        }
-        break;
       }
     }
 
@@ -1205,7 +1229,6 @@ uint8_t outKeyBufferDoubleClick(void) {
     else {
       strcat(line2, " ");
       showString(line2, &standardFont, SCREEN_WIDTH-11, 0, vmNormal, true, true);
-      //refreshStatusBar();
     }
   #endif // JMSHOWCODES_KB3
 

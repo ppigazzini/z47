@@ -92,13 +92,13 @@
 
 
       char tmp3[20];
-      tmp3[0]=0;
+      tmp3[0] = 0;
       if(Norm_Key_00_used) {
-        stringAppend(tmp3 + stringByteLength(tmp3), "[");
-        stringAppend(tmp3 + stringByteLength(tmp3), Name);
-        stringAppend(tmp3 + stringByteLength(tmp3), "]");
-        Name[0]=0;
-        stringAppend(Name + stringByteLength(Name), tmp3);
+        stringCopy(tmp3                         , "[");
+        stringCopy(tmp3 + 1                     , Name);
+        stringCopy(tmp3 + stringByteLength(tmp3), "]");
+        Name[0] = 0;
+        stringCopy(Name, tmp3);
       }
 
       showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5,

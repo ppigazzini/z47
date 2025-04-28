@@ -48,9 +48,9 @@ void fneRPN(uint16_t state) {
   fnGetVolume(vol);
   fnSetVolume(11);
   _Buzz(100,5);
-  xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
+  xcopy(tmpString, errorMessage, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
   create_screenshot(0);      //Screen dump
-  xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+  xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
   _Buzz(100,5);
   fnSetVolume(vol);
 }
@@ -190,7 +190,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
         copyRegisterToClipboardString2(REGISTER_X, tmpString100);
       }
       if(temporaryInformation == TI_FROM_MS_DEG) {
-        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, true);
+        real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC);
         int16_t tmp_i = 0;
         while(tmpString100[tmp_i] != 0 && tmpString100[tmp_i+1] != 0) { //pre-condition the dd.mmssss to replaxce spaces with zeroes
           //printf("%c %d", tmpString100[tmp_i], tmpString100[tmp_i]);
@@ -495,6 +495,215 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
   cpxToStk(const_1, const_0, !forcedLiftTheStack);
 }
 
+struct cmplxPair {
+  real_t r, i;
+};
+
+void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
+  complex34Matrix_t matrixC;
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+
+  //Initialize Memory for Matrix
+  if(initMatrixRegister(REGISTER_X, 3, 3, true)) {
+  }
+  else {
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+      moreInfoOnError("In function fn_cnst_op_A:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+  linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
+
+  real_t const__rt3on2, const_rt3on2, const__1on2;
+  realDivide(const_rt3,const_2,&const_rt3on2,&ctxtReal39);
+  realDivide(const_rt3,const_2,&const__rt3on2,&ctxtReal39);
+  realSetNegativeSign(&const__rt3on2);
+  realCopy(const_1on2,&const__1on2);
+  realSetNegativeSign(&const__1on2);
+
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
+  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
+
+  for (int i = 0; i < 3; i++) {
+    realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+    realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    if(i != 0) {
+      realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i*3]));
+      realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
+    }
+  }
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
+
+
+
+TO_QSPI static const struct {
+    unsigned rows  : 2;
+    unsigned cols  : 2;
+    unsigned x     : 2;
+    unsigned y     : 2;
+    unsigned z     : 2;
+    unsigned xdef  : 2;
+    unsigned ydef  : 2;
+    unsigned zdef  : 2;
+} vecCreate[] = {
+//  type     r  c   x    y    z   xdef ydef zdef
+    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu
+    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },     // 1x3 vector created from zyx FOR MATX menu
+    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },     // 1x3 unity vectors 100
+    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },     // 1x3 unity vectors 010
+    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 },     // 1x3 unity vectors 001
+
+    [ 6] = { 1, 2,  0 ,  1,   3,   2,   2,   3 },     // 1x2 vector created from yx
+    [ 7] = { 1, 2,  0 ,  1,   3,   0,   1,   3 },     // 1x2 unity vectors 10
+    [ 8] = { 1, 2,  0 ,  1,   3,   1,   0,   3 }      // 1x2 unity vectors 01
+
+    // r c is the size of the matrix to be created, eg. 1x3 or 2x1 etc.
+    // x y z are the matrix element number mapping to the register name, eg. x=2 means x register goes to internal matrix element 2; 3 means not copied
+    // xdef/ydef/zdef
+    //   = 1/0 : the value to be pre-loaded into the matrix element
+    //   = 2   : the value is copied from register X, Y or Z to the specified matrix element
+    //   = 3   : not copied
+  };
+
+
+static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
+  if(d == 2) {
+    if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
+      return false;
+    }
+  } 
+  else if(d < 2) {
+    realCopy(d == 1 ? const_1 : const_0, &x[p].r);
+  }
+  return true;
+}
+
+
+void fnConvertStkToMx(uint16_t constVector) {
+  bool_t complexCoefs = false;
+  struct cmplxPair x[3];
+  real34Matrix_t matrix;
+  complex34Matrix_t matrixC;
+  uint16_t elements;
+
+  elements = vecCreate[constVector].rows * vecCreate[constVector].cols;
+
+  if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
+  if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
+     !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(vecCreate[constVector].xdef < 2 || vecCreate[constVector].ydef < 2 || vecCreate[constVector].zdef < 2) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+  } else {
+    fnDrop(NOPARAM);
+    if(elements > 2) {
+      fnDrop(NOPARAM);
+    }
+  }
+
+
+  if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
+    //Initialize Memory for Matrix
+    if(initMatrixRegister(REGISTER_X, vecCreate[constVector].rows, vecCreate[constVector].cols, complexCoefs)) {
+    }
+    else {
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+        moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+  }
+
+
+  if(complexCoefs) {
+    linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
+  } else {
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+  }
+
+
+  for (int i = 0; i < elements; i++) {
+    if(complexCoefs) {
+      realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    }
+    else {
+      realToReal34(&x[elements-1-i].r, &matrix.matrixElements[i]);
+    }
+  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+
+}
+
+void fnConvertMxToStk(uint16_t param) {
+  real34Matrix_t matrix;
+  complex34Matrix_t matrixC;
+
+  if(!(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
+    return;
+  }
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+  convertRealToResultRegister(const_0, REGISTER_Y,amNone);
+  convertRealToResultRegister(const_0, REGISTER_Z,amNone);
+
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+  } else {
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+  }
+
+
+  for (int i = 0; i < 3; i++) {
+    uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+    }
+    else {
+      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
+    }
+    adjustResult(rg, false, false, rg, -1, -1);
+  }
+}
+
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
@@ -552,51 +761,31 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
  * \return void                                                                                           JM UNIT
  ***********************************************                                                          JM UNIT */
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
+
+TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
+TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+
   displayString[0] = ' ';
   displayString[1] = 0;
   displayString[2] = 0;
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-    if(getSystemFlag(FLAG_PFX_ALL)) {
-      switch(exponent) {
-        case -30 : displayString[1] = 'q'; break;
-        case -27 : displayString[1] = 'r'; break;
-        case -24 : displayString[1] = 'y'; break;
-        case -21 : displayString[1] = 'z'; break;
-        case -18 : displayString[1] = 'a'; break;
-        case  18 : displayString[1] = 'E'; break;
-        case  21 : displayString[1] = 'Z'; break;
-        case  24 : displayString[1] = 'Y'; break;
-        case  27 : displayString[1] = 'R'; break;
-        case  30 : displayString[1] = 'Q'; break;
-        default:                           break;
+      if((-15 <= exponent && exponent <= 15) ||
+        (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
+        displayString[1] = SIprefixes[exponent + 30];
+        if(displayString[1] == 'u') {
+          displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1];
+        }
+      }
+  }
+  else if(flag2To10) {                            //exponent of 2^(10/3)
+
+      if((3 <= exponent && exponent <= 15)) {
+        displayString[1] = ITSIprefixes[exponent - 3];
+        displayString[2] = 'i';
       }
     }
-    switch(exponent) {
-      case -15 : displayString[1] = 'f'; break;
-      case -12 : displayString[1] = 'p'; break;
-      case -9  : displayString[1] = 'n'; break;
-      case -6  : displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1]; break;   //JM UNIT
-      case -3  : displayString[1] = 'm'; break;
-      case  3  : displayString[1] = 'k'; break;
-      case  6  : displayString[1] = 'M'; break;
-      case  9  : displayString[1] = 'G'; break;
-      case 12  : displayString[1] = 'T'; break;
-      case 15  : displayString[1] = 'P'; break;
-      default:                           break;
-    }
-  }
-  else if(flag2To10) {
-    switch(exponent) {                             //exponent of 2^(10/3)
-      case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
-      case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
-      case  9  : displayString[1] = 'G'; displayString[2] = 'i'; break;
-      case 12  : displayString[1] = 'T'; displayString[2] = 'i'; break;
-      case 15  : displayString[1] = 'P'; displayString[2] = 'i'; break;
-      default: break;
-    }
-  }
 
   if(displayString[1] == 0) {
     strcpy(displayString, PRODUCT_SIGN);                                                                //JM UNIT Below, copy of
@@ -679,7 +868,6 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       setComplexRegisterAngularMode(REGISTER_X, AMODE);
       setComplexRegisterPolarMode(REGISTER_X, amPolar);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
-
     }
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
@@ -694,19 +882,13 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
         uint16_t currentAngularModeOld = currentAngularMode;
         fnAngularMode(AMODE);
         fnCvtFromCurrentAngularMode(currentAngularMode);
-        currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode
+        currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode (set in fnCvtFromCurrentAngularMode())
       }
-      else { //convert existing tagged angle, and set the ADM
+      else { //convert existing tagged angle
         fnCvtFromCurrentAngularMode(AMODE);
-        //fnAngularMode(AMODE);                             Remove updating of ADM to the same mode
       }
     }
   }
-
-  #if !defined(TESTSUITE_BUILD)
-    fnRefreshState();
-    refreshStatusBar();
-  #endif // !TESTSUITE_BUILD
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
@@ -907,19 +1089,6 @@ void fnByteShortcutsU(uint16_t size) {
 }
 
 
-void fnByte(uint16_t command) {
-  switch(command) {
-    case 1: fnSl(1);          break;
-    case 2: fnSr(1);          break;
-    case 3: fnRl(1);          break;
-    case 4: fnRr(1);          break;
-    case 5: fnSwapEndian(16); break; //FWORD
-    case 6: fnSwapEndian(8);  break; //FBYTE
-    default: ;
-  }
-} //JM POC BASE2 ^^
-
-
 void fnP_Alpha(void) {
   #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_AIM) {
@@ -939,7 +1108,7 @@ void fnP_Alpha(void) {
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
 
-    aimBuffer_csv_out();          //aimBuffer now already copied to tmpString
+    tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     //print_linestr(aimBuffer,false);
   #endif
@@ -993,7 +1162,7 @@ void fnP_All_Regs(uint16_t option) {
     #endif // VERBOSE_LEVEL >= 1
 
     switch(option) {
-      case 0:                    //PRN_ALLr   :   All registers
+      case PRN_ALL:
         stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
@@ -1003,7 +1172,7 @@ void fnP_All_Regs(uint16_t option) {
         //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
         break;
 
-      case 1:                    //PRN_STK   :   Stack only
+      case PRN_STK:
         if(getSystemFlag(FLAG_SSIZE8)) {
           stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
         }
@@ -1012,75 +1181,29 @@ void fnP_All_Regs(uint16_t option) {
         }
         break;
 
-      case 2:                    //Global Registers
+      case PRN_GLOBALr:
         stackregister_csv_out(0, 99, !ONELINE);
         break;
 
-      case 3:                    //LOCAL Registers
+      case PRN_LOCALr:
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
         break;
 
-      case 4:                    //NAMED Registers
+      case PRN_NAMEDr:
         if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
         break;
 
-      case 5:                    //PRN_X   :   X only
+      case PRN_Xr:
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
         break;
 
-      case 6:                    //PRN_XY   :   XY
+      case PRN_XYr:
         stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
         break;
-
-
 
       default: ;
     }
   #endif // !TESTSUITE_BUILD
-}
-
-
-void printf_cpx(calcRegister_t regist) {
-  #if defined(PC_BUILD)
-    if(getRegisterDataType(regist) == dtReal34 || getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_REAL34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("Reg(%d) REAL = %s ", regist, tmpString);
-    }
-
-    if(getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_IMAG34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("IMAG = %s ", tmpString);
-    }
-
-    if(getRegisterDataType(regist) != dtReal34 && getRegisterDataType(regist) != dtComplex34) {
-      printf("Neither real nor complex");
-    }
-  #endif // PC_BUILD
-}
-
-
-void print_stck(void) {
-  #if defined(PC_BUILD)
-    printf("Lasterrorcode=%d\n", lastErrorCode);
-    printf("REGISTER T: ");
-    printf_cpx(REGISTER_T);
-    printf("\n");
-    printf("REGISTER Z: ");
-    printf_cpx(REGISTER_Z);
-    printf("\n");
-    printf("REGISTER Y: ");
-    printf_cpx(REGISTER_Y);
-    printf("\n");
-    printf("REGISTER X: ");
-    printf_cpx(REGISTER_X);
-    printf("\n");
-  #endif // PC_BUILD
 }
 
 
@@ -1644,15 +1767,18 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
 }
 
 
-bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
+bool_t checkForAndChange(char *displayString, const real_t *valueReal, const real_t *valueRealAbs, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
+    realContext_t ctxtReal27 = ctxtReal39;
+    ctxtReal27.digits = 27;
+    realContext_t ctxtReal12 = ctxtReal39;
+    ctxtReal12.digits = 12;
+
     char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
     //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
-    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, valueRealAbs, valueReal, multConstant;
-    real34ToReal(value34,&valueReal);
-    realCopyAbs(&valueReal,&valueRealAbs);
+    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, multConstant;
 
     char denomStr[20], wholePart[30], resultingIntStr[100], tmpstr[50];
     tmpstr[0]=0;
@@ -1662,7 +1788,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     int32_t multipleOfNewConstantInteger = 0;
     char sign[2];
 
-    if(realIsPositive(&valueReal)) {
+    if(realIsPositive(valueReal)) {
       strcpy(sign, "+");
     }
     else {
@@ -1670,11 +1796,11 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     }
 
     //Returning: Real is too small
-    if(realCompareLessThan(&valueRealAbs, const_1e_16)) {
+    if(realCompareLessThan(valueRealAbs, const_1e_16)) {
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal39);
+    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
       return false;
     }
@@ -1704,9 +1830,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(&valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal39);
-    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal39);
-    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal39);
+    realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal12);                               //TRYOUT 12 instead of 27
+    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal12);     //TRYOUT 12 instead of 27
+    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal12);    //TRYOUT 12 instead of 27
     multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
 
     //See if the ip is out of range
@@ -1715,13 +1841,13 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     }
 
   real_t findingIrrationalTolerance1;
-  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal39);         // do relative convergence
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence
 
 
 
 
 //                                printRealToConsole(constant,"\n\nconstant=","\n");
-//                                printRealToConsole(&valueReal,"valueReal=","\n");
+//                                printRealToConsole(valueReal,"valueReal=","\n");
 //                                printRealToConsole(&multConstant,"multConstant=","\n");
 //                                printf("smallestDenom:%i\n",smallestDenom);
 //                                printRealToConsole(&newConstant,"newConstant=","\n");
@@ -1744,14 +1870,14 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
 
 
-    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
+    if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers && smallestDenom != 1) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
       cStr[0] = 0;
     }
     else {
       strcpy(cStr,constantStr);
     }
 
-//                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
+//                                printRealToConsole(valueReal,"\n\nInputvalue: valueReal=","\n");
 //                                printRealToConsole(constant,"    constant=","\n");
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
@@ -1766,8 +1892,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
+//                                printf("  useMixedNumbers = %u\n", useMixedNumbers);
 
-      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom;
+      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers && smallestDenom != 1) {   // Numer > Denom;
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);

@@ -21,6 +21,9 @@
 
 #else
   static bool_t checkParamPoisson(real_t *x, real_t *i) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_R, i))
         goto err;
@@ -51,57 +54,38 @@
   void fnPoissonP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamPoisson(&val, &prob)) {
       WP34S_Pdf_Poisson(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnPoissonL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamPoisson(&val, &prob)) {
       WP34S_Cdf_Poisson(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnPoissonR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamPoisson(&val, &prob)) {
       WP34S_Cdfu_Poisson(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnPoissonI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamPoisson(&val, &prob)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -116,9 +100,8 @@
       }
       WP34S_Qf_Poisson(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

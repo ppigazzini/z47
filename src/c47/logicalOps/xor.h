@@ -8,17 +8,4 @@
   #define XOR_H
 
   void fnLogicalXor(uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void xorError24  (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define xorError24 typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void xorError31  (void);
-  void xorLonILonI (void);
-  void xorLonIReal (void);
-  void xorRealLonI (void);
-  void xorRealReal (void);
-  void xorShoIShoI (void);
 #endif // !XOR_H

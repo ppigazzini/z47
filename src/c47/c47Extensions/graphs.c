@@ -338,7 +338,7 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if((plotStatMx[0]=='S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+  if((plotStatMx[0]=='D' ? (drawMxN() >= 1) : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
     }
@@ -529,9 +529,9 @@ void graph_text(void) {
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
     eformat_eng2(ss, "(", x_max, 2, "");
-    uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     eformat_eng2(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
-    uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     ypos += 38;
     n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
     showString(padEquals(tmpbuf, tt), &standardFont, n+3, ypos, vmNormal, false, false);
@@ -602,24 +602,25 @@ void graph_text(void) {
 
     if(PLOT_INTG && !invalid_intg) {
       snprintf(tmpString, bufLen, "  Trapezoid integral");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
-      plotintbig(5, ypos+4+4-2);
-      plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+
+      plotintbig(5, ypos+4+4-2-4);
+      plotrect(5+4-1, (ypos+4+4-2+2)-1-4, 5+4+2, (ypos+4+4-2+2)+2-4);
       ypos += 20;
     }
 
     if(PLOT_DIFF && !invalid_diff) {
-      snprintf(tmpString, bufLen, "  Num. differential");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
-      plotdeltabig(6, ypos+4+4-2);
+      snprintf(tmpString, bufLen, "  Numerical slope");
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+      plotdeltabig(6, ypos+4+4-2-4);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
-      snprintf(tmpString, bufLen, "  RMSy");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
-      plotrms(6, ypos+4+4-2);
-      plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
+      snprintf(tmpString, bufLen, "  Root Mean Square RMS");
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+      plotrms(6, ypos+4+4-2-3);
+      plotrect(6-1, (ypos+4+4-2)-1-3, 6+2, (ypos+4+4-2)+2-3);
       ypos += 20;
     }
 
@@ -850,6 +851,7 @@ void graph_plotmem(void) {
       float y;
       float sx, sy;
       float ddx = FLoatingMax;
+      float dxx = FLoatingMax;
       float dydx = FLoatingMax;
       float inty = 0;
       float inty_off = 0;
@@ -1182,35 +1184,30 @@ void graph_plotmem(void) {
             if(ix !=0 && ( (PLOT_DIFF && !invalid_diff) || (PLOT_INTG && !invalid_intg) || (PLOT_RMS && !invalid_rms) )) {
               ddx = grf_x(ix) - grf_x(ix-1);
               if(PLOT_DIFF && ddx != 0) {
-                if(ix == 1) {                               // only two samples available
+                if(ix == 1 || ( fabs( ((grf_x(ix) - grf_x(ix-1)) / (grf_x(ix-1) - grf_x(ix-2))) - 1) > 0.0001 )) {                               // only two samples available
                   dydx = (grf_y(ix) - grf_y(ix-1)) / ddx;   // Differential
+                  dxx = (grf_x(ix) + grf_x(ix-1) )/2;
                 }
                 else { //if(ix >= 2)                        // ix >= 2 three samples available 0 1 2
                   dydx = ( grf_y(ix-2) - 4.0 * grf_y(ix-1) + 3.0 * grf_y(ix) ) / 2.0 / ddx; //ChE 205 — Formulas for Numerical Differentiation, formule 32
+                  dxx = (grf_x(ix));
                 }
               }
               else {
                 dydx = FLoatingMax;
               }
 
-              x = (grf_x(ix) + grf_x(ix-1))/2;
-              if(PLOT_DIFF) {
-                y = dydx;                 //y is the default graph
-              }
               if(PLOT_RMS)  {
                 rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
-                y = rmsy;                 //y is the default graph
               }
               if(PLOT_INTG) {
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
-                y = inty;                 //y is the default graph
               }
             }
 
-            if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS)) {
-              x = grf_x(ix);
-              y = grf_y(ix);
-            }
+            x = grf_x(ix);
+            y = grf_y(ix);
+ 
           }
           else { //_VECT
             sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
@@ -1229,7 +1226,7 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG)
             printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
+            printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
@@ -1316,9 +1313,9 @@ void graph_plotmem(void) {
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
-                  printf("Plotting Delta x=%f dy=%f \n", x - ddx/2, dydx);
+                  printf("Plotting Delta x=%f dy=%f \n", dxx, dydx);
                 #endif // STATDEBUG
-                plotdelta(screen_window_x( x_min, x - ddx/2, x_max), screen_window_y(y_min, dydx, y_max));
+                plotdelta(screen_window_x( x_min, dxx, x_max), screen_window_y(y_min, dydx, y_max));
               }
 
 
@@ -1438,27 +1435,10 @@ void fnStatList() {
     clearScreen();
     refreshStatusBar();
 
-    if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
-      plotmode = _VECT;
-    }
-    else {
-      plotmode = _SCAT;
-    }
-
-    if(regStatsXY != INVALID_VARIABLE &&
-      ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
-
-      if(plotStatMx[0] == 'S') {
-        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time
-      }
-      else {
-        statnum = drawMxN();
-      }
-
+    if(regStatsXY != INVALID_VARIABLE && (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+      statnum = drawMxN();
       fnStatSum(0);
-      //      runFunction(ITM_NSIGMA);
-      sprintf(tmpString, "Stat data: N = %d", statnum);
-      //      runFunction(ITM_DROP);
+      sprintf(tmpString, "Graph data: N = %d", statnum);
       print_linestr(tmpString, true);
 
                                   #if defined(STATDEBUG)

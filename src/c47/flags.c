@@ -9,6 +9,41 @@
 
 typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
 
+static void _setSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 |= ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 |= ((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _clearSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 &= ~((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _flipSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 ^=  ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
+  }
+}
+
+bool_t getSystemFlag(int32_t sf);
+
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
     case FLAG_YMD:       //these flags need to update the corresponding softkey status
@@ -27,14 +62,13 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENGOVR:
     case FLAG_ENDPMT:
     case FLAG_HPRP:
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
-    case FLAG_IRFRAC:
-    case FLAG_IRF_ON:
     case FLAG_alphaCAP:
     case FLAG_2TO10:
     case FLAG_CPXPLOT:
@@ -51,17 +85,15 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               break;
 
     case FLAG_SBdate:
-    case FLAG_SBtime:
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
-    case FLAG_SBfrac:
     case FLAG_SBint :
     case FLAG_SBmx  :
     case FLAG_SBtvm :
     case FLAG_SBoc  :
     case FLAG_SBss  :
-    case FLAG_SBclk :
+    case FLAG_SBstpw:
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
@@ -70,47 +102,65 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
+    case FLAG_SBfrac:
+              fnRefreshState();
+              lastIntegerBase = 0; //needed to reset the annunciator
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              break;
+
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+              if(systemFlag == FLAG_SBtime && getSystemFlag(FLAG_SBtime)) {
+                _clearSystemFlag(FLAG_SBwoy);
+              }
+              else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
+                _clearSystemFlag(FLAG_SBtime);
+              }
+              fnRefreshState();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              break; 
+          
+    case FLAG_FRACT:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_IRFRAC);
+                _clearSystemFlag(FLAG_IRFRQ);
+              }
+              fnRefreshState();
+              break;
+
+    case FLAG_IRFRAC:
+              if(getSystemFlag(FLAG_IRFRAC)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRFRQ);
+              }
+              fnRefreshState();
+              break;
+
+     case FLAG_IRFRQ:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRFRAC);
+              }
+              fnRefreshState();
+              break;
+
     default: break;
   }
 }
 
 void setSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 |= ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_SET);
-  }
-  else {
-    systemFlags1 |= ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_SET);
-  }
+  _setSystemFlag(sf);
+  systemFlagAction(sf, FLAG_SET);
 }
 
 void clearSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 &= ~((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
-  else {
-    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
+  _clearSystemFlag(sf);
+  systemFlagAction(sf, FLAG_CLEAR);
 }
 
 void flipSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 ^=  ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_FLIP);
-  }
-  else {
-    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_FLIP);
-  }
+  _flipSystemFlag(sf);
+  systemFlagAction(sf, FLAG_FLIP);
 }
 
 bool_t getSystemFlag(int32_t sf) {
@@ -555,6 +605,7 @@ void SetSetting(uint16_t jmConfig) {
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
 
     case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_2TO10:
     case FLAG_PROPFR:
@@ -563,7 +614,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
-    case ITM_FRCYC:
+    case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
@@ -581,19 +632,7 @@ void SetSetting(uint16_t jmConfig) {
 
     case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
-      if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
-        clearSystemFlag(FLAG_IRFRAC);
-      }
       break;
-
-//SUSPECT!! remove with XEQM
-    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break;
-    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break;
-    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break;
-    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break;
-    case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
-    case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
-
 
     case ITM_DREAL:
       fnFlipFlag(FLAG_DREAL);
@@ -609,17 +648,6 @@ void SetSetting(uint16_t jmConfig) {
       break;
     case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
-      if(getSystemFlag(FLAG_IRFRAC)) {
-        setSystemFlag(FLAG_IRF_ON);
-        if(getSystemFlag(FLAG_FRACT)) {
-          clearSystemFlag(FLAG_FRACT);
-        }
-      }
-      else {
-        if(getSystemFlag(FLAG_IRF_ON)) {
-          clearSystemFlag(FLAG_IRF_ON);
-        }
-      }
       fnRefreshState();
       break;
 

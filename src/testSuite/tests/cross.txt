@@ -96,16 +96,16 @@ Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=CxMa:"M2,3[1i2,5i6,9i10,13i14,17i18,21i22]
 ; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
 ;=======================================
 In:  FL_ASLIFT=0  RY=LonI:"10" RX=LonI:"450"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=LonI:"450"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=LonI:"450"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=LonI:"450"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=LonI:"450"
 
 In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=ShoI:"20#10"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=ShoI:"20#10"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
@@ -114,16 +114,16 @@ In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Stri:"ABC"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=Real:"100.0"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=LonI:"100"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=LonI:"100"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=LonI:"100"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"100#10"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=ShoI:"100#10"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=ShoI:"100#10"
 
 In:  FL_ASLIFT=0  RY=LonI:"10" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=Real:"100.0"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0" RL=Real:"100.0"

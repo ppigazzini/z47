@@ -8,20 +8,9 @@
   #define LOG10_H
 
   void   fnLog10   (uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void   log10Error(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define log10Error typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void   log10LonI (void);
-  void   log10Rema (void);
-  void   log10Cxma (void);
-  void   log10ShoI (void);
-  void   log10Real (void);
-  void   log10Cplx (void);
-
   void   realLog10 (const real_t *x, real_t *res, realContext_t *realContext);
 
+  void logxyCplx(const real_t *denom);
+  void logxyReal(const real_t *denom);
+  void logxyLonI(const real_t *denom);
 #endif // !LOG10_H

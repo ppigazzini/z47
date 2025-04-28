@@ -7,47 +7,7 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const realPart[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1              2              3             4              5              6              7              8             9              10
-//          Long integer   Real34         Complex34     Time           Date           String         Real34 mat     Complex34 m   Short integer  Config data
-            realPartError, realPartReal,  realPartCplx, realPartError, realPartError, realPartError, realPartError, realPartCxma, realPartError, realPartError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in Re
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void realPartError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Re for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnRealPart:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and Re(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnRealPart(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-  realPart[getRegisterDataType(REGISTER_X)]();
-}
-
-
-
-void realPartCxma(void) {
+static void realPartCxma(void) {
   complex34Matrix_t cMat;
   real34Matrix_t rMat;
 
@@ -66,16 +26,33 @@ void realPartCxma(void) {
 }
 
 
-void realPartCplx(void) {
-  real34_t rp;
+static void realPartCplx(void) {
+  real_t a, b;
 
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &rp);
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  real34Copy(&rp, REGISTER_REAL34_DATA(REGISTER_X));
+  if (getRegisterAsComplex(REGISTER_X, &a, &b))
+    convertRealToResultRegister(&a, REGISTER_X, amNone);
 }
 
 
-void realPartReal(void) {
-  setRegisterAngularMode(REGISTER_X, amNone);
+static void realPartReal(void) {
+  real_t x;
+
+  if (getRegisterAsReal(REGISTER_X, &x))
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
+
+/***********************************************venus
+ * \brief regX ==> regL and Re(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnRealPart(uint16_t unusedButMandatoryParameter) {
+  if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    if (saveLastX())
+      realPartCxma();
+  } else
+    processRealComplexMonadicFunction(&realPartReal, &realPartCplx);
+}

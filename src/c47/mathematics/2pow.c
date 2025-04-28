@@ -6,48 +6,9 @@
  ***********************************************/
 
 #include "c47.h"
+#include "10pow.h"
 
-TO_QSPI void (* const twoPow[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2           3           4            5            6            7           8           9             10
-//          Long integer Real34      Complex34   Time         Date         String       Real34 mat  Complex34 m Short integer Config data
-            twoPowLonI,  twoPowReal, twoPowCplx, twoPowError, twoPowError, twoPowError, twoPowRema, twoPowCxma, twoPowShoI,   twoPowError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in exp
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void twoPowError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate 2" STD_SUP_x " for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fn2Pow:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and 2^regX ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fn2Pow(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  twoPow[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
+static void twoPowReal(void);
 
 
 void realPower2(const real_t *x, real_t *res, realContext_t *realContext) {
@@ -56,8 +17,7 @@ void realPower2(const real_t *x, real_t *res, realContext_t *realContext) {
 }
 
 
-
-void twoPowLonI(void) {
+static void twoPowLonI(void) {
   int32_t exponentSign;
   longInteger_t base, exponent;
 
@@ -80,7 +40,6 @@ void twoPowLonI(void) {
   else if(exponentSign == -1) {
     longIntegerFree(base);
     longIntegerFree(exponent);
-    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     twoPowReal();
     return;
   }
@@ -110,59 +69,30 @@ void twoPowLonI(void) {
 }
 
 
-
-void twoPowRema(void) {
-  elementwiseRema(twoPowReal);
-}
-
-
-
-void twoPowCxma(void) {
-  elementwiseCxma(twoPowCplx);
-}
-
-
-
-void twoPowShoI(void) {
+static void twoPowShoI(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_int2pow(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
 }
 
 
 
-void twoPowReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) && !getSystemFlag(FLAG_SPCRES)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function twoPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 2" STD_SUP_x " when flag D is not set", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-
-  real_t x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  realPower2(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+static void twoPowReal(void) {
+  intPowReal(&realPower2);
 }
 
 
 
-void twoPowCplx(void) {
-  real_t a, b, factor;
+static void twoPowCplx(void) {
+  intPowCplx(const_ln2);
+}
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &a);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &b);
 
-  // ln(2) * (a + bi) --> (a + bi)
-  realMultiply(const_ln2, &a, &a, &ctxtReal39);
-  realMultiply(const_ln2, &b, &b, &ctxtReal39);
-
-  // exp(ln(2) * (a + bi)) --> (a + bi)
-  realExp(&a, &factor, &ctxtReal39);
-  realPolarToRectangular(const_1, &b, &a, &b, &ctxtReal39);
-  realMultiply(&factor, &a, &a, &ctxtReal39);
-  realMultiply(&factor, &b, &b, &ctxtReal39);
-
-  convertComplexToResultRegister(&a, &b, REGISTER_X);
+/********************************************//**
+ * \brief regX ==> regL and 2^regX ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fn2Pow(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexMonadicFunction(&twoPowReal, &twoPowCplx, &twoPowShoI, &twoPowLonI);
 }

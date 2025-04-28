@@ -11,10 +11,10 @@ Func: fnMirror
 
 
 ;=======================================
-; mirror(Long Integer) --> Error24
+; mirror(Long Integer) --> Short Integer
 ;=======================================
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
-Out: EC=24 FL_ASLIFT=0 RX=LonI:"-5"
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=13 IM=UNSIGN RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=ShoI:"5120#10"
 
 
 
@@ -71,7 +71,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"-4062001653563012164052
 
 
 ;=======================================
-; mirror(Real) --> Long Integer
+; mirror(Real) --> Error24
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
 Out: EC=24 FL_ASLIFT=0 RX=Real:"0.0001"

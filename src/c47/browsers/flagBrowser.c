@@ -198,12 +198,12 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
         }
 
         case RM_CEIL: {
-          strcat(tmpString + CHARS_PER_LINE * line, STD_LEFT_CEILING "x" STD_RIGHT_CEILING);
+          strcat(tmpString + CHARS_PER_LINE * line, STD_MAT_TL "x" STD_MAT_TR);
           break;
         }
 
         case RM_FLOOR: {
-          strcat(tmpString + CHARS_PER_LINE * line, STD_LEFT_FLOOR "x" STD_RIGHT_FLOOR);
+          strcat(tmpString + CHARS_PER_LINE * line, STD_MAT_BL "x" STD_MAT_BR);
           break;
         }
 

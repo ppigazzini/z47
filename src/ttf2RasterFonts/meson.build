@@ -1,5 +1,4 @@
 font_files = files(
-  '../../res/fonts/sortingOrder.csv',
   '../../res/fonts/C47__NumericFont.ttf',
   '../../res/fonts/C47__StandardFont.ttf',
   '../../res/fonts/C47__TinyFont.ttf'

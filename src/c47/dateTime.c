@@ -305,12 +305,17 @@ void decomposeJulianDay(const real34_t *jd, real34_t *year, real34_t *month, rea
   real34Add(year, &tmp1, year);
 }
 
-uint32_t getDayOfWeek(calcRegister_t regist) {
+uint32_t julianDayToDayOfWeek(real34_t *jd) {
+  real34_t dow;
+  modInt(jd, const34_7, &dow);
+  real34Add(&dow, const34_1, &dow);
+  return real34ToUInt32(&dow);
+}
+
+uint32_t getJulianDayOfWeek(calcRegister_t regist) {
   real34_t date34;
   if(checkDateArgument(regist, &date34)) {
-    modInt(&date34, const34_7, &date34);
-    real34Add(&date34, const34_1, &date34);
-    return real34ToUInt32(&date34);
+    return julianDayToDayOfWeek(&date34);
   }
   else {
     return 0u;
@@ -380,6 +385,35 @@ void checkTimeRange(const real34_t *time34) {
     return;
   }
 }
+
+uint32_t getWeekOfYear(real34_t *jd) {
+  real34_t dsow, sow, rdow;
+  
+  uInt32ToReal34(modulo(((int32_t)julianDayToDayOfWeek(jd)) - firstDayOfWeek, 7), &dsow);
+  real34Subtract(jd, &dsow, &sow);  // 1st day of the week containing the date
+
+  uInt32ToReal34(modulo((int32_t)firstWeekOfYearDay - firstDayOfWeek, 7), &dsow);
+  real34Add(&sow, &dsow, &rdow);    // reference day of the week containing the date
+
+  real34_t y, m, d, j1;
+  decomposeJulianDay(&rdow, &y, &m, &d);  // Get the correct year (may be different from the year of jd)
+  composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
+  
+  int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
+  if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
+    real34Add(&j1, const34_7, &j1);  // … skip to next week
+  }
+
+  uInt32ToReal34(modulo((int32_t)(dow - firstDayOfWeek), 7), &dsow);
+  real34Subtract(&j1, &dsow, &j1);   // 1st day of the 1st week of the year
+
+  real34_t woy;
+  real34Subtract(&sow, &j1, &woy);      // number of days between the 2 dates
+  real34Divide(&woy, const34_7, &woy);  // number of weeks
+  real34Add(&woy, const34_1, &woy);     // first week has number 1
+  return real34ToUInt32(&woy);
+}
+
 
 
 void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
@@ -657,7 +691,7 @@ void fnDay(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnWday(uint16_t unusedButMandatoryParameter) {
-  const uint32_t dayOfWeek = getDayOfWeek(REGISTER_X);
+  const uint32_t dayOfWeek = getJulianDayOfWeek(REGISTER_X);
   longInteger_t result;
 
   if(!saveLastX()) {
@@ -1009,6 +1043,51 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnWeekOfYear(uint16_t unusedButMandatoryParameter) {
+  real34_t jd34;
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(checkDateArgument(REGISTER_X, &jd34)) {
+    uint32_t woy = getWeekOfYear(&jd34);
+    longInteger_t li;
+    longIntegerInit(li);
+    uInt32ToLongInteger(woy, li);
+    convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+    temporaryInformation = TI_WOY;
+    longIntegerFree(li);
+  }
+}
+
+
+void fnSetWeekOfYearRule(uint16_t param) {
+  if(param != NOPARAM) {
+    switch(param) {
+      case ITM_WOY_ISO: firstDayOfWeek = 1; firstWeekOfYearDay = 4; break;
+      case ITM_WOY_US:  firstDayOfWeek = 7; firstWeekOfYearDay = 6; break;
+      case ITM_WOY_ME:  firstDayOfWeek = 6; firstWeekOfYearDay = 5; break;
+      default: break;
+    }
+    temporaryInformation = TI_DISP_WOY;
+  }
+}
+
+
+void fnGetWeekOfYearRule(uint16_t unusedButMandatoryParameter) {
+  real34_t fdow, fwoyd;
+
+  uInt32ToReal34(firstDayOfWeek, &fdow);
+  uInt32ToReal34(firstWeekOfYearDay, &fwoyd);
+  real34Multiply(&fwoyd, const34_1on10, &fwoyd);
+  liftStack();
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  real34Add(&fdow, &fwoyd, REGISTER_REAL34_DATA(REGISTER_X));
+  temporaryInformation = TI_WOY_RULE;
+}
+
+
 void getDateString(char *dateString) {
   #if defined(DMCP_BUILD)
     tm_t timeInfo;
@@ -1117,4 +1196,31 @@ void getTimeString(char *timeString) {
       }
     }
   #endif // DMCP_BUILD
+}
+
+void getWeekOfYearString(char *weekOfYearString) {
+  real34_t jd, y, m, d;
+
+  #if defined(DMCP_BUILD)
+    tm_t timeInfo;
+    dt_t dateInfo;
+
+    rtc_read(&timeInfo, &dateInfo);
+    uInt32ToReal34(dateInfo.year, &y);
+    uInt32ToReal34(dateInfo.month, &m);
+    uInt32ToReal34(dateInfo.day, &d);
+  #else // !DMCP_BUILD
+    time_t epoch = time(NULL);
+    struct tm *timeInfo = localtime(&epoch);
+
+    uInt32ToReal34(timeInfo->tm_year + 1900, &y);
+    uInt32ToReal34(timeInfo->tm_mon + 1, &m);
+    uInt32ToReal34(timeInfo->tm_mday, &d);
+  #endif // DMCP_BUILD
+
+  composeJulianDay(&y, &m, &d, &jd);
+  uint32_t woy = getWeekOfYear(&jd);
+  int32_t dow = julianDayToDayOfWeek(&jd);
+  dow = modulo((dow + 7) - firstDayOfWeek, 7) + 1;
+  sprintf(weekOfYearString, "W%02d-%d", (int)woy, (int)dow);
 }

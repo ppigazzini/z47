@@ -7,50 +7,23 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const power[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX |    regY ==>   1            2            3            4         5         6         7            8            9             10
-//      V               Long integer Real34       Complex34    Time      Date      String    Real34 mat   Complex34 m  Short integer Config data
-/*  1 Long integer  */ {powLonILonI, powRealLonI, powCplxLonI, powError, powError, powError, powRemaLonI, powCxmaLonI, powShoILonI,  powError},
-/*  2 Real34        */ {powLonIReal, powRealReal, powCplxReal, powError, powError, powError, powRemaReal, powCxmaReal, powShoIReal,  powError},
-/*  3 Complex34     */ {powLonICplx, powRealCplx, powCplxCplx, powError, powError, powError, powRemaCplx, powCxmaCplx, powShoICplx,  powError},
-/*  4 Time          */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError},
-/*  5 Date          */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError},
-/*  6 String        */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError},
-/*  7 Real34 mat    */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError},
-/*  8 Complex34 mat */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError},
-/*  9 Short integer */ {powLonIShoI, powRealShoI, powCplxShoI, powError, powError, powError, powRemaShoI, powCxmaShoI, powShoIShoI,  powError},
-/* 10 Config data   */ {powError,    powError,    powError,    powError, powError, powError, powError,    powError,    powError,     powError}
-};
-
-
-
-/********************************************//**
- * \brief Data type error in power
- *
- * \param[in] unusedButMandatoryParameter
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void powError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
-    sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnPower:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
+static void powReal(void);
+static void powCplx(void);
 
 
 void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
   real_t lny;
-  if(realIsNegative(y) && realIsAnInteger(x) && realIsPositive(x)) {
+
+  if(realIsNegative(y) && realIsAnInteger(x) && !realIsZero(x)) {
     realDivideRemainder(x, const_2, &lny, realContext);
     bool_t isOdd = !realIsZero(&lny);
     realCopyAbs(y, &lny);
     WP34S_Ln(&lny, &lny, realContext);
     realMultiply(x, &lny, res, realContext);
     realExp(res, res, realContext);
-    fflush(stdout);
+    #if defined(PC_BUILD)
+      fflush(stdout);
+    #endif //PC_BUILD
     if(isOdd) {
       realChangeSign(res);
     }
@@ -61,27 +34,6 @@ void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *rea
     realExp(res, res, realContext);
   }
 }
-
-
-
-
-/********************************************//**
- * \brief regX ==> regL and regY ^ regX ==> regX
- * Drops Y, enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter
- * \return void
- ***********************************************/
-void fnPower(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  power[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
-
-  adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
-}
-
 
 
 /******************************************************************************************************************************************************************************************/
@@ -118,291 +70,13 @@ void longIntegerPower(longInteger_t base, longInteger_t exponent, longInteger_t 
   }
 }
 
-
-
-/********************************************//**
- * \brief Y(long integer) ^ X(long integer) ==> X(long integer)
- *
- * \param void
- * \return void
- ***********************************************/
-void powLonILonI(void) {
-  longInteger_t base, exponent;
-
-  convertLongIntegerRegisterToLongInteger(REGISTER_Y, base);
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
-
-  if(longIntegerIsZero(exponent) && longIntegerIsZero(base)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function powLonILonI: Cannot calculate 0^0!", NULL, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-    longIntegerFree(base);
-    longIntegerFree(exponent);
-    return;
-  }
-
-  if((longIntegerCompareInt(base, 1) == 0 || longIntegerCompareInt(base, -1) == 0) && longIntegerCompareInt(exponent, -1) == 0) {
-    convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
-    longIntegerFree(base);
-    longIntegerFree(exponent);
-    return;
-  }
-  else if(longIntegerIsNegative(exponent)) {
-    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-    powLonIReal();
-    longIntegerFree(base);
-    longIntegerFree(exponent);
-    return;
-  }
-
-  longInteger_t result;
-
-  longIntegerInit(result);
-  longIntegerPower(base, exponent, result);
-
-  convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
-
-  longIntegerFree(result);
-  longIntegerFree(base);
-  longIntegerFree(exponent);
-}
-
-
-
-/********************************************//**
- * \brief Y(long integer) ^ X(short integer) ==> X(long integer)
- *
- * \param void
- * \return void
- ***********************************************/
-void powLonIShoI(void) {
-  convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
-  powLonILonI();
-}
-
-
-
-/********************************************//**
- * \brief Y(short integer) ^ X(long integer) ==> X(short integer)
- *
- * \param void
- * \return void
- ***********************************************/
-void powShoILonI(void) {
-  int32_t base = getRegisterShortIntegerBase(REGISTER_Y);
-  real_t x, a;
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  convertShortIntegerRegisterToLongIntegerRegister(REGISTER_Y, REGISTER_Y);
-  powLonILonI();
-  if(realIsPositive(&x)) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &a, &ctxtReal39);
-    convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X);
-    setRegisterShortIntegerBase(REGISTER_X, base);
-    convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-    if(realCompareEqual(&x, &a)) {
-      clearSystemFlag(FLAG_OVERFLOW);
-    }
-    else {
-      setSystemFlag(FLAG_OVERFLOW);
-    }
-  }
-}
-
-
-
-/********************************************//**
- * \brief Y(long integer) ^ X(real34) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powLonIReal(void) {
-  convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-  powRealReal();
-}
-
-
-
-/********************************************//**
- * \brief Y(real34) ^ X(long integer) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRealLonI(void) {
-  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-  powRealReal();
-}
-
-
-
-/********************************************//**
- * \brief Y(long integer) ^ X(complex34) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powLonICplx(void) {
-  real_t y;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&y, REGISTER_Y);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-  powCplxCplx();
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34) ^ X(long integer) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCplxLonI(void) {
-  real_t x;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-  powCplxCplx();
-}
-
-
-
-/******************************************************************************************************************************************************************************************/
-/* time ^ ...                                                                                                                                                                             */
-/******************************************************************************************************************************************************************************************/
-
-/******************************************************************************************************************************************************************************************/
-/* date ^ ...                                                                                                                                                                             */
-/******************************************************************************************************************************************************************************************/
-
-/******************************************************************************************************************************************************************************************/
-/* string ^ ...                                                                                                                                                                           */
-/******************************************************************************************************************************************************************************************/
-
-/******************************************************************************************************************************************************************************************/
-/* real34 matrix ^ ...                                                                                                                                                                    */
-/******************************************************************************************************************************************************************************************/
-
-/********************************************//**
- * \brief Y(real34 matrix) ^ X(long integer) ==> X(real34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRemaLonI(void) {
-  elementwiseRemaLonI(powRealLonI);
-}
-
-
-
-/********************************************//**
- * \brief Y(real34 matrix) ^ X(short integer) ==> X(real34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRemaShoI(void) {
-  elementwiseRemaShoI(powRealShoI);
-}
-
-
-
-/********************************************//**
- * \brief Y(real34 matrix) ^ X(real34) ==> X(real34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRemaReal(void) {
-  elementwiseRemaReal(powRealReal);
-}
-
-
-
-/********************************************//**
- * \brief Y(real34 matrix) ^ X(complex34) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRemaCplx(void) {
-  convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
-  powCxmaCplx();
-}
-
-
-
-/******************************************************************************************************************************************************************************************/
-/* complex34 matrix ^ ...                                                                                                                                                                 */
-/******************************************************************************************************************************************************************************************/
-
-/********************************************//**
- * \brief Y(complex34 matrix) ^ X(long integer) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCxmaLonI(void) {
-  elementwiseCxmaLonI(powCplxLonI);
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34 matrix) ^ X(short integer) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCxmaShoI(void) {
-  elementwiseCxmaShoI(powCplxShoI);
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34 matrix) ^ X(real34) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCxmaReal(void) {
-  elementwiseCxmaReal(powCplxReal);
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34 matrix) ^ X(complex34) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCxmaCplx(void) {
-  elementwiseCxmaCplx(powCplxCplx);
-}
-
-
-
-/******************************************************************************************************************************************************************************************/
-/* short integer ^ ...                                                                                                                                                                    */
-/******************************************************************************************************************************************************************************************/
-
 /********************************************//**
  * \brief Y(short integer) ^ X(short integer) ==> X(short integer)
  *
  * \param void
  * \return void
  ***********************************************/
-void powShoIShoI(void) {
+static void powShoI(void) {
   int32_t exponentSign, baseSign;
 
   uint64_t exponent = WP34S_extract_value(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), &exponentSign);
@@ -411,12 +85,9 @@ void powShoIShoI(void) {
   if(base == 1 && exponent == 1 && exponentSign) {
     setRegisterShortIntegerBase(REGISTER_X, getRegisterShortIntegerBase(REGISTER_Y));
     *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y));
-    return;
   }
   else if(exponentSign) { // exponent is negative
-    convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-    convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-    powRealReal();
+    powReal();
   }
   else {
     setRegisterShortIntegerBase(REGISTER_X, getRegisterShortIntegerBase(REGISTER_Y));
@@ -425,67 +96,49 @@ void powShoIShoI(void) {
 }
 
 
-
 /********************************************//**
- * \brief Y(short integer) ^ X(real34) ==> X(real34)
+ * \brief Y(long integer) ^ X(long integer) ==> X(long integer)
  *
  * \param void
  * \return void
  ***********************************************/
-void powShoIReal(void) {
-  convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-  powRealReal();
+static void powLonI(void) {
+  longInteger_t base, exponent, result;
+
+  if (!getRegisterAsLongInt(REGISTER_Y, base, NULL))
+    return;
+  if (!getRegisterAsLongInt(REGISTER_X, exponent, NULL)) {
+    longIntegerFree(base);
+    return;
+  }
+
+  if(longIntegerIsZero(exponent) && longIntegerIsZero(base)) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function powLonI: Cannot calculate 0^0!", NULL, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto finish;
+  }
+
+  if((longIntegerCompareInt(base, 1) == 0 || longIntegerCompareInt(base, -1) == 0) && longIntegerCompareInt(exponent, -1) == 0) {
+    convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
+    goto finish;
+  }
+  else if(longIntegerIsNegative(exponent)) {
+    powReal();
+    goto finish;
+  }
+
+  longIntegerInit(result);
+  longIntegerPower(base, exponent, result);
+
+  convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
+
+  longIntegerFree(result);
+finish:
+  longIntegerFree(base);
+  longIntegerFree(exponent);
 }
-
-
-
-/********************************************//**
- * \brief Y(real34) ^ X(short integer) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRealShoI(void) {
-  convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-  powRealReal();
-}
-
-
-
-/********************************************//**
- * \brief Y(short integer) ^ X(complex34) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powShoICplx(void) {
-  real_t y;
-
-  convertShortIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&y, REGISTER_Y);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-  powCplxCplx();
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34) ^ X(short integer) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCplxShoI(void) {
-  real_t x;
-
-  convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-  powCplxCplx();
-}
-
 
 
 /******************************************************************************************************************************************************************************************/
@@ -498,101 +151,47 @@ void powCplxShoI(void) {
  * \param void
  * \return void
  ***********************************************/
-void powRealReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y))) {
-    if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+static void powReal(void) {
+  real_t y, x, res;
+
+  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+    return;
+
+  if(realIsInfinite(&y)) {
+    if(realIsZero(&x)) {
+      realCopy(const_NaN, &res);
     }
     else {
-      if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsAnInteger(REGISTER_REAL34_DATA(REGISTER_X))) {
-        longInteger_t lgInt;
-        convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), lgInt, DEC_ROUND_DOWN);
-        if(longIntegerIsEven(lgInt)) {
-          convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-        }
-        else {
-          convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
-        }
-        longIntegerFree(lgInt);
+      if(realIsPositive(&x) && realIsAnInteger(&x)) {
+        WP34S_BigMod(&x, const_2, &res, &ctxtReal39);
+        realCopy(realIsZero(&res) ? const_plusInfinity : const_minusInfinity, &res);
       }
       else {
-        convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
+        realCopy(const_plusInfinity, &res);
       }
     }
-    setRegisterAngularMode(REGISTER_X, amNone);
-    return;
+    goto finish;
   }
 
-  real_t y, x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  real_t res;
   PowerReal(&y, &x, &res, &ctxtReal39);
 
   if(realIsNaN(&res) && realIsNegative(&y) && !realIsAnInteger(&x)) {
     if(getFlag(FLAG_CPXRES)) {
-      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-
-      reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-      convertRealToReal34ResultRegister(&y, REGISTER_Y);
-      real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-
-      powCplxCplx();
+      powCplx();
       return;
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function powRealReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+        moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
   }
 
-  convertRealToReal34ResultRegister(&res, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+finish:
+  convertRealToResultRegister(&res, REGISTER_X, amNone);
 }
-
-
-
-/********************************************//**
- * \brief Y(real34) ^ X(complex34) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powRealCplx(void) {
-  real_t y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&y, REGISTER_Y);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-  powCplxCplx();
-}
-
-
-
-/********************************************//**
- * \brief Y(complex34) ^ X(real34) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void powCplxReal(void) {
-  real_t x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-  powCplxCplx();
-}
-
 
 
 /******************************************************************************************************************************************************************************************/
@@ -629,22 +228,66 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       real_t theta;
       real_t tmp;
 
+      // (Yr+iYi) ^ (Xr+iXi)
+      // EXP [  (Xr+iXi) LN (Yr+iYi)  ]
+      // EXP [  (Xr+iXi) LN (r angle theta)  ]
+      // EXP [  Xr.LN (r angle theta)   +   i.(Xi.LN (r angle theta)) ]
+      // EXP [ (Xr.LN r) * (-theta Xi)  +   i.(Xi.LN r + (theta . Xr)) ]  [5]
+
+
       realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
       WP34S_Ln(rReal, rReal, realContext);
 
-      realMultiply(rReal, xImag, rImag, realContext);
-      realFMA(&theta, xReal, rImag, rImag, realContext);
+      realMultiply(rReal, xImag, rImag, realContext);                 //rImag = Xi.LN r
+
+      real_t xR;
+      int8_t md;
+      bool_t doZeroingReal = false;
+      bool_t doZeroingImag = false;
+      if (realCompareAbsEqual(yReal, yImag)) {
+        realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
+        md = realToInt32C47(&xR);
+        if (realIsZero(xImag)) {
+          if (md % 4 == 0) {
+            doZeroingImag = true;
+          } else if ((md-2) % 4 == 0) {
+            doZeroingReal = true;
+          }
+        }
+      } else if (realIsZero(yReal)) {
+        realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
+        md = realToInt32C47(&xR);
+        if (realIsZero(xImag)) {
+          if (md % 2 == 0) {
+            doZeroingImag = true;
+          } else {
+            doZeroingReal = true;
+          }
+        }
+      } else {
+        realCopy(xReal, &xR);
+      }
+
+      realFMA(&theta, &xR, rImag, rImag, realContext);                //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by number of revolutions.
       realChangeSign(&theta);
 
-      realMultiply(rReal, xReal, rReal, realContext);
-      realFMA(&theta, xImag, rReal, rReal, realContext);
+      realMultiply(rReal, xReal, rReal, realContext);                 //rReal = Xr.LN r
+      realFMA(&theta, xImag, rReal, rReal, realContext);              //rReal = Xr.LN r  *  -theta . Xi
 
       realExp(rReal, &tmp, realContext);
       realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
-      realMultiply(&tmp, rImag, rImag, realContext);
-      realMultiply(&tmp, rReal, rReal, realContext);
+      if (doZeroingImag) {
+        realCopy(const_0, rImag);
+      } else {
+        realMultiply(&tmp, rImag, rImag, realContext);
+      }
+      if (doZeroingReal) {
+        realCopy(const_0, rReal);
+      } else {
+        realMultiply(&tmp, rReal, rReal, realContext);
+      }
   }
-
+  
   return errorCode;
 }
 
@@ -654,19 +297,15 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
  * \param void
  * \return void
  ***********************************************/
-void powCplxCplx(void) {
-  real_t yReal, yImag, xReal, xImag;
+static void powCplx(void) {
+  real_t yReal, yImag, xReal, xImag, rReal, rImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  real_t rReal, rImag;
+  if (!getRegisterAsComplex(REGISTER_Y, &yReal, &yImag) || !getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+    return;
 
   uint8_t errorCode = PowerComplex(&yReal, &yImag, &xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
-  if(errorCode!=ERROR_NONE) {
+  if(errorCode != ERROR_NONE) {
     displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -677,4 +316,16 @@ void powCplxCplx(void) {
   else {
     convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
+}
+
+
+/********************************************//**
+ * \brief regX ==> regL and regY ^ regX ==> regX
+ * Drops Y, enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter
+ * \return void
+ ***********************************************/
+void fnPower(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexDyadicFunction(&powReal, &powCplx, &powShoI, &powLonI);
 }

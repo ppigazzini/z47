@@ -150,6 +150,7 @@ void scanLabelsAndPrograms(void) {
   freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
 
   defineCurrentProgramFromCurrentStep();
+  defineFirstDisplayedStep();
 #endif // !SAVE_SPACE_DM42_10
 }
 
@@ -461,7 +462,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
       #if defined(DMCP_BUILD)                                                      // vvv
-        if( !(!getSystemFlag(FLAG_USB) && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
+        if( !(!runningOnSimOrUSB && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
       #endif
 
         lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);
@@ -608,9 +609,19 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   for(uint8_t *pos = firstFreeProgramByte + 1 + size; pos > currentStep; --pos) {
     *pos = *(pos - size);
   }
-  for(uint16_t i = 0; i < size; ++i) {
-    *(currentStep++) = *(dat++);
+
+  #define tmpA (dat[1]+((dat[0] & 0x7F) << 8))    //convert codes for >RECT and >POLAR to the relevant ones, respecting RP_HP
+  if(size == 2 && (tmpA == ITM_toPOL2 || tmpA == ITM_toREC2)) {
+    uint16_t tmpB = ITM_toPOL_HP + (tmpA - ITM_toPOL2) + (getSystemFlag(FLAG_HPRP) ? 0 : 2);
+    *(currentStep++) = (tmpB >> 8) | 0x80;
+    *(currentStep++) = tmpB & 0x00FF;
   }
+  else {    //otherwise use the input data to add a step
+    for(uint16_t i = 0; i < size; ++i) {
+      *(currentStep++) = *(dat++);
+    }
+  }
+
   firstFreeProgramByte    += size;
   freeProgramBytes        -= size;
   currentLocalStepNumber  += 1;
@@ -970,7 +981,8 @@ void pemAddNumber(int16_t item) {
           //}
         case NP_REAL_FLOAT_PART:
         case NP_REAL_EXPONENT:
-          case NP_FRACTION_DENOMINATOR: {
+        case NP_HP32SII_DENOMINATOR:
+        case NP_FRACTION_DENOMINATOR: {
           tmpString[1] = STRING_REAL34;
           break;
           }
@@ -1054,6 +1066,7 @@ void pemCloseNumberInput(void) {
       }
       case NP_REAL_FLOAT_PART:
       case NP_REAL_EXPONENT:
+      case NP_HP32SII_DENOMINATOR:
       case NP_FRACTION_DENOMINATOR: {
         if(inputLength >= REAL34_SIZE_IN_BYTES) {
           real34_t val;

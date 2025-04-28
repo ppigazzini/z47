@@ -62,6 +62,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnEuclideanNorm                (uint16_t unusedParamButMandatory);
+  void       fnVectorDist                   (uint16_t unusedParamButMandatory);
 
   /**
    * Row sum of matrix X.
@@ -234,7 +235,8 @@
    * \param[in] matrix
    * \param[in] prefixWidth
    */
-  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth);
+  #define toDisplayVectorMatrix true
+  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay);
 
   /**
    * Calculates width of columns of a real matrix.

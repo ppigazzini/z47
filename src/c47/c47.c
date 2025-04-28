@@ -63,6 +63,7 @@ bool_t                 skippedStackLines = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
+bool_t                 cleanupAfterShift = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -70,8 +71,6 @@ realContext_t          ctxtReal34;   //   34 digits
 realContext_t          ctxtReal39;   //   39 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal51;   //   51 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
-realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
-realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
 subroutineLevels_t       allSubroutineLevels;
 subroutineLevelHeader_t *currentSubroutineLevelData;
@@ -165,6 +164,7 @@ uint8_t                numLinesStandardFont;
 uint8_t                numLinesTinyFont;
 uint8_t                cursorEnabled;
 uint8_t                nimNumberPart;
+uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
 uint8_t                temporaryInformation;
@@ -244,6 +244,7 @@ int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
 int16_t                imaginaryExponentSignLocation;
 int16_t                imaginaryMantissaSignLocation;
+int16_t                imaginaryDenominatorLocation;
 int16_t                exponentLimit;
 int16_t                exponentHideLimit;
 int16_t                showFunctionNameCounter;
@@ -343,6 +344,9 @@ char                   fileNameSelected[stateFileNameVarLength];
 char                   filename_csv[FILENAMELEN]; //JMMAX   //JM_CSV
 uint32_t               mem__32;                             //JM_CSV
 bool_t                 cancelFilename;
+
+uint8_t                firstDayOfWeek = 1;     // Monday
+uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)

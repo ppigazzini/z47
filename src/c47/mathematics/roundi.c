@@ -7,15 +7,10 @@
 
 #include "c47.h"
 
-static void roundiNoOp (void);
-static void roundiRema (void);
-static void roundiReal (void);
-
-
 TO_QSPI void (* const Roundi[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2           3            4            5            6            7           8            9             10
 //          Long integer Real34      Complex34    Time         Date         String       Real34 mat  Complex34 m  Short integer Config data
-            roundiNoOp,  roundiReal, roundiError, roundiError, roundiError, roundiError, roundiRema, roundiError, roundiNoOp,   roundiError
+            doNothing,   roundiReal, roundiError, roundiError, roundiError, roundiError, roundiRema, roundiError, doNothing,   roundiError
 };
 
 
@@ -55,19 +50,13 @@ void fnRoundi(uint16_t unusedButMandatoryParameter) {
 
 
 
-static void roundiNoOp(void) {
-  // Nothing to do
-}
-
-
-
-static void roundiRema(void) {
+void roundiRema(void) {
   elementwiseRema(roundiReal);
 }
 
 
 
-static void roundiReal(void) {
+void roundiReal(void) {
   if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)

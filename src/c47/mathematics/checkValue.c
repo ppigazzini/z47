@@ -8,9 +8,9 @@
 #include "c47.h"
 
 TO_QSPI void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX ==> 1               2               3               4                5                6                7               8               9               10
-//          Long integer    Real34          Complex34       Time             Date             String           Real34 matrix   Complex34 mat   Short integer   Config data
-            checkValueLonI, checkValueReal, checkValueCplx, checkValueError, checkValueError, checkValueError, checkValueRema, checkValueCxma, checkValueShoI, checkValueError
+// regX ==> 1               2               3               4                   5                  6                7               8               9               10
+//          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
+            checkValueLonI, checkValueReal, checkValueCplx, checkValueDT,       checkValueDT,      checkValueError, checkValueRema, checkValueCxma, checkValueDT,  checkValueError
 };
 
 
@@ -48,6 +48,83 @@ void fnCheckValue(uint16_t mode) {
 
 
 
+
+// LongInteger       0
+// Real              1.0 (1.0 for no angle; 1.1-1.5 for angle)
+// Complex           2.0 (2.0 for RECT, 2.1-2.5 for POLAR)
+// Time              3
+// Date              4
+// String            5
+// RealMatrix        6
+// ComplexMatrix     7.0 (7.0 for RECT, 7.1-7.5 for POLAR)
+// ShortInteger      8.bb (8.02 for binary, 8.16 for Hex)
+// Config            9
+//   
+//   
+// For Real, Complex and ComplexMatrix, if it is an angle, add the following:
+// No angle or RECT   0
+// MultPi      0.1
+// DMS         0.2
+// Degree      0.3
+// Grad        0.4
+// Radian      0.5
+
+void fnCheckType(uint16_t unusedButMandatoryParameter) {
+  int dtp = getRegisterDataType(REGISTER_X);
+  int dam = getRegisterAngularMode(REGISTER_X);
+  if(dtp == dtComplex34Matrix && !(dam & 0x10)) {
+    dam = amNone; //pre-set dam, to cause no angle display if RECT
+  }
+  switch(getRegisterDataType(REGISTER_X)) {
+    case dtLongInteger    :
+    case dtTime           :
+    case dtDate           :
+    case dtString         :
+    case dtReal34Matrix   :
+    case dtConfig         : {
+      longInteger_t lgInt;
+      longIntegerInit(lgInt);
+      uInt32ToLongInteger(dtp, lgInt);
+      setSystemFlag(FLAG_ASLIFT); // 5
+      liftStack();
+      convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+      longIntegerFree(lgInt);
+      setSystemFlag(FLAG_ASLIFT);
+      break;
+    }
+    case dtShortInteger   :
+    case dtComplex34Matrix:
+    case dtReal34         :
+    case dtComplex34      : {
+      real34_t rr;
+      int exportValue = (dtp == dtShortInteger) ? dtp*100 + (dam & 0x1F) : dtp*10 + 5 - (dam & 0x07); // BASE 8.16 for HEX; Angle: 1.3 for Degrees
+      uInt32ToReal34(exportValue,&rr);
+      setSystemFlag(FLAG_ASLIFT); // 5
+      liftStack();
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      if(dtp == dtShortInteger) {
+        real34Multiply(&rr,const34_1on10,&rr);
+      }
+      real34Multiply(&rr,const34_1on10,REGISTER_REAL34_DATA(REGISTER_X));
+      setSystemFlag(FLAG_ASLIFT);
+      break;
+    }
+    default:; //impossible to not be one of the defines
+  }
+}
+
+
+void checkValueDT(uint16_t mode) {
+  if(   (mode == CHECK_VALUE_DATE && getRegisterDataType(REGISTER_X) == dtDate)
+     || (mode == CHECK_VALUE_TIME && getRegisterDataType(REGISTER_X) == dtTime)
+     || ((mode == CHECK_VALUE_SINT || mode == CHECK_VALUE_NUMBER) && getRegisterDataType(REGISTER_X) == dtShortInteger)) {
+    temporaryInformation = TI_TRUE;
+    return;
+  }
+  temporaryInformation = TI_FALSE;
+}
+
+
 void checkValueLonI(uint16_t mode) {
   longInteger_t val;
 
@@ -60,6 +137,10 @@ void checkValueLonI(uint16_t mode) {
       SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsNegative(val));
     }
     longIntegerFree(val);
+    return;
+  }
+  if(mode == CHECK_VALUE_LINT || mode == CHECK_VALUE_NUMBER) {
+    temporaryInformation = TI_TRUE;
     return;
   }
   checkReal(mode);
@@ -211,6 +292,16 @@ void checkValueReal(uint16_t mode) {
       SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)));
       return;
     }
+    case CHECK_VALUE_ANGLE: {
+      if(getRegisterAngularMode(REGISTER_X) != amNone) {
+        temporaryInformation = TI_TRUE;
+      }
+      return;
+    }
+    case CHECK_VALUE_NUMBER: {
+      temporaryInformation = TI_TRUE;
+      return;
+    }
   }
   if(getRegisterAngularMode(REGISTER_X) == amNone) {
     switch(mode) {
@@ -266,6 +357,10 @@ void checkValueCplx(uint16_t mode) {
     }
     case CHECK_VALUE_MATRIX: {
       temporaryInformation = TI_FALSE;
+      return;
+    }
+    case CHECK_VALUE_NUMBER: {
+      temporaryInformation = TI_TRUE;
       return;
     }
     default: {

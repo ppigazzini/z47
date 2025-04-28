@@ -6,11 +6,15 @@
  ***********************************************/
 
 #include "c47.h"
+#include "version.h"
 
 #if defined(PC_BUILD)
   #include "gtkGui.h"
 
   char modelString[50];
+  bool_t              mockup = false;
+  uint16_t            dumpMenus = 0;
+  bool_t              writeExportAll = false;
   uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
@@ -168,6 +172,66 @@
         swapCtrlCode = true;
         printf("Activated: %s\n",argv[arg]);
       }
+      if(strcmp(argv[arg], "--writeexportall") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        writeExportAll = true;
+      }
+      if(strcmp(argv[arg], "--mockup") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        mockup = true;
+      }
+      if(strcmp(argv[arg], "--dumpMenus1") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        dumpMenus = 1;
+      }
+      if(strcmp(argv[arg], "--dumpMenus2") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        dumpMenus = 2;
+      }
+
+      if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
+        #if (CALCMODEL == USER_R47)
+          #define MODELTEXT "R47"
+        #else
+          #define MODELTEXT "C47"
+        #endif
+        char ss[100];
+        char sss[1000];
+        stringToASCII(VERSION_STRING, ss);
+        printf("\n-------------------------------------------------------------\n");
+        sprintf(sss, MODELTEXT " Sim " VERSION1 ", SHA %s.\n", ss);
+        printf("C47/R47 info to be found on 47calc.com\n");
+        printf("C47/R47 license GPL3, details on 47calc.com\n");
+        printf("\n%s",sss);
+        printf("Activated: %s\n\n",argv[arg]);
+        printf("c47 --background     : specify background picture\n");
+        printf("c47 --functionkeys   : display function key labels\n\n");
+        printf("c47 --landscape      : landscape orientation\n");
+        printf("c47 --portrait       : portrait orientation\n");
+        printf("c47 --auto           : automatic orientation\n\n");
+        printf("c47 --r47            : R47v0 layout (f g)\n");
+        printf("c47 --r47v0          : R47v0 layout (f g)\n");
+        printf("c47 --r47v1          : R47v1 layout (fg bk)\n");
+        printf("c47 --r47v2          : R47v2 layout (fg g)\n");
+        printf("c47 --r47v3          : R47v3 layout (bk fg) \n");
+        printf("c47 --dm42           : DM42 layout\n");
+        printf("c47 --e47            : E47 layout (SIM only) (sunsetting)\n");
+        printf("c47 --n47            : N47 layout (SIM only) (sunsetting)\n");
+        printf("c47 --v47            : V47 layout (SIM only) (sunsetting)\n");
+        printf("c47 --d47            : D47 layout (SIM only) (sunsetting)\n\n");
+        printf("c47 --jm             : Setting profile: Jaco preferences\n");
+        printf("c47 --rj             : Setting profile: RJvM preferences\n");
+        printf("c47 --hp35           : Setting profile: HP-35 tribute\n\n");
+        printf("c47 --deadkeys       : typewriter style dead keys\n");
+        printf("c47 --swapctrlcode   : ctrl fix for Swiss keyboards\n");
+        printf("c47 --mockup         : output demo status bar layout\n");
+        printf("c47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n");
+        printf("c47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n");
+        printf("c47 --writeexportall : output all PROGs (internal use)\n");
+        printf("c47 --help           : list all SIM switches\n");
+        printf("c47 --h              : see --help\n");
+        return 0;
+      }
     }
 
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
@@ -217,6 +281,35 @@
       case 3: fnSetHP35(0); break;
       default:;
     }
+
+    if(writeExportAll) {
+      fnSaveAllPrograms(NOPARAM);
+      return 0;
+    }
+
+    if(mockup) {
+      fnReset(CONFIRMED);
+      clearScreen();
+      mockupSB();
+      fnScreenDump(NOPARAM);
+      char bmpFileName[22];
+      time_t rawTime;
+      struct tm *timeInfo;
+      time(&rawTime);
+      timeInfo = localtime(&rawTime);
+      strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
+      printf("\n\nOutput file saved to: %s.\n\n",bmpFileName);
+      return 0;
+    }
+
+    if(dumpMenus > 0) {
+      fnReset(CONFIRMED);
+      clearScreen();
+      fnDumpMenus(dumpMenus);
+      printf("\n\nOutput menus saved.\n");
+      return 0;
+    }
+
 
     //ramDump();
     refreshScreen(190);

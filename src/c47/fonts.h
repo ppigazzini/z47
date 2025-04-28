@@ -31,7 +31,7 @@
   #define STD_NOCHAR                    1
 
 
-  //<------------ Numeric font glyphs -----------> Not used for now
+  //<------------ Numeric font glyphs -----------> Experimentally used by IRFRAC
   #define NUM_0_b                       "\xa4\x73"
   #define NUM_1_b                       "\xa4\x74"
   #define NUM_2_b                       "\xa4\x75"
@@ -202,6 +202,8 @@
 #define STD_i_GRAVE                   "\x80\xec"
 #define STD_i_ACUTE                   "\x80\xed"
 #define STD_i_CIRC                    "\x80\xee"
+#define STD_j_CIRC                    "\x81\x35"
+#define STD_k_CIRC                    "\x81\x37"
 #define STD_i_DIARESIS                "\x80\xef"
 #define STD_eth                       "\x80\xf0"
 #define STD_n_TILDE                   "\x80\xf1"
@@ -218,7 +220,6 @@
 #define STD_u_DIARESIS                "\x80\xfc"
 #define STD_y_ACUTE                   "\x80\xfd"
 #define STD_y_DIARESIS                "\x80\xff"
-#define STD_A_MACRON                  "\x81\x00"
 #define STD_a_MACRON                  "\x81\x01"
 #define STD_A_BREVE                   "\x81\x02"
 #define STD_a_BREVE                   "\x81\x03"
@@ -304,6 +305,7 @@
 #define STD_z_DOT                     "\x81\x7c"
 #define STD_Z_CARON                   "\x81\x7d"
 #define STD_z_CARON                   "\x81\x7e"
+#define STD_A_MACRON                  "\x81\x7f" // was U+0100
 #define STD_y_UNDER_ROOT              "\x82\x32"
 #define STD_y_BAR                     "\x82\x33"
 #define STD_x_BAR                     "\x83\x78"
@@ -348,7 +350,8 @@
 #define STD_epsilon                   "\x83\xb5"
 #define STD_zeta                      "\x83\xb6"
 #define STD_eta                       "\x83\xb7"
-#define STD_theta                     "\x83\xb8"
+#define STD_theta                     "\x83\xd1"
+#define STD_theta_m                   "\x83\xb8"
 #define STD_iota                      "\x83\xb9"
 #define STD_kappa                     "\x83\xba"
 #define STD_lambda                    "\x83\xbb"
@@ -371,7 +374,7 @@
 #define STD_omicron_TONOS             "\x83\xcc"
 #define STD_upsilon_TONOS             "\x83\xcd"
 #define STD_omega_TONOS               "\x83\xce"
-
+#define STD_phi_m                     "\x83\xd5"
 #define STD_QOPPA                     "\x83\xd8"  //JM GREEK
 #define STD_qoppa                     "\x83\xd9"  //JM GREEK
 #define STD_DIGAMMA                   "\x83\xdc"  //JM GREEK
@@ -383,7 +386,7 @@
 #define STD_WPERIOD                   "\xa7\x89"  //JM  ff0e  Changed from FF0E to 2789
 #define STD_WCOMMA                    "\xa7\x88"  //JM  ff0c  Changed from FF0C to 2788
 #define STD_NQUOTE                    "\x82\xbc"  //JM  02bc
-#define STD_INV_BRIDGE                "\x83\x3a"  //JM  033a
+#define STD_INV_BRIDGE                "\xa3\xb5"  //JM  23b5  Changed from 033A to 23B5
 #define STD_EulerE                    "\xa1\x47"  //JM
 #define STD_op_i                      "\xa1\x48"  //JM
 #define STD_op_j                      "\xa1\x49"  //JM
@@ -398,35 +401,54 @@
 #define STD_SUBSET_OF                 "\xA2\x82" //2282
 #define STD_NOT_SUBSET_OF             "\xA2\x84" //2284
 
+#define STD_u_BAR                     "\x83\x80"
+#define STD_v_BAR                     "\x83\x81"
+#define STD_w_BAR                     "\x83\x82"
+#define STD_z_BAR                     "\x83\x83"
+#define STD_v_CIRC                    "\x83\x8B"
+#define STD_z_CIRC                    "\x83\x8D"
+#define STD_u_CIRC2                   "\x83\xA2"
 
-#define STD_SUB_pi                    "\xad\xea" //2DEA
-#define STD_SUP_pi                    "\xad\xeb" //2DEB
-#define STD_SUP_pir                   "\xad\xec" //2DEC
+#define STD_SUP_BOLD_T                "\x9D\x40"
+#define STD_SUP_BOLD_f                "\x9D\xA0"
+#define STD_SUP_BOLD_g                "\x9D\x4D"
+#define STD_SUP_BOLD_h                "\x82\xB0"
+#define STD_SUP_BOLD_r                "\x82\xB3"
+#define STD_SUP_BOLD_x                "\x82\xE3"
+
+#define STD_SUB_pi                    "\xac\x64" //2C64
+#define STD_SUP_pi                    "\xac\x65" //2C65
+#define STD_SUP_pir                   "\xac\x66" //2C66
 
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
 
 
-#define STD_HP_PERIOD                    "\xa0\x24"     // 2024
-#define STD_HP_0                         "\xa4\xea"     // 24ea
-#define STD_HP_1                         "\xa4\xf5"     // 24f5
-#define STD_HP_2                         "\xa4\xf6"
-#define STD_HP_3                         "\xa4\xf7"
-#define STD_HP_4                         "\xa4\xf8"
-#define STD_HP_5                         "\xa4\xf9"
-#define STD_HP_6                         "\xa4\xfa"
-#define STD_HP_7                         "\xa4\xfb"
-#define STD_HP_8                         "\xa4\xfc"
-#define STD_HP_9                         "\xa4\xfd"
-#define STD_HP_MINUS                     "\xa4\xfe"
-#define STD_HP_PLUS                      "\xa4\xff"
+#define STD_HP_PERIOD                 "\xa0\x24"     // 2024
+#define STD_HP_0                      "\xa4\xea"     // 24ea
+#define STD_HP_1                      "\xa4\xf5"     // 24f5
+#define STD_HP_2                      "\xa4\xf6"
+#define STD_HP_3                      "\xa4\xf7"
+#define STD_HP_4                      "\xa4\xf8"
+#define STD_HP_5                      "\xa4\xf9"
+#define STD_HP_6                      "\xa4\xfa"
+#define STD_HP_7                      "\xa4\xfb"
+#define STD_HP_8                      "\xa4\xfc"
+#define STD_HP_9                      "\xa4\xfd"
+#define STD_HP_MINUS                  "\xa4\xfe"
+#define STD_HP_PLUS                   "\xa4\xff"
 
 
 #define STD_LEFT_DASHARROW            "\xa1\xe0"
 #define STD_UP_DASHARROW              "\xa1\xe1"
 #define STD_RIGHT_DASHARROW           "\xa1\xe2"
 #define STD_DOWN_DASHARROW            "\xa1\xe3"
+#define STD_LEFT_BLOCKARROW           "\xab\x60"
+#define STD_UP_BLOCKARROW             "\xab\x61"
+#define STD_RIGHT_BLOCKARROW          "\xab\x62"
+#define STD_DOWN_BLOCKARROW           "\xab\x63"
+#define STD_POWER_SYMBOL              "\xa3\xfb"
 
 #define STD_SPACE_EM                  "\xa0\x03"
 #define STD_SPACE_3_PER_EM            "\xa0\x04"
@@ -445,7 +467,6 @@
 #define STD_DOUBLE_HIGH_QUOTE         "\xa0\x1f"
 #define STD_ELLIPSIS                  "\xa0\x26"
 #define STD_BINARY_ONE                "\xa0\x27"
-#define STD_SUP_MINUS_1               "\xa0\x72"
 #define STD_SUB_E_OUTLINE             "\xa0\x73"
 #define STD_SUB_0                     "\xa0\x80"
 #define STD_SUB_1                     "\xa0\x81"
@@ -501,7 +522,6 @@
 #define STD_UNDO                      "\xa1\xcd"
 #define STD_HOLLOW_UP_ARROW           "\xa1\xe7"
 #define STD_HOLLOW_DOWN_ARROW         "\xa1\xe9"
-#define STD_FOR_ALL                   "\xa2\x00"
 #define STD_COMPLEMENT                "\xa2\x01"
 #define STD_PARTIAL_DIFF              "\xa2\x02"
 #define STD_THERE_EXISTS              "\xa2\x03"
@@ -565,12 +585,9 @@
 #define STD_XOR                       "\xa2\xbb"
 #define STD_NAND                      "\xa2\xbc"
 #define STD_NOR                       "\xa2\xbd"
-#define STD_LEFT_CEILING              "\xa3\x08"
-#define STD_RIGHT_CEILING             "\xa3\x09"
-#define STD_LEFT_FLOOR                "\xa3\x0a"
-#define STD_RIGHT_FLOOR               "\xa3\x0b"
 #define STD_WATCH                     "\xa3\x1a"
 #define STD_HOURGLASS                 "\xa3\x1b"
+#define STD_HOURGLASS_WH              "\xa9\xd6"
 #define STD_PRINTER                   "\xa3\x99"
 #define STD_MAT_TL                    "\xa3\xa1"
 #define STD_MAT_ML                    "\xa3\xa2"
@@ -599,6 +616,7 @@
 #define STD_GAUSS_BLACK_R             "\xa4\x33"
 #define STD_USB_SYMBOL                "\xa4\x34"
 #define STD_BATTERYHALF               "\xa4\x35" //2435
+#define STD_BASE_0                    "\xa4\xEA"
 #define STD_BASE_1                    "\xa4\x60"
 #define STD_BASE_2                    "\xa4\x61"
 #define STD_BASE_3                    "\xa4\x62"
@@ -723,6 +741,7 @@
 #define STD_CHECK_MARK                "\xa7\x13"
 #define STD_YX                        "\xa9\xf0"
 #define STD_fg                        "\xa9\xf1"
+#define STD_FOR_ALL                   "\xac\x6f" // was U+2200
 #define STD_RIGHT_DOUBLE_ARROW        "\xa1\xD2"    //JM
 #define STD_LEFT_RIGHT_DOUBLE_ARROW   "\xa1\xD4"    //JM
 #endif // !FONTS_H

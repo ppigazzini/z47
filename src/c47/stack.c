@@ -275,10 +275,8 @@ void saveForUndo(void) {
 
   lrSelectionUndo = lrSelection;
   if(statisticalSumsPointer == NULL) { // There are no statistical sums to save for undo
-    if(savedStatisticalSumsPointer != NULL) {
-      freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      savedStatisticalSumsPointer = NULL;
-    }
+    freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    savedStatisticalSumsPointer = NULL;
   }
   else { // There are statistical sums to save for undo
     lrChosenUndo = lrChosen;
@@ -315,6 +313,10 @@ void undo(void) {
   #if defined(DEBUGUNDO)
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
+
+  const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);
+  const bool_t wasInting = getSystemFlag(FLAG_INTING);
+
   recallStatsMatrix();
 
   if(currentInputVariable != INVALID_VARIABLE) {
@@ -353,11 +355,9 @@ void undo(void) {
 
   lrSelection = lrSelectionUndo;
   if(savedStatisticalSumsPointer == NULL) { // There are no statistical sums to restore
-    if(statisticalSumsPointer != NULL) {
-      freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      statisticalSumsPointer = NULL;
-      lrChosen = 0;
-    }
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    statisticalSumsPointer = NULL;
+    lrChosen = 0;
   }
   else { // There are statistical sums to restore
     lrChosen = lrChosenUndo;
@@ -370,6 +370,14 @@ void undo(void) {
   SAVED_SIGMA_lastAddRem = SIGMA_NONE;
   thereIsSomethingToUndo = false;
   clearRegister(TEMP_REGISTER_2_SAVED_STATS);
+
+  if(wasSolving != getSystemFlag(FLAG_SOLVING)) {
+    flipSystemFlag(FLAG_SOLVING);
+  }
+  if(wasInting != getSystemFlag(FLAG_INTING)) {
+    flipSystemFlag(FLAG_INTING);
+  }
+
   #if defined(DEBUGUNDO)
     printf(">>> Undone, calcMode = %i\n", calcMode);
   #endif // DEBUGUNDO

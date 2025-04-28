@@ -252,6 +252,11 @@ void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   int n;
   int neg = realIsNegative(x);
 
+  if(realIsNaN(x)) {
+    realCopy(const_NaN, angle);
+    return;
+  }
+
   realCopy(x, &a);
 
   // arrange for a >= 0
@@ -1117,8 +1122,10 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
    * This structure is likely to be larger than is required.
    */
   real1071_t out;
+  realContext_t c = *realContext;
 
-  realDivideRemainder(x, y, (real_t *)&out, &ctxtReal1071);
+  c.digits = 1071;
+  realDivideRemainder(x, y, (real_t *)&out, &c);
   realPlus((real_t *)&out, res, realContext);
 }
 
@@ -1128,8 +1135,10 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
    * This structure is likely to be larger than is required.
    */
   real2139_t out;
+  realContext_t c = *realContext;
 
-  realDivideRemainder(x, y, (real_t *)&out, &ctxtReal2139);
+  c.digits = 2139;
+  realDivideRemainder(x, y, (real_t *)&out, &c);
   realPlus((real_t *)&out, res, realContext);
 }
 

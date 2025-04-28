@@ -6,6 +6,8 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#define FILENAME_BUFFER_LENGTH 400  //allow for longer paths on pc systems
+
 static FILE *_ioFileHandle = NULL;
 
 static int create_dir(char * dir) {
@@ -80,7 +82,7 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
 
 
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
-  static char base_dir[200];
+  static char base_dir[FILENAME_BUFFER_LENGTH]; // at least exceed the 256 limit
   char * current_dir;
   int ret = 0;
 
@@ -100,7 +102,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       return FILE_OK;
 
     case ioPathTestPgms:
-      strcpy(filename, BASEPATH "res/dmcp/testPgms.bin");
+      strcpy(filename, BASEPATH "res/testPgms/testPgms.bin");
       return FILE_OK;
 
     case ioPathBackup:
@@ -158,6 +160,29 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       g_free(current_dir);
       return ret;
 
+
+    case ioPathSaveAllPrograms:
+    case ioPathExportRTFAllPrograms:
+      if(create_dir("./" PROGRAMS_DIR) != 0) {
+        return FILE_ERROR;
+      }
+      if(create_dir("./" PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR) != 0) {
+        return FILE_ERROR;
+      }
+      // set current label name as default file name
+      stringToASCII(tmpStringLabelOrVariableName, filename);
+      //strcpy(filename, tmpStringLabelOrVariableName);
+
+      char filename1[FILENAME_BUFFER_LENGTH];
+      filename1[0] = 0;
+      stringCopy(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
+      stringCopy(filename1 + stringByteLength(filename1), filename);
+      filename[0] = 0;
+      stringCopy(filename, filename1);
+      stringCopy(filename + stringByteLength(filename), (path == ioPathSaveAllPrograms) ? PRGM_EXT : (path == ioPathExportRTFAllPrograms) ? RTF_EXT : "ERR");
+      //printf("#### Filename:%s\n",filename);
+      return FILE_OK;
+
     default:
       return FILE_ERROR;
   }
@@ -167,7 +192,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   assert(_ioFileHandle == NULL);
   const char *filemode;
-  static char filename[40];
+  static char filename[FILENAME_BUFFER_LENGTH];
   strcpy(filename, "untitled");
   fileNameSelected[0]=0;
   int ret = _ioFileNameFromFilePath(path, filename);
@@ -193,7 +218,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
           break;
         }
       }
-      stringAppend(fileNameSelected, filename + jj);
+      stringCopy(fileNameSelected, filename + jj);
     }
     return FILE_OK;
   }
@@ -236,7 +261,7 @@ int ioEof(void) {
 
 int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
   assert(_ioFileHandle == NULL);
-  static char filename[40];
+  static char filename[FILENAME_BUFFER_LENGTH];
   int ret = _ioFileNameFromFilePath(path, filename);
   if(ret != FILE_OK) {
     return ret;

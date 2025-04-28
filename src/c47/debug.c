@@ -99,9 +99,9 @@ TO_QSPI const char typeName[6][10 + 1][24 /* 21 characters + 1 sentinel + 2 padd
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "ln(x)",
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "x^a" STD_SUB_1 ,
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "a" STD_SUB_1 "^(1/x)",
-    "(a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x)" STD_SUP_MINUS_1,
+    "(a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x)" STD_SUP_MINUS STD_SUP_1,
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x" STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_2 "x" STD_SUP_2,
-    STD_LEFT_SQUARE_BRACKET "a" STD_SUB_0 "(x+a" STD_SUB_1 ")" STD_SUP_2 "+a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET STD_SUP_MINUS_1,
+    STD_LEFT_SQUARE_BRACKET "a" STD_SUB_0 "(x+a" STD_SUB_1 ")" STD_SUP_2 "+a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET STD_SUP_MINUS STD_SUP_1,
     "a" STD_SUB_0 "e^" STD_LEFT_SQUARE_BRACKET  "(x-a" STD_SUB_1 ")" STD_SUP_2 "/a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET,
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x",
     "???        "
@@ -689,6 +689,9 @@ void debugNIM(void) {
   }
 
 
+#endif //(DEBUG_PANEL == 1)
+#if ((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
+
   /********************************************//**
    * \brief Returns the name of a calc mode
    *
@@ -751,6 +754,8 @@ void debugNIM(void) {
     }
   }
 
+#endif //((DEBUG_INSTEAD_STATUS_BAR == 1) || (DEBUG_PANEL == 1))
+#if (DEBUG_PANEL == 1)
 
   /********************************************//**
    * \brief Returns the name of a TAM mode
@@ -1035,6 +1040,15 @@ void debugNIM(void) {
       }
       case CATALOG_MVAR: {
         return "CATALOG_MVAR";
+      }
+      case CATALOG_CONFIG: {
+        return "CATALOG_CONFIG";
+      }
+      case CATALOG_ALLVAR: {
+        return "CATALOG_ALLVAR";
+      }
+      case CATALOG_NUMBERS: {
+        return "CATALOG_NUMBERS";
       }
       default: {
     return "CATALOG_????";

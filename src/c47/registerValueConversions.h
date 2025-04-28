@@ -64,6 +64,7 @@
 
   void convertRealToResultRegister                           (const real_t *x, calcRegister_t dest, angularMode_t angle);
   void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
+  void convertComplexToResultRegisterRPangle                 (const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag);
 
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
   void convertReal34RegisterToTimeRegister                   (calcRegister_t source, calcRegister_t destination);
@@ -105,6 +106,7 @@
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
   bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
   bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
+  bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));

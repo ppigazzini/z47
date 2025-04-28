@@ -134,6 +134,17 @@ bool_t realCompareEqual(const real_t *number1, const real_t *number2) {
 
 
 
+bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
+  real_t num1, num2;
+
+  realCopyAbs(number1, &num1);
+  realCopyAbs(number2, &num2);
+  realCompare(&num1, &num2, &num2, &ctxtReal75);
+  return realIsZero(&num2);
+}
+
+
+
 bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2) {
   real_t compare;
 

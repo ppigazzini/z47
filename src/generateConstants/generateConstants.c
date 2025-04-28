@@ -13,8 +13,8 @@ realContext_t ctxtReal34, ctxtReal39, ctxtReal51, ctxtReal75, ctxtReal1071;
 unsigned int cntReal34, cntReal39, cntReal51, cntReal75, cntReal1071;
 
 char whiteSpace[50], temp[10000];
-char defines[1000000], externalDeclarations[1000000]; // .h file
-char realArray[1000000], realPointerDeclarations[1000000], real34PointerDeclarations[1000000], real51PointerDeclarations[1000000], real75PointerDeclarations[1000000], real1071PointerDeclarations[1000000]; // .c file
+char externalDeclarations[1000000]; // .h file
+char realArray[1000000]; // .c file
 FILE *constantsC, *constantsH;
 int  idx, cc;
 
@@ -39,6 +39,28 @@ void *xcopy(void *dest, const void *source, int n) {
   return dest;
 }
 
+static void emitConstantHeader(const char *name, const char *type, const char *prefix) {
+  char *b = strchr(externalDeclarations, '\0');
+
+  sprintf(b, "  #define %s%s%s ((%s *)(constants + %d))\n", prefix, name, whiteSpace, type, idx);
+}
+
+static void emitRealArray(const char *name, const void *vptr, int len, const char *prefix) {
+  char *b = strchr(realArray, '\0');
+  const uint8_t *p = (const uint8_t *)vptr;
+  int n, i;
+
+  n = sprintf(b, "  ");
+  for (i=0; i<len; i++)
+    n += sprintf(b + n, "0x%02x,", p[i]);
+  sprintf(b + n, "  // %s%s\n", prefix, name);
+}
+
+static void emitConstant(const char *name, const char *type, const void *vptr, int len, const char *prefix) {
+  emitConstantHeader(name, type, prefix);
+  emitRealArray(name, vptr, len, prefix);
+  idx += len;
+}
 
 void generateConstantArray(char *name, char *value) {
   real39_t real39;
@@ -53,33 +75,7 @@ void generateConstantArray(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  if(cc <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
-    sprintf(temp, "  #define CONST_%02d %4d\n", cc, idx);
-    strcat(defines, temp);
-  }
-
-  strcat(realPointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(realPointerDeclarations, name);
-  strcat(realPointerDeclarations, whiteSpace);
-  strcat(realPointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL39_SIZE_IN_BYTES;
-  strcat(realPointerDeclarations, temp);
-  strcat(realPointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL39_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real39)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real39, REAL39_SIZE_IN_BYTES, "const_");
   cntReal39++;
 }
 
@@ -97,28 +93,7 @@ void generateConstantArray34(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real34_t * const const34_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real34PointerDeclarations, "TO_QSPI const real34_t * const const34_");
-  strcat(real34PointerDeclarations, name);
-  strcat(real34PointerDeclarations, whiteSpace);
-  strcat(real34PointerDeclarations, " = (real34_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL34_SIZE_IN_BYTES;
-  strcat(real34PointerDeclarations, temp);
-  strcat(real34PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL34_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real34)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real34_t", &real34, REAL34_SIZE_IN_BYTES, "const34_");
   cntReal34++;
 }
 
@@ -136,28 +111,7 @@ void generateConstantArray51(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real51PointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(real51PointerDeclarations, name);
-  strcat(real51PointerDeclarations, whiteSpace);
-  strcat(real51PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL51_SIZE_IN_BYTES;
-  strcat(real51PointerDeclarations, temp);
-  strcat(real51PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL51_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real51)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real51, REAL51_SIZE_IN_BYTES, "const_");
   cntReal51++;
 }
 
@@ -175,28 +129,7 @@ void generateConstantArray75(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real75PointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(real75PointerDeclarations, name);
-  strcat(real75PointerDeclarations, whiteSpace);
-  strcat(real75PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL_SIZE_IN_BYTES;
-  strcat(real75PointerDeclarations, temp);
-  strcat(real75PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real75)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real75, REAL_SIZE_IN_BYTES, "const_");
   cntReal75++;
 }
 
@@ -214,28 +147,7 @@ void generateConstantArray1071(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const1071_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real1071PointerDeclarations, "TO_QSPI const real_t * const const1071_");
-  strcat(real1071PointerDeclarations, name);
-  strcat(real1071PointerDeclarations, whiteSpace);
-  strcat(real1071PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL1071_SIZE_IN_BYTES;
-  strcat(real1071PointerDeclarations, temp);
-  strcat(real1071PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL1071_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real1071)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real1071, REAL1071_SIZE_IN_BYTES, "const1071_");
   cntReal1071++;
 }
 
@@ -458,13 +370,15 @@ void generateAllConstants(void) {
   generateConstantArray("GlukFzuk",      "+1.600000000000000000000000000000000000000000000000000000e+02"); // defined uk       : 1600 x
   generateConstantArray("GlusFzus",      "+1.280000000000000000000000000000000000000000000000000000e+02"); // defined uz       : 1200 x
 ////
-
+  generateConstantArray("bananamm",      "+178.0");
+  generateConstantArray("bananaInch",    "+7.007874015748031496062992125984251968503937007874015748");
+////
 
   generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
   generateConstantArray("_90",           "-9.000000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("_1",            "-1.000000000000000000000000000000000000000000000000000000e+00");
-  generateConstantArray("_1oneE",        "-3.678794411714423215955237701614608674458111310317678345e-01");
+  generateConstantArray("1oneE",         "+3.678794411714423215955237701614608674458111310317678345e-01");
   generateConstantArray("1e_49",         "+1.000000000000000000000000000000000000000000000000000000e-49");
   generateConstantArray("1e_37",         "+1.000000000000000000000000000000000000000000000000000000e-37");
   generateConstantArray("1e_24",         "+1.000000000000000000000000000000000000000000000000000000e-24");
@@ -556,6 +470,10 @@ void generateAllConstants(void) {
   generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143");
   generateConstantArray("rtpi",          "+1.772453850905516027298167483341145182797549456122387128e+00");
   generateConstantArray("1onpi",         "+3.183098861837906715377675267450287240689192914809128975e-01");
+  generateConstantArray("pisq",          "+9.869604401089358618834490999876151135313699407240790626e+00");
+  generateConstantArray("eEsq",          "+7.389056098930650227230427460575007813180315570551847324e+00");
+  generateConstantArray("1onpisq",       "+1.013211836423377714438794632097276389043587746722465488e-01");
+  generateConstantArray("1oneEsq",       "+1.353352832366126918939994949724844034076315459095758815e-01");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
@@ -909,13 +827,9 @@ int main(int argc, char* argv[]) {
   ctxtReal1071.digits  = 1071;
   ctxtReal1071.traps   = 0;
 
-  defines[0] = 0;
   externalDeclarations[0] = 0;
   strcat(externalDeclarations, "  extern const uint8_t constants[];\n");
   realArray[0] = 0;
-  realPointerDeclarations[0]     = 0;
-  real34PointerDeclarations[0]   = 0;
-  real1071PointerDeclarations[0] = 0;
   cntReal34 = cntReal39 = cntReal51 = cntReal75 = cntReal1071 = 0;
 
   generateAllConstants();
@@ -941,9 +855,7 @@ int main(int argc, char* argv[]) {
   fprintf(constantsH, "#if !defined(CONSTANTPOINTERS_H)\n");
   fprintf(constantsH, "  #define CONSTANTPOINTERS_H\n\n");
 
-  fprintf(constantsH, "%s", defines);
-  fprintf(constantsH, "\n");
-  fprintf(constantsH, "%s", externalDeclarations);
+  fprintf(constantsH, "%s\n", externalDeclarations);
 
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_39   %u\n", cntReal39);
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_51   %u\n", cntReal51);
@@ -971,18 +883,7 @@ int main(int argc, char* argv[]) {
 
   fprintf(constantsC, "#include \"c47.h\"\n\n");
 
-  fprintf(constantsC, "%s", realArray);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", realPointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real51PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real75PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real1071PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real34PointerDeclarations);
-
+  fprintf(constantsC, "%s\n", realArray);
   fclose(constantsC);
 
   return 0;

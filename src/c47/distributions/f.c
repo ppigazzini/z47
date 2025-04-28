@@ -20,6 +20,9 @@
 
 #else
   static bool_t checkParamF(real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
         || !getRegisterAsReal(REGISTER_N, j))
@@ -59,57 +62,38 @@
   void fnF_P(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, d1, d2;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamF(&val, &d1, &d2)) {
       WP34S_Pdf_F(&val, &d1, &d2, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnF_L(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, d1, d2;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamF(&val, &d1, &d2)) {
       WP34S_Cdf_F(&val, &d1, &d2, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnF_R(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, d1, d2;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamF(&val, &d1, &d2)) {
       WP34S_Cdfu_F(&val, &d1, &d2, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnF_I(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, d1, d2;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamF(&val, &d1, &d2)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -134,9 +118,8 @@
         return;
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

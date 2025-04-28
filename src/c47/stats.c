@@ -60,340 +60,216 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
 
 
 #if !defined(TESTSUITE_BUILD)
-  static void addMax(real_t *x, real_t *y) {
-    // xmax
-    if(realCompareGreaterThan(x, SIGMA_XMAX)) {
-      realCopy(x, SIGMA_XMAX);
-    }
+  typedef struct {
+    bool_t (*accumulate)(real_t *sum, const real_t *z);
+    bool_t (*minimum)(const real_t *r1, const real_t *r2);
+    bool_t (*maximum)(const real_t *r1, const real_t *r2);
+  } accumulateFuncs_t;
 
-    // ymax
-    if(realCompareGreaterThan(y, SIGMA_YMAX)) {
-      realCopy(y, SIGMA_YMAX);
-    }
-  }
-
-
-  static void addMin(real_t *x, real_t *y) {
-    // xmin
-    if(realCompareLessThan(x, SIGMA_XMIN)) {
-      realCopy(x, SIGMA_XMIN);
-    }
-
-    // ymin
-    if(realCompareLessThan(y, SIGMA_YMIN)) {
-      realCopy(y, SIGMA_YMIN);
-    }
-  }
-
-
-  static void addSigma(real_t *x, real_t *y) {
+  static void accumulateToSigma(const real_t *x, const real_t *y, const accumulateFuncs_t *accum) {
     real_t tmpReal1, tmpReal2, tmpReal3;
+    bool_t (*acc)(real_t *sum, const real_t *z) = accum->accumulate;
     realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
 
-    addMax(x, y);
-    addMin(x, y);
+    // xmax & ymax
+    (*accum->maximum)(x, y);
+
+    // xmin & ymin
+    (*accum->minimum)(x, y);
 
     // n
-    realAdd(SIGMA_N, const_1, SIGMA_N, realContext);
+    if(!(*acc)(SIGMA_N, const_1))
+      goto toReturn;
 
     // sigma x
-    realAdd(SIGMA_X, x, SIGMA_X, realContext);
+    if(!(*acc)(SIGMA_X, x))
+      goto toReturn;
 
     // sigma y
-    realAdd(SIGMA_Y, y, SIGMA_Y, realContext);
+    if(!(*acc)(SIGMA_Y, y))
+      goto toReturn;
 
     // sigma x²
     realMultiply(x, x, &tmpReal1, realContext);
-    realAdd(SIGMA_X2, &tmpReal1, SIGMA_X2, realContext);
+    if(!(*acc)(SIGMA_X2, &tmpReal1))
+      goto toReturn;
 
     // sigma x³
     realMultiply(&tmpReal1, x, &tmpReal2, realContext);
-    realAdd(SIGMA_X3, &tmpReal2, SIGMA_X3, realContext);
+    if(!(*acc)(SIGMA_X3, &tmpReal2))
+      goto toReturn;
 
     // sigma x⁴
     realMultiply(&tmpReal2, x, &tmpReal2, realContext);
-    realAdd(SIGMA_X4, &tmpReal2, SIGMA_X4, realContext);
+    if(!(*acc)(SIGMA_X4, &tmpReal2))
+      goto toReturn;
 
     // sigma x²y
     realMultiply(&tmpReal1, y, &tmpReal2, realContext);
-    realAdd(SIGMA_X2Y, &tmpReal2, SIGMA_X2Y, realContext);
+    if(!(*acc)(SIGMA_X2Y, &tmpReal2))
+      goto toReturn;
 
     // sigma x²/y
     realDivide(&tmpReal1, y, &tmpReal2, realContext);
-    realAdd(SIGMA_X2onY, &tmpReal2, SIGMA_X2onY, realContext);
+    if(!(*acc)(SIGMA_X2onY, &tmpReal2))
+      goto toReturn;
 
     // sigma 1/x²
     realDivide(const_1, &tmpReal1, &tmpReal2, realContext);
-    realAdd(SIGMA_1onX2, &tmpReal2, SIGMA_1onX2, realContext);
+    if(!(*acc)(SIGMA_1onX2, &tmpReal2))
+      goto toReturn;
 
     // sigma y²
     realMultiply(y, y, &tmpReal1, realContext);
-    realAdd(SIGMA_Y2, &tmpReal1, SIGMA_Y2, realContext);
+    if(!(*acc)(SIGMA_Y2, &tmpReal1))
+      goto toReturn;
 
     // sigma 1/y²
     realDivide(const_1, &tmpReal1, &tmpReal2, realContext);
-    realAdd(SIGMA_1onY2, &tmpReal2, SIGMA_1onY2, realContext);
+    if(!(*acc)(SIGMA_1onY2, &tmpReal2))
+      goto toReturn;
 
     // sigma xy
     realMultiply(x, y, &tmpReal1, realContext);
-    realAdd(SIGMA_XY, &tmpReal1, SIGMA_XY, realContext);
+    if(!(*acc)(SIGMA_XY, &tmpReal1))
+      goto toReturn;
 
     // sigma ln(x)
     WP34S_Ln(x, &tmpReal1, realContext);
-    realCopy(&tmpReal1 ,&tmpReal3);
-    realAdd(SIGMA_lnX, &tmpReal1, SIGMA_lnX, realContext);
+    realCopy(&tmpReal1, &tmpReal3);
+    if(!(*acc)(SIGMA_lnX, &tmpReal1))
+      goto toReturn;
 
     // sigma ln²(x)
     realMultiply(&tmpReal1, &tmpReal1, &tmpReal2, realContext);
-    realAdd(SIGMA_ln2X, &tmpReal2, SIGMA_ln2X, realContext);
+    if(!(*acc)(SIGMA_ln2X, &tmpReal2))
+      goto toReturn;
 
     // sigma yln(x)
     realMultiply(&tmpReal1, y, &tmpReal1, realContext);
-    realAdd(SIGMA_YlnX, &tmpReal1, SIGMA_YlnX, realContext);
+    if(!(*acc)(SIGMA_YlnX, &tmpReal1))
+      goto toReturn;
 
     // sigma ln(y)
     WP34S_Ln(y, &tmpReal1, realContext);
-    realAdd(SIGMA_lnY, &tmpReal1, SIGMA_lnY, realContext);
+    if(!(*acc)(SIGMA_lnY, &tmpReal1))
+      goto toReturn;
 
     // sigma ln(x)×ln(y)
     realMultiply(&tmpReal3, &tmpReal1, &tmpReal3, realContext);
-    realAdd(SIGMA_lnXlnY, &tmpReal3, SIGMA_lnXlnY, realContext);
+    if(!(*acc)(SIGMA_lnXlnY, &tmpReal3))
+      goto toReturn;
 
     // sigma ln(y)/x
     realDivide(&tmpReal1, x, &tmpReal2, realContext);
-    realAdd(SIGMA_lnYonX, &tmpReal2, SIGMA_lnYonX, realContext);
+    if(!(*acc)(SIGMA_lnYonX, &tmpReal2))
+      goto toReturn;
 
     // sigma ln²(y)
     realMultiply(&tmpReal1, &tmpReal1, &tmpReal2, realContext);
-    realAdd(SIGMA_ln2Y, &tmpReal2, SIGMA_ln2Y, realContext);
+    if(!(*acc)(SIGMA_ln2Y, &tmpReal2))
+      goto toReturn;
 
     // sigma xln(y)
     realMultiply(&tmpReal1, x, &tmpReal1, realContext);
-    realAdd(SIGMA_XlnY, &tmpReal1, SIGMA_XlnY, realContext);
+    if(!(*acc)(SIGMA_XlnY, &tmpReal1))
+      goto toReturn;
 
     // sigma x²ln(y)
     realMultiply(&tmpReal1, x, &tmpReal1, realContext);
-    realAdd(SIGMA_X2lnY, &tmpReal1, SIGMA_X2lnY, realContext);
+    if(!(*acc)(SIGMA_X2lnY, &tmpReal1))
+      goto toReturn;
 
     // sigma 1/x
     realDivide(const_1, x, &tmpReal1, realContext);
-    realAdd(SIGMA_1onX, &tmpReal1, SIGMA_1onX, realContext);
+    if(!(*acc)(SIGMA_1onX, &tmpReal1))
+      goto toReturn;
 
     // sigma x/y
     realDivide(x, y, &tmpReal1, realContext);
-    realAdd(SIGMA_XonY, &tmpReal1, SIGMA_XonY, realContext);
+    if(!(*acc)(SIGMA_XonY, &tmpReal1))
+      goto toReturn;
 
     // sigma 1/y
     realDivide(const_1, y, &tmpReal1, realContext);
-    realAdd(SIGMA_1onY, &tmpReal1, SIGMA_1onY, realContext);
+    if(!(*acc)(SIGMA_1onY, &tmpReal1))
+      goto toReturn;
+
+    toReturn:
+
+    return;
   }
 
+  static bool_t addMax(const real_t *x, const real_t *y) {
+    if(realCompareGreaterThan(x, SIGMA_XMAX))
+      realCopy(x, SIGMA_XMAX);
+    if(realCompareGreaterThan(y, SIGMA_YMAX))
+      realCopy(y, SIGMA_YMAX);
+    return true;
+  }
 
-  static bool_t ignoreMaxIfValid(real_t *r1, real_t *r2){
-    if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2) || realCompareEqual(r1, r2)) {
+  static bool_t addMin(const real_t *x, const real_t *y) {
+    if(realCompareLessThan(x, SIGMA_XMIN))
+      realCopy(x, SIGMA_XMIN);
+    if(realCompareLessThan(y, SIGMA_YMIN))
+      realCopy(y, SIGMA_YMIN);
+    return true;
+  }
+
+  static bool_t subMax(const real_t *x, const real_t *y) {
+    if(realIsSpecial(x) || realIsSpecial(SIGMA_XMAX)
+      || realIsSpecial(y) || realIsSpecial(SIGMA_YMAX)
+      || realCompareEqual(x, SIGMA_XMAX)
+      || realCompareEqual(y, SIGMA_YMAX)) {
       calcMax(1);
       return false;
     }
     return true;
   }
 
-  static bool_t ignoreMinIfValid(real_t *r1, real_t *r2){
-    if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2) || realCompareEqual(r1, r2)) {
+  static bool_t subMin(const real_t *x, const real_t *y) {
+    if(realIsSpecial(x) || realIsSpecial(SIGMA_XMIN)
+      || realIsSpecial(y) || realIsSpecial(SIGMA_YMIN)
+      || realCompareEqual(x, SIGMA_XMIN)
+      || realCompareEqual(y, SIGMA_YMIN)) {
       calcMin(1);
       return false;
     }
     return true;
   }
 
-
-  static bool_t realSubtractIfValid(real_t *r1, real_t *r2, real_t *r3, realContext_t *ct){
-    if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2)) {
-      calcSigma(1);
-      return false;
-    }
-    realSubtract(r1, r2, r3, ct);
+  static bool_t accumulate(real_t *sum, const real_t *x) {
+    realAdd(sum, x, sum, &ctxtReal75);
     return true;
   }
 
-
-  static void subSigma(real_t *x, real_t *y) {
-    real_t tmpReal1, tmpReal2, tmpReal3;
-    realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-   // SIGMA-
-
-    // xmax
-    if(!ignoreMaxIfValid(x, SIGMA_XMAX)) {
-      goto endMax;
+  static bool_t unaccumulate(real_t *sum, const real_t *x) {
+    if(realIsSpecial(sum) || realIsSpecial(x)) {
+      calcSigma(1);
+      return false;
     }
+    realSubtract(sum, x, sum, &ctxtReal75);
+    return true;
+  }
 
-    // ymax
-    if(!ignoreMaxIfValid(y, SIGMA_YMAX)) {
-      goto endMax;
-    }
+  static void addSigma(const real_t *x, const real_t *y) {
+    TO_QSPI static const accumulateFuncs_t acc = {
+      .accumulate = &accumulate,
+      .minimum = &addMin,
+      .maximum = &addMax
+    };
+    accumulateToSigma(x, y, &acc);
+  }
 
-    endMax:
-
-    // xmin
-    if(!ignoreMinIfValid(x, SIGMA_XMIN)) {
-      goto endMin;
-    }
-
-    // ymin
-    if(!ignoreMinIfValid(y, SIGMA_YMIN)) {
-      goto endMin;
-    }
-
-    endMin:
-
-    // n
-    realCopy(const_1,&tmpReal1);
-    if(!realSubtractIfValid(SIGMA_N, &tmpReal1, SIGMA_N, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x
-    if(!realSubtractIfValid(SIGMA_X, x, SIGMA_X, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma y
-    if(!realSubtractIfValid(SIGMA_Y, y, SIGMA_Y, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x²
-    realMultiply(x, x, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_X2, &tmpReal1, SIGMA_X2, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x³
-    realMultiply(&tmpReal1, x, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_X3, &tmpReal2, SIGMA_X3, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x⁴
-    realMultiply(&tmpReal2, x, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_X4, &tmpReal2, SIGMA_X4, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x²y
-    realMultiply(&tmpReal1, y, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_X2Y, &tmpReal2, SIGMA_X2Y, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x²/y
-    realDivide(&tmpReal1, y, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_X2onY, &tmpReal2, SIGMA_X2onY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma 1/x²
-    realDivide(const_1, &tmpReal1, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_1onX2, &tmpReal2, SIGMA_1onX2, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma y²
-    realMultiply(y, y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_Y2, &tmpReal1, SIGMA_Y2, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma 1/y²
-    realDivide(const_1, &tmpReal1, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_1onY2, &tmpReal2, SIGMA_1onY2, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma xy
-    realMultiply(x, y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_XY, &tmpReal1, SIGMA_XY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln(x)
-    WP34S_Ln(x, &tmpReal1, realContext);
-    realCopy(&tmpReal1 ,&tmpReal3);
-    if(!realSubtractIfValid(SIGMA_lnX, &tmpReal1, SIGMA_lnX, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln²(x)
-    realMultiply(&tmpReal1, &tmpReal1, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_ln2X, &tmpReal2, SIGMA_ln2X, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma yln(x)
-    realMultiply(&tmpReal1, y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_YlnX, &tmpReal1, SIGMA_YlnX, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln(y)
-    WP34S_Ln(y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_lnY, &tmpReal1, SIGMA_lnY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln(x)×ln(y)
-    realMultiply(&tmpReal3, &tmpReal1, &tmpReal3, realContext);
-    if(!realSubtractIfValid(SIGMA_lnXlnY, &tmpReal3, SIGMA_lnXlnY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln(y)/x
-    realDivide(&tmpReal1, x, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_lnYonX, &tmpReal2, SIGMA_lnYonX, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma ln²(y)
-    realMultiply(&tmpReal1, &tmpReal1, &tmpReal2, realContext);
-    if(!realSubtractIfValid(SIGMA_ln2Y, &tmpReal2, SIGMA_ln2Y, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma xln(y)
-    realMultiply(&tmpReal1, x, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_XlnY, &tmpReal1, SIGMA_XlnY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x²ln(y)
-    realMultiply(&tmpReal1, x, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_X2lnY, &tmpReal1, SIGMA_X2lnY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma 1/x
-    realDivide(const_1, x, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_1onX, &tmpReal1, SIGMA_1onX, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma x/y
-    realDivide(x, y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_XonY, &tmpReal1, SIGMA_XonY, realContext)) {
-      goto toReturn;
-    }
-
-    // sigma 1/y
-    realDivide(const_1, y, &tmpReal1, realContext);
-    if(!realSubtractIfValid(SIGMA_1onY, &tmpReal1, SIGMA_1onY, realContext)) {
-      goto toReturn;
-    }
-
-    toReturn:
-
-    return;
+  static void subSigma(const real_t *x, const real_t *y) {
+    TO_QSPI static const accumulateFuncs_t deacc = {
+      .accumulate = &unaccumulate,
+      .minimum = &subMin,
+      .maximum = &subMax
+    };
+    accumulateToSigma(x, y, &deacc);
   }
 #endif // !TESTSUITE_|BUILD
-
 
 
 bool_t checkMinimumDataPoints(const real_t *n) {
@@ -643,12 +519,10 @@ static calcRegister_t fnClHisto(bool_t deleteVariable) {
 void setStatisticalSumsUpdate(bool_t para) {
   //if going off auto, or confirming it is still on auto off, clear sums
   if(!para) {
-    if(statisticalSumsPointer != NULL) {
-      freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      statisticalSumsPointer = NULL;
-      if(lastErrorCode != ERROR_NONE) {
-        return;
-      }
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    statisticalSumsPointer = NULL;
+    if(lastErrorCode != ERROR_NONE) {
+      return;
     }
   }
   if(statisticalSumsUpdate && !para) {
@@ -692,22 +566,20 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
   histElementXorY = 0;
 
 
-  if(statisticalSumsPointer != NULL) {
-    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-    statisticalSumsPointer = NULL;
-  }
+  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+  statisticalSumsPointer = NULL;
 }
 
 
 
 void fnSigmaAddRem(uint16_t plusMinusSelection) {
   #if !defined(TESTSUITE_BUILD)
-  real_t x, y;
+    real_t x, y;
 
-  lrChosen = 0;
+    lrChosen = 0;
 
-  if(plusMinusSelection == SIGMA_PLUS) { // SIGMA+
-    if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
+    if(plusMinusSelection == SIGMA_PLUS) { // SIGMA+
+      if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
         if(statisticalSumsUpdate && statisticalSumsPointer == NULL) {
           initStatisticalSums();
           if(lastErrorCode != ERROR_NONE) {

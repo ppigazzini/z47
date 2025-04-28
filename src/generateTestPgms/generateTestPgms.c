@@ -4694,9 +4694,6 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = REGISTER_J_IN_KS_CODE;
 
-    *(currentStep++) = (ITM_RAD >> 8) | 0x80;
-    *(currentStep++) =  ITM_RAD       & 0xff;
-
     *(currentStep++) = (ITM_LocR >> 8) | 0x80;
     *(currentStep++) =  ITM_LocR       & 0xff;
     *(currentStep++) = 4;
@@ -4740,6 +4737,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_ENTER;
 
+    *(currentStep++) = ITM_RAD2;
+
     *(currentStep++) = ITM_sin;
 
     *(currentStep++) = ITM_XexY;
@@ -4762,6 +4761,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_ENTER;
 
+    *(currentStep++) = ITM_RAD2;
+
     *(currentStep++) = ITM_cos;
 
     *(currentStep++) = ITM_XexY;
@@ -4779,9 +4780,17 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE + 2;
 
+
+
     // 40
     *(currentStep++) = (ITM_toPOL2 >> 8) | 0x80;
     *(currentStep++) =  ITM_toPOL2       & 0xff;
+
+    *(currentStep++) = ITM_FC;
+    *(currentStep++) = SYSTEM_FLAG_NUMBER;
+    *(currentStep++) = FLAG_HPRP & 0xff;
+    *(currentStep++) = ITM_XexY;
+
 
     *(currentStep++) = ITM_STO;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE + 3;
@@ -6060,22 +6069,22 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_FPQ;
 
-    *(currentStep++) = ITM_INT;
+    *(currentStep++) = ITM_IPQ;
 
-    *(currentStep++) = ITM_CPX;
+    *(currentStep++) = ITM_CPXQ;
 
     // 250
-    *(currentStep++) = ITM_MATR;
+    *(currentStep++) = ITM_MATRIXQ;
 
-    *(currentStep++) = ITM_NAN;
+    *(currentStep++) = ITM_NANQ;
 
-    *(currentStep++) = ITM_REAL;
+    *(currentStep++) = ITM_REALQ;
 
-    *(currentStep++) = ITM_SPEC;
+    *(currentStep++) = ITM_SPECQ;
 
-    *(currentStep++) = ITM_STRI;
+    *(currentStep++) = ITM_STRINGQ;
 
-    *(currentStep++) = ITM_PMINFINITY;
+    *(currentStep++) = ITM_INFQ;
 
     *(currentStep++) = ITM_PRIME;
 
@@ -7219,7 +7228,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = 'a';
     *(currentStep++) = 'r';
 
-    *(currentStep++) = ITM_M_SQR;
+    *(currentStep++) = ITM_M_SQRQ;
 
     *(currentStep++) = ITM_LITERAL;
     *(currentStep++) = BINARY_SHORT_INTEGER;
@@ -12439,8 +12448,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_LBLQ       & 0xff;
     *(currentStep++) = 'E' - 'A' + 100; // E
 
-    *(currentStep++) = (ITM_LEAP >> 8) | 0x80;
-    *(currentStep++) =  ITM_LEAP       & 0xff;
+    *(currentStep++) = (ITM_LEAPQ >> 8) | 0x80;
+    *(currentStep++) =  ITM_LEAPQ       & 0xff;
 
     *(currentStep++) = (ITM_Lm >> 8) | 0x80;
     *(currentStep++) =  ITM_Lm       & 0xff;

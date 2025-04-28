@@ -33,7 +33,7 @@ void fnMaskl(uint16_t numberOfBits) {
       mask = (((1ULL << numberOfBits) - 1) & shortIntegerMask) << (shortIntegerWordSize - numberOfBits);
     }
 
-    reallocateRegister(REGISTER_X, dtShortInteger, 0, 2);
+    reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, 2);
     *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = mask;
   }
 }
@@ -66,7 +66,7 @@ void fnMaskr(uint16_t numberOfBits) {
       mask = (1ULL << numberOfBits) - 1;
     }
 
-    reallocateRegister(REGISTER_X, dtShortInteger, 0, 2);
+    reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, 2);
     *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = mask;
   }
 }

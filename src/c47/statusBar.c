@@ -12,7 +12,7 @@ void drawBattery(uint16_t voltage);
 
 
   void showDateTime(void) {
-    if(!((SBARUPD_Date) || (SBARUPD_Time))) {
+    if(!((SBARUPD_Date) || (SBARUPD_Time) || (SBARUPD_WoY))) {
       return;
     }
     lcd_fill_rect(0, 0, X_REAL_COMPLEX, 20, LCD_SET_VALUE);
@@ -21,14 +21,20 @@ void drawBattery(uint16_t voltage);
     if(SBARUPD_Date) {
       getDateString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
-      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
     }
     else {
       x = X_TIME;
     }
 
     if(SBARUPD_Time) {
+      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
       getTimeString(dateTimeString);
+      showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+    }
+
+    if(SBARUPD_WoY) {
+      x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
+      getWeekOfYearString(dateTimeString);
       showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
     }
   }
@@ -72,7 +78,7 @@ void drawBattery(uint16_t voltage);
 
     switch(currentAngularMode) {
       case amRadian: {
-        showGlyph(STD_SUP_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
+        showGlyph(STD_SUP_BOLD_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
         break;
       }
 
@@ -82,7 +88,7 @@ void drawBattery(uint16_t voltage);
       }
 
       case amGrad: {
-        showGlyph(STD_SUP_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
+        showGlyph(STD_SUP_BOLD_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
         break;
       }
 
@@ -128,121 +134,76 @@ void drawBattery(uint16_t voltage);
 
 
 
-void showFracMode(void) {
+  void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
     char statusMessage[20];
     char str20[20];                                   //JM vv KEYS
     char str40[40];
 
-  showString(STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM, &standardFont, X_INTEGER_MODE-12*5, 0, vmNormal, true, true); // STD_SPACE_EM is 0+0+12 pixel wide
+    showString(STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM, &standardFont, X_INTEGER_MODE-12*5, 0, vmNormal, true, true); // STD_SPACE_EM is 0+0+12 pixel wide
 
-  uint32_t x = 0;
+    uint32_t x = 0;
 
-  if(lastIntegerBase != 0) {                               //JMvv HEXKEYS
-    str20[0]=0;
-    if(topHex) {
-      x = showString("#KEY", &standardFont, X_FRAC_MODE, 0 , vmNormal, true, true);//-4 looks good
-      strcpy(str20,"A"); conv(str20, str40);
-      x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
-      x = showString("-",    &standardFont, x,  2 , vmNormal, true, true);         //-4 looks good
-      strcpy(str20,"F"); conv(str20, str40);
-      x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
-    }
-    else {
-      x = showString("#BASE", &standardFont, X_FRAC_MODE, 0, vmNormal, true, true); //-4 looks good
-    }
-    return;
-  }                                                                                //JM^^
+    if(lastIntegerBase != 0) {                               //JMvv HEXKEYS
+      str20[0]=0;
+      if(topHex) {
+        x = showString("#KEY", &standardFont, X_FRAC_MODE, 0 , vmNormal, true, true);//-4 looks good
+        strcpy(str20,"A"); conv(str20, str40);
+        x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
+        x = showString("-",    &standardFont, x,  2 , vmNormal, true, true);         //-4 looks good
+        strcpy(str20,"F"); conv(str20, str40);
+        x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
+      }
+      else {
+        x = showString("#BASE", &standardFont, X_FRAC_MODE, 0, vmNormal, true, true); //-4 looks good
+      }
+      return;
+    }                                                                                //JM^^
 
     //a b/c
     x = X_FRAC_MODE;                    //vJM
     char divStr[10];
-    if(getSystemFlag(FLAG_FRACT) || (getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON))) {
-      if(!getSystemFlag(FLAG_PROPFR)) {
-        raiseString = 9;
-        strcpy(divStr,STD_SUB_b);
-        x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-2;
-        strcpy(divStr,"/");
-      }
-      else {
+    if(getSystemFlag(FLAG_FRACT) || getSystemFlag(FLAG_IRFRAC)) {
+      if(getSystemFlag(FLAG_PROPFR)) {
         raiseString = 3;
         strcpy(divStr,"a" STD_SPACE_4_PER_EM);
         x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-3;
-        raiseString = 9;
-        strcpy(divStr, STD_SUB_b);
-        x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-2;
-        strcpy(divStr,"/");
       }
-    }
-    else {
-        strcpy(divStr,"/");
+      raiseString = 9;
+      strcpy(divStr, STD_SUB_b);
+      x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-2;
     }
 
-    compressString = 1;             //^JM
-    if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
-      sprintf(statusMessage,"%s",divStr);
-      x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+    strcpy(divStr,"/");
+    compressString = 1;
+    if(denMax == 0 || denMax > MAX_DENMAX) {
+      sprintf(statusMessage,"%smax",divStr);
+    } else {
+      sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
+    }
+    x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
 
-      if(denMax == 0 || denMax > MAX_DENMAX) {
-        compressString = 1;
-        sprintf(statusMessage,"max");
-        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      } else {
-        sprintf(statusMessage, "%" PRIu32 ,denMax);
-        compressString = 1;
-      x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      }
+    if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
+      raiseString = 3;
+      x = showString(STD_SUB_f, &standardFont, ++x, 0, vmNormal, true, true);
+    }
 
+    if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
       strcpy(divStr,PRODUCT_SIGN);
       raiseString = 2;
-      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
-
-//TO USE REAL II FONT HERE. spacing issue in font, to fix, keeping the old manual way
-//strcpy(divStr,STD_IRRATIONAL_I);
-//x = showString(divStr, &standardFont, x, -2, vmNormal, true, true);
-
-      strcpy(divStr,"I");
-      raiseString = 1;
-      showString(divStr, &standardFont, x, 0, vmNormal, true, true);
-      raiseString = 1;
-      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
-      x -= 5;
-      for(uint16_t yy = 4; yy<=11; yy++) {
-        setWhitePixel(x, yy);
-      }
-      if(fractionDigits > 0 && fractionDigits < 34) {
-        compressString = 1;
-        x = showString(STD_ALMOST_EQUAL, &standardFont, x + 5 - 1, 0, vmNormal, true, false);
-      }
+      x = showString(divStr, &standardFont, x + (getSystemFlag(FLAG_IRFRAC) ? 0 : 1), 0, vmNormal, true, true) - (getSystemFlag(FLAG_IRFRAC) ? 0 : 1);
     }
 
-    else {//if(getSystemFlag(FLAG_FRACT)){                                              //(NOT IRFRAC or FRAC) AND FRAC
+    if(getSystemFlag(FLAG_IRFRAC)) {
 
-      if(denMax == 0 || denMax > MAX_DENMAX) {
-        compressString = 1;
-        sprintf(statusMessage,"%smax",divStr);
-        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      } else {
-          sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
-        compressString = 1;
-          x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-        }
+    strcpy(divStr,STD_IRRATIONAL_I);
+    x = showString(divStr, &standardFont, x-1, -1, vmNormal, true, true) - 8;
 
-        if(!getSystemFlag(FLAG_DENANY)) {
-          if(getSystemFlag(FLAG_DENFIX)) {
-            x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false, false); // f is 0+7+3 pixel wide
-          }
-          else {
-            x = showString(PRODUCT_SIGN, &standardFont, x, 0, vmNormal, true, false); // STD_DOT is 0+3+2 pixel wide and STD_CROSS is 0+7+2 pixel wide
-          }
-        }
+    }
 
-      if(fractionDigits == 0 || fractionDigits == 34) {
-      }
-      else if(getSystemFlag(FLAG_FRACT)) {                                                    // tags are evaluated
-        compressString = 1;
-        x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, 0, vmNormal, true, false);
-      }
+    if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
+      compressString = 1;
+      x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, -1, vmNormal, true, false);
     }
   }
 
@@ -592,7 +553,7 @@ void showFracMode(void) {
 
       showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
 
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
 
       showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
 
@@ -603,6 +564,8 @@ void showFracMode(void) {
 
       light_ASB_icon();                            //JM
       drawBattery(exponentLimit); //test battery indicator
+
+      calcMode = CM_GRAPH;
   }
 #endif //PC_BUILD
 
@@ -642,15 +605,15 @@ void showFracMode(void) {
 //    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
 
 // eRPN above, with the stack siza underneath it
-//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
+//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_BOLD_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
 //    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_SUB_8 : STD_SUB_4, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, true); // is 0+6+2 pixel wide
   }
 
 
   void showHideWatch(void) {
-    if(!(SBARUPD_Watch)) return;
+    if(!(SBARUPD_StopWatch)) return;
     if(watchIconEnabled) {
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
     }
   }
 
@@ -770,7 +733,7 @@ void drawBattery(uint16_t voltage) {
 
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
-      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
+      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d ti:%u er:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
       if(GRAPHMODE) lcd_fill_rect(0, 0, 158, 20, 0);

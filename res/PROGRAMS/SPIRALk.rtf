@@ -1,0 +1,75 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #42: 564 bytes / 68 steps } \par
+\par
+0001:  LBL \u8216?SPIRALk\u8217?\par
+0002:    REM \u8216?SPIRAL Program jm2025-01-02\u8217?\par
+0003:    REM \u8216?REG I CONTAINS 0 OR SCALING FACTOR\u8217?\par
+0004:    REM \u8216?REG J CONTAINS 0 OR GROWTH RATE OF SPIRAL\u8217?\par
+0005:    REM \u8216?C47 CODE FOR =>RAD REMOVED UPDATE\u8217?\par
+0006:    REM \u8216?COMPLEX AND DO NOT CHANGE TO RAD by RAprism\u8217?\par
+0007:    REM \u8216?CHANGED TO LIMIT |x| TO 150 INSTEAD OF 234 by barrymead\u8217?\par
+0008:    ENTER\u8593?\par
+0009:    RCL I\par
+0010:    x= ? 0.\par
+0011:      0.35\par
+0012:    STO I\par
+0013:    RCL J\par
+0014:    x= ? 0.\par
+0015:      0.1\par
+0016:    |x|\par
+0017:    STO J\par
+0018:    LocR 02\par
+0019:    1\par
+0020:    STO .00\par
+0021:    0\par
+0022:    ENTER\u8593?\par
+0023:    CLLCD\par
+0024:    REM \u8216?MAIN LOOP START\u8217?\par
+\par
+0025:  LBL 00\par
+0026:    REM \u8216?CALC ANGLE\u8217?\par
+0027:    RCL .00\par
+0028:    500.\par
+0029:    \u247?\par
+0030:    ENTER\u8593?\par
+0031:    \u8658?RAD\par
+0032:    ENTER\u8593?\par
+0033:    REM \u8216?CALC RE IM\u8217?\par
+0034:    COS\par
+0035:    x\u8644?y\par
+0036:    SIN\par
+0037:    COMPLEX\par
+0038:    x\u8644?y\par
+0039:    REM \u8216?CALC SIZE\u8217?\par
+0040:    RCL\u215? J\par
+0041:    \u8519?\u739?\par
+0042:    RCL\u215? I\par
+0043:    REM \u8216?CHECK COMPLEX VECTOR SIZE\u8217?\par
+0044:    150\par
+0045:    x\u8804? ? Y\par
+0046:      RTN\par
+0047:    DROPx\par
+0048:    STO .01\par
+0049:    \u215?\par
+0050:    REM \u8216?PLOT POINTS\u8217?\par
+0051:    REM \u8216?ADD OFFSET TO HAVE 0,0 IN MID OF SCREEN\u8217?\par
+0052:    200.+120.\u8520?\par
+0053:    +\par
+0054:    COMPLEX\par
+0055:    x\u8644?y\par
+0056:    SF \u8216?IGN1ER\u8217?\par
+0057:    POINT\par
+0058:    CF \u8216?IGN1ER\u8217?\par
+0059:    PAUSE 00\par
+0060:    REM \u8216?CALC NEXT ANGLE COUNTER\u8217?\par
+0061:    RCL .01\par
+0062:    1/x\par
+0063:    SDL 03\par
+0064:    IP\par
+0065:    INCR X\par
+0066:    STO+ .00\par
+0067:  GTO 00\par
+0068:  END\par
+}}

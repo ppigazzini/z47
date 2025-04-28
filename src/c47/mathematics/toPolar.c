@@ -6,6 +6,34 @@
  ***********************************************/
 
 #include "c47.h"
+static void fnToPolar(uint16_t unusedButMandatoryParameter);
+
+
+  void fnToPolar_HP            (uint16_t unusedButMandatoryParameter){
+    bool_t FLAG_HPRP_mem = getSystemFlag(FLAG_HPRP);
+    setSystemFlag(FLAG_HPRP);
+    fnToPolar2(NOPARAM);
+    if(FLAG_HPRP_mem) {
+      //setSystemFlag(FLAG_HPRP);
+    }
+    else {
+      clearSystemFlag(FLAG_HPRP);
+    }
+  }
+
+  void fnToPolar_CX            (uint16_t unusedButMandatoryParameter){
+    bool_t FLAG_HPRP_mem = getSystemFlag(FLAG_HPRP);
+    clearSystemFlag(FLAG_HPRP);
+    fnToPolar2(NOPARAM);
+    if(FLAG_HPRP_mem) {
+      setSystemFlag(FLAG_HPRP);
+    }
+    else {
+      //clearSystemFlag(FLAG_HPRP);
+    }
+  }
+
+
 
 void fnToPolar2(uint16_t unusedButMandatoryParameter) {
   uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
@@ -38,7 +66,7 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnToPolar(uint16_t unusedButMandatoryParameter) {
+static void fnToPolar(uint16_t unusedButMandatoryParameter) {
   uint32_t dataTypeX, dataTypeY;
   calcRegister_t REG_X, REG_Y;
   real_t x, y;

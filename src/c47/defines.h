@@ -8,7 +8,9 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07a5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+
+// Version 7a5 is an internal alpha, to test the internal changes to allow the upcoming vector branch
 
 
 #if !defined(CALCMODEL)
@@ -84,6 +86,7 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -105,8 +108,9 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -122,7 +126,7 @@
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
 #define significantDigitsForEqnGraphs (significantDigits == 0 ? 12 : significantDigits)   //If 6 is chosen by user, all four types are changes as follows: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+6; 75 to SDIGS+9
-#define significantDigitsForScreen    4                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
+#define significantDigitsForScreen    3                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
 
 
 //Testing and debugging
@@ -610,7 +614,7 @@
 #define FLAG_SBtvm                            0x8034
 #define FLAG_SBoc                             0x8035
 #define FLAG_SBss                             0x8036
-#define FLAG_SBclk                            0x8037
+#define FLAG_SBstpw                           0x8037
 #define FLAG_SBser                            0x8038
 #define FLAG_SBprn                            0x8039
 #define FLAG_SBbatV                           0x803A
@@ -627,7 +631,7 @@
 #define FLAG_ERPN                             0x8045
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
-#define FLAG_IRF_ON                           0x8048
+#define FLAG_IRFRQ                            0xc048
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
 #define FLAG_CPXPLOT                          0x804B
@@ -641,8 +645,10 @@
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
+#define FLAG_MNUp1                            0x8056
+#define FLAG_SBwoy                            0x8057
 
-#define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+24 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1040,6 +1046,9 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define RBR_INCDEC1 10
+#define LAST_GLOBAL_REGISTER_SCREEN LAST_SPARE_REGISTER - modulo(LAST_SPARE_REGISTER, RBR_INCDEC1)
+
 #define FAILED_INDIRECTION                      9999
 
 /* Convertion from a key stroke program register code to a C register number
@@ -1094,6 +1103,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Status bar updating mode
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
+#define SBARUPD_WoY                             (getSystemFlag(FLAG_SBwoy  ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
 #define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
@@ -1106,7 +1116,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_AlphaMode                       ( 1                         )
 #define SBARUPD_HourGlass                       ( 1                         )
 #define SBARUPD_StackSize                       (getSystemFlag(FLAG_SBss   ))
-#define SBARUPD_Watch                           (getSystemFlag(FLAG_SBclk  ))
+#define SBARUPD_StopWatch                       (getSystemFlag(FLAG_SBstpw ))
 #define SBARUPD_SerialIO                        (getSystemFlag(FLAG_SBser  ))
 #define SBARUPD_Printer                         (getSystemFlag(FLAG_SBprn  ))
 #define SBARUPD_UserMode                        ( 1                         )
@@ -1118,9 +1128,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 
 // Horizontal offsets in the status bar
-#define X_DATE                                   (SBARUPD_Time ? 1 : 25)
+#define X_DATE                                   ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
 #define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
-#define X_REAL_COMPLEX                           136
+#define X_REAL_COMPLEX                           136  // note: this is for both dow or time, not both
+#define X_HOURGLASS_GRAPHS                       140
 #define X_COMPLEX_MODE                           146
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
 #define X_ANGULAR_MODE                           160
@@ -1128,11 +1139,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_INTEGER_MODE                           262
 #define X_OVERFLOW_CARRY                         292
 #define X_ALPHA_MODE                             300
-#define X_SSIZE_BEGIN                            327 -5
 #define X_HOURGLASS                              312
-#define X_ASM                                    (X_ALPHA_MODE + 34)
-#define X_HOURGLASS_GRAPHS                       140
-#define X_WATCH                                  337
+#define X_SSIZE_BEGIN                            327 - 5 + 3
+#define X_ASM                                    (X_ALPHA_MODE + 34) //334
+#define X_STOPWATCH                              337
 #define X_SERIAL_IO                              353
 #define X_PRINTER                                362
 #define X_USER_MODE                              375
@@ -1144,7 +1154,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
+#define Y_SHIFT                                  (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
 
 
 
@@ -1182,7 +1192,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_DIGITS                  16
+#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 2)   //used for time consuming functions, divides, etc.
+#define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
 #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has about 64Kb for user usable RAM
@@ -1312,6 +1323,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_MENU                                10017
 #define TM_CMP                                 10018 // TM_CMP must be the last in this list
 
+// gamma function type
+#define GAMMA_XYLOWER                              0
+#define GAMMA_P                                    1
+#define GAMMA_XYUPPER                              2
+#define GAMMA_Q                                    3
+
+
 // NIM number part
 #define NP_EMPTY                                   0
 #define NP_INT_10                                  1 // Integer base 10
@@ -1323,6 +1341,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NP_COMPLEX_INT_PART                        7 // Integer part of the complex imaginary part
 #define NP_COMPLEX_FLOAT_PART                      8 // Decimal part of the complex imaginary part
 #define NP_COMPLEX_EXPONENT                        9 // Ten exponent of the complex imaginary part
+#define NP_HP32SII_DENOMINATOR                    10 // Denominator of the fraction (HP32SII mode)
+#define NP_COMPLEX_FRACTION_DENOMINATOR           11 // Denominator of the complex imaginary part fraction
+#define NP_COMPLEX_HP32SII_DENOMINATOR            12 // Denominator of the complex imaginary part fraction (HP32SII mode)
 
 // Temporary information
 #define TI_NO_INFO                                 0
@@ -1427,17 +1448,24 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS2                                 99
 #define TI_ROOTS3                                100
 #define TI_IJ                                    101
-#define TI_MIJ                                   102
-#define TI_BYTES                                 103
-#define TI_BITS                                  104
-#define TI_SOLVER_VARIABLE_RESULT                105
-#define TI_DATA_NEG_OVRFL                        106
-#define TI_LASTSTATEFILE                         107
-#define TI_FUNCTION                              108
-#define TI_STORCL                                109
-#define TI_TVM_EFF                               110
-#define TI_TVM_IA                                111
-#define TI_NOT_AVAILABLE                         112
+#define TI_I                                     102
+#define TI_J                                     103
+#define TI_MIJ                                   104
+#define TI_BYTES                                 105
+#define TI_BITS                                  106
+#define TI_SOLVER_VARIABLE_RESULT                107
+#define TI_DATA_NEG_OVRFL                        108
+#define TI_LASTSTATEFILE                         109
+#define TI_FUNCTION                              110
+#define TI_STORCL                                111
+#define TI_TVM_EFF                               112
+#define TI_TVM_IA                                113
+#define TI_NOT_AVAILABLE                         114
+#define TI_DISP_WOY                              115
+#define TI_DISP_JULIAN_WOY                       116
+#define TI_WOY                                   117
+#define TI_WOY_RULE                              118
+#define TI_MIJEQ                                 119
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1475,7 +1503,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_REALS                             16
 #define CATALOG_CPXS                              17
 #define CATALOG_MVAR                              18
-#define NUMBER_OF_CATALOGS                        19
+#define CATALOG_CONFIGS                           19
+#define CATALOG_ALLVARS                           20
+#define CATALOG_NUMBRS                            21
+#define NUMBER_OF_CATALOGS                        22
 
 // String comparison type
 #define CMP_BINARY                                 0
@@ -1595,7 +1626,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     261  //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1614,12 +1645,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 
+#define RAM_SIZE_IN_BLOCKS_OLD_HW              (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+#define RAM_SIZE_IN_BLOCKS_NEW_HW              (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #elif defined(DMCP_BUILD) && !defined(NEW_HW) // DMCP
-  #define RAM_SIZE_IN_BLOCKS                   (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_OLD_HW
 #else // !DMCP_BUILD
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #endif // DMCP_BUILD
 
 #define CONFIG_SIZE_IN_BLOCKS                  TO_BLOCKS(sizeof(dtConfigDescriptor_t))
@@ -1680,6 +1713,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CHECK_VALUE_INFINITY                       6
 #define CHECK_VALUE_MATRIX                         7
 #define CHECK_VALUE_MATRIX_SQUARE                  8
+#define CHECK_VALUE_DATE                           9
+#define CHECK_VALUE_TIME                          10
+#define CHECK_VALUE_SINT                          11
+#define CHECK_VALUE_LINT                          12
+#define CHECK_VALUE_ANGLE                         13
+#define CHECK_VALUE_NUMBER                        14
 
 #define OPMOD_MULTIPLY                             0
 #define OPMOD_POWER                                1
@@ -1771,9 +1810,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
-// The number of elements in an array
-#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
-
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
@@ -1798,7 +1834,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= PROBMENUSTART && -softmenu[softmenuStack[0].softmenuId].menuItem <= PROBMENUEND)
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE))
 #define BASEMODEREGISTERX                    (BASEMODEACTIVE && \
@@ -1818,7 +1854,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
-#define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 
@@ -1911,7 +1946,24 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
+#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define getTagAngularMode(tag)               ( tag & amAngleMask)
+#define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
+#define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
+#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+
+#if defined(DMCP_BUILD)
+  #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
+#else //!DMCP_BUILD
+  #define runningOnSimOrUSB true
+#endif //!DMCP_BUILD
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
@@ -1981,13 +2033,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 /* Turn off -Wunused-result for a specific function call */
 #define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
-#if defined(DMCP_BUILD)
-  #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
-#else // !DMCP_BUILD
-  #define TMP_STR_LENGTH     2560 //2560 //JMMAX ORG:2560, changed back from 3000; 2023-09-26
-#endif // DMCP_BUILD
+#define TMP_STR_LENGTH         2560
 #define WRITE_BUFFER_LEN       4096
-#define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
+#define ERROR_MESSAGE_LENGTH    512
 #define DISPLAY_VALUE_LEN        80
 
 #define FILENAMELEN              40

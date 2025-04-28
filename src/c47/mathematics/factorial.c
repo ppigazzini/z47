@@ -7,50 +7,9 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const fact[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2         3         4          5          6          7          8           9             10
-//          Long integer Real34    Complex34 Time       Date       String     Real34 mat Complex34 m Short integer Config data
-            factLonI,    factReal, factCplx, factError, factError, factError, factError, factError,  factShoI,     factError
-};
+static void factReal(void);
 
-
-
-/********************************************//**
- * \brief Data type error in fact
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void factError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate x! for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnFactorial:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and fact(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnFactorial(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  fact[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void factLonI(void) {
+static void factLonI(void) {
   longInteger_t x, f;
 
   convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
@@ -69,8 +28,8 @@ void factLonI(void) {
   if(longIntegerCompareUInt(x, MAX_FACTORIAL) > 0) {                            //JM
     // convert long integers above 450 to reals and return a real factorial result
     convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-    factReal();
     longIntegerFree(x);
+    factReal();
     return;
   }
 
@@ -96,7 +55,7 @@ void factLonI(void) {
   longIntegerFree(x);
 }
 
-uint64_t fact_uint64(uint64_t value)
+static uint64_t fact_uint64(uint64_t value)
 {
   uint64_t result;
 
@@ -123,7 +82,7 @@ uint64_t fact_uint64(uint64_t value)
 }
 
 
-void factShoI(void) {
+static void factShoI(void) {
   int16_t sign;
   uint64_t value;
 
@@ -159,25 +118,34 @@ void factShoI(void) {
 
 
 
-void factReal(void) {
+static void factReal(void) {
   real_t x;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  WP34S_Factorial(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+  if (getRegisterAsReal(REGISTER_X, &x)) {
+    WP34S_Factorial(&x, &x, &ctxtReal39);
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
+  }
 }
 
 
 
-void factCplx(void) {
+static void factCplx(void) {
   real_t zReal, zImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &zReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &zImag);
+  if (getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+    realAdd(&zReal, const_1, &zReal, &ctxtReal39);
+    WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
+    convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+  }
+}
 
-  realAdd(&zReal, const_1, &zReal, &ctxtReal39);
-  WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+/********************************************//**
+ * \brief regX ==> regL and fact(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnFactorial(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexMonadicFunction(&factReal, &factCplx, &factShoI, &factLonI);
 }

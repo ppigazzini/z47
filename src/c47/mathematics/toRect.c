@@ -9,6 +9,30 @@
 
 static void fnToRect(int8_t angleInY);
 
+  void fnToRect_HP             (uint16_t unusedButMandatoryParameter){
+    bool_t FLAG_HPRP_mem = getSystemFlag(FLAG_HPRP);
+    setSystemFlag(FLAG_HPRP);
+    fnToRect2(NOPARAM);
+    if(FLAG_HPRP_mem) {
+      //setSystemFlag(FLAG_HPRP);
+    }
+    else {
+      clearSystemFlag(FLAG_HPRP);
+    }
+  }
+
+  void fnToRect_CX             (uint16_t unusedButMandatoryParameter){
+    bool_t FLAG_HPRP_mem = getSystemFlag(FLAG_HPRP);
+    clearSystemFlag(FLAG_HPRP);
+    fnToRect2(NOPARAM);
+    if(FLAG_HPRP_mem) {
+      setSystemFlag(FLAG_HPRP);
+    }
+    else {
+      //clearSystemFlag(FLAG_HPRP);
+    }
+  }
+
 
 void fnToRect2(uint16_t unusedButMandatoryParameter) {
   uint8_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
@@ -68,7 +92,6 @@ void fnToRect(int8_t angleInY) {
     REG_Y = REGISTER_Y;
   }
   else {
-printf("swapped\n");
     REG_X = REGISTER_Y;
     REG_Y = REGISTER_X;
   }

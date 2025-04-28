@@ -72,7 +72,14 @@ changeSign
 sign
 
 not
+and
+nand
+nor
+or
+xnor
+xor
 mirror
+shift_rotate
 
 addition_longInteger
 addition_time

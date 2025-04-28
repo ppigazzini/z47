@@ -5,6 +5,8 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#define FILENAME_BUFFER_LENGTH 50
+
 static bool_t _ioWriteEnabled = false;
 static bool_t _ioReadEnabled  = false;
 
@@ -109,7 +111,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
           break;
         }
       }
-      stringAppend(fileNameSelected, filename + jj);
+      stringCopy(fileNameSelected, filename + jj);
     }
     return FILE_OK;
   }

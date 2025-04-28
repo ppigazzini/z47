@@ -96,10 +96,10 @@ char       letteredRegisterName(calcRegister_t regist);
 
   //mode
   #define stdNoEnlarge     0                                                                                    //JM vv compress, enlarge, small fonts
-  #define stdEnlarge       1
+  #define stdEnlarge       1  //used in screen.c only
   #define stdnumEnlarge    2
-  #define numSmall         3
-  #define numHalf          4
+  #define numSmall         3  //used in screen.c only
+  #define numHalf          4  //used in screen.c only
 
   //showStringEnhanced, showStringC47
   #define DO_LF            true
@@ -111,7 +111,8 @@ char       letteredRegisterName(calcRegister_t regist);
   #define NO_raise         0
   #define DO_Show          0
   #define NO_Show          1
-
+  #define DO_Bold          1
+  #define NO_Bold          0
 
 
   uint32_t showStringC47                      (const char *string, int mode, int comp, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols );
@@ -145,7 +146,7 @@ char       letteredRegisterName(calcRegister_t regist);
    * \param[in] showEndingCols  Display the ending empty columns
    * \return x coordinate for the next glyph
    */
-  uint32_t showStringEnhanced                 (const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, bool_t lf);
+  uint32_t showStringEnhanced                 (const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, uint8_t boldString1, bool_t lf);
   uint32_t showString                         (const char *str,   const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols);
 
   /**

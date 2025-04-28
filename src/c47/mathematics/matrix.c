@@ -30,73 +30,47 @@
   }
 #endif // !TESTSUITE_BUILD
 
+static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
+  longInteger_t tmp;
+  bool_t res = false;
+
+  longIntegerInit(tmp);
+
+  if (!getRegisterAsLongInt(reg, tmp, NULL)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "invalid data type %s for %s", getRegisterDataTypeName(reg, true, false), reg == REGISTER_X ? "columns" : "rows");
+        moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif // !TESTSUITE_BUILD
+    longIntegerFree(tmp);
+    return false;
+  }
+
+  if(longIntegerIsNegativeOrZero(tmp)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        char strbuf[32];
+        longIntegerToAllocatedString(tmp, strbuf, 32);
+        sprintf(errorMessage, "invalid number of %s", reg == REGISTER_X ? "columns" : "rows");
+        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif // !TESTSUITE_BUILD
+  } else {
+    longIntegerToUInt32(tmp, *d);
+    res = true;
+  }
+
+  longIntegerFree(tmp);
+  return res;
+}
+
 static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
-  longInteger_t tmp_lgInt1;
-  longInteger_t tmp_lgInt2;
-
   //Get Size from REGISTER_X and REGISTER_Y
-  if(   ((getRegisterDataType(REGISTER_X) != dtLongInteger) && (getRegisterDataType(REGISTER_X) != dtReal34))
-     || ((getRegisterDataType(REGISTER_Y) != dtLongInteger) && (getRegisterDataType(REGISTER_Y) != dtReal34))) {
-      #if !defined(TESTSUITE_BUILD)
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-          moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      #endif // !TESTSUITE_BUILD
-    goto returnDone;
-  }
-
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt1);
-  }
-  else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt1, DEC_ROUND_DOWN);
-  }
-
-  if(longIntegerIsNegativeOrZero(tmp_lgInt1)) {
-    #if !defined(TESTSUITE_BUILD)
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt1, strbuf, 32);
-        sprintf(errorMessage, "invalid number of columns");
-        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #endif // !TESTSUITE_BUILD
-    goto returnDone;
-  }
-  longIntegerToUInt32(tmp_lgInt1, *cols);
-
-  if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
-  }
-  else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt2, DEC_ROUND_DOWN);
-  }
-
-  if(longIntegerIsNegativeOrZero(tmp_lgInt2)) {
-    #if !defined(TESTSUITE_BUILD)
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt2, strbuf, 32);
-        sprintf(errorMessage, "invalid number of rows");
-        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #endif // !TESTSUITE_BUILD
-    goto returnDone;
-  }
-  longIntegerToUInt32(tmp_lgInt2, *rows);
-
-  longIntegerFree(tmp_lgInt1);
-  longIntegerFree(tmp_lgInt2);
-  return true;
-
-returnDone:
-  longIntegerFree(tmp_lgInt1);
-  longIntegerFree(tmp_lgInt2);
-  return false;
+  return getSingleDimension(REGISTER_X, cols) &&
+         getSingleDimension(REGISTER_Y, rows);
 }
 
 
@@ -877,11 +851,8 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
 }
 
 
-void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(!saveLastX()) {
-    return;
-  }
 
+static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t matrix;
     real34_t sum;
@@ -916,6 +887,20 @@ void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
+
+
+void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
+  if(saveLastX())
+    _fnEuclideanNorm(NOPARAM);
+}
+
+
+void fnVectorDist(uint16_t unusedParamButMandatory) {
+  fnSubtract(NOPARAM);
+  _fnEuclideanNorm(NOPARAM);
+}
+
+
 
 
 void fnRowSum(uint16_t unusedParamButMandatory) {
@@ -1278,12 +1263,21 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
 
     linkToRealMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
+    }
+    
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      fnRecallVElement(1);
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
@@ -1314,18 +1308,28 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         realMatrixFree(&res);
       }
     }
+    goto Success;
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x, res;
 
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
+    }
+
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      fnRecallVElement(1);
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
@@ -1334,6 +1338,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       complexMatrixFree(&res);
     }
+    goto Success;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1343,8 +1348,41 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     #endif // PC_BUILD
   }
 
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+ErrorExit:
+return;
+
+Success:
+adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+return;
+
+
 }
+
+
+
+static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns){
+  real34Matrix_t matrix;
+  if(Rows == 1 && Columns == 1) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    if(!initMatrixRegister(REGISTER_X, 1, 1, false)) {
+      fnDrop(NOPARAM);
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+        moreInfoOnError("In function createEigenVector1:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return 255;
+    }
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+    realToReal34(const_1, &matrix.matrixElements[0]);
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 
 
 void fnEigenvectors(uint16_t unusedParamButMandatory) {
@@ -1353,15 +1391,24 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
 
     linkToRealMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)",
                 x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else {
+    
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+      case 1  : break;
+      case 255: return;
+      default :
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       ires.header.matrixRows = ires.header.matrixColumns = 0;
@@ -1387,26 +1434,37 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       }
       realMatrixFree(&res);
     }
+    goto Success;
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x, res;
 
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else {
+
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+      case 1  : break;
+      case 255: return;
+      default :
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       complexEigenvectors(&x, &res);
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       complexMatrixFree(&res);
     }
+    goto Success;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1416,7 +1474,13 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     #endif // PC_BUILD
   }
 
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+ErrorExit:
+return;
+
+Success:
+adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+return;
+
 }
 
 
@@ -4221,6 +4285,9 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
   const uint16_t size = matrix->header.matrixRows;
   uint16_t       i, j, k;
   real_t         *v = NULL;
+  uint16_t       freeUnknowns = 1;
+  uint16_t       duplicateEigenvalueCount = 0;
+  uint16_t       *unknownsToFill = NULL;
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
     for(i = 0; i < size * size * 2; i++) {
@@ -4232,70 +4299,127 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
       realPlus(eig + (k * size + k) * 2 + 1, eig + (k * size + k) * 2 + 1, &ctxtReal34);
     }
 
-    for(k = 0; k < size; k++) {
-      if((v = allocC47Blocks(size * REAL_SIZE_IN_BLOCKS * 2))) {
-        for(i = 0; i < size * size; i++) {
-          for(j = 0; j < size * 2; j++) {
-            realCopy(const_NaN, v + j);
-          }
-
-          // Restore the original matrix
-          if(isComplex) {
-            for(j = 0; j < size * size; j++) {
-              real34ToReal(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[j]), a + j * 2    );
-              real34ToReal(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[j]), a + j * 2 + 1);
-            }
-          }
-          else {
-            for(j = 0; j < size * size; j++) {
-              real34ToReal(&matrix->realMatrix.matrixElements[j], a + j * 2);
-              realZero(a + j * 2 + 1);
-            }
-          }
-
-          // Subtract an eigenvalue
-          for(j = 0; j < size; j++) {
-            realSubtract(a + (j * size + j) * 2,     eig + (k * size + k) * 2,     a + (j * size + j) * 2,     realContext);
-            realSubtract(a + (j * size + j) * 2 + 1, eig + (k * size + k) * 2 + 1, a + (j * size + j) * 2 + 1, realContext);
-            realCopy(const_0, q + j * 2    );
-            realCopy(const_0, q + j * 2 + 1);
-          }
-
-          // Make the equation matrices
-          for(j = 0; j < size; j++) {
-            realCopy(j ? const_0 : const_1, a + ((k + i / size) * size + (i + j) % size) * 2    );
-            realCopy(    const_0,           a + ((k + i / size) * size + (i + j) % size) * 2 + 1);
-          }
-          realCopy(const_1, q + (k + i / size) * 2);
-
-          // Solve linear equations from the submatrix
-          lastErrorCode = ERROR_NONE;
-          cpxLinearEqn(a, q, v, size, realContext);
-          if(lastErrorCode != ERROR_SINGULAR_MATRIX) {
-            break;
+    if((unknownsToFill = allocC47Blocks(size * 2 * REAL_SIZE_IN_BLOCKS * 2))) {
+      for(k = 0; k < size; k++) {
+        if(k > 0 && realCompareEqual(eig + (k * size + k) * 2, eig + ((k - 1) * size + (k - 1)) * 2) && realCompareEqual(eig + (k * size + k) * 2 + 1, eig + ((k - 1) * size + (k - 1)) * 2 + 1)) {
+          ++duplicateEigenvalueCount;
+          if(freeUnknowns > size) {
+            freeUnknowns = size; // just in case
           }
         }
-        if(lastErrorCode == ERROR_SINGULAR_MATRIX) {
+        else {
+          duplicateEigenvalueCount = 0;
+          freeUnknowns = 1;
+          unknownsToFill[0] = 0;
+        }
+        if((v = allocC47Blocks(size * 2 * REAL_SIZE_IN_BLOCKS * 2))) {
+          do {
+            for(j = 0; j < size * 2 * 2; j++) {
+              realCopy(const_NaN, v + j);
+            }
+
+            if(duplicateEigenvalueCount == 0) {
+              // Restore the original matrix
+              for(i = 0; i < size; i++) {
+                if(isComplex) {
+                  for(j = 0; j < size; j++) {
+                    real34ToReal(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]), a + (i * (size + freeUnknowns) + j) * 2    );
+                    real34ToReal(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]), a + (i * (size + freeUnknowns) + j) * 2 + 1);
+                  }
+                }
+                else {
+                  for(j = 0; j < size; j++) {
+                    real34ToReal(&matrix->realMatrix.matrixElements[i * size + j], a + (i * (size + freeUnknowns) + j) * 2);
+                    realZero(a + (i * (size + freeUnknowns) + j) * 2 + 1);
+                  }
+                }
+                for(j = 0; j < freeUnknowns; j++) {
+                  realCopy(j == i ? const_1 : const_0, a + (i * (size + freeUnknowns) + j + size) * 2);
+                  realZero(a + (i * (size + freeUnknowns) + j + size) * 2 + 1);
+                }
+              }
+              for(i = 0; i < freeUnknowns; i++) {
+                for(j = 0; j < size; j++) {
+                  realCopy(j == unknownsToFill[i] ? const_1 : const_0, a + ((i + size) * (size + freeUnknowns) + j) * 2);
+                  realZero(a + ((i + size) * (size + freeUnknowns) + j) * 2 + 1);
+                }
+                for(j = 0; j < freeUnknowns; j++) {
+                  realCopy(j == i ? const_1 : const_0, a + ((i + size) * (size + freeUnknowns) + j + size) * 2);
+                  realZero(a + ((i + size) * (size + freeUnknowns) + j + size) * 2 + 1);
+                }
+              }
+
+              // Subtract an eigenvalue
+              for(j = 0; j < size; j++) {
+                realSubtract(a + (j * (size + freeUnknowns) + j) * 2,     eig + (k * size + k) * 2,     a + (j * (size + freeUnknowns) + j) * 2,     realContext);
+                realSubtract(a + (j * (size + freeUnknowns) + j) * 2 + 1, eig + (k * size + k) * 2 + 1, a + (j * (size + freeUnknowns) + j) * 2 + 1, realContext);
+              }
+            }
+
+            // Make the equation matrices
+            for(j = 0; j < size + freeUnknowns; j++) {
+              realCopy(j == duplicateEigenvalueCount + size ? const_1 : const_0, q + j * 2    );
+              realZero(                                                          q + j * 2 + 1);
+            }
+
+            // Solve linear equations from the submatrix
+            lastErrorCode = ERROR_NONE;
+            cpxLinearEqn(a, q, v, size + freeUnknowns, realContext);
+            if(lastErrorCode != ERROR_SINGULAR_MATRIX) {
+              break;
+            }
+
+            // Next iteration
+            ++(unknownsToFill[freeUnknowns - 1]);
+            for(i = 1; i <= freeUnknowns - 1; ++i) {
+              if(unknownsToFill[freeUnknowns - 1] >= size) {
+                ++unknownsToFill[freeUnknowns - i - 1];
+                for(j = freeUnknowns - i; j <= freeUnknowns - 1; ++j) {
+                  unknownsToFill[freeUnknowns + j] = unknownsToFill[freeUnknowns + j - 1];
+                }
+              }
+              else {
+                break;
+              }
+            }
+            if(unknownsToFill[freeUnknowns - 1] >= size) {
+              ++freeUnknowns;
+              for(i = 0; i < size; ++i) {
+                unknownsToFill[i] = i;
+              }
+            }
+          } while(freeUnknowns <= size);
+          if(lastErrorCode == ERROR_SINGULAR_MATRIX) {
+            for(i = 0; i < size; i++) {
+              realCopy(const_0, v + i * 2    );
+              realCopy(const_0, v + i * 2 + 1);
+            }
+            lastErrorCode = ERROR_NONE;
+          }
           for(i = 0; i < size; i++) {
-            realCopy(const_0, v + i * 2    );
-            realCopy(const_0, v + i * 2 + 1);
+            realCopy(v + i * 2,     r + (i * size + k) * 2    );
+            realCopy(v + i * 2 + 1, r + (i * size + k) * 2 + 1);
           }
-          lastErrorCode = ERROR_NONE;
-        }
-        for(i = 0; i < size; i++) {
-          realCopy(v + i * 2,     r + (i * size + k) * 2    );
-          realCopy(v + i * 2 + 1, r + (i * size + k) * 2 + 1);
-        }
 
-        freeC47Blocks(v, size * REAL_SIZE_IN_BLOCKS * 2);
-        v = NULL;
-      }
-      else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        for(i = 0; i < size; i++) {
-          realCopy(const_NaN, r + (i * size + k) * 2    );
-          realCopy(const_NaN, r + (i * size + k) * 2 + 1);
+          freeC47Blocks(v, size * 2 * REAL_SIZE_IN_BLOCKS * 2);
+          v = NULL;
         }
+        else {
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          for(i = 0; i < size; i++) {
+            realCopy(const_NaN, r + (i * size + k) * 2    );
+            realCopy(const_NaN, r + (i * size + k) * 2 + 1);
+          }
+        }
+      }
+      freeC47Blocks(unknownsToFill, size * 2 * REAL_SIZE_IN_BLOCKS * 2);
+      unknownsToFill = NULL;
+    }
+    else {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      for(i = 0; i < size; i++) {
+        realCopy(const_NaN, r + (i * size + k) * 2    );
+        realCopy(const_NaN, r + (i * size + k) * 2 + 1);
       }
     }
   }
@@ -4415,11 +4539,11 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
   bool_t shifted = true;
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
       a   = bulk;
-      q   = bulk + size * size * 2;
-      r   = bulk + size * size * 2 * 2;
-      eig = bulk + size * size * 2 * 3;
+      q   = bulk + size * size * 4 * 2;
+      r   = bulk + size * size * 4 * 2 * 2;
+      eig = bulk + size * size * 4 * 2 * 3;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -4478,7 +4602,7 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       }
 
-      freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -4494,11 +4618,11 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
   bool_t shifted = true;
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
       a   = bulk;
-      q   = bulk + size * size * 2;
-      r   = bulk + size * size * 2 * 2;
-      eig = bulk + size * size * 2 * 3;
+      q   = bulk + size * size * 4 * 2;
+      r   = bulk + size * size * 4 * 2 * 2;
+      eig = bulk + size * size * 4 * 2 * 3;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -4522,7 +4646,7 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       }
 
-      freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);

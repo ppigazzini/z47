@@ -133,10 +133,10 @@ static void getIndirectRegister(uint8_t *paramAddress, const char *op) {
 static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
   char *str = tmpString;
   getStringLabelOrVariableName(stringAddress);
-  str = stringAppend(str, op);
-  str = stringAppend(str, " " STD_RIGHT_ARROW STD_LEFT_SINGLE_QUOTE);
-  str = stringAppend(str, tmpStringLabelOrVariableName);
-  str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+  str = stringCopy(str, op);
+  str = stringCopy(str, " " STD_RIGHT_ARROW STD_LEFT_SINGLE_QUOTE);
+  str = stringCopy(str, tmpStringLabelOrVariableName);
+  str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
 }
 
 
@@ -154,10 +154,10 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
-        str = stringAppend(str, op);
-        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
-        str = stringAppend(str, tmpStringLabelOrVariableName);
-        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, op);
+        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, tmpStringLabelOrVariableName);
+        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       }
       else {
         sprintf(tmpString, "\nIn function decodeOp case PARAM_DECLARE_LABEL: opParam %u is not a valid label!\n", opParam);
@@ -175,10 +175,10 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
-        str = stringAppend(str, op);
-        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
-        str = stringAppend(str, tmpStringLabelOrVariableName);
-        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, op);
+        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, tmpStringLabelOrVariableName);
+        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       }
       else if(opParam == INDIRECT_REGISTER) {
         getIndirectRegister(paramAddress, op);
@@ -208,10 +208,10 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
-        str = stringAppend(str, op);
-        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
-        str = stringAppend(str, tmpStringLabelOrVariableName);
-        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, op);
+        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, tmpStringLabelOrVariableName);
+        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       }
       else if(opParam == INDIRECT_REGISTER) {
         getIndirectRegister(paramAddress, op);
@@ -342,10 +342,10 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
-        str = stringAppend(str, op);
-        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
-        str = stringAppend(str, tmpStringLabelOrVariableName);
-        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, op);
+        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, tmpStringLabelOrVariableName);
+        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       }
       else if(opParam == VALUE_0) {
         sprintf(tmpString, "%s 0.", op);
@@ -393,10 +393,10 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
-        str = stringAppend(str, op);
-        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
-        str = stringAppend(str, tmpStringLabelOrVariableName);
-        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, op);
+        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, tmpStringLabelOrVariableName);
+        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       }
       else if(opParam == INDIRECT_REGISTER) {
         getIndirectRegister(paramAddress, op);
@@ -506,7 +506,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
     case BINARY_REAL34: {
       real34_t realLiteral;
       xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
-      real34ToDisplayString(&realLiteral, amNone, tmpString, &standardFont, 9999, 34, false, false);
+      real34ToDisplayString(&realLiteral, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
       break;
     }
 
@@ -514,7 +514,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
       complex34_t complexLiteral;
       xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                       , REAL34_SIZE_IN_BYTES);
       xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + REAL34_SIZE_IN_BYTES, REAL34_SIZE_IN_BYTES);
-      complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, false, false, currentAngularMode, getSystemFlag(FLAG_POLAR));
+      complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC, currentAngularMode, getSystemFlag(FLAG_POLAR));
       break;
     }
 
@@ -626,9 +626,9 @@ static void decodeLiteral(uint8_t *literalAddress) {
     case STRING_LABEL_VARIABLE: {
       char *str = tmpString;
       getStringLabelOrVariableName(literalAddress);
-      str = stringAppend(str, STD_LEFT_SINGLE_QUOTE);
-      str = stringAppend(str, tmpStringLabelOrVariableName);
-      str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+      str = stringCopy(str, STD_LEFT_SINGLE_QUOTE);
+      str = stringCopy(str, tmpStringLabelOrVariableName);
+      str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
       break;
     }
 
@@ -748,10 +748,10 @@ static void decodeRem(uint8_t *literalAddress) {
   if(*(uint8_t *)(literalAddress++) == STRING_LABEL_VARIABLE) {
     char *str = tmpString;
     getStringLabelOrVariableName(literalAddress);
-    str = stringAppend(str, "REM ");
-    str = stringAppend(str, STD_LEFT_SINGLE_QUOTE);
-    str = stringAppend(str, tmpStringLabelOrVariableName);
-    str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+    str = stringCopy(str, "REM ");
+    str = stringCopy(str, STD_LEFT_SINGLE_QUOTE);
+    str = stringCopy(str, tmpStringLabelOrVariableName);
+    str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
   }
 
   #if !defined(DMCP_BUILD)
@@ -795,7 +795,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
       }
 
       case PTP_DISABLED: {
-        printf("\nERROR in decodeOneStep: instruction %u:%s is not programmable!\n", op, indexOfItems[op].itemCatalogName);
+        #if defined(PC_BUILD)
+          printf("\nERROR in decodeOneStep: instruction %u:%s is not programmable!\n", op, indexOfItems[op].itemCatalogName);
+        #endif
         break;
       }
 

@@ -42,7 +42,8 @@ bool_t   isValidNumber(const char *ss, const char *template);
  * \param[in] str const char*
  * \return int32_t
  ***********************************************/
-int32_t  stringByteLength (const char *str);
+//int32_t  stringByteLength (const char *str);
+#define stringByteLength(str) ((int32_t)strlen(str)) // This works only when there is no glyph with a code point ending with 00
 
 /********************************************//**
  * \brief Returns a string length in glyphs
@@ -96,14 +97,18 @@ void     codePointToUtf8  (uint32_t codePoint, uint8_t *utf8);
  ***********************************************/
 uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
 
-/**
- * Copies the string including the terminating null byte
- *
- * \param[out] dest
- * \param[in] source
- * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
- */
-char    *stringAppend          (char *dest, const char *source);
+#if defined(__MINGW64__)
+  /**
+   * Copies the string including the terminating null byte
+   *
+   * \param[out] dest
+   * \param[in] source
+   * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
+   */
+  char    *stringCopy            (char *dest, const char *source);
+#else
+  #define stringCopy(dest, source) stpcpy(dest, source)
+#endif // __MINGW64__
 
 void     expandConversionName  (char *msg1);
 void     compressConversionName(char *msg1);
@@ -115,4 +120,6 @@ void     stringToRTF           (const char *str, char *ascii);
 void     stringToFileNameChars (const char *str, char *ascii);
 void    *xcopy                 (void *dest, const void *source, int n);
 void     strReplace            (char *haystack, const char *needle, const char *newNeedle);
+void     addChrBothSides       (uint8_t t, char * str);
+void     addStrBothSides       (char * str, char * str_b, char * str_e);
 #endif // !CHARSTRING_H

@@ -121,13 +121,84 @@ typedef enum {
   amRadian    =  0, // radian
   amGrad      =  1, // grad
   amDegree    =  2, // degree
-  amDMS       =  3,
-  amMultPi    =  4,
-  amNone      =  5,
+  amDMS       =  3, // degrees in dd mm ss.sss...
+  amMultPi    =  4, // multiples of pi
+  amNone      =  5, // RECT in complex, real, vector
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
-  TM_HMS      =  7, // JM not an angular but a time unit: for the C47 usage
+  TM_HMS      =  7, // not an angular but a time unit
   amAngleMask = 15,
-  amPolar     = 16  // JM bit 4 of the 5 bits is used for Polar
+  amPolar     = 16, // JM bit 4 of the 5 bits is used for Polar in Complex Case
+
+  //removed the idea of adding bits: See registers.h 
+  //  amPolarCYL  =  64, // 3D Vector: Polar cylindrical. 
+  //  amPolarSPH  = 128  // 3D Vector: Polar cylindrical. 
+  //----
+  // Replaced with the logic table below, in essence, if a real matrix, and if the matrix is 1x2, 2x1, 1x3 or 3x1 then it is a vector, for which: 
+  //   - A 2D vector is in Rect, if the angleMode == amNone. The amPolar flag, bit 4, also is clear
+  //   - A 3D vector is in Rect, if the angleMode == amNone. The amPolar flag set is Spherical Polar, and reset is Cylindrical.
+  //   There are macros for this in defines.h (for matrix type) and registers.h (for registers)
+
+  //using logic to store in a real matrix register, the states: CYL, SPH or RECT. RECT being amNone set and no Polar mode set. This can be reworked into storing the bits. Search for amPolarCYL & amPolarSPH to change.
+  //5-bits stored in register header
+  //current:   0b ---.-xxx   x : 0-7 angle/time types
+  //              ---z-...   z : Polar
+  //              ---.-...   - : spare bits
+
+  //Real             0 -000       Real amRadian
+  //Real             0 -001       Real amGrad  
+  //Real             0 -010       Real amDegree
+  //Real             0 -011       Real amDMS   
+  //Real             0 -100       Real amMultPi
+  //Real             0 -101       Real amNone  
+  //Real             0 -110       Real amSecond
+  //Real             0 -111       Real TM_HMS  
+
+  // Cpx             0 -000       Rect ---
+  // Cpx             0 -001       Rect ---
+  // Cpx             0 -010       Rect ---
+  // Cpx             0 -011       Rect ---
+  // Cpx             0 -100       Rect ---
+  // Cpx             0 -101       Rect amNone
+  // Cpx             0 -110       Rect ---
+  // Cpx             0 -111       Rect ---  
+
+  // Cpx             1 -000      Polar amRadian
+  // Cpx             1 -001      Polar amGrad  
+  // Cpx             1 -010      Polar amDegree
+  // Cpx             1 -011      Polar amDMS   
+  // Cpx             1 -100      Polar amMultPi
+  // Cpx             1 -101            ---
+  // Cpx             1 -110            ---
+  // Cpx             1 -111            ---
+
+  // RealMx 2D 3D    0 -000       Rect ---
+  // RealMx 2D 3D    0 -001       Rect ---
+  // RealMx 2D 3D    0 -010       Rect ---
+  // RealMx 2D 3D    0 -011       Rect ---
+  // RealMx 2D 3D    0 -100       Rect ---
+  // RealMx 2D 3D    0 -101       Rect amNone
+  // RealMx 2D 3D    0 -110       Rect ---
+  // RealMx 2D 3D    0 -111       Rect ---  
+
+  // RealMx    3D    0 -000        CYL amRadian
+  // RealMx    3D    0 -001        CYL amGrad  
+  // RealMx    3D    0 -010        CYL amDegree
+  // RealMx    3D    0 -011        CYL amDMS   
+  // RealMx    3D    0 -100        CYL amMultPi
+  // RealMx    3D    0 -101            ---
+  // RealMx    3D    0 -110            ---
+  // RealMx    3D    0 -111            ---
+
+  // RealMx 2D 3D    1 -000    POL SPH amRadian
+  // RealMx 2D 3D    1 -001    POL SPH amGrad  
+  // RealMx 2D 3D    1 -010    POL SPH amDegree
+  // RealMx 2D 3D    1 -011    POL SPH amDMS   
+  // RealMx 2D 3D    1 -100    POL SPH amMultPi
+  // RealMx 2D 3D    1 -101            ---
+  // RealMx 2D 3D    1 -110            ---
+  // RealMx 2D 3D    1 -111            ---
+
+
 } angularMode_t;
 
 
@@ -153,86 +224,84 @@ typedef enum {
  * Configuration for STOCFG and RCLCFG.
  */
 typedef struct {
-  uint8_t       shortIntegerMode;
-  uint8_t       shortIntegerWordSize;
-  uint8_t       displayFormat;
-  uint8_t       displayFormatDigits;
-  uint16_t        gapItemLeft;
-  uint16_t        gapItemRight;
-  uint16_t        gapItemRadix;
-  uint8_t         grpGroupingLeft;
-  uint8_t         grpGroupingGr1LeftOverflow;
-  uint8_t         grpGroupingGr1Left;
-  uint8_t         grpGroupingRight;
-  uint8_t       displayStack;
-  uint8_t       roundingMode;
-  uint8_t       timeDisplayFormatDigits;
-  uint8_t       reservedForPossibleFutureUse[3];
-  angularMode_t currentAngularMode;
-  uint16_t      lrSelection;
-  uint16_t      lrChosen;
-  uint32_t      denMax;
-  uint32_t      firstGregorianDay;
-  uint64_t      systemFlags0;
-  uint64_t      systemFlags1;
-  calcKey_t     kbd_usr[37];
-  uint8_t fgLN;
-  bool_t compatibility_bool19;
-  bool_t HOME3;
-  bool_t ShiftTimoutMode;
-  bool_t compatibility_bool21;              //Spare Byte
-  bool_t BASE_HOME;
-  bool_t compatibility_bool0;               //Spare Byte
-  int16_t compatibility_int1;               //Spare Word
-  uint8_t Input_Default;
-  bool_t compatibility_bool00;              //Spare Byte
-  bool_t BASE_MYM;
-  bool_t jm_G_DOUBLETAP;
-  float  compatibility_float1;              //Spare float
-  float  compatibility_float2;              //Spare float
-  normKey_t Norm_Key_00;
-  bool_t compatibility_bool2;               //Spare Byte
-  bool_t compatibility_bool3;               //Spare Byte
-  bool_t compatibility_bool4;               //Spare Byte
-  bool_t compatibility_bool5;               //Spare Byte
-  bool_t compatibility_bool6;               //Spare Byte
-  bool_t compatibility_bool7;               //Spare Byte
-  bool_t compatibility_bool8;               //Spare Byte
-  bool_t compatibility_bool9;               //Spare Byte
-  bool_t compatibility_bool10;              //Spare Byte
-  bool_t compatibility_bool11;              //Spare Byte
-  bool_t compatibility_bool12;              //Spare Byte
-  bool_t compatibility_bool13;              //Spare Byte
-  bool_t compatibility_bool14;              //Spare Byte
-  bool_t compatibility_bool15;              //Spare Byte
-  int8_t fractionDigits;
-  int8_t compatibility_bool23;
-  bool_t compatibility_bool16;              //Spare Byte
-  bool_t compatibility_bool20;              //Spare Byte
-  bool_t compatibility_bool17;              //Spare Byte
-  uint8_t IrFractionsCurrentStatus;
-  bool_t compatibility_bool18;              //Spare Byte
-  uint8_t displayStackSHOIDISP;
-  bool_t bcdDisplay;
-  bool_t topHex;
-  uint8_t bcdDisplaySign;
-  uint8_t DRG_Cycling;
-  uint8_t DM_Cycling;
-  bool_t compatibility_bool22;
-  bool_t LongPressM;
-  bool_t LongPressF;
-
-  //Added 2023-09-12
+  uint8_t        shortIntegerMode;                                         //  Sign mode
+  uint8_t        shortIntegerWordSize;                                     //  Word size
+  uint8_t        displayFormat;                                            //  FIX/SCI…
+  uint8_t        displayFormatDigits;                                      //  Display digits for FIX, SCI…
+  uint16_t       gapItemLeft;                                              //  GAP details
+  uint16_t       gapItemRight;                                             //  GAP details
+  uint16_t       gapItemRadix;                                             //  GAP details
+  uint8_t        grpGroupingLeft;                                          //  GAP details
+  uint8_t        grpGroupingGr1LeftOverflow;                               //  GAP details
+  uint8_t        grpGroupingGr1Left;                                       //  GAP details
+  uint8_t        grpGroupingRight;                                         //  GAP details
+  angularMode_t  currentAngularMode;                                       //  ADM
+  uint16_t       lrSelection;                                              //  STAT LR settings
+  uint16_t       lrChosen;                                                 //  Last chosen LR 
+  uint32_t       denMax;                                                   //  DMX
+  uint8_t        displayStack;                                             //  dSTACK
+  uint32_t       firstGregorianDay;                                        //  First Gregorian Day
+  uint8_t        roundingMode;                                             //  RM setting
+  uint64_t       systemFlags0;                                             //  All SFL flags
+  uint64_t       systemFlags1;                                             //  All SFL flags
+  calcKey_t      kbd_usr[37];                                              //  All user keys
+  uint8_t        fgLN;                                                     //  fg.OFF/fg.FLIM/fg.FUL
+  bool_t         compatibility_byte19;                                     //  
+  bool_t         HOME3;                                                    //  HOME.3
+  bool_t         ShiftTimoutMode;                                          //  SH.4s
+  bool_t         compatibility_byte21;              //Spare Byte           //  
+  bool_t         BASE_HOME;                                                //  HOME.b
+  bool_t         compatibility_byte00;               //Spare Byte          //  
+  int16_t        compatibility_int1;               //Spare Word            //  
+  uint8_t        Input_Default;                                            //  iLi/R, iR, iC, iLI
+  bool_t         compatibility_byte0; // dispBase;                                                 //  dBASE
+  bool_t         BASE_MYM;                                                 //  MyMb
+  bool_t         jm_G_DOUBLETAP;                                           //  g.2Tp
+  float          compatibility_float1;              //Spare float          //  
+  float          compatibility_float2;              //Spare float          //  
+  normKey_t      Norm_Key_00;                                              //  BlankKey Config
+  bool_t         compatibility_byte2;               //Spare Byte           //  
+  bool_t         compatibility_byte3;               //Spare Byte           //  
+  bool_t         compatibility_byte4;               //Spare Byte           //  
+  bool_t         compatibility_byte5;               //Spare Byte           //  
+  bool_t         compatibility_byte6;               //Spare Byte           //  
+  bool_t         compatibility_byte7;               //Spare Byte           //  
+  bool_t         compatibility_byte8;               //Spare Byte           //  
+  bool_t         compatibility_byte9;               //Spare Byte           //  
+  bool_t         compatibility_byte10;              //Spare Byte           //  
+  bool_t         compatibility_byte11;              //Spare Byte           //  
+  bool_t         compatibility_byte12;              //Spare Byte           //  
+  bool_t         compatibility_byte13;              //Spare Byte           //  
+  bool_t         compatibility_byte14;              //Spare Byte           //  
+  bool_t         compatibility_byte15;              //Spare Byte           //  
+  int8_t         fractionDigits;                                           //  FDIGS
+  int8_t         compatibility_byte23;                                     //  
+  bool_t         compatibility_byte16;              //Spare Byte           //  
+  bool_t         compatibility_byte20;              //Spare Byte           //  
+  bool_t         compatibility_byte17;              //Spare Byte           //  
+  uint8_t        IrFractionsCurrentStatus;                                 //  Internal control flag for IRFRAC
+  bool_t         compatibility_byte18;              //Spare Byte           //  
+  uint8_t        displayStackSHOIDISP;                                     //  dSI
+  bool_t         bcdDisplay;                                               //  BCD
+  bool_t         topHex; //compatibility_byte24;              //Spare Byte           //  
+  uint8_t        bcdDisplaySign;                                           //  BCDUNS
+  uint8_t        DRG_Cycling;                                              //  Internal control flag for DRG
+  uint8_t        DM_Cycling;                                               //  internal control flag for FSE
+  bool_t         compatibility_byte22;                                     //  
+  uint8_t        LongPressM;                                               //  M.124, M.1234, M.14
+  uint8_t        LongPressF;                                               //  F.1234, F.14, F.124
+  uint32_t       lastDenominator;                                          //  internal control variable for last denominator used
+  uint8_t        significantDigits;                                        //  SDIGS
+  pcg32_random_t pcg32_global;                                             //  Random seed
+  int16_t        exponentLimit;                                            //  RNG
+  int16_t        exponentHideLimit;                                        //  HIDE
+  uint32_t       lastIntegerBase;                                          //  internal control variable for the last base used. Control BASE mode.
+  bool_t         MYM3;                                                     //  MyM.3
+  uint8_t        timeDisplayFormatDigits;                                  //  TDISP
+  uint8_t        reservedForPossibleFutureUse[6]; //additional buffer to pad up to 840 bytes for the descriptor record
+  //2025-04-21 Verified all variables above, and in recall.c and store.c
   //Note: Do not change entries going forward to maintain compatibility
   //Should any be added, ensure that the defaults are appropriately added when reading the state file
-  uint32_t       lastDenominator;
-  uint8_t        significantDigits;
-  pcg32_random_t pcg32_global;
-  int16_t        exponentLimit;
-  int16_t        exponentHideLimit;
-  uint32_t       lastIntegerBase;
-  bool_t MYM3;
-
 } dtConfigDescriptor_t;
 
 
@@ -243,11 +312,11 @@ typedef struct {
 typedef union {
   uint32_t descriptor;
   struct {
-    uint32_t pointerToRegisterData : 16; ///< Memory block number
-    uint32_t dataType              :  4; ///< dtLongInteger, dtReal34, ...
-    uint32_t tag                   :  5; ///< Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
-    uint32_t readOnly              :  1; ///< The register or variable is readOnly if this field is 1 (used for system named variables)
-    uint32_t notUsed               :  6; ///< 6 bits free
+    unsigned pointerToRegisterData : 16; ///< uint32_t      Memory block number
+    unsigned dataType              :  4; ///< uint32_t      dtLongInteger, dtReal34, ...
+    unsigned tag                   :  5; ///< angularMode_t Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
+    unsigned readOnly              :  1; ///< uint32_t      The register or variable is readOnly if this field is 1 (used for system named variables)
+    unsigned notUsed               :  6; ///< uint32_t      6 bits free
   };
 } registerHeader_t;
 
@@ -257,8 +326,10 @@ typedef union {
  * Header for matrix datatype.
  */
 typedef struct {
-  uint16_t matrixRows;                ///< Number of rows in the matrix
-  uint16_t matrixColumns;             ///< Number of columns in the matrix
+  unsigned matrixRows    : 12;   ///< uint32_t      Number of rows in the matrix
+  unsigned matrixColumns : 12;   ///< uint32_t      Number of columns in the matrix
+  unsigned mtag          :  6;   ///< angularMode_t tag;
+  unsigned notUsed       :  2;   ///< uint32_t      2 bits free
 } matrixHeader_t;
 
 

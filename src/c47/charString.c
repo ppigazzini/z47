@@ -288,7 +288,7 @@ char *stringAfterPixels(const char *str, const font_t *font, int16_t width, bool
 
 
 int16_t stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos) {    //Not checking for beyond terminator. Use only if no risk for pos > length(str)
-int16_t posinc = 0;
+  int16_t posinc = 0;
   if(str[pos] == 0) return pos;
 
   if(str[pos] & 0x80) {
@@ -410,21 +410,21 @@ int16_t stringLastGlyph(const char *str) {
 }
 
 
-int32_t stringByteLength(const char *str) {
-  int32_t len = 0;
-
-  while(*str != 0) {
-    if(*str & 0x80) {
-      str += 2;
-      len += 2;
-    }
-    else {
-      str++;
-      len++;
-    }
-  }
-  return len;
-}
+//int32_t stringByteLength(const char *str) {
+//  int32_t len = 0;
+//
+//  while(*str != 0) {
+//    if(*str & 0x80) {
+//      str += 2;
+//      len += 2;
+//    }
+//    else {
+//      str++;
+//      len++;
+//    }
+//  }
+//  return len;
+//}
 
 
 int32_t stringGlyphLength(const char *str) {
@@ -650,12 +650,14 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUP_pi,                    "pi"},
               {STD_sigma,                     "sigma"},
               {STD_phi,                       "phi"},
+              {STD_phi_m,                     "phi"},
+              {STD_theta,                     "theta"},
+              {STD_theta_m,                   "theta"},
               {STD_chi,                       "chi"},
               {STD_psi,                       "psi"},
               {STD_omega,                     "omega"},
               {STD_ELLIPSIS,                  "…"},
               {STD_BINARY_ONE,                "1"},
-              {STD_SUP_MINUS_1,               "`-1"},
               {STD_SUB_E_OUTLINE,             "`E"},
               {STD_SUB_PLUS,                  "`+"},
               {STD_SUB_MINUS,                 "`-"},
@@ -689,6 +691,7 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUB_10,                    "10^"},
               {STD_EulerE,                    "e"},
               {STD_RIGHT_OVER_LEFT_ARROW,     "<>"},
+              {STD_SQUARE_ROOT,               "root"},
 //diverse
               {STD_RIGHT_SINGLE_QUOTE,        "\'"},
               {STD_RIGHT_DOUBLE_QUOTE,        "\""},
@@ -714,25 +717,62 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SPACE_HAIR,                " "},
 //Types used in commands
               {STD_TIME_T,                    "T"},
-              {STD_DATE_D,                    "D"}
+              {STD_DATE_D,                    "D"},
+              {STD_COMPLEX_C,                 "C"},
+              {STD_INTEGER_Z,                 "Z"},
+              {STD_INTEGER_Z_SMALL,           "Z"},
+              {STD_NATURAL_N,                 "N"},
+              {STD_RATIONAL_Q,                "Q"},
+              {STD_IRRATIONAL_I,              "I"},
+              {STD_REAL_R,                    "R"},
+              {STD_u_BAR,                     "u_vec"},
+              {STD_v_BAR,                     "v_vec"},
+              {STD_w_BAR,                     "w_vec"},
+
+              {STD_RIGHT_DOUBLE_ARROW ,       ">>"},
+
+              {STD_RIGHT_DASHARROW    ,       "->"},
+              {STD_RIGHT_ARROW        ,       "->"},
+              {STD_RIGHT_SHORT_ARROW  ,       "->"},
+
+              {STD_LEFT_DASHARROW     ,       "<-"},
+              {STD_LEFT_ARROW         ,       "<-"},
+
+              {STD_UP_DASHARROW       ,       "^" },
+              {STD_UP_ARROW           ,       "^" },
+              {STD_HOLLOW_UP_ARROW    ,       "^" },
+
+              {STD_DOWN_DASHARROW     ,       "v" },
+              {STD_DOWN_ARROW         ,       "v" },
+              {STD_HOLLOW_DOWN_ARROW  ,       "v" },
+
+              {STD_LEFT_RIGHT_ARROWS  ,       "><"},
+              {STD_SUP_pir            ,       "pi"},
+
 };
 
 
-TO_QSPI const function_t2 indexOfStringsRTF[] = {
+TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 2 bytes, i.e. ASCII > 128 will arrive here
               //number                  replacement string
               {STD_BINARY_ONE,                "1"},
-              {STD_BINARY_ZERO,               "0"}
+              {STD_BINARY_ZERO,               "0"},
+           //   {STD_A_MACRON,                  "\x81\x00"},
+           //   {STD_FOR_ALL,                   "\xa2\x00"}
 };
 
+  static char *stringAppend(char *dest, const char *source) {  //functio0n re-instated only for the export, where 0x00 is possible
+    const size_t l = stringByteLength(source);
+    return (char *)memcpy(dest, source, l + 1) + l;
+  }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsASCII[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsASCII[i].item_in[1])) {
         //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]),indexOfStringsASCII[i].item_out);
-        strcpy(str, indexOfStringsASCII[i].item_out);
+        stringAppend(str,indexOfStringsASCII[i].item_out);
         break;
       }
     }
@@ -740,13 +780,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {
   }
 
   static bool_t _getTextRTF(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getTextRTF %u %u : ",(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsRTF);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsRTF[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsRTF[i].item_in[1])) {
         //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]),indexOfStringsRTF[i].item_out);
-        strcpy(str, indexOfStringsRTF[i].item_out);
+        stringAppend(str,indexOfStringsRTF[i].item_out);
         break;
       }
     }
@@ -880,43 +920,7 @@ void stringToASCII(const char *str, char *ascii) {
         }
         ascii--;
       }
-      else if(a1==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[1])) { //arrows
-        *ascii = '>'; ascii++;
-        *ascii = '>'; //to change to >>
-      }
-      else if((a1==(uint8_t)(STD_RIGHT_DASHARROW[0]) && a2==(uint8_t)(STD_RIGHT_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_RIGHT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_ARROW[1])) ||
-         (a1==(uint8_t)(STD_RIGHT_SHORT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_SHORT_ARROW[1]))
-        ) {
-        *ascii = '-'; ascii++;
-        *ascii = '>'; //to change to ->
-      }
-      else if((a1==(uint8_t)(STD_LEFT_DASHARROW[0]) && a2==(uint8_t)(STD_LEFT_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_LEFT_ARROW[0]) && a2==(uint8_t)(STD_LEFT_ARROW[1]))
-        ) {
-        *ascii = '<'; ascii++;
-        *ascii = '-'; //to change to ->
-      }
-      else if((a1==(uint8_t)(STD_UP_DASHARROW[0]) && a2==(uint8_t)(STD_UP_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_UP_ARROW[0]) && a2==(uint8_t)(STD_UP_ARROW[1])) ||
-         (a1==(uint8_t)(STD_HOLLOW_UP_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_UP_ARROW[1])) ) {
-        *ascii = '^';
-      }
-      else if((a1==(uint8_t)(STD_DOWN_DASHARROW[0]) && a2==(uint8_t)(STD_DOWN_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_DOWN_ARROW[0]) && a2==(uint8_t)(STD_DOWN_ARROW[1])) ||
-         (a1==(uint8_t)(STD_HOLLOW_DOWN_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_DOWN_ARROW[1])) ) {
-        *ascii = 'v';
-      }
-      else if(a1==(uint8_t)(STD_LEFT_RIGHT_ARROWS[0]) && a2==(uint8_t)(STD_LEFT_RIGHT_ARROWS[1])) {
-        *ascii = '>'; //to change to ><
-        ascii++;
-        *ascii = '<'; //to change to ><
-      }
-      else if(a1==(uint8_t)(STD_SUP_pir[0]) && a2==(uint8_t)(STD_SUP_pir[1])) {
-        *ascii = 'p'; //to change to ><
-        ascii++;
-        *ascii = 'i'; //to change to ><
-      }
+
       else
       //RANGE SUP/SUB/BASE
       if((a1==(uint8_t)(STD_SUP_0            [0]) && (a2>=(uint8_t)(STD_SUP_0            [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
@@ -965,8 +969,18 @@ void stringToFileNameChars(const char *str, char *ascii) {
       str++;
       ascii++;
     }
-    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\' || *str == '<' || *str == '>' || *str == ' ') {
+    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') {
       *ascii = '_';
+      str++;
+      ascii++;
+    }
+    else if(*str == '|' || *str == '?' || *str == '*' || *str == ':' || *str == '<' || *str == '>') {
+      *ascii = '-';
+      str++;
+      ascii++;
+    }
+    else if(*str == '\"') {
+      *ascii = '\'';
       str++;
       ascii++;
     }
@@ -1000,10 +1014,29 @@ void *xcopy(void *dest, const void *source, int n) {
 }
 
 
-char *stringAppend(char *dest, const char *source) {
-  const size_t l = stringByteLength(source);
-  return (char *)memcpy(dest, source, l + 1) + l;
+void addChrBothSides(uint8_t t, char * str) {
+  char tt[4];
+  tt[0] = t;
+  tt[1] = 0;
+  xcopy(str + 1, str, stringByteLength(str) + 1);
+  str[0] = t;
+  strcat(str, tt);
 }
+
+
+void addStrBothSides(char * str, char * str_b, char * str_e) {
+  xcopy(str + stringByteLength(str_b), str, stringByteLength(str) + 1);
+  xcopy(str, str_b, stringByteLength(str_b));
+  xcopy(str + stringByteLength(str), str_e, stringByteLength(str_e) + 1);
+}
+
+
+#if defined(__MINGW64__)
+  char *stringCopy(char *dest, const char *source) {
+    const uint32_t l = stringByteLength(source);
+    return (char *)xcopy(dest, source, l + 1) + l;
+  }
+#endif // __MINGW64__
 
 
 #if !defined(DMCP_BUILD)

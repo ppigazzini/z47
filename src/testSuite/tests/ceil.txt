@@ -99,7 +99,7 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN":RAD
 
 ; Infinity
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
@@ -108,7 +108,7 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf" RL=Real:"inf":DEG
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":MULTPI
@@ -121,5 +121,5 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":RAD
 ;=======================================
 ; ceil(Complex) --> Error24
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i 1"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"1 i 1"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.1 i 2.2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"2 i 3" RL=Cplx:"1.1 i 2.2"

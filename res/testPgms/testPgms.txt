@@ -1,0 +1,9 @@
+Should you wish to try the collection of test RPN programs, copy testPgms.bin to the calculator root folder, example:
+
+cp ./testPgms.bin ../testPgms.bin
+
+testPgms.bin will only load when (1) the file is in the calculator root directory, AND (2) when you RESET the calculator, i.e. it only loads the testPgms.bin into a blank/clean calculator.
+
+testPgms.zip includes ALL the testPgms in .rtf and .p47 formats, and can be loaded using READP.
+
+

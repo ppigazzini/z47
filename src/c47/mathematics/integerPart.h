@@ -9,12 +9,8 @@
 
   void fnIp   (uint16_t unusedButMandatoryParameter);
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void ipError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define ipError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void ipRema (void);
-  void ipReal (void);
+  /* Helpers for ceil, floor and here */
+  void integerPartNoOp(void);
+  void integerPartReal(enum rounding mode);
+  void integerPartCplx(enum rounding mode);
 #endif // !INTEGERPART_H

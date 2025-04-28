@@ -29,6 +29,9 @@
   enum normalType {stdNormal, paramNormal, logNormal};
 
   static bool_t checkParamNormal(enum normalType type, real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x))
       goto err;
     if(type == stdNormal)
@@ -60,10 +63,6 @@
     const int stdn = type == stdNormal;
     const int logn = type == logNormal;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
         realZero(&ans);
@@ -90,9 +89,8 @@
         }
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
@@ -100,10 +98,6 @@
     real_t val, mu, sigma, ans;
     const int stdn = type == stdNormal;
     const int logn = type == logNormal;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
@@ -126,9 +120,8 @@
         WP34S_Cdf_Q(&val, &ans, &ctxtReal39);
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
@@ -136,10 +129,6 @@
     real_t val, mu, sigma, ans;
     const int stdn = type == stdNormal;
     const int logn = type == logNormal;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
@@ -162,9 +151,8 @@
         WP34S_Cdfu_Q(&val, &ans, &ctxtReal39);
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
@@ -172,10 +160,6 @@
     real_t val, mu, sigma, ans;
     const int stdn = type == stdNormal;
     const int logn = type == logNormal;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -197,9 +181,8 @@
         }
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

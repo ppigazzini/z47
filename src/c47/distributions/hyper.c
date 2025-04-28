@@ -22,6 +22,9 @@
   static bool_t checkParamHyper(real_t *x, real_t *k, real_t *j, real_t *i) {
     real_t xmin, xmax;
 
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
         || !getRegisterAsReal(REGISTER_N, j)
@@ -70,10 +73,6 @@
   void fnHypergeometricP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, spec, samp, batch;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamHyper(&val, &spec, &samp, &batch)) {
       if(realIsAnInteger(&val)) {
         pdf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal39);
@@ -98,10 +97,6 @@
   void fnHypergeometricL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, spec, samp, batch;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamHyper(&val, &spec, &samp, &batch)) {
       cdf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal75);
       if(realIsNaN(&ans)) {
@@ -121,10 +116,6 @@
   void fnHypergeometricR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, spec, samp, batch;
 
-    if(!saveLastX()) {
-     return;
-    }
-
     if(checkParamHyper(&val, &spec, &samp, &batch)) {
       cdfu_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal75);
       if(realIsNaN(&ans)) {
@@ -143,10 +134,6 @@
 
   void fnHypergeometricI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, spec, samp, batch;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamHyper(&val, &spec, &samp, &batch)) {
       if(realCompareLessThan(&val, const_0) || realCompareGreaterThan(&val, const_1)) {

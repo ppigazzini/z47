@@ -15,7 +15,7 @@
     switch(getRegisterDataType(regist)) {
       case dtReal34: {
         if(showContent) {
-          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false);
+          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
         }
         else {
           sprintf(tmpString, "%d bytes", (int16_t)REAL34_SIZE_IN_BYTES);
@@ -25,7 +25,7 @@
 
       case dtComplex34: {
         if(showContent) {
-          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
+          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         }
         else {
           sprintf(tmpString, "%d bytes", (int16_t)COMPLEX34_SIZE_IN_BYTES);
@@ -185,20 +185,22 @@
 
     if(rbrMode == RBR_GLOBAL) { // Global registers
       for(int16_t row=0; row<10; row++) {
-        calcRegister_t regist = (currentRegisterBrowserScreen + row) % (REGISTER_W + 1);
-        registerName(tmpString, regist);
+        calcRegister_t regist = modulo(currentRegisterBrowserScreen + row, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
+        if (regist <= LAST_SPARE_REGISTER){
+          registerName(tmpString, regist);
 
-        // register name or number
-        registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, false, true);
+          // register name or number
+          registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, false, true);
 
-        if(   (regist <  REGISTER_X && regist % 5 == 4)
-           || (regist >= REGISTER_X && regist % 4 == 3)) {
-          lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+          if(   (regist <  REGISTER_X && regist % 5 == 4)
+            || (regist >= REGISTER_X && regist % 4 == 3)) {
+            lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+          }
+
+          _showRegisterInRbr(regist, registerNameWidth);
+
+          showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true) - 1, 219-22*row, vmNormal, false, true);
         }
-
-        _showRegisterInRbr(regist, registerNameWidth);
-
-        showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true) - 1, 219-22*row, vmNormal, false, true);
       }
     }
 
@@ -233,8 +235,8 @@
       for(int16_t row=0; row<10; row++) {
         calcRegister_t regist = currentRegisterBrowserScreen + row;
         if(regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Named variables
-          stringAppend(tmpString, (char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1);
-          stringAppend(tmpString + stringByteLength(tmpString), ":");
+          stringCopy(tmpString, (char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1);
+          stringCopy(tmpString + stringByteLength(tmpString), ":");
 
           // variable name
           registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, true, true);

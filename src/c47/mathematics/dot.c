@@ -7,75 +7,6 @@
 
 #include "c47.h"
 
-static void dotDataTypeError(void);
-
-TO_QSPI void (* const dot[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX |    regY ==>    1                  2                  3                  4                  5                  6                  7                  8                  9                 10
-//      V                Long integer       Real34             Complex34          Time               Date               String             Real34 mat         Complex34 mat      Short integer     Config data
-/*  1 Long integer  */ { dotDataTypeError,  dotDataTypeError,  dotCplxLonI,       dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/*  2 Real34        */ { dotDataTypeError,  dotDataTypeError,  dotCplxReal,       dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/*  3 Complex34     */ { dotLonICplx,       dotRealCplx,       dotCplxCplx,       dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotShoICplx,      dotDataTypeError},
-/*  4 Time          */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/*  5 Date          */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/*  6 String        */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/*  7 Real34 mat    */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotRemaRema,       dotCpmaRema,       dotDataTypeError, dotDataTypeError},
-/*  8 Complex34 mat */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotRemaCpma,       dotCpmaCpma,       dotDataTypeError, dotDataTypeError},
-/*  9 Short integer */ { dotDataTypeError,  dotDataTypeError,  dotCplxShoI,       dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError},
-/* 10 Config data   */ { dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError,  dotDataTypeError, dotDataTypeError}
-};
-
-
-//=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief Data type error in DOT
- *
- * \param void
- * \return void
- ***********************************************/
-static void dotDataTypeError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
-    sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnDot:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-//static void dotSizeError() {
-//  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-//  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-//    sprintf(errorMessage, "cannot calculate DOT product, matrix size mismatch.");
-//    moreInfoOnError("In function fnDot:", errorMessage, NULL, NULL);
-//  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-//}
-
-//=============================================================================
-// Main function
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief regX ==> regL and Dot(regX, RegY) ==> regX
- * enables stack lift and refreshes the stack.
- * Calculate the dot (or scalar) product between complex and matrix
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnDot(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  dot[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
-
-  adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
-}
-
 //=============================================================================
 // Complex dot product calculation functionS
 //-----------------------------------------------------------------------------
@@ -91,73 +22,20 @@ void dotCplx(const real_t *xReal, const real_t *xImag, const real_t *yReal, cons
   realAdd(rReal, &t, rReal, realContext);
 }
 
+
 /********************************************//**
- * \brief Dot(Y(real34), X(complex34)) ==> X(real34)
+ * \brief Dot(Y(real), X(real)) ==> X(real34) = x * y
  *
  * \param void
  * \return void
  ***********************************************/
-void dotRealCplx(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
+void doDotReal(void) {
+  real_t x, y, r;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  realZero(&yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-/********************************************//**
- * \brief Dot(Y(long integer), X(complex34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotLonICplx(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal75);
-  realZero(&yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal75);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-/********************************************//**
- * \brief Dot(Y(short integer), X(complex34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotShoICplx(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  convertShortIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal39);
-  realZero(&yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+  if (getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+    realMultiply(&x, &y, &r, &ctxtReal39);
+    convertRealToResultRegister(&r, REGISTER_X, amNone);
+  }
 }
 
 /********************************************//**
@@ -166,89 +44,15 @@ void dotShoICplx(void) {
  * \param void
  * \return void
  ***********************************************/
-void dotCplxCplx(void) {
+void doDotCplx(void) {
   real_t xReal, xImag, yReal, yImag;
   real_t rReal;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-/********************************************//**
- * \brief Dot(Y(complex34), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotCplxReal(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  realZero(&xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
-
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-/********************************************//**
- * \brief Dot(Y(complex34), X(long integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotCplxLonI(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal75);
-  realZero(&xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal75);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-/********************************************//**
- * \brief Dot(Y(complex34), X(short integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotCplxShoI(void) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t rReal;
-
-  convertShortIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-  realZero(&xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+  if (getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+          && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+    dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
+    convertRealToResultRegister(&rReal, REGISTER_X, amNone);
+  }
 }
 
 //=============================================================================
@@ -261,7 +65,7 @@ void dotCplxShoI(void) {
  * \param void
  * \return void
  ***********************************************/
-void dotRemaRema(void) {
+static void dotRemaRema(void) {
   real34Matrix_t y, x;
   real34_t res;
 
@@ -285,34 +89,12 @@ void dotRemaRema(void) {
 }
 
 /********************************************//**
- * \brief Dot(Y(complex34 matrix), X(real34 matrix)) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotCpmaRema(void) {
-  convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
-  dotCpmaCpma();
-}
-
-/********************************************//**
- * \brief Dot(Y(real34 matrix), X(complex34 matrix)) ==> X(complex34 matrix)
- *
- * \param void
- * \return void
- ***********************************************/
-void dotRemaCpma(void) {
-  convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
-  dotCpmaCpma();
-}
-
-/********************************************//**
  * \brief Dot(Y(complex34 matrix), X(complex34 matrix)) ==> X(complex34 matrix)
  *
  * \param void
  * \return void
  ***********************************************/
-void dotCpmaCpma(void) {
+static void dotCpmaCpma(void) {
   complex34Matrix_t y, x;
   real34_t res_r, res_i;
 
@@ -334,4 +116,77 @@ void dotCpmaCpma(void) {
     real34Copy(&res_r, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&res_i, REGISTER_IMAG34_DATA(REGISTER_X));
   }
+}
+
+/********************************************//**
+ * \brief Dot(Y(complex34 matrix), X(real34 matrix)) ==> X(complex34 matrix)
+ *
+ * \param void
+ * \return void
+ ***********************************************/
+static void dotCpmaRema(void) {
+  convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  dotCpmaCpma();
+}
+
+/********************************************//**
+ * \brief Dot(Y(real34 matrix), X(complex34 matrix)) ==> X(complex34 matrix)
+ *
+ * \param void
+ * \return void
+ ***********************************************/
+static void dotRemaCpma(void) {
+  convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  dotCpmaCpma();
+}
+
+
+/********************************************//**
+ * \brief regX ==> regL and Dot(regX, RegY) ==> regX
+ * enables stack lift and refreshes the stack.
+ * Calculate the dot (or scalar) product between complex and matrix
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnDot(uint16_t unusedButMandatoryParameter) {
+  uint32_t tx = getRegisterDataType(REGISTER_X), ty = getRegisterDataType(REGISTER_Y);
+
+  if (tx == dtComplex34Matrix) {
+    if (ty == dtComplex34Matrix) {
+      if (saveLastX()) {
+        dotCpmaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
+    } else if (ty == dtReal34Matrix) {
+      if (saveLastX()) {
+        dotRemaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
+    } else
+      goto type_err;
+  } else if (tx == dtReal34Matrix) {
+    if (ty == dtComplex34Matrix) {
+      if (saveLastX()) {
+        dotCpmaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
+    } else if (ty == dtReal34Matrix) {
+      if (saveLastX()) {
+        dotRemaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
+    } else
+      goto type_err;
+  } else if (ty == dtComplex34Matrix || ty == dtReal34Matrix) {
+type_err:
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
+      sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function fnDot:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  } else
+    processRealComplexDyadicFunction(&doDotReal, &doDotCplx);
 }

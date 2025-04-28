@@ -71,9 +71,9 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
     { "FLOOR",                               ITM_FLOOR,       0}, // Floor function
 //    { "floor",                               ITM_FLOOR,       0}, // C47 Floor function
     { "g" STD_SUB_d STD_SUP_MINUS STD_SUP_1, ITM_GDM1,        0}, // Inverse Gudermannian function
-    { "g" STD_SUB_d STD_SUP_MINUS_1,         ITM_GDM1,        0}, // Inverse Gudermannian function
+    { "g" STD_SUB_d "^-1",                   ITM_GDM1,        0}, // Inverse Gudermannian function
     { "gd" STD_SUP_MINUS STD_SUP_1,          ITM_GDM1,        0}, // Inverse Gudermannian function
-    { "gd" STD_SUP_MINUS_1,                  ITM_GDM1,        0}, // Inverse Gudermannian function
+    { "gd^-1",                               ITM_GDM1,        0}, // Inverse Gudermannian function
     { "gd",                                  ITM_GD,          0}, // Gudermannian function
     { "g" STD_SUB_d,                         ITM_GD,          0}, // C47 Gudermannian function
 //    { "LB",                                  ITM_LOG2,        0}, // Binary logarithm
@@ -99,7 +99,7 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
     { "MIN",                                 ITM_Min,         0}, // Minimum
 //    { "min",                                 ITM_Min,         0}, // C47 Minimum
     { "W" STD_SUP_MINUS STD_SUP_1,           ITM_WM1,         0}, // Inverse function of Lambert's W
-    { "W" STD_SUP_MINUS_1,                   ITM_WM1,         0}, // C47 Inverse function of Lambert's W
+    { "W^-1",                                ITM_WM1,         0}, // C47 Inverse function of Lambert's W
     { STD_GAMMA,                             ITM_GAMMAX,      0}, // Gamma function
     { STD_SQUARE_ROOT,                       ITM_SQUAREROOTX, 0}, // Square root (available through f SQRT in EIM)
     { STD_zeta,                              ITM_zetaX,       0}, // Riemann zeta function

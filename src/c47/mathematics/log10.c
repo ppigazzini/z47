@@ -3,28 +3,152 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const logBase10[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2          3          4           5           6           7          8           9             10
-//          Long integer Real34     complex34  Time        Date        String      Real34 mat Complex34 m Short integer Config data
-            log10LonI,   log10Real, log10Cplx, log10Error, log10Error, log10Error, log10Rema, log10Cxma,  log10ShoI,    log10Error
-};
+
+void realLog10(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_Ln(x, res, realContext);
+  realDivide(res, const_ln10, res, realContext);
+}
 
 
+void logxyReal(const real_t *denom) {
+  real_t a, b;
 
-/********************************************//**
- * \brief Data type error in log10
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void log10Error(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate log10 for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnLog10:", errorMessage, NULL, NULL);
+  if (!getRegisterAsReal(REGISTER_X, &a))
+    return;
+
+  if(realIsZero(&a)) {
+    if(getSystemFlag(FLAG_SPCRES))
+      realCopy(const_minusInfinity, &a);
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function log2Real:", "cannot calculate log2(0)", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
   }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
+  else if(realIsInfinite(&a)) {
+    if(!getSystemFlag(FLAG_SPCRES)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function log2Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of log2 when flag D is not set", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+    else if(getFlag(FLAG_CPXRES)) {
+      if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)))
+        realCopy(const_plusInfinity, &a);
+      else {
+        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+        realDivide(const_pi, denom, &a, &ctxtReal39);
+        convertComplexToResultRegister(const_plusInfinity, &a, REGISTER_X);
+        return;
+      }
+    }
+    else {
+      realCopy(const_NaN, &a);
+    }
+  }
+
+  else {
+    if(realIsPositive(&a)) {
+      WP34S_Ln(&a, &a, &ctxtReal39);
+      realDivide(&a, denom, &a, &ctxtReal39);
+    }
+    else if(getFlag(FLAG_CPXRES)) {
+      realSetPositiveSign(&a);
+      WP34S_Ln(&a, &a, &ctxtReal39);
+      realDivide(&a, denom, &a, &ctxtReal39);
+      realDivide(const_pi, denom, &b, &ctxtReal39);
+      convertComplexToResultRegister(&a, &b, REGISTER_X);
+      return;
+    }
+    else if(getSystemFlag(FLAG_SPCRES)) {
+      realCopy(const_NaN, &a);
+    }
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function log2Real:", "cannot calculate log2 of a negative number when CPXRES is not set!", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+  convertRealToResultRegister(&a, REGISTER_X, amNone);
+}
+
+
+
+void logxyCplx(const real_t *denom) {
+  real_t a, b;
+
+  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+      return;
+        
+  if(realIsZero(&a) && realIsZero(&b)) {
+    if(getSystemFlag(FLAG_SPCRES)) {
+      realCopy(const_minusInfinity, &a);
+      realZero(&b);
+    }
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function log2Cplx:", "cannot calculate log2(0)", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+  else {
+    realRectangularToPolar(&a, &b, &a, &b, &ctxtReal39);
+    WP34S_Ln(&a, &a, &ctxtReal39);
+    realDivide(&a, denom, &a, &ctxtReal39);
+    realDivide(&b, denom, &b, &ctxtReal39);
+  }
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
+}
+
+
+void logxyLonI(const real_t *denom) {
+  real_t x;
+
+  if (!getRegisterAsReal(REGISTER_X, &x))
+    return;
+  if (realIsNegative(&x) || realIsZero(&x)) {
+    logxyReal(denom);
+    return;
+  }
+
+  WP34S_Ln(&x, &x, &ctxtReal39);
+  realDivide(&x, denom, &x, &ctxtReal34);   /* Round using the 34 digit context */
+  if (!realIsAnInteger(&x))
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
+  else
+    convertRealToLongIntegerRegister(&x, REGISTER_X, DEC_ROUND_HALF_EVEN);
+}
+
+
+/**********************************************************************
+ * In all the functions below:
+ * if X is a number then X = a + ib
+ * The variables a and b are used for intermediate calculations
+ ***********************************************************************/
+
+static void log10LonI(void) {
+  logxyLonI(const_ln10);
+}
+
+static void log10ShoI(void) {
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intLog10(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
+}
+
+static void log10Real(void) {
+  logxyReal(const_ln10);
+}
+
+static void log10Cplx(void) {
+  logxyCplx(const_ln10);
+}
 
 
 /********************************************//**
@@ -35,209 +159,5 @@ TO_QSPI void (* const logBase10[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = 
  * \return void
  ***********************************************/
 void fnLog10(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  logBase10[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void realLog10(const real_t *x, real_t *res, realContext_t *realContext) {
-  WP34S_Ln(x, res, realContext);
-  realDivide(res, const_ln10, res, realContext);
-}
-
-
-
-/**********************************************************************
- * In all the functions below:
- * if X is a number then X = a + ib
- * The variables a and b are used for intermediate calculations
- ***********************************************************************/
-
-void log10LonI(void) {
-  longInteger_t lgInt;
-
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
-
-  if(longIntegerIsZero(lgInt)) {
-    if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10LonI:", "cannot calculate log10(0)", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-  }
-  else {
-    real_t x, y;
-
-    convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-    if(longIntegerIsPositive(lgInt)) {
-      WP34S_Ln(&x, &x, &ctxtReal39);
-      realDivide(&x, const_ln10, &x, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-
-      {
-        longInteger_t xx, rr, yy;
-        longIntegerInit(xx);
-        longIntegerInit(rr);
-        longIntegerInit(yy);
-        uInt32ToLongInteger(10u, xx);
-        convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), rr, DEC_ROUND_HALF_EVEN);
-        longIntegerPower(xx, rr, yy);
-        if(longIntegerCompare(lgInt, yy) == 0) {
-          lintReal();
-        }
-        longIntegerFree(yy);
-        longIntegerFree(rr);
-        longIntegerFree(xx);
-      }
-    }
-    else if(getFlag(FLAG_CPXRES)) {
-      realSetPositiveSign(&x);
-      WP34S_Ln(&x, &x, &ctxtReal39);
-      realDivide(&x, const_ln10, &x, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-      realDivide(const_pi, const_ln10, &y, &ctxtReal39);
-      convertComplexToResultRegister(&x, &y, REGISTER_X);
-    }
-    else if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10LonI:", "cannot calculate log10 of a negative number when CPXRES is not set!", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-  }
-
-  longIntegerFree(lgInt);
-}
-
-
-
-void log10Rema(void) {
-  elementwiseRema(log10Real);
-}
-
-
-
-void log10Cxma(void) {
-  elementwiseCxma(log10Cplx);
-}
-
-
-
-void log10ShoI(void) {
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intLog10(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
-}
-
-
-
-void log10Real(void) {
-  real_t x, y;
-
-  if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
-    if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10Real:", "cannot calculate log10(0)", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-  }
-
-  else if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of log when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-    else if(getFlag(FLAG_CPXRES)) {
-      if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X))) {
-        convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-      }
-      else {
-        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-        realDivide(const_pi, const_ln10, &x, &ctxtReal39);
-        convertComplexToResultRegister(const_plusInfinity, &x, REGISTER_X);
-      }
-    }
-    else {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-  }
-
-  else {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-    if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X))) {
-      WP34S_Ln(&x, &x, &ctxtReal39);
-      realDivide(&x, const_ln10, &x, &ctxtReal39);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-     }
-    else if(getFlag(FLAG_CPXRES)) {
-      realSetPositiveSign(&x);
-      WP34S_Ln(&x, &x, &ctxtReal39);
-      realDivide(&x, const_ln10, &x, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-      realDivide(const_pi, const_ln10, &y, &ctxtReal39);
-      convertComplexToResultRegister(&x, &y, REGISTER_X);
-    }
-    else if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10Real:", "cannot calculate log10 of a negative number when CPXRES is not set!", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-  }
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-
-
-void log10Cplx(void) {
-  if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
-    if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
-      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function log10Cplx:", "cannot calculate log10(0)", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-  }
-  else {
-    real_t a, b;
-
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &a);
-    real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &b);
-
-    realRectangularToPolar(&a, &b, &a, &b, &ctxtReal39);
-    WP34S_Ln(&a, &a, &ctxtReal39);
-    realDivide(&a, const_ln10, &a, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-    realDivide(&b, const_ln10, &b, &ctxtReal39);
-    convertComplexToResultRegister(&a, &b, REGISTER_X);
-  }
+  processIntRealComplexMonadicFunction(&log10Real, &log10Cplx, &log10ShoI, &log10LonI);
 }
