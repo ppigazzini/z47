@@ -496,7 +496,7 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
+    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
         case CM_REGISTER_BROWSER:

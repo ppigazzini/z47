@@ -278,9 +278,11 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
-void graph_eqn(uint16_t mode) {
-  currentKeyCode = 255;
+static void graph_eqn(uint16_t mode) {
   #if !defined(TESTSUITE_BUILD)
+    currentKeyCode = 255;
+    calcMode = CM_GRAPH;
+    saveForUndo();
     regStatsXY = findNamedVariable(plotStatMx);
     double x;
     double x01 = x_min;
@@ -534,7 +536,6 @@ void graph_eqn(uint16_t mode) {
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-
     saveForUndo();
     strcpy(plotStatMx,"STATS");
 
@@ -1327,7 +1328,6 @@ void fnEqSolvGraph (uint16_t func) {
     }
     case EQ_PLOT_LU: {           //uses limits
       if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
-        saveForUndo();
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         liftStack();
@@ -1343,7 +1343,6 @@ void fnEqSolvGraph (uint16_t func) {
         reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNone);
         realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
         realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
-        saveForUndo();
         }
       break;
     }

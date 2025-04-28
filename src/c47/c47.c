@@ -1034,11 +1034,15 @@ int convertKeyCode(int key) {
                                                       telltale_pos++;
                                                       telltale_pos = telltale_pos & 0x03;
                                                       char aaa[100];
-                                                      sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
                                                       sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
                                                     }
                                                   #endif // JMSHOWCODES

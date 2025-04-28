@@ -957,7 +957,7 @@ int16_t lastItem = 0;
                     #endif //VERBOSEKEYS
                     #if defined(PC_BUILD)
                       printf(">>>Function selected: executeFunction data=|%s| f=%d g=%d tam.mode=%i\n",(char *)data, shiftF, shiftG, tam.mode);
-                      if(item<0)  printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[-item].itemCatalogName, shiftF, shiftG);
+                      if(item<0)  printf("    item<0: calcMode=%u item=%d=%s f=%d g=%d\n",calcMode, item,indexOfItems[-item].itemCatalogName, shiftF, shiftG);
                       //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
@@ -1027,7 +1027,7 @@ int16_t lastItem = 0;
             }
             else {
                     #if defined(VERBOSEKEYS)
-                      printf(">>>Function: executeFunction showSoftmenu(%d)\n",item);
+                      printf(">>>Function: executeFunction: calcMode=%u showSoftmenu(%d)\n",calcMode, item);
                     #endif //VERBOSEKEYS
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("BB1 screenUpdatingMode=%u temporaryInformation=%u\n", screenUpdatingMode, temporaryInformation);
@@ -1039,8 +1039,12 @@ int16_t lastItem = 0;
                       printf("BB2 screenUpdatingMode=%u temporaryInformation=%u\n", screenUpdatingMode, temporaryInformation);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
-              if(calcMode == CM_GRAPH && item == -MNU_GRAPHS) {
-                calcMode = CM_NORMAL;
+              if(GRAPHMODE) {
+                screenUpdatingMode = SCRUPD_AUTO;
+                if(item == -MNU_GRAPHS) {
+                  calcMode = CM_NORMAL;
+                  fnUndo(NOPARAM);
+                }
               }
 
               if(item == -MNU_ALPHA) {
@@ -1052,8 +1056,7 @@ int16_t lastItem = 0;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               }
             }
-//temporary
-//screenUpdatingMode = SCRUPD_AUTO;
+
             refreshScreen(111);
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
@@ -2117,9 +2120,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         goto RELEASE_END;
       }
 
-    if(calcMode == CM_LISTXY) {
-      return;
-    }
+      if(calcMode == CM_LISTXY) {
+        return;
+      }
 
       //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
@@ -2419,6 +2422,9 @@ RELEASE_END:
       }
     }
 
+    if(GRAPHMODE) {                         //disregard any TI that may be up, as it is not possible to show in Graph Mode
+      temporaryInformation = TI_NO_INFO;
+    }
 
     if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_SNAP ) {
       keyActionProcessed = true;
