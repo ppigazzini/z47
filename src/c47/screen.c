@@ -8,8 +8,10 @@
   #include <execinfo.h>
 #endif //PC_BUILD
 
-static void refreshRegisterLineRestoreT(void);
-static void _refreshPemScreen(void);
+#if !defined(TESTSUITE_BUILD)
+  static void refreshRegisterLineRestoreT(void);
+  static void _refreshPemScreen(void);
+#endif //TESTSUITE_BUILD
 
 
 //#define DEBUGCLEARS
