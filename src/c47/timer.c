@@ -458,14 +458,18 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
 }
 
 
-void fnSetCountDownTimerApp(uint16_t unusedButMandatoryParameter) {
+void fnSetCountDownTimerApp(uint16_t regist) {
+  uint32_t input;
   #if !defined(TESTSUITE_BUILD)
     bool_t overflow;
-    if(!inputHelper(REGISTER_X, &remainingMsecCountdown, &overflow)) return;
+    if(!inputHelper(regist, &input, &overflow)) return;
     if(overflow){
       remainingMsecCountdown = 0;
+    } else {
+      fnResetTimerApp(NOPARAM);
+      fnStopTimerApp();
+      remainingMsecCountdown = input;      
     }
-    fnStopTimerApp();
   #endif // !TESTSUITE_BUILD
 }
 
