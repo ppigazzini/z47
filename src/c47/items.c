@@ -136,7 +136,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  ReallyRunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     lastFunc = func;
     lastParam = param;
@@ -247,7 +247,7 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
 
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>   reallyRunFunction:                                SBI:%s\n", programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
+      printf("   >>>  reallyRunFunction: CM=%3u                                SBI:%s\n", calcMode, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
     #endif // PC_BUILD
 
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
