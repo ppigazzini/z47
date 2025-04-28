@@ -2527,11 +2527,6 @@ RELEASE_END:
             refreshScreen(139);
             keyActionProcessed = true;
           }
-          else if(temporaryInformation == TI_NO_INFO) {
-            screenUpdatingMode = SCRUPD_AUTO;
-            forceSBupdate();
-            refreshScreen(139);
-          }
           break;
         }
 
