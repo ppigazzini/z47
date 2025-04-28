@@ -278,8 +278,8 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
-static void graph_eqn(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD)
+  static void graph_eqn(uint16_t mode) {
     currentKeyCode = 255;
     calcMode = CM_GRAPH;
     saveForUndo();
@@ -529,9 +529,9 @@ static void graph_eqn(uint16_t mode) {
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
     #endif //LOW_GRAPH_ACC
+  }
+#endif // !TESTSUITE_BUILD
 
-  #endif // !TESTSUITE_BUILD
-}
 
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
