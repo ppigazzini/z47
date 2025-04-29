@@ -24,7 +24,6 @@ clean:
 
 build.sim:
 	RASPBERRY=$(shell tools/onARaspberry) && \
-	echo "Raspberry value: $RASPBERRY" && \
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=$RASPBERRY -DDECNUMBER_FASTMUL=true
 
 build.rel:
