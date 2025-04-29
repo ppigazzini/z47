@@ -709,7 +709,7 @@ void drawBattery(uint16_t voltage) {
 
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
-      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d ti:%u er:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode);
+      sprintf(statusMessage, "%s%d %s/%s m:%s 1i:%d ti:%u er:%u lp:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode, lastParam);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
 
@@ -935,14 +935,16 @@ void drawBattery(uint16_t voltage) {
     x = showString(divStr, &standardFont, ++x, L1+lowerUnderLine, vmNormal, true, true) + (0);
     strcpy(divStr,STD_IRRATIONAL_I);
     raiseString = 1;
-    x = showString(divStr, &standardFont, --x, L1, vmNormal, false, false) + 2;
+    x = max(0,((int32_t)x)-1);
+    x = showString(divStr, &standardFont, x, L1, vmNormal, false, false) + 2;
 
     strcpy(divStr,STD_DOT);
     raiseString = 2;
     x = showString(divStr, &standardFont, ++xx,   L2+lowerUnderLine, vmNormal, true, true) + (2);
     strcpy(divStr,STD_IRRATIONAL_I);
     raiseString = 1;
-    x = showString(divStr, &standardFont, --x  , L2, vmNormal, false, false) + 2;
+    x = max(0,((int32_t)x)-1);
+    x = showString(divStr, &standardFont, x  , L2, vmNormal, false, false) + 2;
 
     compressString = 1;
     x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);

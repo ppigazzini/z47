@@ -322,7 +322,6 @@ void _fnExportProgram(ioFilePath_t path) {
 static void _selectProgram(uint16_t label) {
   #if !defined(TESTSUITE_BUILD)
     dynamicMenuItem = -1;
-    lastProgramRunStop = PGM_UNDEFINED;
     // Find program boundaries
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
