@@ -23,7 +23,9 @@ clean:
 	rm -rf PROGRAMS/ALLPGMS
 
 build.sim:
-	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
+	RASPBERRY=$(shell tools/onARaspberry) && \
+	echo "Raspberry value: $RASPBERRY" && \
+	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=$RASPBERRY -DDECNUMBER_FASTMUL=true
 
 build.rel:
 	meson setup $(BUILD_PC) --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
