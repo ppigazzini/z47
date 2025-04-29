@@ -129,6 +129,7 @@ dist_macos: dist_testPgms_PC
 	#zip the package
 	zip -r c47-macos.zip $(MAC_DIST_DIR)
 	rm -rf $(MAC_DIST_DIR)
+dist_macos: testPgms := build.rel
 
 dist_linux: BUILD_PC = build.rel.debug
 dist_linux: DIST_DIR_PC = $(LINUX_DIST_DIR)
