@@ -23,7 +23,7 @@ clean:
 	rm -rf PROGRAMS/ALLPGMS
 
 build.sim:
-	RASPBERRY=$(shell tools/onARaspberry) && \
+	@RASPBERRY=$(tools/onARaspberry); \
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=$RASPBERRY -DDECNUMBER_FASTMUL=true
 
 build.rel:
