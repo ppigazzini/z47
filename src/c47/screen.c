@@ -4856,8 +4856,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       #endif//!DMCP_BUILD PC_BUILD
     doRefreshSoftMenu = false;
-    //gets a separate hard forced refresh, to restore the part of the PEM screen spoiled by showFunctionName() 
-    force_Registerrefresh(REGISTER_T, false, false);
+
+    force_refresh(force);
   }
 
 
