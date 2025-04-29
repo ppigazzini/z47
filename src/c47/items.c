@@ -3845,8 +3845,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2462 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2463 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2464 */  UNIT_CONV(constFactoreVJ,        divide,                     "eV" STD_RIGHT_ARROW "J" ,                     "eV"  STD_RIGHT_ARROW                   ),
-/* 2465 */  UNIT_CONV(constFactorJeV,      multiply,                     "J"  STD_RIGHT_ARROW "eV",                     "J" STD_RIGHT_ARROW                     ),
+/* 2464 */  UNIT_CONV(constFactoreVJ,      multiply,                     "eV" STD_RIGHT_ARROW "J" ,                     "eV"  STD_RIGHT_ARROW                   ),
+/* 2465 */  UNIT_CONV(constFactorJeV,        divide,                     "J"  STD_RIGHT_ARROW "eV",                     "J" STD_RIGHT_ARROW                     ),
 /* 2466 */  UNIT_CONV(constFactorBananamm, multiply,                     "Banana"  STD_RIGHT_ARROW "mm",                "Banana" STD_RIGHT_ARROW                ),
 /* 2467 */  UNIT_CONV(constFactormmBanana,  divide,                      "mm"  STD_RIGHT_ARROW "Banana",                "mm" STD_RIGHT_ARROW                    ),
 /* 2468 */  UNIT_CONV(constFactorBananaInch,multiply,                    "Banana"  STD_RIGHT_ARROW "inch",              "Banana" STD_RIGHT_ARROW                ),
