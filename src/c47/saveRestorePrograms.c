@@ -478,6 +478,7 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
 
     uint16_t label;
     char labelName[16];
+    char labelName1[500];
         for(int i=0; i<numberOfLabels; i++) {
           if(labelList[i].step > 0) { // Global label
             xcopy(labelName, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
@@ -488,11 +489,16 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
 
             _selectProgram(label);
 
-            //printf("----X %u %u\n",currentProgramNumber, oldCurrentProgramNumber);
+            stringToASCII(labelName, labelName1);
+            //printf("----X %6u ? old=%6u name=%30s  ",currentProgramNumber, oldCurrentProgramNumber, labelName1);
             if(currentProgramNumber != oldCurrentProgramNumber) {
-              printf("Export & saving: Labelnumber=%i, Labelname=%s\n",label, labelName);
+              printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n",label, currentProgramNumber, labelName1, labelName1);
+              fflush(stdout);
               _saveProgram  (label, ioPathSaveAllPrograms);
               _exportProgram(label, ioPathExportRTFAllPrograms);
+            } else {
+              printf("   Not saved: %s is not the first label in program %5u.\n", labelName1, currentProgramNumber);
+              fflush(stdout);
             }
           }
         }
