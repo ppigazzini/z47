@@ -1823,7 +1823,7 @@ return res;
       }
       #define typWidth 120 //stringWidth(" WWWWWW     ", &standardFont, true, true);
       stringCopy(padding + stringByteLength(padding), functionName);
-      stringCopy(padding + stringByteLength(padding), "     ");
+      stringCopy(padding + stringByteLength(padding), "       ");
       if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
         clearRegisterLine(REGISTER_T, true, false);
       }

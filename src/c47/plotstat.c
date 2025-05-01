@@ -794,7 +794,7 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
 
 #define horOffsetR 109+5 //digit righ side aliognment
 #define autoinc 20 //text line spacing
-#define autoshift -5 //text line spacing
+#define autoshift -3 //text line spacing
 #define horOffset 1 //labels from the left
 
 
@@ -1089,8 +1089,9 @@ currentKeyCode = 255;
       realToFloat(&hBr, &hB);
       realToFloat(&nBr, &nB);
 
-      strcpy(ss,histElementXorY == 1 ? "  Histogram(y)" : "  Histogram(x)");
-      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+      strcpy(ss, "Histogram(");
+      strcat(ss,histElementXorY == 1 ? "y)" : "x)");
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -7 +autoshift, vmNormal, false, false);
 
       eformat_eng2(ss, "(", x_max, 2, "");
       eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
@@ -1356,13 +1357,14 @@ void graphDrawLRline(uint16_t selection) {
       if(lrCountOnes(lrSelection)>1 && selection == lrChosen) {
         strcat(ss,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
       }
-      showString(ss, &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
+      showString(ss, &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
       if(selection != CF_GAUSS_FITTING && selection != CF_CAUCHY_FITTING) {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
       else {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
+        compressString = 1;
         showString(          ss,  &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
     }
