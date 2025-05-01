@@ -1041,14 +1041,14 @@ void debugNIM(void) {
       case CATALOG_MVAR: {
         return "CATALOG_MVAR";
       }
-      case CATALOG_CONFIG: {
-        return "CATALOG_CONFIG";
+      case CATALOG_CONFIGS: {
+        return "CATALOG_CONFIGS";
       }
-      case CATALOG_ALLVAR: {
-        return "CATALOG_ALLVAR";
+      case CATALOG_ALLVARS: {
+        return "CATALOG_ALLVARS";
       }
-      case CATALOG_NUMBERS: {
-        return "CATALOG_NUMBERS";
+      case CATALOG_NUMBRS: {
+        return "CATALOG_NUMBRS";
       }
       default: {
     return "CATALOG_????";
