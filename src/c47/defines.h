@@ -160,7 +160,7 @@
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
-  #define    ANALYSE_REFRESH
+  #define    ANALYSE_REFRESH              //various refresh backtraces
   #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
@@ -190,9 +190,12 @@
     #undef DEBUGUNDO
     #define DEBUG_EXECUTE
     #undef DEBUG_EXECUTE
+    #define DEBUG_PGM       // backtrace from insert step
+    #undef DEBUG_PGM        //
   #else // !PC_BUILD
     #undef DEBUGUNDO
     #undef DEBUG_EXECUTE
+    #undef DEBUG_PGM
   #endif // PC_BUILD
 
 
