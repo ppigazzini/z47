@@ -78,7 +78,8 @@ uint8_t  outKeyBuffer         (uint8_t *pByte);
 #endif // BUFFER_CLICK_DETECTION
 uint8_t  outKeyBufferDoubleClick();
 bool_t   fullKeyBuffer        ();
-bool_t   emptyKeyBuffer       ();                           //^^
+bool_t   emptyKeyBuffer       ();
+void     clearKeyBuffer       ();
 
 
 void     btnFnPressed_StateMachine (void *unused, void *data);

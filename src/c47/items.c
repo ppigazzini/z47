@@ -250,9 +250,10 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     }
 
-    hourGlassIconEnabled = false;
-    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    showHideHourGlass();
+//Test: Remove clearing of hourgalss from here - it is too early.
+//    hourGlassIconEnabled = false;
+//    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
@@ -3382,7 +3383,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2005 */  { fnClrMod,                     NOPARAM,                     "CLRMOD",                                      "CLRMOD",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//clear HEX mode
 /* 2006 */  { fnShoiXRepeats,               TM_VALUE,                    "dSI",                                         "dSI",                                         (0 << TAM_MAX_BITS) |     3, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NUMBER_8     },//JM SHOI
 /* 2007 */  { fnScale,                      NOPARAM,                     "X:Y=1",                                       "X:Y=1",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM GRAPHING
-/* 2008 */  { fnSetBCD,                     JC_TOPHEX,                   "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2008 */  { SetSetting,                   FLAG_TOPHEX,                 "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2009 */  { fnPline,                      NOPARAM,                     "LINE",                                        "LINE",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//GRAPH
 /* 2010 */  { fnPcros,                      NOPARAM,                     "CROSS",                                       "CROSS",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//GRAPH
 /* 2011 */  { fnPbox,                       NOPARAM,                     "BOX",                                         "BOX",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//GRAPH
@@ -3652,10 +3653,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2272 */  { fnGetSystemFlag,              FLAG_US,                     "CONV" STD_SUB_U STD_SUB_S,                    "CONV" STD_SUB_U STD_SUB_S,                    (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2273 */  { fnGetSystemFlag,              FLAG_MNUp1,                  "MNUp1",                                       "MNUp1",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2274 */  { fnGetSystemFlag,              FLAG_SBwoy,                  "SBwoy",                                       "SBwoy",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2275 */  { itemToBeCoded,                NOPARAM,                     "2275",                                        "2275",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2276 */  { itemToBeCoded,                NOPARAM,                     "2276",                                        "2276",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2277 */  { itemToBeCoded,                NOPARAM,                     "2277",                                        "2277",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2278 */  { itemToBeCoded,                NOPARAM,                     "2278",                                        "2278",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2275 */  { fnGetSystemFlag,              FLAG_TOPHEX,                 "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2276 */  { itemToBeCoded,                NOPARAM,                     "2277",                                        "2277",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2277 */  { itemToBeCoded,                NOPARAM,                     "2278",                                        "2278",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2278 */  { itemToBeCoded,                NOPARAM,                     "2279",                                        "2279",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2279 */  { itemToBeCoded,                NOPARAM,                     "2279",                                        "2279",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2280 */  { itemToBeCoded,                NOPARAM,                     "2280",                                        "2280",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2281 */  { itemToBeCoded,                NOPARAM,                     "2281",                                        "2281",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

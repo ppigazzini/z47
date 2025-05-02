@@ -747,32 +747,16 @@ bool_t lastshiftG = false;
     switch(-currentMenu()) {
       case MNU_MyMenu: {
         assignToMyMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(103);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_MyAlpha: {
         assignToMyAlpha((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(104);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_DYNAMIC: {
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(105);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
-
       case MNU_HOME: {
         if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
           #if defined(PC_BUILD)
@@ -781,12 +765,7 @@ bool_t lastshiftG = false;
           return false;
         }
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(102);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
       case MNU_PFN: {
         if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
@@ -796,14 +775,8 @@ bool_t lastshiftG = false;
           return false;
         }
         assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
-        calcMode = previousCalcMode;
-        shiftF = shiftG = false;
-        _closeCatalog();
-        refreshScreen(102);
-        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-        return true;
+        goto endReturnTrue;
       }
-
       case MNU_CATALOG:
       case MNU_ALPHA: //JM
       case MNU_CHARS:
@@ -818,10 +791,13 @@ bool_t lastshiftG = false;
         #if defined(PC_BUILD)
           moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-currentMenu()].itemCatalogName, "is write-protected.");
         #endif // PC_BUILD
+endReturnTrue:
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
         _closeCatalog();
-        refreshScreen(106);
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        refreshScreen(103);
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return true;
       }
@@ -930,6 +906,7 @@ int16_t lastItem = 0;
         refreshRegisterLine(REGISTER_T);
       }
     }
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; //Ensure status bar is always checked after fn key release. The new statusbar code does not clear the entire statusbar, it only updates if a setting changed
 
     fnTimerStop(TO_3S_CTFF);      //dr
     fnTimerStop(TO_CL_LONG);      //dr
@@ -1553,7 +1530,7 @@ int16_t lastItem = 0;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary3: %d:",key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
                                                                                                                          //JM shifts
-    if( !tam.mode && (calcMode == CM_NIM || calcMode == CM_NORMAL) && (lastIntegerBase >= 2 && topHex) && (key_no >= 0 && key_no <= 5 )) {               //JMNIM vv Added direct A-F for hex entry
+    if( !tam.mode && (calcMode == CM_NIM || calcMode == CM_NORMAL) && (lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)) && (key_no >= 0 && key_no <= 5 )) {               //JMNIM vv Added direct A-F for hex entry
       result = shiftF ? key->fShifted :
                shiftG ? key->gShifted :
                         key->primaryAim;
@@ -1705,6 +1682,18 @@ int16_t lastItem = 0;
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
+    #if defined(DMCP_BUILD)
+    static void waitForTimer(void) {
+      if(!skippedStackLines) return;
+      int32_t i = 27;
+      while(i > 0) {
+        if(fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING || !skippedStackLines) break;
+        sys_delay(100);
+        i--;
+      }
+    }
+    #endif //DMCP_BUILD
+
     bool_t checkNumber(uint8_t keyCode) {
       if(calcModel == USER_C47) {
         if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) {
@@ -1712,6 +1701,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr0].itm0==keyCode) {
           if(circ[++circPtr0].itm0==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1724,6 +1717,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2].itm2==keyCode) {
           if(circ[++circPtr2].itm2==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1738,6 +1735,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr1].itm1==keyCode) {
           if(circ[++circPtr1].itm1==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetHP35(0);
             return true;
           }
@@ -1750,6 +1751,10 @@ int16_t lastItem = 0;
         }
         if(circ[circPtr2a].itm2a==keyCode) {
           if(circ[++circPtr2a].itm2a==0) {
+            #if defined(DMCP_BUILD)
+              waitForTimer();
+              clearKeyBuffer();
+            #endif //DMCP_BUILD
             fnSetC47(0);
             return true;
           }
@@ -1764,6 +1769,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr3].itm3==keyCode) {
         if(circ[++circPtr3].itm3==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetJM(0);
           return true;
         }
@@ -1776,6 +1785,10 @@ int16_t lastItem = 0;
       }
       if(circ[circPtr4].itm4==keyCode) {
         if(circ[++circPtr4].itm4==0) {
+          #if defined(DMCP_BUILD)
+            waitForTimer();
+            clearKeyBuffer();
+          #endif //DMCP_BUILD
           fnSetRJ(0);
           return true;
         }
@@ -1956,6 +1969,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       }
       else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(126);
       }
 
@@ -2109,7 +2123,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
-      screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
@@ -2121,6 +2134,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(116);
       }
       else if(showFunctionNameItem != 0) {
@@ -2281,6 +2295,7 @@ RELEASE_END:
       if(PROBMENU) {
         screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
       }
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 
 
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
@@ -2346,6 +2361,7 @@ RELEASE_END:
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       refreshScreen(138);
     }
 
@@ -2363,6 +2379,7 @@ RELEASE_END:
       }
       temporaryInformation = TI_NO_INFO;
       screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     }
 
     if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
@@ -2415,6 +2432,9 @@ RELEASE_END:
           if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
             temporaryInformation = TI_NO_INFO;
             refreshRegisterLine(NIM_REGISTER_LINE); }
+          else if(tam.mode) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+          }
           else {
             //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
             keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
@@ -2869,7 +2889,7 @@ RELEASE_END:
                     addItemToNimBuffer(item);
                   }
 
-                  if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
+                  if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && getSystemFlag(FLAG_TOPHEX)) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
                     refreshRegisterLine(REGISTER_X);
                   }                                                                                   //JM^^
                 }
@@ -3660,6 +3680,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(temporaryInformation == TI_VIEW_REGISTER) {
           temporaryInformation = TI_NO_INFO;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         }
         else if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
           temporaryInformation = TI_NO_INFO;
@@ -3752,6 +3773,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             updateMatrixHeightCache();
           }
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           popSoftmenu(); // close softmenu dedicated for the MIM
         }
         break;
@@ -3884,7 +3906,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
 
         if(currentMenu() == -MNU_TIMERF) {
-          clearScreen();
+          clearScreen(5);
           fnItemTimerApp(NOPARAM);
           return;
         }
@@ -4108,6 +4130,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           return;
         }
         else
@@ -4128,6 +4151,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
             screenUpdatingMode = SCRUPD_AUTO;
+            screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
             if(lastErrorCode != 0) {
               lastErrorCode = 0;
             }
@@ -4414,6 +4438,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(calcMode == CM_NIM) {
             closeNim();
           }
@@ -4638,6 +4663,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(calcMode == CM_NIM) {
             closeNim();
           }

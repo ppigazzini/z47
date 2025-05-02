@@ -283,7 +283,7 @@ typedef struct {
   bool_t         compatibility_byte18;              //Spare Byte           //  
   uint8_t        displayStackSHOIDISP;                                     //  dSI
   bool_t         bcdDisplay;                                               //  BCD
-  bool_t         topHex; //compatibility_byte24;              //Spare Byte           //  
+  bool_t         compatibility_byte24;              //Spare Byte           //  
   uint8_t        bcdDisplaySign;                                           //  BCDUNS
   uint8_t        DRG_Cycling;                                              //  Internal control flag for DRG
   uint8_t        DM_Cycling;                                               //  internal control flag for FSE

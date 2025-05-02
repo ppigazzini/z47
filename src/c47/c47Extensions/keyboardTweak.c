@@ -273,7 +273,7 @@ void resetKeytimers(void) {
          || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
-        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
+        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX) && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
           if(LongPressM == RBX_M1234) {
@@ -314,7 +314,7 @@ void resetKeytimers(void) {
       longpressDelayedkey3 = -MNU_PFN;
     }
 
-    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && topHex) {
+    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)) {
        longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].primary  : kbd_std[*result - ITM_A].primary;
        longpressDelayedkey2 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].fShifted : kbd_std[*result - ITM_A].fShifted;
        longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].gShifted : kbd_std[*result - ITM_A].gShifted;
@@ -1251,6 +1251,10 @@ bool_t fullKeyBuffer(void) {
 bool_t emptyKeyBuffer(void) {
   return buffer.read == buffer.write;
 }
+
+void clearKeyBuffer(void) {
+  buffer.read = buffer.write;
+}
 #endif // DMCP_BUILD                                                    //^^
 
 
@@ -1382,6 +1386,7 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
    fnKeyBackspace(0);
    setSystemFlag(FLAG_ASLIFT);
    screenUpdatingMode = SCRUPD_AUTO;
+   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 //   refreshScreen();
   #endif // !TESTSUITE_BUILD
 }
