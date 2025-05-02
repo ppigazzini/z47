@@ -188,7 +188,6 @@ void fnExecute(uint16_t label) {
     }
   }
   else {
-    lastProgramRunStop = PGM_UNDEFINED;
     fnGoto(label);
     dynamicMenuItem = -1;
     if(lastErrorCode == ERROR_NONE) {
@@ -219,6 +218,7 @@ void fnReturn(uint16_t skip) {
   if(currentInputVariable != INVALID_VARIABLE) {
     currentInputVariable = INVALID_VARIABLE;
     screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     refreshScreen(3);
     #if defined(DMCP_BUILD)
       lcd_refresh();
@@ -790,6 +790,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
   }
 
   if(menuLabel != INVALID_VARIABLE) {
@@ -844,6 +845,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           }
@@ -866,6 +868,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
       break;
     }
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
   }
 
 stopProgram:

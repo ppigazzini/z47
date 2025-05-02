@@ -129,6 +129,7 @@ void fnPlay(uint16_t regist) {
         return;
       }
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       for(uint16_t i = 0; i < m.header.matrixRows; ++i) {
         frequency = real34ToUInt32(&m.matrixElements[i * cols]);
         ms_delay  = real34ToUInt32(&m.matrixElements[i * cols + 1]);

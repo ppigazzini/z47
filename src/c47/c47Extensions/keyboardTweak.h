@@ -27,7 +27,7 @@ void     fnSHIFTfg(uint16_t unusedButMandatoryParameter);
 #define  keypress_long_f false
 void     openHOMEorMyM(bool_t situation);
 void     fg_processing_jm    (void);
-int16_t  Check_SigmaPlus_Assigned(int16_t  * result, int16_t tempkey);
+int16_t  Check_Norm_Key_00_Assigned(int16_t  * result, int16_t tempkey);
 
 bool_t   func_lookup         (int16_t  fn, int16_t itemShift, int16_t *funk);
 void     execFnTimeout       (uint16_t key                    );                         //dr - delayed call of the primary function key
@@ -78,7 +78,8 @@ uint8_t  outKeyBuffer         (uint8_t *pByte);
 #endif // BUFFER_CLICK_DETECTION
 uint8_t  outKeyBufferDoubleClick();
 bool_t   fullKeyBuffer        ();
-bool_t   emptyKeyBuffer       ();                           //^^
+bool_t   emptyKeyBuffer       ();
+void     clearKeyBuffer       ();
 
 
 void     btnFnPressed_StateMachine (void *unused, void *data);

@@ -1432,7 +1432,7 @@ void fnStatList() {
     char tmpstr1[100], tmpstr2[100];
     int16_t ix, ixx, statnum;
 
-    clearScreen();
+    clearScreen(1);
     refreshStatusBar();
 
     if(regStatsXY != INVALID_VARIABLE && (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
