@@ -1402,7 +1402,7 @@ int16_t lastItem = 0;
 
     int16_t ShiftOverride = 0;
     result = Norm_Key_00_item_in_layout;
-    ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
+    ShiftOverride = Check_Norm_Key_00_Assigned(&result, key_no);
     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
       printf("**[DL]** determineItem = %d\n",result);
     #endif //VERBOSE_DETERMINEITEM
@@ -1595,7 +1595,7 @@ int16_t lastItem = 0;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: result1: %d:",result); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-    if(Check_SigmaPlus_Assigned(&result, key_no) == 0) {
+    if(Check_Norm_Key_00_Assigned(&result, key_no) == 0) {
       Check_MultiPresses(&result, key_no);        //JM
     }
 
@@ -1941,7 +1941,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
       }
-      else if((keyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used) {
+      else if((keyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used && !(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX))) {
         funcParam = Norm_Key_00.funcParam;
         xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
       }
@@ -2159,7 +2159,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         hideFunctionName();
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-        bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used;
+        bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
                     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
