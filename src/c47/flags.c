@@ -9,13 +9,20 @@
 
 typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
 
+uint64_t systemFlags0Changed = 0xFFFFFFFFFFFFFFFF;
+uint64_t systemFlags1Changed = 0xFFFFFFFFFFFFFFFF;
+uint64_t systemFlags2Changed = 0xFFFFFFFFFFFFFFFF;
+
+
 static void _setSystemFlag(unsigned int sf) {
   int32_t flag = sf & 0x3fff;
 
   if(flag < 64) {
+    systemFlags0Changed |= (~systemFlags0 & ((uint64_t)1 << flag));
     systemFlags0 |= ((uint64_t)1 << flag);
   }
   else {
+    systemFlags1Changed |= (~systemFlags1 & ((uint64_t)1 << (flag - 64)));
     systemFlags1 |= ((uint64_t)1 << (flag - 64));
   }
 }
@@ -24,9 +31,11 @@ static void _clearSystemFlag(unsigned int sf) {
   int32_t flag = sf & 0x3fff;
 
   if(flag < 64) {
+    systemFlags0Changed |= (systemFlags0 & ((uint64_t)1 << flag));
     systemFlags0 &= ~((uint64_t)1 << flag);
   }
   else {
+    systemFlags1Changed |= (systemFlags1 & ((uint64_t)1 << (flag - 64)));
     systemFlags1 &= ~((uint64_t)1 << (flag - 64));
   }
 }
@@ -35,9 +44,11 @@ static void _flipSystemFlag(unsigned int sf) {
   int32_t flag = sf & 0x3fff;
 
   if(flag < 64) {
+    systemFlags0Changed |= ((uint64_t)1 << flag);
     systemFlags0 ^=  ((uint64_t)1 << flag);
   }
   else {
+    systemFlags1Changed |= ((uint64_t)1 << (flag - 64));
     systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
   }
 }
@@ -84,7 +95,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               fnRefreshState();
               break;
 
-    case FLAG_SBdate:
+    case FLAG_SBdate:       //these flags need to clear the statusbar and start SB again
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
@@ -98,14 +109,26 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBprn :
     case FLAG_SBbatV:
     case FLAG_SBshfR:
-              fnRefreshState();
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-              break;
-
     case FLAG_SBfrac:
-              fnRefreshState();
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+    case FLAG_FRACT:
+    case FLAG_IRFRAC:
+    case FLAG_IRFRQ:
+            #if defined(DMCP_BUILD)
+              reallyClearStatusBar(201);
+            #endif
+            fnRefreshState();
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+            break;
+
+    default: break;
+  }
+
+
+  switch(systemFlag) {
+    case FLAG_SBfrac:
               lastIntegerBase = 0; //needed to reset the annunciator
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
     case FLAG_SBwoy :
@@ -116,8 +139,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
                 _clearSystemFlag(FLAG_SBtime);
               }
-              fnRefreshState();
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break; 
           
     case FLAG_FRACT:
@@ -125,7 +146,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_IRFRAC);
                 _clearSystemFlag(FLAG_IRFRQ);
               }
-              fnRefreshState();
               break;
 
     case FLAG_IRFRAC:
@@ -133,7 +153,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRQ);
               }
-              fnRefreshState();
               break;
 
      case FLAG_IRFRQ:
@@ -141,7 +160,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRAC);
               }
-              fnRefreshState();
               break;
 
     default: break;
@@ -173,6 +191,46 @@ bool_t getSystemFlag(int32_t sf) {
     return (systemFlags1 & ((uint64_t)1 << (flag - 64))) != 0;
   }
 }
+
+bool_t didSystemFlagChange(int32_t sf) {
+  int32_t flag = sf & 0x3fff;
+  bool_t returnvalue;
+  if(flag < 64) {
+    returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
+    systemFlags0Changed &= ~((uint64_t)1 << flag);
+  }
+  else if (flag < 128) {
+    returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
+    systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
+  }
+  else {
+    returnvalue = (systemFlags2Changed & ((uint64_t)1 << (flag - 128))) != 0;
+    systemFlags2Changed &= ~((uint64_t)1 << (flag - 128));
+  }
+  return returnvalue;
+}
+
+void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_...
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0Changed |= ((uint64_t)1 << (flag-0));
+  }
+  else if (flag < 128) {
+    systemFlags1Changed |= ((uint64_t)1 << (flag-64));
+  }
+  else {
+    systemFlags2Changed |= ((uint64_t)1 << (flag-128));
+  }
+}
+
+void setAllSystemFlagChanged(void) {
+  systemFlags0Changed = 0xFFFFFFFFFFFFFFFF;
+  systemFlags1Changed = 0xFFFFFFFFFFFFFFFF;
+  systemFlags2Changed = 0xFFFFFFFFFFFFFFFF;
+}
+
+
 
 void forceSystemFlag(unsigned int sf, int set) {
   if(set) {
@@ -626,6 +684,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;

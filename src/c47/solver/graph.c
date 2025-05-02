@@ -487,6 +487,7 @@ void graph_eqn(uint16_t mode) {
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           break;
         }
       #endif //DMCP_BUILD
@@ -1199,6 +1200,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         break;
       }
                                   #if defined(PC_BUILD)
@@ -1432,6 +1434,7 @@ void fnEqSolvGraph (uint16_t func) {
 
       reDraw = true;
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       refreshScreen(239);
       break;
     }

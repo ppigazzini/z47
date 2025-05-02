@@ -8,9 +8,10 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07a5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7a5 is an internal alpha, to test the internal changes to allow the upcoming vector branch
+// Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 
 
 #if !defined(CALCMODEL)
@@ -151,8 +152,6 @@
 #define   FN_TIME_DEBUG1
 #undef    FN_TIME_DEBUG1
 
-
-
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
@@ -160,6 +159,8 @@
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
+  #define    ANALYSE_REFRESH
+  #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
   #define    VERBOSE_DETERMINEITEM
@@ -647,8 +648,19 @@
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
+#define FLAG_TOPHEX                           0x8058
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+24 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+25 // We can have a maximum of 128 system flags
+
+                                                     // only used as bit count for setting change detection
+#define SETTING_AMODE                         0x0080 // current angle mode
+#define SETTING_DMX                           0x0081 // denMax
+#define SETTING_SINT_WS                       0x0082 // shortIntegerWordSize
+#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode 
+#define SETTING_WATCHICON                     0x0084 // the bit controlling the watch face icon
+#define SETTING_SIOICON                       0x0085 // the bit controlling the serial i/o activity icon
+#define SETTING_PRINTERICON                   0x0086 // the bit controlling the IR printer icon
+
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -715,13 +727,13 @@ typedef enum {
 #define TAM_MAX_MASK                          0x3fff
 
 // Stack Lift Status (2 bits)
-#define SLS_STATUS                            0x0003
+#define SLS_STATUS                            0x0003 // 0000 0011
 #define SLS_ENABLED                        ( 0 << 0) // Stack lift enabled after item execution
 #define SLS_DISABLED                       ( 1 << 0) // Stack lift disabled after item execution
 #define SLS_UNCHANGED                      ( 2 << 0) // Stack lift unchanged after item execution
 
 // Undo Status (2 bits)
-#define US_STATUS                             0x000c
+#define US_STATUS                             0x000c // 0000 1100
 #define US_ENABLED                         ( 0 << 2) // The command saves the stack, the statistical sums, and the system flags for later UNDO
 #define US_CANCEL                          ( 1 << 2) // The command cancels the last UNDO data
 #define US_UNCHANGED                       ( 2 << 2) // The command leaves the existing UNDO data as is
@@ -747,7 +759,7 @@ typedef enum {
 #define EIM_ENABLED                         (1 << 8) // Function enabled in EIM
 
 // Parameter Type in Program status (4 bit)
-#define PTP_STATUS                            0x1e00
+#define PTP_STATUS                            0x1e00 // 0001 1110 0000 0000
 #define PTP_NONE                           ( 0 << 9) // No parameters
 #define PTP_DECLARE_LABEL                  ( 1 << 9) // These
 #define PTP_LABEL                          ( 2 << 9) //   parameter
@@ -764,6 +776,12 @@ typedef enum {
 #define PTP_LITERAL                        (13 << 9) // Literal
 #define PTP_REM                            (14 << 9) //
 #define PTP_DISABLED                       (15 << 9) // Not programmable
+
+// Hourglass enable (2 bits)
+#define HG_STATUS                            0x6000  // 0110 0000 0000 0000
+#define HG_ENABLED                         ( 0 << 13 ) // Hourglass enabled
+#define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
+#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked 
 
 
 #define INC_FLAG                                   0
@@ -1128,30 +1146,33 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 
 // Horizontal offsets in the status bar
-#define X_DATE                                   ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
-#define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
-#define X_REAL_COMPLEX                           136  // note: this is for both dow or time, not both
-#define X_HOURGLASS_GRAPHS                       140
-#define X_COMPLEX_MODE                           146
-#define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE                           160
-#define X_FRAC_MODE                              187
-#define X_INTEGER_MODE                           262
-#define X_OVERFLOW_CARRY                         292
-#define X_ALPHA_MODE                             300
-#define X_HOURGLASS                              312
-#define X_SSIZE_BEGIN                            327 - 5 + 3
-#define X_ASM                                    (X_ALPHA_MODE + 34) //334
-#define X_STOPWATCH                              337
-#define X_SERIAL_IO                              353
-#define X_PRINTER                                362
-#define X_USER_MODE                              375
-#define X_BATTERY                                389
-#define DX_BATTERY                                 8  // <=2.054 V - minimum bar (one fine line)
-#define DY_BATTERY                                20  // >=3.045 V - maximum bars (tip of battery against the edge)
-                                                      // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
-#define X_SHIFT_L                                  0
-#define X_SHIFT_R                                (X_USER_MODE - 15)
+#define X_DATE                           ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
+#define X_TIME                                     45 // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
+#define X_REAL_COMPLEX        (X_TIME             +91)// note: this is for both dow or time, not both
+#define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
+#define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
+#define X_COMPLEX_MODE_ADJ               -8           // note: auto moved left if REAL_COMPLEX is not present
+#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
+#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
+#define X_BASE_MODE           (X_FRAC_MODE        + 0)//
+#define X_INTEGER_MODE        (X_BASE_MODE        +77)//
+#define X_MATRIX_MODE         (X_INTEGER_MODE     + 0)//
+#define X_TVM_MODE            (X_MATRIX_MODE      + 0)//
+#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)// 
+#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
+#define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
+#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
+#define X_ASM                 (X_SSIZE_BEGIN      +11)// 
+#define X_STOPWATCH           (X_ASM              + 4)//
+#define X_SERIAL_IO           (X_STOPWATCH        +18)// note: I/O and Printing (soft or hard) cannot happen at the same time
+#define X_PRINTER             (X_SERIAL_IO        + 0)//
+#define X_USER_MODE           (X_PRINTER          +14)//
+#define X_BATTERY             (X_USER_MODE        +13)//
+#define DX_BATTERY                                  8  // <=2.054 V - minimum bar (one fine line)
+#define DY_BATTERY                                 20  // >=3.045 V - maximum bars (tip of battery against the edge)
+                                                       // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
+#define X_SHIFT_L                                   0
+#define X_SHIFT_R                                (X_PRINTER - 1)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
 #define Y_SHIFT                                  (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
@@ -1538,7 +1559,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PGM_RESUMING                               5
 #define PGM_SINGLE_STEP                            6
 #define PGM_UNDEFINED                            255
-#define PGM_DEFINED_MASK                        0x7f
 
 // Save mode
 #define SM_MANUAL_SAVE                             0
@@ -1560,7 +1580,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SCRUPD_MANUAL_STACK                     0x02       //0000 0010
 #define SCRUPD_MANUAL_MENU                      0x04       //0000 0100
 #define SCRUPD_MANUAL_SHIFT_STATUS              0x08       //0000 1000
-//#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10     //0001 0000   16d
+#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10       //0001 0000   16d
 #define SCRUPD_SKIP_STACK_ONE_TIME              0x20       //0010 0000   32d
 #define SCRUPD_SKIP_MENU_ONE_TIME               0x40       //0100 0000   64d
 //#define SCRUPD_SHIFT_STATUS                     0x80

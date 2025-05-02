@@ -285,6 +285,7 @@
   extern bool_t                 hourGlassIconEnabled;
   extern bool_t                 watchIconEnabled;
   extern bool_t                 printerIconEnabled;
+  extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
   extern bool_t                 showContent;
@@ -293,7 +294,6 @@
   extern bool_t                 thereIsSomethingToUndo;
   extern bool_t                 lastProgramListEnd;
   extern bool_t                 programListEnd;
-  extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
   extern bool_t                 secTick1;
   extern bool_t                 halfSecTick2;
@@ -418,7 +418,6 @@
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
-  extern uint8_t                lastProgramRunStop;
   extern uint8_t                currentKeyCode;
   extern uint8_t                lastKeyCode;
   extern uint8_t                keyStateCode;
@@ -475,7 +474,6 @@
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
   extern bool_t                 bcdDisplay;
-  extern bool_t                 topHex;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
