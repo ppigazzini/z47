@@ -208,9 +208,9 @@ void removePixel(uint32_t x, uint32_t y) {
 
 void clearScreenPixels(void) {
   #if !defined(TESTSUITE_BUILD)
-    lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, 0);
-    lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, 0);
-    lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, 0);
+    lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, LCD_SET_VALUE);
+    lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, LCD_SET_VALUE);
+    lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, LCD_SET_VALUE);
   #endif //!TESTSUITE_BUILD
 }
 
@@ -425,7 +425,7 @@ void graphAxisDraw (void){
     }
 
     //DRAW YAXIS
-    lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,0xFF);
+    lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,LCD_EMPTY_VALUE);
 
     //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
 
