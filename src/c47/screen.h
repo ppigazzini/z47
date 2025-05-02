@@ -12,6 +12,7 @@
   void     Shft_stop();                                                                                           //JM reset shift after  4s
   void     clear_ul(void);                                                                                        //JMUL
   void     closeShowMenu(void);
+  void     reallyClearStatusBar(uint8_t info);
 
   void     clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys);               //JMOLD
   void     clearScreenGraphs(uint8_t source, bool_t clearTextArea, bool_t clearGraphArea);
@@ -75,8 +76,22 @@ char       letteredRegisterName(calcRegister_t regist);
   #define  halfSec_clearT true
   #define  halfSec_disp true
 
+  #if defined(TESTSUITE_BUILD)
+      #define clearScreen(cnt)                        do { } while(0)
+      #define clearScreenExcludingStatusBar(cnt)      do { } while(0)
+      #define clearScreenStatusBar(cnt)               do { } while(0)
+  #else //!TESTSUITE_BUILD
+    #if defined(MONITOR_CLRSCR)
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul();                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 20,  LCD_SET_VALUE);             forceSBupdate(); printf("CLEARSB Macro %u\n",                (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+    #else //!MONITOR_CLRSCR
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul();                 } while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 20,  LCD_SET_VALUE);             forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+    #endif //MONITOR_CLRSCR
+  #endif //!TESTSUITE_BUILD
 
-  #define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = PGM_UNDEFINED;} while(0)
 
   #if !defined(TESTSUITE_BUILD)
 
@@ -129,6 +144,7 @@ char       letteredRegisterName(calcRegister_t regist);
   void     clear_fg_jm                        (void);
   void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
   void     force_refresh                      (uint8_t mode);
+  void     force_SBrefresh                    (uint8_t mode);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
@@ -148,6 +164,7 @@ char       letteredRegisterName(calcRegister_t regist);
    */
   uint32_t showStringEnhanced                 (const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, uint8_t boldString1, bool_t lf);
   uint32_t showString                         (const char *str,   const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols);
+  void getStringBounds                        (const char *string, const font_t *font, uint32_t *col, uint32_t *row);
 
   /**
    * Displays the first glyph of a string.

@@ -488,7 +488,7 @@
 
 
 // System flags
-#define SFL_TDM24                    463 // The SFL item names are not used
+#define SFL_TDM24                    463 // This label is used to identify the first in the list of flags
 #define SFL_YMD                      464 // The SFL item names are not used
 #define SFL_DMY                      465 // The SFL item names are not used
 #define SFL_MDY                      466 // The SFL item names are not used
@@ -2304,7 +2304,7 @@
 #define ITM_STOELPLUS               2250
 
 // 64 more system flags
-#define SFL_MONIT                   2251 // The SFL item names are not used
+#define SFL_MONIT                   2251 // This label is used to identify the first in the list of flags
 #define SFL_FRCYC                   2252 // The SFL item names are not used
 #define SFL_HPCONV                  2253 // The SFL item names are not used
 #define SFL_NUMLOCK                 2254 // The SFL item names are not used
@@ -2328,7 +2328,7 @@
 #define SFL_US                      2272 // The SFL item names are not used
 #define SFL_MNUp1                   2273 // The SFL item names are not used
 #define SFL_SBwoy                   2274 // The SFL item names are not used
-#define SFL_2275                    2275 // The SFL item names are not used
+#define SFL_TOPHEX                  2275 // The SFL item names are not used
 #define SFL_2276                    2276 // The SFL item names are not used
 #define SFL_2277                    2277 // The SFL item names are not used
 #define SFL_2278                    2278 // The SFL item names are not used
