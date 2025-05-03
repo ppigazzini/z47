@@ -20,18 +20,19 @@
 static void rmdLonI(void) {
   longInteger_t x, y, remainder;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL) || !getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
     return;
   }
 
   if(longIntegerIsZero(x)) {
-    longIntegerFree(y);
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {
+    if (!getRegisterAsLongInt(REGISTER_Y, y, NULL))
+      goto err;
     longIntegerInit(remainder);
     longIntegerDivideRemainder(y, x, remainder);
 
@@ -40,7 +41,7 @@ static void rmdLonI(void) {
     longIntegerFree(y);
     longIntegerFree(remainder);
   }
-
+err:
   longIntegerFree(x);
 }
 
@@ -56,20 +57,20 @@ static void rmdLonI(void) {
  ***********************************************/
 static void rmdShoI(void) {
   longInteger_t x, y, remainder;
-    uint32_t baseY;
+  uint32_t baseY;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL) || !getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
     return;
-  }
 
   if(longIntegerIsZero(x)) {
-    longIntegerFree(y);
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonILonI:", "cannot IDIVR a short integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {
+    if (!getRegisterAsLongInt(REGISTER_Y, y, NULL))
+      goto err;
     baseY = getRegisterShortIntegerBase(REGISTER_Y);
 
     longIntegerInit(remainder);
@@ -80,7 +81,7 @@ static void rmdShoI(void) {
     longIntegerFree(y);
     longIntegerFree(remainder);
   }
-
+err:
   longIntegerFree(x);
 }
 
@@ -95,7 +96,7 @@ static void rmdShoI(void) {
  * \return void
  ***********************************************/
 static void rmdReal(void) {
-  real_t x, y;
+  real_t x, y, r;
 
   if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
@@ -109,8 +110,8 @@ static void rmdReal(void) {
     return;
   }
 
-  WP34S_Mod(&y, &x, &x, &ctxtReal39);
-  convertRealToResultRegister(&x, REGISTER_X, amNone);
+  WP34S_BigMod(&y, &x, &r, &ctxtReal39);
+  convertRealToResultRegister(&r, REGISTER_X, amNone);
 }
 
 /********************************************//**

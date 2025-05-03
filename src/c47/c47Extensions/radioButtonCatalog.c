@@ -150,7 +150,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {CHR_case,             JC_UC,                  CB_JC},  //
   {ITM_SCR,              JC_SS,                  CB_JC},  //
   {ITM_BCD,              JC_BCD,                 CB_JC},  //
-  {ITM_TOPHEX,           JC_TOPHEX,              CB_JC},  //
+  {ITM_TOPHEX,           FLAG_TOPHEX,            CB_JC},  //
 
   {ITM_2BIN,             2,                      RB_HX},  //fnChangeBaseJM
   {ITM_2OCT,             8,                      RB_HX},  //fnChangeBaseJM
@@ -379,12 +379,12 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SH_LONGPRESS:
             case FLAG_DREAL       :
             case FLAG_CPXMULT     :
+            case FLAG_TOPHEX      :
                        cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
 
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
-            case JC_TOPHEX:              cb_param = topHex;                                                           break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;
                                          break;

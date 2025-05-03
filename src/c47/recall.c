@@ -252,6 +252,7 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_byte21;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte22;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte23;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte24;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
@@ -290,8 +291,8 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(dispBase);
     recallFromDtConfigDescriptor(BASE_MYM);
     recallFromDtConfigDescriptor(jm_G_DOUBLETAP);
-    recallFromDtConfigDescriptor(    compatibility_float1);   //spare
-    recallFromDtConfigDescriptor(    compatibility_float2);   //spare
+    recallFromDtConfigDescriptor(compatibility_float1);   //spare
+    recallFromDtConfigDescriptor(compatibility_float2);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00.func);
     xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
     recallFromDtConfigDescriptor(Norm_Key_00.used);
@@ -318,7 +319,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(    compatibility_byte18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);
-    recallFromDtConfigDescriptor(topHex);
+    recallFromDtConfigDescriptor(    compatibility_byte24);
     recallFromDtConfigDescriptor(bcdDisplaySign);
     recallFromDtConfigDescriptor(DRG_Cycling);
     recallFromDtConfigDescriptor(DM_Cycling);
@@ -331,7 +332,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(exponentLimit);
     recallFromDtConfigDescriptor(exponentHideLimit);
     recallFromDtConfigDescriptor(lastIntegerBase);
-    recallFromDtConfigDescriptor(HOME3);
+    recallFromDtConfigDescriptor(MYM3);
     recallFromDtConfigDescriptor(timeDisplayFormatDigits);
   }
 
@@ -342,6 +343,9 @@ void fnRecallConfig(uint16_t regist) {
       moreInfoOnError("In function fnRecallConfig:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  #if !defined(TESTSUITE_BUILD)
+    forceSBupdate();
+  #endif //TESTSUITE_BUILD
 }
 
 

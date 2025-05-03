@@ -4,9 +4,11 @@
 
 #include "c47.h"
 
-    void setBlackPixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
+#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+  #include <execinfo.h>
+#endif //PC_BUILD
 
+    void setBlackPixel(uint32_t x, uint32_t y) {
       if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
         printf("In function setBlackPixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)(x), y, (int32_t)(y) );
         return;
@@ -18,8 +20,6 @@
 
 
     void setWhitePixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
-
       if(x>=SCREEN_WIDTH || y>=SCREEN_HEIGHT) {
         printf("In function setWhitePixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)x, y, (int32_t)y);
         return;
@@ -46,10 +46,6 @@
     void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
       uint32_t line, col, pixelColor, *pixel, endX = x + dx, endY = y + dy;
 
-      //if(y >= (uint32_t)(-100)) { //JM allowing -100 to measure the size in pixels; allowing -1..-5 for top row text
-      //  return;
-      //}
-
       if(x == 0 && y == 0 && dx == SCREEN_WIDTH && dy == SCREEN_HEIGHT) {  //JMTOCHECK is this needed?
         #if defined(MONITOR_CLRSCR)
           printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n",calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
@@ -60,6 +56,13 @@
       if(endX > SCREEN_WIDTH || endY > SCREEN_HEIGHT) {
         #if defined(MONITOR_CLRSCR)
           printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "lcd_fill_rect called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
         #endif
         return;
       }
@@ -86,9 +89,17 @@
         }
     }
 
-
-
+    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+      #include <execinfo.h>
+    #endif //ANALYSE_REFRESH
     void _lcdRefresh(void) {              //called by force_refresh() and _printHalfSecUpdate_Integer()
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
         if(screenChange) {
           gtk_widget_queue_draw(screen);
           #if defined(FULLUPDATE) // (UGLY)
@@ -97,3 +108,36 @@
         }
     }
 
+
+    void _lcdSBRefresh(void) {
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdSBRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
+        if(screenChange) {
+          gtk_widget_queue_draw_area(screen, 0, 0, 400, 20);
+          #if defined(FULLUPDATE) // (UGLY)
+            refresh_gui();
+          #endif // FULLUPDATE (UGLY)
+        }
+    }
+
+
+    void _lcdBandRefresh(uint32_t y, uint32_t dy) {
+                                    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+                                      void *callstack[128];
+                                      int frames = backtrace(callstack, 128);
+                                      char **strs = backtrace_symbols(callstack, frames);
+                                      printf("%30s%42s%s\n", "", "_lcdBandRefresh called from: ", strs[1]);
+                                      free(strs);
+                                    #endif //ANALYSE_REFRESH
+        if(screenChange) {
+          gtk_widget_queue_draw_area(screen, 0, y, 400, dy);
+          #if defined(FULLUPDATE) // (UGLY)
+            refresh_gui();
+          #endif // FULLUPDATE (UGLY)
+        }
+    }

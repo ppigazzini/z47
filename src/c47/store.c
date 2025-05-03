@@ -345,7 +345,6 @@ void fnStoreMax(uint16_t regist) {
 
 
 void fnStoreConfig(uint16_t regist) {
-
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
@@ -371,6 +370,7 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte21 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte22 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -409,8 +409,8 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(dispBase);
   storeToDtConfigDescriptor(BASE_MYM);
   storeToDtConfigDescriptor(jm_G_DOUBLETAP);
-  storeToDtConfigDescriptor(    compatibility_float1);
-  storeToDtConfigDescriptor(    compatibility_float2);
+  storeToDtConfigDescriptor(compatibility_float1);
+  storeToDtConfigDescriptor(compatibility_float2);
   storeToDtConfigDescriptor(Norm_Key_00.func);
   xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
   storeToDtConfigDescriptor(Norm_Key_00.used);
@@ -437,7 +437,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(    compatibility_byte18);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
   storeToDtConfigDescriptor(bcdDisplay);
-  storeToDtConfigDescriptor(topHex);
+  storeToDtConfigDescriptor(    compatibility_byte24);
   storeToDtConfigDescriptor(bcdDisplaySign);
   storeToDtConfigDescriptor(DRG_Cycling);
   storeToDtConfigDescriptor(DM_Cycling);
@@ -450,7 +450,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(exponentLimit);
   storeToDtConfigDescriptor(exponentHideLimit);
   storeToDtConfigDescriptor(lastIntegerBase);
-  storeToDtConfigDescriptor(HOME3);
+  storeToDtConfigDescriptor(MYM3);
   storeToDtConfigDescriptor(timeDisplayFormatDigits);
 }
 

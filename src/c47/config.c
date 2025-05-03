@@ -141,7 +141,7 @@ fgLongPressSetting,                  xxx,        xxx,                           
 
 
 
-DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,
+DenMaX,                              xxx,        64,                             xxx,             120,                  999,                    64,              xxx,             xxx,
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
@@ -205,6 +205,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            FLAG_SSIZE8,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
 3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
 3,                                   1,          xxx,                            xxx,             FLAG_ENGOVR,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
+3,                                   1,          FLAG_TOPHEX,                    xxx,             FLAG_TOPHEX,          FLAG_TOPHEX,            FLAG_TOPHEX,     xxx,             xxx,                  // Clear flag FLAG_TOPHEX
 
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
@@ -429,7 +430,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     clearSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
     programRunStop = PGM_STOPPED;
-    lastProgramRunStop = PGM_RUNNING;  //set last to running to force first refresh condition to be true
 
     if(calcMode == CM_NIM) {
       strcpy(aimBuffer, "+");
@@ -462,6 +462,10 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     shiftG = false;
     showShiftState();
     refreshModeGui();
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+    refreshStatusBar();
+    screenUpdatingMode = SCRUPD_AUTO;
+    forceSBupdate();
     refreshScreen(166);
     #if defined(PC_BUILD_TELLTALE)
       jm_show_calc_state("fnClrMod end: \n");
@@ -527,6 +531,9 @@ void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
 
 
 void fnIntegerMode(uint16_t mode) {
+  if(shortIntegerMode != mode) {
+    setSystemFlagChanged(SETTING_SINT_MODE);
+  }
   shortIntegerMode = mode;
   fnRefreshState();
 }
@@ -618,6 +625,11 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetWordSize(uint16_t WS) {
+  if(shortIntegerWordSize != WS) {
+    setSystemFlagChanged(SETTING_SINT_WS);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+  }
+
   bool_t reduceWordSize;
   if(WS == 0) {
     WS = 64;
@@ -765,6 +777,9 @@ void fnRoundingMode(uint16_t RM) {
 
 
 void fnAngularMode(uint16_t am) {
+  if(am != currentAngularMode) {
+    setSystemFlagChanged(SETTING_AMODE);
+  }
   currentAngularMode = am;
   fnRefreshState();
 }
@@ -1240,7 +1255,6 @@ void resetOtherConfigurationStuff(void) {
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;
-  topHex = true;                                               //Hex keys enabled
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
@@ -1470,6 +1484,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     systemFlags0 = 0;
     systemFlags1 = 0;
+    clearScreen(202); // implicit forceSBupdate();
 
     Sett(_Reset);
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
@@ -1491,8 +1506,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     programRunStop = PGM_STOPPED;
-    lastProgramRunStop = PGM_UNDEFINED;  //set last to undefined to force first refresh condition to be true
-
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
 
@@ -1518,6 +1531,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       if(calcMode == CM_MIM) {
         mimFinalize();
       }
+
+      clearScreen(10); //WE HAVE TO FIND THE BEST PLACE FOR A FULL SCREEN CLEAR, JUST BEFORE THE CALCULATOR STARTS
       calcModeNormal();
     #endif // !TESTSUITE_BUILD
 
@@ -1828,6 +1843,7 @@ void runDMCPmenu(uint16_t confirmation) {
 //        fnOff(NOPARAM);
 //      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
+      clearScreen(200);
     }
   #endif //!PC_BUILD
 }
@@ -1840,6 +1856,7 @@ void activateUSBdisk(uint16_t confirmation) {
     else {
       cancelFilename = true;
       run_menu_item_sys(MI_MSC);
+      clearScreen(201);
     }
   #endif //!PC_BUILD
 }

@@ -232,15 +232,14 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     maxWidth = largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
-  if(updateDisplayValueX) {
-    displayValueX[0] = 0;
-  }
-
   if(displayFormat == DF_SF && checkHP) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
     displayHasNDigits =  10;
   }
 
   do {
+    if(updateDisplayValueX) {
+      displayValueX[0] = 0;
+    }
     if(tag == amNone) {
       real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal, limitIrfrac);
     }
@@ -259,10 +258,6 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
         break;
       }
       displayFormatDigits--;
-    }
-
-    if(updateDisplayValueX) {
-      displayValueX[0] = 0;
     }
   }
   while(stringWidth(displayString, font, true, true) > maxWidth);
