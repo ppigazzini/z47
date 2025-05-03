@@ -2505,6 +2505,7 @@ void showSoftmenuCurrentPart(void) {
   screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
   if(softmenu[m].menuItem == -MNU_DISTR) {
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
   }
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline

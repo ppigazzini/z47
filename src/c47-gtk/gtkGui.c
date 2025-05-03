@@ -436,7 +436,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
   static bool_t checkNormal(int16_t keyNr, int16_t item) {
     int16_t result = Norm_Key_00_item_in_layout;
-    int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
+    int16_t ss = Check_Norm_Key_00_Assigned(&result, keyNr);
     //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
     return (ss == item);
   }

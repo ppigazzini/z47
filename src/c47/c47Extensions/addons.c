@@ -1103,7 +1103,7 @@ void fnP_Alpha(void) {
     create_filename(".REGS.TSV");
 
     #if (VERBOSE_LEVEL >= 1)
-      clearScreen();
+      clearScreen(2);
       print_linestr("Output Aim Buffer to drive:", true);
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
@@ -1130,7 +1130,7 @@ void fnP_Regs (uint16_t registerNo) {
     create_filename(".REGS.TSV");
 
     #if (VERBOSE_LEVEL >= 1)
-      clearScreen();
+      clearScreen(3);
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
@@ -1156,7 +1156,7 @@ void fnP_All_Regs(uint16_t option) {
     create_filename(".REGS.TSV");
 
     #if (VERBOSE_LEVEL >= 1)
-      clearScreen();
+      clearScreen(4);
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
@@ -2503,8 +2503,6 @@ void fnSetBCD (uint16_t bcd) {
     case BCDu:
       bcdDisplaySign = bcd;
       break;
-    case JC_TOPHEX:
-      topHex = !topHex;
     default: ;
   }
 }

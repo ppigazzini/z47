@@ -14,7 +14,7 @@ static void powCplx(void);
 void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
   real_t lny;
 
-  if(realIsNegative(y) && realIsAnInteger(x) && !realIsZero(x)) {
+  if(realIsNegative(y) && realIsAnInteger(x)){
     realDivideRemainder(x, const_2, &lny, realContext);
     bool_t isOdd = !realIsZero(&lny);
     realCopyAbs(y, &lny);

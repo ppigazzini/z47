@@ -430,14 +430,14 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
   isNegative = real34IsNegative(REGISTER_REAL34_DATA(source));
   real34CopyAbs(REGISTER_REAL34_DATA(source), &part2);
-  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);            //Y D or M
   real34Subtract(&part2, &part1, &part2);
   int32ToReal34(100, &val), real34Multiply(&part2, &val, &part2);
 
   real34Copy(&part2, &part3);
-  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);            //M M or D
   real34Subtract(&part3, &part2, &part3);
-  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);
+  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);  // dd yyyy or yyyy
   real34ToIntegralValue(&part3, &part3, DEC_ROUND_DOWN);
 
   if(isNegative) {

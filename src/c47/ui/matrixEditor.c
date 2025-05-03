@@ -1114,7 +1114,7 @@ int16_t colX = 0;
         real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], amNone, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
         if(toDisplay) {
           if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
-            lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, 0xFF);
+            lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, LCD_EMPTY_VALUE);
             vm = vmReverse;
           }
           else {
@@ -1318,8 +1318,8 @@ void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, ang
     rows = 1;
   }
 
-  int maxCols = cols > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : cols;
-  const int maxRows = rows > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : rows;
+  int maxCols = cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols;
+  const int maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
 
   int16_t matSelRow = colVector ? getJRegisterAsInt(true) : getIRegisterAsInt(true);
   int16_t matSelCol = colVector ? getIRegisterAsInt(true) : getJRegisterAsInt(true);
@@ -1451,7 +1451,7 @@ smallFont:
         tmpString[0] = 0;
         real34ToDisplayString(&re, amNone, tmpString, font, colWidth_r[j], displayFormat == DF_ALL ? digits : 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
         if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
-          lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, 0xFF);
+          lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, LCD_EMPTY_VALUE);
           vm = vmReverse;
         }
         else {
