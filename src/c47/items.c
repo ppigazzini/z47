@@ -136,7 +136,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  ReallyRunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     lastFunc = func;
     lastParam = param;
@@ -183,7 +183,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       thereIsSomethingToUndo = false;
     }
 
-    if(programRunStop != PGM_RUNNING) {
+    if(programRunStop != PGM_RUNNING) { //NORMAL MODE
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^reallyRunFunction func=%d param=%d\n",func, param); jm_show_comment(tmp);
         //printf("---#### Before function %s\n",tmp);
@@ -201,17 +201,17 @@ bool_t itemNotAvail(int16_t itemNr) {
         }
         fnReturn(0); // 1 more time to clean local registers
       }
+              /* Full refresh included in showHideHourGlass above, so removinf it here to save time
+                    #if defined(DMCP_BUILD)
+                      lcd_refresh();
+                    #else // !DMCP_BUILD
+                      refreshLcd(NULL);
+                    #endif // DMCP_BUILD
+              */
+      screenUpdatingMode = SCRUPD_AUTO;
+    }
 
-/* Full refresh included in showHideHourGlass above, so removinf it here to save time
-      #if defined(DMCP_BUILD)
-        lcd_refresh();
-      #else // !DMCP_BUILD
-        refreshLcd(NULL);
-      #endif // DMCP_BUILD
-*/
-
-    screenUpdatingMode = SCRUPD_AUTO;
-    } else {
+    else { //PGM_RUNNING MODE
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         showHideHourGlass();
@@ -221,14 +221,14 @@ bool_t itemNotAvail(int16_t itemNr) {
       #endif //PC_BUILD
     }
 
+
+
     #if defined(PC_BUILD)// || defined(DEBUG_EXECUTE)
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
-      printf("   >>>   reallyRunFunction: %5i%8s§%8s  %5i\n",func, ss1, ss2, param);
+      printf("   >>    reallyRunFunction: %5i%8s§%8s  %5i  SBI:%s\n",func, ss1, ss2, param, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
     #endif // PC_BUILD
-
-
 
     if((programRunStop != PGM_RUNNING && func != ITM_LASTT) || func == ITM_XEQ || timeLastOp0 == 0) {    //The first manual command and XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);                                                                          //    You don't want the timer to always be read before every command when in a program. It would be wasteful. During program execution, LASTT? laps the counter.
@@ -246,18 +246,24 @@ bool_t itemNotAvail(int16_t itemNr) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>  reallyRunFunction: CM=%3u                                SBI:%s\n", calcMode, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
+    #endif // PC_BUILD
 
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
-    } else {
-
+    }
+    
+    if(func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1) {
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+      if(currentSubroutineLevel == 0) {
+        #if !defined(TESTSUITE_BUILD)
+          forceSBupdate();
+        #endif //TESTSUITE_BUILD
+        screenUpdatingMode = SCRUPD_AUTO;
+      }
     }
 
-//a few exceptions may switch on the hourglass in the dispatched code, hence we must make sure we switch it off again
-//Test: Remove clearing of hourgalss from here - it is too early.
-//    hourGlassIconEnabled = false;
-//    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-//    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
@@ -1399,7 +1405,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*   55 */  { fnRecallDiv,                  NOPARAM,                     "RCL/",                                        "RCL/",                                        (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /*   56 */  { fnIsConverged,                TM_VALUE,                    "CONVG?",                                      "CONVG?",                                      (0 << TAM_MAX_BITS) |     7, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /*   57 */  { fnEntryQ,                     NOPARAM,                     "ENTRY?",                                      "ENTRY?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/*   58 */  { fnSquare,                     NOPARAM,                     "x" STD_SUP_2,                                 "x" STD_SUP_2,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/*   58 */  { fnSquare,                     NOPARAM,                     "x" STD_SUP_2,                                 "x" STD_SUP_2,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED_MX_ONLY },
 /*   59 */  { fnCube,                       NOPARAM,                     "x" STD_SUP_3,                                 "x" STD_SUP_3,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   60 */  { fnPower,                      NOPARAM,                     "y" STD_SUP_BOLD_x,                            "y" STD_SUP_BOLD_x,                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   61 */  { fnSquareRoot,                 NOPARAM,                     STD_SQUARE_ROOT STD_x_UNDER_ROOT,              STD_SQUARE_ROOT STD_x_UNDER_ROOT,              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
@@ -2803,7 +2809,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1425 */  { fnClP,                        TM_LABEL,                    "DELP",                                        "DELP",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1426 */  { fnClPAll,                     NOT_CONFIRMED,               "DELPALL",                                     "DELPall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1427 */  { fnClearRegisters,             NOT_CONFIRMED,               "CLREGS",                                      "CLREGS",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1428 */  { fnClearStack,                 NOPARAM,                     "CLSTK",                                       "CLSTK",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1428 */  { fnClearStack,                 NOPARAM,                     "CLSTK",                                       "CLSTK",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         | HG_DISABLED        },
 /* 1429 */  { fnClSigma,                    NOPARAM,                     "CL" STD_SIGMA,                                "CL" STD_SIGMA,                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1430 */  { fnStoreMax,                   NOPARAM,                     "STO" STD_UP_ARROW,                            "Max",                                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 1431 */  { fnConjugate,                  NOPARAM,                     "CONJ",                                        "conj",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },

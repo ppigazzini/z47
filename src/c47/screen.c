@@ -8,7 +8,10 @@
   #include <execinfo.h>
 #endif //PC_BUILD
 
-void refreshRegisterLineRestoreT(void);
+#if !defined(TESTSUITE_BUILD)
+  static void refreshRegisterLineRestoreT(void);
+  static void _refreshPemScreen(void);
+#endif //TESTSUITE_BUILD
 
 
 //#define DEBUGCLEARS
@@ -1408,16 +1411,9 @@ return res;
         yincr = 1;
       }
 
-//      if(lines == editlines || lg == 0) {
-  //      last_CM = 253; //Force redraw if
-    //  }
-
       orglastlines = lastline;
 
       if(lastline > yMultiLineEdOffset) {
-        if(!noshow1) {
-//          clearScreenOld(false, true,false);
-        }
         x = xMultiLineEdOffset;
         y = (yincr-1) + yMultiLineEdOffset * (yincr-1);
       }
@@ -1825,8 +1821,9 @@ return res;
       if(overLapPossible) {
         stringCopy(padding, " ");
       }
+      #define typWidth 120 //stringWidth(" WWWWWW     ", &standardFont, true, true);
       stringCopy(padding + stringByteLength(padding), functionName);
-      stringCopy(padding + stringByteLength(padding), "     ");
+      stringCopy(padding + stringByteLength(padding), "       ");
       if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
         clearRegisterLine(REGISTER_T, true, false);
       }
@@ -1834,7 +1831,8 @@ return res;
       clearShiftState();
       int xx = showString(padding, &standardFont, 18, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
       if(overLapPossible) {
-        plotrect(18, Y_POSITION_OF_REGISTER_T_LINE + 6, xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        plotrect(18, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx,18+typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        if(xx < 18+typWidth) lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, 18+typWidth-xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
@@ -1850,6 +1848,9 @@ return res;
       if(calcMode != CM_PEM) {
         refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
         force_Registerrefresh(REGISTER_T, true, true);
+      } else {
+        _refreshPemScreen();
+        //force reset is done at _refreshPemScreen
       }
 // this seems to cause an undue delay for large matrices, and I cannot see why it should be reprinted (and the cached heights updated
 //      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
@@ -4534,7 +4535,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     _refreshRegisterLine(regist, !RESTORE_T);
   }
 
-  void refreshRegisterLineRestoreT(void) {
+  static void refreshRegisterLineRestoreT(void) {
     _refreshRegisterLine(REGISTER_T, RESTORE_T);    
   }
 
@@ -4605,8 +4606,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     getGlyphBounds(STD_MODE_F, 0, &standardFont, &fcol, &frow);
     getGlyphBounds(STD_MODE_G, 0, &standardFont, &gcol, &grow);
     lcd_fill_rect(X_SHIFT, Y_SHIFT, (fcol > gcol ? fcol : gcol), (frow > grow ? frow : grow), LCD_SET_VALUE);
-    if(calcMode == CM_PEM) {
-    }
   }
 
   void showShiftStateF(void) {
@@ -4687,11 +4686,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       
       //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
-      #define LeftGraphInfoX       0
-      #define topLeftGraphInfoY    Y_POSITION_OF_REGISTER_T_LINE-4
-      #define widthGraphInfoBox    SCREEN_WIDTH - 240 - 2
-      #define heightGraphInfoBox   240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4
-      #define widthGraphInclBorder 240 + 2
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
@@ -4705,8 +4699,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
       //now clear menu area, first the left graph info area, then the actual area covered by the graph if not in graph mode
-      #define menuHeightInclBorder   SOFTMENU_HEIGHT * 3
-      #define topLeftMenuInclBorderY 240 - menuHeightInclBorder
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
@@ -4743,9 +4735,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
   #if !defined(TESTSUITE_BUILD)  //clearScreenOld(clrStatusBar, clrRegisterLines, clrSoftkeys);
     void clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys) {  //clrStatusBar, clrRegisterLines, clrSoftkeys
-      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
-      #endif // PC_BUILD &&MONITOR_CLRSCR
+                                        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                                          printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
+                                        #endif // PC_BUILD &&MONITOR_CLRSCR
+                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "clearScreenOld called from: ", strs[1]);
+                                          free(strs);
+                                        #endif //ANALYSE_REFRESH
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
       screenUpdatingMode = SCRUPD_AUTO;
       if(clearStatusBar) {
@@ -4857,6 +4856,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       #endif//!DMCP_BUILD PC_BUILD
     doRefreshSoftMenu = false;
+    //gets a separate hard forced refresh, to restore the part of the PEM screen spoiled by showFunctionName() 
+    force_Registerrefresh(REGISTER_T, false, false);
   }
 
 
