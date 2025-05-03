@@ -4,9 +4,15 @@
 #include "c47.h"
 
 void fnDenMax(uint16_t D) {
+  if(denMax != D) {
+    setSystemFlagChanged(SETTING_DMX);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+  }
   denMax = D;
   if(denMax == 1 || denMax > MAX_DENMAX) {
     denMax = MAX_DENMAX;
+    setSystemFlagChanged(SETTING_DMX);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
   }
 }
 

@@ -283,13 +283,14 @@
     }
 
     if(writeExportAll) {
+      fnReset(CONFIRMED);
       fnSaveAllPrograms(NOPARAM);
       return 0;
     }
 
     if(mockup) {
       fnReset(CONFIRMED);
-      clearScreen();
+      clearScreen(120);
       mockupSB();
       fnScreenDump(NOPARAM);
       char bmpFileName[22];
@@ -304,7 +305,7 @@
 
     if(dumpMenus > 0) {
       fnReset(CONFIRMED);
-      clearScreen();
+      clearScreen(121);
       fnDumpMenus(dumpMenus);
       printf("\n\nOutput menus saved.\n");
       return 0;

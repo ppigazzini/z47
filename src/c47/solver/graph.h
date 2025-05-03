@@ -24,7 +24,6 @@ extern char plotStatMx[8];
 #define initDrwMx   1
 
 void    fnEqSolvGraph (uint16_t func);
-void    graph_eqn(uint16_t unusedButMandatoryParameter);
 void    graph_stat(uint16_t unusedButMandatoryParameter);
 int32_t drawMxN(void);
 void    fnClDrawMx(uint8_t origin);

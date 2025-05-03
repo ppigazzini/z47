@@ -181,14 +181,15 @@ void fnTimerEndOfActivity(uint16_t param) {
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 #if defined(DMCP_BUILD)
-  if(skippedStackLines && !runningOnSimOrUSB) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+  if(skippedStackLines) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
     if(calcMode == CM_PEM) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
     else {
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
     }
     refreshScreen(32);
+    skippedStackLines = false;
   }
 #endif // DMCP_BUILD
 }
@@ -362,7 +363,6 @@ void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
-  watchIconEnabled = false;
   if(timerStartTime != TIMER_APP_STOPPED) {
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
       //#if defined(PC_BUILD)
@@ -419,7 +419,10 @@ void fnStopTimerApp(void) {
     fnTimerStop(TO_TIMER_APP);
   }
   clearSystemFlag(FLAG_RUNTIM);
-  watchIconEnabled = false;
+  if(watchIconEnabled) {
+    setSystemFlagChanged(SETTING_WATCHICON);
+    watchIconEnabled = false;
+  }
 #endif // TESTSUITE_BUILD
 }
 
@@ -761,7 +764,10 @@ void fnLeaveTimerApp(void) {
   popSoftmenu();
   rbr1stDigit = true;
   calcMode = previousCalcMode;
-  watchIconEnabled = (timerStartTime != TIMER_APP_STOPPED);
+  if(watchIconEnabled != (timerStartTime != TIMER_APP_STOPPED)) {
+    setSystemFlagChanged(SETTING_WATCHICON);
+    watchIconEnabled = !watchIconEnabled;
+  }
   #endif // !TESTSUITE_BUILD
 }
 

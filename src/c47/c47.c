@@ -46,6 +46,7 @@ bool_t                 fnKeyInCatalog;
 bool_t                 hourGlassIconEnabled;
 bool_t                 watchIconEnabled;
 bool_t                 printerIconEnabled;
+bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
 bool_t                 showContent;
@@ -54,7 +55,6 @@ bool_t                 updateDisplayValueX;
 bool_t                 thereIsSomethingToUndo;
 bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
-bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 secTick1;
 bool_t                 halfSecTick2;
@@ -171,7 +171,6 @@ uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
-uint8_t                lastProgramRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                keyStateCode;
@@ -230,7 +229,6 @@ bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
-bool_t                 topHex = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;
@@ -1036,11 +1034,15 @@ int convertKeyCode(int key) {
                                                       telltale_pos++;
                                                       telltale_pos = telltale_pos & 0x03;
                                                       char aaa[100];
-                                                      sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
                                                       sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
                                                     }
                                                   #endif // JMSHOWCODES

@@ -73,25 +73,25 @@ In:  FL_ASLIFT=0 RY=LonI:"1" RX=ShoI:"0#3"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"1" RX=ShoI:"0#3"
 
 ;=======================================
-; Short Integer Mod Long Integer --> Short Integer
+; Short Integer Mod Long Integer --> Long Integer
 ;=======================================
 In:  FL_ASLIFT=0 RY=ShoI:"25#10" RX=LonI:"7"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"7" RX=ShoI:"4#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"7" RX=LonI:"4"
 
 In:  FL_ASLIFT=0 RY=ShoI:"-25#10" RX=LonI:"7"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"7" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"7" RX=LonI:"3"
 
 In:  FL_ASLIFT=0 RY=ShoI:"25#10" RX=LonI:"-7"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-7" RX=ShoI:"-3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-7" RX=LonI:"-3"
 
 In:  FL_ASLIFT=0 RY=ShoI:"-25#10" RX=LonI:"-7"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-7" RX=ShoI:"-4#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-7" RX=LonI:"-4"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=LonI:"123456" ;RY=19111
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"123456" RX=ShoI:"45247#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"123456" RX=LonI:"19111"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"9#11" RX=LonI:"5" ;RY=9
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=ShoI:"4#11"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"4"
 
 In:  FL_ASLIFT=0 RY=ShoI:"1#7" RX=LonI:"0"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"1#7" RX=LonI:"0"

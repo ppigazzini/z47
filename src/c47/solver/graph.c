@@ -278,9 +278,11 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
-void graph_eqn(uint16_t mode) {
-  currentKeyCode = 255;
-  #if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD)
+  static void graph_eqn(uint16_t mode) {
+    currentKeyCode = 255;
+    calcMode = CM_GRAPH;
+    saveForUndo();
     regStatsXY = findNamedVariable(plotStatMx);
     double x;
     double x01 = x_min;
@@ -487,6 +489,7 @@ void graph_eqn(uint16_t mode) {
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           break;
         }
       #endif //DMCP_BUILD
@@ -526,14 +529,13 @@ void graph_eqn(uint16_t mode) {
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
     #endif //LOW_GRAPH_ACC
+  }
+#endif // !TESTSUITE_BUILD
 
-  #endif // !TESTSUITE_BUILD
-}
 
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-
     saveForUndo();
     strcpy(plotStatMx,"STATS");
 
@@ -1199,6 +1201,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         break;
       }
                                   #if defined(PC_BUILD)
@@ -1325,7 +1328,6 @@ void fnEqSolvGraph (uint16_t func) {
     }
     case EQ_PLOT_LU: {           //uses limits
       if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
-        saveForUndo();
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         liftStack();
@@ -1341,7 +1343,6 @@ void fnEqSolvGraph (uint16_t func) {
         reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNone);
         realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
         realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
-        saveForUndo();
         }
       break;
     }
@@ -1432,6 +1433,7 @@ void fnEqSolvGraph (uint16_t func) {
 
       reDraw = true;
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       refreshScreen(239);
       break;
     }
