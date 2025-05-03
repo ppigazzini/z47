@@ -462,6 +462,10 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     shiftG = false;
     showShiftState();
     refreshModeGui();
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+    refreshStatusBar();
+    screenUpdatingMode = SCRUPD_AUTO;
+    forceSBupdate();
     refreshScreen(166);
     #if defined(PC_BUILD_TELLTALE)
       jm_show_calc_state("fnClrMod end: \n");

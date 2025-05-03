@@ -69,8 +69,14 @@ void drawBattery(uint16_t voltage);
   }
 
 
+
+//Note: in PC_BUILD this is called several times per second, continuously
   bool_t showDateTime(void) {
     if(timeChanged() == !timeHasChanged) {     // creates oldTime here
+      return false;
+    }
+    if(programRunStop == PGM_RUNNING) {
+      //printf("RUNNING, NO TIME/DATE SBI PRINTED\n");
       return false;
     }
 
@@ -81,6 +87,8 @@ void drawBattery(uint16_t voltage);
     if(!((SBARUPD_Date) || (SBARUPD_Time) || (SBARUPD_WoY))) {
       return false;
     }
+    //printf("TIME/DATE SBI PRINTED\n");
+
     uint32_t x = X_DATE;
     lcd_fill_rect(0, 0, x - 0, 20, LCD_SET_VALUE);
 
@@ -488,7 +496,7 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
+    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
         case CM_REGISTER_BROWSER:
