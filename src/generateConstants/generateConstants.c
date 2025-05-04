@@ -314,11 +314,11 @@ void generateAllConstants(void) {
 
   generateConstantArray("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02"); // pascal = torr × 101325 / 760
   #if (MMHG_PA_133_3224 == 1)
-    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224
-    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4
+    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224                   // BS 350:2004 p51, 13.595 1 × 9.806 65       , approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
+    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4            // BS 350:2004 p51, 13.595 1 × 9.806 65 x 25.4, approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
   #else // (MMHG_PA_133_3224 == 0)
-    generateConstantArray("MmhgToPa",    "+1.333223874150000000000000000000000000000000000000000000e+02");// cnst              pascal = mm.Hg × 13.5951 × 9.80665
-    generateConstantArray("InhgToPa",    "+3.386388640341000000000000000000000000000000000000000000e+03");// cnst              pascal = in.Hg × 13.5951 × 9.80665 × 2.54
+    generateConstantArray("MmhgToPa",    "+1.333223874150000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 13.5951 × 9.80665          // non-abbreviated
+    generateConstantArray("InhgToPa",    "+3.386388640341000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 13.5951 × 9.80665 × 2.54   // non-abbreviated
   #endif // (MMHG_PA_133_3224 == 1)
   generateConstantArray("PsiToPa",       "+6.894757293168361336722673445346890693781387562775125550e+03"); // pascal = psi × 0.45359237 × 9.80665 / 0.0254²
   generateConstantArray("BarToPa",       "+1.000000000000000000000000000000000000000000000000000000e+05"); // pascal = bar  × 100000
