@@ -638,13 +638,60 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
   complexMatrixFree(&matrix);
 }
 
+
+void sci_fmt(char *buf, int n, double x) {
+/*
+ * Usage:
+ *   char buf[32];
+ *   sci_fmt(buf, sizeof(buf), x);  // replaces snprintf(buf, sizeof(buf), "%.16e", x);
+ *
+ * Output format (if buffer allows):
+ *   [-]d.dddddddddddddddde±dd\0 (up to 25–30 bytes depending on exponent digits)
+ */
+    int exp = 0, i = 0;
+    if (x < 0) {
+        buf[i++] = '-';
+        x = -x;
+    }
+
+    while (x && x < 1.0) x *= 10.0, exp--;
+    while (x >= 10.0) x /= 10.0, exp++;
+
+    unsigned long long m = (unsigned long long)(x * 1e15 + 0.5);
+    if (m >= 10000000000000000ULL) {
+        m /= 10;
+        exp++;
+    }
+
+    buf[i++] = '0' + (m / 1000000000000000ULL);
+    buf[i++] = '.';
+
+    static const unsigned long long divs[] = {
+        1000000000000000ULL, 100000000000000ULL, 10000000000000ULL,
+        1000000000000ULL,   100000000000ULL,    10000000000ULL,
+        1000000000ULL,      100000000ULL,       10000000ULL,
+        1000000ULL,         100000ULL,          10000ULL,
+        1000ULL,            100ULL,             10ULL
+    };
+
+    for (int j = 1; j < 15 && i < n - 6; j++) {
+        buf[i++] = '0' + (m / divs[j]) % 10;
+    }
+
+    i += snprintf(buf + i, n - i, "e%+03d", exp);
+    buf[i] = 0;
+}
+
+
+
 #if !defined(TESTSUITE_BUILD)
   void convertDoubleToString(double x, int16_t n, char *buff) { //Reformatting real strings that are formatted according to different locale settings
     uint16_t i = 2;
     uint16_t j = 2;
     bool_t error = false;
 
-    snprintf(buff, n, "%.16e", x);
+//    snprintf(buff, n, "%.16e", x);
+    sci_fmt(buff, n, x);
 
     if(buff[0] != '-') {
       i = 0;

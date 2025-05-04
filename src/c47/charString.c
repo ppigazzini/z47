@@ -30,6 +30,44 @@
 #endif //TESTSUITE_BUILD
 
 
+void convertDigits(char * refstr, char * outstr) {
+  uint16_t ii = 0;
+  uint16_t oo = 0;
+  outstr[0] = 0;
+
+  while(refstr[ii] != 0) {
+    switch(refstr[ii]) {
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9': outstr[oo++] = STD_SUB_0[0]; outstr[oo++] = STD_SUB_0[1] + refstr[ii] - '0'; break; //.
+  //  case 'E': outstr[oo++] = STD_SUB_A[0]; outstr[oo++] = STD_SUB_A[1] + refstr[ii] - 'A'; break; //.
+      case 't':
+      case 'i':
+      case 'c':
+      case 'k':
+      case 'x': 
+      case 'y': 
+      case 'a': 
+      case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break; //.
+      case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //: ok
+      case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+ ok
+      case '-': outstr[oo++] = STD_SUB_MINUS[0]       ; outstr[oo++] = STD_SUB_MINUS[1]       ; break; //- ok
+      case '.': outstr[oo++] = STD_SINGLE_LOW_QUOTE[0]; outstr[oo++] = STD_SINGLE_LOW_QUOTE[1]; break; //. ok
+      case '/': outstr[oo++] = STD_OBLIQUE3[0]        ; outstr[oo++] = STD_OBLIQUE3[1]        ; break; /// ok
+      default:  outstr[oo++] = refstr[ii];
+    }
+    ii++;
+  }
+  outstr[oo] = 0;
+}
+
 
 typedef struct {
   uint16_t Nr;              ///<
