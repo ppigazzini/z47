@@ -1144,7 +1144,7 @@ void fnP_Regs (uint16_t registerNo) {
 
 void fnP_All_Regs(uint16_t option) {
   #if !defined(TESTSUITE_BUILD)
-    if(calcMode != CM_NORMAL) {
+    if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
       #if defined(DMCP_BUILD)
         beep(440, 50);
         beep(4400, 50);

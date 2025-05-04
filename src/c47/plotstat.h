@@ -66,17 +66,20 @@ void    graphAxisDraw      (void);
 void    graph_axis         (void);
 float   auto_tick          (float tick_int_f);
 void    plotPointGeneric   (int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE);
-
+void    showGraphTickText  (float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc);
 
 //graph functions
 float   grf_x(int i);
 float   grf_y(int i);
 
-#define PLOT_TMP_BUF_SIZE   30
-char   *radixProcess(char *output, const char * ss);
+#define PLOT_TMP_BUF_SIZE   32
+char    *radixProcess(char *output, const char * ss);
 void    eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05);
-char   *padEquals(char *output, const char * ss);
-
+char    *padEquals(char *output, const char * ss);
+char    *smallE(char *output, const char * ss);
+char    *wrap_format_fixed(double value, int digits);
+char    *wrap_format_sci(double value, int digits);
+char    *wrap_eng(double value, int digits);
 
 int16_t screen_window_x(float x_min, float x, float x_max);
 int16_t screen_window_y(float y_min, float y, float y_max);
