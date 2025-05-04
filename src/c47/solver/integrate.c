@@ -296,9 +296,9 @@ static void _integratorIteration(void) {
   if(lastErrorCode == ERROR_SOLVER_ABORT) {
     return;
   }
-  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
+                            if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
+                              copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+                            }
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
@@ -306,11 +306,10 @@ static void _integratorIteration(void) {
     dynamicMenuItem = -1;
     execProgram(currentSolverProgram + FIRST_LABEL);
   }
-  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-    copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
-    fnP_All_Regs(PRN_XYr);
-  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-
+                            if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
+                              copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
+                              fnP_All_Regs(PRN_XYr);
+                            }
 }
 
 

@@ -488,33 +488,23 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 
 
 //###################################################################################
-void convertDigits(char * refstr, uint16_t ii, uint16_t * oo, char * outstr) {
-  switch(refstr[ii]) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = refstr[ii] + (0x80 - 48); break; //.
-    case 'x': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb3; break; //x ok
-    case 'y': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb4; break; //y ok
-    case 'a': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9c; break; //a ok
-    case 's': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xae; break; //s ok
-    case ':': outstr[(*oo)++] = 0xa2; outstr[(*oo)++] = 0x36; break; //: ok
-    case '+': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8a; break; //+ ok
-    case '-': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8b; break; //- ok
-    case '.': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x1a; break; //. ok
-    case '/': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x25; break; /// ok
-    case 't': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xaf; break; //t \xa4\xaf
-    case 'i': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa4; break; //i ok
-    case 'c': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9e; break; //c ok
-    case 'k': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa6; break; //k ok
-    default:  outstr[(*oo)++] = refstr[ii];
-  }
+
+//PLSTAT; EQN Graph;
+
+#define bufLen 40
+
+static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
+  #if !defined(TESTSUITE_BUILD)
+    char buff[32];
+    char outstr[bufLen];
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", wrap_eng(tick_int_y,acc));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
+
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", wrap_eng(tick_int_x,acc));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
+  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -522,9 +512,6 @@ void graph_text(void) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
     uint16_t ii;
-    #define bufLen 40
-    static uint16_t oo;
-    static char outstr[bufLen];
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
@@ -541,31 +528,8 @@ void graph_text(void) {
     eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
     showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
-
-    snprintf(tmpString, bufLen, "  y %.3f/tick  ", tick_int_y);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
-    snprintf(tmpString, bufLen, "  x %.3f/tick  ", tick_int_x);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii,&oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
+    showGraphTickText1(tick_int_x, tick_int_y, 1, ypos, ypos-12, 5);
+    ypos -= 24;
 
     uint32_t minnx, minny;
     minny = 0;
@@ -582,14 +546,9 @@ void graph_text(void) {
     }
 
     //Change to the small characters and fabricate a small = char
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo, outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
+    static char outstr[bufLen];
+    convertDigits(tmpString, outstr);
+
     ii = showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
     if(tmpString[ stringByteLength(tmpString)-1 ] == '0') {
       #define sp 15
@@ -1456,17 +1415,21 @@ void fnStatList() {
         ixx = statnum - ix - 1 + ListXYposition;
 
         if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
-          sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
+          //sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_fixed(grf_x(ixx),7));
         }
         else {
-          sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
+          //sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_sci(grf_x(ixx),7));
         }
 
         if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
-          sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
+          //sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_fixed(grf_y(ixx),7));
         }
         else {
-          sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
+          //sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_sci(grf_y(ixx),7));
         }
 
         strcat(tmpstr1,tmpstr2);
