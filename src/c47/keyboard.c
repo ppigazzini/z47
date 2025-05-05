@@ -943,6 +943,9 @@ int16_t lastItem = 0;
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
+        screenUpdatingMode = SCRUPD_AUTO;
+        clearScreen(234);
+        refreshScreen(127);
         showSoftmenu(-MNU_GRAPHS);
         item = 0;
       }
