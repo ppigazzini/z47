@@ -47,7 +47,6 @@ void convertDigits(char * refstr, char * outstr) {
       case '7':
       case '8':
       case '9': outstr[oo++] = STD_SUB_0[0]; outstr[oo++] = STD_SUB_0[1] + refstr[ii] - '0'; break; //.
-  //  case 'E': outstr[oo++] = STD_SUB_A[0]; outstr[oo++] = STD_SUB_A[1] + refstr[ii] - 'A'; break; //.
       case 't':
       case 'i':
       case 'c':
@@ -55,12 +54,13 @@ void convertDigits(char * refstr, char * outstr) {
       case 'x': 
       case 'y': 
       case 'a': 
-      case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break; //.
-      case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //: ok
-      case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+ ok
-      case '-': outstr[oo++] = STD_SUB_MINUS[0]       ; outstr[oo++] = STD_SUB_MINUS[1]       ; break; //- ok
-      case '.': outstr[oo++] = STD_SINGLE_LOW_QUOTE[0]; outstr[oo++] = STD_SINGLE_LOW_QUOTE[1]; break; //. ok
-      case '/': outstr[oo++] = STD_OBLIQUE3[0]        ; outstr[oo++] = STD_OBLIQUE3[1]        ; break; /// ok
+      case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break;
+      case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //:
+      case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+
+      case '-': outstr[oo++] = STD_SUB_MINUS[0]       ; outstr[oo++] = STD_SUB_MINUS[1]       ; break; //-
+      case ',': outstr[oo++] = STD_SINGLE_LOW_QUOTE[0]; outstr[oo++] = STD_SINGLE_LOW_QUOTE[1]; break; //.
+      case '/': outstr[oo++] = STD_OBLIQUE3[0]        ; outstr[oo++] = STD_OBLIQUE3[1]        ; break; ///
+      case '.':
       default:  outstr[oo++] = refstr[ii];
     }
     ii++;
