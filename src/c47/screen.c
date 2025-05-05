@@ -5212,6 +5212,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       case CM_GRAPH:
@@ -5224,6 +5225,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       case CM_PLOT_STAT:
@@ -5244,6 +5246,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       default: ;
