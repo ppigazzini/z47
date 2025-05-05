@@ -2,15 +2,25 @@ dmcp_cargs = [
   '-D__weak="__attribute__((weak))"',
   '-D__packed="__attribute__((__packed__))"',
   '-DNEW_HW',
-  '-Wno-unused-parameter'
+  '-Wno-unused-parameter',
+  '-fno-exceptions',                  # added in symmetry with DM42
+  '-fno-unwind-tables',               # added in symmetry with DM42
+  '-fno-asynchronous-unwind-tables',  # added in symmetry with DM42
 ]
 
 dmcp_linkargs = [
+  '--specs=nano.specs',               * can remove full math later to save space
   '--specs=nosys.specs',
+  '-u', '_printf_float',              # added in symmetry with DM42 - Enable printf
+#  '-u', '_scanf_float',               # added in symmetry with DM42 - Enable float scanf
+  '-lc',                              # added in symmetry with DM42 - Link C standard library
+  '-lm',                              # added in symmetry with DM42 - Link math library (needed for float ops)
+  '-lnosys',                          # added in symmetry with DM42 - Stub system calls for bare-metal
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
   '-T' + meson.current_source_dir() + '/stm32_program.ld'
+# '-Wl,--strip-all',
 ]
 
 
