@@ -166,9 +166,6 @@ SECTIONS {
     libm.a ( * )
     libgcc.a ( * )
     libgmp.a ( * )
-    *(.init_array*)
-    *(.fini_array*)
-    *(.preinit_array*)
   }
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
