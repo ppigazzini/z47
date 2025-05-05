@@ -264,10 +264,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
     }
 
-
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
-
       case ITM_DRAW_LU:    //Xup Xdn
       case VAR_LX:
       case VAR_UX:
