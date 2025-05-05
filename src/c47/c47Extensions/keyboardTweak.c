@@ -759,7 +759,7 @@ void resetKeytimers(void) {
       else if(!shiftF && shiftG) {
         offset = 12;
       }
-      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE);
+      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE); // if it times out, it goes to execFnTimeout
 
       #if defined(VERBOSEKEYS)
         printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n",(char*)data,((char*)data)[0], FN_key_pressed, offset);
