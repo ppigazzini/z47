@@ -498,11 +498,11 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
     char buff[32];
     char outstr[bufLen];
-    snprintf(tmpString, bufLen, "  y %8s/tick  ", wrap_eng(tick_int_y,acc));
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_y,acc)));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
 
-    snprintf(tmpString, bufLen, "  x %8s/tick  ", wrap_eng(tick_int_x,acc));
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_x,acc)));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
@@ -542,7 +542,7 @@ void graph_text(void) {
       case 0: strcpy(tmpString,"            ");                    break;
       case 1: snprintf(tmpString, bufLen, "  y-axis x 0"); break;
       case 2: snprintf(tmpString, bufLen, "  x-axis y 0"); break;
-      case 3: snprintf(tmpString, bufLen, "  axis 0.0 ");  break;
+      case 3: snprintf(tmpString, bufLen, "  axis 0%s0 ", radixProcess(tmpbuf,"."));  break;
       default: ;
     }
 

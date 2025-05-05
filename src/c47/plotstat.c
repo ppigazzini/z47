@@ -625,57 +625,6 @@ void nanCheck(char* s02) { //eg. change (nanE-3 or ;nanE-3) to NaN
   }
 }
 
-void eformat(char* s02, const char* s01, double inreal, uint8_t prec, const char* s05) {
-  char s03[100];
-  char tmpbuf[PLOT_TMP_BUF_SIZE];
-
-  if(((fabs(inreal) > 1000000.0 || fabs(inreal) < 0.001)) && (inreal != 0.0)) {
-    sprintf(s03,"%.*e",prec,inreal);
-  }
-  else {
-    sprintf(s03,"%.*f",prec,inreal);
-  }
-  strcpy(s02, s01);
-  if(inreal > 0) {
-    strcat(s02,"");  //in place of negative sign
-  }
-  strcat(s02, eatSpacesMid(radixProcess(tmpbuf, s03)));
-  strcat(s02, s05);
-  nanCheck(s02);
-}
-
-
-void eformat_fix3 (char* s02, const char* s01, double inreal) {
-  char *sign;
-  char s03[100]; char s04[100];
-  char tmpbuf[PLOT_TMP_BUF_SIZE];
-
-  s04[0]=0;
-  if(inreal<0.0) {
-    sign = "-";
-    inreal = -inreal;
-  }
-  else {
-    sign = " ";                              //changed from 0.001 to force more digits
-  }
-  if(((fabs(inreal) > 100000000.0f || fabs(inreal) < 0.1f)) && (inreal != 0.0f)) {
-    sprintf(s03,"%s%.3e",sign,inreal);
-  }
-  else {
-    sprintf(s03,"%s%.3f",sign,inreal);
-  }
-
-  strcpy(s02,s01);
-
-  if(inreal > 0) {
-    strcpy(s04, " ");  //in place of negative sign
-  }
-  strcat(s04,s03);
-  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s04)));
-  nanCheck(s02);
-}
-
-
 char * padEquals(char *output, const char * ss) {
   int8_t ix = 0, iy = 0;
 
@@ -1038,8 +987,8 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
 
 
 #define horOffsetR 109+5 //digit righ side aliognment
-#define autoinc 20 //text line spacing
-#define autoshift -3 //text line spacing
+#define autoinc 19 //text line spacing
+#define autoshift -4 //text line offset
 #define horOffset 1 //labels from the left
 
 
@@ -1664,7 +1613,7 @@ void graphDrawLRline(uint16_t selection) {
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
         }
 
-        eformat(ss, "", rr, 4, "");
+        strcpy(ss,wrap_format_fixed(rr,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
         strcpy(ss, "r" STD_SUP_2 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
@@ -1682,22 +1631,22 @@ void graphDrawLRline(uint16_t selection) {
 
       }
       else {                          //ORTHOF
-        eformat_fix3(ss, "", a0);
+        strcpy(ss,wrap_eng(a0,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "",ssa0);
+        strcpy(ss,wrap_eng(ssa0,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "", a1);
+        strcpy(ss,wrap_eng(a1,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "", ssa1);
+        strcpy(ss,wrap_eng(ssa1,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
@@ -1715,16 +1664,11 @@ void graphDrawLRline(uint16_t selection) {
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
         }
         else {
-          eformat(ss, "", rr, 4, "");
+          strcpy(ss,wrap_eng(rr,5));
           showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
           strcpy(ss, "r" STD_SUP_2 "=");
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
         }
-
-        //eformat(ss,"x,y" STD_SUB_m STD_SUB_i STD_SUB_n "=", x_min,5);
-        //showString(ss, &standardFont, 0, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
-        //eformat(ss,"x,y" STD_SUB_m STD_SUB_a STD_SUB_x "=", x_max,5);
-        //showString(ss, &standardFont, 0, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
       }
     }
     else {
