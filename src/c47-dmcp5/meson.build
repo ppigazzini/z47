@@ -9,7 +9,7 @@ dmcp_cargs = [
 ]
 
 dmcp_linkargs = [
-  '--specs=nano.specs',               * can remove full math later to save space
+  '--specs=nano.specs',               # can remove full math later to save space
   '--specs=nosys.specs',
   '-u', '_printf_float',              # added in symmetry with DM42 - Enable printf
 #  '-u', '_scanf_float',               # added in symmetry with DM42 - Enable float scanf
