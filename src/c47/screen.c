@@ -5138,6 +5138,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         clearScreen(9);
         flagBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_FONT_BROWSER:
@@ -5145,6 +5146,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         clearScreen(10);
         fontBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_REGISTER_BROWSER:
@@ -5152,6 +5154,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         clearScreen(11);
         registerBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_PEM:
