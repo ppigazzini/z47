@@ -1855,7 +1855,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-      cleanupAfterShift = false;
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
@@ -1973,7 +1972,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
         }
       }
-      else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
+      else if(calcMode == CM_REGISTER_BROWSER){
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(126);
