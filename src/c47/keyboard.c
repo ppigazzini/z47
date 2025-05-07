@@ -1864,7 +1864,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
-        return;
+        item = ITM_CLRMOD;
       }
 
       asnKey[0] = ((uint8_t *)data)[0];
@@ -2946,6 +2946,7 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     fnRecall(currentRegisterBrowserScreen);
+                    refreshScreen(128);
                   }
                   else if(rbrMode == RBR_NAMED) {
                     if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
