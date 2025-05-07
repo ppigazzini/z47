@@ -704,6 +704,12 @@ overRange:
         exponent++;
       }
 
+      // Remove trailling zeros
+      while(numDigits > 1 && bcd[lastDigit] == 0) {
+        lastDigit--;
+        numDigits--;
+      }
+
       // The sign
       if(sign) {
         displayString[charIndex++] = '-';
