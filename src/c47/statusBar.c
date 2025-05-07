@@ -219,6 +219,8 @@ void drawBattery(uint16_t voltage);
   }
 
 
+  #define lowerUnderLine ((calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER) ? 0 : 2)   //lower the /1200x a few pixels to create to idea of under the line
+
   void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
 
@@ -252,13 +254,14 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
       }
 
-      #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
       compressString = 1;
       int xx = x;
       x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
       x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
 
-      lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
+      if(lowerUnderLine-1 > 0) {
+        lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
+      }
 
       compressString = 1;
       if(denMax == 0 || denMax > MAX_DENMAX) {
@@ -268,7 +271,9 @@ void drawBattery(uint16_t voltage);
       }
       xx = x;
       x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
-      lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
+      if(lowerUnderLine > 0) {
+        lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
+      }
 
       if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
         raiseString = 3;
@@ -943,7 +948,6 @@ void drawBattery(uint16_t voltage) {
       x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2-2;
 
     char divStr[10];
-    #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
     compressString = 1;
     xx = x;
       x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
