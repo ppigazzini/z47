@@ -1722,8 +1722,10 @@ int32_t getSmallestDenom(const real_t *val) {
       break;  // AF: division by zero
     }
     realDivide(const_1,&xx,&xx,&ctxtReal39);
-
-    if(realCompareGreaterThan(&xx,const_10p9__1)) {
+    if(realCompareGreaterThan(&xx,const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
+      realCopy(const_10p9__1,&xx);
+    }
+    if(realIsSpecial(&xx)) {
       #if defined(PC_BUILD)
         printf("\nRepresentation failure. Quitting fraction loop.\n");
       #endif //PC_BUILD
@@ -1841,7 +1843,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     }
 
   real_t findingIrrationalTolerance1;
-  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence // MUST TRY 12. SEEMS TO WORK ON 12
 
 
 
