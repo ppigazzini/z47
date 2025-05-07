@@ -8,13 +8,15 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b7"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07a9"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
 // Version 7c6 fixes a gitlab compile issue, no other changes.
 // Version 7a7 internal alpha test
 // Version 7b7 bugfix version, supplementing nano with float libraries
+// Version 7b8 bugfix version, supplementing nano with float libraries
+// Version 7a9 internal alphs
 
 
 #if !defined(CALCMODEL)
