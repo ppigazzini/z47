@@ -24,6 +24,8 @@ static void sqrtShoI(void) {
   }
 }
 
+
+
 static void sqrtReal(void) {
   real_t a;
 
@@ -56,6 +58,60 @@ static void sqrtReal(void) {
   }
 }
 
+
+
+//input in X, output in X
+void rootLonI(int32_t n) {
+  longInteger_t lgInt, rem, root;
+
+  if(!getRegisterAsLongInt(REGISTER_X, lgInt, NULL)) {
+    return;
+  }
+  bool_t nIsOdd = (n % 2) != 0;
+  if (n > 0 && (nIsOdd || (!nIsOdd && !longIntegerIsNegative(lgInt)))) {
+    longIntegerInit(rem);
+    longIntegerInit(root);
+    mpz_rootrem(root, rem, lgInt, n); // square root
+    if(longIntegerIsZero(rem)) {
+      convertLongIntegerToLongIntegerRegister(root, REGISTER_X);
+      longIntegerFree(rem);
+      longIntegerFree(root);
+      longIntegerFree(lgInt);
+      return;
+    }
+    longIntegerFree(rem);
+    longIntegerFree(root);
+  }
+  longIntegerFree(lgInt);
+  //fall through to Real calculation with errors
+  if(n == 2) {
+    sqrtReal();
+  }
+  else if(n == 3) {
+    curtReal();
+  }
+//This section is not needed as only sqrt and qubert are using this helper function
+//  else { // fallthrough n is even and x < 1
+//    real_t x;
+//    if (!getRegisterAsReal(REGISTER_X, &x)) {
+//      return;
+//    }      
+//    real_t nn;
+//    if(n <= 2147483647) {
+//      int32ToReal(n, &nn);
+//      xthRootReal(&x, &nn, &ctxtReal75);
+//    }
+//  }
+}
+
+
+
+static  void sqrtLonI(void) {
+  rootLonI(2);
+}
+
+
+
 static void sqrtCplx(void) {
   real_t a, b;
 
@@ -64,6 +120,8 @@ static void sqrtCplx(void) {
     convertComplexToResultRegister(&a, &b, REGISTER_X);
   }
 }
+
+
 
 void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   if(realIsZero(imag) && realIsNegative(real)) {
@@ -91,5 +149,5 @@ void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
  * \return void
  ***********************************************/
 void fnSquareRoot(uint16_t unusedButMandatoryParameter) {
-  processIntRealComplexMonadicFunction(&sqrtReal, &sqrtCplx, &sqrtShoI, NULL);
+  processIntRealComplexMonadicFunction(&sqrtReal, &sqrtCplx, &sqrtShoI, &sqrtLonI);
 }
