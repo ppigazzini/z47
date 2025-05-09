@@ -443,7 +443,7 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
 
     #if defined(PC_BUILD)
-      if(gmpMemInBytes != 0) {
+      if(gmpMemInBytes != 0 && !getSystemFlag(FLAG_SOLVING)) {
         char str[30];
         stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, str);
         errorf("gmpMemInBytes should be 0 but it is not! Check to ensure allocated long integers have been freed.");
