@@ -4624,7 +4624,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
