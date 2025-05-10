@@ -4291,7 +4291,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         //normal longinteger handling
           else {
-            longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, toRemoveTrailingRadix);
+            longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, getSystemFlag(FLAG_LARGELI));
             tmpString[TMP_STR_LENGTH-1] = tmpString[0];
           }
 
