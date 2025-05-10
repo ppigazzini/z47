@@ -127,6 +127,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_FRACT,            FLAG_FRACT  ,           CB_JC},
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
+  {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
+  {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
   {ITM_FRCYC,            FLAG_FRCYC  ,           CB_JC},
   {ITM_LARGELI,          FLAG_LARGELI,           CB_JC},  //SetSetting
   {ITM_IRFRAC,           FLAG_IRFRAC ,           CB_JC},  //SetSetting
@@ -361,6 +363,8 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_FRACT  :
             case FLAG_PRTACT :
             case FLAG_ERPN   :
+            case FLAG_CARRY  :
+            case FLAG_OVERFLOW:
             case FLAG_FRCYC  :
             case FLAG_LARGELI:
             case FLAG_IRFRAC :

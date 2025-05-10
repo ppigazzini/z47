@@ -78,6 +78,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
     case FLAG_alphaCAP:
@@ -672,6 +674,8 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:

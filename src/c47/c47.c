@@ -167,6 +167,7 @@ uint8_t                nimNumberPart;
 uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
+uint8_t                previousErrorCode;
 uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;

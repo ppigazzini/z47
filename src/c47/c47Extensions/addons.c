@@ -30,16 +30,6 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
-void fneRPN(uint16_t state) {
-  if(state == 1) {
-    setSystemFlag(FLAG_ERPN);
-  }
-  else if(state == 0) {
-    clearSystemFlag(FLAG_ERPN);
-  }
-}
-
-
 
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {

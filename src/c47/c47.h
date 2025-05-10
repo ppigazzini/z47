@@ -414,6 +414,7 @@
   extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
+  extern uint8_t                previousErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;

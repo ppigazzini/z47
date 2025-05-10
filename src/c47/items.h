@@ -1902,8 +1902,8 @@
 #define KEY_COMPLEX                 1848
 #define ITM_toPOL2                  1849
 #define ITM_toREC2                  1850
-#define ITM_1851                    1851  //blank
-#define ITM_1852                    1852  //blank
+#define ITM_CARRY                   1851
+#define ITM_OVERFLOW                1852
 #define ITM_ERPN                    1853
 #define ITM_HOMEx3                  1854
 #define ITM_SHTIM                   1855
@@ -1956,7 +1956,7 @@
 #define ITM_GLUStoFZUS              1902
 #define ITM_FZUStoGLUS              1903
 #define ITM_N_KEY_USER              1904
-#define ITM_1905                    1905
+#define ITM_LASTERR                 1905
 #define ITM_N_KEY_SIGMA             1906
 #define MNU_PLOT_STAT               1907
 #define ITM_N_KEY_FSH               1908

@@ -937,6 +937,18 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnGetLastErr(uint16_t unusedButMandatoryParameter) {
+  longInteger_t err;
+
+  liftStack();
+
+  longIntegerInit(err);
+  uInt32ToLongInteger(previousErrorCode, err);
+  convertLongIntegerToLongIntegerRegister(err, REGISTER_X);
+  longIntegerFree(err);
+}
+
+
 void initSimEqMatABX(void) {
   matrixHeader_t *matrixHeader;
 
@@ -1511,6 +1523,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     aimBuffer[0] = 0;
     lastErrorCode = 0;
+    previousErrorCode = 0;
 
     #if !defined(TESTSUITE_BUILD)
       resetAlphaSelectionBuffer();

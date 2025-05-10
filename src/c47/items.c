@@ -252,6 +252,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
+    previousErrorCode = lastErrorCode;
+
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u                                SBI:%s\n", calcMode, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
     #endif // PC_BUILD
@@ -923,6 +925,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnGetRange                  (uint16_t unusedButMandatoryParameter) {}
   void fnHide                      (uint16_t unusedButMandatoryParameter) {}
   void fnGetHide                   (uint16_t unusedButMandatoryParameter) {}
+  void fnGetLastErr                (uint16_t unusedButMandatoryParameter) {}
   void fnDot                       (uint16_t unusedButMandatoryParameter) {}
   void fnCross                     (uint16_t unusedButMandatoryParameter) {}
   void fnPercent                   (uint16_t unusedButMandatoryParameter) {}
@@ -1180,7 +1183,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnDisplayFormatSigFig      (uint16_t unusedButMandatoryParameter) {}
   void fnDisplayFormatUnit        (uint16_t unusedButMandatoryParameter) {}
   void fnDisplayFormatCycle       (uint16_t unusedButMandatoryParameter) {}
-  void fnShowErpn                 (uint16_t unusedButMandatoryParameter) {}
   void fnKeysManagement           (uint16_t unusedButMandatoryParameter) {}
   void fnSigmaAssign              (uint16_t unusedButMandatoryParameter) {}
   void fnGetSigmaAssignToX        (uint16_t unusedButMandatoryParameter) {}
@@ -1210,7 +1212,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSetInlineTestXToBs       (uint16_t unusedButMandatoryParameter) {}
   void fnGetInlineTestBsToX       (uint16_t unusedButMandatoryParameter) {}
   void fnSysFreeMem               (uint16_t unusedButMandatoryParameter) {}           //^^
-  void fneRPN                     (uint16_t unusedButMandatoryParameter) {}
   void fnT_ARROW                  (uint16_t unusedButMandatoryParameter) {}
   void fnXSWAP                    (uint16_t unusedButMandatoryParameter) {}
   void fnAngularModeJM            (uint16_t unusedButMandatoryParameter) {}
@@ -3240,8 +3241,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1848 */  { fnKeyCC,                      KEY_COMPLEX,                 "COMPLEX",                                     "COMPLEX",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//JM Change CC to COMPLEX
 /* 1849 */  { fnToPolar2,                   NOPARAM,                     STD_RIGHT_ARROW "POLAR",                       STD_RIGHT_ARROW "P",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//JM TEXT & point to function to add POLAR/RECT
 /* 1850 */  { fnToRect2,                    NOPARAM,                     STD_RIGHT_ARROW "RECT",                        STD_RIGHT_ARROW "R",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//SWAPPED ARROW DIRECTION & JM TEXT & point to function to add POLAR/RECT
-/* 1851 */  { itemToBeCoded,                NOPARAM,                     "1851",                                        "1851",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1852 */  { itemToBeCoded,                NOPARAM,                     "1852",                                        "1852",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1851 */  { SetSetting,                   FLAG_CARRY,                  "C",                                           "C",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1852 */  { SetSetting,                   FLAG_OVERFLOW,               "O",                                           "O",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1853 */  { SetSetting,                   FLAG_ERPN,                   "eRPN",                                        "eRPN",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM eRPN
 /* 1854 */  { SetSetting,                   JC_HOME_TRIPLE,              "HOME.3",                                      "HOME.3",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM HOME.3
 /* 1855 */  { SetSetting,                   JC_SHFT_4s,                  "SH.4s",                                       "SH.4s",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM SHIFT CANCEL
@@ -3294,7 +3295,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1902 */  UNIT_CONV(constFactorGlusFzus, multiply,                    "gal" STD_US STD_RIGHT_ARROW "floz" STD_US,     "gal" STD_US STD_RIGHT_ARROW                    ),
 /* 1903 */  UNIT_CONV(constFactorFzusGlus,   divide,                    "floz" STD_US STD_RIGHT_ARROW "gal" STD_US,     "floz" STD_US STD_RIGHT_ARROW                   ),
 /* 1904 */  { fnSigmaAssign,                16384+ITM_USERMODE,          "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "USER", (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1905 */  { itemToBeCoded,                NOPARAM,                     "1905",                                        "1905",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1905 */  { fnGetLastErr,                 NOPARAM,                     "LSTERR?",                                     "LSTERR?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1906 */  { fnSigmaAssign,                16384+ITM_SIGMAPLUS,         "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM STD_SIGMA "+", (0 << TAM_MAX_BITS) |0,CAT_NONE| SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1907 */  { itemToBeCoded,                NOPARAM,                     "PLSTAT",                                      "PLSTAT",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1908 */  { fnSigmaAssign,                16384+ITM_SHIFTf,            "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "f",    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },

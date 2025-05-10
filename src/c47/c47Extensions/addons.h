@@ -11,7 +11,6 @@ int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 void standardScreenDump(void);
 
-void fneRPN         (uint16_t unusedButMandatoryParameter);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
 void fnShoiXRepeats (uint16_t numberOfRepeats);
 void fnTo_ms        (uint16_t unusedButMandatoryParameter);
