@@ -1037,7 +1037,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     restoreStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
     restoreStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
-    restoreStateValue(&priorErrorCode,                 sizeof(priorErrorCode),                                      "priorErrorCode",                 "uint8");
+    restoreStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     restoreStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
     restoreStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     restoreStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
@@ -3016,7 +3016,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   }
 
   lastErrorCode = ERROR_NONE;
-  priorErrorCode = lastErrorCode;
+  previousErrorCode = lastErrorCode;
 
   ioFileClose();
 
