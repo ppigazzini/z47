@@ -104,8 +104,8 @@ TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CLFALL                    };
 
-TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_LOADEDFILE,             ITM_MEM,                  ITM_DISK,              ITM_KTYP,                    ITM_LocRQ,
-                                             ITM_BATT,                      ITM_LASTERR,                ITM_LASTT,                ITM_WHO,               ITM_VOLQ,                    ITM_MENUQ,
+TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_LASTERR,                ITM_LASTT,                ITM_KTYP,              ITM_LocRQ,                   ITM_MEM,
+                                             ITM_WHO,                       ITM_BATT,                   ITM_DISK,                 ITM_VOLQ,              ITM_MENUQ,                   ITM_LOADEDFILE,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_TYPEQ,                     ITM_M_DIMQ,                 ITM_NEIGHB,               ITM_ULP,               ITM_SSIZE,                   ITM_RMODEQ,
