@@ -390,11 +390,6 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MSAV        53
-#define USER_MFIN        54
-#define USER_MCPX        55
-#define USER_MC47        56
-#define USER_MR47        57
 #define USER_HRESET      58
 #define USER_PRESET      59
 

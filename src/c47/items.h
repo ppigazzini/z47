@@ -2155,9 +2155,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_RIBBON_C47              2104
-#define ITM_RIBBON_R47              2105
-#define ITM_RIBBON_SAV              2106
+#define ITM_2104                    2104
+#define ITM_2105                    2105
+#define ITM_2106                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
@@ -2214,8 +2214,8 @@
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
 #define ITM_PPLUS                   2162
-#define ITM_RIBBON_FIN              2163
-#define ITM_RIBBON_CPX              2164
+#define ITM_2163                    2163
+#define ITM_2164                    2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2578,7 +2578,21 @@
 #define ITM_GET_WOY                 2504
 #define ITM_WOY                     2505
 
-#define LAST_ITEM                   2506
+
+#define ITM_RIBBON_CPX              2506
+#define ITM_RIBBON_FIN              2507
+#define ITM_RIBBON_SAV              2508
+#define ITM_RIBBON_C47              2509
+#define ITM_RIBBON_C47PL            2510
+#define ITM_RIBBON_R47              2511
+#define ITM_2512                    2512
+#define ITM_2513                    2513
+#define ITM_2514                    2514
+#define ITM_2515                    2515
+#define ITM_2516                    2516
+#define ITM_2517                    2517
+
+#define LAST_ITEM                   2518
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

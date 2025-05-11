@@ -2077,12 +2077,12 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #endif // !TESTSUITE_BUILD
 
 
-void fnRESET_MyM(uint8_t param) {
+void fnRESET_MyM(uint16_t param) {
   //Pre-assign the MyMenu                   //JM
   #if !defined(TESTSUITE_BUILD)
     BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == USER_MSAV) {
+      if(param == ITM_RIBBON_SAV) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_SYSTEM2; break;
           case 2: itemToBeAssigned = ITM_ACTUSB;  break;
@@ -2093,7 +2093,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MFIN) {
+      else if(param == ITM_RIBBON_FIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
@@ -2104,7 +2104,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MCPX) {
+      else if(param == ITM_RIBBON_CPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
@@ -2115,7 +2115,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MC47) {
+      else if(param == ITM_RIBBON_C47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_YX;       break;
@@ -2126,7 +2126,18 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MR47) {
+      else if(param == ITM_RIBBON_C47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_DRG;      break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_TOPHEX;   break;
+          case 5: itemToBeAssigned = ITM_CARRY;    break;
+          case 6: itemToBeAssigned = ITM_OVERFLOW; break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_op_j;     break;
           case 2: itemToBeAssigned = ITM_op_j_pol; break;

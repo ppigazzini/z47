@@ -51,7 +51,7 @@ void fnConvertStkToMx(uint16_t unusedButMandatoryParameter);
 void fnConvertMxToStk(uint16_t unusedButMandatoryParameter);
 
 
-void fnRESET_MyM(uint8_t param);
+void fnRESET_MyM(uint16_t param);
 void fnRESET_Mya(void);
 
 void fnByteShortcutsS   (uint16_t size);                    //JM POC BASE2 vv
