@@ -1730,7 +1730,7 @@
 #define ITM_sn                      1682
 #define ITM_cn                      1683
 #define ITM_dn                      1684
-#define ITM_toHR                    1685 //reserved, not used anymore, removed from testPgms
+#define ITM_toHR_OLD                1685 //reserved, not used anymore, removed from testPgms
 #define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
 #define ITM_HMStoTM                 1688
