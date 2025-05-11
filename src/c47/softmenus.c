@@ -25,9 +25,11 @@
 TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_MASKL,                   ITM_MASKR,
                                              ITM_LOGICALNAND,               ITM_LOGICALNOR,             ITM_LOGICALXNOR,          ITM_MIRROR,            ITM_ZIP,                     ITM_UNZIP,
                                              ITM_SB,                        ITM_BS,                     ITM_NUMB,                 ITM_FB,                ITM_BC,                      ITM_CB,
+
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
-                                             ITM_SL,                        ITM_RL,                     ITM_RLC,                  ITM_RRC,               ITM_RR,                      ITM_SR,
-                                             ITM_LJ,                        ITM_RJ,                     ITM_NULL,                 ITM_ASR,               ITM_CARRY,                   ITM_OVERFLOW,
+                                             ITM_SL,                        ITM_RL,                     ITM_RR,                   ITM_SR,                ITM_CARRY,                   ITM_OVERFLOW,
+                                             ITM_LJ,                        ITM_RLC,                    ITM_RRC,                  ITM_RJ,                ITM_ASR,                     ITM_TOPHEX,
+
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_WSIZE                     };
 
 
@@ -692,8 +694,8 @@ TO_QSPI const int16_t menu_Timer[]       = { ITM_TIMER_SIGMA_T,             ITM_
 
 
 TO_QSPI const int16_t menu_BASE[]        = { ITM_2HEX,                      ITM_2DEC,                   ITM_2OCT,                 ITM_2BIN,              ITM_HASH_JM,                 ITM_LINT,                                   //JM BASE MENU ADDED
-                                             ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_CB_LEADING_ZERO,         ITM_HPBASE,
-                                             ITM_WS64,                      ITM_WS32,                   ITM_WS16,                 ITM_WS8,               ITM_WSIZE,                   ITM_BCD,
+                                             ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_CARRY,                   ITM_OVERFLOW,
+                                             ITM_WS64,                      ITM_WS32,                   ITM_WS16,                 ITM_WS8,               ITM_WSIZE,                   ITM_TOPHEX,
 
                                              ITM_SL1,                       ITM_SR1,                    ITM_RL1,                  ITM_RR1,               ITM_RL,                      ITM_RR,
                                              ITM_S64,                       ITM_S32,                    ITM_S16,                  ITM_S08,               ITM_S06,                     ITM_FWORD,
@@ -701,7 +703,7 @@ TO_QSPI const int16_t menu_BASE[]        = { ITM_2HEX,                      ITM_
 
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            -MNU_BITS,                   -MNU_INTS,
-                                             ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_TOPHEX,            ITM_CARRY,                   ITM_OVERFLOW,                  };
+                                             ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_CB_LEADING_ZERO,         ITM_HPBASE,                  };
 
 
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j_pol,                  ITM_op_j,                   ITM_SQUARE,               ITM_op_a,              ITM_op_a2,                   ITM_CLSTK,                          //JM EE
