@@ -1541,7 +1541,7 @@
 #define ITM_JPLUS                   1493
 #define ITM_JMINUS                  1494
 #define ITM_JUL_GREG                1495
-#define ITM_1496                    1496
+#define ITM_MSG                     1496
 #define ITM_KEY                     1497
 #define ITM_KEYG                    1498
 #define ITM_KEYX                    1499
@@ -1567,7 +1567,7 @@
 #define ITM_MEM                     1519
 #define ITM_MENU                    1520
 #define ITM_MONTH                   1521
-#define ITM_MSG                     1522
+#define ITM_MSG_OLD                 1522
 #define ITM_MULPI                   1523
 #define ITM_MVAR                    1524
 #define ITM_M_DELR                  1525
@@ -1806,7 +1806,7 @@
 #define ITM_PLOT_CENTRL             1756
 #define ITM_HIDE_OLD                1757
 #define ITM_SMI                     1758
-#define ITM_PLOT_ASSESS                 1759
+#define ITM_PLOT_ASSESS             1759
 #define ITM_PLOT_NXT                1760
 #define ITM_PLOT_REV                1761
 #define ITM_PLOTZOOM                1762
