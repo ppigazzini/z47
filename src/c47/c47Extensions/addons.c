@@ -2132,8 +2132,8 @@ void fnRESET_MyM(uint16_t param) {
           case 2: itemToBeAssigned = ITM_DSP;      break;
           case 3: itemToBeAssigned = ITM_DREAL;    break;
           case 4: itemToBeAssigned = ITM_TOPHEX;   break;
-          case 5: itemToBeAssigned = ITM_CARRY;    break;
-          case 6: itemToBeAssigned = ITM_OVERFLOW; break;
+          case 5: itemToBeAssigned = ITM_OVERFLOW; break;
+          case 6: itemToBeAssigned = ITM_CARRY;    break;
           default:break;
         }
       }
