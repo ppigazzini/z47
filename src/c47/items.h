@@ -1932,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define ITM_1881                    1881
+#define MNU_BITSET                  1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884
@@ -1948,7 +1948,7 @@
 #define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
 #define ITM_FRCYC                   1896
-#define ITM_1897                    1897
+#define MNU_TAMFLAGEXT              1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900

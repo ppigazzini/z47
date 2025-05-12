@@ -345,8 +345,12 @@
         else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
           showSoftmenu(-MNU_TAM);
         }
-        else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
+        else if(tam.mode == TM_FLAGR) {
           showSoftmenu(-MNU_TAMFLAG);
+        }
+        else if(tam.mode == TM_FLAGW) {
+printf("DDDD\n");
+          showSoftmenu(-MNU_TAMFLAGEXT);
         }
         else if(tam.mode == TM_STORCL) {
           showSoftmenu(item == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
@@ -448,6 +452,23 @@
           default: break;
         }
       }
+      return;
+    }
+    else if(!tam.digitsSoFar && !tam.indirect && tam.mode == TM_FLAGW && (item == ITM_BCD || item == ITM_TOPHEX || item == ITM_CB_LEADING_ZERO || item == ITM_OVERFLOW || item == ITM_CARRY)) {
+printf("sss showFunctionNameItem=%u tam.function=%u\n", showFunctionNameItem,  tam.function);
+      if(tam.function == ITM_SF) {
+        setSystemFlag(indexOfItems[item].param);
+      }
+      else if(tam.function == ITM_CF) {
+        clearSystemFlag(indexOfItems[item].param);
+      }
+      else if(tam.function == ITM_FF) {
+        runFunction(item);
+      }
+      if(tam.mode) {
+        tamLeaveMode();
+      }
+      hourGlassIconEnabled = false;
       return;
     }
     else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
@@ -1108,9 +1129,13 @@
         break;
       }
 
-      case TM_FLAGR:
-      case TM_FLAGW: {
+      case TM_FLAGR: {
         showSoftmenu(-MNU_TAMFLAG);
+        break;
+      }
+      case TM_FLAGW: {
+printf("RRRR %u\n", tam.function);
+        showSoftmenu(-MNU_TAMFLAGEXT);
         break;
       }
 
