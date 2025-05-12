@@ -1214,7 +1214,7 @@ uint16_t searchMsg(uint16_t idStr) {
 }
 
 
-void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
+void fnShowVersion(uint16_t option) {  //KEYS VERSION LOADED
   strcpy(errorMessage, indexOfMsgs[searchMsg(option)].itemName);
   temporaryInformation = TI_KEYS;
 }

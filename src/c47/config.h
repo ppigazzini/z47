@@ -14,7 +14,7 @@ enum {
 
 void     configCommon          (uint16_t idx);
 void     showSoftmenu          (int16_t id);  //JM repeat here to make DMCP compile
-void     fnShowVersion         (uint8_t option);
+void     fnShowVersion         (uint16_t option);
 extern const enum rounding roundingModeTable[7];
 
 /********************************************//**
