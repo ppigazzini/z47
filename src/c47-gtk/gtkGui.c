@@ -107,6 +107,21 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   }
 
 
+  // The screen-changed event does not seem to be generated reliably.
+  //static void onScreenChanged(GtkWidget *w, GdkScreen *oldScreen, gpointer data) {
+  //  debugf("Screen changed: force a redraw");
+  //  gtk_widget_queue_draw(w);
+  //}
+
+
+
+  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
+    //debugf("Configure event: force a redraw");
+    gtk_widget_queue_draw(w);
+    return FALSE;
+  }
+
+
 //  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
 //    GtkWidget *w;
 //    w = NULL;
@@ -4517,11 +4532,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       }
 
       gtk_widget_set_name(frmCalc, "mainWindow");
-      gtk_window_set_resizable (GTK_WINDOW(frmCalc), FALSE);
+      gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
       gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
+
+      //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
         gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
