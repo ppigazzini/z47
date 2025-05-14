@@ -2115,6 +2115,33 @@ void fnRESET_MyM(uint16_t param) {
           default:break;
         }
       }
+
+      //C47 et al
+          else if(!isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = -MNU_CPX;     break;
+              case 2: itemToBeAssigned = -MNU_MATX;    break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = ITM_op_j;     break;
+              case 5: itemToBeAssigned = ITM_EXP;      break;
+              case 6: itemToBeAssigned = -MNU_TRG_C47; break;
+              default:break;
+            }
+          }
+      //R47
+          else if(isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = ITM_op_j;     break;
+              case 2: itemToBeAssigned = -MNU_CPX;     break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = -MNU_MATX;    break;
+              case 5: itemToBeAssigned = -MNU_TRG_R47; break;
+              case 6: itemToBeAssigned = ITM_EXP;      break;
+              default:break;
+            }
+          }
+      //END CONDITIONAL
+
       else if(param == ITM_RIBBON_C47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
@@ -2132,8 +2159,8 @@ void fnRESET_MyM(uint16_t param) {
           case 2: itemToBeAssigned = ITM_DSP;      break;
           case 3: itemToBeAssigned = ITM_DREAL;    break;
           case 4: itemToBeAssigned = ITM_FF;       break;
-          case 5: itemToBeAssigned = ITM_NULL;     break;
-          case 6: itemToBeAssigned = ITM_NULL;     break;
+          case 5: itemToBeAssigned = ITM_Rup;      break;
+          case 6: itemToBeAssigned = ITM_XFACT;    break;
           default:break;
         }
       }
@@ -2145,6 +2172,17 @@ void fnRESET_MyM(uint16_t param) {
           case 4: itemToBeAssigned = ITM_XTHROOT;  break;
           case 5: itemToBeAssigned = ITM_10x;      break;
           case 6: itemToBeAssigned = ITM_EXP;      break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_TIMER;    break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_FF;       break;
+          case 5: itemToBeAssigned = -MNU_LOOP;    break;
+          case 6: itemToBeAssigned = -MNU_TEST;    break;
           default:break;
         }
       }

@@ -2585,8 +2585,8 @@
 #define ITM_RIBBON_C47              2509
 #define ITM_RIBBON_C47PL            2510
 #define ITM_RIBBON_R47              2511
-#define ITM_2512                    2512
-#define ITM_2513                    2513
+#define ITM_RIBBON_R47PL            2512
+#define ITM_RIBBON_ENG              2513
 #define ITM_2514                    2514
 #define ITM_2515                    2515
 #define ITM_2516                    2516
