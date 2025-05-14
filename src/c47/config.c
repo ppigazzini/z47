@@ -1261,7 +1261,6 @@ void resetOtherConfigurationStuff(void) {
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
-  bcdDisplay = false;
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;

@@ -345,12 +345,8 @@
         else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
           showSoftmenu(-MNU_TAM);
         }
-        else if(tam.mode == TM_FLAGR) {
+        else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
           showSoftmenu(-MNU_TAMFLAG);
-        }
-        else if(tam.mode == TM_FLAGW) {
-printf("DDDD\n");
-          showSoftmenu(-MNU_TAMFLAGEXT);
         }
         else if(tam.mode == TM_STORCL) {
           showSoftmenu(item == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
@@ -455,16 +451,6 @@ printf("DDDD\n");
       return;
     }
     else if(!tam.digitsSoFar && !tam.indirect && tam.mode == TM_FLAGW && (item == ITM_BCD || item == ITM_TOPHEX || item == ITM_CB_LEADING_ZERO || item == ITM_OVERFLOW || item == ITM_CARRY)) {
-printf("sss showFunctionNameItem=%u tam.function=%u\n", showFunctionNameItem,  tam.function);
-      if(tam.function == ITM_SF) {
-        setSystemFlag(indexOfItems[item].param);
-      }
-      else if(tam.function == ITM_CF) {
-        clearSystemFlag(indexOfItems[item].param);
-      }
-      else if(tam.function == ITM_FF) {
-        runFunction(item);
-      }
       if(tam.mode) {
         tamLeaveMode();
       }
@@ -1129,13 +1115,9 @@ printf("sss showFunctionNameItem=%u tam.function=%u\n", showFunctionNameItem,  t
         break;
       }
 
-      case TM_FLAGR: {
-        showSoftmenu(-MNU_TAMFLAG);
-        break;
-      }
+      case TM_FLAGR:
       case TM_FLAGW: {
-printf("RRRR %u\n", tam.function);
-        showSoftmenu(-MNU_TAMFLAGEXT);
+        showSoftmenu(-MNU_TAMFLAG);
         break;
       }
 

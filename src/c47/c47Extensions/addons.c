@@ -2533,12 +2533,6 @@ int16_t mm(int16_t id) {
 
 void fnSetBCD (uint16_t bcd) {
   switch(bcd) {
-    case JC_BCD:
-      bcdDisplay = !bcdDisplay;
-      if(lastIntegerBase == 0) {
-        fnChangeBaseJM(10);
-      }
-      break;
     case BCD9c:
     case BCD10c:
     case BCDu:

@@ -7,6 +7,10 @@
 
 #include "c47.h"
 
+#if defined(PC_BUILD) && defined(DEBUG_PGM)
+  #include <execinfo.h>
+#endif //PC_BUILD
+
 // Structure of the program memory.
 // In this example the RAM is 16384 blocks (from 0 to 16383) of 4 bytes = 65536 bytes.
 // The program memory occupies the end of the RAM area.

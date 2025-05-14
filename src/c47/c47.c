@@ -229,7 +229,6 @@ bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f a
 bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
-bool_t                 bcdDisplay = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;

@@ -1948,7 +1948,7 @@
 #define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
 #define ITM_FRCYC                   1896
-#define MNU_TAMFLAGEXT              1897
+#define ITM_1897                    1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
@@ -2329,7 +2329,7 @@
 #define SFL_MNUp1                   2273 // The SFL item names are not used
 #define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
-#define SFL_2276                    2276 // The SFL item names are not used
+#define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_2277                    2277 // The SFL item names are not used
 #define SFL_2278                    2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
@@ -2591,8 +2591,14 @@
 #define ITM_2515                    2515
 #define ITM_2516                    2516
 #define ITM_2517                    2517
+#define ITM_2518                    2518
+#define ITM_2519                    2519
+#define ITM_2520                    2520
+#define ITM_2521                    2521
+#define ITM_2522                    2522
+#define ITM_2523                    2523
 
-#define LAST_ITEM                   2518
+#define LAST_ITEM                   2524
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

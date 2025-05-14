@@ -94,6 +94,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnRefreshState();
               break;
 
@@ -123,6 +124,13 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
             fnRefreshState();
             screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
             break;
+
+    case FLAG_BCD    :
+            if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
+              fnChangeBaseJM(10);
+            }
+            break;
+
 
     default: break;
   }
@@ -689,6 +697,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_VECT   :
     case FLAG_NVECT  :
     case FLAG_TOPHEX :
+    case FLAG_BCD    :
     case FLAG_LARGELI:
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
