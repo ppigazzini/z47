@@ -1065,6 +1065,15 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 
 #define FAILED_INDIRECTION                      9999
 
+#define ISREGINRANGE(regist) \
+    (regist <= LAST_LETTERED_REGISTER) || \
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) || \
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) || \
+    (regist >= FIRST_LOCAL_REGISTER && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || \
+    (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) || \
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE)
+
+
 /* Convertion from a key stroke program register code to a C register number
  */
 static inline int16_t regKStoC(const uint8_t regKS) {

@@ -2945,6 +2945,7 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     fnRecall(currentRegisterBrowserScreen);
+                    screenUpdatingMode = SCRUPD_AUTO;
                     refreshScreen(128);
                   }
                   else if(rbrMode == RBR_NAMED) {
