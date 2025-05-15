@@ -372,6 +372,7 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte22 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte25 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -437,7 +438,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(IrFractionsCurrentStatus);
   storeToDtConfigDescriptor(    compatibility_byte18);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
-  storeToDtConfigDescriptor(bcdDisplay);
+  storeToDtConfigDescriptor(    compatibility_byte25);
   storeToDtConfigDescriptor(    compatibility_byte24);
   storeToDtConfigDescriptor(bcdDisplaySign);
   storeToDtConfigDescriptor(DRG_Cycling);

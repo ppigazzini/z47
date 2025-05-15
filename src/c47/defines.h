@@ -390,11 +390,6 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MSAV        53
-#define USER_MFIN        54
-#define USER_MCPX        55
-#define USER_MC47        56
-#define USER_MR47        57
 #define USER_HRESET      58
 #define USER_PRESET      59
 
@@ -635,18 +630,19 @@
 #define FLAG_SHOWX                            0x804C
 #define FLAG_SHOWY                            0x804D
 #define FLAG_PBOX                             0x804E
-#define FLAG_PCROS                            0x804F
+#define FLAG_PCROS                            0x804F //16
 #define FLAG_PPLUS                            0x8050
 #define FLAG_PLINE                            0x8051
 #define FLAG_SCALE                            0x8052
-#define FLAG_VECT                             0x8053
+#define FLAG_VECT                             0x8053 //20
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
 #define FLAG_TOPHEX                           0x8058
+#define FLAG_BCD                              0x8059 //26
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+25 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+26 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode

@@ -1078,6 +1078,19 @@ int16_t lastItem = 0;
           }
 
           else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+                   && calcMode == CM_PEM && !catalog &&        //allow only in case of PEM, and a CAT
+                   (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
+                   !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
+            //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
+            if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
+              tam.value = (indexOfItems[item].param & 0xff);
+              tam.alpha = true;
+              addStepInProgram(tamOperation());
+              tamLeaveMode();
+            }
+          }
+
+          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
 
