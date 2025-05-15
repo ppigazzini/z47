@@ -1772,8 +1772,8 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
 bool_t checkForAndChange(char *displayString, const real_t *valueReal, const real_t *valueRealAbs, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
-    realContext_t ctxtReal27 = ctxtReal39;
-    ctxtReal27.digits = 27;
+    realContext_t ctxtReal32 = ctxtReal39;
+    ctxtReal32.digits = 32;
     realContext_t ctxtReal12 = ctxtReal39;
     ctxtReal12.digits = 12;
 
@@ -1802,7 +1802,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal32);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
       return false;
     }
@@ -1843,7 +1843,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     }
 
   real_t findingIrrationalTolerance1;
-  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence // MUST TRY 12. SEEMS TO WORK ON 12
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal32);         // do relative convergence // MUST TRY 12. SEEMS TO WORK ON 12
 
 
 
