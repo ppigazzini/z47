@@ -2902,7 +2902,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             showBottomLine();
           }
       }
-      else if((restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+      else if((!checkHP && restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
         prefixWidth = 0;
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
                                         #if defined(PC_BUILD)
@@ -4269,6 +4269,22 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_VIEW_REGISTER) {          //X, Y, & Z, not T
             userTI(currentViewRegister, regist, prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_DAY_OF_WEEK) {
+            if(regist == REGISTER_X) {
+              int day;
+              if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
+                day = (int)tmpString[4] - '0';
+              } else {  
+                day = (int)tmpString[0] - '0';
+              }
+              if(day < 1 || day > 7) {
+                day = 0;
+              }
+              strcpy(prefix,"[ISO day] ");
+              strcat(prefix, nameOfWday_en[day].itemName);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
 
 
         //This section to display long integers as reals
@@ -4296,17 +4312,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
 
 
-          if(temporaryInformation == TI_DAY_OF_WEEK) {
-            if(regist == REGISTER_X) {
-              int day = (int)tmpString[0] - '0';
-              if(day < 1 || day > 7) {
-                day = 0;
-              }
-              strcpy(prefix,"[ISO day] ");
-              strcat(prefix, nameOfWday_en[day].itemName);
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
-            }
-          }
+
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;

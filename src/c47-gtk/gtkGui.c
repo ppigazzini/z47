@@ -107,6 +107,21 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   }
 
 
+  // The screen-changed event does not seem to be generated reliably.
+  //static void onScreenChanged(GtkWidget *w, GdkScreen *oldScreen, gpointer data) {
+  //  debugf("Screen changed: force a redraw");
+  //  gtk_widget_queue_draw(w);
+  //}
+
+
+
+  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
+    //debugf("Configure event: force a redraw");
+    gtk_widget_queue_draw(w);
+    return FALSE;
+  }
+
+
 //  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
 //    GtkWidget *w;
 //    w = NULL;
@@ -4517,11 +4532,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       }
 
       gtk_widget_set_name(frmCalc, "mainWindow");
-      gtk_window_set_resizable (GTK_WINDOW(frmCalc), FALSE);
+      gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
       gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
+
+      //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
         gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
@@ -4624,7 +4643,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
