@@ -15,7 +15,7 @@ bool_t isRegInRange(uint16_t regist) {
 
 
 bool_t regInRange(uint16_t regist) {
-  bool_t inRange = isRegInRange((uint)regist);
+  bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
       if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
