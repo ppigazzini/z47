@@ -333,7 +333,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
       bool_t inLocalRegisters =     (param >= FIRST_LOCAL_REGISTER && param < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
       bool_t isMatrix = (inRegisterRange || inReservedRange || inNameRegisterRange || inLocalRegisters) ? (getRegisterDataType(param) == dtReal34Matrix || getRegisterDataType(param) == dtComplex34Matrix) : false;
-      bool_t matrixIndexed = ((matrixIndex != INVALID_VARIABLE) && (ISREGINRANGE(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
+      bool_t matrixIndexed = ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
       
       switch(func) {
         case ITM_RCL_FV      :

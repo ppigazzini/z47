@@ -3,8 +3,19 @@
 
 #include "c47.h"
 
+
+bool_t isRegInRange(uint16_t regist) {
+  return (regist <= LAST_LETTERED_REGISTER) ||
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
+    (regist >= FIRST_LOCAL_REGISTER && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
+    (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE);
+}
+
+
 bool_t regInRange(uint16_t regist) {
-  bool_t inRange = ISREGINRANGE(regist);
+  bool_t inRange = isRegInRange((uint)regist);
   #if defined(PC_BUILD)
     if(!inRange) {
       if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
