@@ -356,6 +356,10 @@ void Sett(int16_t grp) {
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
+    itemToBeAssigned = -MNU_RIBBONS;
+    assignToMyMenu(10);
+    itemToBeAssigned = ITM_DREAL;
+    assignToMyMenu(9);
 
 
     cachedDynamicMenu = 0;
