@@ -1040,6 +1040,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
 //        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+        ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )
   ) {
