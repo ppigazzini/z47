@@ -1902,8 +1902,8 @@
 #define KEY_COMPLEX                 1848
 #define ITM_toPOL2                  1849
 #define ITM_toREC2                  1850
-#define ITM_1851                    1851  //blank
-#define ITM_1852                    1852  //blank
+#define ITM_CARRY                   1851
+#define ITM_OVERFLOW                1852
 #define ITM_ERPN                    1853
 #define ITM_HOMEx3                  1854
 #define ITM_SHTIM                   1855
@@ -1932,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define ITM_1881                    1881
+#define MNU_BITSET                  1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884
@@ -1956,7 +1956,7 @@
 #define ITM_GLUStoFZUS              1902
 #define ITM_FZUStoGLUS              1903
 #define ITM_N_KEY_USER              1904
-#define ITM_1905                    1905
+#define ITM_LASTERR                 1905
 #define ITM_N_KEY_SIGMA             1906
 #define MNU_PLOT_STAT               1907
 #define ITM_N_KEY_FSH               1908
@@ -2155,9 +2155,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_RIBBON_C47              2104
-#define ITM_RIBBON_R47              2105
-#define ITM_RIBBON_SAV              2106
+#define ITM_2104                    2104
+#define ITM_2105                    2105
+#define ITM_2106                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
@@ -2214,8 +2214,8 @@
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
 #define ITM_PPLUS                   2162
-#define ITM_RIBBON_FIN              2163
-#define ITM_RIBBON_CPX              2164
+#define ITM_2163                    2163
+#define ITM_2164                    2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2329,7 +2329,7 @@
 #define SFL_MNUp1                   2273 // The SFL item names are not used
 #define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
-#define SFL_2276                    2276 // The SFL item names are not used
+#define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_2277                    2277 // The SFL item names are not used
 #define SFL_2278                    2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
@@ -2578,7 +2578,27 @@
 #define ITM_GET_WOY                 2504
 #define ITM_WOY                     2505
 
-#define LAST_ITEM                   2506
+
+#define ITM_RIBBON_CPX              2506
+#define ITM_RIBBON_FIN              2507
+#define ITM_RIBBON_SAV              2508
+#define ITM_RIBBON_C47              2509
+#define ITM_RIBBON_C47PL            2510
+#define ITM_RIBBON_R47              2511
+#define ITM_RIBBON_R47PL            2512
+#define ITM_RIBBON_ENG              2513
+#define ITM_2514                    2514
+#define ITM_2515                    2515
+#define ITM_2516                    2516
+#define ITM_2517                    2517
+#define ITM_2518                    2518
+#define ITM_2519                    2519
+#define ITM_2520                    2520
+#define ITM_2521                    2521
+#define ITM_2522                    2522
+#define ITM_2523                    2523
+
+#define LAST_ITEM                   2524
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -4,6 +4,19 @@
 #include "c47.h"
 
 /*
+Math changes:
+
+1. addon.c: Added fnArg_all which uses fnArg, but gives a result of 0 for a real
+   and longint input. The testSuite is not ifluenced. Not needed to modify |x|,
+   as it already works for a real and longint.
+   (testSuite not in use for fnArg, therefore also not added)
+
+2. bufferize.c: closenim: changed the default for (0 CC EXIT to 0) instead of i.
+   (testSuite not ifluenced).
+
+Todo
+
+
 All the below: because both Last x and savestack does not work due to multiple steps.
 
   5. Added Star > Delta. Change and put in separate c file, and sort out savestack.
@@ -12,19 +25,10 @@ All the below: because both Last x and savestack does not work due to multiple s
   8. ABC>SYM
   9. e^theta. redo in math file,
   10. three phase Ohms Law: 17,18,19
-  11. Check for savestack in jm.c
+
+
+ Check for savestack in jm.c
 */
-
-
-void fneRPN(uint16_t state) {
-  if(state == 1) {
-    setSystemFlag(FLAG_ERPN);
-  }
-  else if(state == 0) {
-    clearSystemFlag(FLAG_ERPN);
-  }
-}
-
 
 
 #ifdef DMCP_BUILD
@@ -1666,15 +1670,12 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
 int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as this needs to be re-calculated in the main algo
   /*
-  ** Adapted by Jaco from:
-  **
+  ** Adapted from:
   ** https://www.ics.uci.edu/~eppstein/numth/frap.c
   **
   ** find rational approximation to given real number
   ** David Eppstein / UC Irvine / 8 Aug 1993
   ** With corrections from Arno Formella, May 2008
-  ** Initial addaptation by Jaco Mostert, 2020
-  ** Major adaptations from Jaco Mostert, 2025
   **
   ** based on the theory of continued fractions
   ** if x = a1 + 1/(a2 + 1/(a3 + 1/(a4 + ...)))
@@ -1686,9 +1687,6 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   **  ( 1  0 ) ( 1  0 ) ( 1  0 )
   ** Instead of keeping the sequence of continued fraction terms,
   ** we just keep the last partial product of these matrices.
-  **
-  ** JM addition: The fraction can be obtained from the other matrix pair;
-  ** Both fractions are recreated and the one with the loweset error used.
   */
 
   realContext_t ctxtReal_denom_finder = ctxtReal39;
@@ -1719,7 +1717,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   m[0][1] = m[1][0] = 0;
 
   /* loop finding terms until denom gets too big */
-  while(m[1][0] *  ( ai =  realToInt32C47(&xx) ) + m[1][1] <= maxden) {
+  while(m[1][0] *  ( ai = realToInt32C47(&xx) ) + m[1][1] <= maxden) {
     //printf("  ai = %12i  condition:%8i<%6i ",ai, m[1][0] * ai + m[1][1], maxden ); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
@@ -1882,6 +1880,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
 #endif //IRFRAC_ENGINE
 
+
     //Create a new constant comprising the constant divided by the whole denominator
     int32ToReal(smallestDenom, &smallestDenomR);
     realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
@@ -1961,7 +1960,6 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 // DEBUG CODE
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);
-
         char useMixedNumbersSep[3];
         if(cStr[0]==0) {                                                                                          // no constant
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
@@ -2151,12 +2149,12 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #endif // !TESTSUITE_BUILD
 
 
-void fnRESET_MyM(uint8_t param) {
+void fnRESET_MyM(uint16_t param) {
   //Pre-assign the MyMenu                   //JM
   #if !defined(TESTSUITE_BUILD)
     BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == USER_MSAV) {
+      if(param == ITM_RIBBON_SAV) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_SYSTEM2; break;
           case 2: itemToBeAssigned = ITM_ACTUSB;  break;
@@ -2167,7 +2165,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MFIN) {
+      else if(param == ITM_RIBBON_FIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
@@ -2178,7 +2176,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MCPX) {
+      else if(param == ITM_RIBBON_CPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
@@ -2189,7 +2187,34 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MC47) {
+
+      //C47 et al
+          else if(!isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = -MNU_CPX;     break;
+              case 2: itemToBeAssigned = -MNU_MATX;    break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = ITM_op_j;     break;
+              case 5: itemToBeAssigned = ITM_EXP;      break;
+              case 6: itemToBeAssigned = -MNU_TRG_C47; break;
+              default:break;
+            }
+          }
+      //R47
+          else if(isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = ITM_op_j;     break;
+              case 2: itemToBeAssigned = -MNU_CPX;     break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = -MNU_MATX;    break;
+              case 5: itemToBeAssigned = -MNU_TRG_R47; break;
+              case 6: itemToBeAssigned = ITM_EXP;      break;
+              default:break;
+            }
+          }
+      //END CONDITIONAL
+
+      else if(param == ITM_RIBBON_C47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_YX;       break;
@@ -2200,7 +2225,18 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MR47) {
+      else if(param == ITM_RIBBON_C47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_DRG;      break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_FF;       break;
+          case 5: itemToBeAssigned = ITM_Rup;      break;
+          case 6: itemToBeAssigned = ITM_XFACT;    break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_op_j;     break;
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
@@ -2208,6 +2244,17 @@ void fnRESET_MyM(uint8_t param) {
           case 4: itemToBeAssigned = ITM_XTHROOT;  break;
           case 5: itemToBeAssigned = ITM_10x;      break;
           case 6: itemToBeAssigned = ITM_EXP;      break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_TIMER;    break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_FF;       break;
+          case 5: itemToBeAssigned = -MNU_LOOP;    break;
+          case 6: itemToBeAssigned = -MNU_TEST;    break;
           default:break;
         }
       }
@@ -2558,12 +2605,6 @@ int16_t mm(int16_t id) {
 
 void fnSetBCD (uint16_t bcd) {
   switch(bcd) {
-    case JC_BCD:
-      bcdDisplay = !bcdDisplay;
-      if(lastIntegerBase == 0) {
-        fnChangeBaseJM(10);
-      }
-      break;
     case BCD9c:
     case BCD10c:
     case BCDu:

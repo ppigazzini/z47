@@ -414,6 +414,7 @@
   extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
+  extern uint8_t                previousErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
@@ -473,7 +474,6 @@
   extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
-  extern bool_t                 bcdDisplay;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;

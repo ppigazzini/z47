@@ -167,6 +167,7 @@ uint8_t                nimNumberPart;
 uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
+uint8_t                previousErrorCode;
 uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
@@ -228,7 +229,6 @@ bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f a
 bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
-bool_t                 bcdDisplay = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;
