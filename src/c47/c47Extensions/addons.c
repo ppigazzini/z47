@@ -1749,8 +1749,8 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   }
 
   //Pick the correct num/denom from the matrix
-  realContext_t ctxtReal_interger_conversion_find_lowest_err_fraction = ctxtReal39;
-  ctxtReal_interger_conversion_find_lowest_err_fraction.digits = K_ctxtReal_integer_conversion_find_lowest_err_fraction;
+  realContext_t ctxtReal_integer_conversion_find_lowest_err_fraction = ctxtReal39;
+  ctxtReal_integer_conversion_find_lowest_err_fraction.digits = K_ctxtReal_integer_conversion_find_lowest_err_fraction;
   real_t num1, den1, num2, den2;
   real_t frac1, frac2;
   real_t err1, err2;
@@ -1765,16 +1765,16 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   //decNumberFromInt32(&den2, m[1][1]);
 
   // Compute fractions num/den: frac = num / den
-  realDivide(&num1, &den1, &frac1, &ctxtReal_interger_conversion_find_lowest_err_fraction);
-  realDivide(&num2, &den2, &frac2, &ctxtReal_interger_conversion_find_lowest_err_fraction);
+  realDivide(&num1, &den1, &frac1, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  realDivide(&num2, &den2, &frac2, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   // Compute errors: err = |value - fraction|
-  realSubtract(val, &frac1, &err1, &ctxtReal_interger_conversion_find_lowest_err_fraction);
+  realSubtract(val, &frac1, &err1, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   realCopyAbs(&err1, &err1);
-  realSubtract(val, &frac2, &err2, &ctxtReal_interger_conversion_find_lowest_err_fraction);
+  realSubtract(val, &frac2, &err2, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   realCopyAbs(&err2, &err2);
   real_t cmpResult;           // to store comparison result
   // Compare errors: if err2 < err1, update m accordingly
-  realCompare(&err2, &err1, &cmpResult, &ctxtReal_interger_conversion_find_lowest_err_fraction);
+  realCompare(&err2, &err1, &cmpResult, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   // cmpResult will hold -1 if err2 < err1, 0 if equal, 1 if err2 > err1
   // Check if err2 < err1 and swap output if needed
   // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
