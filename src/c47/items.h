@@ -2598,7 +2598,11 @@
 #define ITM_2522                    2522
 #define ITM_2523                    2523
 
-#define LAST_ITEM                   2524
+#define ITM_REALMATQ                2524
+#define ITM_COMPLEXMATQ             2525
+#define ITM_CONFIGQ                 2526
+
+#define LAST_ITEM                   2527
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

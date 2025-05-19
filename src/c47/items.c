@@ -3927,6 +3927,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2522 */  { itemToBeCoded,                NOPARAM,                     "M.2522",                                      "M.2522",                                      (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2523 */  { itemToBeCoded,                NOPARAM,                     "M.2523",                                      "M.2523",                                      (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
-/* 2524 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "mat?",                             STD_REAL_R "mat?",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "mat?",                          STD_COMPLEX_C "mat?",                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2526 */  { fnCheckType,                  dtConfig,                    "config?",                                     "config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+
+/* 2527 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };

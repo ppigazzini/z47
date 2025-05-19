@@ -11,12 +11,6 @@ void fnCheckType(uint16_t type) {
   SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == type);
 }
 
-TO_QSPI void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX ==> 1               2               3               4                   5                  6                7               8               9               10
-//          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
-            checkValueLonI, checkValueReal, checkValueCplx, checkValueDT,       checkValueDT,      checkValueError, checkValueRema, checkValueCxma, checkValueDT,  checkValueError
-};
-
 
 void checkValueError(uint16_t unusedButMandatoryParameter) {
   //displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -44,11 +38,6 @@ static void checkReal(uint16_t mode) {
   }
 }
 
-
-
-void fnCheckValue(uint16_t mode) {
-  CheckValue[getRegisterDataType(REGISTER_X)](mode);
-}
 
 
 
@@ -118,7 +107,7 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void checkValueDT(uint16_t mode) {
+static void checkValueDT(uint16_t mode) {
   if(   (mode == CHECK_VALUE_DATE && getRegisterDataType(REGISTER_X) == dtDate)
      || (mode == CHECK_VALUE_TIME && getRegisterDataType(REGISTER_X) == dtTime)
      || ((mode == CHECK_VALUE_SINT || mode == CHECK_VALUE_NUMBER) && getRegisterDataType(REGISTER_X) == dtShortInteger)) {
@@ -129,7 +118,7 @@ void checkValueDT(uint16_t mode) {
 }
 
 
-void checkValueLonI(uint16_t mode) {
+static void checkValueLonI(uint16_t mode) {
   longInteger_t val;
 
   if(mode == CHECK_VALUE_POSITIVE_ZERO || mode == CHECK_VALUE_NEGATIVE_ZERO) { // unlikely true
@@ -152,7 +141,7 @@ void checkValueLonI(uint16_t mode) {
 
 
 
-void checkValueRema(uint16_t mode) {
+static void checkValueRema(uint16_t mode) {
   const int32_t elements = (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
   switch(mode) {
     case CHECK_VALUE_MATRIX: {
@@ -201,7 +190,7 @@ void checkValueRema(uint16_t mode) {
 
 
 
-void checkValueCxma(uint16_t mode) {
+static void checkValueCxma(uint16_t mode) {
   const int32_t elements = (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
   switch(mode) {
     case CHECK_VALUE_MATRIX: {
@@ -264,7 +253,7 @@ void checkValueCxma(uint16_t mode) {
 
 
 
-void checkValueShoI(uint16_t mode) {
+static void checkValueShoI(uint16_t mode) {
   if(mode == CHECK_VALUE_POSITIVE_ZERO || mode == CHECK_VALUE_NEGATIVE_ZERO) {
     if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
       if(mode == CHECK_VALUE_POSITIVE_ZERO && (*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & shortIntegerMask) == 0) {
@@ -284,7 +273,7 @@ void checkValueShoI(uint16_t mode) {
 
 
 
-void checkValueReal(uint16_t mode) {
+static void checkValueReal(uint16_t mode) {
   longInteger_t val;
 
   switch(mode) {
@@ -341,7 +330,7 @@ void checkValueReal(uint16_t mode) {
 
 
 
-void checkValueCplx(uint16_t mode) {
+static void checkValueCplx(uint16_t mode) {
   switch(mode) {
     case CHECK_VALUE_COMPLEX: {
       SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
@@ -372,3 +361,14 @@ void checkValueCplx(uint16_t mode) {
     }
   }
 }
+
+TO_QSPI static void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
+// regX ==> 1               2               3               4                   5                  6                7               8               9               10
+//          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
+            checkValueLonI, checkValueReal, checkValueCplx, checkValueDT,       checkValueDT,      checkValueError, checkValueRema, checkValueCxma, checkValueShoI,  checkValueError
+};
+
+void fnCheckValue(uint16_t mode) {
+  CheckValue[getRegisterDataType(REGISTER_X)](mode);
+}
+

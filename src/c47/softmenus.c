@@ -325,7 +325,11 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
 
                                              ITM_NUMBRQ,                    ITM_LINTQ,                  ITM_CPXQ,                 ITM_REALQ,             ITM_DATEQ,                   ITM_TIMEQ, 
                                              ITM_STRINGQ,                   ITM_SINTQ,                  ITM_MATRIXQ,              ITM_ANGLEQ,            ITM_LEAPQ,                   ITM_NULL,
-                                             ITM_FPQ,                       ITM_IPQ,                    ITM_M_SQRQ,               ITM_SPECQ,             ITM_NANQ,                    ITM_INFQ                       };
+                                             ITM_FPQ,                       ITM_IPQ,                    ITM_M_SQRQ,               ITM_SPECQ,             ITM_NANQ,                    ITM_INFQ,
+
+                                             ITM_REALMATQ,                  ITM_COMPLEXMATQ,            ITM_CONFIGQ,              ITM_NULL,             ITM_NULL,                     ITM_NULL, 
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,             ITM_NULL,                     ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,             ITM_NULL,                     ITM_NULL                       };
 
 TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_PRIME,                  ITM_FACTORS,              ITM_FIB,               ITM_AGM,                     ITM_LINPOL,
                                              ITM_zetaX,                     ITM_EULPHI,                 ITM_PFACTORSMULT,         ITM_EE_EXP_TH,         ITM_M1X,                     ITM_XFACT,
