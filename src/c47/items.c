@@ -331,10 +331,12 @@ bool_t itemNotAvail(int16_t itemNr) {
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
                        (FIRST_SPARE_REGISTER <= param && param <= LAST_SPARE_REGISTER));
-      bool_t inReservedRange =  (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
+      bool_t inReservedRange =      (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
       bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
-      bool_t isMatrix = inRegisterRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
-      bool_t matrixIndexed = false; // !(matrixIndex == INVALID_VARIABLE || !regInRange(matrixIndex));
+      bool_t inLocalRegisters =     (param >= FIRST_LOCAL_REGISTER && param < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
+      bool_t isMatrix = (inRegisterRange || inReservedRange || inNameRegisterRange || inLocalRegisters) ? (getRegisterDataType(param) == dtReal34Matrix || getRegisterDataType(param) == dtComplex34Matrix) : false;
+      bool_t matrixIndexed = ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
+      
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
@@ -347,7 +349,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCL         : temporaryInformation = (param == REGISTER_I && matrixIndexed) ? TI_I : \
                                (param == REGISTER_J) && matrixIndexed ? TI_J : \
                                (isMatrix) ? TI_STORCL : \
-                               (inReservedRange || inRegisterRange || inNameRegisterRange) ? TI_STORCL : TI_NO_INFO ; break;
+                               (inReservedRange || inRegisterRange || inNameRegisterRange || inLocalRegisters) ? TI_STORCL : TI_NO_INFO ; break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :

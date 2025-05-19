@@ -3,11 +3,19 @@
 
 #include "c47.h"
 
-bool_t regInRange(uint16_t regist) {
-  bool_t inRange = (
-    (regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
+
+bool_t isRegInRange(uint16_t regist) {
+  return (regist <= LAST_LETTERED_REGISTER) ||
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
+    (regist >= FIRST_LOCAL_REGISTER && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
-    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE));
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE);
+}
+
+
+bool_t regInRange(uint16_t regist) {
+  bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
       if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
@@ -22,6 +30,7 @@ bool_t regInRange(uint16_t regist) {
       }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "register .%04d", regist);
       }
       moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
     }

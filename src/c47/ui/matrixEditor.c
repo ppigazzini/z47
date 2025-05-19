@@ -1149,10 +1149,12 @@ int16_t colX = 0;
 
   }
 
-  if(!toDisplay) {
-    //printf("sss:%s\n", errorMessage);
-    showString(errorMessage, font, X_POS, Y_POS - (maxRows -1) * fontHeight, vm, true, false);
-  }
+// I suspect strongly this is test code previously not removed. Keeping in here until we are sure. JM 2025-05-16
+// It interferes by printing vectors in X while the vector is locaed in say T
+// why do we have this ????  if(!toDisplay) {
+// why do we have this ????    //printf("sss:%s\n", errorMessage);
+// why do we have this ????    showString(errorMessage, font, X_POS, Y_POS - (maxRows -1) * fontHeight, vm, true, false);
+// why do we have this ????  }
 
   displayFormat = tmpDisplayFormat;
   displayFormatDigits = tmpDisplayFormatDigits;
