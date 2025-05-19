@@ -7,6 +7,10 @@
 
 #include "c47.h"
 
+void fnCheckType(uint16_t type) {
+  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == type);
+}
+
 TO_QSPI void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
 // regX ==> 1               2               3               4                   5                  6                7               8               9               10
 //          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
@@ -69,7 +73,7 @@ void fnCheckValue(uint16_t mode) {
 // Grad        0.4
 // Radian      0.5
 
-void fnCheckType(uint16_t unusedButMandatoryParameter) {
+void fnGetType(uint16_t unusedButMandatoryParameter) {
   int dtp = getRegisterDataType(REGISTER_X);
   int dam = getRegisterAngularMode(REGISTER_X);
   if(dtp == dtComplex34Matrix && !(dam & 0x10)) {
