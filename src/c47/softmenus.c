@@ -428,8 +428,8 @@ TO_QSPI const int16_t menu_ConvM[]        = {
                                                     ITM_JINtoKG,              ITM_KGtoJIN,              ITM_LIANGtoKG,            ITM_KGtoLIANG,            ITM_NULL,                 ITM_NULL,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_Misc[]        = {
-                                                    ITM_YEARtoS,              ITM_StoYEAR,              ITM_CtoF,                 ITM_FtoC,                 ITM_FRtoDB,               ITM_DBtoFR,
-                                                    ITM_HMStoHR,              ITM_HRtoHMS,              ITM_NMtoLBFFT,            ITM_LBFFTtoNM,            ITM_PRtoDB,               ITM_DBtoPR,
+                                                    ITM_HMStoHR,              ITM_HRtoHMS,              ITM_CtoF,                 ITM_FtoC,                 ITM_FRtoDB,               ITM_DBtoFR,
+                                                    ITM_YEARtoS,              ITM_StoYEAR,              ITM_NMtoLBFFT,            ITM_LBFFTtoNM,            ITM_PRtoDB,               ITM_DBtoPR,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvP[]        = {
                                                     ITM_HPEtoW,               ITM_WtoHPE,               ITM_HPUKtoW,              ITM_WtoHPUK,              ITM_HPMtoW,               ITM_WtoHPM,
