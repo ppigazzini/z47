@@ -2409,6 +2409,44 @@ void createSubstrings(uint8_t number) {
   }
 
 
+  void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X) {
+      real_t t;
+      getRegisterAsRealQuiet(REGISTER_X, &t);
+      int32_t ii = realToInt32C47(&t);
+      realMultiply(&t, const_100, &t, &ctxtReal39);
+      int32_t jj = realToInt32C47(&t) - 100*ii;
+      char sss[30];
+      sss[0]=0;
+      switch (ii) {
+        case 0 : strcpy(sss,"LongInteger"); break;
+        case 1 : strcpy(sss,"Real"); break;
+        case 2 : strcpy(sss,"Complex"); break;
+        case 3 : strcpy(sss,"Time"); break;
+        case 4 : strcpy(sss,"Date"); break;
+        case 5 : strcpy(sss,"String"); break;
+        case 6 : strcpy(sss,"RealMatrix"); break;
+        case 7 : strcpy(sss,"ComplexMatrix");  break;
+        case 8 : strcpy(sss,"ShortInteger"); break;
+        case 9 : strcpy(sss,"Config"); break;
+        default: break;
+      }
+
+      switch (jj) {
+        case 10 : strcat(sss,", MultPi"); break;
+        case 20 : strcat(sss,", DMS"); break;
+        case 30 : strcat(sss,", Degree"); break;
+        case 40 : strcat(sss,", Grad"); break;
+        case 50 : strcat(sss,", Radian"); break;
+        default:break;
+      }
+      sprintf(prefix, "%s", sss);
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    }
+  }
+
+
+
 static bool_t displayTrueFalse(calcRegister_t regist) {
       char sss[10];
       #define clearOffset -2
@@ -3945,6 +3983,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_REGTYPE) {
+            _displayRegType(regist, prefix, &prefixWidth);
+          }
 
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
@@ -4256,6 +4297,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_REGTYPE) {
+            _displayRegType(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_ABC || temporaryInformation == TI_ABBCCA || temporaryInformation == TI_012) {                             //JM EE \/
             elecTI(regist, prefix, &prefixWidth);

@@ -692,6 +692,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnCheckMatrixSquare         (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsNotReal            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsNotImag            (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -1389,7 +1391,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*   22 */  { fnCheckInteger,               CHECK_INTEGER_EVEN,          "EVEN?",                                       "EVEN?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   23 */  { fnCheckInteger,               CHECK_INTEGER_ODD,           "ODD?",                                        "ODD?",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   24 */  { fnCheckInteger,               CHECK_INTEGER_FP,            "FP?",                                         "FP?",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/*   25 */  { fnCheckInteger,               CHECK_INTEGER,               "IP?",                                         "IP?",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/*   25 */  { fnCheckInteger,               CHECK_INTEGER,               "INT?",                                        "INT?",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   26 */  { fnCheckType,                  dtComplex34,                 STD_COMPLEX_C "?",                             STD_COMPLEX_C "?",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   27 */  { fnCheckMatrix,                NOPARAM,                     "MATR?",                                       "MATR?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*   28 */  { fnCheckNaN,                   NOPARAM,                     "NaN?",                                        "NaN?",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3937,12 +3939,14 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2522 */  { itemToBeCoded,                NOPARAM,                     "M.2522",                                      "M.2522",                                      (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2523 */  { itemToBeCoded,                NOPARAM,                     "M.2523",                                      "M.2523",                                      (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
-/* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "mat?",                             STD_REAL_R "mat?",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "mat?",                          STD_COMPLEX_C "mat?",                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "matx?",                            STD_REAL_R "matx?",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "matx?",                         STD_COMPLEX_C "matx?",                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2526 */  { fnCheckType,                  dtConfig,                    "Config?",                                     "Config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2527 */  { fnCheckIsNotReal,             NOPARAM,                     "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2528 */  { fnCheckIsNotImag,             NOPARAM,                     "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2529 */  { fnCheckIsVect2d,              NOPARAM,                     "VECT2D?",                                     "VECT2D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2530 */  { fnCheckIsVect3d,              NOPARAM,                     "VECT3D?",                                     "VECT3D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
-/* 2527 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2531 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };

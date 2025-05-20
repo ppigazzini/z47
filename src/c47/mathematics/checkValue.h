@@ -20,4 +20,7 @@
   void fnCheckMatrixSquare  (uint16_t unusedButMandatoryParameter);
   void fnCheckIsNotReal     (uint16_t unusedButMandatoryParameter);
   void fnCheckIsNotImag     (uint16_t unusedButMandatoryParameter);
+  void fnCheckIsVect2d      (uint16_t unusedButMandatoryParameter);
+  void fnCheckIsVect3d      (uint16_t unusedButMandatoryParameter);
+
 #endif // !CHECKVALUE_H

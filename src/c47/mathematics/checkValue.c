@@ -44,17 +44,20 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
                     && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
 }
 
-
 void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
-
-  SET_TI_TRUE_FALSE(t == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
 }
 
 void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
+  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+}
 
-  SET_TI_TRUE_FALSE(t == dtComplex34 && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
+  SET_TI_TRUE_FALSE(isRegisterMatrix2dVector(REGISTER_X));
+}
+
+void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
+  SET_TI_TRUE_FALSE(isRegisterMatrix3dVector(REGISTER_X));
 }
 
 
@@ -253,4 +256,5 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     }
     default:; //impossible to not be one of the defines
   }
+  temporaryInformation = TI_REGTYPE;
 }
