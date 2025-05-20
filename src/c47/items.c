@@ -690,6 +690,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnCheckMinusZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrix               (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrixSquare         (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsNotReal            (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsNotImag            (uint16_t unusedButMandatoryParameter) {}
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -3937,7 +3939,9 @@ TO_QSPI const item_t indexOfItems[] = {
 
 /* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "mat?",                             STD_REAL_R "mat?",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "mat?",                          STD_COMPLEX_C "mat?",                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2526 */  { fnCheckType,                  dtConfig,                    "config?",                                     "config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2526 */  { fnCheckType,                  dtConfig,                    "Config?",                                     "Config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2527 */  { fnCheckIsNotReal,             NOPARAM,                     "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2528 */  { fnCheckIsNotImag,             NOPARAM,                     "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
 /* 2527 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 

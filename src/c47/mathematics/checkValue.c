@@ -44,11 +44,26 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
                     && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
 }
 
+
+void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  SET_TI_TRUE_FALSE(t == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+}
+
+void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  SET_TI_TRUE_FALSE(t == dtComplex34 && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+}
+
+
 static uint32_t matrixXNumElem(void) {
   return REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (uint32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
 }
 
-static void realCheck(uint32_t (*checkFn)(const real34_t *)) {
+static void realCheck(int (*checkFn)(const real34_t *)) {
+
   int check = 0;
   uint32_t elements, i;
 
@@ -81,25 +96,32 @@ static void realCheck(uint32_t (*checkFn)(const real34_t *)) {
       check = 1;
       break;
   }
-  SET_TI_TRUE_FALSE(check ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(check);
 }
 
-static uint32_t checkRealSpecial(const real34_t *r) {
-  return real34IsSpecial(r);
+static int wrapperDecQuadIsNaN(const real34_t *r) {
+    return (int)decQuadIsNaN(r);
 }
 
-void fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
-  realCheck(&checkRealSpecial);
+static int wrapperDecQuadIsInfinite(const real34_t *r) {
+    return (int)decQuadIsInfinite(r);
+}
+
+static int wrapperCheckRealSpecial(const real34_t *r) {
+    return wrapperDecQuadIsNaN(r) || wrapperDecQuadIsInfinite(r);
 }
 
 void fnCheckNaN(uint16_t unusedButMandatoryParameter) {
-  realCheck(&decQuadIsNaN);
+    realCheck(wrapperDecQuadIsNaN);
 }
 
 void fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
-  realCheck(&decQuadIsInfinite);
+    realCheck(wrapperDecQuadIsInfinite);
 }
 
+void fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
+    realCheck(wrapperCheckRealSpecial);
+}
 
 static void zeroCheck(int neg) {
   int check = 0;
@@ -158,7 +180,7 @@ static void zeroCheck(int neg) {
       check = 1;
       break;
   }
-  SET_TI_TRUE_FALSE(check ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(check);
 }
 
 void fnCheckPlusZero(uint16_t unusedButMandatoryParameter) {

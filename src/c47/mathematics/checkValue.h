@@ -18,4 +18,6 @@
   void fnCheckMinusZero     (uint16_t unusedButMandatoryParameter);
   void fnCheckMatrix        (uint16_t unusedButMandatoryParameter);
   void fnCheckMatrixSquare  (uint16_t unusedButMandatoryParameter);
+  void fnCheckIsNotReal     (uint16_t unusedButMandatoryParameter);
+  void fnCheckIsNotImag     (uint16_t unusedButMandatoryParameter);
 #endif // !CHECKVALUE_H
