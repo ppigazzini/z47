@@ -7,40 +7,167 @@
 
 #include "c47.h"
 
+static bool_t checkXisType(uint16_t type) {
+  return getRegisterDataType(REGISTER_X) == type;
+}
+
 void fnCheckType(uint16_t type) {
-  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == type);
+  SET_TI_TRUE_FALSE(checkXisType(type));
 }
 
+void fnCheckReal(uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
 
-void checkValueError(uint16_t unusedButMandatoryParameter) {
-  //displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  //#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  //  sprintf(errorMessage, "cannot do this for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-  //  moreInfoOnError("In function fnCheckValue:", errorMessage, NULL, NULL);
-  //#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  temporaryInformation = TI_FALSE;
+  SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
 }
 
-static void checkReal(uint16_t mode) {
-  switch(mode) {
-    case CHECK_VALUE_COMPLEX:
-    case CHECK_VALUE_MATRIX: {
-      temporaryInformation = TI_FALSE;
-      return;
-    }
-    case CHECK_VALUE_REAL: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-    default: {
-      checkValueError(mode);
-    }
+void fnCheckNumber(uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
+}
+
+void fnCheckAngle(uint16_t unusedButMandatoryParameter) {
+  SET_TI_TRUE_FALSE(checkXisType(dtReal34) && getRegisterAngularMode(REGISTER_X) != amNone);
+}
+
+void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  SET_TI_TRUE_FALSE(t == dtReal34Matrix || t == dtReal34Matrix);
+}
+
+void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  SET_TI_TRUE_FALSE((t == dtReal34Matrix || t == dtReal34Matrix)
+                    && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+}
+
+static uint32_t matrixXNumElem(void) {
+  return REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (uint32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+}
+
+static void realCheck(uint32_t (*checkFn)(const real34_t *)) {
+  int check = 0;
+  uint32_t elements, i;
+
+  switch (getRegisterDataType(REGISTER_X)) {
+    default:
+      break;
+    case dtComplex34:
+      check = checkFn(REGISTER_IMAG34_DATA(REGISTER_X));
+      /* FALL THROUGH */
+    case dtTime:
+    case dtDate:
+    case dtReal34:
+      check |= checkFn(REGISTER_REAL34_DATA(REGISTER_X));
+      break;
+
+    case dtReal34Matrix:
+      elements = matrixXNumElem();
+      for(i = 0; i < elements; ++i)
+        if (!checkFn(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i))
+          break;
+      check = 1;
+      break;
+
+    case dtComplex34Matrix:
+      elements = matrixXNumElem();
+      for(i = 0; i < elements; ++i)
+        if (!checkFn(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))
+            || !checkFn(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)))
+          break;
+      check = 1;
+      break;
   }
+  SET_TI_TRUE_FALSE(check ? TI_TRUE : TI_FALSE);
+}
+
+static uint32_t checkRealSpecial(const real34_t *r) {
+  return real34IsSpecial(r);
+}
+
+void fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
+  realCheck(&checkRealSpecial);
+}
+
+void fnCheckNaN(uint16_t unusedButMandatoryParameter) {
+  realCheck(&decQuadIsNaN);
+}
+
+void fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
+  realCheck(&decQuadIsInfinite);
 }
 
 
+static void zeroCheck(int neg) {
+  int check = 0;
+  uint32_t elements, i;
 
+  switch (getRegisterDataType(REGISTER_X)) {
+    default:
+      break;
+    case dtLongInteger:
+      if (!neg) {
+        longInteger_t val;
 
+        convertLongIntegerRegisterToLongInteger(REGISTER_X, val);
+        check = longIntegerIsZero(val);
+        longIntegerFree(val);
+      }
+      break;
+
+    case dtShortInteger: {
+      uint64_t u64;
+      int16_t sign16;
+
+      convertShortIntegerRegisterToUInt64(REGISTER_X, &sign16, &u64);
+      check = u64 == 0 && sign16 == neg;
+      break;
+    }
+
+    case dtComplex34:
+      check = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) &&
+              (real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) == neg || real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X)) == neg);
+      break;
+
+    case dtTime:
+    case dtDate:
+    case dtReal34:
+      check = real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) == neg && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X));
+      break;
+
+    case dtReal34Matrix:
+      elements = matrixXNumElem();
+      for(i = 0; i < elements; ++i)
+        if (!real34IsZero(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i) || real34IsNegative(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i) != neg)
+          break;
+      check = 1;
+      break;
+
+    case dtComplex34Matrix:
+      elements = matrixXNumElem();
+      for(i = 0; i < elements; ++i) {
+        if (!real34IsZero(VARIABLE_REAL34_DATA(REGISTER_X)) || !real34IsZero(VARIABLE_IMAG34_DATA(REGISTER_X)))
+          break;
+        if (real34IsNegative(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) != neg
+            && real34IsNegative(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) != neg)
+          break;
+      }
+      check = 1;
+      break;
+  }
+  SET_TI_TRUE_FALSE(check ? TI_TRUE : TI_FALSE);
+}
+
+void fnCheckPlusZero(uint16_t unusedButMandatoryParameter) {
+  zeroCheck(0);
+}
+
+void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
+  zeroCheck(1);
+}
 
 // LongInteger       0
 // Real              1.0 (1.0 for no angle; 1.1-1.5 for angle)
@@ -105,270 +232,3 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     default:; //impossible to not be one of the defines
   }
 }
-
-
-static void checkValueDT(uint16_t mode) {
-  if(   (mode == CHECK_VALUE_DATE && getRegisterDataType(REGISTER_X) == dtDate)
-     || (mode == CHECK_VALUE_TIME && getRegisterDataType(REGISTER_X) == dtTime)
-     || ((mode == CHECK_VALUE_SINT || mode == CHECK_VALUE_NUMBER) && getRegisterDataType(REGISTER_X) == dtShortInteger)) {
-    temporaryInformation = TI_TRUE;
-    return;
-  }
-  temporaryInformation = TI_FALSE;
-}
-
-
-static void checkValueLonI(uint16_t mode) {
-  longInteger_t val;
-
-  if(mode == CHECK_VALUE_POSITIVE_ZERO || mode == CHECK_VALUE_NEGATIVE_ZERO) { // unlikely true
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, val);
-    if(mode == CHECK_VALUE_POSITIVE_ZERO) {
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsPositive(val));
-    }
-    else { // mode == CHECK_VALUE_NEGATIVE_ZERO
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsNegative(val));
-    }
-    longIntegerFree(val);
-    return;
-  }
-  if(mode == CHECK_VALUE_LINT || mode == CHECK_VALUE_NUMBER) {
-    temporaryInformation = TI_TRUE;
-    return;
-  }
-  checkReal(mode);
-}
-
-
-
-static void checkValueRema(uint16_t mode) {
-  const int32_t elements = (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-  switch(mode) {
-    case CHECK_VALUE_MATRIX: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-    case CHECK_VALUE_MATRIX_SQUARE: {
-      SET_TI_TRUE_FALSE(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
-      return;
-    }
-    case CHECK_VALUE_COMPLEX: {
-      temporaryInformation = TI_FALSE;
-      return;
-    }
-    case CHECK_VALUE_REAL: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-    case CHECK_VALUE_SPECIAL:  { // true if any elements is special
-      temporaryInformation = TI_FALSE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(real34IsSpecial(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i)) {
-            temporaryInformation = TI_TRUE;
-          }
-        }
-      }
-      return;
-    }
-    case CHECK_VALUE_NAN: {
-      temporaryInformation = TI_FALSE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(real34IsNaN(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i)) {
-            temporaryInformation = TI_TRUE;
-          }
-        }
-      }
-      return;
-    }
-    default: {
-      checkValueError(mode);
-    }
-  }
-}
-
-
-
-static void checkValueCxma(uint16_t mode) {
-  const int32_t elements = (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (int32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-  switch(mode) {
-    case CHECK_VALUE_MATRIX: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-    case CHECK_VALUE_MATRIX_SQUARE: {
-      SET_TI_TRUE_FALSE(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
-      return;
-    }
-    case CHECK_VALUE_COMPLEX: {
-      temporaryInformation = TI_FALSE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(!real34IsZero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))) {
-            temporaryInformation = TI_TRUE;
-          }
-        }
-      }
-      return;
-    }
-    case CHECK_VALUE_REAL: { // true if all elements are real
-      temporaryInformation = TI_TRUE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(!real34IsZero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))) {
-            temporaryInformation = TI_FALSE;
-          }
-        }
-      }
-      return;
-    }
-    case CHECK_VALUE_SPECIAL: { // true if any elements is special
-      temporaryInformation = TI_FALSE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(real34IsSpecial(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) || real34IsSpecial(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))) {
-            temporaryInformation = TI_TRUE;
-          }
-        }
-      }
-      return;
-    }
-    case CHECK_VALUE_NAN: {
-      temporaryInformation = TI_FALSE;
-      if(getSystemFlag(FLAG_SPCRES)) {
-        for(int i = 0; i < elements; ++i) {
-          if(real34IsNaN(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) || real34IsNaN(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))) {
-            temporaryInformation = TI_TRUE;
-          }
-        }
-      }
-      return;
-    }
-    default: {
-      checkValueError(mode);
-    }
-  }
-}
-
-
-
-static void checkValueShoI(uint16_t mode) {
-  if(mode == CHECK_VALUE_POSITIVE_ZERO || mode == CHECK_VALUE_NEGATIVE_ZERO) {
-    if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
-      if(mode == CHECK_VALUE_POSITIVE_ZERO && (*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & shortIntegerMask) == 0) {
-          temporaryInformation = TI_TRUE;
-          return;
-      }
-      if(mode == CHECK_VALUE_NEGATIVE_ZERO && (*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & shortIntegerMask) == (shortIntegerMode == SIM_1COMPL ? shortIntegerMask : shortIntegerSignBit)) {
-          temporaryInformation = TI_TRUE;
-          return;
-      }
-    }
-    temporaryInformation = TI_FALSE;
-    return;
-  }
-  checkReal(mode);
-}
-
-
-
-static void checkValueReal(uint16_t mode) {
-  longInteger_t val;
-
-  switch(mode) {
-    case CHECK_VALUE_SPECIAL: {
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)));
-      return;
-    }
-    case CHECK_VALUE_NAN: {
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)));
-      return;
-    }
-    case CHECK_VALUE_ANGLE: {
-      if(getRegisterAngularMode(REGISTER_X) != amNone) {
-        temporaryInformation = TI_TRUE;
-      }
-      return;
-    }
-    case CHECK_VALUE_NUMBER: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-  }
-  if(getRegisterAngularMode(REGISTER_X) == amNone) {
-    switch(mode) {
-      case CHECK_VALUE_POSITIVE_ZERO: {
-        SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)));
-        return;
-      }
-      case CHECK_VALUE_NEGATIVE_ZERO: {
-        SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)));
-        return;
-      }
-      case CHECK_VALUE_INFINITY: {
-        if(getSystemFlag(FLAG_SPCRES) && real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
-          temporaryInformation = TI_TRUE;
-          longIntegerInit(val);
-          int32ToLongInteger(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) ? 1 : -1, val);
-          convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
-          longIntegerFree(val);
-        }
-        else {
-          temporaryInformation = TI_FALSE;
-          longIntegerInit(val);
-          uInt32ToLongInteger(0u, val);
-          convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
-          longIntegerFree(val);
-        }
-        return;
-      }
-    }
-  }
-  checkReal(mode);
-}
-
-
-
-static void checkValueCplx(uint16_t mode) {
-  switch(mode) {
-    case CHECK_VALUE_COMPLEX: {
-      SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
-      return;
-    }
-    case CHECK_VALUE_REAL: {
-      SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
-      return;
-    }
-    case CHECK_VALUE_SPECIAL: {
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))));
-      return;
-    }
-    case CHECK_VALUE_NAN: {
-      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && (real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X))));
-      return;
-    }
-    case CHECK_VALUE_MATRIX: {
-      temporaryInformation = TI_FALSE;
-      return;
-    }
-    case CHECK_VALUE_NUMBER: {
-      temporaryInformation = TI_TRUE;
-      return;
-    }
-    default: {
-      checkValueError(mode);
-    }
-  }
-}
-
-TO_QSPI static void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX ==> 1               2               3               4                   5                  6                7               8               9               10
-//          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
-            checkValueLonI, checkValueReal, checkValueCplx, checkValueDT,       checkValueDT,      checkValueError, checkValueRema, checkValueCxma, checkValueShoI,  checkValueError
-};
-
-void fnCheckValue(uint16_t mode) {
-  CheckValue[getRegisterDataType(REGISTER_X)](mode);
-}
-

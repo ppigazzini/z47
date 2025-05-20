@@ -1716,22 +1716,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CHECK_INTEGER_ODD                          2
 #define CHECK_INTEGER_FP                           3
 
-#define CHECK_VALUE_COMPLEX                        0
-#define CHECK_VALUE_REAL                           1
-#define CHECK_VALUE_POSITIVE_ZERO                  2
-#define CHECK_VALUE_NEGATIVE_ZERO                  3
-#define CHECK_VALUE_SPECIAL                        4
-#define CHECK_VALUE_NAN                            5
-#define CHECK_VALUE_INFINITY                       6
-#define CHECK_VALUE_MATRIX                         7
-#define CHECK_VALUE_MATRIX_SQUARE                  8
-#define CHECK_VALUE_DATE                           9
-#define CHECK_VALUE_TIME                          10
-#define CHECK_VALUE_SINT                          11
-#define CHECK_VALUE_LINT                          12
-#define CHECK_VALUE_ANGLE                         13
-#define CHECK_VALUE_NUMBER                        14
-
 #define OPMOD_MULTIPLY                             0
 #define OPMOD_POWER                                1
 
