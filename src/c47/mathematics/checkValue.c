@@ -45,11 +45,18 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
-  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  /* Should a complex matrix be checked? */
+  SET_TI_TRUE_FALSE(checkXisType(dtComplex34) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
 }
 
 void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
-  SET_TI_TRUE_FALSE(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  uint32_t t = getRegisterDataType(REGISTER_X);
+
+  if (t == dtComplex34) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  } else {
+    SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
+  }
 }
 
 void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
