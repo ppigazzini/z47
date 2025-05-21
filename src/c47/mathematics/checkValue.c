@@ -85,6 +85,28 @@ void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
   }
 }
 
+void fnCheckReNotZero (uint16_t unusedButMandatoryParameter) {
+  const uint32_t t = getRegisterDataType(REGISTER_X);
+
+  /* Should a matrix be checked? */
+  if (t == dtComplex34) {
+    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  } else {
+    SET_TI_TRUE_FALSE(0);
+  }
+}
+
+void fnCheckImNotZero (uint16_t unusedButMandatoryParameter) {
+  const uint32_t t = getRegisterDataType(REGISTER_X);
+
+  /* Should a complex matrix be checked? */
+  if (t == dtComplex34) {
+    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  } else {
+    SET_TI_TRUE_FALSE(0);
+  }
+}
+
 void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
   SET_TI_TRUE_FALSE(isRegisterMatrix2dVector(REGISTER_X));
 }

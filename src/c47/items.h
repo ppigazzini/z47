@@ -34,7 +34,7 @@
 #define ITM_EVEN                      22
 #define ITM_ODD                       23
 #define ITM_FPQ                       24
-#define ITM_IPQ                       25
+#define ITM_INTQ                      25
 #define ITM_CPXQ                      26
 #define ITM_MATRIXQ                   27
 #define ITM_NANQ                      28
@@ -2603,10 +2603,12 @@
 #define ITM_CONFIGQ                 2526
 #define ITM_ISREZQ                  2527
 #define ITM_ISIMZQ                  2528
-#define ITM_ISVECT2DQ               2529
-#define ITM_ISVECT3DQ               2530
+#define ITM_ISREQ                   2529
+#define ITM_ISIMQ                   2530
+#define ITM_ISVECT2DQ               2531
+#define ITM_ISVECT3DQ               2532
 
-#define LAST_ITEM                   2531
+#define LAST_ITEM                   2533
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
