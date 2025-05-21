@@ -25,6 +25,10 @@ void fnCheckInteger(uint16_t mode) {
 
     case dtReal34: {
       // if ceil(x) != floor(x), then x is not an integer
+      if (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) {
+        temporaryInformation = TI_FALSE;
+        return;
+      }
       convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), x, DEC_ROUND_CEILING);
       convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), x2, DEC_ROUND_FLOOR);
       break;
