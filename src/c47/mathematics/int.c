@@ -23,9 +23,15 @@ void fnCheckInteger(uint16_t mode) {
       break;
     }
 
+    case dtComplex34:
+      if (!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) || real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))) {
+        temporaryInformation = TI_FALSE;
+        return;
+      }
+      /* FALL THROUGH */
     case dtReal34: {
       // if ceil(x) != floor(x), then x is not an integer
-      if (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) {
+      if (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X))) {
         temporaryInformation = TI_FALSE;
         return;
       }

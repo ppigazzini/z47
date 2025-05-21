@@ -16,7 +16,7 @@ void fnCheckType(uint16_t type) {
 }
 
 void fnCheckReal(uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
+  const uint32_t t = getRegisterDataType(REGISTER_X);
 
   SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
 }
@@ -51,25 +51,31 @@ void fnCheckAngle(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
+  const uint32_t t = getRegisterDataType(REGISTER_X);
 
   SET_TI_TRUE_FALSE(t == dtReal34Matrix || t == dtComplex34Matrix);
 }
 
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
+  const uint32_t t = getRegisterDataType(REGISTER_X);
 
   SET_TI_TRUE_FALSE((t == dtReal34Matrix || t == dtComplex34Matrix)
                     && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
 }
 
 void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
-  /* Should a complex matrix be checked? */
-  SET_TI_TRUE_FALSE(checkXisType(dtComplex34) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  const uint32_t t = getRegisterDataType(REGISTER_X);
+
+  /* Should a matrix be checked? */
+  if (t == dtComplex34) {
+    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  } else {
+    SET_TI_TRUE_FALSE(t > dtDate && t != dtShortInteger);
+  }
 }
 
 void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
+  const uint32_t t = getRegisterDataType(REGISTER_X);
 
   /* Should a complex matrix be checked? */
   if (t == dtComplex34) {
@@ -252,11 +258,9 @@ void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 // Radian      0.5
 
 void fnGetType(uint16_t unusedButMandatoryParameter) {
-  int dtp = getRegisterDataType(REGISTER_X);
+  const int dtp = getRegisterDataType(REGISTER_X);
   int dam = getRegisterAngularMode(REGISTER_X);
-  if(dtp == dtComplex34Matrix && !(dam & 0x10)) {
-    dam = amNone; //pre-set dam, to cause no angle display if RECT
-  }
+
   switch(getRegisterDataType(REGISTER_X)) {
     case dtLongInteger    :
     case dtTime           :
@@ -274,8 +278,11 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
       setSystemFlag(FLAG_ASLIFT);
       break;
     }
-    case dtShortInteger   :
     case dtComplex34Matrix:
+      if(!(dam & 0x10))
+        dam = amNone; //pre-set dam, to cause no angle display if RECT
+      /* FALL THROUGH */
+    case dtShortInteger   :
     case dtReal34         :
     case dtComplex34      : {
       real34_t rr;
