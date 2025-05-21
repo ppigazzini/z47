@@ -2431,14 +2431,17 @@ void createSubstrings(uint8_t number) {
         case 9 : strcpy(sss,"Config"); break;
         default: break;
       }
-
-      switch (jj) {
-        case 10 : strcat(sss,", MultPi"); break;
-        case 20 : strcat(sss,", DMS"); break;
-        case 30 : strcat(sss,", Degree"); break;
-        case 40 : strcat(sss,", Grad"); break;
-        case 50 : strcat(sss,", Radian"); break;
-        default:break;
+      if(ii == 8) {
+        strcat(sss,", base");
+      } else {
+        switch (jj) {
+          case 10 : strcat(sss,", MUL" STD_pi); break;
+          case 20 : strcat(sss,", DMS"); break;
+          case 30 : strcat(sss,", Degree"); break;
+          case 40 : strcat(sss,", Grad"); break;
+          case 50 : strcat(sss,", Radian"); break;
+          default:break;
+        }
       }
       sprintf(prefix, "%s", sss);
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;

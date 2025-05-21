@@ -63,25 +63,25 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
                     && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
 }
 
-void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
+void fnCheckReIsZero (uint16_t unusedButMandatoryParameter) {
   const uint32_t t = getRegisterDataType(REGISTER_X);
 
   /* Should a matrix be checked? */
   if (t == dtComplex34) {
-    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(t > dtDate && t != dtShortInteger);
+    SET_TI_TRUE_FALSE(0);
   }
 }
 
-void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
+void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
   const uint32_t t = getRegisterDataType(REGISTER_X);
 
   /* Should a complex matrix be checked? */
   if (t == dtComplex34) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
+    SET_TI_TRUE_FALSE(0);
   }
 }
 
