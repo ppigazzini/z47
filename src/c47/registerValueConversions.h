@@ -99,6 +99,9 @@
   void badTypeError(calcRegister_t reg);
   void badDomainError(calcRegister_t reg);
 
+  void badTypeErrorX(void);
+  void badDomainErrorX(void);
+
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);

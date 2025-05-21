@@ -888,6 +888,14 @@ void badDomainError(calcRegister_t reg) {
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
+void badTypeErrorX(void) {
+  badTypeError(REGISTER_X);
+}
+
+void badDomainErrorX(void) {
+  badDomainError(REGISTER_X);
+}
+
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -1222,7 +1230,7 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
     else if(complexf != NULL)
       complexf();
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
   }
 
 done:
@@ -1285,7 +1293,7 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
     else if(complexf != NULL)
       elementwiseRemaCplx(complexf);
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
     goto fin;
   }
   else if(typeY == dtComplex34Matrix && xNumber) {

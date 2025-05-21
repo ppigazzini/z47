@@ -59,60 +59,60 @@ void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
   const uint32_t t = getRegisterDataType(REGISTER_X);
 
-  SET_TI_TRUE_FALSE((t == dtReal34Matrix || t == dtComplex34Matrix)
-                    && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+  if (t == dtReal34Matrix || t == dtComplex34Matrix)
+    SET_TI_TRUE_FALSE(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+  else
+    badTypeErrorX();
 }
 
 void fnCheckReIsZero (uint16_t unusedButMandatoryParameter) {
-  const uint32_t t = getRegisterDataType(REGISTER_X);
-
-  /* Should a matrix be checked? */
-  if (t == dtComplex34) {
+  if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(0);
+    badTypeErrorX();
   }
 }
 
 void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
-  const uint32_t t = getRegisterDataType(REGISTER_X);
-
-  /* Should a complex matrix be checked? */
-  if (t == dtComplex34) {
+  if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(0);
+    badTypeErrorX();
   }
 }
 
 void fnCheckReNotZero (uint16_t unusedButMandatoryParameter) {
-  const uint32_t t = getRegisterDataType(REGISTER_X);
-
-  /* Should a matrix be checked? */
-  if (t == dtComplex34) {
+  if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(0);
+    badTypeErrorX();
   }
 }
 
 void fnCheckImNotZero (uint16_t unusedButMandatoryParameter) {
-  const uint32_t t = getRegisterDataType(REGISTER_X);
-
-  /* Should a complex matrix be checked? */
-  if (t == dtComplex34) {
+  if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
-    SET_TI_TRUE_FALSE(0);
+    badTypeErrorX();
   }
 }
 
 void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
-  SET_TI_TRUE_FALSE(isRegisterMatrix2dVector(REGISTER_X));
+  if (checkXisType(dtReal34Matrix)) {
+    const matrixHeader_t *h = REGISTER_MATRIX_HEADER(REGISTER_X);
+
+    SET_TI_TRUE_FALSE(isMatrix2dVector(h->matrixRows, h->matrixColumns));
+  } else
+    badTypeErrorX();
 }
 
 void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
-  SET_TI_TRUE_FALSE(isRegisterMatrix3dVector(REGISTER_X));
+  if (checkXisType(dtReal34Matrix)) {
+    const matrixHeader_t *h = REGISTER_MATRIX_HEADER(REGISTER_X);
+
+    SET_TI_TRUE_FALSE(isMatrix3dVector(h->matrixRows, h->matrixColumns));
+  } else
+    badTypeErrorX();
 }
 
 
@@ -127,7 +127,8 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
-      break;
+      badTypeErrorX();
+      return;
     case dtComplex34:
       check = checkFn(REGISTER_IMAG34_DATA(REGISTER_X));
       /* FALL THROUGH */
@@ -137,26 +138,30 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
       check |= checkFn(REGISTER_REAL34_DATA(REGISTER_X));
       break;
 
-    case dtReal34Matrix:
+    case dtReal34Matrix: {
+      const real34_t *r = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
+
       elements = matrixXNumElem();
       for(i = 0; i < elements; ++i)
-        if (checkFn(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i)) {
+        if (checkFn(r + i)) {
           check = 1;
           break;
         }
       break;
+    }
 
-    case dtComplex34Matrix:
+    case dtComplex34Matrix: {
+      const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X);
+
       elements = matrixXNumElem();
       for(i = 0; i < elements; ++i) {
-        const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i;
-
-        if (checkFn(&cpx->real) || checkFn(&cpx->imag)) {
+        if (checkFn(&cpx[i].real) || checkFn(&cpx[i].imag)) {
           check = 1;
           break;
         }
       }
       break;
+    }
   }
   SET_TI_TRUE_FALSE(check);
 }
@@ -191,6 +196,7 @@ static void zeroCheck(int neg) {
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
+      badTypeErrorX();
       break;
     case dtLongInteger:
       if (!neg) {

@@ -13,41 +13,37 @@ void fnCheckInteger(uint16_t mode) {
 
   longIntegerInit(x);
   if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
-    temporaryInformation = TI_FALSE;
-    return;
-  }
-  if (frac) {
+    badTypeErrorX();
+  } else if (frac) {
     SET_TI_TRUE_FALSE(mode == CHECK_INTEGER_FP);
-    goto freefin;
+  } else {
+    #if defined(DMCP_BUILD)
+      lcd_refresh();
+    #else // !DMCP_BUILD
+      refreshLcd(NULL);
+    #endif // DMCP_BUILD
+
+    switch(mode) {
+      case CHECK_INTEGER: {
+        temporaryInformation = TI_TRUE;
+        break;
+      }
+
+      case CHECK_INTEGER_EVEN: {
+        SET_TI_TRUE_FALSE(longIntegerIsEven(x));
+        break;
+      }
+
+      case CHECK_INTEGER_ODD: {
+        SET_TI_TRUE_FALSE(longIntegerIsOdd(x));
+        break;
+      }
+
+      case CHECK_INTEGER_FP: {
+        temporaryInformation = TI_FALSE;
+        break;
+      }
+    }
   }
-
-  #if defined(DMCP_BUILD)
-    lcd_refresh();
-  #else // !DMCP_BUILD
-    refreshLcd(NULL);
-  #endif // DMCP_BUILD
-
-  switch(mode) {
-    case CHECK_INTEGER: {
-      temporaryInformation = TI_TRUE;
-      break;
-    }
-
-    case CHECK_INTEGER_EVEN: {
-      SET_TI_TRUE_FALSE(longIntegerIsEven(x));
-      break;
-    }
-
-    case CHECK_INTEGER_ODD: {
-      SET_TI_TRUE_FALSE(longIntegerIsOdd(x));
-      break;
-    }
-
-    case CHECK_INTEGER_FP: {
-      temporaryInformation = TI_FALSE;
-      break;
-    }
-  }
-freefin:
   longIntegerFree(x);
 }
