@@ -11,9 +11,14 @@ void fnCheckInteger(uint16_t mode) {
   longInteger_t x;
   bool_t frac;
 
-  if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE || frac) {
+  longIntegerInit(x);
+  if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
     temporaryInformation = TI_FALSE;
     return;
+  }
+  if (frac) {
+    SET_TI_TRUE_FALSE(mode == CHECK_INTEGER_FP);
+    goto freefin;
   }
 
   #if defined(DMCP_BUILD)
@@ -43,5 +48,6 @@ void fnCheckInteger(uint16_t mode) {
       break;
     }
   }
+freefin:
   longIntegerFree(x);
 }
