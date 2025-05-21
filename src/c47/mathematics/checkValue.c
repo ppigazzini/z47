@@ -59,7 +59,7 @@ void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
   uint32_t t = getRegisterDataType(REGISTER_X);
 
-  SET_TI_TRUE_FALSE((t == dtReal34Matrix || t == dtReal34Matrix)
+  SET_TI_TRUE_FALSE((t == dtReal34Matrix || t == dtComplex34Matrix)
                     && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
 }
 
