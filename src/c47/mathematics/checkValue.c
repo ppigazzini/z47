@@ -23,8 +23,27 @@ void fnCheckReal(uint16_t unusedButMandatoryParameter) {
 
 void fnCheckNumber(uint16_t unusedButMandatoryParameter) {
   uint32_t t = getRegisterDataType(REGISTER_X);
+  int res = 1;
 
-  SET_TI_TRUE_FALSE(t <= dtDate || t == dtShortInteger);
+  switch (t) {
+    default:
+      res = 0;
+      break;
+
+    case dtLongInteger:
+    case dtShortInteger:
+      break;
+
+    case dtComplex34:
+      res = !real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X));
+      /* FALL THROUGH */
+    case dtTime:
+    case dtDate:
+    case dtReal34:
+      res &= !real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X));
+      break;
+  }
+  SET_TI_TRUE_FALSE(res);
 }
 
 void fnCheckAngle(uint16_t unusedButMandatoryParameter) {
@@ -34,7 +53,7 @@ void fnCheckAngle(uint16_t unusedButMandatoryParameter) {
 void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
   uint32_t t = getRegisterDataType(REGISTER_X);
 
-  SET_TI_TRUE_FALSE(t == dtReal34Matrix || t == dtReal34Matrix);
+  SET_TI_TRUE_FALSE(t == dtReal34Matrix || t == dtComplex34Matrix);
 }
 
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
@@ -52,6 +71,7 @@ void fnCheckIsNotReal (uint16_t unusedButMandatoryParameter) {
 void fnCheckIsNotImag (uint16_t unusedButMandatoryParameter) {
   uint32_t t = getRegisterDataType(REGISTER_X);
 
+  /* Should a complex matrix be checked? */
   if (t == dtComplex34) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
@@ -99,10 +119,13 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
 
     case dtComplex34Matrix:
       elements = matrixXNumElem();
-      for(i = 0; i < elements; ++i)
-        if (!checkFn(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i))
-            || !checkFn(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)))
+      for(i = 0; i < elements; ++i) {
+        const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i;
+
+        if (!checkFn(&cpx->real)
+            || !checkFn(&cpx->imag))
           break;
+      }
       check = 1;
       break;
   }
@@ -159,10 +182,13 @@ static void zeroCheck(int neg) {
       break;
     }
 
-    case dtComplex34:
-      check = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) &&
-              (real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) == neg || real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X)) == neg);
+    case dtComplex34: {
+      const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X);
+
+      check = real34IsZero(&cpx->real) && real34IsZero(&cpx->imag) &&
+              (real34IsNegative(&cpx->real) == neg || real34IsNegative(&cpx->imag) == neg);
       break;
+    }
 
     case dtTime:
     case dtDate:
@@ -172,19 +198,23 @@ static void zeroCheck(int neg) {
 
     case dtReal34Matrix:
       elements = matrixXNumElem();
-      for(i = 0; i < elements; ++i)
-        if (!real34IsZero(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i) || real34IsNegative(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i) != neg)
+      for(i = 0; i < elements; ++i) {
+        const real34_t *r = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i;
+
+        if (!real34IsZero(r) || real34IsNegative(r) != neg)
           break;
+      }
       check = 1;
       break;
 
     case dtComplex34Matrix:
       elements = matrixXNumElem();
       for(i = 0; i < elements; ++i) {
-        if (!real34IsZero(VARIABLE_REAL34_DATA(REGISTER_X)) || !real34IsZero(VARIABLE_IMAG34_DATA(REGISTER_X)))
+        const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i;
+
+        if (!real34IsZero(&cpx->real) || !real34IsZero(&cpx->imag))
           break;
-        if (real34IsNegative(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) != neg
-            && real34IsNegative(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i)) != neg)
+        if (real34IsNegative(&cpx->real) != neg && real34IsNegative(&cpx->imag) != neg)
           break;
       }
       check = 1;
