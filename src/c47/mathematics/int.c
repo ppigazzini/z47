@@ -11,7 +11,7 @@ void fnCheckInteger(uint16_t mode) {
   longInteger_t x;
   bool_t frac;
 
-  if (!getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) || frac) {
+  if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE || frac) {
     temporaryInformation = TI_FALSE;
     return;
   }

@@ -102,12 +102,14 @@
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);
-  bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
   bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
-  bool_t getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
   bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
   bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
+
+  bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
+  /* returns error code or ERROR_NONE if okay */
+  int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));

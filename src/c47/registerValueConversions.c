@@ -1080,7 +1080,7 @@ finish:
   return true;
 }
 
-bool_t getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
   bool_t frac = false;
 
@@ -1097,7 +1097,7 @@ bool_t getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
         if (realIsSpecial(&rval))
-          return false;
+          return ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
         if (!realIsAnInteger(&rval)) {
           realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
           frac = true;
@@ -1108,19 +1108,19 @@ bool_t getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *
       /* fall through */
 
     default:
-      return false;
+      return ERROR_INVALID_DATA_TYPE_FOR_OP;
   }
   if (fractional != NULL)
     *fractional = frac;
-  return true;
+  return ERROR_NONE;
 }
 
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
-  bool_t res = getRegisterAsLongIntQuiet(reg, val, fractional);
+  const int err = getRegisterAsLongIntQuiet(reg, val, fractional);
 
-  if(!res)
-    badTypeError(reg);
-  return res;
+  if(err != ERROR_NONE)
+    displayCalcErrorMessage(err, ERR_REGISTER_LINE, REGISTER_T);
+  return err == ERROR_NONE;
 }
 
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
