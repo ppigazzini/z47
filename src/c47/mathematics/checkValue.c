@@ -118,9 +118,10 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
     case dtReal34Matrix:
       elements = matrixXNumElem();
       for(i = 0; i < elements; ++i)
-        if (!checkFn(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i))
+        if (checkFn(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i)) {
+          check = 1;
           break;
-      check = 1;
+        }
       break;
 
     case dtComplex34Matrix:
@@ -128,11 +129,11 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
       for(i = 0; i < elements; ++i) {
         const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i;
 
-        if (!checkFn(&cpx->real)
-            || !checkFn(&cpx->imag))
+        if (checkFn(&cpx->real) || checkFn(&cpx->imag)) {
+          check = 1;
           break;
+        }
       }
-      check = 1;
       break;
   }
   SET_TI_TRUE_FALSE(check);
