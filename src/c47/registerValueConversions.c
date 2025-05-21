@@ -1080,7 +1080,7 @@ finish:
   return true;
 }
 
-bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+bool_t getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
   bool_t frac = false;
 
@@ -1096,10 +1096,8 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
     case dtComplex34:
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
-        if (realIsSpecial(&rval)) {
-          badDomainError(reg);
+        if (realIsSpecial(&rval))
           return false;
-        }
         if (!realIsAnInteger(&rval)) {
           realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
           frac = true;
@@ -1110,12 +1108,19 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
       /* fall through */
 
     default:
-      badTypeError(reg);
       return false;
   }
   if (fractional != NULL)
     *fractional = frac;
   return true;
+}
+
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  bool_t res = getRegisterAsLongIntQuiet(reg, val, fractional);
+
+  if(!res)
+    badTypeError(reg);
+  return res;
 }
 
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
