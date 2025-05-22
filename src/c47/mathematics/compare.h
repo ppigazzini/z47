@@ -33,5 +33,5 @@
 
   void  fnIsConverged      (uint16_t mode);
 
-  void compareTypeError    (void);
+  void compareTypeErrorX   (void);
 #endif // !COMPARE_H

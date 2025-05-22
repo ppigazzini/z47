@@ -13,7 +13,7 @@ void fnCheckInteger(uint16_t mode) {
 
   longIntegerInit(x);
   if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
-    compareTypeError();
+    compareTypeErrorX();
   } else if (frac) {
     SET_TI_TRUE_FALSE(mode == CHECK_INTEGER_FP);
   } else {

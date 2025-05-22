@@ -22,9 +22,13 @@ TO_QSPI void (* const cmpFunc[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_D
 /* 10 Config data   */ { NULL,                NULL,                NULL,      NULL,                NULL,                NULL,                NULL,          NULL,           NULL,                NULL}
 };
 
-void compareTypeError(void) {
+static void compareTypeError(calcRegister_t regist) {
   temporaryInformation = TI_FALSE;
-  badTypeErrorX();
+  badTypeError(regist);
+}
+
+void compareTypeErrorX(void) {
+  compareTypeError(REGISTER_X);
 }
 
 bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *result) {
@@ -223,7 +227,7 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    compareTypeError();
+    compareTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist1 : regist2, dest);
@@ -239,7 +243,7 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    compareTypeError();
+    compareTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist2 : regist1, dest);
@@ -417,7 +421,7 @@ finCplxIdnZero:
       }
     }
     else {
-      badTypeError(regist);
+      compareTypeError(regist);
     }
   }
   #if defined(PC_BUILD)
@@ -595,7 +599,7 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualMatrix(regist);
     }
     else {
-      badTypeError(regist);
+      compareTypeError(regist);
     }
   }
   else if(getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtTime) {
@@ -603,11 +607,11 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualScalar(regist);
     }
     else {
-      badTypeError(regist);
+      compareTypeError(regist);
     }
   }
   else {
-    badTypeError(regist);
+    compareTypeError(regist);
   }
 }
 
@@ -625,7 +629,7 @@ void fnIsConverged(uint16_t mode) {
 
   convergenceTolerence(&tol);
   if(!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &isComplex) || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &isComplex)) {
-    badTypeError(REGISTER_Y);
+    compareTypeError(REGISTER_Y);
     return;
   }
 
