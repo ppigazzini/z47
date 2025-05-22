@@ -62,14 +62,14 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
   if (t == dtReal34Matrix || t == dtComplex34Matrix)
     SET_TI_TRUE_FALSE(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
   else
-    badTypeErrorX();
+    compareTypeError();
 }
 
 void fnCheckReIsZero (uint16_t unusedButMandatoryParameter) {
   if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
   } else {
-    badTypeErrorX();
+    compareTypeError();
   }
 }
 
@@ -77,7 +77,7 @@ void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
   if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
-    badTypeErrorX();
+    compareTypeError();
   }
 }
 
@@ -85,7 +85,7 @@ void fnCheckReNotZero (uint16_t unusedButMandatoryParameter) {
   if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
   } else {
-    badTypeErrorX();
+    compareTypeError();
   }
 }
 
@@ -93,7 +93,7 @@ void fnCheckImNotZero (uint16_t unusedButMandatoryParameter) {
   if (checkXisType(dtComplex34)) {
     SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
   } else {
-    badTypeErrorX();
+    compareTypeError();
   }
 }
 
@@ -103,7 +103,7 @@ void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
 
     SET_TI_TRUE_FALSE(isMatrix2dVector(h->matrixRows, h->matrixColumns));
   } else
-    badTypeErrorX();
+    compareTypeError();
 }
 
 void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
@@ -112,7 +112,7 @@ void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
 
     SET_TI_TRUE_FALSE(isMatrix3dVector(h->matrixRows, h->matrixColumns));
   } else
-    badTypeErrorX();
+    compareTypeError();
 }
 
 
@@ -127,7 +127,7 @@ static void realCheck(int (*checkFn)(const real34_t *)) {
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
-      badTypeErrorX();
+      compareTypeError();
       return;
     case dtComplex34:
       check = checkFn(REGISTER_IMAG34_DATA(REGISTER_X));
@@ -196,7 +196,7 @@ static void zeroCheck(int neg) {
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
-      badTypeErrorX();
+      compareTypeError();
       break;
     case dtLongInteger:
       if (!neg) {

@@ -32,4 +32,6 @@
   void  fnXAlmostEqual     (uint16_t regist);
 
   void  fnIsConverged      (uint16_t mode);
+
+  void compareTypeError    (void);
 #endif // !COMPARE_H

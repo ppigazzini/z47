@@ -22,7 +22,10 @@ TO_QSPI void (* const cmpFunc[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_D
 /* 10 Config data   */ { NULL,                NULL,                NULL,      NULL,                NULL,                NULL,                NULL,          NULL,           NULL,                NULL}
 };
 
-
+void compareTypeError(void) {
+  temporaryInformation = TI_FALSE;
+  badTypeErrorX();
+}
 
 bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *result) {
   void (*func)(calcRegister_t, calcRegister_t, int8_t*) = cmpFunc[getRegisterDataType(regist1)][getRegisterDataType(regist2)];
@@ -220,7 +223,7 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    badTypeErrorX();
+    compareTypeError();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist1 : regist2, dest);
@@ -236,7 +239,7 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    badTypeErrorX();
+    compareTypeError();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist2 : regist1, dest);
