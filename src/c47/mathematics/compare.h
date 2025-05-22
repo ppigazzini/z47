@@ -8,7 +8,6 @@
   #define COMPARE_H
 
   bool_t registerCmp       (calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpError   (calcRegister_t regist1, calcRegister_t regist2);
   void  registerCmpLonILonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
   void  registerCmpLonIShoI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
   void  registerCmpLonIReal(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);

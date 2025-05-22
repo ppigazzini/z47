@@ -38,17 +38,6 @@ bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *resul
 
 
 
-void registerCmpError(calcRegister_t regist1, calcRegister_t regist2) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot get compare: %s", getRegisterDataTypeName(regist1, true, false));
-    sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "and %s", getRegisterDataTypeName(regist2, true, false));
-    moreInfoOnError("In function registerCmp:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-
-
 void registerCmpLonILonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result) {
   // regist1 = Long Integer, regist2 = Long Integer
 
@@ -231,7 +220,7 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    registerCmpError(regist1, regist2);
+    badTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist1 : regist2, dest);
@@ -247,7 +236,7 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    registerCmpError(regist1, regist2);
+    badTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist2 : regist1, dest);
@@ -255,17 +244,6 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
       *(REGISTER_SHORT_INTEGER_DATA(dest)) &= shortIntegerMask;
     }
   }
-}
-
-
-
-void comparisonTypeError(uint16_t regist) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot compare %s and %s", getRegisterDataTypeName(REGISTER_X, true, false), getRegisterDataTypeName(regist, true, false));
-    moreInfoOnError("In function comparisonTypeError:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  temporaryInformation = TI_FALSE;
 }
 
 
@@ -402,7 +380,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       }
     }
     else {
-      comparisonTypeError(regist);
+      badTypeError(regist);
     }
   }
   #if defined(PC_BUILD)
@@ -580,7 +558,7 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualMatrix(regist);
     }
     else {
-      comparisonTypeError(regist);
+      badTypeError(regist);
     }
   }
   else if(getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtTime) {
@@ -588,11 +566,11 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualScalar(regist);
     }
     else {
-      comparisonTypeError(regist);
+      badTypeError(regist);
     }
   }
   else {
-    comparisonTypeError(regist);
+    badTypeError(regist);
   }
 }
 
@@ -604,41 +582,13 @@ void fnXAlmostEqual(uint16_t regist) {
 #undef COMPARE_MODE_NOT_EQUAL
 #undef COMPARE_MODE_GREATER_EQUAL
 
-
-static int getAsComplex(calcRegister_t reg, real_t *re, real_t *im, int *isComplex) {
-  uint32_t type = getRegisterDataType(reg);
-
-  if(type == dtLongInteger) {
-    convertLongIntegerRegisterToReal(reg, re, &ctxtReal39);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtShortInteger) {
-    convertShortIntegerRegisterToReal(reg, re, &ctxtReal39);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(reg), re);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtComplex34) {
-    real34ToReal(REGISTER_REAL34_DATA(reg), re);
-    real34ToReal(REGISTER_IMAG34_DATA(reg), im);
-    *isComplex |= 1;
-    return 1;
-  }
-  return 0;
-}
-
 void fnIsConverged(uint16_t mode) {
   real_t xReal, xImag, yReal, yImag, tol;
-  int isComplex = 0;
+  bool_t isComplex = false;
 
   convergenceTolerence(&tol);
-  if(!getAsComplex(REGISTER_X, &xReal, &xImag, &isComplex) || !getAsComplex(REGISTER_Y, &yReal, &yImag, &isComplex)) {
-    comparisonTypeError(REGISTER_Y);
+  if(!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &isComplex) || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &isComplex)) {
+    badTypeError(REGISTER_Y);
     return;
   }
 
