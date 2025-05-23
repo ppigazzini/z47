@@ -192,7 +192,6 @@ void fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
 
 static void zeroCheck(int neg) {
   int check = 0;
-  uint32_t elements, i;
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
@@ -229,30 +228,6 @@ static void zeroCheck(int neg) {
     case dtDate:
     case dtReal34:
       check = real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) == neg && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X));
-      break;
-
-    case dtReal34Matrix:
-      elements = matrixXNumElem();
-      for(i = 0; i < elements; ++i) {
-        const real34_t *r = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + i;
-
-        if (!real34IsZero(r) || real34IsNegative(r) != neg)
-          break;
-      }
-      check = 1;
-      break;
-
-    case dtComplex34Matrix:
-      elements = matrixXNumElem();
-      for(i = 0; i < elements; ++i) {
-        const complex34_t *cpx = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + i;
-
-        if (!real34IsZero(&cpx->real) || !real34IsZero(&cpx->imag))
-          break;
-        if (real34IsNegative(&cpx->real) != neg && real34IsNegative(&cpx->imag) != neg)
-          break;
-      }
-      check = 1;
       break;
   }
   SET_TI_TRUE_FALSE(check);
