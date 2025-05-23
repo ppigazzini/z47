@@ -2353,11 +2353,19 @@ void createSubstrings(uint8_t number) {
   }
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
-      char noo[12];
+      char noo[32];
+      real_t t;
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
       switch(no) {
         case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
-        default: strcpy(noo," =" ); break;
+        case  1: strcpy(noo," =" );
+                   if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
+                     if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t) == 200) {
+                      strcat(noo," (conjugates)");
+                     }
+                   }
+                   break;
+        default:break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
