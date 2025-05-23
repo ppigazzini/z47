@@ -2275,11 +2275,11 @@
 #define ITM_MIKtoK100M              2221
 #define MNU_CONVYMMV                2222
 #define ITM_XEQP1                   2223
-#define ITM_SI_Ki                   2224
-#define ITM_SI_Mi                   2225
-#define ITM_SI_Gi                   2226
-#define ITM_SI_Ti                   2227
-#define ITM_SI_Pi                   2228
+#define ITM_RCLP1                   2224
+#define ITM_2225                    2225
+#define ITM_2226                    2226
+#define ITM_2227                    2227
+#define ITM_2228                    2228
 #define MNU_PREFIX                  2229
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
@@ -2607,8 +2607,13 @@
 #define ITM_ISIMQ                   2530
 #define ITM_ISVECT2DQ               2531
 #define ITM_ISVECT3DQ               2532
+#define ITM_SI_Ki                   2533
+#define ITM_SI_Mi                   2534
+#define ITM_SI_Gi                   2535
+#define ITM_SI_Ti                   2536
+#define ITM_SI_Pi                   2537
 
-#define LAST_ITEM                   2533
+#define LAST_ITEM                   2538
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
