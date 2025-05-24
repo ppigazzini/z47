@@ -707,7 +707,9 @@ int16_t executeOneStep(uint8_t *step) {
     case ITM_BACK:        //  1412
     case ITM_CASE:        //  1418
     case ITM_SKIP: {      //  1603
+      uint8_t previousErrorCodeMeM = previousErrorCode;
       _executeOp(step, op, (indexOfItems[op].status & PTP_STATUS) >> 9);
+      previousErrorCode = previousErrorCodeMeM;
       return -1;
       }
 
