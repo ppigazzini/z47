@@ -54,6 +54,13 @@ void fnLastX(uint16_t unusedButMandatoryParameter) {
 
 
 
+void fnRecallPlusSkip(uint16_t regist) {
+  fnRecall(regist);
+  fnSkip(0);
+}
+
+
+
 void fnRecallAdd(uint16_t regist) {
   if(regInRange(regist)) {
     if(programRunStop == PGM_RUNNING && regist == REGISTER_L) {
