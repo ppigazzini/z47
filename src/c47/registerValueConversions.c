@@ -888,6 +888,14 @@ void badDomainError(calcRegister_t reg) {
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
+void badTypeErrorX(void) {
+  badTypeError(REGISTER_X);
+}
+
+void badDomainErrorX(void) {
+  badDomainError(REGISTER_X);
+}
+
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -1080,7 +1088,7 @@ finish:
   return true;
 }
 
-bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
   bool_t frac = false;
 
@@ -1096,10 +1104,8 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
     case dtComplex34:
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
-        if (realIsSpecial(&rval)) {
-          badDomainError(reg);
-          return false;
-        }
+        if (realIsSpecial(&rval))
+          return ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
         if (!realIsAnInteger(&rval)) {
           realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
           frac = true;
@@ -1110,12 +1116,19 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
       /* fall through */
 
     default:
-      badTypeError(reg);
-      return false;
+      return ERROR_INVALID_DATA_TYPE_FOR_OP;
   }
   if (fractional != NULL)
     *fractional = frac;
-  return true;
+  return ERROR_NONE;
+}
+
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  const int err = getRegisterAsLongIntQuiet(reg, val, fractional);
+
+  if(err != ERROR_NONE)
+    displayCalcErrorMessage(err, ERR_REGISTER_LINE, REGISTER_T);
+  return err == ERROR_NONE;
 }
 
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
@@ -1217,7 +1230,7 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
     else if(complexf != NULL)
       complexf();
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
   }
 
 done:
@@ -1280,7 +1293,7 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
     else if(complexf != NULL)
       elementwiseRemaCplx(complexf);
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
     goto fin;
   }
   else if(typeY == dtComplex34Matrix && xNumber) {

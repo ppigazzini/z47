@@ -8,7 +8,6 @@
   #define COMPARE_H
 
   bool_t registerCmp       (calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpError   (calcRegister_t regist1, calcRegister_t regist2);
   void  registerCmpLonILonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
   void  registerCmpLonIShoI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
   void  registerCmpLonIReal(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
@@ -33,4 +32,6 @@
   void  fnXAlmostEqual     (uint16_t regist);
 
   void  fnIsConverged      (uint16_t mode);
+
+  void compareTypeErrorX   (void);
 #endif // !COMPARE_H

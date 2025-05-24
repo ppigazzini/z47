@@ -22,7 +22,14 @@ TO_QSPI void (* const cmpFunc[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_D
 /* 10 Config data   */ { NULL,                NULL,                NULL,      NULL,                NULL,                NULL,                NULL,          NULL,           NULL,                NULL}
 };
 
+static void compareTypeError(calcRegister_t regist) {
+  temporaryInformation = TI_FALSE;
+  badTypeError(regist);
+}
 
+void compareTypeErrorX(void) {
+  compareTypeError(REGISTER_X);
+}
 
 bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *result) {
   void (*func)(calcRegister_t, calcRegister_t, int8_t*) = cmpFunc[getRegisterDataType(regist1)][getRegisterDataType(regist2)];
@@ -34,17 +41,6 @@ bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *resul
   func(regist1, regist2, result);
 
   return true;
-}
-
-
-
-void registerCmpError(calcRegister_t regist1, calcRegister_t regist2) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot get compare: %s", getRegisterDataTypeName(regist1, true, false));
-    sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "and %s", getRegisterDataTypeName(regist2, true, false));
-    moreInfoOnError("In function registerCmp:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -231,7 +227,7 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    registerCmpError(regist1, regist2);
+    compareTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist1 : regist2, dest);
@@ -247,7 +243,7 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   int8_t result = 0;
 
   if(!registerCmp(regist1, regist2, &result)) {
-    registerCmpError(regist1, regist2);
+    compareTypeErrorX();
   }
   else if(result != 0) {
     copySourceRegisterToDestRegister(result>0 ? regist2 : regist1, dest);
@@ -255,17 +251,6 @@ void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
       *(REGISTER_SHORT_INTEGER_DATA(dest)) &= shortIntegerMask;
     }
   }
-}
-
-
-
-void comparisonTypeError(uint16_t regist) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot compare %s and %s", getRegisterDataTypeName(REGISTER_X, true, false), getRegisterDataTypeName(regist, true, false));
-    moreInfoOnError("In function comparisonTypeError:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  temporaryInformation = TI_FALSE;
 }
 
 
@@ -298,9 +283,43 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
   int8_t result;
 
   if((regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || (FIRST_NAMED_VARIABLE <= regist && regist <= FIRST_NAMED_VARIABLE + numberOfNamedVariables) || (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) || (regist == TEMP_REGISTER_1)) {
+    const uint32_t typeX = getRegisterDataType(REGISTER_X);
+    const uint32_t typeR = getRegisterDataType(regist);
+
     #if !defined(TESTSUITE_BUILD)
+      /* Check for zero and identity matricies */
+      if (regist == TEMP_REGISTER_1 && typeX == dtReal34Matrix && typeR == dtReal34 && (mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL)) {
+        real34Matrix_t x;
+        int i, j, k;
+        bool_t res = mode == COMPARE_MODE_EQUAL;
+
+        linkToRealMatrixRegister(REGISTER_X, &x);
+        for (i=k=0; i<x.header.matrixRows; i++)
+          for (j=0; j<x.header.matrixColumns; j++, k++)
+            if (!real34CompareEqual(&x.matrixElements[k], i==j ? REGISTER_REAL34_DATA(regist) : const34_0)) {
+              res = mode == COMPARE_MODE_NOT_EQUAL;
+              goto finRealIdnZero;
+            }
+finRealIdnZero:
+        SET_TI_TRUE_FALSE(res);
+      } else if (regist == TEMP_REGISTER_1 && typeX == dtComplex34Matrix && typeR == dtReal34 && (mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL)) {
+        complex34Matrix_t x;
+        int i, j, k;
+        bool_t res = mode == COMPARE_MODE_EQUAL;
+
+        linkToComplexMatrixRegister(REGISTER_X, &x);
+        for (i=k=0; i<x.header.matrixRows; i++)
+          for (j=0; j<x.header.matrixColumns; j++, k++)
+            if (!real34CompareEqual(&x.matrixElements[k].real, i==j ? REGISTER_REAL34_DATA(regist) : const34_0)
+                || !real34IsZero((&x.matrixElements[k].imag))) {
+              res = mode == COMPARE_MODE_NOT_EQUAL;
+              goto finCplxIdnZero;
+            }
+finCplxIdnZero:
+        SET_TI_TRUE_FALSE(res);
+      } else
       // Compare matrices
-      if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && getRegisterDataType(REGISTER_X) == dtReal34Matrix && getRegisterDataType(regist) == dtReal34Matrix) {
+      if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && typeX == dtReal34Matrix && typeR == dtReal34Matrix) {
         real34Matrix_t x, r;
         linkToRealMatrixRegister(REGISTER_X, &x);
         linkToRealMatrixRegister(regist, &r);
@@ -325,15 +344,15 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
           }
         }
       }
-      else if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) && (getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix)) {
+      else if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && (typeX == dtReal34Matrix || typeX == dtComplex34Matrix) && (typeR == dtReal34Matrix || typeR == dtComplex34Matrix)) {
         complex34Matrix_t x, r;
-        if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+        if(typeX == dtComplex34Matrix) {
           linkToComplexMatrixRegister(REGISTER_X, &x);
         }
         else {
           convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
         }
-        if(getRegisterDataType(regist) == dtComplex34Matrix) {
+        if(typeR == dtComplex34Matrix) {
           linkToComplexMatrixRegister(regist,     &r);
         }
         else {
@@ -359,21 +378,21 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
            temporaryInformation = TI_TRUE;
           }
         }
-        if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        if(typeX == dtReal34Matrix) {
           complexMatrixFree(&x);
         }
-        if(getRegisterDataType(regist) == dtReal34Matrix) {
+        if(typeR == dtReal34Matrix) {
           complexMatrixFree(&r);
         }
       }
       else
     #endif // !TESTSUITE_BUILD
     // Compare complex numbers
-    if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && (getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(regist) == dtComplex34)) {
-      if(getRegisterDataType(REGISTER_X) == getRegisterDataType(regist)) { // == dtComplex34
+    if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && (typeX == dtComplex34 || typeR == dtComplex34)) {
+      if(typeX == typeR) { // == dtComplex34
         SET_TI_TRUE_FALSE(real34CompareEqual(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(regist)) && real34CompareEqual(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(regist)));
       }
-      else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+      else if(typeX == dtComplex34) {
         SET_TI_TRUE_FALSE(isEqualRealComplex(REGISTER_X, regist));
       }
       else {
@@ -402,7 +421,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       }
     }
     else {
-      comparisonTypeError(regist);
+      compareTypeError(regist);
     }
   }
   #if defined(PC_BUILD)
@@ -580,7 +599,7 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualMatrix(regist);
     }
     else {
-      comparisonTypeError(regist);
+      compareTypeError(regist);
     }
   }
   else if(getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtTime) {
@@ -588,11 +607,11 @@ void fnXAlmostEqual(uint16_t regist) {
       almostEqualScalar(regist);
     }
     else {
-      comparisonTypeError(regist);
+      compareTypeError(regist);
     }
   }
   else {
-    comparisonTypeError(regist);
+    compareTypeError(regist);
   }
 }
 
@@ -604,41 +623,13 @@ void fnXAlmostEqual(uint16_t regist) {
 #undef COMPARE_MODE_NOT_EQUAL
 #undef COMPARE_MODE_GREATER_EQUAL
 
-
-static int getAsComplex(calcRegister_t reg, real_t *re, real_t *im, int *isComplex) {
-  uint32_t type = getRegisterDataType(reg);
-
-  if(type == dtLongInteger) {
-    convertLongIntegerRegisterToReal(reg, re, &ctxtReal39);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtShortInteger) {
-    convertShortIntegerRegisterToReal(reg, re, &ctxtReal39);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(reg), re);
-    realZero(im);
-    return 1;
-  }
-  else if(type == dtComplex34) {
-    real34ToReal(REGISTER_REAL34_DATA(reg), re);
-    real34ToReal(REGISTER_IMAG34_DATA(reg), im);
-    *isComplex |= 1;
-    return 1;
-  }
-  return 0;
-}
-
 void fnIsConverged(uint16_t mode) {
   real_t xReal, xImag, yReal, yImag, tol;
-  int isComplex = 0;
+  bool_t isComplex = false;
 
   convergenceTolerence(&tol);
-  if(!getAsComplex(REGISTER_X, &xReal, &xImag, &isComplex) || !getAsComplex(REGISTER_Y, &yReal, &yImag, &isComplex)) {
-    comparisonTypeError(REGISTER_Y);
+  if(!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &isComplex) || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &isComplex)) {
+    compareTypeError(REGISTER_Y);
     return;
   }
 

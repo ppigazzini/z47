@@ -34,7 +34,7 @@
 #define ITM_EVEN                      22
 #define ITM_ODD                       23
 #define ITM_FPQ                       24
-#define ITM_IPQ                       25
+#define ITM_INTQ                      25
 #define ITM_CPXQ                      26
 #define ITM_MATRIXQ                   27
 #define ITM_NANQ                      28

@@ -6069,7 +6069,7 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_FPQ;
 
-    *(currentStep++) = ITM_IPQ;
+    *(currentStep++) = ITM_INTQ;
 
     *(currentStep++) = ITM_CPXQ;
 
