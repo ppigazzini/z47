@@ -1642,7 +1642,7 @@ return res;
       }
 
       //lcd_refresh();
-      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
+      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
       if(disp) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
@@ -5076,12 +5076,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                 free(strs);
                               #endif // PC_BUILD
 
-    //Special test function to click every time refresh screen is called
-    #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
-      start_buzzer_freq(100000);
-      sys_delay(5);
-      stop_buzzer();
-    #endif // DMCP_BUILD && CLICK_REFRESHSCR
+                              #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
+                                powerMarkerMsF(3,10000);
+                              #endif // DMCP_BUILD && CLICK_REFRESHSCR
 
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S

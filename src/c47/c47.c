@@ -754,6 +754,9 @@ int convertKeyCode(int key) {
     while(!backToDMCP) {
       if(ST(STAT_PGM_END) && ST(STAT_SUSPENDED)) { // Already in off mode and suspended
         CLR_ST(STAT_RUNNING);
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(15,1000);
+                            #endif //DM42_POWERMARKS
         sys_sleep();
       }
       else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {         // Just wait if no keys available.
@@ -767,11 +770,15 @@ int convertKeyCode(int key) {
                                                       lcd_refresh_wait();
                                                     }
                                                   #endif // TMR_OBSERVE
+          nextTimerRefresh = sys_current_ms() + SCREEN_REFRESH_PERIOD;
+                              #if defined(DM42_POWERMARKS)
+                                powerMarkerMsF(5,1000);
+                              #endif //DM42_POWERMARKS
           sys_sleep();
         }
         else {                                                                 // timeout available
-          //uint32_t timeoutTime = max(1, nextTimerRefresh - sys_current_ms());
-          uint32_t timeoutTime = sys_current_ms();
+          uint32_t tnow = sys_current_ms();
+          uint32_t timeoutTime = tnow;
           if(nextTimerRefresh > timeoutTime) {
             timeoutTime = nextTimerRefresh - timeoutTime;
           }
@@ -780,10 +787,11 @@ int convertKeyCode(int key) {
                                                     if(fnTestBitIsSet(3) == true) {
                                                       char snum[50];
                                                       itoa(timeoutTime - nextTimerRefresh, snum, 10);
-                                                      showString(snum, &standardFont, 20, 120, vmNormal, false, false);
+                                                      showString(snum, &standardFont, 40, 120, vmNormal, false, false);
                                                     }
                                                   #endif // TMR_OBSERVE
             timeoutTime = 1;
+            nextTimerRefresh = tnow + SCREEN_REFRESH_PERIOD;
           }
 
           if(fnTimerGetStatus(TO_KB_ACTV) == TMR_RUNNING) {
@@ -811,6 +819,9 @@ int convertKeyCode(int key) {
                                                     }
                                                   #endif // TMR_OBSERVE
 
+                              #if defined(DM42_POWERMARKS)
+                                powerMarkerMsF(10,1000);
+                              #endif //DM42_POWERMARKS
           sys_sleep();
           sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         }
@@ -833,6 +844,9 @@ int convertKeyCode(int key) {
       // =======================
       // Externally forced LCD repaint
       if(ST(STAT_CLK_WKUP_FLAG)) {
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(5,10000);
+                            #endif //DM42_POWERMARKS
         if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
 
                                                   #if defined(TMR_OBSERVE)
@@ -848,11 +862,14 @@ int convertKeyCode(int key) {
         continue;
       }
       if(ST(STAT_POWER_CHANGE)) {
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(7,10000);
+                            #endif //DM42_POWERMARKS
         showHideUsbLowBattery();
         refreshLcd();
         lcd_refresh_wait();
         if(!ST(STAT_OFF) && (fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING)) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT);
         }
         CLR_ST(STAT_POWER_CHANGE);
         continue;
@@ -900,6 +917,9 @@ int convertKeyCode(int key) {
         }
       }
 
+                          #if defined(DM42_POWERMARKS)
+                            powerMarkerMsF(9,10000);
+                          #endif //DM42_POWERMARKS
       dmcpResetAutoOff();
 
                                                   #if defined(NOKEYMAP)
@@ -1048,15 +1068,25 @@ int convertKeyCode(int key) {
                                                   #endif // JMSHOWCODES
 
       if(38 <= key && key <=43) { // Function key
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%c", key+11);
         btnFnPressed(charKey);
-        keyClick(3);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(3);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
       else if(1 <= key && key <= 37) { // Not a function key
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%02u", key - 1);
         btnPressed(charKey);
-        keyClick(1);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(1);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
 
@@ -1079,33 +1109,49 @@ int convertKeyCode(int key) {
                                                   #endif // FN_RELEASE_CODE_WP43S
 
       else if(key == 0 && charKey[1] == 0) {            //JM, key=0 is release, therefore there must have been a press before that. If the press was a FN key, FN_key_pressed > 0 when it comes back here for release.
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         btnFnReleased(charKey);                                //    in short, it can only execute FN release after there was a FN press.
-        keyClick(4);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(4);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
       else if(key == 0) {
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         btnReleased(charKey);
-        keyClick(2);
-          if(calcMode == CM_PEM && shiftF && ( (calcModel == USER_C47 && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2')))
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(2);
+                            #endif //DM42_KEYCLICK
+        if(calcMode == CM_PEM && shiftF && ( (calcModel == USER_C47 && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2')))
                                             || (calcModel == USER_R47 && ((charKey[0] == '2' && charKey[1] == '2') || (charKey[0] == '2' && charKey[1] == '7')))
                                                  )) {
-            shiftF = false;
-            refreshScreen(74);
-          }
+          shiftF = false;
+          refreshScreen(74);
+        }
         //lcd_refresh_dma();
       }
 
       if(key >= 0) {                                        //dr
         lcd_refresh_dma();
         if(key > 0) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV);  //dr
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM);     // Key pressed
         }
         else if(cursorEnabled == true) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 480);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(6);
+                            #endif //DM42_KEYCLICK
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_CURSOR);
         }
         else
         {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(7);
+                            #endif //DM42_KEYCLICK
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT); // Key released
         }
       }
 
