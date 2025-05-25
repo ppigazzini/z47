@@ -5244,7 +5244,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       case CM_ERROR_MESSAGE:
       case CM_TIMER:
 //printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
-        if(doRefreshSoftMenu && !SHOWMODE) {
+        if((doRefreshSoftMenu && !SHOWMODE) || calcMode == CM_ASSIGN) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
 
