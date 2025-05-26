@@ -106,6 +106,11 @@ different:
   SET_TI_TRUE_FALSE(mode == actualMode);
 }
 
+/* In matrices, we consider NaNs to be equal which is counter to normal */
+static int matrixCompareRealEqual(const real34_t *a, const real34_t *b) {
+  return real34CompareEqual(a, b) || (real34IsNaN(a) && real34IsNaN(b));
+}
+
 static void compareMatrices(uint16_t regist, uint8_t mode, uint32_t typeX, uint32_t typeR) {
   complex34Matrix_t x, r;
 
@@ -124,7 +129,8 @@ static void compareMatrices(uint16_t regist, uint8_t mode, uint32_t typeX, uint3
   if(x.header.matrixRows == r.header.matrixRows && x.header.matrixColumns == r.header.matrixColumns) {
     temporaryInformation = TI_TRUE;
     for(int i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
-      if((!real34CompareEqual(VARIABLE_REAL34_DATA(&x.matrixElements[i]), VARIABLE_REAL34_DATA(&r.matrixElements[i]))) || (!real34CompareEqual(VARIABLE_IMAG34_DATA(&x.matrixElements[i]), VARIABLE_IMAG34_DATA(&r.matrixElements[i])))) {
+      if((!matrixCompareRealEqual(VARIABLE_REAL34_DATA(&x.matrixElements[i]), VARIABLE_REAL34_DATA(&r.matrixElements[i])))
+          || (!matrixCompareRealEqual(VARIABLE_IMAG34_DATA(&x.matrixElements[i]), VARIABLE_IMAG34_DATA(&r.matrixElements[i])))) {
         temporaryInformation = TI_FALSE;
         break;
       }
