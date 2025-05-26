@@ -212,12 +212,18 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       if (cmplx) {
         if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
           compareTypeError(regist);
+        else if (realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) || realIsNaN(&rImag))
+          temporaryInformation = TI_FALSE;
         else
           SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) && realCompareEqual(&xImag, &rImag))
                             == (mode == COMPARE_MODE_EQUAL));
       } else {
-        realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
-        cmpToResult(realIsZero(&xImag) ? 0 : realIsNegative(&xImag) ? -1 : 1, mode);
+        if (realIsNaN(&xReal) || realIsNaN(&rReal))
+          temporaryInformation = TI_FALSE;
+        else {
+          realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
+          cmpToResult(realIsZero(&xImag) ? 0 : realIsNegative(&xImag) ? -1 : 1, mode);
+        }
       }
     }
   }
