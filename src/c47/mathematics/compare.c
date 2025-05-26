@@ -28,30 +28,31 @@ bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *res) 
 
     longIntegerInit(int1);
     longIntegerInit(int2);
-    if (!getRegisterAsLongIntQuiet(regist1, int1, NULL) && !getRegisterAsLongInt(regist2, int2, NULL)) {
-      compareTypeError(regist1);
+    /* These should never fail */
+    if (getRegisterAsLongIntQuiet(regist1, int1, NULL) != ERROR_NONE
+        || getRegisterAsLongIntQuiet(regist2, int2, NULL))
       return false;
-    }
     *res = longIntegerCompare(int1, int2);
     longIntegerFree(int1);
     longIntegerFree(int2);
   } else {
     real_t rcmp, real1, real2;
 
-    if (!getRegisterAsAnyReal(regist1, &real1) || !getRegisterAsReal(regist2, &real2))
+    if (!getRegisterAsAnyRealQuiet(regist1, &real1) || !getRegisterAsAnyRealQuiet(regist2, &real2))
       return false;
     realCompare(&real1, &real2, &rcmp, &ctxtReal39);
     *res = realIsZero(&rcmp) ? 0 : realIsPositive(&rcmp) ? 1 : -1;
-    return true;
   }
-  return false;
+  return true;
 }
 
 static void registerMinMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest, int maximum) {
     int8_t cmp;
     calcRegister_t rMin = regist1, rMax = regist2, where;
 
-    if (registerCmp(rMin = regist1, rMax = regist2, &cmp)) {
+    if (registerCmp(rMin, rMax, &cmp)) {
+      if (cmp == 0 && (dest == regist1 || dest == regist2))
+        return;
       if (cmp > 0) {
         rMin = regist2;
         rMax = regist1;
@@ -60,7 +61,7 @@ static void registerMinMax(calcRegister_t regist1, calcRegister_t regist2, calcR
       if (where != dest)
         copySourceRegisterToDestRegister(where, dest);
     } else
-      compareTypeError(regist1);
+      badTypeError(regist1);
 }
 
 void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest) {
