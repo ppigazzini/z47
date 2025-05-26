@@ -22,7 +22,7 @@ void fnCheckReal(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnCheckNumber(uint16_t unusedButMandatoryParameter) {
-  int res;
+  int res = 1;
 
   switch (getRegisterDataType(REGISTER_X)) {
     default:
@@ -31,7 +31,6 @@ void fnCheckNumber(uint16_t unusedButMandatoryParameter) {
 
     case dtLongInteger:
     case dtShortInteger:
-      res = 1;
       break;
 
     case dtComplex34:
