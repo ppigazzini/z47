@@ -22,16 +22,16 @@ void fnCheckReal(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnCheckNumber(uint16_t unusedButMandatoryParameter) {
-  uint32_t t = getRegisterDataType(REGISTER_X);
-  int res = 1;
+  int res;
 
-  switch (t) {
+  switch (getRegisterDataType(REGISTER_X)) {
     default:
       res = 0;
       break;
 
     case dtLongInteger:
     case dtShortInteger:
+      res = 1;
       break;
 
     case dtComplex34:
@@ -120,7 +120,7 @@ static uint32_t matrixXNumElem(void) {
   return REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * (uint32_t)REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
 }
 
-static void realCheck(int (*checkFn)(const real34_t *)) {
+static void specialRealCheck(int (*checkFn)(const real34_t *)) {
 
   int check = 0;
   uint32_t elements, i;
@@ -179,15 +179,15 @@ static int wrapperCheckRealSpecial(const real34_t *r) {
 }
 
 void fnCheckNaN(uint16_t unusedButMandatoryParameter) {
-    realCheck(wrapperDecQuadIsNaN);
+    specialRealCheck(wrapperDecQuadIsNaN);
 }
 
 void fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
-    realCheck(wrapperDecQuadIsInfinite);
+    specialRealCheck(wrapperDecQuadIsInfinite);
 }
 
 void fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
-    realCheck(wrapperCheckRealSpecial);
+    specialRealCheck(wrapperCheckRealSpecial);
 }
 
 static void zeroCheck(int neg) {
@@ -197,6 +197,7 @@ static void zeroCheck(int neg) {
     default:
       compareTypeErrorX();
       break;
+
     case dtLongInteger:
       if (!neg) {
         longInteger_t val;
