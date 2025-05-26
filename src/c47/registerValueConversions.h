@@ -113,6 +113,7 @@
   bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
 
   bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsAnyRealQuiet(calcRegister_t reg, real_t *val);
   bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx);
   /* returns error code or ERROR_NONE if okay */
