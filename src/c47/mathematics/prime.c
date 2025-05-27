@@ -137,6 +137,10 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
+void SQUFOF(mpz_t result, const mpz_t N);
+void complete_factorization1(const mpz_t N);
+void complete_factorization2(const mpz_t N);
+
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
@@ -175,7 +179,12 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
       uInt32ToLongInteger(1u, currentNumber);
     }
 
-    //longIntegerNextPrime(currentNumber, nextPrime);
+
+//SQUFOF(nextPrime, currentNumber);
+//complete_factorization1(currentNumber);
+//complete_factorization2(currentNumber);
+
+    //this one was commented. longIntegerNextPrime(currentNumber, nextPrime);
     calculateNextPrime(currentNumber, nextPrime);
 
     if(getRegisterDataType(REGISTER_L) == dtShortInteger) {
@@ -1181,5 +1190,419 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     longIntegerFree(x);
 
   #endif //SAVE_SPACE_DM42_12PRIME
+}
+
+
+
+#define nelems(x) (sizeof(x) / sizeof((x)[0]))
+const int multiplier[] = {1, 3, 5, 7, 11, 3*5, 3*7, 3*11, 5*7, 5*11, 7*11, 3*5*7, 3*5*11, 3*7*11, 5*7*11, 3*5*7*11};
+
+// GCD function using GMP
+void gcd_mpz(mpz_t result, const mpz_t a, const mpz_t b) {
+    mpz_gcd(result, a, b);
+}
+
+// Integer square root function using GMP
+void isqrt_mpz(mpz_t result, const mpz_t n) {
+    mpz_sqrt(result, n);
+}
+
+// Check if a number is a perfect square using GMP
+int is_perfect_square_mpz(const mpz_t n, mpz_t root) {
+    mpz_sqrt(root, n);
+    mpz_t temp;
+    mpz_init(temp);
+    mpz_mul(temp, root, root);
+    int is_perfect = (mpz_cmp(temp, n) == 0);
+    mpz_clear(temp);
+    return is_perfect;
+}
+
+void SQUFOF(mpz_t result, const mpz_t N) {
+    mpz_t D, Po, P, Pprev, Q, Qprev, q, b, r, s;
+    mpz_t temp1, temp2, temp3, gcd_result;
+    uint32_t L, B, i, k;
+    
+    // Initialize all GMP variables
+    mpz_init(D); mpz_init(Po); mpz_init(P); mpz_init(Pprev);
+    mpz_init(Q); mpz_init(Qprev); mpz_init(q); mpz_init(b);
+    mpz_init(r); mpz_init(s); mpz_init(temp1); mpz_init(temp2);
+    mpz_init(temp3); mpz_init(gcd_result);
+    
+    // Check if N is a perfect square
+    if (is_perfect_square_mpz(N, s)) {
+        mpz_set(result, s);
+        goto cleanup;
+    }
+    
+    // Calculate s = sqrt(N)
+    isqrt_mpz(s, N);
+    
+    for (k = 0; k < nelems(multiplier); k++) {
+        // Check if N * multiplier[k] would overflow (conceptually)
+        // For GMP, we don't have overflow issues, but we keep the logic
+        
+        // D = multiplier[k] * N
+        mpz_mul_ui(D, N, multiplier[k]);
+        
+        // Po = Pprev = P = sqrt(D)
+        isqrt_mpz(Po, D);
+        mpz_set(Pprev, Po);
+        mpz_set(P, Po);
+        
+        // Qprev = 1
+        mpz_set_ui(Qprev, 1);
+        
+        // Q = D - Po*Po
+        mpz_mul(temp1, Po, Po);
+        mpz_sub(Q, D, temp1);
+        
+        // L = 2 * sqrt(2*s)
+        mpz_mul_ui(temp1, s, 2);
+        isqrt_mpz(temp2, temp1);
+        L = 2 * mpz_get_ui(temp2);
+        
+        // B = 3 * L
+        B = 3 * L;
+        
+        for (i = 2; i < B; i++) {
+            // b = (Po + P) / Q
+            mpz_add(temp1, Po, P);
+            mpz_fdiv_q(b, temp1, Q);
+            
+            // P = b*Q - P
+            mpz_mul(temp1, b, Q);
+            mpz_sub(temp2, temp1, P);
+            mpz_set(P, temp2);
+            
+            // q = Q
+            mpz_set(q, Q);
+            
+            // Q = Qprev + b*(Pprev - P)
+            mpz_sub(temp1, Pprev, P);
+            mpz_mul(temp2, b, temp1);
+            mpz_add(Q, Qprev, temp2);
+            
+            // r = sqrt(Q)
+            isqrt_mpz(r, Q);
+            
+            // Check if i is even and r*r == Q
+            if (!(i & 1) && is_perfect_square_mpz(Q, temp1)) {
+                break;
+            }
+            
+            // Qprev = q; Pprev = P
+            mpz_set(Qprev, q);
+            mpz_set(Pprev, P);
+        }
+        
+        if (i >= B) continue;
+        
+        // b = (Po - P) / r
+        mpz_sub(temp1, Po, P);
+        mpz_fdiv_q(b, temp1, r);
+        
+        // Pprev = P = b*r + P
+        mpz_mul(temp1, b, r);
+        mpz_add(temp2, temp1, P);
+        mpz_set(Pprev, temp2);
+        mpz_set(P, temp2);
+        
+        // Qprev = r
+        mpz_set(Qprev, r);
+        
+        // Q = (D - Pprev*Pprev) / Qprev
+        mpz_mul(temp1, Pprev, Pprev);
+        mpz_sub(temp2, D, temp1);
+        mpz_fdiv_q(Q, temp2, Qprev);
+        
+        i = 0;
+        do {
+            // b = (Po + P) / Q
+            mpz_add(temp1, Po, P);
+            mpz_fdiv_q(b, temp1, Q);
+            
+            // Pprev = P
+            mpz_set(Pprev, P);
+            
+            // P = b*Q - P
+            mpz_mul(temp1, b, Q);
+            mpz_sub(P, temp1, P);
+            
+            // q = Q
+            mpz_set(q, Q);
+            
+            // Q = Qprev + b*(Pprev - P)
+            mpz_sub(temp1, Pprev, P);
+            mpz_mul(temp2, b, temp1);
+            mpz_add(Q, Qprev, temp2);
+            
+            // Qprev = q
+            mpz_set(Qprev, q);
+            
+            i++;
+        } while (mpz_cmp(P, Pprev) != 0);
+        
+        // r = gcd(N, Qprev)
+        gcd_mpz(r, N, Qprev);
+        
+        // Check if r != 1 and r != N
+        if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
+            mpz_set(result, r);
+            goto cleanup;
+        }
+    }
+    
+    // No factor found
+    mpz_set_ui(result, 0);
+    
+cleanup:
+    // Clear all GMP variables
+    mpz_clear(D); mpz_clear(Po); mpz_clear(P); mpz_clear(Pprev);
+    mpz_clear(Q); mpz_clear(Qprev); mpz_clear(q); mpz_clear(b);
+    mpz_clear(r); mpz_clear(s); mpz_clear(temp1); mpz_clear(temp2);
+    mpz_clear(temp3); mpz_clear(gcd_result);
+}
+
+
+
+
+// Check if a number is prime using GMP's probabilistic primality test
+int is_prime_mpz(const mpz_t n) {
+    return mpz_probab_prime_p(n, 25); // 25 rounds for high confidence
+}
+
+// Complete factorization using SQUFOF iteratively
+// This gives a one-level of factors.
+void complete_factorization1(const mpz_t N) {
+    mpz_t current, factor, quotient;
+    mpz_t factors[1000]; // Array to store factors
+    uint32_t factor_count = 0;
+    uint32_t i;
+    
+    mpz_init(current);
+    mpz_init(factor);
+    mpz_init(quotient);
+    
+    // Initialize factors array
+    for (i = 0; i < 1000; i++) {
+        mpz_init(factors[i]);
+    }
+    
+    mpz_set(current, N);
+    
+    printf("Factorizing: ");
+    mpz_out_str(stdout, 10, N);
+    printf("\n");
+    printf("Factors found: ");
+    
+    while (mpz_cmp_ui(current, 1) > 0) {
+        // Check if current number is prime
+        if (is_prime_mpz(current)) {
+            mpz_set(factors[factor_count], current);
+            factor_count++;
+            mpz_out_str(stdout, 10, current);
+            printf(" ");
+            break;
+        }
+        
+        // Try to find a factor using SQUFOF
+        SQUFOF(factor, current);
+        
+        if (mpz_cmp_ui(factor, 0) == 0) {
+            // SQUFOF failed, number might be prime or too hard to factor
+            printf("\nSQUFOF failed to find factor for: ");
+            mpz_out_str(stdout, 10, current);
+            printf(" (assuming prime)\n");
+            mpz_set(factors[factor_count], current);
+            factor_count++;
+            mpz_out_str(stdout, 10, current);
+            printf(" ");
+            break;
+        }
+        
+        // Found a factor
+        mpz_set(factors[factor_count], factor);
+        factor_count++;
+        mpz_out_str(stdout, 10, factor);
+        printf(" ");
+        
+        // Divide current by the factor to get the quotient
+        mpz_divexact(quotient, current, factor);
+        mpz_set(current, quotient);
+        
+        // If quotient equals the factor, we have a repeated factor
+        if (mpz_cmp(current, factor) == 0) {
+            mpz_set(factors[factor_count], factor);
+            factor_count++;
+            mpz_out_str(stdout, 10, factor);
+            printf(" ");
+            break;
+        }
+    }
+    
+    printf("\n\nComplete factorization: ");
+    mpz_out_str(stdout, 10, N);
+    printf(" = ");
+    
+    for (i = 0; i < factor_count; i++) {
+        mpz_out_str(stdout, 10, factors[i]);
+        if (i < factor_count - 1) {
+            printf(" × ");
+        }
+    }
+    printf("\n");
+    
+    // Verify factorization
+    mpz_t product;
+    mpz_init_set_ui(product, 1);
+    for (i = 0; i < factor_count; i++) {
+        mpz_mul(product, product, factors[i]);
+    }
+    
+    if (mpz_cmp(product, N) == 0) {
+        printf("Factorization verified: CORRECT\n");
+    } else {
+        printf("Factorization verified: ERROR\n");
+    }
+    
+    // Cleanup
+    mpz_clear(current);
+    mpz_clear(factor);
+    mpz_clear(quotient);
+    mpz_clear(product);
+    
+    for (i = 0; i < 1000; i++) {
+        mpz_clear(factors[i]);
+    }
+}
+
+
+
+#define MAXIMUM_FACTORS 1000
+#define MAXIMUM_QUEUE_SIZE 1000
+
+void complete_factorization2(const mpz_t N) {
+    mpz_t queue[MAXIMUM_QUEUE_SIZE];
+    size_t queue_start = 0, queue_end = 0;
+
+    mpz_t factors[MAXIMUM_FACTORS];
+    size_t factor_count = 0;
+
+    mpz_t temp, factor, quotient;
+    mpz_init(temp);
+    mpz_init(factor);
+    mpz_init(quotient);
+
+    // Initialize queue with the input number
+    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+        mpz_init(queue[i]);
+    }
+    mpz_set(queue[queue_end++], N);
+
+    // Initialize factors array
+    for (size_t i = 0; i < MAXIMUM_FACTORS; i++) {
+        mpz_init(factors[i]);
+    }
+
+    printf("Factorizing: ");
+    mpz_out_str(stdout, 10, N);
+    printf("\nFactors found: ");
+
+    while (queue_start < queue_end) {
+        mpz_t current;
+        mpz_init_set(current, queue[queue_start++]);
+
+        // Skip if current is 1
+        if (mpz_cmp_ui(current, 1) == 0) {
+            mpz_clear(current);
+            continue;
+        }
+
+        // Check if current is prime
+        if (is_prime_mpz(current)) {
+            if (factor_count < MAXIMUM_FACTORS) {
+                mpz_set(factors[factor_count++], current);
+                mpz_out_str(stdout, 10, current);
+                printf(" ");
+            } else {
+                fprintf(stderr, "\nError: Exceeded maximum number of factors.\n");
+                mpz_clear(current);
+                break;
+            }
+            mpz_clear(current);
+            continue;
+        }
+
+        // Attempt to find a factor using SQUFOF
+        SQUFOF(factor, current);
+
+        if (mpz_cmp_ui(factor, 0) == 0 || mpz_cmp(factor, current) == 0) {
+            // SQUFOF failed; treat current as prime
+            if (factor_count < MAXIMUM_FACTORS) {
+                mpz_set(factors[factor_count++], current);
+                mpz_out_str(stdout, 10, current);
+                printf(" ");
+            } else {
+                fprintf(stderr, "\nError: Exceeded maximum number of factors.\n");
+                mpz_clear(current);
+                break;
+            }
+            mpz_clear(current);
+            continue;
+        }
+
+        // Divide current by the found factor
+        mpz_divexact(quotient, current, factor);
+
+        // Enqueue the factor and quotient for further factorization
+        if (queue_end + 2 <= MAXIMUM_QUEUE_SIZE) {
+            mpz_set(queue[queue_end++], factor);
+            mpz_set(queue[queue_end++], quotient);
+        } else {
+            fprintf(stderr, "\nError: Queue overflow.\n");
+            mpz_clear(current);
+            break;
+        }
+
+        mpz_clear(current);
+    }
+
+    printf("\n\nComplete factorization: ");
+    mpz_out_str(stdout, 10, N);
+    printf(" = ");
+
+    for (size_t i = 0; i < factor_count; i++) {
+        mpz_out_str(stdout, 10, factors[i]);
+        if (i < factor_count - 1) {
+            printf(" × ");
+        }
+    }
+    printf("\n");
+
+    // Verify the factorization
+    mpz_t product;
+    mpz_init_set_ui(product, 1);
+    for (size_t i = 0; i < factor_count; i++) {
+        mpz_mul(product, product, factors[i]);
+    }
+
+    if (mpz_cmp(product, N) == 0) {
+        printf("Factorization verified: CORRECT\n");
+    } else {
+        printf("Factorization verified: ERROR\n");
+    }
+
+    // Cleanup
+    mpz_clear(temp);
+    mpz_clear(factor);
+    mpz_clear(quotient);
+    mpz_clear(product);
+    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+        mpz_clear(queue[i]);
+    }
+    for (size_t i = 0; i < MAXIMUM_FACTORS; i++) {
+        mpz_clear(factors[i]);
+    }
 }
 
