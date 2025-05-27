@@ -741,17 +741,30 @@ int convertKeyCode(int key) {
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
     fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);
 //--fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
-    nextTimerRefresh = 0;
+
+    #define TIMER_REFRESH_PERIOD SCREEN_REFRESH_PERIOD
+    refreshTimer();
+    nextTimerRefresh = sys_current_ms() + TIMER_REFRESH_PERIOD;
 
     // Status flags:
     //   ST(STAT_PGM_END)   - Indicates that program should go to off state (set by auto off timer)
     //   ST(STAT_SUSPENDED) - Program signals it is ready for off and doesn't need to be woken-up again
     //   ST(STAT_OFF)       - Program in off state (OS goes to sleep and only [EXIT] key can wake it up again)
     //   ST(STAT_RUNNING)   - OS doesn't sleep in this mode
-  //SET_ST(STAT_CLK_WKUP_SECONDS);
+    //   SET_ST(STAT_CLK_WKUP_SECONDS);
     SET_ST(STAT_CLK_WKUP_ENABLE); // Enable wakeup each minute (for clock update)
 
+
+    //** ** ** MAIN LOOP START ** ** **
     while(!backToDMCP) {
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(1,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
+                                               //    char rrr[100];
+                                               //    int ii = sys_auto_off_cnt();
+                                               //    sprintf(rrr, "time left: %d",(uint16_t)ii);
+                                               //    print_linestr(rrr,true);
+
       if(ST(STAT_PGM_END) && ST(STAT_SUSPENDED)) { // Already in off mode and suspended
         CLR_ST(STAT_RUNNING);
                             #if defined(DM42_POWERMARKS)
@@ -759,10 +772,8 @@ int convertKeyCode(int key) {
                             #endif //DM42_POWERMARKS
         sys_sleep();
       }
-      else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {         // Just wait if no keys available.
+      else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {          // Just wait if no keys available.
         CLR_ST(STAT_RUNNING);
-
-        if(nextTimerRefresh == 0) {                                            // no timeout available
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(2) == true) {
                                                       showString("key_empty()", &standardFont, 20, 40, vmNormal, false, false);
@@ -770,17 +781,12 @@ int convertKeyCode(int key) {
                                                       lcd_refresh_wait();
                                                     }
                                                   #endif // TMR_OBSERVE
-          nextTimerRefresh = sys_current_ms() + SCREEN_REFRESH_PERIOD;
-                              #if defined(DM42_POWERMARKS)
-                                powerMarkerMsF(5,1000);
-                              #endif //DM42_POWERMARKS
-          sys_sleep();
-        }
-        else {                                                                 // timeout available
-          uint32_t tnow = sys_current_ms();
-          uint32_t timeoutTime = tnow;
-          if(nextTimerRefresh > timeoutTime) {
-            timeoutTime = nextTimerRefresh - timeoutTime;
+        {                                                                 // timeout available
+          uint32_t tnow;
+          tnow = sys_current_ms();
+          uint32_t timeoutTime;
+          if(nextTimerRefresh > tnow) {
+            timeoutTime = nextTimerRefresh - tnow;                             // nextTimerRefresh does not change, since it has not expiread
           }
           else {
                                                   #if defined(TMR_OBSERVE)
@@ -791,8 +797,18 @@ int convertKeyCode(int key) {
                                                     }
                                                   #endif // TMR_OBSERVE
             timeoutTime = 1;
-            nextTimerRefresh = tnow + SCREEN_REFRESH_PERIOD;
           }
+                                                  char rrr[100];
+                                                  sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
+                                                  print_linestr(rrr,true);
+                                                  rrr[0]=0;
+                                                  print_linestr(rrr,false);                                                  
+                                                  sprintf(rrr, "tnow: %lu",tnow);
+                                                  print_linestr(rrr,false);
+                                                  sprintf(rrr, "timeoutTime: %lu",timeoutTime);
+                                                  print_linestr(rrr,false);
+                                                  sprintf(rrr, "TIMER_REFRESH_PERIOD: %lu",(uint32_t)TIMER_REFRESH_PERIOD);
+                                                  print_linestr(rrr,false);
 
           if(fnTimerGetStatus(TO_KB_ACTV) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 40);
@@ -803,7 +819,7 @@ int convertKeyCode(int key) {
 
           uint32_t sleepTime = SCREEN_REFRESH_PERIOD;
           sleepTime = min(sleepTime, timeoutTime);
-          sys_timer_start(TIMER_IDX_REFRESH_SLEEP, max(sleepTime, 1));         // wake up for screen refresh
+          sys_timer_start(TIMER_IDX_REFRESH_SLEEP, max(sleepTime, 10));         // wake up for screen refresh
 
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(1) == true) {
@@ -822,7 +838,13 @@ int convertKeyCode(int key) {
                               #if defined(DM42_POWERMARKS)
                                 powerMarkerMsF(10,1000);
                               #endif //DM42_POWERMARKS
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(max(sleepTime, 1),8000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           sys_sleep();
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(1,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         }
 
@@ -847,7 +869,7 @@ int convertKeyCode(int key) {
                             #if defined(DM42_POWERMARKS)
                               powerMarkerMsF(5,10000);
                             #endif //DM42_POWERMARKS
-        if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
+        if(!ST(STAT_OFF)) {
 
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(1) == true) {
@@ -917,9 +939,6 @@ int convertKeyCode(int key) {
         }
       }
 
-                          #if defined(DM42_POWERMARKS)
-                            powerMarkerMsF(9,10000);
-                          #endif //DM42_POWERMARKS
       dmcpResetAutoOff();
 
                                                   #if defined(NOKEYMAP)
@@ -1164,18 +1183,25 @@ int convertKeyCode(int key) {
                                                   //      inFastRefresh = 0;
                                                   //    }
 
-      uint32_t now = sys_current_ms();
-
-      if(nextTimerRefresh != 0 && nextTimerRefresh <= now) {
-        refreshTimer();                                     // Executes pending timer jobs
-      }
+      uint32_t now;
       now = sys_current_ms();
+
+      if(nextTimerRefresh <= now) {
+        nextTimerRefresh = now + TIMER_REFRESH_PERIOD;
+        refreshTimer();                                     // Executes pending timer jobs
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(5,4000);
+                          #endif //DM42_POWERMARK_KEYPRESS
+      }
       if(nextScreenRefresh <= now) {
         nextScreenRefresh += SCREEN_REFRESH_PERIOD;
         if(nextScreenRefresh < now) {
           nextScreenRefresh = now + SCREEN_REFRESH_PERIOD;  // we were out longer than expected; just skip ahead.
         }
         if((calcMode != CM_TIMER) || (fnTimerGetStatus(TO_TIMER_APP) != TMR_RUNNING)) {
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(10,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           refreshLcd();
           if(key >= 0) {
             lcd_refresh();
