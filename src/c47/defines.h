@@ -141,7 +141,7 @@
   #define    DM42_POWERMARKS
   #undef     DM42_POWERMARKS
   #define    DM42_POWERMARK_KEYPRESS
-  //#undef     DM42_POWERMARK_KEYPRESS
+  #undef     DM42_POWERMARK_KEYPRESS
 
   #define    CLICK_REFRESHSCR           //Add a 5 ms click before refresh screen
   #undef     CLICK_REFRESHSCR

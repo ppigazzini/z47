@@ -741,10 +741,7 @@ int convertKeyCode(int key) {
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
     fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);
 //--fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
-
-    #define TIMER_REFRESH_PERIOD SCREEN_REFRESH_PERIOD
-    refreshTimer();
-    nextTimerRefresh = sys_current_ms() + TIMER_REFRESH_PERIOD;
+    nextTimerRefresh = SCREEN_REFRESH_PERIOD;
 
     // Status flags:
     //   ST(STAT_PGM_END)   - Indicates that program should go to off state (set by auto off timer)
@@ -774,6 +771,8 @@ int convertKeyCode(int key) {
       }
       else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {          // Just wait if no keys available.
         CLR_ST(STAT_RUNNING);
+
+        if(nextTimerRefresh == 0) {                                            // no timeout available
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(2) == true) {
                                                       showString("key_empty()", &standardFont, 20, 40, vmNormal, false, false);
@@ -781,34 +780,31 @@ int convertKeyCode(int key) {
                                                       lcd_refresh_wait();
                                                     }
                                                   #endif // TMR_OBSERVE
-        {                                                                 // timeout available
-          uint32_t tnow;
-          tnow = sys_current_ms();
-          uint32_t timeoutTime;
-          if(nextTimerRefresh > tnow) {
-            timeoutTime = nextTimerRefresh - tnow;                             // nextTimerRefresh does not change, since it has not expiread
+          sys_sleep();
+        }
+        else {                                                                 // timeout available
+          //uint32_t timeoutTime = max(1, nextTimerRefresh - sys_current_ms());
+          uint32_t timeoutTime = sys_current_ms();
+          if(nextTimerRefresh > timeoutTime) {
+            timeoutTime = nextTimerRefresh - timeoutTime;
           }
           else {
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(3) == true) {
                                                       char snum[50];
                                                       itoa(timeoutTime - nextTimerRefresh, snum, 10);
-                                                      showString(snum, &standardFont, 40, 120, vmNormal, false, false);
+                                                      showString(snum, &standardFont, 20, 120, vmNormal, false, false);
                                                     }
                                                   #endif // TMR_OBSERVE
             timeoutTime = 1;
           }
-                                                  char rrr[100];
-                                                  sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
-                                                  print_linestr(rrr,true);
-                                                  rrr[0]=0;
-                                                  print_linestr(rrr,false);                                                  
-                                                  sprintf(rrr, "tnow: %lu",tnow);
-                                                  print_linestr(rrr,false);
-                                                  sprintf(rrr, "timeoutTime: %lu",timeoutTime);
-                                                  print_linestr(rrr,false);
-                                                  sprintf(rrr, "TIMER_REFRESH_PERIOD: %lu",(uint32_t)TIMER_REFRESH_PERIOD);
-                                                  print_linestr(rrr,false);
+                                                  // char rrr[100];
+                                                  // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
+                                                  // print_linestr(rrr,true);
+                                                  // rrr[0]=0;
+                                                  // print_linestr(rrr,false);                                                  
+                                                  // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
+                                                  // print_linestr(rrr,false);
 
           if(fnTimerGetStatus(TO_KB_ACTV) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 40);
@@ -816,10 +812,13 @@ int convertKeyCode(int key) {
           if(fnTimerGetStatus(TO_FN_EXEC) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 15);
           }
+          if(fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING || fnTimerGetStatus(TO_FN_LONG) == TMR_RUNNING || fnTimerGetStatus(TO_CL_LONG) == TMR_RUNNING) {
+            timeoutTime = min(timeoutTime, 10);
+          }
 
           uint32_t sleepTime = SCREEN_REFRESH_PERIOD;
           sleepTime = min(sleepTime, timeoutTime);
-          sys_timer_start(TIMER_IDX_REFRESH_SLEEP, max(sleepTime, 10));         // wake up for screen refresh
+          sys_timer_start(TIMER_IDX_REFRESH_SLEEP, max(sleepTime, 1));         // wake up for screen refresh
 
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(1) == true) {
@@ -869,7 +868,7 @@ int convertKeyCode(int key) {
                             #if defined(DM42_POWERMARKS)
                               powerMarkerMsF(5,10000);
                             #endif //DM42_POWERMARKS
-        if(!ST(STAT_OFF)) {
+        if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
 
                                                   #if defined(TMR_OBSERVE)
                                                     if(fnTestBitIsSet(1) == true) {
@@ -891,7 +890,7 @@ int convertKeyCode(int key) {
         refreshLcd();
         lcd_refresh_wait();
         if(!ST(STAT_OFF) && (fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING)) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT);
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
         }
         CLR_ST(STAT_POWER_CHANGE);
         continue;
@@ -1183,16 +1182,15 @@ int convertKeyCode(int key) {
                                                   //      inFastRefresh = 0;
                                                   //    }
 
-      uint32_t now;
-      now = sys_current_ms();
+      uint32_t now = sys_current_ms();
 
-      if(nextTimerRefresh <= now) {
-        nextTimerRefresh = now + TIMER_REFRESH_PERIOD;
+      if(nextTimerRefresh != 0 && nextTimerRefresh <= now) {
         refreshTimer();                                     // Executes pending timer jobs
                           #if defined(DM42_POWERMARK_KEYPRESS)
                             powerMarkerMsF(5,4000);
                           #endif //DM42_POWERMARK_KEYPRESS
       }
+      now = sys_current_ms();
       if(nextScreenRefresh <= now) {
         nextScreenRefresh += SCREEN_REFRESH_PERIOD;
         if(nextScreenRefresh < now) {
