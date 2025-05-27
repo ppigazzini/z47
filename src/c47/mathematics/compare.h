@@ -8,18 +8,6 @@
   #define COMPARE_H
 
   bool_t registerCmp       (calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpLonILonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpLonIShoI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpLonIReal(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpTimeTime(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpDateDate(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpStriStri(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpShoILonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpShoIShoI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpShoIReal(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpRealLonI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpRealShoI(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
-  void  registerCmpRealReal(calcRegister_t regist1, calcRegister_t regist2, int8_t *result);
   void  registerMax        (calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
   void  registerMin        (calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
 

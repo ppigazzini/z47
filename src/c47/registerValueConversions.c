@@ -924,7 +924,7 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   return true;
 }
 
-bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToReal(reg, r, &ctxtReal75);
@@ -934,6 +934,8 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
       convertShortIntegerRegisterToReal(reg, r, &ctxtReal34);
       break;
 
+    case dtTime:
+    case dtDate:
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), r);
       break;
@@ -946,14 +948,37 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
       return true;
 
     default:
-      badTypeError(reg);
       return false;
   }
   realZero(i);
   return true;
 }
 
-bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
+bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const bool_t ret = getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+
+  if (!ret)
+    badTypeError(reg);
+  return ret;
+}
+
+bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const uint32_t t = getRegisterDataType(reg);
+
+  if (t == dtTime || t == dtDate)
+    return false;
+  return getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+}
+
+bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const bool_t ret = getRegisterAsComplexOrRealQuiet(reg, r, i, cmplx);
+
+  if (!ret)
+    badTypeError(reg);
+  return ret;
+}
+
+bool_t getRegisterAsAnyRealQuiet(calcRegister_t reg, real_t *val) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToReal(reg, val, &ctxtReal75);
@@ -963,6 +988,8 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
       convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
       break;
 
+    case dtDate:
+    case dtTime:
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), val);
       break;
@@ -980,8 +1007,24 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
   return true;
 }
 
+bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
+  uint32_t t = getRegisterDataType(reg);
+
+  if (t == dtDate || t ==dtTime)
+    return false;
+  return getRegisterAsAnyRealQuiet(reg, val);
+}
+
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   bool_t res = getRegisterAsRealQuiet(reg, val);
+
+  if(!res)
+    badTypeError(reg);
+  return res;
+}
+
+bool_t getRegisterAsAnyReal(calcRegister_t reg, real_t *val) {
+  bool_t res = getRegisterAsAnyRealQuiet(reg, val);
 
   if(!res)
     badTypeError(reg);

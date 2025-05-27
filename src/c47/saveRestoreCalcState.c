@@ -2069,13 +2069,14 @@ int64_t stringToInt64(const char *str) {
       if(loadedVersion < 10000008) {
         // For earlier version config files of 896 desxcriptor length, the above Write into the register must only be up to the old descriptor content.
         // We add the defaults for the new portion of the new descriptor in the following string.
-        char tmpvalue[65];
-        strcpy(tmpvalue, "0000000000000000F777DC2C2B842A1C33203033460C2A330118000000000000");
-        for(tag=0; tag<strlen(tmpvalue); tag+=2, cfg++) {
-          *cfg = ((tmpvalue[tag] >= 'A' ? tmpvalue[tag] - 'A' + 10 : tmpvalue[tag] - '0') << 4) | (tmpvalue[tag + 1] >= 'A' ? tmpvalue[tag + 1] - 'A' + 10 : tmpvalue[tag + 1] - '0');
-        }
+        static const unsigned char tmpvalue[] = {
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
+          0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
+          0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        };
+        memcpy(cfg, tmpvalue, sizeof(tmpvalue));
       }
-
     }
 
     else {
