@@ -238,7 +238,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_artanh      },
     {ITM_CEIL        },
     {ITM_FLOOR       },
-    {ITM_DEC         },
+    {ITM_DECR        },
     {ITM_INC         },
     {ITM_IP          },
     {ITM_FP          },
