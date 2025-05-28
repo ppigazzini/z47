@@ -61,7 +61,12 @@ bool_t anyKeyWaiting(void) {
 
 bool_t exitKeyWaiting(void) {
   #if defined(DMCP_BUILD)
-    return C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+    bool_t checkKey = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+    if(!checkKey) {
+      key_pop_all();
+      clearKeyBuffer();
+    }
+    return checkKey;
   #elif defined(PC_BUILD) // !DMCP_BUILD
     //printf("KeyWaiting keyCode=%u",currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
@@ -1185,6 +1190,10 @@ void fnP_All_Regs(uint16_t option) {
 
       case PRN_Xr:
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
+        break;
+
+      case PRN_TMP:
+        stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
         break;
 
       case PRN_XYr:
