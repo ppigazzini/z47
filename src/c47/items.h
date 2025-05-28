@@ -100,7 +100,7 @@
 #define ITM_FLOOR                     88
 #define ITM_GCD                       89
 #define ITM_LCM                       90
-#define ITM_DEC                       91
+#define ITM_DECR                      91
 #define ITM_INC                       92
 #define ITM_IP                        93
 #define ITM_FP                        94
