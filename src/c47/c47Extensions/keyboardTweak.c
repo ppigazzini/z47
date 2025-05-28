@@ -459,7 +459,12 @@ void resetKeytimers(void) {
         default : {
           switch(*result) {
             case ITM_EXIT1    :
-              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              if(calcModel == USER_C47) {
+                longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              } else {
+                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD               
+                longpressDelayedkey1 = ITM_SNAP;
+              }
               break;
             default:;
           }
