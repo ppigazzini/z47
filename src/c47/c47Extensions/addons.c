@@ -76,7 +76,7 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     if(!anyKeyWaiting()) return -1;
     if(displayWaitForRelease) {
       #if !defined(TESTSUITE_BUILD)
-        showString("Waiting for key release ...", &standardFont, 20, 40, vmNormal, false, false);
+        showString("Waiting for key ...", &standardFont, 20, 40, vmNormal, false, false);
       #endif //!TESTSUITE_BUILD
       force_refresh(force);
 ////Monitor key codes on screen
