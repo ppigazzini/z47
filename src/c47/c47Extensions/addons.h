@@ -35,6 +35,7 @@ void fnInDefault    (uint16_t inputDefault);
 #define PRN_NAMEDr  4
 #define PRN_Xr      5
 #define PRN_XYr     6
+#define PRN_TMP     7
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (void);

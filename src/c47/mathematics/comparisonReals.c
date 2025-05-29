@@ -55,6 +55,17 @@ bool_t real34CompareEqual(const real34_t *number1, const real34_t *number2) {
 }
 
 
+bool_t real34CompareAbsEqual(const real34_t *number1, const real34_t *number2) {
+  real34_t compare;
+  real34_t num1, num2;
+
+  real34CopyAbs(number1, &num1);
+  real34CopyAbs(number2, &num2);
+
+  real34Compare(&num1, &num2, &compare);
+  return real34IsZero(&compare);
+}
+
 
 bool_t real34CompareGreaterEqual(const real34_t *number1, const real34_t *number2) {
   real34_t compare;

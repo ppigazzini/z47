@@ -16,6 +16,7 @@ bool_t  real34CompareAbsGreaterThan (const real34_t *number1, const real34_t *nu
 bool_t  real34CompareAbsGreaterEqual(const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareAbsLessThan    (const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareEqual          (const real34_t *number1, const real34_t *number2);
+bool_t  real34CompareAbsEqual       (const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareGreaterEqual   (const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareGreaterThan    (const real34_t *number1, const real34_t *number2); //never used: JM returned
 bool_t  real34CompareLessEqual      (const real34_t *number1, const real34_t *number2);
