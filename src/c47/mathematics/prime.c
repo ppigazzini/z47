@@ -180,11 +180,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     }
 
 
-//SQUFOF(nextPrime, currentNumber);
-//complete_factorization1(currentNumber);
-//complete_factorization2(currentNumber);
-
-    //this one was commented. longIntegerNextPrime(currentNumber, nextPrime);
+    //longIntegerNextPrime(currentNumber, nextPrime);
     calculateNextPrime(currentNumber, nextPrime);
 
     if(getRegisterDataType(REGISTER_L) == dtShortInteger) {
@@ -504,6 +500,10 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 #define WGR              //verbose
 #undef WGR
+
+#undef old_PrimeFactorProgram
+
+#ifdef old_PrimeFactorProgram
 #define MAX_FACTORS 100//87
 
 typedef struct FactorAdder
@@ -816,6 +816,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerFree(currentNumber);
   #endif //SAVE_SPACE_DM42_12PRIME
 }
+#endif //old_PrimeFactorProgram
+
 
 
 
@@ -909,8 +911,6 @@ void _fnEvPFacts     (uint16_t param) {
         longInteger_t prod, factor, tmp_prod, p_li, k_li;
         longIntegerInit(prod);
         longIntegerInit(factor);
-        longIntegerInit(p_li);
-        longIntegerInit(k_li);
         longIntegerInit(tmp_prod);
         uInt32ToLongInteger(1u, prod);
         realCopy(const_1,&prodR);
@@ -931,6 +931,8 @@ void _fnEvPFacts     (uint16_t param) {
               case M_EULER_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
               default:;
             }
+            longIntegerFree(p_li);
+            longIntegerFree(k_li);
             //printLongIntegerToConsole(factor,"factor:","\n");
             longIntegerCopy(prod, tmp_prod);
             longIntegerMultiply(tmp_prod, factor, prod);
@@ -984,8 +986,6 @@ void _fnEvPFacts     (uint16_t param) {
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         longIntegerFree(prod);
         longIntegerFree(factor);
-        longIntegerFree(p_li);
-        longIntegerFree(k_li);
         longIntegerFree(tmp_prod);
       }
       else {
@@ -1114,8 +1114,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
     longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
     longIntegerInit(phi_x);
-    longIntegerInit(p_li);
-    longIntegerInit(p_li_less_1);
     longIntegerInit(phi_x_tmp);
     longIntegerInit(phi_x_tmp_b);
     real34Matrix_t matrix;
@@ -1152,6 +1150,8 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
             longIntegerCopy(phi_x, phi_x_tmp);
             longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
             longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
+            longIntegerFree(p_li);
+            longIntegerFree(p_li_less_1);
           }
         }
         else {
@@ -1181,8 +1181,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
     return2:
     longIntegerFree(phi_x);
-    longIntegerFree(p_li);
-    longIntegerFree(p_li_less_1);
     longIntegerFree(phi_x_tmp);
     longIntegerFree(phi_x_tmp_b);
 
@@ -1192,6 +1190,12 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   #endif //SAVE_SPACE_DM42_12PRIME
 }
 
+
+
+
+
+//** **********************************************************************************************************
+#ifndef old_PrimeFactorProgram
 
 
 #define nelems(x) (sizeof(x) / sizeof((x)[0]))
@@ -1218,11 +1222,14 @@ int is_perfect_square_mpz(const mpz_t n, mpz_t root) {
     return is_perfect;
 }
 
+    #if !defined(TESTSUITE_BUILD)
+      int32_t loopp = 0;
+    #endif //TESTSUITE_BUILD
+
 void SQUFOF(mpz_t result, const mpz_t N) {
     mpz_t D, Po, P, Pprev, Q, Qprev, q, b, r, s;
     mpz_t temp1, temp2, temp3, gcd_result;
     uint32_t L, B, i, k;
-    
     // Initialize all GMP variables
     mpz_init(D); mpz_init(Po); mpz_init(P); mpz_init(Pprev);
     mpz_init(Q); mpz_init(Qprev); mpz_init(q); mpz_init(b);
@@ -1253,19 +1260,34 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         // Qprev = 1
         mpz_set_ui(Qprev, 1);
         
-        // Q = D - Po*Po
+   // Q = D - Po*Po
         mpz_mul(temp1, Po, Po);
         mpz_sub(Q, D, temp1);
-        
-        // L = 2 * sqrt(2*s)
+        if (mpz_sgn(Q) == 0) {
+            continue;             // Q is zero; skip this iteration
+        }        
+   // L = 2 * sqrt(2*s)
         mpz_mul_ui(temp1, s, 2);
         isqrt_mpz(temp2, temp1);
         L = 2 * mpz_get_ui(temp2);
         
         // B = 3 * L
         B = 3 * L;
-        
+       
         for (i = 2; i < B; i++) {
+            #if !defined(TESTSUITE_BUILD)
+              loopp++;
+              if(checkHalfSec()) {
+                if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  force_refresh(force);
+                }
+              }
+              if(exitKeyWaiting()) {
+                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                programRunStop = PGM_WAITING;
+                break;
+              }
+            #endif //!TESTSUITE_BUILD
             // b = (Po + P) / Q
             mpz_add(temp1, Po, P);
             mpz_fdiv_q(b, temp1, Q);
@@ -1274,18 +1296,18 @@ void SQUFOF(mpz_t result, const mpz_t N) {
             mpz_mul(temp1, b, Q);
             mpz_sub(temp2, temp1, P);
             mpz_set(P, temp2);
-            
+
             // q = Q
             mpz_set(q, Q);
-            
+
             // Q = Qprev + b*(Pprev - P)
             mpz_sub(temp1, Pprev, P);
             mpz_mul(temp2, b, temp1);
             mpz_add(Q, Qprev, temp2);
-            
+
             // r = sqrt(Q)
             isqrt_mpz(r, Q);
-            
+
             // Check if i is even and r*r == Q
             if (!(i & 1) && is_perfect_square_mpz(Q, temp1)) {
                 break;
@@ -1318,6 +1340,19 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         
         i = 0;
         do {
+            #if !defined(TESTSUITE_BUILD)
+              loopp++;
+              if(checkHalfSec()) {
+                if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  force_refresh(force);
+                }
+              }
+              if(exitKeyWaiting()) {
+                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                programRunStop = PGM_WAITING;
+                break;
+              }
+            #endif //!TESTSUITE_BUILD
             // b = (Po + P) / Q
             mpz_add(temp1, Po, P);
             mpz_fdiv_q(b, temp1, Q);
@@ -1366,128 +1401,214 @@ cleanup:
 
 
 
+#define MAX_FACTORS 100
+#define MAXIMUM_QUEUE_SIZE 1000
+
+#define MONITOR_FACTORS
+#undef MONITOR_FACTORS
+
+typedef struct FactorAdder
+{
+  uint16_t nExpons;
+  uint16_t expons[MAX_FACTORS];
+} FactorAdder_t;
+
+
+#if !defined(SAVE_SPACE_DM42_12PRIME)
+  static void initFactorAdder(FactorAdder_t *faddr) {
+    faddr->nExpons = 0;
+  };
+
+  void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
+    uint16_t n2 = faddr->nExpons;
+                                            #ifdef WGR
+                                              printf("wgr:  fill expons:  *nExpons==%u, n2==%u dump=%u\n", faddr->nExpons, n2, dumpForFewerThan);
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              printf("wgr:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                            #endif
+    linkToRealMatrixRegister(REGISTER_X,  matrix);
+    for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
+                                            #ifdef WGR
+                                              printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %u, ind %u\n", n2, i, faddr->expons[i], faddr->expons[i], n2+i);
+                                            #endif //WGR
+      uInt32ToReal34(faddr->expons[i], &matrix->matrixElements[n2+i]);
+    }
+  }
+
+
+  static bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
+    //printLongIntegerToConsole(factor,"-->","\n");
+                                            #ifdef WGR
+                                              printf("wgr:  addFactor()\n");
+                                            #endif //WGR
+    if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+      //Initialize Memory for Matrix
+      if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
+        setSystemFlag(FLAG_ASLIFT);
+      }
+      else {
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    }
+
+
+
+    uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+    #endif //(EXTRA_INFO_ON_CALC_ERROR == 1)
+    if(rows > 2) {
+       #if !defined(TESTSUITE_BUILD)
+         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+           sprintf(errorMessage, "Incorrect matrix dimensions %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+           moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+       #endif // !TESTSUITE_BUILD
+       return false;
+    }
+
+    if( faddr->nExpons == 0 ) {
+      faddr->nExpons = 1;  // has to be 1 now, as we have this factor
+      faddr->expons[(faddr->nExpons)-1] = 1;
+    }
+    uint16_t wkgCols = faddr->nExpons;
+                                            #ifdef WGR
+                                              gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
+                                            #endif //WGR
+    if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+      #if !defined(TESTSUITE_BUILD)
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #endif // !TESTSUITE_BUILD
+      return false;
+    }
+
+    linkToRealMatrixRegister(REGISTER_X, matrix);
+    int counter = faddr->nExpons;
+    uint16_t n = rows*counter;
+    uint16_t c = n/2;
+
+    //printf("faddr->nExpons=%d n=%d c=%d",cntr, n, c);
+
+    real34_t factorR;
+    convertLongIntegerToReal34(factor, &factorR);
+    while(counter > 0) {
+      if(real34CompareEqual(&factorR, &matrix->matrixElements[counter])) {
+        break;
+      }
+      counter--;
+    }
+
+
+
+    //printf("EEEEE %d\n",counter);
+    if( longIntegerSign(factor) != 0 && counter > 0 ) {
+      ++(faddr->expons[counter]);
+                                              #ifdef WGR
+                                                printf("wgr:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
+                                              #endif
+    }
+    else {
+      bool_t incNExpons = real34CompareAbsEqual(&factorR,const34_1) ? false : true;
+      if( !incNExpons ) {
+        c = 0;
+      }
+                                              #ifdef WGR
+                                                printf("wgr:   restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
+                                              #endif
+      real34Copy(&factorR, &matrix->matrixElements[c]);
+      real34Copy(&matrix->matrixElements[c], lastAdded);
+      if( incNExpons ) {
+        if( faddr->nExpons < MAX_FACTORS ) {
+            (faddr->nExpons)++;
+        }
+        else {
+          #if !defined(TESTSUITE_BUILD)
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #endif // !TESTSUITE_BUILD
+          return false;
+        }
+
+        ++wkgCols;
+        faddr->expons[faddr->nExpons-1] = 1;
+        if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+          #if !defined(TESTSUITE_BUILD)
+            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            #endif // !TESTSUITE_BUILD
+          return false;
+        }
+      }
+      n = rows*(faddr->nExpons);
+      c = n/2;
+    }
+    return true;
+  }
+#endif //SAVE_SPACE_DM42_12PRIME
+
 
 // Check if a number is prime using GMP's probabilistic primality test
 int is_prime_mpz(const mpz_t n) {
     return mpz_probab_prime_p(n, 25); // 25 rounds for high confidence
 }
 
-// Complete factorization using SQUFOF iteratively
-// This gives a one-level of factors.
-void complete_factorization1(const mpz_t N) {
-    mpz_t current, factor, quotient;
-    mpz_t factors[1000]; // Array to store factors
-    uint32_t factor_count = 0;
-    uint32_t i;
-    
-    mpz_init(current);
-    mpz_init(factor);
-    mpz_init(quotient);
-    
-    // Initialize factors array
-    for (i = 0; i < 1000; i++) {
-        mpz_init(factors[i]);
-    }
-    
-    mpz_set(current, N);
-    
-    printf("Factorizing: ");
-    mpz_out_str(stdout, 10, N);
-    printf("\n");
-    printf("Factors found: ");
-    
-    while (mpz_cmp_ui(current, 1) > 0) {
-        // Check if current number is prime
-        if (is_prime_mpz(current)) {
-            mpz_set(factors[factor_count], current);
-            factor_count++;
-            mpz_out_str(stdout, 10, current);
-            printf(" ");
-            break;
-        }
-        
-        // Try to find a factor using SQUFOF
-        SQUFOF(factor, current);
-        
-        if (mpz_cmp_ui(factor, 0) == 0) {
-            // SQUFOF failed, number might be prime or too hard to factor
-            printf("\nSQUFOF failed to find factor for: ");
-            mpz_out_str(stdout, 10, current);
-            printf(" (assuming prime)\n");
-            mpz_set(factors[factor_count], current);
-            factor_count++;
-            mpz_out_str(stdout, 10, current);
-            printf(" ");
-            break;
-        }
-        
-        // Found a factor
-        mpz_set(factors[factor_count], factor);
-        factor_count++;
-        mpz_out_str(stdout, 10, factor);
-        printf(" ");
-        
-        // Divide current by the factor to get the quotient
-        mpz_divexact(quotient, current, factor);
-        mpz_set(current, quotient);
-        
-        // If quotient equals the factor, we have a repeated factor
-        if (mpz_cmp(current, factor) == 0) {
-            mpz_set(factors[factor_count], factor);
-            factor_count++;
-            mpz_out_str(stdout, 10, factor);
-            printf(" ");
-            break;
-        }
-    }
-    
-    printf("\n\nComplete factorization: ");
-    mpz_out_str(stdout, 10, N);
-    printf(" = ");
-    
-    for (i = 0; i < factor_count; i++) {
-        mpz_out_str(stdout, 10, factors[i]);
-        if (i < factor_count - 1) {
-            printf(" × ");
-        }
-    }
-    printf("\n");
-    
-    // Verify factorization
-    mpz_t product;
-    mpz_init_set_ui(product, 1);
-    for (i = 0; i < factor_count; i++) {
-        mpz_mul(product, product, factors[i]);
-    }
-    
-    if (mpz_cmp(product, N) == 0) {
-        printf("Factorization verified: CORRECT\n");
-    } else {
-        printf("Factorization verified: ERROR\n");
-    }
-    
-    // Cleanup
-    mpz_clear(current);
-    mpz_clear(factor);
-    mpz_clear(quotient);
-    mpz_clear(product);
-    
-    for (i = 0; i < 1000; i++) {
-        mpz_clear(factors[i]);
-    }
-}
+void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+//void complete_factorization2(uint16_t unusedButMandatoryParameter) {
+    currentKeyCode = 255;
+    real34_t lastAdded;
 
+    longInteger_t currentNumber, tmp, temp1;
 
+    longIntegerInit(currentNumber);
+    longIntegerInit(tmp);
+    longIntegerInit(temp1);
+    real34Matrix_t matrix;
 
-#define MAXIMUM_FACTORS 1000
-#define MAXIMUM_QUEUE_SIZE 1000
+    if(!getIntArg(currentNumber)) {
+      goto abort;
+    }
 
-void complete_factorization2(const mpz_t N) {
+    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+    longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+    if(longIntegerIsPositive(tmp)) {
+      badDomainError(REGISTER_X);
+      goto abort;
+    }
+
+    if(!saveLastX()) {
+      goto abort;
+    }
+
+    int32ToReal34(0,&lastAdded);
+    FactorAdder_t faddr;
+    initFactorAdder(&faddr);
+
+    int32ToLongInteger(longIntegerIsNegative(currentNumber) ? -1 : 1, tmp);    
+    if(!addFactor(tmp, &matrix, &lastAdded, &faddr)) {
+      goto abort;
+    }
+    longIntegerSetPositiveSign(currentNumber);
+
     mpz_t queue[MAXIMUM_QUEUE_SIZE];
-    size_t queue_start = 0, queue_end = 0;
-
-    mpz_t factors[MAXIMUM_FACTORS];
-    size_t factor_count = 0;
+    int queue_start = 0, queue_end = 0;
 
     mpz_t temp, factor, quotient;
     mpz_init(temp);
@@ -1495,23 +1616,46 @@ void complete_factorization2(const mpz_t N) {
     mpz_init(quotient);
 
     // Initialize queue with the input number
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
         mpz_init(queue[i]);
     }
-    mpz_set(queue[queue_end++], N);
+    mpz_set(queue[queue_end++], currentNumber);
 
-    // Initialize factors array
-    for (size_t i = 0; i < MAXIMUM_FACTORS; i++) {
-        mpz_init(factors[i]);
-    }
+    #if defined(MONITOR_FACTORS)
+      printf("Factorizing: ");
+      mpz_out_str(stdout, 10, currentNumber);
+      printf("\nFactors found: ");
+    #endif //MONITOR_FACTORS
 
-    printf("Factorizing: ");
-    mpz_out_str(stdout, 10, N);
-    printf("\nFactors found: ");
 
     while (queue_start < queue_end) {
         mpz_t current;
         mpz_init_set(current, queue[queue_start++]);
+
+        #if defined(MONITOR_FACTORS)
+          printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+        #endif //MONITOR_FACTORS
+           #if defined(MONITOR_FACTORS)
+             mpz_out_str(stdout, 10, current);
+             printf(" ");
+            #endif //MONITOR_FACTORS
+
+        #if !defined(TESTSUITE_BUILD)
+          loopp++;
+          if(checkHalfSec()) {
+            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              _showProgress(&lastAdded, current);
+              dumpExponents(&matrix, &faddr, 13);
+              force_refresh(force);
+            }
+          }
+          if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+        #endif //!TESTSUITE_BUILD
+
 
         // Skip if current is 1
         if (mpz_cmp_ui(current, 1) == 0) {
@@ -1521,14 +1665,14 @@ void complete_factorization2(const mpz_t N) {
 
         // Check if current is prime
         if (is_prime_mpz(current)) {
-            if (factor_count < MAXIMUM_FACTORS) {
-                mpz_set(factors[factor_count++], current);
-                mpz_out_str(stdout, 10, current);
-                printf(" ");
-            } else {
-                fprintf(stderr, "\nError: Exceeded maximum number of factors.\n");
-                mpz_clear(current);
-                break;
+           #if defined(MONITOR_FACTORS)
+             mpz_out_str(stdout, 10, current);
+             printf(" ");
+            #endif //MONITOR_FACTORS
+            convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
+            fnP_All_Regs(PRN_TMP);
+            if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
+              goto endandclose;
             }
             mpz_clear(current);
             continue;
@@ -1536,17 +1680,16 @@ void complete_factorization2(const mpz_t N) {
 
         // Attempt to find a factor using SQUFOF
         SQUFOF(factor, current);
-
         if (mpz_cmp_ui(factor, 0) == 0 || mpz_cmp(factor, current) == 0) {
             // SQUFOF failed; treat current as prime
-            if (factor_count < MAXIMUM_FACTORS) {
-                mpz_set(factors[factor_count++], current);
-                mpz_out_str(stdout, 10, current);
-                printf(" ");
-            } else {
-                fprintf(stderr, "\nError: Exceeded maximum number of factors.\n");
-                mpz_clear(current);
-                break;
+            #if defined(MONITOR_FACTORS)
+              mpz_out_str(stdout, 10, current);
+              printf(" ");
+            #endif //MONITOR_FACTORS
+            convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
+            fnP_All_Regs(PRN_TMP);
+            if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
+              goto endandclose;
             }
             mpz_clear(current);
             continue;
@@ -1560,7 +1703,9 @@ void complete_factorization2(const mpz_t N) {
             mpz_set(queue[queue_end++], factor);
             mpz_set(queue[queue_end++], quotient);
         } else {
-            fprintf(stderr, "\nError: Queue overflow.\n");
+            #if defined(MONITOR_FACTORS)
+              fprintf(stderr, "\nError: Queue overflow.\n");
+            #endif //MONITOR_FACTORS
             mpz_clear(current);
             break;
         }
@@ -1568,41 +1713,23 @@ void complete_factorization2(const mpz_t N) {
         mpz_clear(current);
     }
 
-    printf("\n\nComplete factorization: ");
-    mpz_out_str(stdout, 10, N);
-    printf(" = ");
-
-    for (size_t i = 0; i < factor_count; i++) {
-        mpz_out_str(stdout, 10, factors[i]);
-        if (i < factor_count - 1) {
-            printf(" × ");
-        }
-    }
-    printf("\n");
-
-    // Verify the factorization
-    mpz_t product;
-    mpz_init_set_ui(product, 1);
-    for (size_t i = 0; i < factor_count; i++) {
-        mpz_mul(product, product, factors[i]);
-    }
-
-    if (mpz_cmp(product, N) == 0) {
-        printf("Factorization verified: CORRECT\n");
-    } else {
-        printf("Factorization verified: ERROR\n");
-    }
-
     // Cleanup
     mpz_clear(temp);
     mpz_clear(factor);
     mpz_clear(quotient);
-    mpz_clear(product);
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
         mpz_clear(queue[i]);
     }
-    for (size_t i = 0; i < MAXIMUM_FACTORS; i++) {
-        mpz_clear(factors[i]);
-    }
+
+endandclose:
+    dumpExponents(&matrix, &faddr, 65535);
+abort:
+    uInt32ToLongInteger(1u, tmp);
+    convertLongIntegerToLongIntegerRegister(tmp, TEMP_REGISTER_1);
+    longIntegerFree(tmp);
+    longIntegerFree(temp1);
+    longIntegerFree(currentNumber);
+
 }
+#endif //!old_PrimeFactorProgram
 
