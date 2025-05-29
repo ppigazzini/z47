@@ -138,8 +138,14 @@
 //Testing and debugging
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
+  #define    DM42_POWERMARKS
+  #undef     DM42_POWERMARKS
+  #define    DM42_POWERMARK_KEYPRESS
+  #undef     DM42_POWERMARK_KEYPRESS
+
   #define    CLICK_REFRESHSCR           //Add a 5 ms click before refresh screen
   #undef     CLICK_REFRESHSCR
+
   #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
   #undef     BATTERYTEST
   #define    MONITOR_VOLTAGE_INTEGRATOR
@@ -286,10 +292,10 @@
   #define JM_TO_3S_CTFF    600   //ms TO_3S_CTFF
 #endif // DMCP_BUILD
 
-#define JM_TO_KB_ACTV      6000  //ms TO_KB_ACTV
-#define PROGRAM_KB_ACTV   60000  //ms TO_KB_ACTV
-#define PROGRAM_STOP      FAST_SCREEN_REFRESH_PERIOD+50 //ms TO_KB_ACTV
-
+#define TO_KB_ACTV_MEDIUM 6000
+#define TO_KB_ACTV_CURSOR  480
+#define TO_KB_ACTV_SHORT    40 
+#define PROGRAM_KB_ACTV  60000
 
 
 #define JMSHOWCODES_KB3   // top line right   Single Double Triple
