@@ -4973,6 +4973,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         //else if(temporaryInformation == TI_SHOWNOTHING) {
         //  screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
         //}
+        else if((calcMode == CM_NORMAL) && ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ) {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        }
 
         _selectiveClearScreen();
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
