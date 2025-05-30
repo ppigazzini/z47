@@ -26,18 +26,31 @@ void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-void keyClick(uint8_t length) {  //Debugging on scope, a pulse after every key edge. !!!!! Destroys the prior volume setting
+//Length in ms, frequency in Hz
+void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
   #if defined(DMCP_BUILD)
-    #if defined(DM42_KEYCLICK)
+    #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
       while(get_beep_volume() < 11) {
         beep_volume_up();
       }
-      start_buzzer_freq(1000000); //Click 1kHz for 1 ms
-      sys_delay((uint32_t)length);
+      start_buzzer_freq(f*1000); //Click 1kHz for 1 ms
+      sys_delay((uint32_t)lengthMs);
       stop_buzzer();
     #endif // DM42_KEYCLICK
   #endif // DMCP_BUILD
+}
+
+void keyClick(uint8_t lengthMs) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+   _keyClick(lengthMs, 1000);
+  #endif
+}
+
+
+void powerMarkerMsF(uint8_t lengthMs, uint32_t f) {
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+    _keyClick(lengthMs, f);
+  #endif
 }
 
 
@@ -459,7 +472,12 @@ void resetKeytimers(void) {
         default : {
           switch(*result) {
             case ITM_EXIT1    :
-              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              if(calcModel == USER_C47) {
+                longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              } else {
+                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD               
+                longpressDelayedkey1 = ITM_SNAP;
+              }
               break;
             default:;
           }
