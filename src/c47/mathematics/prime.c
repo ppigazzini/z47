@@ -13,7 +13,8 @@
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
                                          97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
-                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211      };
+                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,      
+                                        223, 227, 229, 233, 239, 241, 251 };
 
 // pre-calced sieve of Eratosthenes for n = 2, 3, 5, 7
 TO_QSPI const uint8_t indices[] = {   1,  11,  13,  17,  19,  23,  29,  31,  37,  41,  43,  47,
@@ -350,7 +351,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
   longInteger_t primeCandidateMinus1, primeCandidateMinus1on2, a, s, temp;
   uint32_t i, j, pc;
 
-  if(longIntegerCompareUInt(primeCandidate, 212) <= 0) {
+  if(longIntegerCompareUInt(primeCandidate, smallPrimes[46]+1) <= 0) {  //smallPrimes[46]+1 = 212
     longIntegerToUInt32(primeCandidate, pc);
     for(i=0; i<nbrOfElements(smallPrimes); i++) {
       if(smallPrimes[i] == pc) {
@@ -368,7 +369,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 
   // if primeCandidate is a 32-bit integer, perform full trial division
   if(longIntegerCompareUInt(primeCandidate, 0xffffffff) <= 0) {
-    i = 211;
+    i = smallPrimes[46]; //smallPrimes[46] = 211
     longIntegerToUInt32(primeCandidate, pc);
     while(i*i < pc) {
       for(j=0; j<nbrOfElements(offsets); j++) {
@@ -421,10 +422,10 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
     longIntegerAddUInt(currentNumber, 1, currentNumber);
   }
 
-  if(longIntegerCompareUInt(currentNumber, 212) < 0) {
+  if(longIntegerCompareUInt(currentNumber, smallPrimes[46]+1) < 0) {  //smallPrimes[46]+1 = 212  
     while(true) {
       longIntegerToUInt32(currentNumber, cn);
-      for(i=0; i<nbrOfElements(smallPrimes); i++) {
+      for(i=0; i<47; i++) {  //nbrOfElements(smallPrimes) = 47
         if(smallPrimes[i] == cn) {
           uInt32ToLongInteger(cn, nextPrime);
           return;
@@ -435,7 +436,7 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
   }
 
   // find our position in the sieve rotation via binary search
-  x = longIntegerModuloUInt(currentNumber, 210);
+  x = longIntegerModuloUInt(currentNumber, smallPrimes[46]-1);  //smallPrimes[46]-1 = 210
   s = 0;
   e = 47;
   m = 24;
@@ -1197,8 +1198,9 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 //** **********************************************************************************************************
 #ifndef old_PrimeFactorProgram
 
+// Shanks algortih, based on the demo on the wikipedia page
+// https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
 
-#define nelems(x) (sizeof(x) / sizeof((x)[0]))
 const int multiplier[] = {1, 3, 5, 7, 11, 3*5, 3*7, 3*11, 5*7, 5*11, 7*11, 3*5*7, 3*5*11, 3*7*11, 5*7*11, 3*5*7*11};
 
 // GCD function using GMP
@@ -1245,7 +1247,7 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     // Calculate s = sqrt(N)
     isqrt_mpz(s, N);
     
-    for (k = 0; k < nelems(multiplier); k++) {
+    for (k = 0; k < nbrOfElements(multiplier); k++) {
         // Check if N * multiplier[k] would overflow (conceptually)
         // For GMP, we don't have overflow issues, but we keep the logic
         
@@ -1401,6 +1403,57 @@ cleanup:
 
 
 
+bool delCol1RealMatrixX(void) {
+    real34Matrix_t mat;
+    linkToRealMatrixRegister(REGISTER_X, &mat);
+    uint16_t rows = mat.header.matrixRows;
+    uint16_t cols = mat.header.matrixColumns;
+    if (!mat.matrixElements || cols <= 1) return false;
+
+    // early‐exit if every element in column 0 is exactly 1.0
+    bool allOnes = true;
+    for (uint16_t i = 0; i < rows; ++i) {
+        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1)) {
+            allOnes = false;
+            break;
+        }
+    }
+    if (!allOnes) {
+        // nothing to delete, first column is all 1.0
+        return true;
+    }
+
+
+    // Build a temp matrix with one fewer column:
+    real34Matrix_t tmp;
+    if (!realMatrixInit(&tmp, rows, cols - 1)) {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return false;
+    }
+    for (uint16_t i = 0; i < rows; i++) {
+        for (uint16_t j = 1; j < cols; j++) {
+            real34Copy(
+                &mat.matrixElements[i*cols + j],
+                &tmp.matrixElements[i*(cols-1) + (j-1)]
+            );
+        }
+    }
+    // Re-init the register and free old buffer
+    initMatrixRegister(REGISTER_X, rows, cols - 1, false);
+
+    // Copy the temp data back into the freshly-allocated register
+    real34_t *dest = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
+    size_t total = (size_t)rows * (cols - 1);
+    for (size_t k = 0; k < total; k++) {
+        real34Copy(&tmp.matrixElements[k], &dest[k]);
+    }
+    realMatrixFree(&tmp);
+    return true;
+}
+
+
+
+
 #define MAX_FACTORS 100
 #define MAXIMUM_QUEUE_SIZE 1000
 
@@ -1503,17 +1556,13 @@ typedef struct FactorAdder
 
     real34_t factorR;
     convertLongIntegerToReal34(factor, &factorR);
-    while(counter > 0) {
-      if(real34CompareEqual(&factorR, &matrix->matrixElements[counter])) {
-        break;
-      }
+    //search for existing factors
+    while(counter >= 0 && !real34CompareEqual(&factorR, &matrix->matrixElements[counter])) {
       counter--;
     }
 
-
-
-    //printf("EEEEE %d\n",counter);
-    if( longIntegerSign(factor) != 0 && counter > 0 ) {
+    //increment exponent if found
+    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(&matrix->matrixElements[counter],const34_1) ) {
       ++(faddr->expons[counter]);
                                               #ifdef WGR
                                                 printf("wgr:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
@@ -1619,22 +1668,42 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
         mpz_init(queue[i]);
     }
+
+    // original command, prior to pre-run
+    //   mpz_set(queue[queue_end++], currentNumber);
+
+    // first do a pre-run, to do small prime checking
+    mpz_t tempp;
+    mpz_init(tempp);
+    for (uint i = 0; i < nbrOfElements(smallPrimes); i++) {
+      while (mpz_divisible_ui_p(currentNumber, smallPrimes[i])) {
+                            #if defined(MONITOR_FACTORS)
+                              printf("Prime factor: %u -> tempp; Remaining currentNumber -> queue: ", smallPrimes[i]);
+                            #endif //MONITOR_FACTORS
+        mpz_divexact_ui(currentNumber, currentNumber, smallPrimes[i]);
+                            #if defined(MONITOR_FACTORS)
+                              mpz_out_str(stdout, 10, currentNumber);
+                            #endif //MONITOR_FACTORS
+        mpz_set_ui(tempp, (unsigned long)(smallPrimes[i]));
+        if(!addFactor(tempp, &matrix, &lastAdded, &faddr)) {
+          goto endandclose;
+        }
+        printf("\n");
+      }
+    }
     mpz_set(queue[queue_end++], currentNumber);
-
-    #if defined(MONITOR_FACTORS)
-      printf("Factorizing: ");
-      mpz_out_str(stdout, 10, currentNumber);
-      printf("\nFactors found: ");
-    #endif //MONITOR_FACTORS
-
-
+    mpz_clear(tempp);
+                            #if defined(MONITOR_FACTORS)
+                              printf("Factorizing: ");
+                              mpz_out_str(stdout, 10, currentNumber);
+                              printf("\nFactors found: ");
+                            #endif //MONITOR_FACTORS
     while (queue_start < queue_end) {
         mpz_t current;
         mpz_init_set(current, queue[queue_start++]);
-
-        #if defined(MONITOR_FACTORS)
-          printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
-        #endif //MONITOR_FACTORS
+                            #if defined(MONITOR_FACTORS)
+                              printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+                            #endif //MONITOR_FACTORS
            #if defined(MONITOR_FACTORS)
              mpz_out_str(stdout, 10, current);
              printf(" ");
@@ -1723,6 +1792,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
 endandclose:
     dumpExponents(&matrix, &faddr, 65535);
+    delCol1RealMatrixX();
+
 abort:
     uInt32ToLongInteger(1u, tmp);
     convertLongIntegerToLongIntegerRegister(tmp, TEMP_REGISTER_1);
