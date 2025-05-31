@@ -1221,15 +1221,15 @@ void isqrt_mpz(mpz_t result, const mpz_t n) {
 }
 
 // Check if a number is a perfect square using GMP
-int is_perfect_square_mpz(const mpz_t n, mpz_t root) {
-    mpz_sqrt(root, n);
-    mpz_t temp;
-    mpz_init(temp);
-    mpz_mul(temp, root, root);
-    int is_perfect = (mpz_cmp(temp, n) == 0);
-    mpz_clear(temp);
-    return is_perfect;
+static int is_perfect_square_mpz_cached(const longInteger_t n, longInteger_t r)
+{
+  if (mpz_perfect_square_p(n)) {
+    mpz_sqrt(r, n);
+    return 1;
+  }
+  return 0;
 }
+
 
     #if !defined(TESTSUITE_BUILD)
       int32_t loopp = 0;
@@ -1245,10 +1245,9 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     mpz_init(r); mpz_init(s); mpz_init(temp1); mpz_init(temp2);
     mpz_init(temp3); mpz_init(gcd_result);
     
-    // Check if N is a perfect square
-    if (is_perfect_square_mpz(N, s)) {
-        mpz_set(result, s);
-        goto cleanup;
+    // check if Q is a square
+    if (is_perfect_square_mpz_cached(Q, r)) {
+      goto cleanup;
     }
     
     // Calculate s = sqrt(N)
