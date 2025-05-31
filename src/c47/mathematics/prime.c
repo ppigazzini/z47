@@ -964,6 +964,9 @@ void _fnEvPFacts     (uint16_t param) {
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              longIntegerFree(prod);
+              longIntegerFree(factor);
+              longIntegerFree(tmp_prod);
               return;
             }
           }
@@ -1034,6 +1037,7 @@ void fnEvPFacts (uint16_t param) {
   if(param == M_EULER_SIGMA_pk) {
     longIntegerInit(xx);
     if(!getIntArg(xx)) {
+      longIntegerFree(xx);
       return;
     }
     longIntegerToInt32(xx, k);
@@ -1143,9 +1147,12 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
           for (uint16_t j = 0;  j < cols; ++j) {
             real34_t p = matrix.matrixElements[j];
             convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
+            longIntegerInit(p_li_less_1);
             longIntegerSubtractUInt(p_li, 1, p_li_less_1);
             if(j == 0 && !longIntegerIsPositive(p_li_less_1)) {   //ensure 0 is returned is the first factor <= 1. This is achieved above, see (*), (**), (***)
               uInt32ToLongInteger(0u, phi_x);
+              longIntegerFree(p_li);
+              longIntegerFree(p_li_less_1);
               break;
             }
             longIntegerCopy(phi_x, phi_x_tmp);
@@ -1198,7 +1205,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 //** **********************************************************************************************************
 #ifndef old_PrimeFactorProgram
 
-// Shanks algortih, based on the demo on the wikipedia page
+// Shanks algorithm, based on the demo on the wikipedia page
 // https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
 
 const int multiplier[] = {1, 3, 5, 7, 11, 3*5, 3*7, 3*11, 5*7, 5*11, 7*11, 3*5*7, 3*5*11, 3*7*11, 5*7*11, 3*5*7*11};
@@ -1410,7 +1417,7 @@ bool delCol1RealMatrixX(void) {
     uint16_t cols = mat.header.matrixColumns;
     if (!mat.matrixElements || cols <= 1) return false;
 
-    // early‐exit if every element in column 0 is exactly 1.0
+    // every element in column 0 is exactly 1.0
     bool allOnes = true;
     for (uint16_t i = 0; i < rows; ++i) {
         if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1)) {
