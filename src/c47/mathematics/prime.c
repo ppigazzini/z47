@@ -1208,8 +1208,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 // Shanks algorithm, based on the demo on the wikipedia page
 // https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
 
-const int multiplier[] = {1, 3, 5, 7, 11, 3*5, 3*7, 3*11, 5*7, 5*11, 7*11, 3*5*7, 3*5*11, 3*7*11, 5*7*11, 3*5*7*11};
-
 // GCD function using GMP
 void gcd_mpz(mpz_t result, const mpz_t a, const mpz_t b) {
     mpz_gcd(result, a, b);
@@ -1229,6 +1227,26 @@ static int is_perfect_square_mpz_cached(const longInteger_t n, longInteger_t r)
   }
   return 0;
 }
+
+// Check if a number is prime using GMP's probabilistic primality test
+int is_prime_mpz(const mpz_t n) {
+    return mpz_probab_prime_p(n, 25); // 25 rounds for high confidence
+}
+
+// Fast perfect square check using 32-bit integer sqrt
+static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
+    uint32_t r = (uint32_t)(sqrt((double)n));
+    if (r * r == n) {
+        if (sqrt_out) *sqrt_out = r;
+        return 1;
+    }
+    if ((r + 1) * (r + 1) == n) {
+        if (sqrt_out) *sqrt_out = r + 1;
+        return 1;
+    }
+    return 0;
+}
+
 
 
     #if !defined(TESTSUITE_BUILD)
@@ -1253,147 +1271,146 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     // Calculate s = sqrt(N)
     isqrt_mpz(s, N);
     
-    for (k = 0; k < nbrOfElements(multiplier); k++) {
-        // Check if N * multiplier[k] would overflow (conceptually)
-        // For GMP, we don't have overflow issues, but we keep the logic
-        
-        // D = multiplier[k] * N
-        mpz_mul_ui(D, N, multiplier[k]);
-        
-        // Po = Pprev = P = sqrt(D)
-        isqrt_mpz(Po, D);
-        mpz_set(Pprev, Po);
-        mpz_set(P, Po);
-        
-        // Qprev = 1
-        mpz_set_ui(Qprev, 1);
-        
-   // Q = D - Po*Po
-        mpz_mul(temp1, Po, Po);
-        mpz_sub(Q, D, temp1);
-        if (mpz_sgn(Q) == 0) {
-            continue;             // Q is zero; skip this iteration
-        }        
-   // L = 2 * sqrt(2*s)
-        mpz_mul_ui(temp1, s, 2);
-        isqrt_mpz(temp2, temp1);
-        L = 2 * mpz_get_ui(temp2);
-        
-        // B = 3 * L
-        B = 3 * L;
-       
-        for (i = 2; i < B; i++) {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
-                }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(temp2, temp1, P);
-            mpz_set(P, temp2);
-
-            // q = Q
-            mpz_set(q, Q);
-
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-
-            // r = sqrt(Q)
-            isqrt_mpz(r, Q);
-
-            // Check if i is even and r*r == Q
-            if (!(i & 1) && is_perfect_square_mpz(Q, temp1)) {
-                break;
+    // Removed multiplier loop, replaced with multiplier=1 single run
+    k = 1;
+    
+    // D = multiplier[k] * N  (just N here)
+    mpz_mul_ui(D, N, k);
+    
+    // Po = Pprev = P = sqrt(D)
+    isqrt_mpz(Po, D);
+    mpz_set(Pprev, Po);
+    mpz_set(P, Po);
+    
+    // Qprev = 1
+    mpz_set_ui(Qprev, 1);
+    
+    // Q = D - Po*Po
+    mpz_mul(temp1, Po, Po);
+    mpz_sub(Q, D, temp1);
+    if (mpz_sgn(Q) == 0) {
+        goto cleanup;  // Q is zero; no factor found
+    }
+    
+    // L = 2 * sqrt(2*s)
+    mpz_mul_ui(temp1, s, 2);
+    isqrt_mpz(temp2, temp1);
+    L = 2 * mpz_get_ui(temp2);
+    
+    // B = 3 * L
+    B = 3 * L;
+   
+    for (i = 2; i < B; i++) {
+        #if !defined(TESTSUITE_BUILD)
+          loopp++;
+          if(checkHalfSec()) {
+            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              force_refresh(force);
             }
-            
-            // Qprev = q; Pprev = P
-            mpz_set(Qprev, q);
-            mpz_set(Pprev, P);
-        }
+          }
+          if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+        #endif //!TESTSUITE_BUILD
+        // b = (Po + P) / Q
+        mpz_add(temp1, Po, P);
+        mpz_fdiv_q(b, temp1, Q);
         
-        if (i >= B) continue;
-        
-        // b = (Po - P) / r
-        mpz_sub(temp1, Po, P);
-        mpz_fdiv_q(b, temp1, r);
-        
-        // Pprev = P = b*r + P
-        mpz_mul(temp1, b, r);
-        mpz_add(temp2, temp1, P);
-        mpz_set(Pprev, temp2);
+        // P = b*Q - P
+        mpz_mul(temp1, b, Q);
+        mpz_sub(temp2, temp1, P);
         mpz_set(P, temp2);
-        
-        // Qprev = r
-        mpz_set(Qprev, r);
-        
-        // Q = (D - Pprev*Pprev) / Qprev
-        mpz_mul(temp1, Pprev, Pprev);
-        mpz_sub(temp2, D, temp1);
-        mpz_fdiv_q(Q, temp2, Qprev);
-        
-        i = 0;
-        do {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
-                }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // Pprev = P
-            mpz_set(Pprev, P);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(P, temp1, P);
-            
-            // q = Q
-            mpz_set(q, Q);
-            
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-            
-            // Qprev = q
-            mpz_set(Qprev, q);
-            
-            i++;
-        } while (mpz_cmp(P, Pprev) != 0);
-        
-        // r = gcd(N, Qprev)
-        gcd_mpz(r, N, Qprev);
-        
-        // Check if r != 1 and r != N
-        if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
-            mpz_set(result, r);
-            goto cleanup;
+
+        // q = Q
+        mpz_set(q, Q);
+
+        // Q = Qprev + b*(Pprev - P)
+        mpz_sub(temp1, Pprev, P);
+        mpz_mul(temp2, b, temp1);
+        mpz_add(Q, Qprev, temp2);
+
+        // r = sqrt(Q)
+        isqrt_mpz(r, Q);
+
+        // Check if i is even and r*r == Q
+        if (!(i & 1) && is_perfect_square_mpz_cached(Q, temp1)) {
+            break;
         }
+        
+        // Qprev = q; Pprev = P
+        mpz_set(Qprev, q);
+        mpz_set(Pprev, P);
+    }
+    
+    if (i >= B) goto cleanup;
+    
+    // b = (Po - P) / r
+    mpz_sub(temp1, Po, P);
+    mpz_fdiv_q(b, temp1, r);
+    
+    // Pprev = P = b*r + P
+    mpz_mul(temp1, b, r);
+    mpz_add(temp2, temp1, P);
+    mpz_set(Pprev, temp2);
+    mpz_set(P, temp2);
+    
+    // Qprev = r
+    mpz_set(Qprev, r);
+    
+    // Q = (D - Pprev*Pprev) / Qprev
+    mpz_mul(temp1, Pprev, Pprev);
+    mpz_sub(temp2, D, temp1);
+    mpz_fdiv_q(Q, temp2, Qprev);
+    
+    i = 0;
+    do {
+        #if !defined(TESTSUITE_BUILD)
+          loopp++;
+          if(checkHalfSec()) {
+            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              force_refresh(force);
+            }
+          }
+          if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+        #endif //!TESTSUITE_BUILD
+        // b = (Po + P) / Q
+        mpz_add(temp1, Po, P);
+        mpz_fdiv_q(b, temp1, Q);
+        
+        // Pprev = P
+        mpz_set(Pprev, P);
+        
+        // P = b*Q - P
+        mpz_mul(temp1, b, Q);
+        mpz_sub(P, temp1, P);
+        
+        // q = Q
+        mpz_set(q, Q);
+        
+        // Q = Qprev + b*(Pprev - P)
+        mpz_sub(temp1, Pprev, P);
+        mpz_mul(temp2, b, temp1);
+        mpz_add(Q, Qprev, temp2);
+        
+        // Qprev = q
+        mpz_set(Qprev, q);
+        
+        i++;
+    } while (mpz_cmp(P, Pprev) != 0);
+    
+    // r = gcd(N, Qprev)
+    gcd_mpz(r, N, Qprev);
+    
+    // Check if r != 1 and r != N
+    if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
+        mpz_set(result, r);
+        goto cleanup;
     }
     
     // No factor found
@@ -1620,10 +1637,6 @@ typedef struct FactorAdder
 #endif //SAVE_SPACE_DM42_12PRIME
 
 
-// Check if a number is prime using GMP's probabilistic primality test
-int is_prime_mpz(const mpz_t n) {
-    return mpz_probab_prime_p(n, 25); // 25 rounds for high confidence
-}
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 //void complete_factorization2(uint16_t unusedButMandatoryParameter) {
@@ -1681,6 +1694,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     // first do a pre-run, to do small prime checking
     mpz_t tempp;
     mpz_init(tempp);
+
+
     for (uint i = 0; i < nbrOfElements(smallPrimes); i++) {
       while (mpz_divisible_ui_p(currentNumber, smallPrimes[i])) {
                             #if defined(MONITOR_FACTORS)
@@ -1694,9 +1709,42 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         if(!addFactor(tempp, &matrix, &lastAdded, &faddr)) {
           goto endandclose;
         }
-        printf("\n");
+                            #if defined(MONITOR_FACTORS)
+                              printf("\n");
+                            #endif //MONITOR_FACTORS
       }
+    } // end of small prime loop
+
+
+    // Early multiplier check using 32-bit perfect square test
+    static const uint32_t multipliers[] = { 257, 263, 269, 271, 281, 283, 293, 307, 311, 313 };
+    for (uint i = 0; i < sizeof(multipliers)/sizeof(multipliers[0]); i++) {
+        uint32_t k = multipliers[i];
+        if (mpz_fits_uint_p(currentNumber)) {
+            uint32_t n32 = mpz_get_ui(currentNumber);
+            uint64_t kn = (uint64_t)k * (uint64_t)n32;
+            uint32_t root;
+            if (is_perfect_square_uint32(kn, &root)) {
+                // Skip trivial perfect square 1 * 1 = 1
+                if (!(k == 1 && root == 1)) {
+                    #if defined(MONITOR_FACTORS)
+                      printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+                    #endif
+                    // Inject a trivial factor
+                    mpz_set_ui(tempp, root);
+                    if (!addFactor(tempp, &matrix, &lastAdded, &faddr)) {
+                        goto endandclose;
+                    }
+                    mpz_divexact_ui(currentNumber, currentNumber, root);
+                    break;
+                }
+            }
+        }
     }
+
+
+
+
     mpz_set(queue[queue_end++], currentNumber);
     mpz_clear(tempp);
                             #if defined(MONITOR_FACTORS)
@@ -1704,6 +1752,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                               mpz_out_str(stdout, 10, currentNumber);
                               printf("\nFactors found: ");
                             #endif //MONITOR_FACTORS
+
     while (queue_start < queue_end) {
         mpz_t current;
         mpz_init_set(current, queue[queue_start++]);
