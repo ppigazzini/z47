@@ -46,7 +46,7 @@ uint16_t smallPrimeList(uint16_t index) {
   } else
   if(index < smallPrimeListNumber) {
     uint16_t subIndex = index - nbrOfElements(smallPrimes);
-    for(uint ii = 0; ii <= subIndex && ii < nbrOfElements(smallPrimes2); ii++) {
+    for(uint16_t ii = 0; ii <= subIndex && ii < nbrOfElements(smallPrimes2); ii++) {
       tt += smallPrimes2[ii];
     }
     return tt;
@@ -534,12 +534,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
       strcpy(tmpString,"Last =  ");
-      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 28, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
-      strcpy(tmpString,"p =  ");
-      real34ToDisplayString(&rr, amNone, tmpString+3, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      strcpy(tmpString,"Test:   ");
+      real34ToDisplayString(&rr, amNone, tmpString+7, &standardFont, 400, 28, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
       refreshRegisterLine(REGISTER_X);
@@ -1344,7 +1344,7 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               force_refresh(force);
             }
           }
@@ -1409,7 +1409,7 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               force_refresh(force);
             }
           }
@@ -1729,16 +1729,32 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     //   mpz_set(queue[queue_end++], currentNumber);
 
     // first do a pre-run, to do small prime checking
-    for (uint i = 0; i < smallPrimeListNumber; i++) {
-      while (mpz_divisible_ui_p(currentNumber, smallPrimeList(i))) {
+    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+      uint16_t smallP = smallPrimeList(i);
+      while (mpz_divisible_ui_p(currentNumber, smallP)) {
+        #if !defined(TESTSUITE_BUILD)
+          loopp++;
+          if(checkHalfSec()) {
+            if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              _showProgress(&lastAdded, currentNumber);
+              dumpExponents(&matrix, &faddr, 13);
+              force_refresh(force);
+            }
+          }
+          if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+        #endif //!TESTSUITE_BUILD
                             #if defined(MONITOR_FACTORS)
-                              printf("Prime factor: %u -> tempPrePrimeRun; Remaining currentNumber -> queue: ", smallPrimeList(i));
+                              printf("Prime factor: %u -> tempPrePrimeRun; Remaining currentNumber -> queue: ", smallP);
                             #endif //MONITOR_FACTORS
-        mpz_divexact_ui(currentNumber, currentNumber, smallPrimeList(i));
+        mpz_divexact_ui(currentNumber, currentNumber, smallP);
                             #if defined(MONITOR_FACTORS)
                               mpz_out_str(stdout, 10, currentNumber);
                             #endif //MONITOR_FACTORS
-        mpz_set_ui(tempPrePrimeRun, (unsigned long)(smallPrimeList(i)));
+        mpz_set_ui(tempPrePrimeRun, (unsigned long)(smallP));
         if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
           goto cleanup;
         }
@@ -1750,7 +1766,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     // Early multiplier check using 32-bit perfect square test
     static const uint32_t multipliers[] = { 257, 263, 269, 271, 281, 283, 293, 307, 311, 313 };
-    for (uint i = 0; i < sizeof(multipliers)/sizeof(multipliers[0]); i++) {
+    for (uint16_t i = 0; i < sizeof(multipliers)/sizeof(multipliers[0]); i++) {
         uint32_t k = multipliers[i];
         if (mpz_fits_uint_p(currentNumber)) {
             uint32_t n32 = mpz_get_ui(currentNumber);
@@ -1799,7 +1815,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Tested n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Shanks iteratative: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, current);
               dumpExponents(&matrix, &faddr, 13);
               force_refresh(force);
