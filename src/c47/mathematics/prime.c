@@ -534,12 +534,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
       strcpy(tmpString,"Last =  ");
-      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 28, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
       strcpy(tmpString,"Test:   ");
-      real34ToDisplayString(&rr, amNone, tmpString+7, &standardFont, 400, 28, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(&rr, amNone, tmpString+7, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
       refreshRegisterLine(REGISTER_X);
