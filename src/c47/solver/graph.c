@@ -578,6 +578,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 //###################################################################################
 //SOLVER HELPERS
 
+#if !defined(TESTSUITE_BUILD)
 static bool_t checkRegisterXYRealZeroTol(calcRegister_t tol) {
   return (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
      || ((real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(tol)))
@@ -599,6 +600,7 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
   }
   return checkRegisterXYRealZeroTol(tol);
   }
+#endif //TESTSUITE_BUILD
 
 
 //SOLVER

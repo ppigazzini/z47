@@ -1211,7 +1211,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 2)   //used for time consuming functions, divides, etc.
+#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 1 + 3) //add for deg/rad   //used for time consuming functions, divides, etc.
 #define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
