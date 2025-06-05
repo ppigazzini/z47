@@ -533,13 +533,13 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       clearRegisterLine(REGISTER_X, true, true);
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
-      strcpy(tmpString,"Last =  ");
-      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      strcpy(tmpString,"Last:   ");
+      real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
       strcpy(tmpString,"Test:   ");
-      real34ToDisplayString(&rr, amNone, tmpString+7, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
       refreshRegisterLine(REGISTER_X);
@@ -1262,30 +1262,64 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 #define MONITOR_FACTORS
 #undef MONITOR_FACTORS
 
-// Check if a number is a perfect square using GMP
-static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r)
-{
-  if (longIntegerPerfectSquare(n)) {
-    longIntegerSquareRoot(n, r);
-    return 1;
-  }
-  return 0;
-}
+    const int multipliers[] = {
+        1, 3, 5, 7, 11, 13,
+        3*5, 3*7, 3*11, 3*13,
+        5*7, 5*11, 5*13,
+        7*11, 7*13,
+        11*13,
+        3*5*7, 3*5*11, 3*5*13,
+        3*7*11, 3*7*13, 3*11*13,
+        5*7*11, 5*7*13,
+        3*5*7*11
+    };
+
+    //// Check if a number is a perfect square using GMP
+    //static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r)
+    //{
+    //  if (longIntegerPerfectSquare(n)) {
+    //    longIntegerSquareRoot(n, r);
+    //    return 1;
+    //  }
+    //  return 0;
+    //}
 
 
-// Fast perfect square check using 32-bit integer sqrt
-static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
-    uint32_t r = (uint32_t)(sqrt((double)n));
-    if (r * r == n) {
-        if (sqrt_out) *sqrt_out = r;
-        return 1;
+    // Fast perfect square check using 32-bit integer sqrt
+    static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
+        uint32_t r = (uint32_t)(sqrt((double)n));
+        if (r * r == n) {
+            if (sqrt_out) *sqrt_out = r;
+            return 1;
+        }
+        if ((r + 1) * (r + 1) == n) {
+            if (sqrt_out) *sqrt_out = r + 1;
+            return 1;
+        }
+        return 0;
     }
-    if ((r + 1) * (r + 1) == n) {
-        if (sqrt_out) *sqrt_out = r + 1;
-        return 1;
+
+
+    // Check if a number is a perfect square using GMP
+    // Efficient and correct: fast path for small numbers, fallback for large
+    static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r) {
+        if (mpz_fits_uint_p(n)) {
+            uint32_t small = (uint32_t)mpz_get_ui(n);
+            uint32_t sqrt_small;
+            if (is_perfect_square_uint32(small, &sqrt_small)) {
+                mpz_set_ui(r, sqrt_small);
+                return 1;
+            }
+            return 0;
+        }
+
+        // GMP fallback for larger integers
+        if (longIntegerPerfectSquare(n)) {
+            longIntegerSquareRoot(n, r);
+            return 1;
+        }
+        return 0;
     }
-    return 0;
-}
 
 
 
@@ -1305,154 +1339,155 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     
     // Check if N is a perfect square
     if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
+      mpz_set(result, s);
       goto cleanup;
     }
     
     // Calculate s = sqrt(N)
     longIntegerSquareRoot(N, s);
     
-    // Removed multiplier loop, replaced with multiplier=1 single run
-    k = 1;
-    
-    // D = multiplier[k] * N  (just N here)
-    mpz_mul_ui(D, N, k);
-    
-    // Po = Pprev = P = sqrt(D)
-    longIntegerSquareRoot(D, Po);
-    mpz_set(Pprev, Po);
-    mpz_set(P, Po);
-    
-    // Qprev = 1
-    mpz_set_ui(Qprev, 1);
-    
-    // Q = D - Po*Po
-    mpz_mul(temp1, Po, Po);
-    mpz_sub(Q, D, temp1);
-    if (mpz_sgn(Q) == 0) {
-        goto cleanup;  // Q is zero; no factor found
-    }
-    
-    // L = 2 * sqrt(2*s)
-    mpz_mul_ui(temp1, s, 2);
-    longIntegerSquareRoot(temp1, temp2);
-    L = 2 * mpz_get_ui(temp2);
-    
-    // B = 3 * L
-    B = 3 * L;
-   
-    for (i = 2; i < B; i++) {
-        #if !defined(TESTSUITE_BUILD)
-          loopp++;
-          if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-              force_refresh(force);
-            }
-          }
-          if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            break;
-          }
-        #endif //!TESTSUITE_BUILD
-        // b = (Po + P) / Q
-        mpz_add(temp1, Po, P);
-        mpz_fdiv_q(b, temp1, Q);
+    for (k = 0; k < nbrOfElements(multipliers); k++) {
+
+        // D = multiplier[k] * N  (just N here)
+        mpz_mul_ui(D, N, multipliers[k]);
         
-        // P = b*Q - P
-        mpz_mul(temp1, b, Q);
-        mpz_sub(temp2, temp1, P);
-        mpz_set(P, temp2);
-
-        // q = Q
-        mpz_set(q, Q);
-
-        // Q = Qprev + b*(Pprev - P)
-        mpz_sub(temp1, Pprev, P);
-        mpz_mul(temp2, b, temp1);
-        mpz_add(Q, Qprev, temp2);
-
-        // r = sqrt(Q)
-        longIntegerSquareRoot(Q, r);
-
-        // Check if i is even and r*r == Q
-        if (!(i & 1) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
-            break;
+        // Po = Pprev = P = sqrt(D)
+        longIntegerSquareRoot(D, Po);
+        mpz_set(Pprev, Po);
+        mpz_set(P, Po);
+        
+        // Qprev = 1
+        mpz_set_ui(Qprev, 1);
+        
+        // Q = D - Po*Po
+        mpz_mul(temp1, Po, Po);
+        mpz_sub(Q, D, temp1);
+        if (mpz_sgn(Q) == 0) {
+            continue; //goto nff;  // Q is zero; no factor found
         }
         
-        // Qprev = q; Pprev = P
-        mpz_set(Qprev, q);
-        mpz_set(Pprev, P);
-    }
-    
-    if (i >= B) goto cleanup;
-    
-    // b = (Po - P) / r
-    mpz_sub(temp1, Po, P);
-    mpz_fdiv_q(b, temp1, r);
-    
-    // Pprev = P = b*r + P
-    mpz_mul(temp1, b, r);
-    mpz_add(temp2, temp1, P);
-    mpz_set(Pprev, temp2);
-    mpz_set(P, temp2);
-    
-    // Qprev = r
-    mpz_set(Qprev, r);
-    
-    // Q = (D - Pprev*Pprev) / Qprev
-    mpz_mul(temp1, Pprev, Pprev);
-    mpz_sub(temp2, D, temp1);
-    mpz_fdiv_q(Q, temp2, Qprev);
-    
-    i = 0;
-    do {
-        #if !defined(TESTSUITE_BUILD)
-          loopp++;
-          if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-              force_refresh(force);
+        // L = 2 * sqrt(2*s)
+        mpz_mul_ui(temp1, s, 2);
+        longIntegerSquareRoot(temp1, temp2);
+        L = 2 * mpz_get_ui(temp2);
+        
+        // B = 3 * L
+        B = 3 * L;
+       
+        for (i = 2; i < B; i++) {
+            #if !defined(TESTSUITE_BUILD)
+              loopp++;
+              if(checkHalfSec()) {
+                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  force_refresh(force);
+                }
+              }
+              if(exitKeyWaiting()) {
+                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                programRunStop = PGM_WAITING;
+                break;
+              }
+            #endif //!TESTSUITE_BUILD
+            // b = (Po + P) / Q
+            mpz_add(temp1, Po, P);
+            mpz_fdiv_q(b, temp1, Q);
+            
+            // P = b*Q - P
+            mpz_mul(temp1, b, Q);
+            mpz_sub(temp2, temp1, P);
+            mpz_set(P, temp2);
+
+            // q = Q
+            mpz_set(q, Q);
+
+            // Q = Qprev + b*(Pprev - P)
+            mpz_sub(temp1, Pprev, P);
+            mpz_mul(temp2, b, temp1);
+            mpz_add(Q, Qprev, temp2);
+
+            // r = sqrt(Q)
+            longIntegerSquareRoot(Q, r);
+
+            // Check if i is even and r*r == Q
+            if (!(i & 1) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+                break;
             }
-          }
-          if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            break;
-          }
-        #endif //!TESTSUITE_BUILD
-        // b = (Po + P) / Q
-        mpz_add(temp1, Po, P);
-        mpz_fdiv_q(b, temp1, Q);
+            
+            // Qprev = q; Pprev = P
+            mpz_set(Qprev, q);
+            mpz_set(Pprev, P);
+        }
         
-        // Pprev = P
-        mpz_set(Pprev, P);
+        if (i >= B) continue; //goto nff;
         
-        // P = b*Q - P
-        mpz_mul(temp1, b, Q);
-        mpz_sub(P, temp1, P);
+        // b = (Po - P) / r
+        mpz_sub(temp1, Po, P);
+        mpz_fdiv_q(b, temp1, r);
         
-        // q = Q
-        mpz_set(q, Q);
+        // Pprev = P = b*r + P
+        mpz_mul(temp1, b, r);
+        mpz_add(temp2, temp1, P);
+        mpz_set(Pprev, temp2);
+        mpz_set(P, temp2);
         
-        // Q = Qprev + b*(Pprev - P)
-        mpz_sub(temp1, Pprev, P);
-        mpz_mul(temp2, b, temp1);
-        mpz_add(Q, Qprev, temp2);
+        // Qprev = r
+        mpz_set(Qprev, r);
         
-        // Qprev = q
-        mpz_set(Qprev, q);
+        // Q = (D - Pprev*Pprev) / Qprev
+        mpz_mul(temp1, Pprev, Pprev);
+        mpz_sub(temp2, D, temp1);
+        mpz_fdiv_q(Q, temp2, Qprev);
         
-        i++;
-    } while (mpz_cmp(P, Pprev) != 0);
-    
-    // r = gcd(N, Qprev)
-    longIntegerGcd(N, Qprev, r);
-    
-    // Check if r != 1 and r != N
-    if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
-        mpz_set(result, r);
-        goto cleanup;
+        i = 0;
+        do {
+            #if !defined(TESTSUITE_BUILD)
+              loopp++;
+              if(checkHalfSec()) {
+                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  force_refresh(force);
+                }
+              }
+              if(exitKeyWaiting()) {
+                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                programRunStop = PGM_WAITING;
+                break;
+              }
+            #endif //!TESTSUITE_BUILD
+            // b = (Po + P) / Q
+            mpz_add(temp1, Po, P);
+            mpz_fdiv_q(b, temp1, Q);
+            
+            // Pprev = P
+            mpz_set(Pprev, P);
+            
+            // P = b*Q - P
+            mpz_mul(temp1, b, Q);
+            mpz_sub(P, temp1, P);
+            
+            // q = Q
+            mpz_set(q, Q);
+            
+            // Q = Qprev + b*(Pprev - P)
+            mpz_sub(temp1, Pprev, P);
+            mpz_mul(temp2, b, temp1);
+            mpz_add(Q, Qprev, temp2);
+            
+            // Qprev = q
+            mpz_set(Qprev, q);
+            
+            i++;
+        } while (mpz_cmp(P, Pprev) != 0);
+        
+        // r = gcd(N, Qprev)
+        longIntegerGcd(N, Qprev, r);
+        
+        // Check if r != 1 and r != N
+        if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
+            mpz_set(result, r);
+            goto cleanup;
+        }
     }
-    
+
     // No factor found
     mpz_set_ui(result, 0);
     
@@ -1748,7 +1783,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           }
         #endif //!TESTSUITE_BUILD
                             #if defined(MONITOR_FACTORS)
-                              printf("Prime factor: %u -> tempPrePrimeRun; Remaining currentNumber -> queue: ", smallP);
+                              printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
                             #endif //MONITOR_FACTORS
         mpz_divexact_ui(currentNumber, currentNumber, smallP);
                             #if defined(MONITOR_FACTORS)
@@ -1764,32 +1799,55 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       }
     } // end of small prime loop
 
+
+
     // Early multiplier check using 32-bit perfect square test
-    static const uint32_t multipliers[] = { 257, 263, 269, 271, 281, 283, 293, 307, 311, 313 };
-    for (uint16_t i = 0; i < sizeof(multipliers)/sizeof(multipliers[0]); i++) {
-        uint32_t k = multipliers[i];
+    static const uint32_t multipliers[] = {
+    1,   // Always include 1
+    3, 5, 7, 11,
+    15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
+    105 }; // 3-way composite: 3*5*7
+
+
+    // Alternative: smaller set of multipliers including some composites for better coverage
+    // static const uint32_t multipliers[] = {1, 3, 5, 7, 11, 15, 21, 33, 35, 39, 55, 65, 77, 105, 115, 165};
+
+    for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
         if (mpz_fits_uint_p(currentNumber)) {
+            uint32_t k = multipliers[i];
             uint32_t n32 = mpz_get_ui(currentNumber);
             uint64_t kn = (uint64_t)k * (uint64_t)n32;
+            #if defined(MONITOR_FACTORS)
+              printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+              fflush(stdout);
+            #endif
             uint32_t root;
             if (is_perfect_square_uint32(kn, &root)) {
                 // Skip trivial perfect square 1 * 1 = 1
                 if (!(k == 1 && root == 1)) {
                     #if defined(MONITOR_FACTORS)
                       printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+                      fflush(stdout);
                     #endif
-                    // Inject a trivial factor
-                    mpz_set_ui(tempPrePrimeRun, root);
-                    if (!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
-                        goto cleanup;
+                    // Use gcd to extract non-trivial factor safely
+                    mpz_t gcd;
+                    mpz_init(gcd);
+                    mpz_gcd_ui(gcd, currentNumber, root);
+                    if (mpz_cmp_ui(gcd, 1) > 0) {
+                        // Inject a trivial factor
+                        if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
+                            mpz_clear(gcd);
+                            goto cleanup;
+                        }
+                        mpz_divexact(currentNumber, currentNumber, gcd);
+                        mpz_clear(gcd);
+                        break;
                     }
-                    mpz_divexact_ui(currentNumber, currentNumber, root);
-                    break;
+                    mpz_clear(gcd);
                 }
             }
         }
     }
-
 
 
 
@@ -1846,7 +1904,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
             fnP_All_Regs(PRN_TMP);
             if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
-              goto endandclose;
+              goto doneWhile;
             }
                             #if defined(MONITOR_FACTORS)
                               printf("Skip, current is prime\n");
@@ -1866,7 +1924,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
             fnP_All_Regs(PRN_TMP);
             if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
-              goto endandclose;
+              goto doneWhile;
             }
                             #if defined(MONITOR_FACTORS)
                               printf("current considered prime, next\n");
@@ -1898,6 +1956,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         }
 
     }
+doneWhile:
     mpz_clear(current);
 
 cleanup:
@@ -1909,7 +1968,6 @@ cleanup:
         mpz_clear(queue[i]);
     }
 
-endandclose:
     dumpExponents(&matrix, &faddr, 65535);
     delCol1RealMatrixX();
 
