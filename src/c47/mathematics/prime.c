@@ -1274,17 +1274,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         3*5*7*11
     };
 
-    //// Check if a number is a perfect square using GMP
-    //static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r)
-    //{
-    //  if (longIntegerPerfectSquare(n)) {
-    //    longIntegerSquareRoot(n, r);
-    //    return 1;
-    //  }
-    //  return 0;
-    //}
-
-
     // Fast perfect square check using 32-bit integer sqrt
     static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
         uint32_t r = (uint32_t)(sqrt((double)n));
@@ -1298,7 +1287,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         }
         return 0;
     }
-
 
     // Check if a number is a perfect square using GMP
     // Efficient and correct: fast path for small numbers, fallback for large
@@ -1322,20 +1310,30 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     }
 
 
-
     #if !defined(TESTSUITE_BUILD)
       int32_t loopp = 0;
     #endif //TESTSUITE_BUILD
 
 void SQUFOF(mpz_t result, const mpz_t N) {
-    mpz_t D, Po, P, Pprev, Q, Qprev, q, b, r, s;
-    mpz_t temp1, temp2, temp3, gcd_result;
-    uint32_t L, B, i, k;
-    // Initialize all GMP variables
-    mpz_init(D); mpz_init(Po); mpz_init(P); mpz_init(Pprev);
-    mpz_init(Q); mpz_init(Qprev); mpz_init(q); mpz_init(b);
-    mpz_init(r); mpz_init(s); mpz_init(temp1); mpz_init(temp2);
-    mpz_init(temp3); mpz_init(gcd_result);
+    uint32_t k;
+    longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
+    longIntegerInit(BB);
+    longIntegerInit(LL);
+    longIntegerInit(ii);
+    longIntegerInit(D);
+    longIntegerInit(Po);
+    longIntegerInit(P);
+    longIntegerInit(Pprev);
+    longIntegerInit(Q);
+    longIntegerInit(Qprev);
+    longIntegerInit(q);
+    longIntegerInit(b);
+    longIntegerInit(r);
+    longIntegerInit(s);
+    longIntegerInit(temp1);
+    longIntegerInit(temp2);
+    longIntegerInit(temp3);
+    longIntegerInit(gcd_result);
     
     // Check if N is a perfect square
     if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
@@ -1363,18 +1361,21 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         mpz_mul(temp1, Po, Po);
         mpz_sub(Q, D, temp1);
         if (mpz_sgn(Q) == 0) {
-            continue; //goto nff;  // Q is zero; no factor found
+            continue; // Q is zero; no factor found
         }
         
-        // L = 2 * sqrt(2*s)
+        // LL = 2 * sqrt(2*s)
         mpz_mul_ui(temp1, s, 2);
         longIntegerSquareRoot(temp1, temp2);
-        L = 2 * mpz_get_ui(temp2);
+        mpz_mul_ui(LL, temp2, 2);
         
-        // B = 3 * L
-        B = 3 * L;
+        // BB = 3 * LL
+        mpz_mul_ui(BB, LL, 3);
        
-        for (i = 2; i < B; i++) {
+        // Initialize i as mpz_t for comparison with BB
+        mpz_set_ui(ii, 2);
+        
+        while (mpz_cmp(ii, BB) < 0) {
             #if !defined(TESTSUITE_BUILD)
               loopp++;
               if(checkHalfSec()) {
@@ -1396,29 +1397,30 @@ void SQUFOF(mpz_t result, const mpz_t N) {
             mpz_mul(temp1, b, Q);
             mpz_sub(temp2, temp1, P);
             mpz_set(P, temp2);
-
             // q = Q
             mpz_set(q, Q);
-
             // Q = Qprev + b*(Pprev - P)
             mpz_sub(temp1, Pprev, P);
             mpz_mul(temp2, b, temp1);
             mpz_add(Q, Qprev, temp2);
-
             // r = sqrt(Q)
             longIntegerSquareRoot(Q, r);
-
             // Check if i is even and r*r == Q
-            if (!(i & 1) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+            if (mpz_even_p(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
                 break;
             }
             
             // Qprev = q; Pprev = P
             mpz_set(Qprev, q);
             mpz_set(Pprev, P);
+            
+            // Increment i
+            mpz_add_ui(ii, ii, 1);
         }
         
-        if (i >= B) continue; //goto nff;
+        if (mpz_cmp(ii, BB) >= 0) {
+            continue;
+        }
         
         // b = (Po - P) / r
         mpz_sub(temp1, Po, P);
@@ -1438,7 +1440,6 @@ void SQUFOF(mpz_t result, const mpz_t N) {
         mpz_sub(temp2, D, temp1);
         mpz_fdiv_q(Q, temp2, Qprev);
         
-        i = 0;
         do {
             #if !defined(TESTSUITE_BUILD)
               loopp++;
@@ -1475,7 +1476,6 @@ void SQUFOF(mpz_t result, const mpz_t N) {
             // Qprev = q
             mpz_set(Qprev, q);
             
-            i++;
         } while (mpz_cmp(P, Pprev) != 0);
         
         // r = gcd(N, Qprev)
@@ -1492,11 +1492,23 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     mpz_set_ui(result, 0);
     
 cleanup:
-    // Clear all GMP variables
-    mpz_clear(D); mpz_clear(Po); mpz_clear(P); mpz_clear(Pprev);
-    mpz_clear(Q); mpz_clear(Qprev); mpz_clear(q); mpz_clear(b);
-    mpz_clear(r); mpz_clear(s); mpz_clear(temp1); mpz_clear(temp2);
-    mpz_clear(temp3); mpz_clear(gcd_result);
+    longIntegerFree(BB);
+    longIntegerFree(LL);
+    longIntegerFree(ii);
+    longIntegerFree(D);
+    longIntegerFree(Po);
+    longIntegerFree(P);
+    longIntegerFree(Pprev);
+    longIntegerFree(Q);
+    longIntegerFree(Qprev);
+    longIntegerFree(q);
+    longIntegerFree(b);
+    longIntegerFree(r);
+    longIntegerFree(s);
+    longIntegerFree(temp1);
+    longIntegerFree(temp2);
+    longIntegerFree(temp3);
+    longIntegerFree(gcd_result);
 }
 
 
@@ -1808,9 +1820,6 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
     105 }; // 3-way composite: 3*5*7
 
-
-    // Alternative: smaller set of multipliers including some composites for better coverage
-    // static const uint32_t multipliers[] = {1, 3, 5, 7, 11, 15, 21, 33, 35, 39, 55, 65, 77, 105, 115, 165};
 
     for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
         if (mpz_fits_uint_p(currentNumber)) {
