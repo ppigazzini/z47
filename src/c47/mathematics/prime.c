@@ -9,6 +9,13 @@
 
 #define maximumPrime 308   //10^308
 
+
+//debugging method to disable the prime factor parts
+const bool_t Factors_1_SmallPrimes   = true;
+const bool_t Factors_2_PerfectSquare = true;
+const bool_t Factors_3_Pollard       = true;
+
+
 // primes less than 212
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
@@ -60,6 +67,73 @@ uint16_t smallPrimeList(uint16_t index) {
 //    printf("prime: %u : %u\n",i,smallPrimeList(i));
 //  }
 //}
+
+
+
+//------------- Pollard for Factors
+/*
+ * Common status codes returned by factoring algorithms.
+ * These allow coordination across multiple algorithms.
+ */
+typedef enum {
+  FACTORS_SETUP,     // Start or restart the factoring algorithm
+  FACTORS_ITERATE,   // Perform one or more factoring iterations
+  FACTORS_RESET,     // Indicates the input n has changed (reinitialize)
+  FACTORS_DONE,      // A nontrivial factor has been found
+  FACTORS_FAIL       // Too many attempts or failure to progress
+} factors_status_t;
+
+/*
+ * Result structure returned after a step or setup.
+ * Provides progress monitoring and diagnostic data.
+ */
+typedef struct {
+  factors_status_t status;
+  int iterations_this_call;
+  int total_iterations;
+  int attempts;
+} factors_result_t;
+
+/*
+ * Internal state structure for Pollard's Rho algorithm.
+ * Designed for resumable, externally scheduled factoring.
+ */
+typedef struct {
+  mpz_t n;        // Number to factor
+  mpz_t x, y;     // Brent's cycle detection (two runners)
+  mpz_t c;        // Constant for the polynomial: f(x) = x^2 + c
+  mpz_t d;        // Current GCD candidate
+  mpz_t tmp;      // Temporary variable for calculations
+  int iteration;  // Total iterations performed
+  int max_iterations; // Reset after this many iterations
+  int attempt;    // Number of reinitializations attempted
+  int max_attempts;   // Max allowed retries before FAIL
+  gmp_randstate_t rng; // RNG for random starts
+} pollard_t;
+
+// Initialize the Pollard state structure
+void pollard_init(pollard_t *self);
+
+// Free all memory used by the state structure
+void pollard_clear(pollard_t *self);
+
+// Update n and automatically reset internal state
+void pollard_update_n(pollard_t *self, const mpz_t new_n);
+
+// Print pollard status to screen
+char* pollard_status(factors_status_t st);
+
+/*
+ * Perform one or more iteration steps.
+ * Does not block or recurse — safe for cooperative multitasking.
+ * - If a factor is found, status will be FACTORS_DONE.
+ * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
+ */
+factors_result_t pollard_step(pollard_t *self, mpz_t factor,
+                              factors_status_t instruction,
+                              int steps);
+//------------------
+
 
 
 
@@ -1334,6 +1408,20 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     longIntegerInit(temp2);
     longIntegerInit(temp3);
     longIntegerInit(gcd_result);
+
+    //Pollard simultaneous analysis
+    pollard_t pollardData;
+    factors_status_t instruction = FACTORS_SETUP;
+    factors_result_t PollardResult;
+    longInteger_t n, pollardFactor;
+    if(Factors_3_Pollard) {
+      longIntegerInit(n);
+      longIntegerInit(pollardFactor);
+      longIntegerCopy(N, n);
+      pollard_init(&pollardData);
+      pollard_update_n(&pollardData, n);
+    }
+
     
     // Check if N is a perfect square
     if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
@@ -1345,7 +1433,6 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     longIntegerSquareRoot(N, s);
     
     for (k = 0; k < nbrOfElements(multipliers); k++) {
-
         // D = multiplier[k] * N  (just N here)
         mpz_mul_ui(D, N, multipliers[k]);
         
@@ -1389,6 +1476,30 @@ void SQUFOF(mpz_t result, const mpz_t N) {
                 break;
               }
             #endif //!TESTSUITE_BUILD
+
+
+         //Pollard simultaneous analysis
+            //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
+            if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
+              PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
+              #if defined(MONITOR_FACTORS)
+                printf("   Step: %d | Attempts: %d | Status: %d\n",PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+              #endif //MONITOR_FACTORS
+              if (PollardResult.status == FACTORS_DONE) {
+                #if defined(MONITOR_FACTORS)
+                  gmp_printf("   Pollard found factor: %Zd\n", pollardFactor);
+                #endif //MONITOR_FACTORS
+                mpz_set(result,pollardFactor);
+                goto cleanup;
+              } else if (PollardResult.status == FACTORS_FAIL) {
+                #if defined(MONITOR_FACTORS)
+                  printf("   Pollard failed after %d attempts.\n", PollardResult.attempts);
+                #endif //MONITOR_FACTORS
+              }
+              instruction = PollardResult.status;
+            }
+
+
             // b = (Po + P) / Q
             mpz_add(temp1, Po, P);
             mpz_fdiv_q(b, temp1, Q);
@@ -1492,6 +1603,11 @@ void SQUFOF(mpz_t result, const mpz_t N) {
     mpz_set_ui(result, 0);
     
 cleanup:
+    //Pollard simultaneous analysis
+    if(Factors_3_Pollard) {
+      pollard_clear(&pollardData);
+      mpz_clears(n, pollardFactor, NULL);
+    }
     longIntegerFree(BB);
     longIntegerFree(LL);
     longIntegerFree(ii);
@@ -1720,7 +1836,6 @@ typedef struct FactorAdder
 #endif //SAVE_SPACE_DM42_12PRIME
 
 
-
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 //void complete_factorization2(uint16_t unusedButMandatoryParameter) {
     currentKeyCode = 255;
@@ -1775,41 +1890,43 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     // original command, prior to pre-run of primes. Retain here to test without the pre-run block
     //   mpz_set(queue[queue_end++], currentNumber);
 
-    // first do a pre-run, to do small prime checking
-    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
-      uint16_t smallP = smallPrimeList(i);
-      while (mpz_divisible_ui_p(currentNumber, smallP)) {
-        #if !defined(TESTSUITE_BUILD)
-          loopp++;
-          if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-              _showProgress(&lastAdded, currentNumber);
-              dumpExponents(&matrix, &faddr, 13);
-              force_refresh(force);
+    if(Factors_1_SmallPrimes) {
+      // first do a pre-run, to do small prime checking
+      for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+        uint16_t smallP = smallPrimeList(i);
+        while (mpz_divisible_ui_p(currentNumber, smallP)) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(&matrix, &faddr, 13);
+                force_refresh(force);
+              }
             }
+            if(exitKeyWaiting()) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
+                              #if defined(MONITOR_FACTORS)
+                                printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
+                              #endif //MONITOR_FACTORS
+          mpz_divexact_ui(currentNumber, currentNumber, smallP);
+                              #if defined(MONITOR_FACTORS)
+                                mpz_out_str(stdout, 10, currentNumber);
+                              #endif //MONITOR_FACTORS
+          mpz_set_ui(tempPrePrimeRun, (unsigned long)(smallP));
+          if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
+            goto cleanup;
           }
-          if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            break;
-          }
-        #endif //!TESTSUITE_BUILD
-                            #if defined(MONITOR_FACTORS)
-                              printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
-                            #endif //MONITOR_FACTORS
-        mpz_divexact_ui(currentNumber, currentNumber, smallP);
-                            #if defined(MONITOR_FACTORS)
-                              mpz_out_str(stdout, 10, currentNumber);
-                            #endif //MONITOR_FACTORS
-        mpz_set_ui(tempPrePrimeRun, (unsigned long)(smallP));
-        if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
-          goto cleanup;
+                              #if defined(MONITOR_FACTORS)
+                                printf("\n");
+                              #endif //MONITOR_FACTORS
         }
-                            #if defined(MONITOR_FACTORS)
-                              printf("\n");
-                            #endif //MONITOR_FACTORS
-      }
-    } // end of small prime loop
+      } // end of small prime loop
+    }
 
 
 
@@ -1820,45 +1937,44 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
     105 }; // 3-way composite: 3*5*7
 
-
-    for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
-        if (mpz_fits_uint_p(currentNumber)) {
-            uint32_t k = multipliers[i];
-            uint32_t n32 = mpz_get_ui(currentNumber);
-            uint64_t kn = (uint64_t)k * (uint64_t)n32;
-            #if defined(MONITOR_FACTORS)
-              printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
-              fflush(stdout);
-            #endif
-            uint32_t root;
-            if (is_perfect_square_uint32(kn, &root)) {
-                // Skip trivial perfect square 1 * 1 = 1
-                if (!(k == 1 && root == 1)) {
-                    #if defined(MONITOR_FACTORS)
-                      printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
-                      fflush(stdout);
-                    #endif
-                    // Use gcd to extract non-trivial factor safely
-                    mpz_t gcd;
-                    mpz_init(gcd);
-                    mpz_gcd_ui(gcd, currentNumber, root);
-                    if (mpz_cmp_ui(gcd, 1) > 0) {
-                        // Inject a trivial factor
-                        if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
-                            mpz_clear(gcd);
-                            goto cleanup;
-                        }
-                        mpz_divexact(currentNumber, currentNumber, gcd);
-                        mpz_clear(gcd);
-                        break;
-                    }
-                    mpz_clear(gcd);
-                }
-            }
-        }
+    if(Factors_2_PerfectSquare) {
+      for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
+          if (mpz_fits_uint_p(currentNumber)) {
+              uint32_t k = multipliers[i];
+              uint32_t n32 = mpz_get_ui(currentNumber);
+              uint64_t kn = (uint64_t)k * (uint64_t)n32;
+              #if defined(MONITOR_FACTORS)
+                printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+                fflush(stdout);
+              #endif
+              uint32_t root;
+              if (is_perfect_square_uint32(kn, &root)) {
+                  // Skip trivial perfect square 1 * 1 = 1
+                  if (!(k == 1 && root == 1)) {
+                      #if defined(MONITOR_FACTORS)
+                        printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+                        fflush(stdout);
+                      #endif
+                      // Use gcd to extract non-trivial factor safely
+                      mpz_t gcd;
+                      mpz_init(gcd);
+                      mpz_gcd_ui(gcd, currentNumber, root);
+                      if (mpz_cmp_ui(gcd, 1) > 0) {
+                          // Inject a trivial factor
+                          if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
+                              mpz_clear(gcd);
+                              goto cleanup;
+                          }
+                          mpz_divexact(currentNumber, currentNumber, gcd);
+                          mpz_clear(gcd);
+                          break;
+                      }
+                      mpz_clear(gcd);
+                  }
+              }
+          }
+      }
     }
-
-
 
     mpz_set(queue[queue_end++], currentNumber);
                             #if defined(MONITOR_FACTORS)
@@ -1989,4 +2105,146 @@ abort:
 
 }
 #endif //!old_PrimeFactorProgram
+
+
+
+//-------------------------------------------------------------------
+
+/*
+ * Pollard's Rho Integer Factorization (with GMP) with perfect power detection
+ *
+ * Based on: https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+ * jaymos 2025
+ */
+
+
+
+/*
+ * Print pollard status to screen
+ */
+char* pollard_status(factors_status_t st) {
+  switch(st){
+    case FACTORS_SETUP:   return("SETUP:  "); break;
+    case FACTORS_ITERATE: return("ITERATE:"); break;
+    case FACTORS_RESET:   return("RESET:  "); break;
+    case FACTORS_DONE:    return("DONE:   "); break;
+    case FACTORS_FAIL:    return("FAIL:   "); break;
+    default:return("");break;
+  }
+}
+
+/*
+ * Polynomial function used in Pollard's Rho:
+ * f(x) = x^2 + c mod n
+ */
+static void f(mpz_t result, const mpz_t x, const mpz_t c, const mpz_t n) {
+  mpz_mul(result, x, x);     // x^2
+  mpz_add(result, result, c); // + c
+  mpz_mod(result, result, n); // mod n
+}
+
+/*
+ * Initializes the Pollard state structure.
+ * Must be called before using the step or update functions.
+ */
+void pollard_init(pollard_t *self) {
+  mpz_inits(self->n, self->x, self->y, self->c, self->d, self->tmp, NULL);
+  self->iteration = 0;
+  self->max_iterations = 1000000;
+  self->attempt = 0;
+  self->max_attempts = 25;
+  gmp_randinit_mt(self->rng);
+  gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
+}
+
+/*
+ * Frees all GMP variables and RNG state.
+ */
+void pollard_clear(pollard_t *self) {
+  mpz_clears(self->n, self->x, self->y, self->c, self->d, self->tmp, NULL);
+  gmp_randclear(self->rng);
+}
+
+/*
+ * Updates the target number to factor (n),
+ * and resets the internal state automatically.
+ */
+void pollard_update_n(pollard_t *self, const mpz_t new_n) {
+  mpz_set(self->n, new_n);
+  self->attempt = 0;
+  self->iteration = 0;
+
+  // Setup: Choose new random x and c
+  mpz_urandomm(self->c, self->rng, self->n);
+  mpz_urandomm(self->x, self->rng, self->n);
+  mpz_set(self->y, self->x);
+  mpz_set_ui(self->d, 1);
+}
+
+/*
+ * Performs a bounded number of Pollard's Rho iterations.
+ * Returns a result struct containing status and diagnostic info.
+ */
+factors_result_t pollard_step(pollard_t *self, mpz_t factor,
+                              factors_status_t instruction,
+                              int steps) {
+  factors_result_t result;
+  result.status = FACTORS_ITERATE;
+  result.iterations_this_call = 0;
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+
+  // First-time or forced re-setup
+  if (instruction == FACTORS_RESET || instruction == FACTORS_SETUP) {
+    if (self->attempt++ >= self->max_attempts) {
+      result.status = FACTORS_FAIL;
+      return result;
+    }
+    mpz_urandomm(self->c, self->rng, self->n);
+    mpz_urandomm(self->x, self->rng, self->n);
+    mpz_set(self->y, self->x);
+    mpz_set_ui(self->d, 1);
+    self->iteration = 0;
+    result.status = FACTORS_ITERATE;
+    return result;
+  }
+
+  // Perform up to `steps` iterations
+  if (instruction == FACTORS_ITERATE) {
+    for (int i = 0; i < steps; ++i) {
+      if (++self->iteration >= self->max_iterations) {
+        result.status = FACTORS_SETUP; // Too long without result — reseed
+        break;
+      }
+
+      // Brent cycle: advance x once, y twice
+      f(self->x, self->x, self->c, self->n);
+      f(self->y, self->y, self->c, self->n);
+      f(self->y, self->y, self->c, self->n);
+
+      mpz_sub(self->tmp, self->x, self->y);
+      mpz_abs(self->tmp, self->tmp);
+      mpz_gcd(self->d, self->tmp, self->n);
+
+      // Factor found!
+      if (mpz_cmp_ui(self->d, 1) > 0 && mpz_cmp(self->d, self->n) < 0) {
+        mpz_set(factor, self->d);
+        result.status = FACTORS_DONE;
+        break;
+      }
+
+      // Fail — retry from new seed
+      if (mpz_cmp(self->d, self->n) == 0) {
+        result.status = FACTORS_SETUP;
+        break;
+      }
+
+      result.iterations_this_call++;
+    }
+  }
+
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+  return result;
+}
 
