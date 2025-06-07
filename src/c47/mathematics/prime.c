@@ -92,23 +92,23 @@ typedef struct {
 
 // Internal structure for Pollard's Rho algorithm.
 typedef struct {
-  mpz_t n;        // Number to factor
-  mpz_t x, y;     // Brent's cycle detection (two runners)
-  mpz_t c;        // Constant for the polynomial: f(x) = x^2 + c
-  mpz_t d;        // Current GCD candidate
-  mpz_t tmp;      // Temporary variable for calculations
-  int iteration;  // Total iterations performed
-  int max_iterations; // Reset after this many iterations
-  int attempt;    // Number of reinitializations attempted
-  int max_attempts;   // Max allowed retries before FAIL
-  gmp_randstate_t rng; // RNG for random starts
+  longInteger_t n;        // Number to factor
+  longInteger_t x, y;     // Brent's cycle detection (two runners)
+  longInteger_t c;        // Constant for the polynomial: f(x) = x^2 + c
+  longInteger_t d;        // Current GCD candidate
+  longInteger_t tmp;      // Temporary variable for calculations
+  int iteration;          // Total iterations performed
+  int max_iterations;     // Reset after this many iterations
+  int attempt;            // Number of reinitializations attempted
+  int max_attempts;       // Max allowed retries before FAIL
+  gmp_randstate_t rng;    // RNG for random starts
 } pollard_t;
 
 void pollard_init(pollard_t *self);
 void pollard_clear(pollard_t *self);
-void pollard_update_n(pollard_t *self, const mpz_t new_n);
+void pollard_update_n(pollard_t *self, const longInteger_t new_n);
 char* pollard_status(factors_status_t st);
-factors_result_t pollard_step(pollard_t *self, mpz_t factor, factors_status_t instruction, int steps);
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps);
 //------------- Pollard for Factors -------------
 
 
@@ -223,9 +223,9 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
-void SQUFOF(mpz_t result, const mpz_t N);
-void complete_factorization1(const mpz_t N);
-void complete_factorization2(const mpz_t N);
+void SQUFOF(longInteger_t result, const longInteger_t N);
+void complete_factorization1(const longInteger_t N);
+void complete_factorization2(const longInteger_t N);
 
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
@@ -1363,7 +1363,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       int32_t loopp = 0;
     #endif //TESTSUITE_BUILD
 
-    void SQUFOF(mpz_t result, const mpz_t N) {
+    void SQUFOF(longInteger_t result, const longInteger_t N) {
       uint32_t k;
       longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
       longIntegerInit(BB);
@@ -1434,7 +1434,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
           // BB = 3 * LL
           mpz_mul_ui(BB, LL, 3);
          
-          // Initialize i as mpz_t for comparison with BB
+          // Initialize i as longInteger_t for comparison with BB
           mpz_set_ui(ii, 2);
           
           while (mpz_cmp(ii, BB) < 0) {
@@ -1848,11 +1848,11 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     }
     longIntegerSetPositiveSign(currentNumber);
 
-    mpz_t queue[MAXIMUM_QUEUE_SIZE];
+    longInteger_t queue[MAXIMUM_QUEUE_SIZE];
     int queue_start = 0, queue_end = 0;
 
 // initialize and prep second part
-    mpz_t temp, factor, quotient, tempPrePrimeRun;
+    longInteger_t temp, factor, quotient, tempPrePrimeRun;
     mpz_init(temp);
     mpz_init(factor);
     mpz_init(quotient);
@@ -1931,7 +1931,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                         fflush(stdout);
                       #endif
                       // Use gcd to extract non-trivial factor safely
-                      mpz_t gcd;
+                      longInteger_t gcd;
                       mpz_init(gcd);
                       mpz_gcd_ui(gcd, currentNumber, root);
                       if (mpz_cmp_ui(gcd, 1) > 0) {
@@ -1958,7 +1958,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                               printf("\nFactors found: ");
                             #endif //MONITOR_FACTORS
 
-    mpz_t current;
+    longInteger_t current;
     mpz_init(current);
     while (queue_start < queue_end) {
         mpz_set(current, queue[queue_start++]);
@@ -2120,7 +2120,7 @@ char* pollard_status(factors_status_t st) {
  * Polynomial function used in Pollard's Rho:
  * f(x) = x^2 + c mod n
  */
-static void f(mpz_t result, const mpz_t x, const mpz_t c, const mpz_t n) {
+static void f(longInteger_t result, const longInteger_t x, const longInteger_t c, const longInteger_t n) {
   mpz_mul(result, x, x);                // x^2
   mpz_add(result, result, c);           // + c
   longIntegerModulo(result, n, result); // mod n
@@ -2147,7 +2147,7 @@ void pollard_clear(pollard_t *self) {
 /*
  * Updates the target number to factor (n), and resets the internal state automatically.
  */
-void pollard_update_n(pollard_t *self, const mpz_t new_n) {
+void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
   longIntegerCopy(new_n, self->n);
   self->attempt = 0;
   self->iteration = 0;
@@ -2163,7 +2163,7 @@ void pollard_update_n(pollard_t *self, const mpz_t new_n) {
  * - If a factor is found, status will be FACTORS_DONE.
  * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
  */
-factors_result_t pollard_step(pollard_t *self, mpz_t factor, factors_status_t instruction, int steps) {
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps) {
   factors_result_t result;
   result.status = FACTORS_ITERATE;
   result.iterations_this_call = 0;
