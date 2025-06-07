@@ -11,6 +11,8 @@
 
 
 //debugging method to disable the prime factor parts
+#define MONITOR_FACTORS
+#undef MONITOR_FACTORS
 const bool_t Factors_1_SmallPrimes   = true;
 const bool_t Factors_2_PerfectSquare = true;
 const bool_t Factors_3_Pollard       = true;
@@ -70,11 +72,8 @@ uint16_t smallPrimeList(uint16_t index) {
 
 
 
-//------------- Pollard for Factors
-/*
- * Common status codes returned by factoring algorithms.
- * These allow coordination across multiple algorithms.
- */
+//------------- Pollard for Factors -------------
+// Common status codes returned by factoring algorithms.
 typedef enum {
   FACTORS_SETUP,     // Start or restart the factoring algorithm
   FACTORS_ITERATE,   // Perform one or more factoring iterations
@@ -83,10 +82,7 @@ typedef enum {
   FACTORS_FAIL       // Too many attempts or failure to progress
 } factors_status_t;
 
-/*
- * Result structure returned after a step or setup.
- * Provides progress monitoring and diagnostic data.
- */
+// Result structure returned after a step or setup, for monitoring and diagnostic data.
 typedef struct {
   factors_status_t status;
   int iterations_this_call;
@@ -94,10 +90,7 @@ typedef struct {
   int attempts;
 } factors_result_t;
 
-/*
- * Internal state structure for Pollard's Rho algorithm.
- * Designed for resumable, externally scheduled factoring.
- */
+// Internal structure for Pollard's Rho algorithm.
 typedef struct {
   mpz_t n;        // Number to factor
   mpz_t x, y;     // Brent's cycle detection (two runners)
@@ -111,28 +104,12 @@ typedef struct {
   gmp_randstate_t rng; // RNG for random starts
 } pollard_t;
 
-// Initialize the Pollard state structure
 void pollard_init(pollard_t *self);
-
-// Free all memory used by the state structure
 void pollard_clear(pollard_t *self);
-
-// Update n and automatically reset internal state
 void pollard_update_n(pollard_t *self, const mpz_t new_n);
-
-// Print pollard status to screen
 char* pollard_status(factors_status_t st);
-
-/*
- * Perform one or more iteration steps.
- * Does not block or recurse — safe for cooperative multitasking.
- * - If a factor is found, status will be FACTORS_DONE.
- * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
- */
-factors_result_t pollard_step(pollard_t *self, mpz_t factor,
-                              factors_status_t instruction,
-                              int steps);
-//------------------
+factors_result_t pollard_step(pollard_t *self, mpz_t factor, factors_status_t instruction, int steps);
+//------------- Pollard for Factors -------------
 
 
 
@@ -1332,9 +1309,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 //** factorization **********************************************************************************************************
 // Shanks algorithm, based on the demo on the wikipedia page
 // https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
-
-#define MONITOR_FACTORS
-#undef MONITOR_FACTORS
+// jaymos 2025
 
     const int multipliers[] = {
         1, 3, 5, 7, 11, 13,
@@ -1388,244 +1363,244 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       int32_t loopp = 0;
     #endif //TESTSUITE_BUILD
 
-void SQUFOF(mpz_t result, const mpz_t N) {
-    uint32_t k;
-    longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
-    longIntegerInit(BB);
-    longIntegerInit(LL);
-    longIntegerInit(ii);
-    longIntegerInit(D);
-    longIntegerInit(Po);
-    longIntegerInit(P);
-    longIntegerInit(Pprev);
-    longIntegerInit(Q);
-    longIntegerInit(Qprev);
-    longIntegerInit(q);
-    longIntegerInit(b);
-    longIntegerInit(r);
-    longIntegerInit(s);
-    longIntegerInit(temp1);
-    longIntegerInit(temp2);
-    longIntegerInit(temp3);
-    longIntegerInit(gcd_result);
+    void SQUFOF(mpz_t result, const mpz_t N) {
+      uint32_t k;
+      longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
+      longIntegerInit(BB);
+      longIntegerInit(LL);
+      longIntegerInit(ii);
+      longIntegerInit(D);
+      longIntegerInit(Po);
+      longIntegerInit(P);
+      longIntegerInit(Pprev);
+      longIntegerInit(Q);
+      longIntegerInit(Qprev);
+      longIntegerInit(q);
+      longIntegerInit(b);
+      longIntegerInit(r);
+      longIntegerInit(s);
+      longIntegerInit(temp1);
+      longIntegerInit(temp2);
+      longIntegerInit(temp3);
+      longIntegerInit(gcd_result);
 
-    //Pollard simultaneous analysis
-    pollard_t pollardData;
-    factors_status_t instruction = FACTORS_SETUP;
-    factors_result_t PollardResult;
-    longInteger_t n, pollardFactor;
-    if(Factors_3_Pollard) {
-      longIntegerInit(n);
-      longIntegerInit(pollardFactor);
-      longIntegerCopy(N, n);
-      pollard_init(&pollardData);
-      pollard_update_n(&pollardData, n);
-    }
+      //Pollard simultaneous analysis
+      pollard_t pollardData;
+      factors_status_t instruction = FACTORS_SETUP;
+      factors_result_t PollardResult;
+      longInteger_t n, pollardFactor;
+      if(Factors_3_Pollard) {
+        longIntegerInit(n);
+        longIntegerInit(pollardFactor);
+        longIntegerCopy(N, n);
+        pollard_init(&pollardData);
+        pollard_update_n(&pollardData, n);
+      }
 
-    
-    // Check if N is a perfect square
-    if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
-      mpz_set(result, s);
-      goto cleanup;
-    }
-    
-    // Calculate s = sqrt(N)
-    longIntegerSquareRoot(N, s);
-    
-    for (k = 0; k < nbrOfElements(multipliers); k++) {
-        // D = multiplier[k] * N  (just N here)
-        mpz_mul_ui(D, N, multipliers[k]);
-        
-        // Po = Pprev = P = sqrt(D)
-        longIntegerSquareRoot(D, Po);
-        mpz_set(Pprev, Po);
-        mpz_set(P, Po);
-        
-        // Qprev = 1
-        mpz_set_ui(Qprev, 1);
-        
-        // Q = D - Po*Po
-        mpz_mul(temp1, Po, Po);
-        mpz_sub(Q, D, temp1);
-        if (mpz_sgn(Q) == 0) {
-            continue; // Q is zero; no factor found
-        }
-        
-        // LL = 2 * sqrt(2*s)
-        mpz_mul_ui(temp1, s, 2);
-        longIntegerSquareRoot(temp1, temp2);
-        mpz_mul_ui(LL, temp2, 2);
-        
-        // BB = 3 * LL
-        mpz_mul_ui(BB, LL, 3);
-       
-        // Initialize i as mpz_t for comparison with BB
-        mpz_set_ui(ii, 2);
-        
-        while (mpz_cmp(ii, BB) < 0) {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
+      
+      // Check if N is a perfect square
+      if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
+        mpz_set(result, s);
+        goto cleanup;
+      }
+      
+      // Calculate s = sqrt(N)
+      longIntegerSquareRoot(N, s);
+      
+      for (k = 0; k < nbrOfElements(multipliers); k++) {
+          // D = multiplier[k] * N  (just N here)
+          mpz_mul_ui(D, N, multipliers[k]);
+          
+          // Po = Pprev = P = sqrt(D)
+          longIntegerSquareRoot(D, Po);
+          mpz_set(Pprev, Po);
+          mpz_set(P, Po);
+          
+          // Qprev = 1
+          mpz_set_ui(Qprev, 1);
+          
+          // Q = D - Po*Po
+          mpz_mul(temp1, Po, Po);
+          mpz_sub(Q, D, temp1);
+          if (mpz_sgn(Q) == 0) {
+              continue; // Q is zero; no factor found
+          }
+          
+          // LL = 2 * sqrt(2*s)
+          mpz_mul_ui(temp1, s, 2);
+          longIntegerSquareRoot(temp1, temp2);
+          mpz_mul_ui(LL, temp2, 2);
+          
+          // BB = 3 * LL
+          mpz_mul_ui(BB, LL, 3);
+         
+          // Initialize i as mpz_t for comparison with BB
+          mpz_set_ui(ii, 2);
+          
+          while (mpz_cmp(ii, BB) < 0) {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    force_refresh(force);
+                  }
                 }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-
-
-         //Pollard simultaneous analysis
-            //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
-            if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
-              PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
-              #if defined(MONITOR_FACTORS)
-                printf("   Step: %d | Attempts: %d | Status: %d\n",PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
-              #endif //MONITOR_FACTORS
-              if (PollardResult.status == FACTORS_DONE) {
-                #if defined(MONITOR_FACTORS)
-                  gmp_printf("   Pollard found factor: %Zd\n", pollardFactor);
-                #endif //MONITOR_FACTORS
-                mpz_set(result,pollardFactor);
-                goto cleanup;
-              } else if (PollardResult.status == FACTORS_FAIL) {
-                #if defined(MONITOR_FACTORS)
-                  printf("   Pollard failed after %d attempts.\n", PollardResult.attempts);
-                #endif //MONITOR_FACTORS
-              }
-              instruction = PollardResult.status;
-            }
-
-
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(temp2, temp1, P);
-            mpz_set(P, temp2);
-            // q = Q
-            mpz_set(q, Q);
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-            // r = sqrt(Q)
-            longIntegerSquareRoot(Q, r);
-            // Check if i is even and r*r == Q
-            if (mpz_even_p(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
-                break;
-            }
-            
-            // Qprev = q; Pprev = P
-            mpz_set(Qprev, q);
-            mpz_set(Pprev, P);
-            
-            // Increment i
-            mpz_add_ui(ii, ii, 1);
-        }
-        
-        if (mpz_cmp(ii, BB) >= 0) {
-            continue;
-        }
-        
-        // b = (Po - P) / r
-        mpz_sub(temp1, Po, P);
-        mpz_fdiv_q(b, temp1, r);
-        
-        // Pprev = P = b*r + P
-        mpz_mul(temp1, b, r);
-        mpz_add(temp2, temp1, P);
-        mpz_set(Pprev, temp2);
-        mpz_set(P, temp2);
-        
-        // Qprev = r
-        mpz_set(Qprev, r);
-        
-        // Q = (D - Pprev*Pprev) / Qprev
-        mpz_mul(temp1, Pprev, Pprev);
-        mpz_sub(temp2, D, temp1);
-        mpz_fdiv_q(Q, temp2, Qprev);
-        
-        do {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
+                if(exitKeyWaiting()) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
                 }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // Pprev = P
-            mpz_set(Pprev, P);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(P, temp1, P);
-            
-            // q = Q
-            mpz_set(q, Q);
-            
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-            
-            // Qprev = q
-            mpz_set(Qprev, q);
-            
-        } while (mpz_cmp(P, Pprev) != 0);
-        
-        // r = gcd(N, Qprev)
-        longIntegerGcd(N, Qprev, r);
-        
-        // Check if r != 1 and r != N
-        if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
-            mpz_set(result, r);
-            goto cleanup;
-        }
-    }
+              #endif //!TESTSUITE_BUILD
 
-    // No factor found
-    mpz_set_ui(result, 0);
-    
+
+           //Pollard simultaneous analysis
+              //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
+              if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
+                PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
+                #if defined(MONITOR_FACTORS)
+                  printf("   Step: %d | Attempts: %d | Status: %d\n",PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                #endif //MONITOR_FACTORS
+                if (PollardResult.status == FACTORS_DONE) {
+                  #if defined(MONITOR_FACTORS)
+                    gmp_printf("   Pollard found factor: %Zd\n", pollardFactor);
+                  #endif //MONITOR_FACTORS
+                  mpz_set(result,pollardFactor);
+                  goto cleanup;
+                } else if (PollardResult.status == FACTORS_FAIL) {
+                  #if defined(MONITOR_FACTORS)
+                    printf("   Pollard failed after %d attempts.\n", PollardResult.attempts);
+                  #endif //MONITOR_FACTORS
+                }
+                instruction = PollardResult.status;
+              }
+
+
+              // b = (Po + P) / Q
+              mpz_add(temp1, Po, P);
+              mpz_fdiv_q(b, temp1, Q);
+              
+              // P = b*Q - P
+              mpz_mul(temp1, b, Q);
+              mpz_sub(temp2, temp1, P);
+              mpz_set(P, temp2);
+              // q = Q
+              mpz_set(q, Q);
+              // Q = Qprev + b*(Pprev - P)
+              mpz_sub(temp1, Pprev, P);
+              mpz_mul(temp2, b, temp1);
+              mpz_add(Q, Qprev, temp2);
+              // r = sqrt(Q)
+              longIntegerSquareRoot(Q, r);
+              // Check if i is even and r*r == Q
+              if (mpz_even_p(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+                  break;
+              }
+              
+              // Qprev = q; Pprev = P
+              mpz_set(Qprev, q);
+              mpz_set(Pprev, P);
+              
+              // Increment i
+              mpz_add_ui(ii, ii, 1);
+          }
+          
+          if (mpz_cmp(ii, BB) >= 0) {
+              continue;
+          }
+          
+          // b = (Po - P) / r
+          mpz_sub(temp1, Po, P);
+          mpz_fdiv_q(b, temp1, r);
+          
+          // Pprev = P = b*r + P
+          mpz_mul(temp1, b, r);
+          mpz_add(temp2, temp1, P);
+          mpz_set(Pprev, temp2);
+          mpz_set(P, temp2);
+          
+          // Qprev = r
+          mpz_set(Qprev, r);
+          
+          // Q = (D - Pprev*Pprev) / Qprev
+          mpz_mul(temp1, Pprev, Pprev);
+          mpz_sub(temp2, D, temp1);
+          mpz_fdiv_q(Q, temp2, Qprev);
+          
+          do {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    force_refresh(force);
+                  }
+                }
+                if(exitKeyWaiting()) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
+                }
+              #endif //!TESTSUITE_BUILD
+              // b = (Po + P) / Q
+              mpz_add(temp1, Po, P);
+              mpz_fdiv_q(b, temp1, Q);
+              
+              // Pprev = P
+              mpz_set(Pprev, P);
+              
+              // P = b*Q - P
+              mpz_mul(temp1, b, Q);
+              mpz_sub(P, temp1, P);
+              
+              // q = Q
+              mpz_set(q, Q);
+              
+              // Q = Qprev + b*(Pprev - P)
+              mpz_sub(temp1, Pprev, P);
+              mpz_mul(temp2, b, temp1);
+              mpz_add(Q, Qprev, temp2);
+              
+              // Qprev = q
+              mpz_set(Qprev, q);
+              
+          } while (mpz_cmp(P, Pprev) != 0);
+          
+          // r = gcd(N, Qprev)
+          longIntegerGcd(N, Qprev, r);
+          
+          // Check if r != 1 and r != N
+          if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
+              mpz_set(result, r);
+              goto cleanup;
+          }
+      }
+
+      // No factor found
+      mpz_set_ui(result, 0);
+      
 cleanup:
-    //Pollard simultaneous analysis
-    if(Factors_3_Pollard) {
-      pollard_clear(&pollardData);
-      mpz_clears(n, pollardFactor, NULL);
+      //Pollard simultaneous analysis
+      if(Factors_3_Pollard) {
+        pollard_clear(&pollardData);
+        mpz_clears(n, pollardFactor, NULL);
+      }
+      longIntegerFree(BB);
+      longIntegerFree(LL);
+      longIntegerFree(ii);
+      longIntegerFree(D);
+      longIntegerFree(Po);
+      longIntegerFree(P);
+      longIntegerFree(Pprev);
+      longIntegerFree(Q);
+      longIntegerFree(Qprev);
+      longIntegerFree(q);
+      longIntegerFree(b);
+      longIntegerFree(r);
+      longIntegerFree(s);
+      longIntegerFree(temp1);
+      longIntegerFree(temp2);
+      longIntegerFree(temp3);
+      longIntegerFree(gcd_result);
     }
-    longIntegerFree(BB);
-    longIntegerFree(LL);
-    longIntegerFree(ii);
-    longIntegerFree(D);
-    longIntegerFree(Po);
-    longIntegerFree(P);
-    longIntegerFree(Pprev);
-    longIntegerFree(Q);
-    longIntegerFree(Qprev);
-    longIntegerFree(q);
-    longIntegerFree(b);
-    longIntegerFree(r);
-    longIntegerFree(s);
-    longIntegerFree(temp1);
-    longIntegerFree(temp2);
-    longIntegerFree(temp3);
-    longIntegerFree(gcd_result);
-}
 
 
 
@@ -2109,43 +2084,49 @@ abort:
 
 
 //-------------------------------------------------------------------
-
 /*
- * Pollard's Rho Integer Factorization (with GMP) with perfect power detection
+ * Pollard's Rho Integer Factorization with perfect power detection
  *
  * Based on: https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
  * jaymos 2025
+ * The point of this approach of coding is to let Pollard's algo operate step wise,
+ *   interjected while doing the Shanks algo. Shanks was done first, and found to get
+ *   stuck with relatively simple factor not being found. Pollard will in PARALLEL 
+ *   scan the current number and whicheve Shanks or Pollard finding a factor,
+ *   will run the addFactor function, and continue to look in the same way sharing the 
+ *   processor.
+ * The idea comes from 'linear programming' in the 80's afaik, where a simplistic
+ * single threaded industrial controller or PLC does 'multi-tasking' without formal time
+ * slicing and mult-threadedness.
+ *
+ * In summary, Shanks was written, then Pollard was written to fill in and find factors
+ * in parallel without breaking the Shanks factor finding loop.
  */
-
-
 
 /*
  * Print pollard status to screen
  */
 char* pollard_status(factors_status_t st) {
   switch(st){
-    case FACTORS_SETUP:   return("SETUP:  "); break;
-    case FACTORS_ITERATE: return("ITERATE:"); break;
-    case FACTORS_RESET:   return("RESET:  "); break;
-    case FACTORS_DONE:    return("DONE:   "); break;
-    case FACTORS_FAIL:    return("FAIL:   "); break;
+    case FACTORS_SETUP:   return("SETUP  "); break;
+    case FACTORS_ITERATE: return("ITERATE"); break;
+    case FACTORS_RESET:   return("RESET  "); break;
+    case FACTORS_DONE:    return("DONE   "); break;
+    case FACTORS_FAIL:    return("FAIL   "); break;
     default:return("");break;
   }
 }
-
 /*
  * Polynomial function used in Pollard's Rho:
  * f(x) = x^2 + c mod n
  */
 static void f(mpz_t result, const mpz_t x, const mpz_t c, const mpz_t n) {
-  mpz_mul(result, x, x);     // x^2
-  mpz_add(result, result, c); // + c
-  mpz_mod(result, result, n); // mod n
+  mpz_mul(result, x, x);                // x^2
+  mpz_add(result, result, c);           // + c
+  longIntegerModulo(result, n, result); // mod n
 }
-
 /*
- * Initializes the Pollard state structure.
- * Must be called before using the step or update functions.
+ * Initializes the Pollard state structure. Must be called before using the step or update functions.
  */
 void pollard_init(pollard_t *self) {
   mpz_inits(self->n, self->x, self->y, self->c, self->d, self->tmp, NULL);
@@ -2156,7 +2137,6 @@ void pollard_init(pollard_t *self) {
   gmp_randinit_mt(self->rng);
   gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
 }
-
 /*
  * Frees all GMP variables and RNG state.
  */
@@ -2164,36 +2144,31 @@ void pollard_clear(pollard_t *self) {
   mpz_clears(self->n, self->x, self->y, self->c, self->d, self->tmp, NULL);
   gmp_randclear(self->rng);
 }
-
 /*
- * Updates the target number to factor (n),
- * and resets the internal state automatically.
+ * Updates the target number to factor (n), and resets the internal state automatically.
  */
 void pollard_update_n(pollard_t *self, const mpz_t new_n) {
-  mpz_set(self->n, new_n);
+  longIntegerCopy(new_n, self->n);
   self->attempt = 0;
   self->iteration = 0;
-
   // Setup: Choose new random x and c
   mpz_urandomm(self->c, self->rng, self->n);
   mpz_urandomm(self->x, self->rng, self->n);
-  mpz_set(self->y, self->x);
+  longIntegerCopy(self->x, self->y);
   mpz_set_ui(self->d, 1);
 }
-
 /*
- * Performs a bounded number of Pollard's Rho iterations.
- * Returns a result struct containing status and diagnostic info.
+ * Performs a number of Pollard's Rho iterations.
+ * Returns a result struct with status and diagnostic info.
+ * - If a factor is found, status will be FACTORS_DONE.
+ * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
  */
-factors_result_t pollard_step(pollard_t *self, mpz_t factor,
-                              factors_status_t instruction,
-                              int steps) {
+factors_result_t pollard_step(pollard_t *self, mpz_t factor, factors_status_t instruction, int steps) {
   factors_result_t result;
   result.status = FACTORS_ITERATE;
   result.iterations_this_call = 0;
   result.total_iterations = self->iteration;
   result.attempts = self->attempt;
-
   // First-time or forced re-setup
   if (instruction == FACTORS_RESET || instruction == FACTORS_SETUP) {
     if (self->attempt++ >= self->max_attempts) {
@@ -2202,13 +2177,12 @@ factors_result_t pollard_step(pollard_t *self, mpz_t factor,
     }
     mpz_urandomm(self->c, self->rng, self->n);
     mpz_urandomm(self->x, self->rng, self->n);
-    mpz_set(self->y, self->x);
+    longIntegerCopy(self->x, self->y);
     mpz_set_ui(self->d, 1);
     self->iteration = 0;
     result.status = FACTORS_ITERATE;
     return result;
   }
-
   // Perform up to `steps` iterations
   if (instruction == FACTORS_ITERATE) {
     for (int i = 0; i < steps; ++i) {
@@ -2216,33 +2190,27 @@ factors_result_t pollard_step(pollard_t *self, mpz_t factor,
         result.status = FACTORS_SETUP; // Too long without result — reseed
         break;
       }
-
       // Brent cycle: advance x once, y twice
       f(self->x, self->x, self->c, self->n);
       f(self->y, self->y, self->c, self->n);
       f(self->y, self->y, self->c, self->n);
-
       mpz_sub(self->tmp, self->x, self->y);
       mpz_abs(self->tmp, self->tmp);
-      mpz_gcd(self->d, self->tmp, self->n);
-
+      longIntegerGcd(self->tmp, self->n, self->d);
       // Factor found!
-      if (mpz_cmp_ui(self->d, 1) > 0 && mpz_cmp(self->d, self->n) < 0) {
-        mpz_set(factor, self->d);
+      if (longIntegerCompareUInt(self->d, 1) > 0 && longIntegerCompare(self->d, self->n) < 0) {
+        longIntegerCopy(self->d, factor);
         result.status = FACTORS_DONE;
         break;
       }
-
       // Fail — retry from new seed
-      if (mpz_cmp(self->d, self->n) == 0) {
+      if (longIntegerCompare(self->d, self->n) == 0) {
         result.status = FACTORS_SETUP;
         break;
       }
-
       result.iterations_this_call++;
     }
   }
-
   result.total_iterations = self->iteration;
   result.attempts = self->attempt;
   return result;
