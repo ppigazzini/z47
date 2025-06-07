@@ -9,6 +9,15 @@
 
 #define maximumPrime 308   //10^308
 
+
+//debugging method to disable the prime factor parts
+#define MONITOR_FACTORS
+#undef MONITOR_FACTORS
+const bool_t Factors_1_SmallPrimes   = true;
+const bool_t Factors_2_PerfectSquare = true;
+const bool_t Factors_3_Pollard       = true;
+
+
 // primes less than 212
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
@@ -60,6 +69,48 @@ uint16_t smallPrimeList(uint16_t index) {
 //    printf("prime: %u : %u\n",i,smallPrimeList(i));
 //  }
 //}
+
+
+
+//------------- Pollard for Factors -------------
+// Common status codes returned by factoring algorithms.
+typedef enum {
+  FACTORS_SETUP,     // Start or restart the factoring algorithm
+  FACTORS_ITERATE,   // Perform one or more factoring iterations
+  FACTORS_RESET,     // Indicates the input n has changed (reinitialize)
+  FACTORS_DONE,      // A nontrivial factor has been found
+  FACTORS_FAIL       // Too many attempts or failure to progress
+} factors_status_t;
+
+// Result structure returned after a step or setup, for monitoring and diagnostic data.
+typedef struct {
+  factors_status_t status;
+  int iterations_this_call;
+  int total_iterations;
+  int attempts;
+} factors_result_t;
+
+// Internal structure for Pollard's Rho algorithm.
+typedef struct {
+  longInteger_t n;        // Number to factor
+  longInteger_t x, y;     // Brent's cycle detection (two runners)
+  longInteger_t c;        // Constant for the polynomial: f(x) = x^2 + c
+  longInteger_t d;        // Current GCD candidate
+  longInteger_t tmp;      // Temporary variable for calculations
+  int iteration;          // Total iterations performed
+  int max_iterations;     // Reset after this many iterations
+  int attempt;            // Number of reinitializations attempted
+  int max_attempts;       // Max allowed retries before FAIL
+  gmp_randstate_t rng;    // RNG for random starts
+} pollard_t;
+
+void pollard_init(pollard_t *self);
+void pollard_clear(pollard_t *self);
+void pollard_update_n(pollard_t *self, const longInteger_t new_n);
+char* pollard_status(factors_status_t st);
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps);
+//------------- Pollard for Factors -------------
+
 
 
 
@@ -172,9 +223,9 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
-void SQUFOF(mpz_t result, const mpz_t N);
-void complete_factorization1(const mpz_t N);
-void complete_factorization2(const mpz_t N);
+void SQUFOF(longInteger_t result, const longInteger_t N);
+void complete_factorization1(const longInteger_t N);
+void complete_factorization2(const longInteger_t N);
 
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
@@ -552,9 +603,8 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 
 
-#undef old_PrimeFactorProgram
 
-#ifdef old_PrimeFactorProgram
+/* OLD FACTORS FUNCTION, BRUTE FORCE, SLOW
 #define MAX_FACTORS 100//87
 #define WGR              //verbose
 #undef WGR
@@ -705,7 +755,7 @@ typedef struct FactorAdder
 #endif //SAVE_SPACE_DM42_12PRIME
 
 
-/*
+ *
  * This function takes a long integer in the X register, and determines its
  * prime factorisation.  The result is a matrix with two rows.  The first
  * row contains all the distinct prime factors.
@@ -719,7 +769,7 @@ typedef struct FactorAdder
  *   Input X register:  -1500
  *   Output X register:  -1. 2.  3.  5.
  *                        1. 2.  1.  3.
- */
+ *
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     #define NOFACTOR 127
@@ -869,8 +919,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerFree(currentNumber);
   #endif //SAVE_SPACE_DM42_12PRIME
 }
-#endif //old_PrimeFactorProgram
-
+*/
 
 
 
@@ -1254,13 +1303,10 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
 
 
-#ifndef old_PrimeFactorProgram
 //** factorization **********************************************************************************************************
 // Shanks algorithm, based on the demo on the wikipedia page
 // https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
-
-#define MONITOR_FACTORS
-#undef MONITOR_FACTORS
+// jaymos 2025
 
     const int multipliers[] = {
         1, 3, 5, 7, 11, 13,
@@ -1273,17 +1319,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         5*7*11, 5*7*13,
         3*5*7*11
     };
-
-    //// Check if a number is a perfect square using GMP
-    //static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r)
-    //{
-    //  if (longIntegerPerfectSquare(n)) {
-    //    longIntegerSquareRoot(n, r);
-    //    return 1;
-    //  }
-    //  return 0;
-    //}
-
 
     // Fast perfect square check using 32-bit integer sqrt
     static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
@@ -1299,7 +1334,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         return 0;
     }
 
-
     // Check if a number is a perfect square using GMP
     // Efficient and correct: fast path for small numbers, fallback for large
     static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r) {
@@ -1307,12 +1341,11 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
             uint32_t small = (uint32_t)mpz_get_ui(n);
             uint32_t sqrt_small;
             if (is_perfect_square_uint32(small, &sqrt_small)) {
-                mpz_set_ui(r, sqrt_small);
+                uInt32ToLongInteger(sqrt_small, r);
                 return 1;
             }
             return 0;
         }
-
         // GMP fallback for larger integers
         if (longIntegerPerfectSquare(n)) {
             longIntegerSquareRoot(n, r);
@@ -1322,182 +1355,248 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     }
 
 
-
     #if !defined(TESTSUITE_BUILD)
       int32_t loopp = 0;
     #endif //TESTSUITE_BUILD
 
-void SQUFOF(mpz_t result, const mpz_t N) {
-    mpz_t D, Po, P, Pprev, Q, Qprev, q, b, r, s;
-    mpz_t temp1, temp2, temp3, gcd_result;
-    uint32_t L, B, i, k;
-    // Initialize all GMP variables
-    mpz_init(D); mpz_init(Po); mpz_init(P); mpz_init(Pprev);
-    mpz_init(Q); mpz_init(Qprev); mpz_init(q); mpz_init(b);
-    mpz_init(r); mpz_init(s); mpz_init(temp1); mpz_init(temp2);
-    mpz_init(temp3); mpz_init(gcd_result);
-    
-    // Check if N is a perfect square
-    if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
-      mpz_set(result, s);
-      goto cleanup;
-    }
-    
-    // Calculate s = sqrt(N)
-    longIntegerSquareRoot(N, s);
-    
-    for (k = 0; k < nbrOfElements(multipliers); k++) {
+    void SQUFOF(longInteger_t result, const longInteger_t N) {
+      uint32_t k;
+      longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
+      longIntegerInit(BB);
+      longIntegerInit(LL);
+      longIntegerInit(ii);
+      longIntegerInit(D);
+      longIntegerInit(Po);
+      longIntegerInit(P);
+      longIntegerInit(Pprev);
+      longIntegerInit(Q);
+      longIntegerInit(Qprev);
+      longIntegerInit(q);
+      longIntegerInit(b);
+      longIntegerInit(r);
+      longIntegerInit(s);
+      longIntegerInit(temp1);
+      longIntegerInit(temp2);
+      longIntegerInit(temp3);
+      longIntegerInit(gcd_result);
 
-        // D = multiplier[k] * N  (just N here)
-        mpz_mul_ui(D, N, multipliers[k]);
-        
-        // Po = Pprev = P = sqrt(D)
-        longIntegerSquareRoot(D, Po);
-        mpz_set(Pprev, Po);
-        mpz_set(P, Po);
-        
-        // Qprev = 1
-        mpz_set_ui(Qprev, 1);
-        
-        // Q = D - Po*Po
-        mpz_mul(temp1, Po, Po);
-        mpz_sub(Q, D, temp1);
-        if (mpz_sgn(Q) == 0) {
-            continue; //goto nff;  // Q is zero; no factor found
-        }
-        
-        // L = 2 * sqrt(2*s)
-        mpz_mul_ui(temp1, s, 2);
-        longIntegerSquareRoot(temp1, temp2);
-        L = 2 * mpz_get_ui(temp2);
-        
-        // B = 3 * L
-        B = 3 * L;
-       
-        for (i = 2; i < B; i++) {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
+      //Pollard simultaneous analysis
+      pollard_t pollardData;
+      factors_status_t instruction = FACTORS_SETUP;
+      factors_result_t PollardResult;
+      longInteger_t n, pollardFactor;
+      if(Factors_3_Pollard) {
+        longIntegerInit(n);
+        longIntegerInit(pollardFactor);
+        longIntegerCopy(N, n);
+        pollard_init(&pollardData);
+        pollard_update_n(&pollardData, n);
+      }
+
+      // Check if N is a perfect square
+      if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
+        longIntegerCopy(s, result);
+        goto cleanup;
+      }
+      
+      // Calculate s = sqrt(N)
+      longIntegerSquareRoot(N, s);
+      
+      for (k = 0; k < nbrOfElements(multipliers); k++) {
+          // D = multiplier[k] * N  (just N here)
+          longIntegerMultiplyUInt(N, multipliers[k], D);
+          
+          // Po = Pprev = P = sqrt(D)
+          longIntegerSquareRoot(D, Po);
+          longIntegerCopy(Po, Pprev);
+          longIntegerCopy(Po, P);
+          
+          // Qprev = 1
+          uInt32ToLongInteger(1, Qprev);
+          
+          // Q = D - Po*Po
+          longIntegerMultiply(Po, Po, temp1);
+          longIntegerSubtract(D, temp1, Q);
+          if (longIntegerSign(Q) == 0) {
+              continue; // Q is zero; no factor found
+          }
+          
+          // LL = 2 * sqrt(2*s)
+          longIntegerMultiplyUInt(s, 2, temp1);
+          longIntegerSquareRoot(temp1, temp2);
+          longIntegerMultiplyUInt(temp2, 2, LL);
+          
+          // BB = 3 * LL
+          longIntegerMultiplyUInt(LL, 3, BB);
+         
+          // Initialize i as longInteger_t for comparison with BB
+          uInt32ToLongInteger(2, ii);
+          
+          while (longIntegerCompare(ii, BB) < 0) {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    force_refresh(force);
+                  }
                 }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(temp2, temp1, P);
-            mpz_set(P, temp2);
-
-            // q = Q
-            mpz_set(q, Q);
-
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-
-            // r = sqrt(Q)
-            longIntegerSquareRoot(Q, r);
-
-            // Check if i is even and r*r == Q
-            if (!(i & 1) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
-                break;
-            }
-            
-            // Qprev = q; Pprev = P
-            mpz_set(Qprev, q);
-            mpz_set(Pprev, P);
-        }
-        
-        if (i >= B) continue; //goto nff;
-        
-        // b = (Po - P) / r
-        mpz_sub(temp1, Po, P);
-        mpz_fdiv_q(b, temp1, r);
-        
-        // Pprev = P = b*r + P
-        mpz_mul(temp1, b, r);
-        mpz_add(temp2, temp1, P);
-        mpz_set(Pprev, temp2);
-        mpz_set(P, temp2);
-        
-        // Qprev = r
-        mpz_set(Qprev, r);
-        
-        // Q = (D - Pprev*Pprev) / Qprev
-        mpz_mul(temp1, Pprev, Pprev);
-        mpz_sub(temp2, D, temp1);
-        mpz_fdiv_q(Q, temp2, Qprev);
-        
-        i = 0;
-        do {
-            #if !defined(TESTSUITE_BUILD)
-              loopp++;
-              if(checkHalfSec()) {
-                if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                  force_refresh(force);
+                if(exitKeyWaiting()) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
                 }
-              }
-              if(exitKeyWaiting()) {
-                progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                programRunStop = PGM_WAITING;
-                break;
-              }
-            #endif //!TESTSUITE_BUILD
-            // b = (Po + P) / Q
-            mpz_add(temp1, Po, P);
-            mpz_fdiv_q(b, temp1, Q);
-            
-            // Pprev = P
-            mpz_set(Pprev, P);
-            
-            // P = b*Q - P
-            mpz_mul(temp1, b, Q);
-            mpz_sub(P, temp1, P);
-            
-            // q = Q
-            mpz_set(q, Q);
-            
-            // Q = Qprev + b*(Pprev - P)
-            mpz_sub(temp1, Pprev, P);
-            mpz_mul(temp2, b, temp1);
-            mpz_add(Q, Qprev, temp2);
-            
-            // Qprev = q
-            mpz_set(Qprev, q);
-            
-            i++;
-        } while (mpz_cmp(P, Pprev) != 0);
-        
-        // r = gcd(N, Qprev)
-        longIntegerGcd(N, Qprev, r);
-        
-        // Check if r != 1 and r != N
-        if (mpz_cmp_ui(r, 1) != 0 && mpz_cmp(r, N) != 0) {
-            mpz_set(result, r);
-            goto cleanup;
-        }
-    }
+              #endif //!TESTSUITE_BUILD
 
-    // No factor found
-    mpz_set_ui(result, 0);
-    
+
+           //Pollard simultaneous analysis
+              //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
+              if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
+                PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
+                #if defined(MONITOR_FACTORS)
+                  printf("   Step: %d | Attempts: %d | Status: %d\n",PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                #endif //MONITOR_FACTORS
+                if (PollardResult.status == FACTORS_DONE) {
+                  #if defined(MONITOR_FACTORS)
+                    gmp_printf("   Pollard found factor: %Zd\n", pollardFactor);
+                  #endif //MONITOR_FACTORS
+                  longIntegerCopy(pollardFactor, result);
+                  goto cleanup;
+                } else if (PollardResult.status == FACTORS_FAIL) {
+                  #if defined(MONITOR_FACTORS)
+                    printf("   Pollard failed after %d attempts.\n", PollardResult.attempts);
+                  #endif //MONITOR_FACTORS
+                }
+                instruction = PollardResult.status;
+              }
+
+
+              // b = (Po + P) / Q
+              longIntegerAdd(Po, P, temp1);
+              longIntegerDivide(temp1, Q, b);
+              
+              // P = b*Q - P
+              longIntegerMultiply(b, Q, temp1);
+              longIntegerSubtract(temp1, P, temp2);
+              longIntegerCopy(temp2, P);
+              // q = Q
+              longIntegerCopy(Q, q);
+              // Q = Qprev + b*(Pprev - P)
+              longIntegerSubtract(Pprev, P, temp1);
+              longIntegerMultiply(b, temp1, temp2);
+              longIntegerAdd(Qprev, temp2, Q);
+              // r = sqrt(Q)
+              longIntegerSquareRoot(Q, r);
+              // Check if i is even and r*r == Q
+              if (longIntegerIsEven(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+                  break;
+              }
+              
+              // Qprev = q; Pprev = P
+              longIntegerCopy(q, Qprev);
+              longIntegerCopy(P, Pprev);
+              
+              // Increment i
+              longIntegerAddUInt(ii, 1, ii);
+          }
+          
+          if (longIntegerCompare(ii, BB) >= 0) {
+              continue;
+          }
+          
+          // b = (Po - P) / r
+          longIntegerSubtract(Po, P, temp1);
+          longIntegerDivide(temp1, r, b);
+          
+          // Pprev = P = b*r + P
+          longIntegerMultiply(b, r, temp1);
+          longIntegerAdd(temp1, P, temp2);
+          longIntegerCopy(temp2, Pprev);
+          longIntegerCopy(temp2, P);
+          
+          // Qprev = r
+          longIntegerCopy(r, Qprev);
+          
+          // Q = (D - Pprev*Pprev) / Qprev
+          longIntegerMultiply(Pprev, Pprev, temp1);
+          longIntegerSubtract(D, temp1, temp2);
+          longIntegerDivide(temp2, Qprev, Q);
+          
+          do {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    force_refresh(force);
+                  }
+                }
+                if(exitKeyWaiting()) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
+                }
+              #endif //!TESTSUITE_BUILD
+              // b = (Po + P) / Q
+              longIntegerAdd(Po, P, temp1);
+              longIntegerDivide(temp1, Q, b);
+              
+              // Pprev = P
+              longIntegerCopy(P, Pprev);
+              
+              // P = b*Q - P
+              longIntegerMultiply(b, Q, temp1);
+              longIntegerSubtract(temp1, P, P);
+              
+              // q = Q
+              longIntegerCopy(Q, q);
+              
+              // Q = Qprev + b*(Pprev - P)
+              longIntegerSubtract(Pprev, P, temp1);
+              longIntegerMultiply(b, temp1, temp2);
+              longIntegerAdd(Qprev, temp2, Q);
+              
+              // Qprev = q
+              longIntegerCopy(q, Qprev);
+              
+          } while (longIntegerCompare(P, Pprev) != 0);
+          
+          // r = gcd(N, Qprev)
+          longIntegerGcd(N, Qprev, r);
+          
+          // Check if r != 1 and r != N
+          if (longIntegerCompareUInt(r, 1) != 0 && longIntegerCompare(r, N) != 0) {
+              longIntegerCopy(r, result);
+              goto cleanup;
+          }
+      }
+
+      // No factor found
+      uInt32ToLongInteger(0, result);
+      
 cleanup:
-    // Clear all GMP variables
-    mpz_clear(D); mpz_clear(Po); mpz_clear(P); mpz_clear(Pprev);
-    mpz_clear(Q); mpz_clear(Qprev); mpz_clear(q); mpz_clear(b);
-    mpz_clear(r); mpz_clear(s); mpz_clear(temp1); mpz_clear(temp2);
-    mpz_clear(temp3); mpz_clear(gcd_result);
-}
+      //Pollard simultaneous analysis
+      if(Factors_3_Pollard) {
+        pollard_clear(&pollardData);
+        longIntegerFree(n);
+        longIntegerFree(pollardFactor);
+      }
+      longIntegerFree(BB);
+      longIntegerFree(LL);
+      longIntegerFree(ii);
+      longIntegerFree(D);
+      longIntegerFree(Po);
+      longIntegerFree(P);
+      longIntegerFree(Pprev);
+      longIntegerFree(Q);
+      longIntegerFree(Qprev);
+      longIntegerFree(q);
+      longIntegerFree(b);
+      longIntegerFree(r);
+      longIntegerFree(s);
+      longIntegerFree(temp1);
+      longIntegerFree(temp2);
+      longIntegerFree(temp3);
+      longIntegerFree(gcd_result);
+    }
 
 
 
@@ -1746,58 +1845,61 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     }
     longIntegerSetPositiveSign(currentNumber);
 
-    mpz_t queue[MAXIMUM_QUEUE_SIZE];
+    longInteger_t queue[MAXIMUM_QUEUE_SIZE];
     int queue_start = 0, queue_end = 0;
 
 // initialize and prep second part
-    mpz_t temp, factor, quotient, tempPrePrimeRun;
-    mpz_init(temp);
-    mpz_init(factor);
-    mpz_init(quotient);
-    mpz_init(tempPrePrimeRun);
+    longInteger_t temp, factor, quotient, tempPrePrimeRun;
+    longIntegerInit(temp);
+    longIntegerInit(factor);
+    longIntegerInit(quotient);
+    longIntegerInit(tempPrePrimeRun);
     // Initialize queue with the input number
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
-        mpz_init(queue[i]);
+        longIntegerInit(queue[i]);
     }
 
     // original command, prior to pre-run of primes. Retain here to test without the pre-run block
-    //   mpz_set(queue[queue_end++], currentNumber);
+    //   longIntegerCopy(currentNumber, queue[queue_end++]);
 
-    // first do a pre-run, to do small prime checking
-    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
-      uint16_t smallP = smallPrimeList(i);
-      while (mpz_divisible_ui_p(currentNumber, smallP)) {
-        #if !defined(TESTSUITE_BUILD)
-          loopp++;
-          if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-              _showProgress(&lastAdded, currentNumber);
-              dumpExponents(&matrix, &faddr, 13);
-              force_refresh(force);
+    if(Factors_1_SmallPrimes) {
+      // first do a pre-run, to do small prime checking
+      for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+        uint16_t smallP = smallPrimeList(i);
+        while (mpz_divisible_ui_p(currentNumber, smallP)) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(&matrix, &faddr, 13);
+                force_refresh(force);
+              }
             }
+            if(exitKeyWaiting()) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
+                              #if defined(MONITOR_FACTORS)
+                                printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
+                              #endif //MONITOR_FACTORS
+          mpz_divexact_ui(currentNumber, currentNumber, smallP);
+                              #if defined(MONITOR_FACTORS)
+                                mpz_out_str(stdout, 10, currentNumber);
+                              #endif //MONITOR_FACTORS
+          uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
+          if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
+            goto cleanup;
           }
-          if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            break;
-          }
-        #endif //!TESTSUITE_BUILD
-                            #if defined(MONITOR_FACTORS)
-                              printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
-                            #endif //MONITOR_FACTORS
-        mpz_divexact_ui(currentNumber, currentNumber, smallP);
-                            #if defined(MONITOR_FACTORS)
-                              mpz_out_str(stdout, 10, currentNumber);
-                            #endif //MONITOR_FACTORS
-        mpz_set_ui(tempPrePrimeRun, (unsigned long)(smallP));
-        if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
-          goto cleanup;
+                              #if defined(MONITOR_FACTORS)
+                                printf("\n");
+                              #endif //MONITOR_FACTORS
         }
-                            #if defined(MONITOR_FACTORS)
-                              printf("\n");
-                            #endif //MONITOR_FACTORS
-      }
-    } // end of small prime loop
+      } // end of small prime loop
+    }
+
 
 
 
@@ -1808,60 +1910,57 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
     105 }; // 3-way composite: 3*5*7
 
-
-    // Alternative: smaller set of multipliers including some composites for better coverage
-    // static const uint32_t multipliers[] = {1, 3, 5, 7, 11, 15, 21, 33, 35, 39, 55, 65, 77, 105, 115, 165};
-
-    for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
-        if (mpz_fits_uint_p(currentNumber)) {
-            uint32_t k = multipliers[i];
-            uint32_t n32 = mpz_get_ui(currentNumber);
-            uint64_t kn = (uint64_t)k * (uint64_t)n32;
-            #if defined(MONITOR_FACTORS)
-              printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
-              fflush(stdout);
-            #endif
-            uint32_t root;
-            if (is_perfect_square_uint32(kn, &root)) {
-                // Skip trivial perfect square 1 * 1 = 1
-                if (!(k == 1 && root == 1)) {
-                    #if defined(MONITOR_FACTORS)
-                      printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
-                      fflush(stdout);
-                    #endif
-                    // Use gcd to extract non-trivial factor safely
-                    mpz_t gcd;
-                    mpz_init(gcd);
-                    mpz_gcd_ui(gcd, currentNumber, root);
-                    if (mpz_cmp_ui(gcd, 1) > 0) {
-                        // Inject a trivial factor
-                        if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
-                            mpz_clear(gcd);
-                            goto cleanup;
-                        }
-                        mpz_divexact(currentNumber, currentNumber, gcd);
-                        mpz_clear(gcd);
-                        break;
-                    }
-                    mpz_clear(gcd);
-                }
-            }
-        }
+    if(Factors_2_PerfectSquare) {
+      for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
+          if (mpz_fits_uint_p(currentNumber)) {
+              uint32_t k = multipliers[i];
+              uint32_t n32;
+              longIntegerToUInt32(currentNumber, n32);
+              uint64_t kn = (uint64_t)k * (uint64_t)n32;
+              #if defined(MONITOR_FACTORS)
+                printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+                fflush(stdout);
+              #endif
+              uint32_t root;
+              if (is_perfect_square_uint32(kn, &root)) {
+                  // Skip trivial perfect square 1 * 1 = 1
+                  if (!(k == 1 && root == 1)) {
+                      #if defined(MONITOR_FACTORS)
+                        printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+                        fflush(stdout);
+                      #endif
+                      // Use gcd to extract non-trivial factor safely
+                      longInteger_t gcd;
+                      longIntegerInit(gcd);
+                      mpz_gcd_ui(gcd, currentNumber, root);
+                      if (longIntegerCompareUInt(gcd, 1) > 0) {
+                          // Inject a trivial factor
+                          if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
+                              longIntegerFree(gcd);
+                              goto cleanup;
+                          }
+                          mpz_divexact(currentNumber, currentNumber, gcd);
+                          longIntegerFree(gcd);
+                          break;
+                      }
+                      longIntegerFree(gcd);
+                  }
+              }
+          }
+      }
     }
 
-
-
-    mpz_set(queue[queue_end++], currentNumber);
+    longIntegerCopy(currentNumber, queue[queue_end++]);
                             #if defined(MONITOR_FACTORS)
                               printf("Factorizing: ");
                               mpz_out_str(stdout, 10, currentNumber);
                               printf("\nFactors found: ");
                             #endif //MONITOR_FACTORS
 
-    mpz_t current;
-    mpz_init(current);
+    longInteger_t current;
+    longIntegerInit(current);
     while (queue_start < queue_end) {
-        mpz_set(current, queue[queue_start++]);
+        longIntegerCopy(queue[queue_start++], current);
                             #if defined(MONITOR_FACTORS)
                               printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
                             #endif //MONITOR_FACTORS
@@ -1888,7 +1987,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
 
         // Skip if current is 1
-        if (mpz_cmp_ui(current, 1) == 0) {
+        if (longIntegerCompareUInt(current, 1) == 0) {
                             #if defined(MONITOR_FACTORS)
                               printf("Skip, current is 1\n");
                             #endif //MONITOR_FACTORS
@@ -1914,7 +2013,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
         // Attempt to find a factor using SQUFOF
         SQUFOF(factor, current);
-        if (mpz_cmp_ui(factor, 0) == 0 || mpz_cmp(factor, current) == 0) {
+        if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
             // SQUFOF failed; treat current as prime
                             #if defined(MONITOR_FACTORS)
                               printf("SQUFOF failed; treat current as prime: ");
@@ -1944,8 +2043,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                               mpz_out_str(stdout, 10, quotient);
                               printf("\n");
                             #endif //MONITOR_FACTORS
-            mpz_set(queue[queue_end++], factor);
-            mpz_set(queue[queue_end++], quotient);
+            longIntegerCopy(factor, queue[queue_end++]);
+            longIntegerCopy(quotient, queue[queue_end++]);
         } else {
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1957,15 +2056,15 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     }
 doneWhile:
-    mpz_clear(current);
+    longIntegerFree(current);
 
 cleanup:
-    mpz_clear(temp);
-    mpz_clear(factor);
-    mpz_clear(quotient);
-    mpz_clear(tempPrePrimeRun);
+    longIntegerFree(temp);
+    longIntegerFree(factor);
+    longIntegerFree(quotient);
+    longIntegerFree(tempPrePrimeRun);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
-        mpz_clear(queue[i]);
+        longIntegerFree(queue[i]);
     }
 
     dumpExponents(&matrix, &faddr, 65535);
@@ -1977,7 +2076,150 @@ abort:
     longIntegerFree(tmp);
     longIntegerFree(temp1);
     longIntegerFree(currentNumber);
-
 }
-#endif //!old_PrimeFactorProgram
+
+
+
+//-------------------------------------------------------------------
+/*
+ * Pollard's Rho Integer Factorization with perfect power detection
+ *
+ * Based on: https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+ * jaymos 2025
+ * The point of this approach of coding is to let Pollard's algo operate step wise,
+ *   interjected while doing the Shanks algo. Shanks was done first, and found to get
+ *   stuck with relatively simple factor not being found. Pollard will in PARALLEL 
+ *   scan the current number and whicheve Shanks or Pollard finding a factor,
+ *   will run the addFactor function, and continue to look in the same way sharing the 
+ *   processor.
+ * The idea comes from 'linear programming' in the 80's afaik, where a simplistic
+ * single threaded industrial controller or PLC does 'multi-tasking' without formal time
+ * slicing and mult-threadedness.
+ *
+ * In summary, Shanks was written, then Pollard was written to fill in and find factors
+ * in parallel without breaking the Shanks factor finding loop.
+ */
+
+/*
+ * Print pollard status to screen
+ */
+char* pollard_status(factors_status_t st) {
+  switch(st){
+    case FACTORS_SETUP:   return("SETUP  "); break;
+    case FACTORS_ITERATE: return("ITERATE"); break;
+    case FACTORS_RESET:   return("RESET  "); break;
+    case FACTORS_DONE:    return("DONE   "); break;
+    case FACTORS_FAIL:    return("FAIL   "); break;
+    default:return("");break;
+  }
+}
+/*
+ * Polynomial function used in Pollard's Rho:
+ * f(x) = x^2 + c mod n
+ */
+static void f(longInteger_t result, longInteger_t x, longInteger_t c, const longInteger_t n) {
+  longIntegerMultiply(x, x, result);                // x^2
+  longIntegerAdd(result, c, result);                // + c
+  longIntegerModulo(result, n, result);             // mod n
+}
+/*
+ * Initializes the Pollard state structure. Must be called before using the step or update functions.
+ */
+void pollard_init(pollard_t *self) {
+  longIntegerInit(self->n);
+  longIntegerInit(self->x);
+  longIntegerInit(self->y);
+  longIntegerInit(self->c);
+  longIntegerInit(self->d);
+  longIntegerInit(self->tmp);
+  self->iteration = 0;
+  self->max_iterations = 1000000;
+  self->attempt = 0;
+  self->max_attempts = 25;
+  gmp_randinit_mt(self->rng);
+  gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
+}
+/*
+ * Frees all GMP variables and RNG state.
+ */
+void pollard_clear(pollard_t *self) {
+  longIntegerFree(self->n);
+  longIntegerFree(self->x);
+  longIntegerFree(self->y);
+  longIntegerFree(self->c);
+  longIntegerFree(self->d);
+  longIntegerFree(self->tmp);
+  gmp_randclear(self->rng);
+}
+/*
+ * Updates the target number to factor (n), and resets the internal state automatically.
+ */
+void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
+  longIntegerCopy(new_n, self->n);
+  self->attempt = 0;
+  self->iteration = 0;
+  // Setup: Choose new random x and c
+  mpz_urandomm(self->c, self->rng, self->n);
+  mpz_urandomm(self->x, self->rng, self->n);
+  longIntegerCopy(self->x, self->y);
+  uInt32ToLongInteger(1, self->d);
+}
+/*
+ * Performs a number of Pollard's Rho iterations.
+ * Returns a result struct with status and diagnostic info.
+ * - If a factor is found, status will be FACTORS_DONE.
+ * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
+ */
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps) {
+  factors_result_t result;
+  result.status = FACTORS_ITERATE;
+  result.iterations_this_call = 0;
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+  // First-time or forced re-setup
+  if (instruction == FACTORS_RESET || instruction == FACTORS_SETUP) {
+    if (self->attempt++ >= self->max_attempts) {
+      result.status = FACTORS_FAIL;
+      return result;
+    }
+    mpz_urandomm(self->c, self->rng, self->n);
+    mpz_urandomm(self->x, self->rng, self->n);
+    longIntegerCopy(self->x, self->y);
+    uInt32ToLongInteger(1, self->d);
+    self->iteration = 0;
+    result.status = FACTORS_ITERATE;
+    return result;
+  }
+  // Perform up to `steps` iterations
+  if (instruction == FACTORS_ITERATE) {
+    for (int i = 0; i < steps; ++i) {
+      if (++self->iteration >= self->max_iterations) {
+        result.status = FACTORS_SETUP; // Too long without result — reseed
+        break;
+      }
+      // Brent cycle: advance x once, y twice
+      f(self->x, self->x, self->c, self->n);
+      f(self->y, self->y, self->c, self->n);
+      f(self->y, self->y, self->c, self->n);
+      longIntegerSubtract(self->x, self->y, self->tmp);
+      mpz_abs(self->tmp, self->tmp);
+      longIntegerGcd(self->tmp, self->n, self->d);
+      // Factor found!
+      if (longIntegerCompareUInt(self->d, 1) > 0 && longIntegerCompare(self->d, self->n) < 0) {
+        longIntegerCopy(self->d, factor);
+        result.status = FACTORS_DONE;
+        break;
+      }
+      // Fail — retry from new seed
+      if (longIntegerCompare(self->d, self->n) == 0) {
+        result.status = FACTORS_SETUP;
+        break;
+      }
+      result.iterations_this_call++;
+    }
+  }
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+  return result;
+}
 
