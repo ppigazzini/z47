@@ -1613,16 +1613,16 @@ bool delCol1RealMatrixX(void) {
     uint16_t cols = mat.header.matrixColumns;
     if (!mat.matrixElements || cols <= 1) return false;
 
-    // every element in column 0 is exactly 1.0
-    bool allOnes = true;
+    // every element in column 0 is exactly 1.0 or 0.0
+    bool removeFirstCol = true;
     for (uint16_t i = 0; i < rows; ++i) {
-        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1)) {
-            allOnes = false;
+        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1) && !real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_0)) {
+            removeFirstCol = false;
             break;
         }
     }
-    if (!allOnes) {
-        // nothing to delete, first column is all 1.0
+    if (!removeFirstCol) {
+        // nothing to delete, first column is all 1.0 or 0.0
         return true;
     }
 
@@ -1718,12 +1718,15 @@ typedef struct FactorAdder
                                               printf("addFactor 3:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
+
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+          uint16_t cols_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+          uint16_t rows_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+          sprintf(errorMessage, "Not enough memory for a rows:%" PRIu32 STD_CROSS " cols:%" PRIu32 " matrix", rows_, cols_);
+          moreInfoOnError("In function addFactor 001:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+        goto returnFalse;
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -1742,7 +1745,7 @@ typedef struct FactorAdder
            moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        #endif // !TESTSUITE_BUILD
-       return false;
+       goto returnFalse;
     }
 
     if( faddr->nExpons == 0 ) {
@@ -1761,7 +1764,7 @@ typedef struct FactorAdder
           moreInfoOnError("In function addFactor 002:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-      return false;
+      goto returnFalse;
     }
 
     linkToRealMatrixRegister(REGISTER_X, matrix);
@@ -1807,7 +1810,7 @@ typedef struct FactorAdder
               moreInfoOnError("In function addFactor 003:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           #endif // !TESTSUITE_BUILD
-          return false;
+        goto returnFalse;
         }
 
         ++wkgCols;
@@ -1820,13 +1823,15 @@ typedef struct FactorAdder
               moreInfoOnError("In function addFactor 004", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             #endif // !TESTSUITE_BUILD
-          return false;
+            goto returnFalse;
         }
       }
       n = rows*(faddr->nExpons);
       c = n/2;
     }
-    return true;
+     return true;
+
+returnFalse:
   }
 #endif //SAVE_SPACE_DM42_12PRIME
 
