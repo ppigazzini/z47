@@ -1355,9 +1355,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     }
 
 
-    #if !defined(TESTSUITE_BUILD)
-      int32_t loopp;
-    #endif //TESTSUITE_BUILD
+    int32_t loopp;
 
     void SQUFOF(longInteger_t result, const longInteger_t N) {
       uint32_t k;
