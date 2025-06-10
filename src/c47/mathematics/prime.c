@@ -1440,7 +1440,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
                     force_refresh(force);
                   }
                 }
-                if(exitKeyWaiting()) {
+                if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
                   progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                   programRunStop = PGM_WAITING;
                   break;
@@ -1535,7 +1535,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
                     force_refresh(force);
                   }
                 }
-                if(exitKeyWaiting()) {
+                if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
                   progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                   programRunStop = PGM_WAITING;
                   break;
@@ -1829,6 +1829,7 @@ typedef struct FactorAdder
       n = rows*(faddr->nExpons);
       c = n/2;
     }
+    dumpExponents(matrix, faddr, 13);
     updateMatrixHeightCache();
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
     refreshScreen(300);
@@ -1917,7 +1918,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                 force_refresh(force);
               }
             }
-            if(exitKeyWaiting()) {
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
               progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
               programRunStop = PGM_WAITING;
               break;
@@ -1953,13 +1954,28 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     if(Factors_2_PerfectSquare) {
       for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              if(progressHalfSecUpdate_Integer(timed, "Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(&matrix, &faddr, 13);
+                force_refresh(force);
+              }
+            }
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
           if (mpz_fits_uint_p(currentNumber)) {
               uint32_t k = multipliers[i];
               uint32_t n32;
               longIntegerToUInt32(currentNumber, n32);
               uint64_t kn = (uint64_t)k * (uint64_t)n32;
               #if defined(MONITOR_FACTORS)
-                printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+                printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
                 fflush(stdout);
               #endif
               uint32_t root;
@@ -1991,6 +2007,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       }
     }
 
+    //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
     longIntegerCopy(currentNumber, queue[queue_end++]);
                             #if defined(MONITOR_FACTORS)
                               printf("Factorizing: ");
@@ -2019,7 +2036,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
               force_refresh(force);
             }
           }
-          if(exitKeyWaiting()) {
+          if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
             progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;

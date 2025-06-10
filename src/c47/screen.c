@@ -4974,7 +4974,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         //  screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
         //}
         else if((calcMode == CM_NORMAL) && ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ) {
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+          screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
         }
 
         _selectiveClearScreen();
