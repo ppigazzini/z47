@@ -1355,9 +1355,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     }
 
 
-    #if !defined(TESTSUITE_BUILD)
-      int32_t loopp = 0;
-    #endif //TESTSUITE_BUILD
+    int32_t loopp;
 
     void SQUFOF(longInteger_t result, const longInteger_t N) {
       uint32_t k;
@@ -1380,7 +1378,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       longIntegerInit(temp3);
       longIntegerInit(gcd_result);
 
-      //Pollard simultaneous analysis
+      //Pollard simultaneous analysis setup
       pollard_t pollardData;
       factors_status_t instruction = FACTORS_SETUP;
       factors_result_t PollardResult;
@@ -1436,11 +1434,11 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
                 if(checkHalfSec()) {
-                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(up): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                     force_refresh(force);
                   }
                 }
-                if(exitKeyWaiting()) {
+                if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
                   progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                   programRunStop = PGM_WAITING;
                   break;
@@ -1448,27 +1446,28 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               #endif //!TESTSUITE_BUILD
 
 
-           //Pollard simultaneous analysis
+           //Pollard simultaneous analysis - interject a few steps
               //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
               if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
                 PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
                 #if defined(MONITOR_FACTORS)
-                  printf("   Step: %d | Attempts: %d | Status: %d\n",PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                  printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                  fflush(stdout);
                 #endif //MONITOR_FACTORS
                 if (PollardResult.status == FACTORS_DONE) {
                   #if defined(MONITOR_FACTORS)
-                    gmp_printf("   Pollard found factor: %Zd\n", pollardFactor);
+                    gmp_printf("   Pollard found factor: %Zd                    \n", pollardFactor);
                   #endif //MONITOR_FACTORS
                   longIntegerCopy(pollardFactor, result);
                   goto cleanup;
                 } else if (PollardResult.status == FACTORS_FAIL) {
                   #if defined(MONITOR_FACTORS)
-                    printf("   Pollard failed after %d attempts.\n", PollardResult.attempts);
+                    printf("   Pollard failed after %d attempts.                \n", PollardResult.attempts);
                   #endif //MONITOR_FACTORS
                 }
                 instruction = PollardResult.status;
               }
-
+              //Pollard end
 
               // b = (Po + P) / Q
               longIntegerAdd(Po, P, temp1);
@@ -1498,7 +1497,12 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               // Increment i
               longIntegerAddUInt(ii, 1, ii);
           }
-          
+
+          #if defined(MONITOR_FACTORS)
+            printf("\n");
+            fflush(stdout);
+          #endif //MONITOR_FACTORS
+
           if (longIntegerCompare(ii, BB) >= 0) {
               continue;
           }
@@ -1525,11 +1529,11 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
                 if(checkHalfSec()) {
-                  if(progressHalfSecUpdate_Integer(timed, "Shanks SQFO(dn): n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                     force_refresh(force);
                   }
                 }
-                if(exitKeyWaiting()) {
+                if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
                   progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                   programRunStop = PGM_WAITING;
                   break;
@@ -1573,7 +1577,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       uInt32ToLongInteger(0, result);
       
 cleanup:
-      //Pollard simultaneous analysis
+      //Pollard simultaneous analysis cleanup
       if(Factors_3_Pollard) {
         pollard_clear(&pollardData);
         longIntegerFree(n);
@@ -1607,16 +1611,16 @@ bool delCol1RealMatrixX(void) {
     uint16_t cols = mat.header.matrixColumns;
     if (!mat.matrixElements || cols <= 1) return false;
 
-    // every element in column 0 is exactly 1.0
-    bool allOnes = true;
+    // every element in column 0 is exactly 1.0 or 0.0
+    bool removeFirstCol = true;
     for (uint16_t i = 0; i < rows; ++i) {
-        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1)) {
-            allOnes = false;
+        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1) && !real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_0)) {
+            removeFirstCol = false;
             break;
         }
     }
-    if (!allOnes) {
-        // nothing to delete, first column is all 1.0
+    if (!removeFirstCol) {
+        // nothing to delete, first column is all 1.0 or 0.0
         return true;
     }
 
@@ -1689,17 +1693,38 @@ typedef struct FactorAdder
                                               printf("--c:  addFactor()\n");
                                             #endif //MONITOR_FACTORS
     if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-      //Initialize Memory for Matrix
+                                            #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              printf("addFactor 1:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                            #endif //MONITOR_FACTORS
+       //Initialize Memory for Matrix
       if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
+                                             #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              printf("addFactor 2:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                            #endif //MONITOR_FACTORS
         setSystemFlag(FLAG_ASLIFT);
       }
       else {
+                                            #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              printf("addFactor 3:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                            #endif //MONITOR_FACTORS
+
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+          uint16_t cols_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+          uint16_t rows_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+          sprintf(errorMessage, "Not enough memory for a rows:%" PRIu32 STD_CROSS " cols:%" PRIu32 " matrix", rows_, cols_);
+          moreInfoOnError("In function addFactor 001:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+        goto returnFalse;
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -1718,7 +1743,7 @@ typedef struct FactorAdder
            moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        #endif // !TESTSUITE_BUILD
-       return false;
+       goto returnFalse;
     }
 
     if( faddr->nExpons == 0 ) {
@@ -1734,10 +1759,10 @@ typedef struct FactorAdder
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function addFactor 002:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-      return false;
+      goto returnFalse;
     }
 
     linkToRealMatrixRegister(REGISTER_X, matrix);
@@ -1780,10 +1805,10 @@ typedef struct FactorAdder
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+              moreInfoOnError("In function addFactor 003:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           #endif // !TESTSUITE_BUILD
-          return false;
+        goto returnFalse;
         }
 
         ++wkgCols;
@@ -1793,23 +1818,33 @@ typedef struct FactorAdder
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+              moreInfoOnError("In function addFactor 004", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             #endif // !TESTSUITE_BUILD
-          return false;
+            goto returnFalse;
         }
       }
       n = rows*(faddr->nExpons);
       c = n/2;
     }
-    return true;
+    dumpExponents(matrix, faddr, 13);
+    updateMatrixHeightCache();
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+    refreshScreen(300);
+     return true;
+
+returnFalse:
+    updateMatrixHeightCache();
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+    refreshScreen(300);
+    return false;
   }
 #endif //SAVE_SPACE_DM42_12PRIME
 
 
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
-//void complete_factorization2(uint16_t unusedButMandatoryParameter) {
+    loopp = 0;
     currentKeyCode = 255;
     real34_t lastAdded;
 
@@ -1821,6 +1856,11 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     real34Matrix_t matrix;
 
     if(!getIntArg(currentNumber)) {
+      goto abort;
+    }
+
+    if(longIntegerIsZero(currentNumber)) {
+      badDomainError(REGISTER_X);
       goto abort;
     }
 
@@ -1870,13 +1910,13 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           #if !defined(TESTSUITE_BUILD)
             loopp++;
             if(checkHalfSec()) {
-              if(progressHalfSecUpdate_Integer(timed, "Pre-run small primes < 1000: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              if(progressHalfSecUpdate_Integer(timed, "Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                 _showProgress(&lastAdded, currentNumber);
                 dumpExponents(&matrix, &faddr, 13);
                 force_refresh(force);
               }
             }
-            if(exitKeyWaiting()) {
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
               progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
               programRunStop = PGM_WAITING;
               break;
@@ -1912,13 +1952,28 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     if(Factors_2_PerfectSquare) {
       for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              if(progressHalfSecUpdate_Integer(timed, "Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(&matrix, &faddr, 13);
+                force_refresh(force);
+              }
+            }
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
           if (mpz_fits_uint_p(currentNumber)) {
               uint32_t k = multipliers[i];
               uint32_t n32;
               longIntegerToUInt32(currentNumber, n32);
               uint64_t kn = (uint64_t)k * (uint64_t)n32;
               #if defined(MONITOR_FACTORS)
-                printf("Testing for early squares: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+                printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
                 fflush(stdout);
               #endif
               uint32_t root;
@@ -1950,6 +2005,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       }
     }
 
+    //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
     longIntegerCopy(currentNumber, queue[queue_end++]);
                             #if defined(MONITOR_FACTORS)
                               printf("Factorizing: ");
@@ -1972,13 +2028,13 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
-            if(progressHalfSecUpdate_Integer(timed, "Shanks iteratative: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, current);
               dumpExponents(&matrix, &faddr, 13);
               force_refresh(force);
             }
           }
-          if(exitKeyWaiting()) {
+          if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
             progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;
@@ -2049,7 +2105,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-              moreInfoOnError("In function fnPrimeFactors:  Queue overflow:", errorMessage, NULL, NULL);
+              moreInfoOnError("In function fnPrimeFactors 001:  Queue overflow:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             break;
         }
@@ -2089,7 +2145,7 @@ abort:
  * The point of this approach of coding is to let Pollard's algo operate step wise,
  *   interjected while doing the Shanks algo. Shanks was done first, and found to get
  *   stuck with relatively simple factor not being found. Pollard will in PARALLEL 
- *   scan the current number and whicheve Shanks or Pollard finding a factor,
+ *   scan the current number and whichever Shanks or Pollard finding a factor,
  *   will run the addFactor function, and continue to look in the same way sharing the 
  *   processor.
  * The idea comes from 'linear programming' in the 80's afaik, where a simplistic
