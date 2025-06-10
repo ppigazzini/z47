@@ -1829,9 +1829,16 @@ typedef struct FactorAdder
       n = rows*(faddr->nExpons);
       c = n/2;
     }
+    updateMatrixHeightCache();
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+    refreshScreen(300);
      return true;
 
 returnFalse:
+    updateMatrixHeightCache();
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+    refreshScreen(300);
+    return false;
   }
 #endif //SAVE_SPACE_DM42_12PRIME
 
