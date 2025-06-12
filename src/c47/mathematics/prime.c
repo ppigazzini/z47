@@ -93,16 +93,15 @@ typedef struct {
 // Internal structure for Pollard's Rho algorithm.
 typedef struct {
   longInteger_t n;        // Number to factor
-  longInteger_t x, y;     // Brent's cycle detection (two runners)
+  longInteger_t x, y;     // Floyd's cycle detection: tortoise and hare
   longInteger_t c;        // Constant for the polynomial: f(x) = x^2 + c
   longInteger_t d;        // Current GCD candidate
   longInteger_t tmp;      // Temporary variable for calculations
   int iteration;          // Total iterations performed
-  int max_iterations;     // Reset after this many iterations
   int attempt;            // Number of reinitializations attempted
-  int max_attempts;       // Max allowed retries before FAIL
   gmp_randstate_t rng;    // RNG for random starts
 } pollard_t;
+
 
 void pollard_init(pollard_t *self);
 void pollard_clear(pollard_t *self);
@@ -2189,9 +2188,10 @@ void pollard_init(pollard_t *self) {
   longIntegerInit(self->d);
   longIntegerInit(self->tmp);
   self->iteration = 0;
-  self->max_iterations = 1000000;
   self->attempt = 0;
-  self->max_attempts = 25;
+  #define max_iterations 1000000     // Reset after this many iterations
+  #define max_attempts   1000         // Max allowed retries before FAIL
+  #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
   gmp_randinit_mt(self->rng);
   gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
 }
@@ -2214,8 +2214,8 @@ void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
   longIntegerCopy(new_n, self->n);
   self->attempt = 0;
   self->iteration = 0;
-  // Setup: Choose new random x and c
-  mpz_urandomm(self->c, self->rng, self->n);
+
+  uInt32ToLongInteger(1, self->c);        // Start with f(x) = x² + 1
   mpz_urandomm(self->x, self->rng, self->n);
   longIntegerCopy(self->x, self->y);
   uInt32ToLongInteger(1, self->d);
@@ -2233,12 +2233,20 @@ factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_sta
   result.total_iterations = self->iteration;
   result.attempts = self->attempt;
   // First-time or forced re-setup
-  if (instruction == FACTORS_RESET || instruction == FACTORS_SETUP) {
-    if (self->attempt++ >= self->max_attempts) {
+if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iteration >= maxIter)) {
+    if (self->attempt++ >= max_attempts) {
       result.status = FACTORS_FAIL;
       return result;
     }
-    mpz_urandomm(self->c, self->rng, self->n);
+
+  // Try different polynomial function based on attempt number
+  if (self->attempt % 3 == 0) {
+    uInt32ToLongInteger(1, self->c);      // f(x) = x² + 1
+  } else if (self->attempt % 3 == 1) {
+    uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2  
+  } else {
+    mpz_urandomm(self->c, self->rng, self->n); // Random c
+  }
     mpz_urandomm(self->x, self->rng, self->n);
     longIntegerCopy(self->x, self->y);
     uInt32ToLongInteger(1, self->d);
@@ -2249,13 +2257,13 @@ factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_sta
   // Perform up to `steps` iterations
   if (instruction == FACTORS_ITERATE) {
     for (int i = 0; i < steps; ++i) {
-      if (++self->iteration >= self->max_iterations) {
+      if (++self->iteration >= maxIter) {
         result.status = FACTORS_SETUP; // Too long without result — reseed
         break;
       }
-      // Brent cycle: advance x once, y twice
-      f(self->x, self->x, self->c, self->n);
-      f(self->y, self->y, self->c, self->n);
+      // Floyd's cycle detection: tortoise and hare
+      f(self->x, self->x, self->c, self->n);         // tortoise: 1 step  
+      f(self->y, self->y, self->c, self->n);         // hare: 2 steps
       f(self->y, self->y, self->c, self->n);
       longIntegerSubtract(self->x, self->y, self->tmp);
       mpz_abs(self->tmp, self->tmp);
