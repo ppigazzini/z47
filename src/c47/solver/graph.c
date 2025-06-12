@@ -1267,9 +1267,9 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     bool_t conjugates = false;
     if(getRegisterDataType(SREG_X2) == dtComplex34) {  // do not consider conjugates for Real X
       fnRCL(SREG_X2);
-      fnRCL(SREG_X2);                                  // a bit wasteful but the tolerance check works for two registers
+      fnRCL(SREG_X2);                                  // a bit wasteful but the existing tolerance check works for two registers
       runFunction(ITM_CONJ);
-      if(!checkRegisterXYImagZeroTol(SREG_TOL)) {      // prevent testing for conjugate recognition for complex Imag components close to zero, using the tolerance detector  
+      if(!checkRegisterXYImagZeroTol(SREG_TOL)) {      // prevent testing for conjugate recognition for X & Y complex Imag components close to zero, using the tolerance detector  
         execute_rpn_function();
         fnDrop(NOPARAM);
         fnRCL(SREG_Y2);
@@ -1284,12 +1284,12 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     if(((iterationCounter > NUMBERITERATIONS) && !checkzero) || checkNaN) {
       temporaryInformation = TI_SOLVER_FAILED;
       displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      convertDoubleToReal34RegisterPush(5.0, REGISTER_X);
+      convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_X);
     }
     else {
       temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
       lastErrorCode = ERROR_NONE;
-      convertDoubleToReal34RegisterPush(conjugates ? 200.0 : 0.0, REGISTER_X);
+      convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_X);
     }
 
 

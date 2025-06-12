@@ -1778,6 +1778,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_RESULT_CONSTANT                     4
 #define SOLVER_RESULT_OTHER_FAILURE                5
 #define SOLVER_RESULT_ABORTED                      6
+#define SOLVER_RESULT_CONJUGATES                 200
 
 #define ASSIGN_NAMED_VARIABLES                 10000
 #define ASSIGN_LABELS                          12000
