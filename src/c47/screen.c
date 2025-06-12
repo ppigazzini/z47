@@ -1973,13 +1973,12 @@ return res;
     int16_t prefixWidth;
     currentViewRegister = regist;
     viewRegName(prefix, &prefixWidth);
-    uint16_t nn = stringByteLength(prefix)-1;
-    while(prefix[nn] != 0) {
+    int32_t nn = stringByteLength(prefix);
+    while(--nn >= 0 && prefix[nn] != 0) {
       if(prefix[nn] == '=') {
         prefix[nn] = 0;
         //prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
-      nn--;
     }
     currentViewRegister = currentViewRegisterStored;
   }
@@ -2965,7 +2964,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                             free(strs);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
-                                        #endif //PC_BUILD          
+                                        #endif //PC_BUILD
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -4238,7 +4237,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getRegisterDataType(regist) == dtShortInteger) {
           {
             shortIntegerToDisplayString(regist, tmpString, true);
-            showString(tmpString, fontForShortInteger, 
+            showString(tmpString, fontForShortInteger,
               SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
             if(regist == REGISTER_X) {
               displayBaseMode(regist);
@@ -4284,7 +4283,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, 
+              showString(prefix, &standardFont, 1,
                 baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
@@ -4329,7 +4328,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               int day;
               if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
                 day = (int)tmpString[4] - '0';
-              } else {  
+              } else {
                 day = (int)tmpString[0] - '0';
               }
               if(day < 1 || day > 7) {
@@ -4511,7 +4510,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             lineWidth = w;
             if(w > SCREEN_WIDTH - 1) {
               w = stringWidth(tmpString, &standardFont, false, true);
-              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits
               showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
             } else {
               showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
@@ -4597,7 +4596,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   static void refreshRegisterLineRestoreT(void) {
-    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);
   }
 
 
@@ -4745,7 +4744,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         refreshStatusBar();
       }
 
-      
+
       //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
