@@ -1217,13 +1217,17 @@ void doubleToXRegisterReal34(double x) { //Convert from double to X register REA
 }
 
 
+void fnStrtoReg(const char aimBuffer[], calcRegister_t regist) {                             //DONE
+  int16_t mem = stringByteLength(aimBuffer) + 1;
+  reallocateRegister(regist, dtString, TO_BLOCKS(mem), amNone);
+  xcopy(REGISTER_STRING_DATA(regist), aimBuffer, mem);
+  setSystemFlag(FLAG_ASLIFT);
+}
+
 void fnStrtoX(const char aimBuffer[]) {                             //DONE
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
-  int16_t mem = stringByteLength(aimBuffer) + 1;
-  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(mem), amNone);
-  xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, mem);
-  setSystemFlag(FLAG_ASLIFT);
+  fnStrtoReg(aimBuffer, REGISTER_X);
 }
 
 
