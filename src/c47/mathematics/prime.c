@@ -1668,41 +1668,62 @@ typedef struct FactorAdder
     faddr->nExpons = 0;
   };
 
-  void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
-    uint16_t n2 = faddr->nExpons;
+  // And integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
+
+  void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
+      uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+      uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+      
                                             #ifdef MONITOR_FACTORS
-                                              printf("dumpExponents:  fill expons:  *nExpons==%u, n2==%u dump=%u\n", faddr->nExpons, n2, dumpForFewerThan);
-                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              printf("\ndumpExponents:\n");
+                                              printRegisterToConsole(regist,"Matrix: ","\n");
+                                              printf("  Exponent Array: \n");
+                                              for(int ii = 0; ii < faddr->nExpons; ii++) {
+                                                printf("%d:%d ",ii, faddr->expons[ii]);
+                                              }
+                                              printf("\n");
+                                            #endif //MONITOR_FACTORS
+
+    if(faddr->nExpons != cols || rows != 2 || getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+       #if !defined(TESTSUITE_BUILD)
+         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+           sprintf(errorMessage, "Incorrect matrix counters %" PRIu32 STD_CROSS "%" PRIu32 " matrix vs. array %d", rows, cols, faddr->nExpons);
+           moreInfoOnError("In function dumpExponents:", errorMessage, NULL, NULL);
+         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+         return;
+       #endif // !TESTSUITE_BUILD
+    }
+                                            #ifdef MONITOR_FACTORS
+                                              printf("dumpExponents:  fill exponents:  faddr->nExpons==%u dumpForFewerThan=%u\n", faddr->nExpons, dumpForFewerThan);
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
-    linkToRealMatrixRegister(REGISTER_X,  matrix);
-    for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
+    for( uint16_t i = 0;  i < min(faddr->nExpons, dumpForFewerThan);  ++i ) {
                                             #ifdef MONITOR_FACTORS
-                                              printf("--b:  adding expon at n2==%u, i==%u, val %u, sval %u, ind %u\n", n2, i, faddr->expons[i], faddr->expons[i], n2+i);
+                                              printf("--b:  adding expon at faddr->nExpons==%u, i==%u, val %u, ind %u\n", faddr->nExpons, i, faddr->expons[i], faddr->nExpons+i);
                                             #endif //MONITOR_FACTORS
-      uInt32ToReal34(faddr->expons[i], &matrix->matrixElements[n2+i]);
+      uInt32ToReal34(faddr->expons[i], REGISTER_REAL34_MATRIX_ELEMENTS(regist) + faddr->nExpons+i);
     }
   }
 
 
-  static bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
+  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
     //printLongIntegerToConsole(factor,"-->","\n");
                                             #ifdef MONITOR_FACTORS
                                               printf("--c:  addFactor()\n");
                                             #endif //MONITOR_FACTORS
-    if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+    if(getRegisterDataType(regist) != dtReal34Matrix) {
                                             #ifdef MONITOR_FACTORS
-                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 1:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
-       //Initialize Memory for Matrix
-      if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
+      //Initialize Memory for Matrix
+      if(initMatrixRegister(regist, 2, 0, false)) {
                                              #ifdef MONITOR_FACTORS
-                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 2:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
@@ -1710,16 +1731,17 @@ typedef struct FactorAdder
       }
       else {
                                             #ifdef MONITOR_FACTORS
-                                              uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-                                              uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 3:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
 
+        if(errorMessage != 0) goto returnFalse;
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          uint16_t cols_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-          uint16_t rows_ = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+          uint16_t cols_ = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+          uint16_t rows_ = REGISTER_MATRIX_HEADER(regist)->matrixRows;
           sprintf(errorMessage, "Not enough memory for a rows:%" PRIu32 STD_CROSS " cols:%" PRIu32 " matrix", rows_, cols_);
           moreInfoOnError("In function addFactor 001:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1730,9 +1752,9 @@ typedef struct FactorAdder
 
 
 
-    uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+    uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+      uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
     #endif //(EXTRA_INFO_ON_CALC_ERROR == 1)
     if(rows > 2) {
        #if !defined(TESTSUITE_BUILD)
@@ -1753,7 +1775,8 @@ typedef struct FactorAdder
                                             #ifdef MONITOR_FACTORS
                                               gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
                                             #endif //MONITOR_FACTORS
-    if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+    if(!redimMatrixRegister(regist, rows, wkgCols)) {
+      if(errorMessage != 0) goto returnFalse;
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1764,7 +1787,6 @@ typedef struct FactorAdder
       goto returnFalse;
     }
 
-    linkToRealMatrixRegister(REGISTER_X, matrix);
     int counter = faddr->nExpons;
     uint16_t n = rows*counter;
     uint16_t c = n/2;
@@ -1774,12 +1796,12 @@ typedef struct FactorAdder
     real34_t factorR;
     convertLongIntegerToReal34(factor, &factorR);
     //search for existing factors
-    while(counter >= 0 && !real34CompareEqual(&factorR, &matrix->matrixElements[counter])) {
+    while(counter >= 0 && !real34CompareEqual(&factorR, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter)) {
       counter--;
     }
 
     //increment exponent if found
-    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(&matrix->matrixElements[counter],const34_1) ) {
+    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter,const34_1) ) {
       ++(faddr->expons[counter]);
                                               #ifdef MONITOR_FACTORS
                                                 printf("--e:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
@@ -1793,8 +1815,8 @@ typedef struct FactorAdder
                                               #ifdef MONITOR_FACTORS
                                                 printf("--f:   restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
                                               #endif //MONITOR_FACTORS
-      real34Copy(&factorR, &matrix->matrixElements[c]);
-      real34Copy(&matrix->matrixElements[c], lastAdded);
+      real34Copy(&factorR, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + c);
+      real34Copy(&factorR, lastAdded);
       if( incNExpons ) {
         if( faddr->nExpons < MAX_FACTORS ) {
             (faddr->nExpons)++;
@@ -1812,7 +1834,8 @@ typedef struct FactorAdder
 
         ++wkgCols;
         faddr->expons[faddr->nExpons-1] = 1;
-        if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+        if(!redimMatrixRegister(regist, rows, wkgCols)) {
+          if(errorMessage != 0) goto returnFalse;
           #if !defined(TESTSUITE_BUILD)
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1826,7 +1849,7 @@ typedef struct FactorAdder
       n = rows*(faddr->nExpons);
       c = n/2;
     }
-    dumpExponents(matrix, faddr, 13);
+    dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
     refreshScreen(300);
@@ -1835,7 +1858,7 @@ typedef struct FactorAdder
 returnFalse:
     updateMatrixHeightCache();
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-    refreshScreen(300);
+    refreshScreen(301);
     return false;
   }
 #endif //SAVE_SPACE_DM42_12PRIME
@@ -1852,7 +1875,6 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerInit(currentNumber);
     longIntegerInit(tmp);
     longIntegerInit(temp1);
-    real34Matrix_t matrix;
 
     if(!getIntArg(currentNumber)) {
       goto abort;
@@ -1879,7 +1901,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     initFactorAdder(&faddr);
 
     int32ToLongInteger(longIntegerIsNegative(currentNumber) ? -1 : 1, tmp);    
-    if(!addFactor(tmp, &matrix, &lastAdded, &faddr)) {
+    if(!addFactor(tmp, REGISTER_X, &lastAdded, &faddr)) {
       goto abort;
     }
     longIntegerSetPositiveSign(currentNumber);
@@ -1911,7 +1933,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             if(checkHalfSec()) {
               if(progressHalfSecUpdate_Integer(timed, "Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                 _showProgress(&lastAdded, currentNumber);
-                dumpExponents(&matrix, &faddr, 13);
+                dumpExponents(REGISTER_X, &faddr, 13);
                 force_refresh(force);
               }
             }
@@ -1929,7 +1951,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                                 mpz_out_str(stdout, 10, currentNumber);
                               #endif //MONITOR_FACTORS
           uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
-          if(!addFactor(tempPrePrimeRun, &matrix, &lastAdded, &faddr)) {
+          if(!addFactor(tempPrePrimeRun, REGISTER_X, &lastAdded, &faddr)) {
             goto cleanup;
           }
                               #if defined(MONITOR_FACTORS)
@@ -1956,7 +1978,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             if(checkHalfSec()) {
               if(progressHalfSecUpdate_Integer(timed, "Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                 _showProgress(&lastAdded, currentNumber);
-                dumpExponents(&matrix, &faddr, 13);
+                dumpExponents(REGISTER_X, &faddr, 13);
                 force_refresh(force);
               }
             }
@@ -1989,7 +2011,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                       mpz_gcd_ui(gcd, currentNumber, root);
                       if (longIntegerCompareUInt(gcd, 1) > 0) {
                           // Inject a trivial factor
-                          if (!addFactor(gcd, &matrix, &lastAdded, &faddr)) {
+                          if (!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
                               longIntegerFree(gcd);
                               goto cleanup;
                           }
@@ -2029,7 +2051,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           if(checkHalfSec()) {
             if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, current);
-              dumpExponents(&matrix, &faddr, 13);
+              dumpExponents(REGISTER_X, &faddr, 13);
               force_refresh(force);
             }
           }
@@ -2057,7 +2079,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             #endif //MONITOR_FACTORS
             convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
             fnP_All_Regs(PRN_TMP);
-            if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
+            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
               goto doneWhile;
             }
                             #if defined(MONITOR_FACTORS)
@@ -2077,7 +2099,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
                             #endif //MONITOR_FACTORS
             convertLongIntegerToLongIntegerRegister(current, TEMP_REGISTER_1);
             fnP_All_Regs(PRN_TMP);
-            if(!addFactor(current, &matrix, &lastAdded, &faddr)) {
+            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
               goto doneWhile;
             }
                             #if defined(MONITOR_FACTORS)
@@ -2101,6 +2123,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             longIntegerCopy(factor, queue[queue_end++]);
             longIntegerCopy(quotient, queue[queue_end++]);
         } else {
+            if(errorMessage != 0) break;
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
@@ -2122,7 +2145,7 @@ cleanup:
         longIntegerFree(queue[i]);
     }
 
-    dumpExponents(&matrix, &faddr, 65535);
+    dumpExponents(REGISTER_X, &faddr, 65535);
     delCol1RealMatrixX();
 
 abort:
