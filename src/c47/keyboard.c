@@ -943,6 +943,9 @@ int16_t lastItem = 0;
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
+        screenUpdatingMode = SCRUPD_AUTO;
+        clearScreen(234);
+        refreshScreen(127);
         showSoftmenu(-MNU_GRAPHS);
         item = 0;
       }
@@ -1072,6 +1075,19 @@ int16_t lastItem = 0;
             refreshScreen(112);
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
+          }
+
+          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+                   && calcMode == CM_PEM && !catalog &&        //allow only in case of PEM, and a CAT
+                   (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
+                   !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
+            //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
+            if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
+              tam.value = (indexOfItems[item].param & 0xff);
+              tam.alpha = true;
+              addStepInProgram(tamOperation());
+              tamLeaveMode();
+            }
           }
 
           else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
@@ -1852,7 +1868,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-      cleanupAfterShift = false;
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
@@ -1861,7 +1876,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
-        return;
+        item = ITM_CLRMOD;
       }
 
       asnKey[0] = ((uint8_t *)data)[0];
@@ -1970,7 +1985,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
         }
       }
-      else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
+      else if(calcMode == CM_REGISTER_BROWSER){
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(126);
@@ -2943,6 +2958,8 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     fnRecall(currentRegisterBrowserScreen);
+                    screenUpdatingMode = SCRUPD_AUTO;
+                    refreshScreen(128);
                   }
                   else if(rbrMode == RBR_NAMED) {
                     if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables

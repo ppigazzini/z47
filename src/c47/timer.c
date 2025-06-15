@@ -181,6 +181,10 @@ void fnTimerEndOfActivity(uint16_t param) {
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 #if defined(DMCP_BUILD)
+                                #if defined(DM42_POWERMARKS)
+                                  powerMarkerMsF(1,10000);
+                                #endif //DM42_POWERMARKS
+                                  
   if(skippedStackLines) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
     if(calcMode == CM_PEM) {
       screenUpdatingMode = SCRUPD_AUTO;
@@ -191,6 +195,9 @@ void fnTimerEndOfActivity(uint16_t param) {
     refreshScreen(32);
     skippedStackLines = false;
   }
+                                #if defined(DM42_POWERMARKS)
+                                  powerMarkerMsF(1,15000);
+                                #endif //DM42_POWERMARKS
 #endif // DMCP_BUILD
 }
 

@@ -78,6 +78,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
     case FLAG_alphaCAP:
@@ -92,6 +94,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnRefreshState();
               break;
 
@@ -121,6 +124,13 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
             fnRefreshState();
             screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
             break;
+
+    case FLAG_BCD    :
+            if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
+              fnChangeBaseJM(10);
+            }
+            break;
+
 
     default: break;
   }
@@ -672,6 +682,8 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
@@ -685,6 +697,8 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_VECT   :
     case FLAG_NVECT  :
     case FLAG_TOPHEX :
+    case FLAG_BCD    :
+    case FLAG_LARGELI:
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
@@ -692,22 +706,12 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
       break;
-
-    case ITM_DREAL:
-      fnFlipFlag(FLAG_DREAL);
-      if(getSystemFlag(FLAG_DREAL)) {
-        clearSystemFlag(FLAG_LARGELI);
-      }
-      break;
-    case FLAG_LARGELI:
-      fnFlipFlag(FLAG_LARGELI);
-      if(getSystemFlag(FLAG_LARGELI)) {
-        clearSystemFlag(FLAG_DREAL);
-      }
-      break;
     case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
       fnRefreshState();
+      break;
+    case ITM_DREAL:
+      fnFlipFlag(FLAG_DREAL);
       break;
 
 

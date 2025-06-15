@@ -8,7 +8,7 @@
   #define ERROR_H
 
   void fnRaiseError             (uint16_t errorCode);
-  void fnErrorMessage           (uint16_t unusedButMandatoryParameter);
+  void fnErrorMessage           (uint16_t errorCode);
 
   #if !defined(TESTSUITE_BUILD)
     void displayBugScreen     (const char *msg);

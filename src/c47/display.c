@@ -315,8 +315,11 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get log base 1024 of real34
       decContext c = ctxtReal39;
-      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      int maxExponent = x.exponent + x.digits;
+      c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
       WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
+      maxExponent = x.exponent + x.digits;
+      c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
       realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
@@ -343,12 +346,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       real_t tmp3, fact;
       int32ToReal(1000, &tmp3);
       int32ToReal(1024, &tmp4);
-      realDivide(&tmp3, &tmp4, &fact, &c);
+      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
       //printRealToConsole(&fact, "factor = ", "\n");
-      realPower(&fact, &tmpIp, &tmp3, &c);
+      realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
       //printRealToConsole(&tmp3, "factor^IP = ", "\n");
       //printRealToConsole(&xx, "xx = ", "\n");
-      realMultiply(&xx, &tmp3, &x, &c);
+      realMultiply(&xx, &tmp3, &x, &ctxtReal39);
       //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
@@ -702,6 +705,12 @@ overRange:
         lastDigit = firstDigit;
         numDigits = 1;
         exponent++;
+      }
+
+      // Remove trailling zeros
+      while(numDigits > 1 && bcd[lastDigit] == 0) {
+        lastDigit--;
+        numDigits--;
       }
 
       // The sign
@@ -1380,8 +1389,10 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
 
     decContext c = ctxtReal39;
-    c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+    int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
+    c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2; //add 2 guard digits for Taylor etc.
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    c.digits = 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
 
     realToReal34(&real, &real34);

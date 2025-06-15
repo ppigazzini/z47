@@ -7,6 +7,10 @@
 
 #include "c47.h"
 
+#if defined(PC_BUILD) && defined(DEBUG_PGM)
+  #include <execinfo.h>
+#endif //PC_BUILD
+
 // Structure of the program memory.
 // In this example the RAM is 16384 blocks (from 0 to 16383) of 4 bytes = 65536 bytes.
 // The program memory occupies the end of the RAM area.
@@ -1219,6 +1223,13 @@ static void _pemCloseDmsInput(void) {
 }
 
 void insertStepInProgram(int16_t func) {
+                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "insertStepInProgram called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   char buffer[16];
   uint32_t opBytes = (func >= 128) ? 2 : 1;
 
@@ -1534,8 +1545,18 @@ void insertUserItemInProgram(int16_t func, char *funcParam) {
   }
 }
 
+#if defined(PC_BUILD) && defined(DEBUG_PGM)
+  #include <execinfo.h>
+#endif // PC_BUILD &&MONITOR_CLRSCR
 
 void addStepInProgram(int16_t func) {
+                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "addStepInProgram called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
     ++currentLocalStepNumber;

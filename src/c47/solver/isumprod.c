@@ -37,7 +37,6 @@
     longIntegerInit(loopTo);
     longIntegerInit(iCounter);
     longIntegerInit(iLoop);
-    longIntegerInit(xLi);
     longIntegerInit(resultLi);
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, loopTo);
     convertLongIntegerRegisterToLongInteger(REGISTER_X, loopStep);
@@ -112,6 +111,7 @@
         else {
           longIntegerAdd(resultLi, xLi, resultLi);
         }
+        longIntegerFree(xLi);
 
         #if defined(VERBOSE_COUNTER)
           printLongIntegerToConsole(resultLi,"= "," \n");
@@ -137,7 +137,6 @@
       }
 
       longIntegerFree(resultLi);
-      longIntegerFree(xLi);
       longIntegerFree(iLoop);
       longIntegerFree(iCounter);
       longIntegerFree(loopTo);

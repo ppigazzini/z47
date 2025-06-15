@@ -30,16 +30,6 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
-void fneRPN(uint16_t state) {
-  if(state == 1) {
-    setSystemFlag(FLAG_ERPN);
-  }
-  else if(state == 0) {
-    clearSystemFlag(FLAG_ERPN);
-  }
-}
-
-
 
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {
@@ -86,7 +76,7 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     if(!anyKeyWaiting()) return -1;
     if(displayWaitForRelease) {
       #if !defined(TESTSUITE_BUILD)
-        showString("Waiting for key release ...", &standardFont, 20, 40, vmNormal, false, false);
+        showString("Waiting for key ...", &standardFont, 20, 40, vmNormal, false, false);
       #endif //!TESTSUITE_BUILD
       force_refresh(force);
 ////Monitor key codes on screen
@@ -1144,7 +1134,7 @@ void fnP_Regs (uint16_t registerNo) {
 
 void fnP_All_Regs(uint16_t option) {
   #if !defined(TESTSUITE_BUILD)
-    if(calcMode != CM_NORMAL) {
+    if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
       #if defined(DMCP_BUILD)
         beep(440, 50);
         beep(4400, 50);
@@ -1657,8 +1647,28 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 }
 
 
-// *******************************************************************
-int32_t getSmallestDenom(const real_t *val) {
+
+// ** ITFRAC *****************************************************************************
+// ** IRFRAC parameters: input minimum: 1E-16
+// **                  : input maximum: 999 999 999 excluding the IR factor
+// **                  : DMX maximum setting 32500
+// **                  : Output numerator, excluding IR factor: 999 999 999
+// **                  : internal max 1E9-1 after IR constant divided
+// **                  : Accuracy 24 digits; 
+// **                  : Internally uses 12 digits in denom seeker for integer conversions
+// **                  : Internally uses 26 digits for denom seeker real
+// **                  : Internally uses 26 digits for fraction comparison, 
+// ** ************************************************************************************
+// **
+// ** 24 digits guaranteed. 24+2 used, as this has proven to need only 24+1
+// ** decNumber number of digits needed for IRFRAC
+// ** optimised and verified for the input range offered
+#define K_ctxtReal_denominator_finder                           26  //Continuous fraction representation
+#define K_ctxtReal_integer_conversion_find_lowest_err_fraction  12  //Determine correct fraction to use from continuous fraction expansion matrix
+#define K_ctxtReal_irrational_detection                         26  //This is used for multiple of input constant too large, as well as for irrational tolerance, relative.
+#define K_ctxtReal_find_multiple_of_irr                         26  //This is used to determine the whole multiple.
+
+int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as this needs to be re-calculated in the main algo
   /*
   ** Adapted from:
   ** https://www.ics.uci.edu/~eppstein/numth/frap.c
@@ -1679,6 +1689,8 @@ int32_t getSmallestDenom(const real_t *val) {
   ** we just keep the last partial product of these matrices.
   */
 
+  realContext_t ctxtReal_denom_finder = ctxtReal39;
+  ctxtReal_denom_finder.digits = K_ctxtReal_denominator_finder;
   real_t xx, temp;
   realCopy(val, &xx);
 
@@ -1692,7 +1704,7 @@ int32_t getSmallestDenom(const real_t *val) {
     maxden = denMax;
   }
   int32ToReal(maxden,&temp);
-  realDivide(const_1on4,&temp,&temp,&ctxtReal39);
+  realDivide(const_1on4,&temp,&temp,&ctxtReal_denom_finder);
   if(realCompareLessThan(&xx,&temp)) {
     //printf("Lower than 0.25/DMX, quitting before fraction loop.\n");  // Any value lower than 0.5/DMX will be deemed 0. Make the threshold 1/2 of 0.5/DMX
     dd = 1;
@@ -1716,23 +1728,64 @@ int32_t getSmallestDenom(const real_t *val) {
     m[1][0] = t;
 
     int32ToReal(ai,&temp);
-    realSubtract(&xx,&temp,&xx,&ctxtReal39);
+    realSubtract(&xx,&temp,&xx,&ctxtReal_denom_finder);
     //printf("                                               "); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
-    realDivide(const_1,&xx,&xx,&ctxtReal39);
-
-    if(realCompareGreaterThan(&xx,const_10p9__1)) {
+    realDivide(const_1,&xx,&xx,&ctxtReal_denom_finder);
+    if(realCompareGreaterThan(&xx,const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
+      realCopy(const_10p9__1,&xx);
+    }
+    if(realIsSpecial(&xx)) {
       #if defined(PC_BUILD)
-        printf("\nRepresentation failure. Quitting fraction loop.\n");
+        errorf("Representation failure. Quitting fraction loop.");
+        printRealToConsole(&xx,"xx:","\n");
+        fflush(stderr);
       #endif //PC_BUILD
       dd = 1;
       goto nothingTodo;
     }
   }
 
+  //Pick the correct num/denom from the matrix
+  realContext_t ctxtReal_integer_conversion_find_lowest_err_fraction = ctxtReal39;
+  ctxtReal_integer_conversion_find_lowest_err_fraction.digits = K_ctxtReal_integer_conversion_find_lowest_err_fraction;
+  real_t num1, den1, num2, den2;
+  real_t frac1, frac2;
+  real_t err1, err2;
+  // Convert int32_t integers to reals
+  int32ToReal(m[0][0], &num1);
+  int32ToReal(m[1][0], &den1);
+  int32ToReal(m[0][1], &num2);
+  int32ToReal(m[1][1], &den2);
+  //decNumberFromInt32(&num1, m[0][0]);
+  //decNumberFromInt32(&den1, m[1][0]);
+  //decNumberFromInt32(&num2, m[0][1]);
+  //decNumberFromInt32(&den2, m[1][1]);
+
+  // Compute fractions num/den: frac = num / den
+  realDivide(&num1, &den1, &frac1, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  realDivide(&num2, &den2, &frac2, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  // Compute errors: err = |value - fraction|
+  realSubtract(val, &frac1, &err1, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  realCopyAbs(&err1, &err1);
+  realSubtract(val, &frac2, &err2, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  realCopyAbs(&err2, &err2);
+  real_t cmpResult;           // to store comparison result
+  // Compare errors: if err2 < err1, update m accordingly
+  realCompare(&err2, &err1, &cmpResult, &ctxtReal_integer_conversion_find_lowest_err_fraction);
+  // cmpResult will hold -1 if err2 < err1, 0 if equal, 1 if err2 > err1
+  // Check if err2 < err1 and swap output if needed
+  // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
+  // printRealToConsole(&err2,  "err2: "," "); printf("%d/%d\n",    m[0][1],m[1][1]);
+  if (realIsNegative(&cmpResult)) {
+      m[0][0] = m[0][1];
+      m[1][0] = m[1][1];
+  }
+  //ignore numerator for the IRFRAC application - that is re-done later, report the denominator
   dd = m[1][0];
+  // printf("----> Selected %d\n",dd);
   if(dd == 0) {
     dd = 1;
   }
@@ -1741,7 +1794,7 @@ nothingTodo:
   return dd;
 }
 
-
+//** Helper to help create and format output string
 void changeToSup(uint64_t numer, char *str) {  //numerator
   int16_t  endingZero = 0;
   str[0]=0;
@@ -1749,6 +1802,7 @@ void changeToSup(uint64_t numer, char *str) {  //numerator
 
 }
 
+//** Helper to help create and format output string
 void changeToSub(uint64_t denom, char *str) {  //denominator
   int16_t  endingZero = 1;
   str[0]='/';
@@ -1756,6 +1810,7 @@ void changeToSub(uint64_t denom, char *str) {  //denominator
   _denominator(denom, str, &endingZero);
 }
 
+//** Helper to help create and format output string
 void changeToWholeString(int32_t intt, char *str, char *str1) {
   str[0]=0;
   longInteger_t lgInt;
@@ -1767,13 +1822,14 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
 }
 
 
+//** Main IRFRAC search and conversion function
 bool_t checkForAndChange(char *displayString, const real_t *valueReal, const real_t *valueRealAbs, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
-    realContext_t ctxtReal27 = ctxtReal39;
-    ctxtReal27.digits = 27;
-    realContext_t ctxtReal12 = ctxtReal39;
-    ctxtReal12.digits = 12;
+    realContext_t ctxtReal_irrational_detection = ctxtReal39;
+    ctxtReal_irrational_detection.digits = K_ctxtReal_irrational_detection;
+    realContext_t ctxtReal_find_multiple_of_irr = ctxtReal39;
+    ctxtReal_find_multiple_of_irr.digits = K_ctxtReal_find_multiple_of_irr;
 
     char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
@@ -1800,16 +1856,15 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal27);                                               //TRYOUT 12 instead of 27
-    if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
+    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal_irrational_detection);                                               //TRYOUT 12 instead of 27
+    if(realCompareGreaterThan(&multConstant, const_10p9__1)) {   //reduce whole multiple range to 34-24 = 10 digits. Use 10p9__1 = 999 999 999. (was const_2p31__1 = 2 147 483 647)
       return false;
     }
 
 
-#define IRFRAC_ENGINE
-
     //See if the multiplier to the constant has a whole denominator
 
+#define IRFRAC_ENGINE
 #ifndef IRFRAC_ENGINE
     //* This section uses the standard fraction() to calculate the denominator
     int16_t sign1, lessEqualGreater;
@@ -1821,6 +1876,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     int32_t smallestDenom = denom;
 #endif //FRACT_ENGINE
 #ifdef IRFRAC_ENGINE
+    //* This section uses the new special demoninator search engine
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
 #endif //IRFRAC_ENGINE
 
@@ -1830,22 +1886,22 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal12);                               //TRYOUT 12 instead of 27
-    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal12);     //TRYOUT 12 instead of 27
-    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal12);    //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal_find_multiple_of_irr);
+    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal_find_multiple_of_irr);
+    realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal_find_multiple_of_irr);
     multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
 
-    //See if the ip is out of range
-    if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, const_2p31__1)) {
+    //See if the ip is out of range (use the Real check not the integer check to protect agains > 32 bit integer max)
+    if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, const_10p9__1)) {   //reduce whole multiple range to 34-24 = 10 digits. Use 10p9__1 = 999 999 999. (was const_2p31__1 = 2 147 483 647)
       return false;
     }
 
   real_t findingIrrationalTolerance1;
-  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal27);         // do relative convergence
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal_irrational_detection);         // do relative convergence // MUST TRY 12. SEEMS TO WORK ON 12
 
 
 
-
+// DEBUG CODE
 //                                printRealToConsole(constant,"\n\nconstant=","\n");
 //                                printRealToConsole(valueReal,"valueReal=","\n");
 //                                printRealToConsole(&multConstant,"multConstant=","\n");
@@ -1877,6 +1933,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       strcpy(cStr,constantStr);
     }
 
+
+// DEBUG CODE
 //                                printRealToConsole(valueReal,"\n\nInputvalue: valueReal=","\n");
 //                                printRealToConsole(constant,"    constant=","\n");
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
@@ -1891,12 +1949,16 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 //                                stringToASCII(resultingIntStr,displayString1); printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n",displayString1,(uint8_t)(displayString[0]),(uint8_t)(displayString[1]),(uint8_t)(displayString[2]),(uint8_t)(displayString[3]),(uint8_t)(displayString[4]),(uint8_t)(displayString[5]),(uint8_t)(displayString[6]),(uint8_t)(displayString[7]));
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
+
+// DEBUG CODE
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
 //                                printf("  useMixedNumbers = %u\n", useMixedNumbers);
 
       if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers && smallestDenom != 1) {   // Numer > Denom;
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
+
+// DEBUG CODE
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);
         char useMixedNumbersSep[3];
         if(cStr[0]==0) {                                                                                          // no constant
@@ -1954,6 +2016,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
     }
 
+// DEBUG CODE
 //                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
 //                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(tmpstr[0]),(uint8_t)(tmpstr[1]),(uint8_t)(tmpstr[2]),(uint8_t)(tmpstr[3]),(uint8_t)(tmpstr[4]),(uint8_t)(tmpstr[5]),(uint8_t)(tmpstr[6]),(uint8_t)(tmpstr[7]));
 //                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(resultingIntStr[0]),(uint8_t)(resultingIntStr[1]),(uint8_t)(resultingIntStr[2]),(uint8_t)(resultingIntStr[3]),(uint8_t)(resultingIntStr[4]),(uint8_t)(resultingIntStr[5]),(uint8_t)(resultingIntStr[6]),(uint8_t)(resultingIntStr[7]));
@@ -1975,6 +2038,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   real_t roundingTolerance1;
   irfractionTolerence(smallestDenom * 6 + 1, &roundingTolerance1);                                              // relative convergence, add (6x+1) i.e about 0.43 digits + 1 for safety margin)
 
+// DEBUG CODE
 //                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
 //                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
 //                               printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
@@ -2085,12 +2149,12 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #endif // !TESTSUITE_BUILD
 
 
-void fnRESET_MyM(uint8_t param) {
+void fnRESET_MyM(uint16_t param) {
   //Pre-assign the MyMenu                   //JM
   #if !defined(TESTSUITE_BUILD)
     BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == USER_MSAV) {
+      if(param == ITM_RIBBON_SAV) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_SYSTEM2; break;
           case 2: itemToBeAssigned = ITM_ACTUSB;  break;
@@ -2101,7 +2165,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MFIN) {
+      else if(param == ITM_RIBBON_FIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
@@ -2112,7 +2176,7 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MCPX) {
+      else if(param == ITM_RIBBON_CPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
@@ -2123,7 +2187,34 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MC47) {
+
+      //C47 et al
+          else if(!isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = -MNU_CPX;     break;
+              case 2: itemToBeAssigned = -MNU_MATX;    break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = ITM_op_j;     break;
+              case 5: itemToBeAssigned = ITM_EXP;      break;
+              case 6: itemToBeAssigned = -MNU_TRG_C47; break;
+              default:break;
+            }
+          }
+      //R47
+          else if(isR47FAM && param == ITM_RIBBON_ENG) {
+            switch(fn) {
+              case 1: itemToBeAssigned = ITM_op_j;     break;
+              case 2: itemToBeAssigned = -MNU_CPX;     break;
+              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
+              case 4: itemToBeAssigned = -MNU_MATX;    break;
+              case 5: itemToBeAssigned = -MNU_TRG_R47; break;
+              case 6: itemToBeAssigned = ITM_EXP;      break;
+              default:break;
+            }
+          }
+      //END CONDITIONAL
+
+      else if(param == ITM_RIBBON_C47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_YX;       break;
@@ -2134,7 +2225,18 @@ void fnRESET_MyM(uint8_t param) {
           default:break;
         }
       }
-      else if(param == USER_MR47) {
+      else if(param == ITM_RIBBON_C47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_DRG;      break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_FF;       break;
+          case 5: itemToBeAssigned = ITM_Rup;      break;
+          case 6: itemToBeAssigned = ITM_XFACT;    break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_op_j;     break;
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
@@ -2142,6 +2244,17 @@ void fnRESET_MyM(uint8_t param) {
           case 4: itemToBeAssigned = ITM_XTHROOT;  break;
           case 5: itemToBeAssigned = ITM_10x;      break;
           case 6: itemToBeAssigned = ITM_EXP;      break;
+          default:break;
+        }
+      }
+      else if(param == ITM_RIBBON_R47PL) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_TIMER;    break;
+          case 2: itemToBeAssigned = ITM_DSP;      break;
+          case 3: itemToBeAssigned = ITM_DREAL;    break;
+          case 4: itemToBeAssigned = ITM_FF;       break;
+          case 5: itemToBeAssigned = -MNU_LOOP;    break;
+          case 6: itemToBeAssigned = -MNU_TEST;    break;
           default:break;
         }
       }
@@ -2492,12 +2605,6 @@ int16_t mm(int16_t id) {
 
 void fnSetBCD (uint16_t bcd) {
   switch(bcd) {
-    case JC_BCD:
-      bcdDisplay = !bcdDisplay;
-      if(lastIntegerBase == 0) {
-        fnChangeBaseJM(10);
-      }
-      break;
     case BCD9c:
     case BCD10c:
     case BCDu:

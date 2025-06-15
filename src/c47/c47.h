@@ -22,7 +22,7 @@
   #include <time.h>
   #include <unistd.h>
 
-  #if defined(DMCP_BUILD) && defined(OLD_HW) // this is due to the libc_nano added in 999acb23 which does not have hh support.
+  #if defined(DMCP_BUILD) // this is due to the libc_nano added in 999acb23 which does not have hh support; also added nano to the new hardware in 2fde900
     #undef PRIu8
     #define PRIu8 "u"
     #undef PRIi8
@@ -414,6 +414,7 @@
   extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
+  extern uint8_t                previousErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
@@ -473,7 +474,6 @@
   extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
-  extern bool_t                 bcdDisplay;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;

@@ -638,13 +638,60 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
   complexMatrixFree(&matrix);
 }
 
+
+void sci_fmt(char *buf, int n, double x) {
+/*
+ * Usage:
+ *   char buf[32];
+ *   sci_fmt(buf, sizeof(buf), x);  // replaces snprintf(buf, sizeof(buf), "%.16e", x);
+ *
+ * Output format (if buffer allows):
+ *   [-]d.dddddddddddddddde±dd\0 (up to 25–30 bytes depending on exponent digits)
+ */
+    int exp = 0, i = 0;
+    if (x < 0) {
+        buf[i++] = '-';
+        x = -x;
+    }
+
+    while (x && x < 1.0) x *= 10.0, exp--;
+    while (x >= 10.0) x /= 10.0, exp++;
+
+    unsigned long long m = (unsigned long long)(x * 1e15 + 0.5);
+    if (m >= 10000000000000000ULL) {
+        m /= 10;
+        exp++;
+    }
+
+    buf[i++] = '0' + (m / 1000000000000000ULL);
+    buf[i++] = '.';
+
+    static const unsigned long long divs[] = {
+        1000000000000000ULL, 100000000000000ULL, 10000000000000ULL,
+        1000000000000ULL,   100000000000ULL,    10000000000ULL,
+        1000000000ULL,      100000000ULL,       10000000ULL,
+        1000000ULL,         100000ULL,          10000ULL,
+        1000ULL,            100ULL,             10ULL
+    };
+
+    for (int j = 1; j < 15 && i < n - 6; j++) {
+        buf[i++] = '0' + (m / divs[j]) % 10;
+    }
+
+    i += snprintf(buf + i, n - i, "e%+03d", exp);
+    buf[i] = 0;
+}
+
+
+
 #if !defined(TESTSUITE_BUILD)
   void convertDoubleToString(double x, int16_t n, char *buff) { //Reformatting real strings that are formatted according to different locale settings
     uint16_t i = 2;
     uint16_t j = 2;
     bool_t error = false;
 
-    snprintf(buff, n, "%.16e", x);
+//    snprintf(buff, n, "%.16e", x);
+    sci_fmt(buff, n, x);
 
     if(buff[0] != '-') {
       i = 0;
@@ -841,6 +888,14 @@ void badDomainError(calcRegister_t reg) {
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
+void badTypeErrorX(void) {
+  badTypeError(REGISTER_X);
+}
+
+void badDomainErrorX(void) {
+  badDomainError(REGISTER_X);
+}
+
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -869,7 +924,7 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   return true;
 }
 
-bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToReal(reg, r, &ctxtReal75);
@@ -879,6 +934,8 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
       convertShortIntegerRegisterToReal(reg, r, &ctxtReal34);
       break;
 
+    case dtTime:
+    case dtDate:
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), r);
       break;
@@ -891,14 +948,37 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
       return true;
 
     default:
-      badTypeError(reg);
       return false;
   }
   realZero(i);
   return true;
 }
 
-bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
+bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const bool_t ret = getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+
+  if (!ret)
+    badTypeError(reg);
+  return ret;
+}
+
+bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const uint32_t t = getRegisterDataType(reg);
+
+  if (t == dtTime || t == dtDate)
+    return false;
+  return getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+}
+
+bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  const bool_t ret = getRegisterAsComplexOrRealQuiet(reg, r, i, cmplx);
+
+  if (!ret)
+    badTypeError(reg);
+  return ret;
+}
+
+bool_t getRegisterAsAnyRealQuiet(calcRegister_t reg, real_t *val) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToReal(reg, val, &ctxtReal75);
@@ -908,6 +988,8 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
       convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
       break;
 
+    case dtDate:
+    case dtTime:
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), val);
       break;
@@ -925,8 +1007,24 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
   return true;
 }
 
+bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
+  uint32_t t = getRegisterDataType(reg);
+
+  if (t == dtDate || t ==dtTime)
+    return false;
+  return getRegisterAsAnyRealQuiet(reg, val);
+}
+
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   bool_t res = getRegisterAsRealQuiet(reg, val);
+
+  if(!res)
+    badTypeError(reg);
+  return res;
+}
+
+bool_t getRegisterAsAnyReal(calcRegister_t reg, real_t *val) {
+  bool_t res = getRegisterAsAnyRealQuiet(reg, val);
 
   if(!res)
     badTypeError(reg);
@@ -1033,7 +1131,7 @@ finish:
   return true;
 }
 
-bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
   bool_t frac = false;
 
@@ -1049,10 +1147,8 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
     case dtComplex34:
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
-        if (realIsSpecial(&rval)) {
-          badDomainError(reg);
-          return false;
-        }
+        if (realIsSpecial(&rval))
+          return ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
         if (!realIsAnInteger(&rval)) {
           realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
           frac = true;
@@ -1063,12 +1159,19 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
       /* fall through */
 
     default:
-      badTypeError(reg);
-      return false;
+      return ERROR_INVALID_DATA_TYPE_FOR_OP;
   }
   if (fractional != NULL)
     *fractional = frac;
-  return true;
+  return ERROR_NONE;
+}
+
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  const int err = getRegisterAsLongIntQuiet(reg, val, fractional);
+
+  if(err != ERROR_NONE)
+    displayCalcErrorMessage(err, ERR_REGISTER_LINE, REGISTER_T);
+  return err == ERROR_NONE;
 }
 
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
@@ -1170,7 +1273,7 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
     else if(complexf != NULL)
       complexf();
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
   }
 
 done:
@@ -1233,7 +1336,7 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
     else if(complexf != NULL)
       elementwiseRemaCplx(complexf);
     else
-      badTypeError(REGISTER_X);
+      badTypeErrorX();
     goto fin;
   }
   else if(typeY == dtComplex34Matrix && xNumber) {

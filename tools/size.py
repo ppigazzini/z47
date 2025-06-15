@@ -67,8 +67,8 @@ for i in range(len(sizes)):
     elif sects[i] == ".qspi":
         used["qspi"] += sizes[i]
     else:
-        print("Unknown section:", sects[i])
-        sys.exit(1)
+        print("Warning: Unknown section:", sects[i], "- ignoring.")
+        continue
 
 # Display totals and free space
 def output(sect):

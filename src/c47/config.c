@@ -350,12 +350,16 @@ void Sett(int16_t grp) {
     Sett(_JM);
 
     roundingMode = RM_HALF_UP;
-    fnKeysManagement(USER_MC47);
+    fnKeysManagement(ITM_RIBBON_C47);
 
     itemToBeAssigned = -MNU_EE;
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
+    itemToBeAssigned = -MNU_RIBBONS;
+    assignToMyMenu(10);
+    itemToBeAssigned = ITM_DREAL;
+    assignToMyMenu(9);
 
 
     cachedDynamicMenu = 0;
@@ -937,6 +941,18 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnGetLastErr(uint16_t unusedButMandatoryParameter) {
+  longInteger_t err;
+
+  liftStack();
+
+  longIntegerInit(err);
+  uInt32ToLongInteger(previousErrorCode, err);
+  convertLongIntegerToLongIntegerRegister(err, REGISTER_X);
+  longIntegerFree(err);
+}
+
+
 void initSimEqMatABX(void) {
   matrixHeader_t *matrixHeader;
 
@@ -990,10 +1006,10 @@ void fnClAll(uint16_t confirmation) {
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
 
     if(isR47FAM) {
-      fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
+      fnRESET_MyM(ITM_RIBBON_R47);            // Reset Menu MyMenu
     }
     else {
-      fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
+      fnRESET_MyM(ITM_RIBBON_C47);            // Reset Menu MyMenu
     }
 
     fnRESET_Mya();                            // Reset Menu MyAlpha
@@ -1110,7 +1126,7 @@ void restoreStats(void){
 
     typedef struct {              //JM VALUES DEMO
       uint8_t  itemType;
-      uint8_t  count;
+      uint16_t  count;
       char     *itemName;
     } numberstr;
 
@@ -1179,11 +1195,14 @@ void restoreStats(void){
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
-      {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
-      {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
-      {0,USER_MC47,    "MyMenu primary C47 F-key ribbon"                 },
-      {0,USER_MR47,    "MyMenu primary R47 F-key ribbon"                 },
+      {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
+      {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
+      {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
+      {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
+      {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
+      {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
+      {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
+      {0,ITM_RIBBON_R47PL, "MyMenu primary R47 Plus F-key ribbon"        },
       {0,100,"Error List"}
     };
 
@@ -1201,7 +1220,7 @@ uint16_t searchMsg(uint16_t idStr) {
 }
 
 
-void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
+void fnShowVersion(uint16_t option) {  //KEYS VERSION LOADED
   strcpy(errorMessage, indexOfMsgs[searchMsg(option)].itemName);
   temporaryInformation = TI_KEYS;
 }
@@ -1246,7 +1265,6 @@ void resetOtherConfigurationStuff(void) {
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
-  bcdDisplay = false;
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
@@ -1511,6 +1529,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     aimBuffer[0] = 0;
     lastErrorCode = 0;
+    previousErrorCode = 0;
 
     #if !defined(TESTSUITE_BUILD)
       resetAlphaSelectionBuffer();
@@ -1603,13 +1622,13 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_MR47\n");
                                    #endif
-      fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
+      fnKeysManagement(ITM_RIBBON_R47);                  // Reset Menu MyMenu Ribbon
     }
     else {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_MC47\n");
                                    #endif
-      fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
+      fnKeysManagement(ITM_RIBBON_C47);                  // Reset Menu MyMenu Ribbon
     }
 
     #if !defined(TESTSUITE_BUILD)
@@ -1956,11 +1975,14 @@ void fnKeysManagement(uint16_t choice) {
       fnShowVersion(choice);
       break;
 
-    case USER_MFIN:
-    case USER_MCPX:
-    case USER_MSAV:
-    case USER_MC47:
-    case USER_MR47:
+    case ITM_RIBBON_CPX  :
+    case ITM_RIBBON_FIN  :
+    case ITM_RIBBON_ENG  :
+    case ITM_RIBBON_SAV  :
+    case ITM_RIBBON_C47  :
+    case ITM_RIBBON_C47PL:
+    case ITM_RIBBON_R47  :
+    case ITM_RIBBON_R47PL:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
       #if !defined(TESTSUITE_BUILD)

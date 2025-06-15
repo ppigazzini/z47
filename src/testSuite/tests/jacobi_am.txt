@@ -108,7 +108,7 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; sn(Short Integer) --> Error24
+; sn(Short Integer) --> Real
 ;=======================================
 
 
