@@ -33,8 +33,10 @@ static void invertReal(void) {
   }
 
   else if(realIsInfinite(&x)) {
+    const int wasNeg = realIsNegative(&x);
+
     realZero(&x);
-    if (realIsNegative(&x))
+    if (wasNeg)
       realChangeSign(&x);
   }
 
