@@ -33,10 +33,10 @@ static void invertReal(void) {
   }
 
   else if(realIsInfinite(&x)) {
-    const int wasNeg = realIsNegative(&x);
+    const int setNeg = realIsNegative(&x) && getSystemFlag(FLAG_SPCRES);
 
     realZero(&x);
-    if (wasNeg)
+    if (setNeg)
       realChangeSign(&x);
   }
 
