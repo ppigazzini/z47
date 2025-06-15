@@ -18,7 +18,7 @@ const bool_t Factors_2_PerfectSquare = true;
 const bool_t Factors_3_Pollard       = true;
 
 
-// primes less than 212
+// primes less than 212 for the sieve, the rest of the array to fill one byte primes for the factors trial tests
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
                                          97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
@@ -38,7 +38,7 @@ TO_QSPI const uint8_t offsets[] = {  10,   2,   4,   2,   4,   6,   2,   6,   4,
                                       4,   2,   4,   6,   2,   6,   4,   2,   4,   2,  10,   2 };
 
 
-// distances between primes, starting at 251+6 ==> 257 .... 1009
+// distances between primes, to add to the 1-byte small prime list; starting at 251+6 ==> 257 .... 1009
 TO_QSPI const uint8_t smallPrimes2[] = { 6, 6, 6, 2, 6, 4, 2, 10, 14, 4, 2, 4, 14, 6, 10, 2, 4, 6, 8, 
                                          6, 6, 4, 6, 8, 4, 8, 10, 2, 10, 2, 6, 4, 6, 8, 4, 2, 4, 12, 
                                          8, 4, 8, 4, 6, 12, 2, 18, 6, 10, 6, 6, 2, 6, 10, 6, 6, 2, 6, 
@@ -64,6 +64,7 @@ uint16_t smallPrimeList(uint16_t index) {
   }
 }
 
+//To check if the list of small primes being split into two methods, are contimuous
 //void listAllPrimesInList(void) {
 //  for (uint i = 0; i < smallPrimeListNumber; i++) {
 //    printf("prime: %u : %u\n",i,smallPrimeList(i));
@@ -1000,6 +1001,15 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         3*5*7*11
     };
 
+    bool_t addFactorsToTSV = false;
+
+    static void keepFileNameAlive(void) {
+      if(addFactorsToTSV) {
+        preventFilenameTimeout();
+      }
+    }
+
+
     // Fast perfect square check using 32-bit integer sqrt
     static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
         uint32_t r = (uint32_t)(sqrt((double)n));
@@ -1114,6 +1124,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
                 if(checkHalfSec()) {
+                  keepFileNameAlive();
                   if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                     force_refresh(force);
                   }
@@ -1209,6 +1220,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
                 if(checkHalfSec()) {
+                  keepFileNameAlive();
                   if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                     force_refresh(force);
                   }
@@ -1391,8 +1403,10 @@ typedef struct FactorAdder
   static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
     //printLongIntegerToConsole(factor,"-->","\n");
 
-    convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
-    fnP_All_Regs(PRN_TMP);
+    if(addFactorsToTSV) {
+      convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
+    }
 
                                             #ifdef MONITOR_FACTORS
                                               printf("--c:  addFactor()\n");
@@ -1550,24 +1564,27 @@ returnFalse:
 
 
 static void printTitles(longInteger_t input) {
-  #if !defined(TESTSUITE_BUILD)
-    create_filename("");
-    fnStrtoReg(filename_csv, TEMP_REGISTER_1);
-    cancelFilename = true;
-    fnP_All_Regs(PRN_TMP);
+  if(addFactorsToTSV) {
+    #if !defined(TESTSUITE_BUILD)
+      create_filename("");
+      fnStrtoReg(filename_csv, TEMP_REGISTER_1);
+      cancelFilename = true;
+      fnP_All_Regs(PRN_TMP);
 
-    convertLongIntegerToLongIntegerRegister(input, TEMP_REGISTER_1);
-    fnP_All_Regs(PRN_TMP);
+      convertLongIntegerToLongIntegerRegister(input, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
 
-    char filename[50];
-    strcat(filename,"FACTORS:");
-    fnStrtoReg(filename, TEMP_REGISTER_1);
-    fnP_All_Regs(PRN_TMP);
-  #endif //TESTSUITE_BUILD
+      char filename[50];
+      strcat(filename,"FACTORS:");
+      fnStrtoReg(filename, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
+    #endif //TESTSUITE_BUILD
+  }
 }
 
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+    addFactorsToTSV = false;
     loopp = 0;
     currentKeyCode = 255;
     real34_t lastAdded;
@@ -1598,17 +1615,30 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       goto abort;
     }
 
-    printTitles(currentNumber);
-
     int32ToReal34(0,&lastAdded);
     FactorAdder_t faddr;
     initFactorAdder(&faddr);
 
-    int32ToLongInteger(longIntegerIsNegative(currentNumber) ? -1 : 1, tmp);    
+    int32_t sign = longIntegerIsNegative(currentNumber);
+    if(sign == -1) {
+      longIntegerSetPositiveSign(currentNumber);
+    }
+
+    //determine if the TSV file is to be written
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    stringToLongInteger("9999999999999999999999999999999999", 10, lgInt);
+    addFactorsToTSV = (longIntegerCompare(currentNumber, lgInt) > 0);
+    longIntegerFree(lgInt);
+    printTitles(currentNumber);
+
+
+    //capture the sign in the output matrix
+    int32ToLongInteger(sign ? -1 : 1, tmp);    
     if(!addFactor(tmp, REGISTER_X, &lastAdded, &faddr)) {
       goto abort;
     }
-    longIntegerSetPositiveSign(currentNumber);
+
 
     longInteger_t queue[MAXIMUM_QUEUE_SIZE];
     int queue_start = 0, queue_end = 0;
@@ -1635,7 +1665,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           #if !defined(TESTSUITE_BUILD)
             loopp++;
             if(checkHalfSec()) {
-              if(progressHalfSecUpdate_Integer(timed, "Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                 _showProgress(&lastAdded, currentNumber);
                 dumpExponents(REGISTER_X, &faddr, 13);
                 force_refresh(force);
@@ -1680,7 +1711,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           #if !defined(TESTSUITE_BUILD)
             loopp++;
             if(checkHalfSec()) {
-              if(progressHalfSecUpdate_Integer(timed, "Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
                 _showProgress(&lastAdded, currentNumber);
                 dumpExponents(REGISTER_X, &faddr, 13);
                 force_refresh(force);
@@ -1753,6 +1785,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
+            keepFileNameAlive();
             if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, current);
               dumpExponents(REGISTER_X, &faddr, 13);
@@ -1854,6 +1887,7 @@ abort:
     longIntegerFree(tmp);
     longIntegerFree(temp1);
     longIntegerFree(currentNumber);
+    cancelFilename = true;
 }
 
 
@@ -1912,8 +1946,8 @@ void pollard_init(pollard_t *self) {
   longIntegerInit(self->tmp);
   self->iteration = 0;
   self->attempt = 0;
-  #define max_iterations 1000000     // Reset after this many iterations
-  #define max_attempts   1000         // Max allowed retries before FAIL
+  #define max_iterations 1000000      // Reset current attempt after this many iterations
+  #define max_attempts   1000         // Max allowed retried attempts before FAIL. 1000 meaning literally infinity for the hardware speed ...
   #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
   gmp_randinit_mt(self->rng);
   gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
@@ -1944,7 +1978,8 @@ void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
   uInt32ToLongInteger(1, self->d);
 }
 /*
- * Performs a number of Pollard's Rho iterations.
+ * Performs a number 'steps' of Pollard's Rho iterations within one main iteration.
+ *   Currently 10 steps of pollard to one step of Shanks; Shanks being on the back burner.
  * Returns a result struct with status and diagnostic info.
  * - If a factor is found, status will be FACTORS_DONE.
  * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
