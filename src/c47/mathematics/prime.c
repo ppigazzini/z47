@@ -1577,7 +1577,7 @@ static void printTitles(longInteger_t input) {
       fnP_All_Regs(PRN_TMP);
 
       char filename[50];
-      strcat(filename,"FACTORS:");
+      strcpy(filename,"FACTORS:");
       fnStrtoReg(filename, TEMP_REGISTER_1);
       fnP_All_Regs(PRN_TMP);
     #endif //TESTSUITE_BUILD
