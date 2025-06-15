@@ -78,14 +78,23 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"inf i inf"
 ;=======================================
 ; conj other numeric types
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"1"
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Cplx:"1 i 0"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1"
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Cplx:"1 i 0"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=ShoI:"1#10"
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=ShoI:"1#10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#10" RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Cplx:"1 i -0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Cplx:"1 i -0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=ShoI:"1#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#10" RX=Cplx:"1 i -0"
 
 ;=======================================
 ; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
