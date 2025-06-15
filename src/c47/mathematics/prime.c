@@ -1402,6 +1402,13 @@ typedef struct FactorAdder
   }
 
 
+  static void pushLongIntegerToJK(longInteger_t factor) {
+    copySourceRegisterToDestRegister(REGISTER_H, REGISTER_G);
+    copySourceRegisterToDestRegister(REGISTER_K, REGISTER_H);
+    convertLongIntegerToLongIntegerRegister(factor, REGISTER_K);
+  }
+
+
   static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
     //printLongIntegerToConsole(factor,"-->","\n");
 
@@ -1409,6 +1416,8 @@ typedef struct FactorAdder
       convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
       fnP_All_Regs(PRN_TMP);
     }
+
+    pushLongIntegerToJK(factor);
 
                                             #ifdef MONITOR_FACTORS
                                               printf("--c:  addFactor()\n");
@@ -1554,7 +1563,7 @@ typedef struct FactorAdder
     updateMatrixHeightCache();
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
     refreshScreen(300);
-     return true;
+    return true;
 
 returnFalse:
     updateMatrixHeightCache();
