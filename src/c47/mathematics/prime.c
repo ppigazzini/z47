@@ -223,7 +223,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
-void SQUFOF(longInteger_t result, const longInteger_t N);
+void SQUFOF(longInteger_t result, const longInteger_t N, const real34_t lastAdded);
 void complete_factorization1(const longInteger_t N);
 void complete_factorization2(const longInteger_t N);
 
@@ -585,12 +585,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
       strcpy(tmpString,"Last:   ");
-      real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
       strcpy(tmpString,"Test:   ");
-      real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
       refreshRegisterLine(REGISTER_X);
@@ -1047,7 +1047,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
     int32_t loopp;
 
-    void SQUFOF(longInteger_t result, const longInteger_t N) {
+    void SQUFOF(longInteger_t result, const longInteger_t N, const real34_t lastAdded) {
       uint32_t k;
       longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
       longIntegerInit(BB);
@@ -1126,6 +1126,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
                 if(checkHalfSec()) {
                   keepFileNameAlive();
                   if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    _showProgress(&lastAdded, n);
                     force_refresh(force);
                   }
                 }
@@ -1222,6 +1223,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
                 if(checkHalfSec()) {
                   keepFileNameAlive();
                   if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    _showProgress(&lastAdded, n);
                     force_refresh(force);
                   }
                 }
@@ -1824,7 +1826,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         }
 
         // Attempt to find a factor using SQUFOF
-        SQUFOF(factor, current);
+        SQUFOF(factor, current, lastAdded);
         if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
             // SQUFOF failed; treat current as prime
                             #if defined(MONITOR_FACTORS)
