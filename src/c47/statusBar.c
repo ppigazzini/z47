@@ -424,7 +424,7 @@ void drawBattery(uint16_t voltage);
        SBAlphaModeLastShown = SETT_AlphaMode;
        SBchanged = true;
     }
-    if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged || toSwitchOff) {
+    if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged || toSwitchOff || textModeIconDisplay) {
 
       int status=0;
       uint8_t nChar;

@@ -218,7 +218,7 @@ Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-1"
 
 Func: fnInvert
 In:  FL_ASLIFT=0 RX=Real:"-inf"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-0"
 
 Func: fnExp
 In:  FL_ASLIFT=0 RX=Real:"-inf"
