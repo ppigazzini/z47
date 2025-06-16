@@ -600,7 +600,7 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
   }
   return checkRegisterXYRealZeroTol(tol);
   }
-#endif //TESTSUITE_BUILD
+#endif // !TESTSUITE_BUILD
 
 
 //SOLVER

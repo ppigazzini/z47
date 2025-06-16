@@ -1727,37 +1727,42 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   void printRegisterToConsole(calcRegister_t regist, const char *before, const char *after) {
     char str[3000];
 
-    printf("%s", before);
-
     if(getRegisterDataType(regist) == dtReal34) {
       real34ToString(REGISTER_REAL34_DATA(regist), str);
+      printf("%s", before);
       printf("real34 %s %s", str, getAngularModeName(getRegisterAngularMode(regist)));
     }
 
     else if(getRegisterDataType(regist) == dtComplex34) {
       real34ToString(REGISTER_REAL34_DATA(regist), str);
+      printf("%s", before);
       printf("complex34 %s ", str);
 
       real34ToString(REGISTER_IMAG34_DATA(regist), str);
       if(real34IsNegative(REGISTER_IMAG34_DATA(regist))) {
+        printf("%s", before);
         printf("- ix%s", str + 1);
       }
       else {
+        printf("%s", before);
         printf("+ ix%s", str);
       }
     }
 
     else if(getRegisterDataType(regist) == dtString) {
       stringToUtf8(REGISTER_STRING_DATA(regist), (uint8_t *)str);
+      printf("%s", before);
       printf("string (%" PRIu32 " + %" PRIu32 " bytes) |%s|", (uint32_t)sizeof(strLgIntHeader_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
     }
 
     else if(getRegisterDataType(regist) == dtShortInteger) {
       uint64_t value = *(REGISTER_SHORT_INTEGER_DATA(regist));
+      printf("%s", before);
       printf("short integer %08x-%08x (base %" PRIu32 ")", (unsigned int)(value>>32), (unsigned int)(value&0xffffffff), getRegisterTag(regist));
     }
 
     else if(getRegisterDataType(regist) == dtConfig) {
+      printf("%s", before);
       printf("Configuration data");
     }
 
@@ -1767,16 +1772,19 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       convertLongIntegerRegisterToLongInteger(regist, lgInt);
       longIntegerToAllocatedString(lgInt, str, sizeof(str));
       longIntegerFree(lgInt);
+      printf("%s", before);
       printf("long integer (%" PRIu32 " + %" PRIu32 " bytes) %s", (uint32_t)sizeof(strLgIntHeader_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
     }
 
     else if(getRegisterDataType(regist) == dtTime) {
       real34ToString(REGISTER_REAL34_DATA(regist), str);
+      printf("%s", before);
       printf("time %s", str);
     }
 
     else if(getRegisterDataType(regist) == dtDate) {
       real34ToString(REGISTER_REAL34_DATA(regist), str);
+      printf("%s", before);
       printf("date %s", str);
     }
 
@@ -1785,6 +1793,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       real34Matrix_t mat;
       linkToRealMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
+        printf("%s", before);
         printf("Matrix Row %3i: ",r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real34ToString(&mat.matrixElements[r * mat.header.matrixColumns + c], str);
@@ -1796,6 +1805,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
 
     else {
+      printf("%s", before);
       sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
       displayBugScreen(errorMessage);
     }

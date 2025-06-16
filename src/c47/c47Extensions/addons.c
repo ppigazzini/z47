@@ -61,7 +61,12 @@ bool_t anyKeyWaiting(void) {
 
 bool_t exitKeyWaiting(void) {
   #if defined(DMCP_BUILD)
-    return C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+    bool_t checkKey = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+    if(!checkKey) {
+      key_pop_all();
+      clearKeyBuffer();
+    }
+    return checkKey;
   #elif defined(PC_BUILD) // !DMCP_BUILD
     //printf("KeyWaiting keyCode=%u",currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
@@ -1187,6 +1192,10 @@ void fnP_All_Regs(uint16_t option) {
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
         break;
 
+      case PRN_TMP:
+        stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
+        break;
+
       case PRN_XYr:
         stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
         break;
@@ -1208,12 +1217,16 @@ void doubleToXRegisterReal34(double x) { //Convert from double to X register REA
 }
 
 
-void fnStrtoX(const char aimBuffer[]) {                             //DONE
+void fnStrtoReg(const char buffer[], calcRegister_t regist) {                             //DONE
+  int16_t mem = stringByteLength(buffer) + 1;
+  reallocateRegister(regist, dtString, TO_BLOCKS(mem), amNone);
+  xcopy(REGISTER_STRING_DATA(regist), buffer, mem);
+}
+
+void fnStrtoX(const char buffer[]) {                             //DONE
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
-  int16_t mem = stringByteLength(aimBuffer) + 1;
-  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(mem), amNone);
-  xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, mem);
+  fnStrtoReg(buffer, REGISTER_X);
   setSystemFlag(FLAG_ASLIFT);
 }
 

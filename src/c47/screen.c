@@ -4973,7 +4973,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         //  screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
         //}
         else if((calcMode == CM_NORMAL) && ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ) {
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+          screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
         }
 
         _selectiveClearScreen();
@@ -5116,12 +5116,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
   int16_t refreshScreenCounter = 0;        //JM
 
-  void refreshScreen(uint8_t source) {
+  void refreshScreen(uint16_t source) {
                               #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 void *callstack[128];
                                 int frames = backtrace(callstack, 128);
                                 char **strs = backtrace_symbols(callstack, frames);
-                                printf("%30s%42s%s\n", "", "refreshScreen called from: ", strs[1]);
+                                printf("%30s%42s%s (%d)\n", "", "refreshScreen called from: ", strs[1], source);
                                 free(strs);
                               #endif // PC_BUILD
 
@@ -5161,7 +5161,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
+                               printf("   refrsh(%5u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
                                   calcMode,
