@@ -1257,6 +1257,12 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               
           } while (longIntegerCompare(P, Pprev) != 0);
           
+          if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+
           // r = gcd(N, Qprev)
           longIntegerGcd(N, Qprev, r);
           
@@ -1595,6 +1601,7 @@ static void printTitles(longInteger_t input) {
 
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+    iterations = true;
     addFactorsToTSV = false;
     loopp = 0;
     currentKeyCode = 255;
@@ -1899,6 +1906,7 @@ abort:
     longIntegerFree(temp1);
     longIntegerFree(currentNumber);
     cancelFilename = true;
+    iterations = false;
 }
 
 

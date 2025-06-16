@@ -1529,6 +1529,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
+    iterations = false;
     programRunStop = PGM_STOPPED;
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
