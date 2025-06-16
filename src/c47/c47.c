@@ -60,6 +60,7 @@ bool_t                 secTick1;
 bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
+bool_t                 iterations = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
