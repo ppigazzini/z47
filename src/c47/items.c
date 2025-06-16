@@ -455,7 +455,6 @@ bool_t itemNotAvail(int16_t itemNr) {
       #endif // PC_BUILD
     }
 
-printf("CHECKING FOR GMP 1\n");
     #if defined(PC_BUILD)
       if(gmpMemInBytes != 0 && !getSystemFlag(FLAG_SOLVING) && !iterations) {
         char str[30], txt[200];
