@@ -34,15 +34,15 @@ All the below: because both Last x and savestack does not work due to multiple s
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-  uint16_t vol = 0;
-  fnGetVolume(vol);
+  int32_t vol = 0;
+  vol = getBeepVolume();
   fnSetVolume(11);
   _Buzz(100,5);
   xcopy(tmpString, errorMessage, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
   create_screenshot(0);      //Screen dump
   xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
   _Buzz(100,5);
-  fnSetVolume(vol);
+  fnSetVolume((uint16_t)vol);
 }
 #endif //DMCP_BUILD
 
