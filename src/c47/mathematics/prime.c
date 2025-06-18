@@ -1360,7 +1360,7 @@ bool delCol1RealMatrixX(void) {
 
 
 #define MAX_FACTORS 110
-#define MAXIMUM_QUEUE_SIZE 1000
+#define MAXIMUM_QUEUE_SIZE 100 // must be even. Worst well on 1000, which costs > 8000 bytes just for the empty longints
 typedef struct FactorAdder
 {
   uint16_t nExpons;
@@ -1373,7 +1373,7 @@ typedef struct FactorAdder
     faddr->nExpons = 0;
   };
 
-  // And integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
+  // An integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
 
   void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
       uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
@@ -1571,8 +1571,9 @@ typedef struct FactorAdder
     }
     dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
-    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-    refreshScreen(300);
+    refreshRegisterLine(REGISTER_X);
+//    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+//    refreshScreen(300);
     return true;
 
 returnFalse:
@@ -1675,6 +1676,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
         longIntegerInit(queue[i]);
     }
+
+    clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+    force_refresh(force);
 
     // original command, prior to pre-run of primes. Retain here to test without the pre-run block
     //   longIntegerCopy(currentNumber, queue[queue_end++]);
@@ -1785,7 +1789,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     }
 
     //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
-    longIntegerCopy(currentNumber, queue[queue_end++]);
+    longIntegerCopy(currentNumber, queue[queue_end]);
+    queue_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
                             #if defined(MONITOR_FACTORS)
                               printf("Factorizing: ");
                               mpz_out_str(stdout, 10, currentNumber);
@@ -1794,8 +1799,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     longInteger_t current;
     longIntegerInit(current);
-    while (queue_start < queue_end) {
-        longIntegerCopy(queue[queue_start++], current);
+    while (queue_start != queue_end) {
+        longIntegerCopy(queue[queue_start], current);
+        queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
                             #if defined(MONITOR_FACTORS)
                               printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
                             #endif //MONITOR_FACTORS
@@ -1867,16 +1873,20 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         mpz_divexact(quotient, current, factor);
 
         // Enqueue the factor and quotient for further factorization
-        if (queue_end + 2 <= MAXIMUM_QUEUE_SIZE) {
+        int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+        int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
+        if (next_next_end != queue_start) {
                             #if defined(MONITOR_FACTORS)
-                              printf("Enqeueing: ");
+                              printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
                               mpz_out_str(stdout, 10, factor);
-                              printf(" ");
+                              printf(" quotient: ");
                               mpz_out_str(stdout, 10, quotient);
                               printf("\n");
                             #endif //MONITOR_FACTORS
-            longIntegerCopy(factor, queue[queue_end++]);
-            longIntegerCopy(quotient, queue[queue_end++]);
+            longIntegerCopy(factor, queue[queue_end]);
+            queue_end = next_end;
+            longIntegerCopy(quotient, queue[queue_end]);
+            queue_end = next_next_end;
         } else {
             if(errorMessage != 0) break;
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
