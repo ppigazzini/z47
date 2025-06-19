@@ -2612,8 +2612,15 @@
 #define ITM_SI_Gi                   2535
 #define ITM_SI_Ti                   2536
 #define ITM_SI_Pi                   2537
+#define ITM_ALPHALTRIM              2538
+#define ITM_ALPHARTRIM              2539
+#define ITM_ALPHAMID                2540
+#define ITM_ALPHALEFT               2541
+#define ITM_ALPHARIGHT              2542
+#define ITM_ALPHALOWER              2543
+#define ITM_ALPHAUPPER              2544
 
-#define LAST_ITEM                   2538
+#define LAST_ITEM                   2545
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
