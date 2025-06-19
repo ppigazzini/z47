@@ -1440,7 +1440,7 @@ typedef struct FactorAdder
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
       //Initialize Memory for Matrix
-      if(initMatrixRegister(regist, 2, 0, false)) {
+      if(initMatrixRegister(regist, 2, 1, false)) {
                                              #ifdef MONITOR_FACTORS
                                               uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
