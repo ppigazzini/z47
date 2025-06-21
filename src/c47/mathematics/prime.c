@@ -1987,17 +1987,19 @@ void pollard_init(pollard_t *self) {
   pcg32_srandom_r(&self->rng, (uint64_t)time(NULL), 12345);
 
 }
-void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) {  // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
-    size_t n_bits = mpz_sizeinbase(n, 2);
-    mpz_set_ui(rop, 0);
-    size_t bits_generated = 0;
-    while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
-        uint32_t random_val = pcg32_random_r(rng);
-        mpz_mul_2exp(rop, rop, 32);
-        mpz_add_ui(rop, rop, random_val);
-        bits_generated += 32;
-    }
-    mpz_mod(rop, rop, n);     // range [0, n)
+void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) { // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
+  size_t n_bits = mpz_sizeinbase(n, 2);
+  mpz_t temp;
+  mpz_init(temp);
+  size_t bits_generated = 0;
+  while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
+      uint32_t random_val = pcg32_random_r(rng);
+      mpz_mul_2exp(temp, temp, 32);
+      mpz_add_ui(temp, temp, random_val);
+      bits_generated += 32;
+  }
+  mpz_mod(rop, temp, n);
+  mpz_clear(temp);
 }
 /*
  * Frees all GMP variables and RNG state.
