@@ -100,7 +100,7 @@ typedef struct {
   longInteger_t tmp;      // Temporary variable for calculations
   int iteration;          // Total iterations performed
   int attempt;            // Number of reinitializations attempted
-  gmp_randstate_t rng;    // RNG for random starts
+  pcg32_random_t rng;     // Use PCG32 instead of GMP RNG
 } pollard_t;
 
 
@@ -1440,7 +1440,7 @@ typedef struct FactorAdder
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                             #endif //MONITOR_FACTORS
       //Initialize Memory for Matrix
-      if(initMatrixRegister(regist, 2, 0, false)) {
+      if(initMatrixRegister(regist, 2, 1, false)) {
                                              #ifdef MONITOR_FACTORS
                                               uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
@@ -1677,8 +1677,10 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         longIntegerInit(queue[i]);
     }
 
-    clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
-    force_refresh(force);
+    #if !defined(TESTSUITE_BUILD)
+      clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+      force_refresh(force);
+    #endif //TESTSUITE_BUILD
 
     // original command, prior to pre-run of primes. Retain here to test without the pre-run block
     //   longIntegerCopy(currentNumber, queue[queue_end++]);
@@ -1982,8 +1984,20 @@ void pollard_init(pollard_t *self) {
   #define max_iterations 1000000      // Reset current attempt after this many iterations
   #define max_attempts   1000         // Max allowed retried attempts before FAIL. 1000 meaning literally infinity for the hardware speed ...
   #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
-  gmp_randinit_mt(self->rng);
-  gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
+  pcg32_srandom_r(&self->rng, (uint64_t)time(NULL), 12345);
+
+}
+void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) {  // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
+    size_t n_bits = mpz_sizeinbase(n, 2);
+    mpz_set_ui(rop, 0);
+    size_t bits_generated = 0;
+    while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
+        uint32_t random_val = pcg32_random_r(rng);
+        mpz_mul_2exp(rop, rop, 32);
+        mpz_add_ui(rop, rop, random_val);
+        bits_generated += 32;
+    }
+    mpz_mod(rop, rop, n);     // range [0, n)
 }
 /*
  * Frees all GMP variables and RNG state.
@@ -1995,7 +2009,6 @@ void pollard_clear(pollard_t *self) {
   longIntegerFree(self->c);
   longIntegerFree(self->d);
   longIntegerFree(self->tmp);
-  gmp_randclear(self->rng);
 }
 /*
  * Updates the target number to factor (n), and resets the internal state automatically.
@@ -2006,7 +2019,7 @@ void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
   self->iteration = 0;
 
   uInt32ToLongInteger(1, self->c);        // Start with f(x) = x² + 1
-  mpz_urandomm(self->x, self->rng, self->n);
+  mpz_urandomm_pcg32(self->x, &self->rng, self->n);
   longIntegerCopy(self->x, self->y);
   uInt32ToLongInteger(1, self->d);
 }
@@ -2036,9 +2049,9 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
   } else if (self->attempt % 3 == 1) {
     uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2  
   } else {
-    mpz_urandomm(self->c, self->rng, self->n); // Random c
+    mpz_urandomm_pcg32(self->c, &self->rng, self->n); // Random c
   }
-    mpz_urandomm(self->x, self->rng, self->n);
+    mpz_urandomm_pcg32(self->x, &self->rng, self->n);
     longIntegerCopy(self->x, self->y);
     uInt32ToLongInteger(1, self->d);
     self->iteration = 0;

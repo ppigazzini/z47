@@ -1632,6 +1632,9 @@ return res;
     if((mode != timed && !blockForcedRefreshes) || ((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick3) { //1.024 second refresh interval
       halfSecTick3 = !halfSecTick3;
       ret_value = true;
+      #if defined(DMCP_BUILD)
+        dmcpResetAutoOff();
+      #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
       if(clearT) {
@@ -1668,6 +1671,9 @@ return res;
     }
     if(((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick2) { //1.024 second refresh interval
       halfSecTick2 = !halfSecTick2;
+      #if defined(DMCP_BUILD)
+        dmcpResetAutoOff();
+      #endif //DMCP_BUILD
       return true;
     }
     return false;
