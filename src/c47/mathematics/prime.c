@@ -1373,6 +1373,28 @@ typedef struct FactorAdder
     faddr->nExpons = 0;
   };
 
+//  static void initFactorCreateFromMatrix(FactorAdder_t *faddr) {
+//    faddr->nExpons = 0;
+//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0,const34_1)) {
+//      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+//      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+//      for(int j = cols-1-1; j >= 0 ; j--) {
+//        for(int i = rows-1; i >= 0; i--) {
+//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j,REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
+//        }
+//      }
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0);
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+cols+0);
+//      faddr->expons[faddr->nExpons] = 1;
+//      (faddr->nExpons)++;
+//    }
+//    while(faddr->nExpons < REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns ) {
+//      faddr->expons[faddr->nExpons] = real34ToUInt32(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns + faddr->nExpons);
+//      (faddr->nExpons)++;
+//    }
+//  };
+
+
   // An integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
 
   void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
@@ -1618,6 +1640,13 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerInit(tmp);
     longIntegerInit(temp1);
 
+//    bool_t continueWithMatrix = false;
+//    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 2 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 0) {
+//      continueWithMatrix = true;
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns-1, temp1, RM_HALF_UP);
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns*2-1, tmp, RM_HALF_UP);
+//      longIntegerPower(temp1, tmp, currentNumber);
+//    } else
     if(!getIntArg(currentNumber)) {
       goto abort;
     }
@@ -1641,6 +1670,10 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     int32ToReal34(0,&lastAdded);
     FactorAdder_t faddr;
     initFactorAdder(&faddr);
+
+//    if(continueWithMatrix) {
+//      initFactorCreateFromMatrix(&faddr);
+//    }
 
     int32_t sign = longIntegerIsNegative(currentNumber);
     if(sign == -1) {
