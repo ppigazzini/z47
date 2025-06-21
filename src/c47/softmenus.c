@@ -27,7 +27,7 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
                                              ITM_SB,                        ITM_BS,                     ITM_FB,                   ITM_BC,                ITM_CB,                      ITM_FF,
 
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
-                                             ITM_SL,                        ITM_RL,                     ITM_RR,                   ITM_SR,                ITM_ASR,                     -MNU_BITSET,
+                                             ITM_SL,                        ITM_SR,                     ITM_RL,                   ITM_RR,                ITM_ASR,                     -MNU_BITSET,
                                              ITM_LJ,                        ITM_RLC,                    ITM_RRC,                  ITM_RJ,                ITM_MIRROR,                  ITM_FF                        };
 
 TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_DtoJ,                   ITM_TIME,                 ITM_DTtoJ,             ITM_JtoDT,                   ITM_TIMER,
@@ -494,9 +494,11 @@ TO_QSPI const int16_t menu_ConvChef[]       = {
 
 
 
-TO_QSPI const int16_t menu_alphaFN[]     = { ITM_XtoALPHA,                  ITM_ALPHARL,                ITM_ALPHARR,              ITM_ALPHASL,           ITM_ALPHASR,                 ITM_ALPHAtoX,
-                                             ITM_FBR,                       ITM_XPARSE,                 ITM_NULL,                 ITM_NULL,              ITM_ALPHALENG,               ITM_ALPHAPOS,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_alphaFN[]     = { ITM_FBR,                       ITM_XtoALPHA,               ITM_ALPHAtoX,             ITM_ALPHALENG,         ITM_ALPHAPOS,                ITM_XPARSE,
+                                             ITM_ALPHASL,                   ITM_ALPHASR,                ITM_ALPHARL,              ITM_ALPHARR,           ITM_ALPHALOWER,              ITM_ALPHAUPPER,
+                                             ITM_ALPHALTRIM,                ITM_ALPHARTRIM,             ITM_NULL,                 ITM_ALPHAMID,          ITM_ALPHALEFT,               ITM_ALPHARIGHT                };
+
+
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -2933,10 +2935,10 @@ void showSoftmenuCurrentPart(void) {
 
         if(!catalog) {                                                                                 //remember the page number if the menu you are opening was already open and in the stack
           if(!getSystemFlag(FLAG_MNUp1)) {
-            lastCatalogPosition[catalog] = softmenuStack[i].firstItem;
+            lastCatalogPosition[CATALOG_NONE] = softmenuStack[i].firstItem;
             calcMode = softmenuStack[i].calcMode;
           } else {
-            lastCatalogPosition[catalog] = 0;
+            lastCatalogPosition[CATALOG_NONE] = 0;
           }
         }
         xcopy(softmenuStack + 1, softmenuStack, i * sizeof(softmenuStack_t));                          // Remove it by lifting the stack to cover the existing entry i
@@ -3238,6 +3240,10 @@ void showSoftmenuCurrentPart(void) {
       displayBugScreen(bugScreenIdMustNotBe0);
       return;
     }
+   if((softmenu[softmenuStack[0].softmenuId].menuItem == id) && (softmenuStack[0].softmenuId >= NUMBER_OF_DYNAMIC_SOFTMENUS) && !catalog) {   // The menu to push on the stack is already displayed and current, so just change back to p1
+     softmenuStack[0].firstItem = 0;
+     return;
+   }
 
     screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
 
