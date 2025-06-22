@@ -4712,6 +4712,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     showRegis = 9999;
     calcMode = CM_NORMAL;
     screenUpdatingMode = SCRUPD_AUTO;
+    temporaryInformation = TI_NO_INFO;
     refreshScreen(137);
   }
 
@@ -5113,6 +5114,24 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD &&MONITOR_CLRSCR
   }
 
+  #if defined(PC_BUILD)
+    char* get_binary_bits(uint64_t n, int bits) {
+      static char buffer[80]; // 64 bits + 15 spaces + null terminator
+      if (bits <= 0 || bits > 64) {
+          return NULL;
+      }
+      int pos = 0;
+      for (int i = bits - 1; i >= 0; i--) {
+          buffer[pos++] = (n & (1ULL << i)) ? '1' : '0';
+          if (i % 4 == 0 && i != 0) {
+              buffer[pos++] = ' ';
+          }
+      }
+      buffer[pos] = '\0';
+      return buffer;
+    }
+  #endif //PC_BUILD
+
 
   int16_t refreshScreenCounter = 0;        //JM
 
@@ -5144,10 +5163,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                              #if defined(PC_BUILD)
                                char ttt[500] = "";
                                char sss[500] = "";
-                               convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
-                               shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false);
-                               stringToASCII(ttt,sss);
-                               strcpy(ttt,"");
+                               strcpy(sss,get_binary_bits(screenUpdatingMode,8));
                                if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
                                  if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");
                                  if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");
