@@ -1200,10 +1200,6 @@ void restoreStats(void){
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
       {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
       {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
-      {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
-      {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
-      {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
       {0,USER_PRESET,  "P.FN menu reset to default"                      },
@@ -1942,12 +1938,6 @@ void fnKeysManagement(uint16_t choice) {
       case USER_R47fg_g:
       case USER_C47:
       case USER_DM42:
-      #if defined(PC_BUILD)
-        case USER_D47:
-        case USER_E47:
-        case USER_N47:
-        case USER_V47:
-      #endif //PC_BUILD
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
