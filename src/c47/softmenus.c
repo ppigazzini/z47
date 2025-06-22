@@ -733,11 +733,9 @@ TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIB
 #else
                                              ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL,         };
 #endif
-#if (defined PC_BUILD)
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_USER_EXPR,             ITM_KEYMAP,                ITM_USERMODE,
-                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL,
-                                             ITM_USER_D47,              ITM_USER_E47,              ITM_USER_N47,              ITM_USER_V47,              ITM_NULL,                  ITM_NULL          };
-#elif (defined DMCP_BUILD) && (CALCMODEL != USER_R47)
+
+
+#if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_KEYMAP,                ITM_USERMODE,
                                              ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL          };
 #else
