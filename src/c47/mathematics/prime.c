@@ -1594,8 +1594,12 @@ typedef struct FactorAdder
     dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
     refreshRegisterLine(REGISTER_X);
-//    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-//    refreshScreen(300);
+    #if defined (PC_BUILD) //Note clear the correct number of lines to ensure no old register debris remains on screen. This is only required on SIM as the hardware clears the screen presumably
+      if(cachedDisplayStack <= 3) refreshRegisterLine(REGISTER_Y);
+      if(cachedDisplayStack <= 2) refreshRegisterLine(REGISTER_Z);
+      if(cachedDisplayStack <= 1) refreshRegisterLine(REGISTER_T);
+    #endif //PC_BUILD
+
     return true;
 
 returnFalse:
@@ -1656,6 +1660,11 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       goto abort;
     }
 
+    int32_t sign = longIntegerIsNegative(currentNumber);
+    if(sign) {
+      longIntegerSetPositiveSign(currentNumber);
+    }
+
     longIntegerPowerUIntUInt(10,maximumPrime,tmp);
     longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
@@ -1674,11 +1683,6 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 //    if(continueWithMatrix) {
 //      initFactorCreateFromMatrix(&faddr);
 //    }
-
-    int32_t sign = longIntegerIsNegative(currentNumber);
-    if(sign == -1) {
-      longIntegerSetPositiveSign(currentNumber);
-    }
 
     //determine if the TSV file is to be written
     longInteger_t lgInt;
