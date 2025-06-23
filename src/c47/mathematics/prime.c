@@ -100,7 +100,7 @@ typedef struct {
   longInteger_t tmp;      // Temporary variable for calculations
   int iteration;          // Total iterations performed
   int attempt;            // Number of reinitializations attempted
-  gmp_randstate_t rng;    // RNG for random starts
+  pcg32_random_t rng;     // Use PCG32 instead of GMP RNG
 } pollard_t;
 
 
@@ -1360,7 +1360,7 @@ bool delCol1RealMatrixX(void) {
 
 
 #define MAX_FACTORS 110
-#define MAXIMUM_QUEUE_SIZE 1000
+#define MAXIMUM_QUEUE_SIZE 100 // must be even. Worst well on 1000, which costs > 8000 bytes just for the empty longints
 typedef struct FactorAdder
 {
   uint16_t nExpons;
@@ -1373,7 +1373,29 @@ typedef struct FactorAdder
     faddr->nExpons = 0;
   };
 
-  // And integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
+//  static void initFactorCreateFromMatrix(FactorAdder_t *faddr) {
+//    faddr->nExpons = 0;
+//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0,const34_1)) {
+//      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+//      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+//      for(int j = cols-1-1; j >= 0 ; j--) {
+//        for(int i = rows-1; i >= 0; i--) {
+//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j,REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
+//        }
+//      }
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0);
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+cols+0);
+//      faddr->expons[faddr->nExpons] = 1;
+//      (faddr->nExpons)++;
+//    }
+//    while(faddr->nExpons < REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns ) {
+//      faddr->expons[faddr->nExpons] = real34ToUInt32(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns + faddr->nExpons);
+//      (faddr->nExpons)++;
+//    }
+//  };
+
+
+  // An integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
 
   void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
       uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
@@ -1571,8 +1593,9 @@ typedef struct FactorAdder
     }
     dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
-    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-    refreshScreen(300);
+    refreshRegisterLine(REGISTER_X);
+//    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+//    refreshScreen(300);
     return true;
 
 returnFalse:
@@ -1617,6 +1640,13 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerInit(tmp);
     longIntegerInit(temp1);
 
+//    bool_t continueWithMatrix = false;
+//    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 2 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 0) {
+//      continueWithMatrix = true;
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns-1, temp1, RM_HALF_UP);
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns*2-1, tmp, RM_HALF_UP);
+//      longIntegerPower(temp1, tmp, currentNumber);
+//    } else
     if(!getIntArg(currentNumber)) {
       goto abort;
     }
@@ -1640,6 +1670,10 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     int32ToReal34(0,&lastAdded);
     FactorAdder_t faddr;
     initFactorAdder(&faddr);
+
+//    if(continueWithMatrix) {
+//      initFactorCreateFromMatrix(&faddr);
+//    }
 
     int32_t sign = longIntegerIsNegative(currentNumber);
     if(sign == -1) {
@@ -1675,6 +1709,11 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
         longIntegerInit(queue[i]);
     }
+
+    #if !defined(TESTSUITE_BUILD)
+      clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+      force_refresh(force);
+    #endif //TESTSUITE_BUILD
 
     // original command, prior to pre-run of primes. Retain here to test without the pre-run block
     //   longIntegerCopy(currentNumber, queue[queue_end++]);
@@ -1785,7 +1824,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     }
 
     //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
-    longIntegerCopy(currentNumber, queue[queue_end++]);
+    longIntegerCopy(currentNumber, queue[queue_end]);
+    queue_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
                             #if defined(MONITOR_FACTORS)
                               printf("Factorizing: ");
                               mpz_out_str(stdout, 10, currentNumber);
@@ -1794,8 +1834,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     longInteger_t current;
     longIntegerInit(current);
-    while (queue_start < queue_end) {
-        longIntegerCopy(queue[queue_start++], current);
+    while (queue_start != queue_end) {
+        longIntegerCopy(queue[queue_start], current);
+        queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
                             #if defined(MONITOR_FACTORS)
                               printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
                             #endif //MONITOR_FACTORS
@@ -1867,16 +1908,20 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         mpz_divexact(quotient, current, factor);
 
         // Enqueue the factor and quotient for further factorization
-        if (queue_end + 2 <= MAXIMUM_QUEUE_SIZE) {
+        int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+        int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
+        if (next_next_end != queue_start) {
                             #if defined(MONITOR_FACTORS)
-                              printf("Enqeueing: ");
+                              printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
                               mpz_out_str(stdout, 10, factor);
-                              printf(" ");
+                              printf(" quotient: ");
                               mpz_out_str(stdout, 10, quotient);
                               printf("\n");
                             #endif //MONITOR_FACTORS
-            longIntegerCopy(factor, queue[queue_end++]);
-            longIntegerCopy(quotient, queue[queue_end++]);
+            longIntegerCopy(factor, queue[queue_end]);
+            queue_end = next_end;
+            longIntegerCopy(quotient, queue[queue_end]);
+            queue_end = next_next_end;
         } else {
             if(errorMessage != 0) break;
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -1953,10 +1998,11 @@ char* pollard_status(factors_status_t st) {
  * f(x) = x^2 + c mod n
  */
 static void f(longInteger_t result, longInteger_t x, longInteger_t c, const longInteger_t n) {
-  longIntegerMultiply(x, x, result);                // x^2
+  longIntegerSquare(x, result);                     // x^2
   longIntegerAdd(result, c, result);                // + c
   longIntegerModulo(result, n, result);             // mod n
 }
+
 /*
  * Initializes the Pollard state structure. Must be called before using the step or update functions.
  */
@@ -1972,8 +2018,27 @@ void pollard_init(pollard_t *self) {
   #define max_iterations 1000000      // Reset current attempt after this many iterations
   #define max_attempts   1000         // Max allowed retried attempts before FAIL. 1000 meaning literally infinity for the hardware speed ...
   #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
-  gmp_randinit_mt(self->rng);
-  gmp_randseed_ui(self->rng, (unsigned long)time(NULL));
+
+  // Deterministically seed the RNG for repeatability.
+  // These values are the defaults specified by the algorithm, so pretty uninteresting.
+  // It doesn't matter much what values are used so long as the inc is odd.
+  self->rng.state = 0x853c49e6748fea9bull;
+  self->rng.inc = 0xda3e39cb94b95bdbull;
+}
+
+void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) { // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
+  size_t n_bits = mpz_sizeinbase(n, 2);
+  mpz_t temp;
+  mpz_init(temp);
+  size_t bits_generated = 0;
+  while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
+      uint32_t random_val = pcg32_random_r(rng);
+      mpz_mul_2exp(temp, temp, 32);
+      mpz_add_ui(temp, temp, random_val);
+      bits_generated += 32;
+  }
+  mpz_mod(rop, temp, n);
+  mpz_clear(temp);
 }
 /*
  * Frees all GMP variables and RNG state.
@@ -1985,7 +2050,6 @@ void pollard_clear(pollard_t *self) {
   longIntegerFree(self->c);
   longIntegerFree(self->d);
   longIntegerFree(self->tmp);
-  gmp_randclear(self->rng);
 }
 /*
  * Updates the target number to factor (n), and resets the internal state automatically.
@@ -1996,7 +2060,7 @@ void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
   self->iteration = 0;
 
   uInt32ToLongInteger(1, self->c);        // Start with f(x) = x² + 1
-  mpz_urandomm(self->x, self->rng, self->n);
+  mpz_urandomm_pcg32(self->x, &self->rng, self->n);
   longIntegerCopy(self->x, self->y);
   uInt32ToLongInteger(1, self->d);
 }
@@ -2026,9 +2090,9 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
   } else if (self->attempt % 3 == 1) {
     uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2  
   } else {
-    mpz_urandomm(self->c, self->rng, self->n); // Random c
+    mpz_urandomm_pcg32(self->c, &self->rng, self->n); // Random c
   }
-    mpz_urandomm(self->x, self->rng, self->n);
+    mpz_urandomm_pcg32(self->x, &self->rng, self->n);
     longIntegerCopy(self->x, self->y);
     uInt32ToLongInteger(1, self->d);
     self->iteration = 0;
