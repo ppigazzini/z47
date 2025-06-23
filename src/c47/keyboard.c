@@ -1457,6 +1457,9 @@ int16_t lastItem = 0;
       shiftG = false;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
 
@@ -1488,9 +1491,11 @@ int16_t lastItem = 0;
       shiftG = !shiftG;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
-
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       return ITM_NOP;
@@ -1527,6 +1532,9 @@ int16_t lastItem = 0;
 
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
 
