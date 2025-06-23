@@ -1998,10 +1998,11 @@ char* pollard_status(factors_status_t st) {
  * f(x) = x^2 + c mod n
  */
 static void f(longInteger_t result, longInteger_t x, longInteger_t c, const longInteger_t n) {
-  longIntegerMultiply(x, x, result);                // x^2
+  longIntegerSquare(x, result);                     // x^2
   longIntegerAdd(result, c, result);                // + c
   longIntegerModulo(result, n, result);             // mod n
 }
+
 /*
  * Initializes the Pollard state structure. Must be called before using the step or update functions.
  */
@@ -2017,9 +2018,14 @@ void pollard_init(pollard_t *self) {
   #define max_iterations 1000000      // Reset current attempt after this many iterations
   #define max_attempts   1000         // Max allowed retried attempts before FAIL. 1000 meaning literally infinity for the hardware speed ...
   #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
-  pcg32_srandom_r(&self->rng, (uint64_t)time(NULL), 12345);
 
+  // Deterministically seed the RNG for repeatability.
+  // These values are the defaults specified by the algorithm, so pretty uninteresting.
+  // It doesn't matter much what values are used so long as the inc is odd.
+  self->rng.state = 0x853c49e6748fea9bull;
+  self->rng.inc = 0xda3e39cb94b95bdbull;
 }
+
 void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) { // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
   size_t n_bits = mpz_sizeinbase(n, 2);
   mpz_t temp;
