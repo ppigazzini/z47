@@ -17,4 +17,5 @@
   //      RegX
   void chsReal     (void);
   void chsCplx     (void);
+  void chsShoI     (void);
 #endif // !CHANGESIGN_H
