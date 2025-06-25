@@ -1404,11 +1404,12 @@ typedef struct FactorAdder
                                             #ifdef MONITOR_FACTORS
                                               printf("\ndumpExponents:\n");
                                               printRegisterToConsole(regist,"Matrix: ","\n");
-                                              printf("  Exponent Array: \n");
+                                              printf("  Exponent Array: faddr->nExpons=%d\n", faddr->nExpons);
                                               for(int ii = 0; ii < faddr->nExpons; ii++) {
                                                 printf("%d:%d ",ii, faddr->expons[ii]);
                                               }
                                               printf("\n");
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
 
     if(faddr->nExpons != cols || rows != 2 || getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
@@ -1424,10 +1425,12 @@ typedef struct FactorAdder
                                             #ifdef MONITOR_FACTORS
                                               printf("dumpExponents:  fill exponents:  faddr->nExpons==%u dumpForFewerThan=%u\n", faddr->nExpons, dumpForFewerThan);
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
     for( uint16_t i = 0;  i < min(faddr->nExpons, dumpForFewerThan);  ++i ) {
                                             #ifdef MONITOR_FACTORS
                                               printf("--b:  adding expon at faddr->nExpons==%u, i==%u, val %u, ind %u\n", faddr->nExpons, i, faddr->expons[i], faddr->nExpons+i);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
       uInt32ToReal34(faddr->expons[i], REGISTER_REAL34_MATRIX_ELEMENTS(regist) + faddr->nExpons+i);
     }
@@ -1453,6 +1456,7 @@ typedef struct FactorAdder
 
                                             #ifdef MONITOR_FACTORS
                                               printf("--c:  addFactor()\n");
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
     if(getRegisterDataType(regist) != dtReal34Matrix) {
                                             #ifdef MONITOR_FACTORS
@@ -1460,6 +1464,7 @@ typedef struct FactorAdder
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 1:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
       //Initialize Memory for Matrix
       if(initMatrixRegister(regist, 2, 1, false)) {
@@ -1468,6 +1473,7 @@ typedef struct FactorAdder
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 2:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
         setSystemFlag(FLAG_ASLIFT);
       }
@@ -1477,6 +1483,7 @@ typedef struct FactorAdder
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 3:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
 
         if(errorMessage != 0) goto returnFalse;
@@ -1516,6 +1523,7 @@ typedef struct FactorAdder
     uint16_t wkgCols = faddr->nExpons;
                                             #ifdef MONITOR_FACTORS
                                               gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
+                                              fflush(stdout);
                                             #endif //MONITOR_FACTORS
     if(!redimMatrixRegister(regist, rows, wkgCols)) {
       if(errorMessage != 0) goto returnFalse;
@@ -1532,9 +1540,10 @@ typedef struct FactorAdder
     int counter = faddr->nExpons;
     uint16_t n = rows*counter;
     uint16_t c = n/2;
-
-    //printf("faddr->nExpons=%d n=%d c=%d",cntr, n, c);
-
+                                            #ifdef MONITOR_FACTORS
+                                              printf("faddr->nExpons=%d n=%d c=%d\n",faddr->nExpons, n, c);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
     real34_t factorR;
     convertLongIntegerToReal34(factor, &factorR);
     //search for existing factors
