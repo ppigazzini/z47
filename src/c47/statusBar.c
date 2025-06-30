@@ -348,53 +348,47 @@ void drawBattery(uint16_t voltage);
   }
 
 
+//sharing space with Integermode
+  static bool_t showMatrixMode(void) {
+    if(!(SBARUPD_MatrixMode)) return false;
+    bool_t enable = calcMode == CM_MIM || didSystemFlagChange(FLAG_GROW);
+    if(enable) {
+      compressString = 1;
+      showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_MATRIX_MODE, 0, X_ALPHA_MODE - X_MATRIX_MODE, 20, vmNormal, true, true);
+    }
+    return enable;
+  }
+
+//sharing space with Integermode
+  static bool_t showTvmMode(void) {
+    if(!(SBARUPD_TVMMode)) return false;
+    bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN;
+    if(enable) {
+      compressString = 1;
+      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_TVM_MODE, 0, X_ALPHA_MODE - X_TVM_MODE, 20, vmNormal, true, true);
+    }
+    return enable;
+  }
+
   static void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
-    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE) || reInstateIntegerModeDisplay) {
+    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE)){// || reInstateIntegerModeDisplay) {
       reInstateIntegerModeDisplay = false;
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
+      strcat(statusMessage," ");
       showStringAndClear(statusMessage, &standardFont, X_INTEGER_MODE, 0, X_OVERFLOW_CARRY - X_INTEGER_MODE, 20, vmNormal, true, true);
     }
   }
 
-
-
-//sharing space with Integermode
-  static void showMatrixMode(void) {
-    if(!(SBARUPD_MatrixMode)) return;
-    reInstateIntegerModeDisplay = true;
-    reInstateOCModeDisplay      = true;
-    if (didSystemFlagChange(FLAG_GROW)) {
-        compressString = 1;
-        showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_MATRIX_MODE, 0, X_OVERFLOW_CARRY - X_MATRIX_MODE, 20, vmNormal, true, true);
-    }
-  }
-
-
-
-//sharing space with Integermode
-  static void showTvmMode(void) {
-    if(!(SBARUPD_TVMMode)) return;
-    reInstateIntegerModeDisplay = true;
-    reInstateOCModeDisplay      = true;
-    if (didSystemFlagChange(FLAG_ENDPMT)) {
-        compressString = 1;
-        showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_TVM_MODE, 0, X_OVERFLOW_CARRY - X_TVM_MODE, 20, vmNormal, true, true);
-    }
-  }
-
-
   static void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
-    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY) || reInstateOCModeDisplay) {
+    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY)){// || reInstateOCModeDisplay) {
       reInstateOCModeDisplay = false;
       showStringAndClear(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, 6 /*X_ALPHA_MODE - X_OVERFLOW_CARRY*/, 20, vmNormal, true, true);
-
-    if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
-      lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
-    }
-
+      if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
+        lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
+      }
       if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
         lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
       }
@@ -768,16 +762,14 @@ void drawBattery(uint16_t voltage) {
       showComplexMode();
       showAngularMode();
       showFracMode();
-      if(calcMode == CM_MIM) {
-        showMatrixMode();
+
+      if(!showMatrixMode()) {
+        if(!showTvmMode()) {
+          showIntegerMode();
+          showOverflowCarry();
+        }
       }
-      else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN) {
-        showTvmMode();
-      }
-      else {
-        showIntegerMode();
-        showOverflowCarry();
-      }
+
       showHideAlphaMode();
       showHideHourGlass();
       showStackSize();
