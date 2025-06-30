@@ -316,10 +316,10 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       //get log base 1024 of real34
       decContext c = ctxtReal39;
       int maxExponent = x.exponent + x.digits;
-      c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
       maxExponent = x.exponent + x.digits;
-      c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
@@ -444,7 +444,7 @@ overRange:
       // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
       real34ToReal(real34, &tmp1);
       decContext c = ctxtReal39;
-      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      c.digits = (SHOWMODE ? 39 : NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &c); //  &ctxtReal75);
       realToReal34(&tmp1, &reduced);
       // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
@@ -1396,9 +1396,9 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
 
     decContext c = ctxtReal39;
     int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-    c.digits = max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2; //add 2 guard digits for Taylor etc.
+    c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
-    c.digits = 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
+    c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
 
     realToReal34(&real, &real34);

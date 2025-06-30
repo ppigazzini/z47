@@ -2186,7 +2186,7 @@ void createSubstrings(uint8_t number) {
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
 
       bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
-      for(int j = 0; j < cols; j++) {
+      for(int j = 0; j < min(cols,MATRIX_MAX_COLUMNS); j++) {
         allElementsInColAreIntegers[j]=true;
         for(int i = 0; i < rows; i++) {
           if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
