@@ -211,7 +211,7 @@ void drawBattery(uint16_t voltage);
         else {
           x = showString("#BASE", &standardFont, x, 0, vmNormal, true, true);
         }
-        lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
+        lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
         return true;
       }
     }
@@ -246,6 +246,7 @@ void drawBattery(uint16_t voltage);
           lcd_fill_rect(x, 0, 11, 20, LCD_SET_VALUE);
           raiseString = 3;
           x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
+          lcd_fill_rect(x-11, 17, 11, 2, LCD_SET_VALUE);
         }
         lcd_fill_rect(x, 0, 7+15, 20, LCD_SET_VALUE);
         raiseString = 9;
@@ -254,13 +255,11 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
       }
 
-      compressString = 1;
-      int xx = x;
-      x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
-      x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
+      int xxSlash = x;
+      x += 8;
 
       if(lowerUnderLine-1 > 0) {
-        lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
+        lcd_fill_rect(xxSlash, 0, x - xxSlash, lowerUnderLine-1, LCD_SET_VALUE);
       }
 
       compressString = 1;
@@ -269,7 +268,7 @@ void drawBattery(uint16_t voltage);
       } else {
         sprintf(statusMessage, "%" PRIu32,denMax);
       }
-      xx = x;
+      int xx = x;
       x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
       if(lowerUnderLine > 0) {
         lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
@@ -298,14 +297,17 @@ void drawBattery(uint16_t voltage);
       if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
         compressString = 1;
         x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
-        if(x >= X_INTEGER_MODE - 1) {
-          lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+        if(x >= X_INT_MX_TVM_MODE - 1) {
+          lcd_fill_rect(X_INT_MX_TVM_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
         }
       }
 
-      if(x <= X_INTEGER_MODE) {
-        lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
+      if(x <= X_INT_MX_TVM_MODE) {
+        lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
       }
+
+      plotline2(xxSlash,  18, xxSlash+9,0);
+
     }
   }
 
@@ -348,53 +350,47 @@ void drawBattery(uint16_t voltage);
   }
 
 
+//sharing space with Integermode
+  static bool_t showMatrixMode(void) {
+    if(!(SBARUPD_MatrixMode)) return false;
+    bool_t enable = calcMode == CM_MIM || didSystemFlagChange(FLAG_GROW);
+    if(enable) {
+      compressString = 1;
+      showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
+    }
+    return enable;
+  }
+
+//sharing space with Integermode
+  static bool_t showTvmMode(void) {
+    if(!(SBARUPD_TVMMode)) return false;
+    bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN;
+    if(enable) {
+      compressString = 1;
+      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
+    }
+    return enable;
+  }
+
   static void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
-    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE) || reInstateIntegerModeDisplay) {
+    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE)){// || reInstateIntegerModeDisplay) {
       reInstateIntegerModeDisplay = false;
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-      showStringAndClear(statusMessage, &standardFont, X_INTEGER_MODE, 0, X_OVERFLOW_CARRY - X_INTEGER_MODE, 20, vmNormal, true, true);
+      strcat(statusMessage," ");
+      showStringAndClear(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, X_OVERFLOW_CARRY - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
   }
-
-
-
-//sharing space with Integermode
-  static void showMatrixMode(void) {
-    if(!(SBARUPD_MatrixMode)) return;
-    reInstateIntegerModeDisplay = true;
-    reInstateOCModeDisplay      = true;
-    if (didSystemFlagChange(FLAG_GROW)) {
-        compressString = 1;
-        showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_MATRIX_MODE, 0, X_OVERFLOW_CARRY - X_MATRIX_MODE, 20, vmNormal, true, true);
-    }
-  }
-
-
-
-//sharing space with Integermode
-  static void showTvmMode(void) {
-    if(!(SBARUPD_TVMMode)) return;
-    reInstateIntegerModeDisplay = true;
-    reInstateOCModeDisplay      = true;
-    if (didSystemFlagChange(FLAG_ENDPMT)) {
-        compressString = 1;
-        showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_TVM_MODE, 0, X_OVERFLOW_CARRY - X_TVM_MODE, 20, vmNormal, true, true);
-    }
-  }
-
 
   static void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
-    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY) || reInstateOCModeDisplay) {
+    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY)){// || reInstateOCModeDisplay) {
       reInstateOCModeDisplay = false;
       showStringAndClear(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, 6 /*X_ALPHA_MODE - X_OVERFLOW_CARRY*/, 20, vmNormal, true, true);
-
-    if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
-      lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
-    }
-
+      if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
+        lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
+      }
       if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
         lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
       }
@@ -768,16 +764,14 @@ void drawBattery(uint16_t voltage) {
       showComplexMode();
       showAngularMode();
       showFracMode();
-      if(calcMode == CM_MIM) {
-        showMatrixMode();
+
+      if(!showMatrixMode()) {
+        if(!showTvmMode()) {
+          showIntegerMode();
+          showOverflowCarry();
+        }
       }
-      else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN) {
-        showTvmMode();
-      }
-      else {
-        showIntegerMode();
-        showOverflowCarry();
-      }
+
       showHideAlphaMode();
       showHideHourGlass();
       showStackSize();
@@ -989,18 +983,18 @@ void drawBattery(uint16_t voltage) {
 
 
     sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-    x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    x = showString(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, vmNormal, true, true);
 
-    x = X_MATRIX_MODE;
+    x = X_INT_MX_TVM_MODE;
     compressString = 1;
     x = showString("grow", &standardFont, x, L1, vmNormal, true, true);
-    x = X_MATRIX_MODE;
+    x = X_INT_MX_TVM_MODE;
     compressString = 1;
     x = showString("wrap", &standardFont, x, L2, vmNormal, true, true);
     compressString = 1;
-    showString("END"    , &standardFont, X_TVM_MODE,  L3, vmNormal, true, true);   //normal
+    showString("END"    , &standardFont, X_INT_MX_TVM_MODE,  L3, vmNormal, true, true);   //normal
     compressString = 1;
-    showString("BEG"    , &standardFont, X_TVM_MODE,  L4, vmNormal, true, true);   //normal
+    showString("BEG"    , &standardFont, X_INT_MX_TVM_MODE,  L4, vmNormal, true, true);   //normal
 
     showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
