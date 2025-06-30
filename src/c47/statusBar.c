@@ -246,6 +246,7 @@ void drawBattery(uint16_t voltage);
           lcd_fill_rect(x, 0, 11, 20, LCD_SET_VALUE);
           raiseString = 3;
           x = showString("a" STD_SPACE_4_PER_EM, &standardFont, x, 0, vmNormal, true, true) - 3;
+          lcd_fill_rect(x-11, 17, 11, 2, LCD_SET_VALUE);
         }
         lcd_fill_rect(x, 0, 7+15, 20, LCD_SET_VALUE);
         raiseString = 9;
@@ -254,13 +255,11 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
       }
 
-      compressString = 1;
-      int xx = x;
-      x = showGlyph("/", &standardFont, x, lowerUnderLine-1, vmNormal, false, true, true);
-      x = showGlyph("/", &standardFont, xx+4, lowerUnderLine-1-9, vmNormal, false, true, true)-5;
+      int xxSlash = x;
+      x += 8;
 
       if(lowerUnderLine-1 > 0) {
-        lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
+        lcd_fill_rect(xxSlash, 0, x - xxSlash, lowerUnderLine-1, LCD_SET_VALUE);
       }
 
       compressString = 1;
@@ -269,7 +268,7 @@ void drawBattery(uint16_t voltage);
       } else {
         sprintf(statusMessage, "%" PRIu32,denMax);
       }
-      xx = x;
+      int xx = x;
       x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
       if(lowerUnderLine > 0) {
         lcd_fill_rect(xx+1, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
@@ -306,6 +305,9 @@ void drawBattery(uint16_t voltage);
       if(x <= X_INT_MX_TVM_MODE) {
         lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
       }
+
+      plotline2(xxSlash,  18, xxSlash+9,0);
+
     }
   }
 
