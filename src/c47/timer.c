@@ -466,9 +466,9 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
 
 
 void fnSetCountDownTimerApp(uint16_t regist) {
-  uint32_t input;
   #if !defined(TESTSUITE_BUILD)
     bool_t overflow;
+    uint32_t input;
     if(!inputHelper(regist, &input, &overflow)) return;
     if(overflow){
       remainingMsecCountdown = 0;
