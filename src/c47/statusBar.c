@@ -211,7 +211,7 @@ void drawBattery(uint16_t voltage);
         else {
           x = showString("#BASE", &standardFont, x, 0, vmNormal, true, true);
         }
-        lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
+        lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
         return true;
       }
     }
@@ -298,13 +298,13 @@ void drawBattery(uint16_t voltage);
       if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
         compressString = 1;
         x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
-        if(x >= X_INTEGER_MODE - 1) {
-          lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+        if(x >= X_INT_MX_TVM_MODE - 1) {
+          lcd_fill_rect(X_INT_MX_TVM_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
         }
       }
 
-      if(x <= X_INTEGER_MODE) {
-        lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
+      if(x <= X_INT_MX_TVM_MODE) {
+        lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
       }
     }
   }
@@ -354,7 +354,7 @@ void drawBattery(uint16_t voltage);
     bool_t enable = calcMode == CM_MIM || didSystemFlagChange(FLAG_GROW);
     if(enable) {
       compressString = 1;
-      showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_MATRIX_MODE, 0, X_ALPHA_MODE - X_MATRIX_MODE, 20, vmNormal, true, true);
+      showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
     return enable;
   }
@@ -365,7 +365,7 @@ void drawBattery(uint16_t voltage);
     bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN;
     if(enable) {
       compressString = 1;
-      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_TVM_MODE, 0, X_ALPHA_MODE - X_TVM_MODE, 20, vmNormal, true, true);
+      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
     return enable;
   }
@@ -377,7 +377,7 @@ void drawBattery(uint16_t voltage);
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
       strcat(statusMessage," ");
-      showStringAndClear(statusMessage, &standardFont, X_INTEGER_MODE, 0, X_OVERFLOW_CARRY - X_INTEGER_MODE, 20, vmNormal, true, true);
+      showStringAndClear(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, X_OVERFLOW_CARRY - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
   }
 
@@ -981,18 +981,18 @@ void drawBattery(uint16_t voltage) {
 
 
     sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-    x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    x = showString(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, vmNormal, true, true);
 
-    x = X_MATRIX_MODE;
+    x = X_INT_MX_TVM_MODE;
     compressString = 1;
     x = showString("grow", &standardFont, x, L1, vmNormal, true, true);
-    x = X_MATRIX_MODE;
+    x = X_INT_MX_TVM_MODE;
     compressString = 1;
     x = showString("wrap", &standardFont, x, L2, vmNormal, true, true);
     compressString = 1;
-    showString("END"    , &standardFont, X_TVM_MODE,  L3, vmNormal, true, true);   //normal
+    showString("END"    , &standardFont, X_INT_MX_TVM_MODE,  L3, vmNormal, true, true);   //normal
     compressString = 1;
-    showString("BEG"    , &standardFont, X_TVM_MODE,  L4, vmNormal, true, true);   //normal
+    showString("BEG"    , &standardFont, X_INT_MX_TVM_MODE,  L4, vmNormal, true, true);   //normal
 
     showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
