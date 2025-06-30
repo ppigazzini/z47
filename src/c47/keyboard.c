@@ -602,6 +602,9 @@ bool_t lastshiftG = false;
                     #if defined(VERBOSEKEYS)
                       printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
 
       releaseOverride = false;
       temporaryInformation = TI_NO_INFO;
@@ -2318,11 +2321,22 @@ RELEASE_END:
 
       //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
 
-      if(PROBMENU) {
-        screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+      switch(last_CM) {
+        case CM_REGISTER_BROWSER:
+        case CM_FLAG_BROWSER:
+        case CM_ASN_BROWSER:
+        case CM_FONT_BROWSER: {
+          screenUpdatingMode = SCRUPD_AUTO;
+          break;
+        }
+        default: {
+          if(PROBMENU) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+          }
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+          break;
+        }
       }
-      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
-
 
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
                     #if defined(PC_BUILD)
