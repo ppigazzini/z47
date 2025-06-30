@@ -19,7 +19,7 @@ static void chsLonI(void) {
   longIntegerFree(x);
 }
 
-static void chsShoI(void) {
+void chsShoI(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intChs(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
 }
 

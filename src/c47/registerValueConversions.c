@@ -1247,7 +1247,7 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
   bool_t cmplxRes = false;
   const uint32_t type = getRegisterDataType(REGISTER_X);
 
-  if(!saveLastX())
+  if(lastFunc != ITM_CHS && !saveLastX())                 // Compiler witll short circuit and not run saveLastX if the related function is CHS
     return;
 
   if(type == dtShortInteger) {
