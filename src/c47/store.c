@@ -15,7 +15,6 @@ bool_t isRegInRange(uint16_t regist) {
 }
 
 bool_t regInRange(uint16_t regist) {
-  errorMessage[0] = 0;
   bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
@@ -32,7 +31,7 @@ bool_t regInRange(uint16_t regist) {
         sprintf(errorMessage, "Spare register %04d", regist - FIRST_SPARE_REGISTER);
       }
       else if(!(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters)) {
-      printf("Local Not in range.\n");
+        printf("Local Not in range.\n");
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       }
@@ -46,7 +45,7 @@ bool_t regInRange(uint16_t regist) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "reserved variable %04d", regist - FIRST_RESERVED_VARIABLE);
       }
-      else if(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER){
+      else if(!(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER)){
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "temporary register %04d", regist - LAST_TEMP_REGISTER);
       }
