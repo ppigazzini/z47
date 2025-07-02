@@ -780,8 +780,11 @@ void execTimerApp(uint16_t timerType) {
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
+          BASE_OVERRIDEONCE = true;
           showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
+          BASE_OVERRIDEONCE = true;
           showSoftmenuCurrentPart();
+          BASE_OVERRIDEONCE = true;            //for upcoming refresh
         }
         shiftF = 0;
         shiftG = 0;

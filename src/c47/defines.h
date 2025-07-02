@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b11"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
@@ -20,6 +20,7 @@
 // Version 7b9 test for FACTORS
 // Version 7b10 bugfixes for FACTORS
 // Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
+// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
 
 
 #if !defined(CALCMODEL)
@@ -1156,10 +1157,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
 #define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
 #define X_BASE_MODE           (X_FRAC_MODE        + 0)//
-#define X_INTEGER_MODE        (X_BASE_MODE        +77)//
-#define X_MATRIX_MODE         (X_INTEGER_MODE     + 0)//
-#define X_TVM_MODE            (X_MATRIX_MODE      + 0)//
-#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)// 
+#define X_INT_MX_TVM_MODE     (X_BASE_MODE        +77)//
+#define X_OVERFLOW_CARRY      (X_INT_MX_TVM_MODE  +30)// 
 #define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
 #define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
 #define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
