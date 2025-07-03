@@ -5,32 +5,53 @@
 
 
 bool_t isRegInRange(uint16_t regist) {
-  return (regist <= LAST_LETTERED_REGISTER) ||
+  return (regist <= LAST_LETTERED_REGISTER) ||                              //this includes r00-r99
     (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
     (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
-    (regist >= FIRST_LOCAL_REGISTER && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
+    (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
-    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE);
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||
+    (FIRST_TEMP_REGISTER  <= regist && regist <= LAST_TEMP_REGISTER);
 }
-
 
 bool_t regInRange(uint16_t regist) {
   bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
-      if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
+      if(!(regist <= LAST_LETTERED_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Lettered register %04d", regist - FIRST_LETTERED_REGISTER);
+      }
+      else if(!(FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Stat register %04d", regist - FIRST_STAT_REGISTER);
+      }
+      else if(!(FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Spare register %04d", regist - FIRST_SPARE_REGISTER);
+      }
+      else if(!(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters)) {
+        printf("Local Not in range.\n");
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       }
-      else if(regist >= FIRST_NAMED_VARIABLE && regist <= LAST_NAMED_VARIABLE) {
+      else if(!(FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         // This error message is not massively useful because it doesn't have the original name
         // But it shouldn't have even got this far if the name doesn't exist
         sprintf(errorMessage, "named register .%02d", regist - FIRST_NAMED_VARIABLE);
       }
+      else if(!(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "reserved variable %04d", regist - FIRST_RESERVED_VARIABLE);
+      }
+      else if(!(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "temporary register %04d", regist - LAST_TEMP_REGISTER);
+      }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "register .%04d", regist);
+        sprintf(errorMessage, "generic");
       }
       moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
     }
