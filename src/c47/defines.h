@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b11"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
@@ -20,6 +20,7 @@
 // Version 7b9 test for FACTORS
 // Version 7b10 bugfixes for FACTORS
 // Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
+// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
 
 
 #if !defined(CALCMODEL)
