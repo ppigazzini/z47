@@ -227,6 +227,13 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  uint8_t savedDisplayFormat       = displayFormat;
+  bool_t  ovrENG = getSystemFlag(FLAG_ENGOVR);
+
+  if(calcMode == CM_PEM) {
+    displayFormat = DF_ALL;         // Display all digits for reals in PEM
+    clearSystemFlag(FLAG_ENGOVR);   // Default to SCI display in PEM for large reals
+  }
 
   #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
@@ -262,7 +269,9 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
   }
   while(stringWidth(displayString, font, true, true) > maxWidth);
 
+  displayFormat       = savedDisplayFormat;
   displayFormatDigits = savedDisplayFormatDigits;
+  if(ovrENG) setSystemFlag(FLAG_ENGOVR);
 }
 
 
@@ -580,7 +589,7 @@ overRange:
       exponent   = 0;
     }
   }*/
-  
+
   // printf("value34 (INT)=%i exponent=%i limitExponent=%i (exponentLimit=%i) (exponentHideLimit=%i) \n", real34ToUInt32(&value34),  exponent,limitExponent, exponentLimit, exponentHideLimit);
 
   if(limitExponent) {
@@ -679,7 +688,7 @@ overRange:
 
     if(noFix || exponent >= displayHasNDigits ||
         exponent <= -displayHasNDigits ||
-        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || 
+        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) ||
         (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
       digitsToDisplay = min(displayHasNDigits, numDigits - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
@@ -2959,8 +2968,8 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     int16_t dCounter = d - (*startingLine)*SHOWLineSize;
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
-    while((*source < *last) && 
-          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) && 
+    while((*source < *last) &&
+          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
           (*dest < TMP_STR_LENGTH - 6)
          ) {
       #if defined(MONITOR_SHOW)
@@ -2970,7 +2979,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       #if defined(MONITOR_SHOW)
         printf("03    ==>%c (%u)",((tmpString + (*dest))[0]), (uint8_t)((tmpString + (*dest))[0]));
         if(((uint8_t)((tmpString + (*dest))[0]) & 0x80) == 0) {printf("\n");}
-      #endif 
+      #endif
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
         #if defined(MONITOR_SHOW)

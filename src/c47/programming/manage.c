@@ -1027,7 +1027,16 @@ void pemCloseNumberInput(void) {
     char *tmpPtr = tmpString;
     uint32_t inputLength = stringByteLength(numBuffer);
     bool_t doneWithBinaryLiteral = false;
+    int16_t lastChar = strlen(aimBuffer) - 1;
+
     *(tmpPtr++) = ITM_LITERAL;
+    if((nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_REAL_EXPONENT) && (aimBuffer[lastChar] == '+' || aimBuffer[lastChar] == '-') && aimBuffer[lastChar - 1] == 'e') {
+      aimBuffer[--lastChar] = 0;
+      lastChar--;
+    }
+    else if(nimNumberPart == NP_REAL_EXPONENT && aimBuffer[lastChar] == 'e') {
+      aimBuffer[lastChar--] = 0;
+    }
     switch(nimNumberPart) {
       //case NP_INT_16:
       case NP_INT_BASE: {
