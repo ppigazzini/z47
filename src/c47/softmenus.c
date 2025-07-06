@@ -704,7 +704,7 @@ TO_QSPI const int16_t menu_BASE[]        = { ITM_2HEX,                      ITM_
 
 TO_QSPI const int16_t menu_BITSET[]      = { 
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
-                                             ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_NULL,
+                                             ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_WSIZE,                   ITM_NULL,
                                              ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_HPBASE,                  ITM_FF};
 
 
