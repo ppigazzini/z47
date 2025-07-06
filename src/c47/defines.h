@@ -490,7 +490,6 @@
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
 
-
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                        61
 #define SAVING_STATE_FILE                         62
@@ -511,8 +510,9 @@
 #define TI_Saved_statistic_data_restored          75
 #define TI_Saved_user_variables_restored          76
 #define TI_Program_file_loaded                    77
-#define TI_Not_enough_memory_for_undo             78
 
+//TI & ERROR Messages
+#define ERROR_TI_UNDO_FAILED                      78
 
 
 #define NUMBER_OF_ERROR_CODES                     79

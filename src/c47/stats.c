@@ -677,9 +677,9 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
         #if defined(DEBUGUNDO)
           if(statisticalSumsPointer != NULL) {
             calcRegister_t regStats = findNamedVariable(statMx);
-            //printRealToConsole(SIGMA_N,"   >>> After\n   >>>   SIGMA_N:","\n");
-            //printRealToConsole(SIGMA_XMAX,"   >>>   SIGMA_MaxX:","\n");
-            //printRegisterToConsole(regStats,"From Sigma-: STATS\n","\n");
+            printRealToConsole(SIGMA_N,"   >>> After\n   >>>   SIGMA_N:","\n");
+            printRealToConsole(SIGMA_XMAX,"   >>>   SIGMA_MaxX:","\n");
+            printRegisterToConsole(regStats,"From Sigma-: STATS\n","\n");
           }
         #endif //DEBUGUNDO
       }

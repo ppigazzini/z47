@@ -104,7 +104,9 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 75 */  "Statistical data loaded",
 /* 76 */  "User variables loaded",
 /* 77 */  "Program file loaded",
-/* 78 */  "Not enough memory for undo",
+
+//ERROR & TI Messages (incomplete)
+/* 78 */  "Undo failed: likely no memory",
 
 /* 79 */
 
