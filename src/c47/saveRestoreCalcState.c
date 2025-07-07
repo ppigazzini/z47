@@ -2329,6 +2329,7 @@ int64_t stringToInt64(const char *str) {
         #endif //LOADDEBUG
 
         initStatisticalSums();
+        reLoadStatisticalSums();
 
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString); // statistical sum

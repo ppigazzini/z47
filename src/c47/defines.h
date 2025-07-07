@@ -1617,9 +1617,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SUM_YMAX                                  27
 
 #define NUMBER_OF_STATISTICAL_SUMS                28
-#define SIGMA_N      (statisticalSumsPointer             ) // could be a 32 bit unsigned integer
-#define SIGMA_X      (statisticalSumsPointer + SUM_X     ) // could be a real34
-#define SIGMA_Y      (statisticalSumsPointer + SUM_Y     ) // could be a real34
+#define SIGMA_N      (statisticalSumsPointer             ) // could be a 32 bit unsigned integer. No, this must be old. SIGMA_N is a Real.
+#define SIGMA_X      (statisticalSumsPointer + SUM_X     ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_Y      (statisticalSumsPointer + SUM_Y     ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 #define SIGMA_X2     (statisticalSumsPointer + SUM_X2    )
 #define SIGMA_X2Y    (statisticalSumsPointer + SUM_X2Y   )
 #define SIGMA_Y2     (statisticalSumsPointer + SUM_Y2    )
@@ -1641,10 +1641,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_1onY2  (statisticalSumsPointer + SUM_1onY2 )
 #define SIGMA_X3     (statisticalSumsPointer + SUM_X3    )
 #define SIGMA_X4     (statisticalSumsPointer + SUM_X4    )
-#define SIGMA_XMIN   (statisticalSumsPointer + SUM_XMIN  ) // could be a real34
-#define SIGMA_XMAX   (statisticalSumsPointer + SUM_XMAX  ) // could be a real34
-#define SIGMA_YMIN   (statisticalSumsPointer + SUM_YMIN  ) // could be a real34
-#define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
+#define SIGMA_XMIN   (statisticalSumsPointer + SUM_XMIN  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_XMAX   (statisticalSumsPointer + SUM_XMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_YMIN   (statisticalSumsPointer + SUM_YMIN  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
