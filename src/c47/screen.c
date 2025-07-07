@@ -2412,7 +2412,8 @@ void createSubstrings(uint8_t number) {
     }
   }
 
-  void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+  #define noLine false
+  static void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth, bool_t doLine) {
     int32_t w = realToInt32C47(SIGMA_N);
     if(regist == REGISTER_X) {
       sprintf(prefix, "%03" PRId32 " data point", w);
@@ -2420,7 +2421,9 @@ void createSubstrings(uint8_t number) {
         stringCopy(prefix + stringByteLength(prefix), "s");
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      if(doLine) {
+        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      }
     }
   }
 
@@ -3828,7 +3831,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
 
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
 
           else if(temporaryInformation == TI_STATISTIC_LR) {
@@ -4285,7 +4288,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
@@ -4324,7 +4327,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             elecTI(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
@@ -4487,6 +4490,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             else if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_X) {          //X, not T
               userTI(currentViewRegister, regist, prefix, &prefixWidth);
+            }
+            else if(temporaryInformation == TI_STATISTIC_SUMS) {
+              _displaySigmaPlus(regist, prefix, &prefixWidth, noLine);
             }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {

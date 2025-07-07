@@ -68,6 +68,8 @@
 
   bool_t checkMinimumDataPoints(const real_t *n);
   void   initStatisticalSums   (void);
+  void   clearStatisticalSums  (void);
+  void   reLoadStatisticalSums (void);
   void   calcSigma             (uint16_t maxOffset);
 
   void   fnSetLoBin              (uint16_t unusedButMandatoryParameter);
