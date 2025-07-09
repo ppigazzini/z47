@@ -2853,7 +2853,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         sprintf(prefix, "Not available on the simulator");
         displayTemporaryInformationOnX(prefix);
       }
-      #endif // PC_BUILD
+      #elif defined(DMCP_BUILD)
+      else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
+        sprintf(prefix, "Only available on the simulator");
+        displayTemporaryInformationOnX(prefix);
+      }
+      #endif // PC_BUILD/DMCP_BUILD
 
       else if(temporaryInformation == TI_BACKUP_RESTORED && regist == REGISTER_X) {
         clearRegisterLine(REGISTER_X, true, true);
