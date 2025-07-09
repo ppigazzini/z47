@@ -233,9 +233,9 @@ void resetKeytimers(void) {
 
 
   int16_t Check_Norm_Key_00_Assigned(int16_t * result, int16_t tempkey) {
-    //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
     if(!getSystemFlag(FLAG_USER) && (Norm_Key_00_key != -1) &&
        (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER || calcMode == CM_ASSIGN) &&
+       !tam.alpha && tam.mode != TM_STORCL && && tam.mode != TM_LABEL
        (!catalog || (catalog && (Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != KEY_fg))) &&
        (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX))) &&
        (  ( ((!shiftF && !shiftG) || isR47FAM) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||   //f & g allowed in R47, not allowed in C47 Σ+
