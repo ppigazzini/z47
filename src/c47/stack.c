@@ -330,11 +330,23 @@ void undo(void) {
   #if defined(DEBUGUNDO)
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
+                                        #if defined(DEBUGUNDO)
+                                          printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
+                                          #include <execinfo.h>
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n", "", "undo() called from: ", strs[1]);
+                                          free(strs);
+                                        #endif // DEBUGUNDO
 
   const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);
   const bool_t wasInting = getSystemFlag(FLAG_INTING);
 
+  const uint8_t lastErrorCodeMeM = lastErrorCode;
+  lastErrorCode = ERROR_NONE;
   recallStatsMatrix();
+  if(lastErrorCode == ERROR_NONE) lastErrorCode = lastErrorCodeMeM;
 
   if(currentInputVariable != INVALID_VARIABLE) {
     if(currentInputVariable & 0x4000) {

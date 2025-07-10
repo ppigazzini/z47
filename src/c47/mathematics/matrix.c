@@ -424,6 +424,9 @@ bool_t recallStatsMatrix(void) {
       #endif // DEBUGUNDO
       clearRegister(regStats);
 
+      #if defined(DEBUGUNDO)
+        printf("Trying to initialize matrix: R=%d C=%d into register: %d\n",rows, cols, regStats);
+      #endif // DEBUGUNDO
       //Initialize Memory for Matrix
       if(initMatrixRegister(regStats, rows, cols, false)) {
         #if defined(DEBUGUNDO)
@@ -434,9 +437,9 @@ bool_t recallStatsMatrix(void) {
         return true; //restored
       }
       else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_TI_UNDO_FAILED, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Not enough memory to undo STATS undo matrix: rows=%i, cols=%i", rows, cols);
+          sprintf(errorMessage, "Creation of STATS matrix from TEMP2 failed, likely due to insufficient memory: rows=%i, cols=%i", rows, cols);
           moreInfoOnError("In function recallStatsMatrix:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false; //not enough memory
@@ -1664,6 +1667,13 @@ void getMatrixFromRegister(calcRegister_t regist) {
 
 
 bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, bool_t complex) {
+  #if defined(PC_BUILD)
+    if(lastErrorCode != ERROR_NONE) {
+      errorf("initMatrixRegister(): Entered initMatrixRegister with pre-existing error.");
+      printf("  Error code: %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
+    }
+  #endif //PC_BUILD
+
   const size_t neededSize = (rows * cols) * (complex ? COMPLEX34_SIZE_IN_BLOCKS : REAL34_SIZE_IN_BLOCKS);
   reallocateRegister(regist, complex ? dtComplex34Matrix : dtReal34Matrix, neededSize, amNone);
   if(regist == INVALID_VARIABLE) {
@@ -1686,6 +1696,9 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
     return true;
   }
   else {
+    #if defined(PC_BUILD)
+      printf("  initMatrixRegister(): Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
+    #endif //PC_BUILD
     return false;
   }
 }
