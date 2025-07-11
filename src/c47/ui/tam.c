@@ -941,7 +941,7 @@
       }
       else if(tryAllocate && !tam.indirect) {
         value = findOrAllocateNamedVariable(buffer);
-        //printf("findOrAllocateNamedVariable value=%d\n",value);
+        //printf("findOrAllocateNamedVariable value=%d lastErrorCode=%d\n",value, lastErrorCode);
       }
       else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
         value = findMenu(buffer);
@@ -965,7 +965,7 @@
       }
       else {
         value = findNamedVariable(buffer);
-        //printf("findNamedVariable value=%d\n",value);
+        //printf("findNamedVariable value=%d lastErrorCode=%d\n",value, lastErrorCode);
         if(value == INVALID_VARIABLE && calcMode != CM_PEM) {
           if(getSystemFlag(FLAG_IGN1ER)) {
             clearSystemFlag(FLAG_IGN1ER);
@@ -977,10 +977,17 @@
           else {
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "string '%s' is not a named variable", buffer);
+              sprintf(errorMessage, "string '%s' is not a named variable (1)", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
+        }
+        else if(value == INVALID_VARIABLE && calcMode == CM_PEM) {
+            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a named variable (2)", buffer);
+              moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
       if(calcMode == CM_PEM && tam.function != ITM_DELP && lastErrorCode == 0) { //do not add a step of any kind if an error occurred in the processing prior to adding the step. This solves the MVAR and STO of an identified variable name problem.
