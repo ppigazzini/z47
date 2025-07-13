@@ -97,7 +97,10 @@ void scanLabelsAndPrograms(void) {
       numberOfLabels++;
     }
     if(isAtEndOfProgram(step)) { // END
-      numberOfPrograms++;
+      uint8_t *st = findNextStep(step);
+      if(!isAtEndOfPrograms(st)) { // .END.
+        numberOfPrograms++;
+      }
     }
     step = findNextStep(step);
   }
@@ -140,9 +143,12 @@ void scanLabelsAndPrograms(void) {
     }
 
     if(isAtEndOfProgram(step)) { // END
-      programList[numberOfPrograms].instructionPointer = step + 2;
-      programList[numberOfPrograms].step = stepNumber + 1;
-      numberOfPrograms++;
+      uint8_t *st = findNextStep(step);
+      if(!isAtEndOfPrograms(st)) { // .END.
+        programList[numberOfPrograms].instructionPointer = step + 2;
+        programList[numberOfPrograms].step = stepNumber + 1;
+        numberOfPrograms++;
+      }
     }
 
     step = nextStep;
