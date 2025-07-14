@@ -1299,10 +1299,17 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-
-  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0) {
+  
+  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_HMStoTM) {
     if(func == ITM_dotD) {
       _pemCloseDateInput();
+      if(aimBuffer[0] == '!') {
+        aimBuffer[0] = 0;
+        return;
+      }
+    }
+    else if(func == ITM_ms) {
+      _pemCloseTimeInput();
       if(aimBuffer[0] == '!') {
         aimBuffer[0] = 0;
         return;
@@ -1323,7 +1330,7 @@ void insertStepInProgram(const int16_t func) {
     tmpString[1] =  func       & 0xff;
   }
 
-  switch(indexOfItems[func].status & PTP_STATUS) {
+   switch(indexOfItems[func].status & PTP_STATUS) {
     case PTP_DISABLED: {
       switch(func) {
         case ITM_KEYG:           // 1498
@@ -1454,7 +1461,7 @@ void insertStepInProgram(const int16_t func) {
     }
 
     case PTP_NONE: {
-      if(func == ITM_HRtoTM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
+      if(func == ITM_HMStoTM  && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
         _pemCloseTimeInput();
         if(aimBuffer[0] != '!') {
           pemCloseNumberInput();
