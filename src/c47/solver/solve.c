@@ -90,6 +90,7 @@ void fnSolve(uint16_t labelOrVariable) {
       int32ToReal34(resultCode, REGISTER_REAL34_DATA(REGISTER_T));
       switch(resultCode) {
         case SOLVER_RESULT_NORMAL: {
+          copySourceRegisterToDestRegister(REGISTER_X, labelOrVariable);
           temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
           lastErrorCode = ERROR_NONE;
           break;
