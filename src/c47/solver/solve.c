@@ -326,7 +326,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
-    real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34;
+    real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34, tol34AlmostZero;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
     bool_t extendRange = false;
     bool_t originallyLevel = false;
@@ -335,8 +335,11 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
     int16_t getOutOfLevel = 17;
+    bool_t fbIsAlmostZero = false;
 
     convergenceTolerence(&tol);
+    stringToReal34("1e-34", &tol34AlmostZero);
+    //printReal34ToConsole(&tol34AlmostZero,"tol=","\n");
 
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
@@ -624,29 +627,28 @@ retryLevel:
       bool_t bb_bb1_converged   = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39);
       bool_t b1_b2_Equal = real34CompareEqual(&b1, &b2);
       bool_t b_b1_Equal  = real34CompareEqual(&b,  &b1);
+      fbIsAlmostZero = real34CompareAbsLessThan(&fb,&tol34AlmostZero);
 
       //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-      //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel);
+      //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
       //   } while(result == SOLVER_RESULT_NORMAL &&
       //           (real34IsSpecial(&b2) || !real34CompareEqual(&b1, &b2) || !(extendRange || extremum || WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39))) &&
       //           (originallyLevel || !((!extendRange && WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39)) || real34CompareEqual(&b, &b1) || real34CompareEqual(&fb, const34_0)))
       //          );
       //Rewrote the above while condition as more understandable discrete logic:
 
+      if(result != SOLVER_RESULT_NORMAL) {
+        break;
+      }
       if( (!real34IsSpecial(&b2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
         break;
       }
       if( !originallyLevel &&
-        ((!extendRange && bb_bb1_converged) || b_b1_Equal || real34IsZero(&fb) )  ) {
+        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         break;
       }
-    } while(result == SOLVER_RESULT_NORMAL);
-
-    real34Copy(&fb, resZ);
-    _executeSolver(variable, &b, resZ);
-    real34Copy(&b1, resY);
-    real34Copy(&b, resX);
+    } while(true);
 
     if((extendRange && !originallyLevel) || extremum) {
       result = SOLVER_RESULT_EXTREMUM;
@@ -660,9 +662,13 @@ retryLevel:
       setSystemFlag(FLAG_INTING);
     }
 
-    if(real34IsZero(&fb)) {
+    if(fbIsAlmostZero) {  //    if(real34IsZero(&fb)) {
       result = SOLVER_RESULT_NORMAL;
     }
+
+    _executeSolver(variable, &b, resZ);
+    real34Copy(&b1, resY);
+    real34Copy(&b, resX);
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
       bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
