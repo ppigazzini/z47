@@ -38,15 +38,6 @@ void fnPgmSlv(uint16_t label) {
   }
 }
 
-static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  real_t realVal;
-  if(getRegisterAsRealQuiet(regist, &realVal)) {
-    realToReal34(&realVal, val);
-    return true;
-  }
-  return false;
-}
-
 void fnSolve(uint16_t labelOrVariable) {
   if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
@@ -70,7 +61,7 @@ void fnSolve(uint16_t labelOrVariable) {
     real_t tmp;
     int resultCode = 0;
 
-    if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
+    if(getRegisterAsReal34Quiet(REGISTER_Y, &y) && getRegisterAsReal34Quiet(REGISTER_X, &x)) {
       fnDrop(NOPARAM);
       fnDrop(NOPARAM);
       saveForUndo(); //repeat after dropping the input parameters
@@ -151,43 +142,43 @@ void fnSolve(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  printStatus(1, errorMessages[REAL_SOLVER],force);
-  const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
-  const uint16_t regist = findOrAllocateNamedVariable(var);
-  const uint16_t nameLength = stringByteLength(var) + 1;
-  if(currentMvarLabel != INVALID_VARIABLE) {
-    if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
-      reallyRunFunction(ITM_STO, regist);
-    }
-    else {  // MNU_MVAR was displayed by VARMNU
-      if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
-        entryStatus &= 0xfe;
-        currentSolverVariable = regist;
+    printStatus(1, errorMessages[REAL_SOLVER],force);
+    const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
+    const uint16_t regist = findOrAllocateNamedVariable(var);
+    const uint16_t nameLength = stringByteLength(var) + 1;
+    if(currentMvarLabel != INVALID_VARIABLE) {
+      if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
         reallyRunFunction(ITM_STO, regist);
-        temporaryInformation = TI_SOLVER_VARIABLE;
       }
-      else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-        reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength) , amNone);
-        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength);
-        dynamicMenuItem = -1;
-        runProgram(false, INVALID_VARIABLE);
+      else {  // MNU_MVAR was displayed by VARMNU
+        if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+          entryStatus &= 0xfe;
+          currentSolverVariable = regist;
+          reallyRunFunction(ITM_STO, regist);
+          temporaryInformation = TI_SOLVER_VARIABLE;
+        }
+        else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
+          reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength) , amNone);
+          xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength);
+          dynamicMenuItem = -1;
+          runProgram(false, INVALID_VARIABLE);
+        }
       }
     }
-  }
-  else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
-    currentSolverVariable = regist;
-    reallyRunFunction(ITM_STO, regist);
-    temporaryInformation = TI_SOLVER_VARIABLE;
-  }
-  else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-    reallyRunFunction(ITM_SOLVE, regist);
-  }
-  else {
-    currentSolverVariable = regist;
-    reallyRunFunction(ITM_STO, regist);
-    currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
-    temporaryInformation = TI_SOLVER_VARIABLE;
-  }
+    else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
+      currentSolverVariable = regist;
+      reallyRunFunction(ITM_STO, regist);
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
+    else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      reallyRunFunction(ITM_SOLVE, regist);
+    }
+    else {
+      currentSolverVariable = regist;
+      reallyRunFunction(ITM_STO, regist);
+      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
   #endif // !TESTSUITE_BUILD
 }
 
@@ -220,7 +211,7 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(_realSolverFirstGuesses(REGISTER_X, res)) {
+    else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
     } 
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
