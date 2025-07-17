@@ -39,9 +39,9 @@ void fnPgmSlv(uint16_t label) {
 }
 
 static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  if(getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34) {
-    fnToReal(0); // ensure the result is a plain real34
-    real34Copy(REGISTER_REAL34_DATA(regist), val);
+  real_t realVal;
+  if(getRegisterAsRealQuiet(regist, &realVal)) {
+    realToReal34(&realVal, val);
     return true;
   }
   return false;
@@ -220,10 +220,8 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtReal34) {
-      fnToReal(0); // ensure the result is a plain real34
-      real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
-    }
+    else if(_realSolverFirstGuesses(REGISTER_X, res)) {
+    } 
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
       real34ChangeSign(res);
