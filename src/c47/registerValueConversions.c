@@ -1031,6 +1031,15 @@ bool_t getRegisterAsAnyReal(calcRegister_t reg, real_t *val) {
   return res;
 }
 
+bool_t getRegisterAsReal34Quiet(calcRegister_t reg, real34_t *val) {
+  real_t realVal;
+  if(getRegisterAsRealQuiet(reg, &realVal)) {
+    realToReal34(&realVal, val);
+    return true;
+  }
+  return false;
+}
+
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional) {
   real_t rval;
   longInteger_t ival;
