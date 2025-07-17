@@ -183,7 +183,7 @@ void fnPExport(void) {
     lastProgramListEnd       = false;
 
     if(firstDisplayedLocalStepNumber == 0) {
-      sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
+      sprintf(tmpString, "0000: { Prgm #%" PRIu16 "/%" PRIu16 ": %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, numberOfPrograms, _getProgramSize(), numberOfSteps, numberOfSteps == 1 ? "" : "s");
       stringCopy(tmpString + stringByteLength(tmpString), " \\par");
       stringCopy(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
