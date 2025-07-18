@@ -639,6 +639,10 @@ retryLevel:
       }
     } while(true);
 
+    _executeSolver(variable, &b, resZ);
+    real34Copy(&b1, resY);
+    real34Copy(&b, resX);
+
     if((extendRange && !originallyLevel) || extremum) {
       result = SOLVER_RESULT_EXTREMUM;
     }
@@ -654,10 +658,6 @@ retryLevel:
     if(fbIsAlmostZero) {  //    if(real34IsZero(&fb)) {
       result = SOLVER_RESULT_NORMAL;
     }
-
-    _executeSolver(variable, &b, resZ);
-    real34Copy(&b1, resY);
-    real34Copy(&b, resX);
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
       bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
