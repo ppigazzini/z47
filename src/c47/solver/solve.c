@@ -362,8 +362,12 @@ retryLevel:
         #endif //PC_BUILD
         real34Multiply(&antiLevel34,const34_153,&antiLevel34);   //increase it for the next round so long
         real34Minus(&antiLevel34,&antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
-        real34Add(&a, &antiLevel34, &a);                         //Add this value to the starting value
-        real34Add(&b1, &antiLevel34, &b1);                       //Add this value to the starting value
+        if(real34IsPositive(&antiLevel34)) {
+          real34Add(&b, &antiLevel34, &b);                       //Add this value to the right hand starting value
+        } else {
+          real34Add(&a, &antiLevel34, &a);                       //Add this value to the left hand starting value
+          real34Add(&b1, &antiLevel34, &b1);                     //Add this value to the left hand starting value
+        }
       }
     }
 
