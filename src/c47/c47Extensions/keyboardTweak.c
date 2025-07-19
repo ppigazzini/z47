@@ -365,6 +365,7 @@ void resetKeytimers(void) {
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey2 = longpressDelayedkey1;
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
+      longpressDelayedkey3 = ITM_EDIT;
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
@@ -409,6 +410,7 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                   longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                  longpressDelayedkey3 = ITM_EDIT;
                 }
               break;
             case ITM_EXIT1:
@@ -434,6 +436,7 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                longpressDelayedkey3 = ITM_EDIT;
               }
               break;
             case ITM_EXIT1:
@@ -454,6 +457,9 @@ void resetKeytimers(void) {
 
         case CM_PEM : {
           switch(*result) {
+            case ITM_BACKSPACE:
+                longpressDelayedkey1 = ITM_EDIT;
+              break;
             case ITM_EXIT1:
               longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP

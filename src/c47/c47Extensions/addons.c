@@ -31,6 +31,33 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 
+void fnEdit (uint16_t unusedParamButMandatory) {
+  #if !defined(TESTSUITE_BUILD)
+    if(tam.mode != 0) return;
+    switch(calcMode) {
+      case CM_NORMAL :
+        if(currentMenu() == -MNU_EQN) {
+          runFunction(ITM_EQ_EDI);
+        } else {
+          calcModeAim(NOPARAM);
+          runFunction(ITM_XEDIT);
+        }
+        break;
+      case CM_AIM :
+        runFunction(ITM_XEDIT);
+        break;
+      default:
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Calculator mode not supported for prelim EDIT command");
+          moreInfoOnError("In function fnEdit:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        break;
+    }
+  #endif
+}
+
+
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
