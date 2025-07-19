@@ -73,7 +73,6 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
 bool_t itemNotAvail(int16_t itemNr) {
 #ifdef DMCP_BUILD
   return (itemERRTIVal(itemNr) !=  _TO_ITM_NONE);
-}
 #elif PC_BUILD
   if(itemERRTIVal(itemNr) !=  _TO_ITM_NONE) {
     #if (VERBOSE_LEVEL >= 0)
