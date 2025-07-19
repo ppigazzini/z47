@@ -453,7 +453,7 @@
 #define ERROR_SINGULAR_MATRIX                     22
 #define ERROR_FLASH_MEMORY_FULL                   23
 #define ERROR_INVALID_DATA_TYPE_FOR_OP            24
-#define ERROR_WP34S_COMPAT                        25
+#define ERROR_NO_MVAR_FOUND                       25
 #define ERROR_ENTER_NEW_NAME                      26
 #define ERROR_CANNOT_DELETE_PREDEF_ITEM           27
 #define ERROR_NO_SUMMATION_DATA                   28
@@ -510,12 +510,21 @@
 #define TI_Saved_statistic_data_restored          75
 #define TI_Saved_user_variables_restored          76
 #define TI_Program_file_loaded                    77
+#define TI_All_user_flags_cleared                 78
+#define TI_All_data_prgms_cleared                 79
+#define TI_All_user_menus_cleared                 80
+#define TI_All_user_vars_cleared                  81
+#define TI_All_user_prgms_deleted                 82
+#define TI_All_user_menus_deleted                 83
+#define TI_All_user_vars_deleted                  84
 
 //TI & ERROR Messages
-#define ERROR_TI_UNDO_FAILED                      78
+#define TI_Not_on_simulator                       85
+#define TI_Only_on_simulator                      86
+#define ERROR_TI_UNDO_FAILED                      87
 
 
-#define NUMBER_OF_ERROR_CODES                     79
+#define NUMBER_OF_ERROR_CODES                     88
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1462,32 +1471,34 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         93
 #define TI_DATA_LOSS                              94
-#define TI_CLEAR_ALL_MENUS                        95    //DL
-#define TI_CLEAR_ALL_VARIABLES                    96    //DL
-#define TI_DEL_ALL_MENUS                          97    //DL
-#define TI_DEL_ALL_VARIABLES                      98    //DL
-#define TI_ROOTS2                                 99
-#define TI_ROOTS3                                100
-#define TI_IJ                                    101
-#define TI_I                                     102
-#define TI_J                                     103
-#define TI_MIJ                                   104
-#define TI_BYTES                                 105
-#define TI_BITS                                  106
-#define TI_SOLVER_VARIABLE_RESULT                107
-#define TI_DATA_NEG_OVRFL                        108
-#define TI_LASTSTATEFILE                         109
-#define TI_FUNCTION                              110
-#define TI_STORCL                                111
-#define TI_TVM_EFF                               112
-#define TI_TVM_IA                                113
-#define TI_NOT_AVAILABLE                         114
-#define TI_DISP_WOY                              115
-#define TI_DISP_JULIAN_WOY                       116
-#define TI_WOY                                   117
-#define TI_WOY_RULE                              118
-#define TI_MIJEQ                                 119
-#define TI_REGTYPE                               120
+#define TI_CLEAR_ALL_FLAGS                        95
+#define TI_CLEAR_ALL_MENUS                        96    //DL
+#define TI_CLEAR_ALL_VARIABLES                    97    //DL
+#define TI_DEL_ALL_PRGMS                          98
+#define TI_DEL_ALL_MENUS                          99    //DL
+#define TI_DEL_ALL_VARIABLES                     100    //DL
+#define TI_ROOTS2                                101
+#define TI_ROOTS3                                102
+#define TI_IJ                                    103
+#define TI_I                                     104
+#define TI_J                                     105
+#define TI_MIJ                                   106
+#define TI_BYTES                                 107
+#define TI_BITS                                  108
+#define TI_SOLVER_VARIABLE_RESULT                109
+#define TI_DATA_NEG_OVRFL                        110
+#define TI_LASTSTATEFILE                         111
+#define TI_FUNCTION                              112
+#define TI_STORCL                                113
+#define TI_TVM_EFF                               114
+#define TI_TVM_IA                                115
+#define TI_NOT_AVAILABLE                         116
+#define TI_DISP_WOY                              117
+#define TI_DISP_JULIAN_WOY                       118
+#define TI_WOY                                   119
+#define TI_WOY_RULE                              120
+#define TI_MIJEQ                                 121
+#define TI_REGTYPE                               122
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
