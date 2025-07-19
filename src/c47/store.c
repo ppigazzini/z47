@@ -204,8 +204,12 @@ void fnStore(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     _storeValue(regist);
     uint16_t rows = 1;
-    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
-      calcSigma(0);
+    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+      if(isStatsMatrixN(&rows, regist)) {
+        calcSigma(0);
+      } else {
+        clearStatisticalSums();
+      }
     }
   }
 }
