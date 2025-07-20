@@ -353,8 +353,10 @@ void drawBattery(uint16_t voltage);
 //sharing space with Integermode
   static bool_t showMatrixMode(void) {
     if(!(SBARUPD_MatrixMode)) return false;
-    bool_t enable = calcMode == CM_MIM || didSystemFlagChange(FLAG_GROW);
+    bool_t enable = calcMode == CM_MIM;// || didSystemFlagChange(FLAG_GROW);
     if(enable) {
+      reInstateOCModeDisplay = true;
+      reInstateIntegerModeDisplay = true;
       compressString = 1;
       showStringAndClear(getSystemFlag(FLAG_GROW) ? "grow" : "wrap", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
@@ -366,26 +368,35 @@ void drawBattery(uint16_t voltage);
     if(!(SBARUPD_TVMMode)) return false;
     bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN;
     if(enable) {
+      reInstateOCModeDisplay = true;
+      reInstateIntegerModeDisplay = true;
       compressString = 1;
-      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
+      showStringAndClear(getSystemFlag(FLAG_ENDPMT) ? "END " : "BEG ", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
     }
     return enable;
   }
 
-  static void showIntegerMode(void) {
-    if(!(SBARUPD_IntegerMode)) return;
-    if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE)){// || reInstateIntegerModeDisplay) {
+  static bool_t showIntegerMode(void) {
+    bool_t aa = didSystemFlagChange(SETTING_SINT_WS);    //note, separately to prevent compiler short circuiting second term
+    bool_t bb = didSystemFlagChange(SETTING_SINT_MODE);
+    if(!(SBARUPD_IntegerMode)) return false;
+    if( aa || bb || reInstateIntegerModeDisplay) {
       reInstateIntegerModeDisplay = false;
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
       strcat(statusMessage," ");
       showStringAndClear(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, X_OVERFLOW_CARRY - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
+      return true;
+    } else {
+      return false;
     }
   }
 
-  static void showOverflowCarry(void) {
-    if(!(SBARUPD_OCCarryMode)) return;
-    if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY)){// || reInstateOCModeDisplay) {
+  static bool_t showOverflowCarry(void) {
+    bool_t aa = didSystemFlagChange(FLAG_OVERFLOW);    //note, separately to prevent compiler short circuiting second term
+    bool_t bb = didSystemFlagChange(FLAG_CARRY);
+    if(!(SBARUPD_OCCarryMode)) return false;
+    if (aa || bb || reInstateOCModeDisplay) {
       reInstateOCModeDisplay = false;
       showStringAndClear(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, 6 /*X_ALPHA_MODE - X_OVERFLOW_CARRY*/, 20, vmNormal, true, true);
       if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
@@ -394,9 +405,16 @@ void drawBattery(uint16_t voltage);
       if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
         lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
       }
+      return true;
+    } else {
+      return false;
     }
   }
 
+  static void clearINT_MX_TVM_MODE(void) {
+    compressString = 1;
+    showStringAndClear("    ", &standardFont, X_INT_MX_TVM_MODE, 0, X_ALPHA_MODE - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
+  }
 
 //todo remove SETT_AlphaMode replace with didSystemFlagChange
   #define SETT_AlphaMode (uint16_t)((nextChar         ) \
@@ -767,8 +785,11 @@ void drawBattery(uint16_t voltage) {
 
       if(!showMatrixMode()) {
         if(!showTvmMode()) {
-          showIntegerMode();
-          showOverflowCarry();
+          bool_t aa = showIntegerMode();    //note, separately to prevent compiler short circuiting second term
+          bool_t bb = showOverflowCarry();
+          if(!aa && !bb && (!(SBARUPD_IntegerMode) || !(SBARUPD_OCCarryMode))) {
+            clearINT_MX_TVM_MODE();
+          }
         }
       }
 
