@@ -47,7 +47,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 22 */  "Singular matrix",
 /* 23 */  "Flash memory is full",
 /* 24 */  "Invalid input data type for this operation",
-/* 25 */  "",
+/* 25 */  "No MVAR found in selected program",
 /* 26 */  "Please enter a NEW name",
 /* 27 */  "Cannot delete a predefined item",
 /* 28 */  "No statistic data present",
@@ -66,7 +66,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 41 */  "Large " STD_DELTA " and opposite signs, may be a pole",
 /* 42 */  "Solver reached local extremum, no root",
 /* 43 */  STD_GREATER_EQUAL "1 initial guess lies out of the domain",
-/* 44 */  "The function value look static constant",
+/* 44 */  "The function values seem constant",
 /* 45 */  "Syntax error in this equation",
 /* 46 */  "This equation formula is too complex",
 /* 47 */  "This item cannot be assigned here",
@@ -104,11 +104,20 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 75 */  "Statistical data loaded",
 /* 76 */  "User variables loaded",
 /* 77 */  "Program file loaded",
+/* 78 */  "All global user flags cleared",
+/* 79 */  "All data, programs and definitions cleared",
+/* 80 */  "All user menus cleared",
+/* 81 */  "All user variables cleared",
+/* 82 */  "All user programs deleted",
+/* 83 */  "All user menus deleted",
+/* 84 */  "All user variables deleted",
 
-//ERROR & TI Messages (incomplete)
-/* 78 */  "Undo failed: likely no memory",
+//ERROR & TI Messages combined, used by either
+/* 85 */  "Not available on the simulator",
+/* 86 */  "Only available on the simulator",
+/* 87 */  "Undo failed: likely no memory",
 
-/* 79 */
+/* 88 */
 
 };
 

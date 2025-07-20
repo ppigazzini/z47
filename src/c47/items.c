@@ -30,36 +30,57 @@ void doNothing(void) {
 }
 
 
-//Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
-bool_t itemNotAvail(int16_t itemNr) {
+
 #ifdef DMCP_BUILD
+  #define notAvail TI_Only_on_simulator
+#else //PC_BUILD
+  #define notAvail TI_Not_on_simulator
+#endif //PC_BUILD
+
+#define  _TO_ITM_NONE 0
+#define  _TO_ITM_ERR  1
+#define  _TO_ITM_TI   2
+
+static uint8_t itemERRTIVal(int16_t itemNr) {
   switch(max(itemNr,-itemNr)) {
+    #ifdef DMCP_BUILD
       case ITM_WRXPALL   :
-             return true;
-      default:
-             return false;
-  }
-#elif PC_BUILD
-  switch(max(itemNr,-itemNr)) {
-      case ITM_ACTUSB   :
-      case ITM_SYSTEM2  :
+    #elif PC_BUILD
+      case ITM_SAVEAUT  :
       case ITM_SETDAT   :
       case ITM_SETTIM   :
+      case ITM_SYSTEM2  :
+      case ITM_ACTUSB   :
+    #endif //PC_BUILD
+                          return  _TO_ITM_ERR;
+    #ifdef PC_BUILD
       case ITM_DISK     :
-      case ITM_SAVEAUT  :
       case ITM_BUZZ     :
       case ITM_PLAY     :
       case ITM_VOL      :
       case ITM_VOLMINUS :
       case ITM_VOLPLUS  :
       case ITM_VOLQ     :
-      case ITM_BATT     :
-             #if (VERBOSE_LEVEL >= 0)
-               printf("Item %i Softkey item not available, not executing and/or struck through.\n",itemNr);
-             #endif
-             return true;
-      default:
-             return false;
+      case ITM_BATT     :  return  _TO_ITM_TI;
+    #endif //PC_BUILD
+      default           :  return  _TO_ITM_NONE;
+    }
+}
+
+
+
+//Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
+bool_t itemNotAvail(int16_t itemNr) {
+#ifdef DMCP_BUILD
+  return (itemERRTIVal(itemNr) !=  _TO_ITM_NONE);
+#elif PC_BUILD
+  if(itemERRTIVal(itemNr) !=  _TO_ITM_NONE) {
+    #if (VERBOSE_LEVEL >= 0)
+      printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n",itemNr);
+    #endif
+    return true;
+  } else {
+    return false;
   }
 #else //!DMCP_BUILD && !PC_BUILD
   return false;
@@ -248,7 +269,16 @@ bool_t itemNotAvail(int16_t itemNr) {
     if(!itemNotAvail(func)) {
       indexOfItems[func].func(param);
     } else {
-      temporaryInformation = TI_NOT_AVAILABLE;
+        if(itemERRTIVal(func) ==  _TO_ITM_TI) {
+          temporaryInformation = TI_NOT_AVAILABLE;
+        } 
+        else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
+          displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Not Available");
+            moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
@@ -541,7 +571,16 @@ bool_t itemNotAvail(int16_t itemNr) {
         if(!itemNotAvail(func)) {
           tamEnterMode(func);
         } else {
-          temporaryInformation = TI_NOT_AVAILABLE;
+          if(itemERRTIVal(func) ==  _TO_ITM_TI) {
+            temporaryInformation = TI_NOT_AVAILABLE;
+          } 
+          else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
+            displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Not Available");
+              moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
           screenUpdatingMode = SCRUPD_AUTO;
         }
 
