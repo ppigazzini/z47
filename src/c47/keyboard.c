@@ -3158,7 +3158,7 @@ RELEASE_END:
                   addStepInProgram(ITM_STOP);
                   keyActionProcessed = true;
                 }
-                else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
+                else if(item == ITM_dotD && aimBuffer[0] == 0) {
                   addStepInProgram(ITM_toREAL);
                   keyActionProcessed = true;
                 }
