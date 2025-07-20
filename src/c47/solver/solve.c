@@ -212,6 +212,8 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
       realToReal34(const_NaN, res);
     }
     else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
+    else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
+      ;
     } 
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
