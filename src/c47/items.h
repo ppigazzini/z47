@@ -2455,7 +2455,7 @@
 #define ITM_USER_R47bk_fg           2392
 #define ITM_USER_R47fg_bk           2393
 #define ITM_USER_R47fg_g            2394
-#define ITM_2395                    2395
+#define ITM_EDIT                    2395
 
 #define ITM_ANGLEQ                  2396
 #define ITM_DATEQ                   2397
