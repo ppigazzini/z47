@@ -606,6 +606,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_SCR:
         case ITM_USERMODE:
                 doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
+        case ITM_EDIT:
         case ITM_ALPHA_EDIT:
                 doNotAddStep |= (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)); break;
         default:;
@@ -1394,6 +1395,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnWeekOfYear               (uint16_t unusedButMandatoryParameter) {}
   void fnSetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnGetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
+  void fnEdit                     (uint16_t unusedButMandatoryParameter) {}
 
 
 #endif // GENERATE_CATALOGS
@@ -3860,7 +3862,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2392 */  { fnKeysManagement,             USER_R47bk_fg,               STD_BOX " " STD_fg,                            STD_BOX " " STD_fg,                            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2393 */  { fnKeysManagement,             USER_R47fg_bk,               STD_fg " " STD_BOX,                            STD_fg " " STD_BOX,                            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2394 */  { fnKeysManagement,             USER_R47fg_g,                STD_fg " " "g",                                STD_fg " " "g",                                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2395 */  { itemToBeCoded,                NOPARAM,                     "2395",                                        "2395",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2395 */  { fnEdit,                       NOPARAM,                     "EDIT",                                        "EDIT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2396 */  { fnCheckAngle,                 NOPARAM,                     "ANGLE?",                                      "ANGLE?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2397 */  { fnCheckType,                  dtDate,                      STD_DATE_D "?",                                STD_DATE_D "?",                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2398 */  { fnCheckType,                  dtLongInteger,               "LINT?",                                       "LINT?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
