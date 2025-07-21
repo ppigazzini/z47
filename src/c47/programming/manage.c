@@ -221,6 +221,13 @@ void fnClPAll(uint16_t confirmation) {
     }
 
     scanLabelsAndPrograms();
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_DEL_ALL_PRGMS;
+    }
+    else {
+      temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 

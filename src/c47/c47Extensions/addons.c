@@ -31,6 +31,41 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 
+void fnEdit (uint16_t unusedParamButMandatory) {
+  //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
+  //All might have to be changed have a propoer generic EDIT function.
+  #if !defined(TESTSUITE_BUILD)
+    if(tam.mode != 0) goto err;
+    switch(calcMode) {
+      case CM_NORMAL :
+        if(currentMenu() == -MNU_EQN || currentMenu() == -MNU_Sfdx || currentMenu() == -MNU_Solver_TOOL || currentMenu() == -MNU_Sf_TOOL || currentMenu() == -MNU_GRAPHS ||
+           (currentMenu() == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE))         ) {
+          showSoftmenu(-MNU_EQN);
+          runFunction(ITM_EQ_EDI);
+        } else if(getRegisterDataType(REGISTER_X) == dtString) {
+          calcModeAim(NOPARAM);
+          runFunction(ITM_XEDIT);
+        }
+        else {
+          goto err;
+        }
+        break;
+      case CM_AIM :
+        runFunction(ITM_XEDIT);
+        break;
+      default:
+err:
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Calculator mode or type not supported for EDIT command");
+          moreInfoOnError("In function fnEdit:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        break;
+    }
+  #endif
+}
+
+
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure

@@ -590,6 +590,13 @@ void fnClFAll(uint16_t confirmation) {
     if(currentLocalFlags != NULL) {
       *currentLocalFlags = 0; // Clear local flags
     }
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_CLEAR_ALL_FLAGS;
+    }
+    else {
+      temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 

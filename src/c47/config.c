@@ -1034,7 +1034,7 @@ void fnClAll(uint16_t confirmation) {
     // Clear global flags
     fnClFAll(CONFIRMED);
 
-    temporaryInformation = TI_NO_INFO;
+    temporaryInformation = TI_RESET;
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
     }

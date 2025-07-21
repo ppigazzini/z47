@@ -2819,7 +2819,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
-        sprintf(tmpString, "Data, programs, and definitions cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_data_prgms_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
@@ -2829,36 +2829,53 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         displayTemporaryInformationOnX(prefix);
       }
 
+      else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_FLAGS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_flags_cleared]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)
       else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
-        sprintf(prefix, "Not available on the simulator");
+        sprintf(prefix, "%s", errorMessages[TI_Not_on_simulator]);
         displayTemporaryInformationOnX(prefix);
       }
-      #endif // PC_BUILD
+      #elif defined(DMCP_BUILD)
+      else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
+        sprintf(prefix, "%s", errorMessages[TI_Only_on_simulator]);
+        displayTemporaryInformationOnX(prefix);
+      }
+      #endif // PC_BUILD/DMCP_BUILD
 
       else if(temporaryInformation == TI_BACKUP_RESTORED && regist == REGISTER_X) {
         clearRegisterLine(REGISTER_X, true, true);
