@@ -587,7 +587,7 @@ TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                       ITM_
  /*same*/                                    ITM_NULL,                      CST_77,                     CST_78,                   ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
 
 // ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,                   ITM_CPXSLV,                 ITM_CPXSLV_LU,            VAR_LLIM,              VAR_ULIM,                    -MNU_GRAPHS,
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,                   ITM_CPXSLV,                 ITM_CPXSLV_LU,            VAR_LEST,              VAR_UEST,                    -MNU_GRAPHS,
                                              ITM_NULL,                      ITM_REALSLV,                ITM_REALSLV_LU,           ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
 
 
@@ -2143,6 +2143,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_LLIM    :
       case VAR_UX      :
       case VAR_LX      :
+      case VAR_UEST    :
+      case VAR_LEST    :
+      case VAR_UY      :
+      case VAR_LY      :
 
       case VAR_IPonA   :
       case VAR_NPPER   :
@@ -2217,6 +2221,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       switch(itemNr%10000) {
                         case VAR_ULIM    :
                         case VAR_LLIM    :
+                        case VAR_UEST    :
+                        case VAR_LEST    :
                           if(stringByteLength(tmpS) > 5) {
                             itemName[3] = 0;
                           }
@@ -3229,6 +3235,8 @@ void showSoftmenuCurrentPart(void) {
         }
       }
       id = -MNU_DYNAMIC;
+    } else if(id == -MNU_Solver_TOOL) {
+        solverEstimatesUsed = false;
     }
 
 
