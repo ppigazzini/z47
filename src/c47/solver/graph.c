@@ -1296,6 +1296,7 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     fnRCL(SREG_Y2);
     fnRCL(SREG_X1);
     fnRCL(SREG_X2);
+    copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
