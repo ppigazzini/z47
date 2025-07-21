@@ -35,6 +35,9 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
 
+  realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+  realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
+
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
@@ -167,6 +170,8 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
       case CM_GRAPH: {
         const int8_t RangeHi = +16;
         const int8_t RangeLo = -16;
+        realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+        realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
         PLOT_AXIS = true;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZMY += increment;
@@ -711,6 +716,10 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
     multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
     //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
+  }
+  if(!real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) || !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY))) {
+    y_min = convertRegisterToDouble(RESERVED_VARIABLE_LY);
+    y_max = convertRegisterToDouble(RESERVED_VARIABLE_UY);
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)

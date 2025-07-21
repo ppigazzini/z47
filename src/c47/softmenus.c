@@ -290,7 +290,7 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
                                              ITM_SIGMAMINUS,                ITM_SIGMAylnx,             ITM_SIGMAlnxy,             ITM_SIGMAxlny,         ITM_SIGMAx2lny,              ITM_SIGMAx2ony,
                                              ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                   };
 
-TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    ITM_DRAW_LU,               ITM_NULL,              ITM_NULL,                    ITM_DRAW,                     };
+TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    VAR_LY,                    VAR_UY,                ITM_DRAW_LU,                 ITM_DRAW,                     };
 
 TO_QSPI const int16_t menu_PLOT_SCATR[]  = {
                                              ITM_PLOT_CENTRL,               ITM_SMI,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
