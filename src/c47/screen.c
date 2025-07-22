@@ -1721,7 +1721,7 @@ return res;
 
   static void stats_param_display(const char *name, calcRegister_t reg, char *prefix, char *tmpString, calcRegister_t rowReg) {
     int16_t prefixWidth;
-    char regS[5], *p;
+    char regS[16], *p;
     real_t t;
     real34_t u;
     uint32_t angleMode;
@@ -1731,10 +1731,18 @@ return res;
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_");
-    regS[3] = letteredRegisterName(reg);
+    if(reg == RESERVED_VARIABLE_UEST) {
+      sprintf(prefix, "Upper estimate =");
+      strcpy(regS,name);
+    } else if (reg == RESERVED_VARIABLE_LEST) {
+      sprintf(prefix, "Lower estimate =");
+      strcpy(regS,name);
+    } else {
+        strcpy(regS, "Reg_");
+        regS[3] = letteredRegisterName(reg);
+        sprintf(prefix, "= %s =", name);
+    }
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
-    sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
     if(getRegisterAsRealQuiet(reg, &t)) {
@@ -3011,13 +3019,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           inputRegName(prefix, &prefixWidth);
         }
 
-        // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
+
+        // STATISTICAL DISTR & SOLVER
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
-
           switch(currentMenu()) {
+            case -MNU_Solver_TOOL:
+              r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
+              r_j = indexOfItems[VAR_UEST].itemCatalogName; register_j = RESERVED_VARIABLE_UEST;
+              break;
             case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -3882,14 +3894,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_ULIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_UP_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_UP_ARROW " Upper limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_LLIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_DOWN_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_DOWN_ARROW " Lower limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }

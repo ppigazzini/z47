@@ -192,7 +192,9 @@ static void _storeValue(uint16_t regist) {
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       copySourceRegisterToDestRegister(REGISTER_X, regist);
-      copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+      if(regist != RESERVED_VARIABLE_UEST && regist != RESERVED_VARIABLE_LEST) {
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);             // restore LI or SI or angle
+      }
     }
   }
   else {

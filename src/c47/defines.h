@@ -854,6 +854,11 @@ typedef enum {
 #define VAR_NO_UX      41
 #define VAR_NO_LX      42
 #define VAR_NO_CPERONA 43
+#define VAR_NO_UEST    44
+#define VAR_NO_LEST    45
+#define VAR_NO_UY      46
+#define VAR_NO_LY      47
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Register numbering for                                                                           Register numbering in key
@@ -991,8 +996,12 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
   RESERVED_VARIABLE_CPERONA,                             //2043
+  RESERVED_VARIABLE_UEST,                                //2044
+  RESERVED_VARIABLE_LEST,                                //2045
+  RESERVED_VARIABLE_UY,                                  //2046
+  RESERVED_VARIABLE_LY,                                  //2047
   //  RESERVED_SPARES_HERE
-  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_CPERONA,
+  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LY,
 
   INVALID_VARIABLE_OLD = 2043,                           //2043   // Used to fix the backup.cfg loading
   INVALID_VARIABLE = 2199,                               //2199   // Old backup.cfg files will contain currentInputVariable to be 2043, which is fixed
