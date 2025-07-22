@@ -380,8 +380,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       if(inNameRegisterRange) regStats = findNamedVariable("STATS");
 
       switch(func) {
-        case VAR_UEST        : temporaryInformation = TI_UEST; solverEstimatesUsed = true; break;
-        case VAR_LEST        : temporaryInformation = TI_LEST; solverEstimatesUsed = true; break;
+        case VAR_UEST        : solverEstimatesUsed = true; break;
+        case VAR_LEST        : solverEstimatesUsed = true; break;
         case VAR_UX          :
         case VAR_LX          :
         case VAR_UY          :

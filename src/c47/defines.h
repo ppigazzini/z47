@@ -1508,8 +1508,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_WOY_RULE                              120
 #define TI_MIJEQ                                 121
 #define TI_REGTYPE                               122
-#define TI_UEST                                  123
-#define TI_LEST                                  124
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

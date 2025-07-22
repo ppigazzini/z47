@@ -3892,20 +3892,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          else if(temporaryInformation == TI_UEST) {
-            if(regist == REGISTER_X) {
-              sprintf(prefix, STD_UP_ARROW " Upper estimate" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
-          else if(temporaryInformation == TI_LEST) {
-            if(regist == REGISTER_X) {
-              sprintf(prefix, STD_UP_ARROW " Lower estimate" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
           else if(temporaryInformation == TI_ULIM) {
             if(regist == REGISTER_X) {
               sprintf(prefix, STD_UP_ARROW " Upper limit" STD_SPACE_FIGURE ":");

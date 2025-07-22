@@ -2098,6 +2098,87 @@ TO_QSPI static const mstr modeNames[] = {
 };
 
 
+static int count_significant_digits(const char* str) {
+    int count = 0;
+    int found_nonzero = 0;
+    const char* p = str;
+    
+    while (*p) {
+        if (*p >= '0' && *p <= '9') {
+            if (*p != '0') {
+                found_nonzero = 1;
+                count++;
+            } else if (found_nonzero) {
+                count++;
+            }
+        }
+        p++;
+    }
+    return count;
+}
+
+static void remove_trailing_zeros(char* str) {
+    char* decimal_pos = strchr(str, '.');
+    if (!decimal_pos) return;
+    int len = strlen(str);
+    int i = len - 1;
+    while (i > decimal_pos - str && str[i] == '0') {
+        str[i] = '\0';
+        i--;
+    }
+    if (i == decimal_pos - str) {
+        str[i] = '\0';
+    }
+}
+
+static void clean_scientific(char* str) {
+    char* e_pos = strchr(str, 'E');
+    if (!e_pos) return;
+    char* exp_start = e_pos + 1;
+    if (*exp_start == '+') {
+        memmove(exp_start, exp_start + 1, strlen(exp_start));
+    }
+    while (*exp_start == '0' && strlen(exp_start) > 1) {
+        memmove(exp_start, exp_start + 1, strlen(exp_start));
+    }
+}
+
+char* format_double_width(double value, int decimals, char* result, bool_t* success) {
+   int original_decimals = decimals;
+   uint32_t max_width = 400/6-2;
+   static char temp[30];
+   static char test_buffer[60];
+   do { 
+       sprintf(temp, "%.*f", decimals, value);
+       remove_trailing_zeros(temp);
+       sprintf(test_buffer, "%s%s", result, temp);
+       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
+           *success = (count_significant_digits(temp) >= original_decimals);
+           return temp;
+       }
+   } while (--decimals >= 0);
+   
+   memset(temp, 0, sizeof(temp));
+   int best_decimals = -1;
+   for (decimals = 0; decimals <= 15; decimals++) {
+       sprintf(temp, "%.*E", decimals, value);
+       clean_scientific(temp);
+       sprintf(test_buffer, "%s%s", result, temp);
+       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
+           best_decimals = decimals;
+       }
+   }   
+   if (best_decimals >= 0) {
+       sprintf(temp, "%.*E", best_decimals, value);
+       clean_scientific(temp);
+       *success = (count_significant_digits(temp) >= original_decimals);
+       return temp;
+   }
+   *success = 0;   
+   return temp; // fallback
+}
+
+
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
   char tmpS[30], tmpSS[20];
@@ -2161,7 +2242,6 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
                       realToFloat(&tmpR, &tmpF);
 
-//                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? const_1e5 : const_1e6) && realCompareGreaterEqual(&tmpR, const_0)) {
                       if(tmpF == (int)tmpF && (
                          (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
                          (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
@@ -2184,60 +2264,32 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
                         }
                         else {
-                          if(fabsf(tmpF) < 10000 && itemNr%10000 == VAR_IPonA) {    //force single decimal for percentage
-                            sprintf(tmpS,"%6.1f",tmpF);
+                          bool_t success;
+                          strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
+                          if(!success) {
+                            switch(itemNr%10000) {
+                              case VAR_ULIM    :
+                              case VAR_LLIM    :
+                              case VAR_UEST    :
+                              case VAR_LEST    :
+                                  itemName[3] = 0;
+                                break;
+                              case VAR_IPonA   :
+                              case VAR_NPPER   :
+                              case VAR_PPERonA :
+                              case VAR_CPERonA :
+                              case VAR_PV      :
+                              case VAR_FV      :
+                              case VAR_PMT     :
+                                  itemName[1] = 0;
+                              default:;
+                            }
+                            strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
                           }
-                          else if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) {
-                            sprintf(tmpS,"%8.0f",tmpF);
-                          }
-                          else if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
-                            sprintf(tmpS,"%8.2f",tmpF);
-                          }
-                          else if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
-                            sprintf(tmpS,"%8.4f",tmpF);
-                          }
-                          else if(tmpF<0 && tmpF>-0.01) {
-                            sprintf(tmpS,"%8.1E",tmpF);
-                          }
-                          else if(tmpF>0 && tmpF<0.001) {
-                            sprintf(tmpS,"%8.2E",tmpF);
-                          }
-                          else {
-                            sprintf(tmpS,"%8.1G",tmpF);
-                          }
-
-                          strcpy(tmpS, eatSpacesMid(tmpS));
-                          uint16_t ii = stringByteLength(tmpS);
-                          if(tmpS[ii-4] == 'E' && (tmpS[ii-3] == '+' || tmpS[ii-3] == '-') && tmpS[ii-2] == '0') {
-                            tmpS[ii-2] = tmpS[ii-1];
-                            tmpS[ii-1] = 0;
+                          if(!success) {
+                            strcpy(tmpS, format_double_width(tmpF, 3, itemName, &success));
                           }
                         }
-                      }
-
-                      //Note this section requires knowledge of where single and double byte unicode letters are in the names
-                      //Future: Improve this to read the unicode characters
-                      int buttonDigits = 0;
-                      switch(itemNr%10000) {
-                        case VAR_ULIM    :
-                        case VAR_LLIM    :
-                        case VAR_UEST    :
-                        case VAR_LEST    :
-                          if(stringByteLength(tmpS) > 5) {
-                            itemName[3] = 0;
-                          }
-                          break;
-                        case VAR_IPonA   :
-                        case VAR_NPPER    : buttonDigits = 5; break;
-                        case VAR_PPERonA :
-                        case VAR_CPERonA : buttonDigits = 4; break;
-                        case VAR_PV      :
-                        case VAR_FV      : buttonDigits = 6; break;
-                        case VAR_PMT     : buttonDigits = 5; break;
-                        default:;
-                      }
-                      if(buttonDigits != 0 && (stringByteLength(tmpS) > buttonDigits )) {
-                        itemName[1] = 0;
                       }
 
                       radixProcess(tmpSS,tmpS);
