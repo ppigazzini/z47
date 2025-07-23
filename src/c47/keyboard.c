@@ -1058,7 +1058,9 @@ int16_t lastItem = 0;
               }
 
               if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
-                printf("**[DL]** popSoftmenu 4\n");fflush(stdout);
+                #if defined PC_BUILD
+                  printf("**[DL]** popSoftmenu 4\n");fflush(stdout);
+                #endif //PC_BUILD
                 popSoftmenu();
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;

@@ -1079,6 +1079,8 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           bufPtr[0] = 0;
           if(((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER ) && var >= FIRST_RESERVED_VARIABLE) {
             displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            screenUpdatingMode = SCRUPD_AUTO;
+            //refreshScreen(400); //This is the second step if screenUpdatingMode = SCRUPD_AUTO does not work, to force a refresh after screenUpdatingMode was set. It may not be needed depending the next normal refresh in the cycle
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function _parseWord:", strPtr, "names a reserved variable!", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
