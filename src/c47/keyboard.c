@@ -2296,6 +2296,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               goto RELEASE_END;
             }
 
+            if((item == ITM_BASEMENU) && tam.mode) {
+              tamLeaveMode();
+            }
+
             runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
