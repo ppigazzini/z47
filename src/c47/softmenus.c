@@ -2098,85 +2098,268 @@ TO_QSPI static const mstr modeNames[] = {
 };
 
 
-static int count_significant_digits(const char* str) {
-    int count = 0;
-    int found_nonzero = 0;
-    const char* p = str;
-    
-    while (*p) {
-        if (*p >= '0' && *p <= '9') {
-            if (*p != '0') {
-                found_nonzero = 1;
-                count++;
-            } else if (found_nonzero) {
-                count++;
-            }
-        }
-        p++;
-    }
-    return count;
+//#define DEBUGA
+
+
+//------------------------------------------------------------------ float to sig conversion ----------
+static int checkWidthWithPrefix(const char* itemName, const char* numStr, uint32_t max_width) {
+  char test_buffer[128];
+  snprintf(test_buffer, sizeof(test_buffer), "%s%s", itemName, numStr);
+  return stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width;
 }
 
-static void remove_trailing_zeros(char* str) {
+static int compareSignificantDigits(const char* str, int inp, int* sigout) {
+  const char* p = str;
+  int count = 0;
+  int found_nonzero = 0;
+
+  if (*p == '-') p++;                                      // skip negative sign
+
+  const char* e_pos = strchr(p, 'E');                      // find exponent separator
+  if (!e_pos) e_pos = strchr(p, 'e');
+
+  while (*p && p != e_pos) {                               // process mantissa only
+    if (*p == '.') {
+      // decimal point - continue
+    } else if (*p >= '0' && *p <= '9') {
+      if (*p != '0') {
+        found_nonzero = 1;
+        count++;
+      } else if (found_nonzero) {
+        count++;                                           // count zeros after first non-zero
+      }
+    }
+    p++;
+  }
+
+  if (count == 0) count = 1;                               // special case for zero
+  *sigout = count;
+
+  if (count < inp) return -1;
+  if (count > inp) return +1;
+  return 0;
+}
+
+static void removeTrailingZerosLeadingExpZeros(char* str) {
+  char* e_pos = strchr(str, 'E');
+  if (!e_pos) e_pos = strchr(str, 'e');
+
+  if (e_pos && *e_pos == 'e') *e_pos = 'E';                // convert to uppercase
+
+  if (e_pos) {                                             // handle scientific notation
+    char* decimal_pos = strchr(str, '.');
+    if (decimal_pos && decimal_pos < e_pos) {
+      char* p = e_pos - 1;
+      while (p > decimal_pos && *p == '0') p--;            // remove trailing zeros
+      if (p == decimal_pos) {
+        memmove(decimal_pos, e_pos, strlen(e_pos) + 1);    // remove decimal point
+      } else {
+        memmove(p + 1, e_pos, strlen(e_pos) + 1);          // move exponent
+      }
+    }
+
+    e_pos = strchr(str, 'E');                              // remove leading zeros from exponent
+    if (e_pos) {
+      char* exp_start = e_pos + 1;
+      if (*exp_start == '+') exp_start++;
+      if (*exp_start == '-') exp_start++;
+      while (*exp_start == '0' && *(exp_start + 1) != '\0') {
+        memmove(exp_start, exp_start + 1, strlen(exp_start + 1) + 1);
+      }
+    }
+  } else {                                                 // handle regular decimal notation
     char* decimal_pos = strchr(str, '.');
     if (!decimal_pos) return;
+
     int len = strlen(str);
     int i = len - 1;
-    while (i > decimal_pos - str && str[i] == '0') {
-        str[i] = '\0';
-        i--;
+    while (i > decimal_pos - str && str[i] == '0') {       // remove trailing zeros
+      str[i] = '\0';
+      i--;
     }
-    if (i == decimal_pos - str) {
-        str[i] = '\0';
-    }
+    if (i == decimal_pos - str) str[i] = '\0';             // remove decimal point if empty
+  }
 }
 
-static void clean_scientific(char* str) {
-    char* e_pos = strchr(str, 'E');
-    if (!e_pos) return;
-    char* exp_start = e_pos + 1;
-    if (*exp_start == '+') {
-        memmove(exp_start, exp_start + 1, strlen(exp_start));
+static void convertFloatToString(double xx, int sig, char* outDec, char* outExp) {
+  char tmp[64];
+
+  sprintf(tmp, "%.15E", xx);                               // convert to exponential notation
+  #ifdef DEBUGA
+    printf("1: tmp=%s\n", tmp);
+  #endif //DEBUGA
+
+  char* e_pos = strchr(tmp, 'E');                          // parse exponential form
+  if (!e_pos) e_pos = strchr(tmp, 'e');
+  if (!e_pos) {
+    strcpy(outDec, "0");
+    strcpy(outExp, "0E0");
+    return;
+  }
+
+  if (*e_pos == 'e') *e_pos = 'E';                         // convert to uppercase
+  int exponent = atoi(e_pos + 1);
+  *e_pos = '\0';
+
+  char digits[32];                                         // extract all digits from mantissa
+  int digit_count = 0;
+  for (char* p = tmp; *p; p++) {
+    if (*p >= '0' && *p <= '9') {
+      digits[digit_count++] = *p;
     }
-    while (*exp_start == '0' && strlen(exp_start) > 1) {
-        memmove(exp_start, exp_start + 1, strlen(exp_start));
-    }
+  }
+
+  while (digit_count < sig) {                              // pad with zeros to sig digits
+    digits[digit_count++] = '0';
+  }
+  digits[sig] = '\0';
+  #ifdef DEBUGA
+    printf("4: digits=%s\n", digits);
+  #endif //DEBUGA
+
+  if (sig == 1) {                                          // create exponential form
+    sprintf(outExp, "%cE%d", digits[0], exponent);
+  } else {
+    sprintf(outExp, "%c.%sE%d", digits[0], digits + 1, exponent);
+  }
+  #ifdef DEBUGA
+    printf("5: outExp=%s\n", outExp);
+  #endif //DEBUGA
+
+  char decimal_form[64];                                   // convert to decimal form
+  int decimal_pos = exponent + 1;
+
+  if (decimal_pos <= 0) {                                  // need leading zeros
+    char zero_padding[32];
+    int padding_len = -decimal_pos;
+    if (padding_len > 31) padding_len = 31;
+    memset(zero_padding, '0', padding_len);
+    zero_padding[padding_len] = '\0';
+    sprintf(decimal_form, "0.%s%s", zero_padding, digits);
+  } else if (decimal_pos >= sig) {                         // all digits before decimal
+    char trailing_zeros[32];
+    int trailing_len = decimal_pos - sig;
+    if (trailing_len > 31) trailing_len = 31;
+    memset(trailing_zeros, '0', trailing_len);
+    trailing_zeros[trailing_len] = '\0';
+    sprintf(decimal_form, "%s%s", digits, trailing_zeros);
+  } else {                                                 // decimal point within digits
+    sprintf(decimal_form, "%.*s.%s", decimal_pos, digits, digits + decimal_pos);
+  }
+
+  strcpy(outDec, decimal_form);
+  #ifdef DEBUGA
+    printf("6: outDec=%s\n", outDec);
+  #endif //DEBUGA
+
+  removeTrailingZerosLeadingExpZeros(outDec);              // clean up both forms
+  removeTrailingZerosLeadingExpZeros(outExp);
 }
 
-char* format_double_width(double value, int decimals, char* result, bool_t* success) {
-   int original_decimals = decimals;
-   uint32_t max_width = 400/6-2;
-   static char temp[30];
-   static char test_buffer[60];
-   do { 
-       sprintf(temp, "%.*f", decimals, value);
-       remove_trailing_zeros(temp);
-       sprintf(test_buffer, "%s%s", result, temp);
-       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
-           *success = (count_significant_digits(temp) >= original_decimals);
-           return temp;
-       }
-   } while (--decimals >= 0);
-   
-   memset(temp, 0, sizeof(temp));
-   int best_decimals = -1;
-   for (decimals = 0; decimals <= 15; decimals++) {
-       sprintf(temp, "%.*E", decimals, value);
-       clean_scientific(temp);
-       sprintf(test_buffer, "%s%s", result, temp);
-       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
-           best_decimals = decimals;
-       }
-   }   
-   if (best_decimals >= 0) {
-       sprintf(temp, "%.*E", best_decimals, value);
-       clean_scientific(temp);
-       *success = (count_significant_digits(temp) >= original_decimals);
-       return temp;
-   }
-   *success = 0;   
-   return temp; // fallback
+char* formatDoubleWidth(double value, int digits, char* itemName, bool_t* success) {
+  static char out[64];
+  char decForm[64], expForm[64];
+  bool_t is_negative = (value < 0.0);
+  double abs_value = is_negative ? -value : value;
+  int actual_max_width = 400 / 6 - 2;
+
+  if (abs_value == 0.0) {                                  // handle zero early
+    strcpy(out, "0");
+    *success = 1;
+    return out;
+  }
+
+  for (int sig = digits; sig <= digits + 6; sig++) {      // phase 1: try increasing sig digits
+    convertFloatToString(abs_value, sig, decForm, expForm);
+
+    char finalDec[64], finalExp[64];                       // prepare both forms
+    if (is_negative) {
+      snprintf(finalDec, sizeof(finalDec), "-%s", decForm);
+      snprintf(finalExp, sizeof(finalExp), "-%s", expForm);
+    } else {
+      strcpy(finalDec, decForm);
+      strcpy(finalExp, expForm);
+    }
+
+    int actual_sig_dec, actual_sig_exp;                    // check significant digits
+    int cmp_dec = compareSignificantDigits(finalDec, digits, &actual_sig_dec);
+    int cmp_exp = compareSignificantDigits(finalExp, digits, &actual_sig_exp);
+
+    #ifdef DEBUGA
+      printf("finalDec=%s actual_sig_dec=%d\n", finalDec, actual_sig_dec);
+      printf("finalExp=%s actual_sig_exp=%d\n", finalExp, actual_sig_exp);
+    #endif //DEBUGA
+
+    if (cmp_dec >= 0 && checkWidthWithPrefix(itemName, finalDec, actual_max_width)) {
+      strcpy(out, finalDec);                               // prefer decimal form
+      *success = (actual_sig_dec >= digits) ? 1 : 0;
+      return out;
+    }
+
+    if (cmp_exp >= 0 && checkWidthWithPrefix(itemName, finalExp, actual_max_width)) {
+      strcpy(out, finalExp);                               // try exponential form
+      *success = (actual_sig_exp >= digits) ? 1 : 0;
+      return out;
+    }
+  }
+
+  for (int sig = digits - 1; sig >= 1; sig--) {           // phase 2: reduce sig digits to fit
+    convertFloatToString(abs_value, sig, decForm, expForm);
+
+    char finalDec[64], finalExp[64];                       // prepare both forms
+    if (is_negative) {
+      snprintf(finalDec, sizeof(finalDec), "-%s", decForm);
+      snprintf(finalExp, sizeof(finalExp), "-%s", expForm);
+    } else {
+      strcpy(finalDec, decForm);
+      strcpy(finalExp, expForm);
+    }
+
+    int actual_sig_dec, actual_sig_exp;                    // get actual sig digits for success flag
+    compareSignificantDigits(finalDec, digits, &actual_sig_dec);
+    compareSignificantDigits(finalExp, digits, &actual_sig_exp);
+
+    if (checkWidthWithPrefix(itemName, finalDec, actual_max_width)) {
+      strcpy(out, finalDec);                               // prefer decimal form
+      *success = (actual_sig_dec >= digits) ? 1 : 0;
+      return out;
+    }
+
+    if (checkWidthWithPrefix(itemName, finalExp, actual_max_width)) {
+      strcpy(out, finalExp);                               // try exponential form
+      *success = (actual_sig_exp >= digits) ? 1 : 0;
+      return out;
+    }
+  }
+
+  strcpy(out, is_negative ? "-0" : "0");                   // ultimate fallback
+  *success = 0;
+  return out;
 }
+//------------------------------------------------------------------ float to sig conversion ----------
+
+
+//void aaaaa(void) {
+//  char* itemName = "QQ";
+//  char tmpS[100];
+//  bool_t success;
+//  double test_values[50] = {
+//      0.0, -0.0, 1.0, -1.0, 0.0001234, -0.0001234, 123456.789, -123456.789,
+//      1e-10, -1e-10, 1e10, -1e10, 999.9999, -999.9999, 999.99995, -999.99995,
+//      0.99999, -0.99999, 0.000009999, -0.000009999,
+//      1.23456789, -1.23456789, 9.9999, -9.9999, 10.0001, -10.0001,
+//      123.4567890123, -123.4567890123, 1.0000001, -1.0000001,
+//      1.00001, -1.00001, 0.10001, -0.10001, 100000.0, -100000.0,
+//      1e-308, -1e-308, 1e308, -1e308, DBL_MIN, -DBL_MIN, DBL_MAX, -DBL_MAX,
+//      2.22507e-308, -2.22507e-308, 1.79769e+308, -1.79769e+308
+//  };
+//  printf("------------------------\n");
+//  for (int i = 0; i < 50; i++) {
+//      double tmpF = test_values[i];
+//      strcpy(tmpS, formatDoubleWidth(tmpF, 4, itemName, &success));
+//      printf("Input: %.17g, Output: \"%s\", Success: %d\n", tmpF, tmpS, success);
+//  }
+//}
 
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
@@ -2193,6 +2376,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     * showCb = fnCbIsSet(itemNr%10000);
     * showValue = fnItemShowValue(itemNr%10000);
 
+    // aaaaa();  //test program for in softkey number formatting
     switch(itemNr%10000) {
 
       case VAR_ACC: {
@@ -2265,7 +2449,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                         else {
                           bool_t success;
-                          strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
+                          strcpy(tmpS, formatDoubleWidth(tmpF, 4, itemName, &success));
                           if(!success) {
                             switch(itemNr%10000) {
                               case VAR_ULIM    :
@@ -2284,10 +2468,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                                   itemName[1] = 0;
                               default:;
                             }
-                            strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
-                          }
-                          if(!success) {
-                            strcpy(tmpS, format_double_width(tmpF, 3, itemName, &success));
+                            strcpy(tmpS, formatDoubleWidth(tmpF, 4, itemName, &success));
                           }
                         }
                       }
