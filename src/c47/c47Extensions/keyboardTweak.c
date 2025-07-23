@@ -175,13 +175,22 @@ void resetKeytimers(void) {
       }
       else {
         if(getSystemFlag(FLAG_ALPHA)) {
+          if(tam.mode) {
+            tamLeaveMode();
+          }
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
           if(HOME3) {
+            if(tam.mode) {
+              tamLeaveMode();
+            }
             showSoftmenu(target_HOME);
           }
           else if(MYM3) {
+            if(tam.mode) {
+              tamLeaveMode();
+            }
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
@@ -203,6 +212,7 @@ void resetKeytimers(void) {
             fnTimerStop(TO_3S_CTFF);
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
+            if(tam.mode) tamLeaveMode();
             openHOMEorMyM(keypress_fff);
           }
         }
