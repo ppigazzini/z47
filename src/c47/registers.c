@@ -729,25 +729,17 @@ bool_t validateName(const char *name) {
 
 
 
-bool_t isUniqueName(const char *name) {
-  // Built-in items
+bool_t isUniqueMenuName(const char *name) {
+
+  // Built-in menu items
   for(uint32_t i = 0; i < LAST_ITEM; ++i) {
     switch(indexOfItems[i].status & CAT_STATUS) {
-      case CAT_FNCT:
-      case CAT_MENU:
-      case CAT_CNST:
-      case CAT_RVAR:
-      case CAT_SYFL: {
+      case CAT_MENU: {
         if(compareString(name, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
           return false;
         }
+      }
     }
-  }
-  }
-
-  // Variable menus
-  if(findNamedVariable(name) != INVALID_VARIABLE) {
-    return false;
   }
 
   // User menus
@@ -768,12 +760,13 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
   if(len < 1 || len > 7) {
     return INVALID_VARIABLE;
   }
-int i;
+
+  int i;
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
   //printf("|%20s|%20s|\n",(char *)(allReservedVariables[0].reservedVariableName + 1), variableName);
-  for(/*int*/ i = 0; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
+  for(/*int*/ i = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
     if(compareString((char *)(allReservedVariables[i].reservedVariableName + 1), variableName, CMP_NAME) == 0) {
       //return i + FIRST_RESERVED_VARIABLE;
       goto found;
@@ -914,14 +907,6 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
   }
   regist = findNamedVariable(variableName);
   if(regist == INVALID_VARIABLE && numberOfNamedVariables <= (LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE)) {
-    if(!isUniqueName(variableName)) {
-      displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-        sprintf(errorMessage, "the name %s", variableName);
-        moreInfoOnError("In function allocateNamedVariable:", errorMessage, "is already in use!", NULL);
-      #endif // PC_BUILD
-      return regist;
-    }
     allocateNamedVariable(variableName, dtReal34, REAL34_SIZE_IN_BLOCKS);
     if(lastErrorCode == ERROR_NONE) {
       // New variables are zero by default - although this might be immediately overridden, it might require an
