@@ -3108,7 +3108,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)

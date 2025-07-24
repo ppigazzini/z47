@@ -1058,9 +1058,6 @@ int16_t lastItem = 0;
               }
 
               if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
-                #if defined PC_BUILD
-                  printf("**[DL]** popSoftmenu 4\n");fflush(stdout);
-                #endif //PC_BUILD
                 popSoftmenu();
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
@@ -2399,7 +2396,7 @@ RELEASE_END:
 #if !defined(TESTSUITE_BUILD)
   void processKeyAction(int16_t item) {
 
-                    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u screenUpdatingMode=%i\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE, screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
@@ -2568,6 +2565,7 @@ RELEASE_END:
           else if(lastErrorCode != 0) {
             lastErrorCode = 0;
             screenUpdatingMode = SCRUPD_AUTO;
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             refreshScreen(139);
             keyActionProcessed = true;
           }
@@ -3537,6 +3535,17 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       case CM_EIM: {
         if(aimBuffer[0] != 0) {
           setEquation(currentFormula, aimBuffer);
+          parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+          if(lastErrorCode != 0) {  // Stay in Edit mode for the current equation
+            const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+            if(equationString) {
+              xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
+            }
+            else {
+              aimBuffer[0] = 0;
+            }
+            break;
+          }
         }
         if(currentMenu() == -MNU_EQ_EDIT) {
           calcModeNormal();
@@ -3894,10 +3903,15 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else {
           if(currentMenu() == -MNU_EQ_EDIT) {
-            calcModeNormal();
-            if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+            parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+            if(lastErrorCode != 0) {
+              deleteEquation(currentFormula);
+              lastErrorCode = 0;
+            }
+            else if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
               deleteEquation(currentFormula);
             }
+            calcModeNormal();
           }
           popSoftmenu();
         }
