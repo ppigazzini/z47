@@ -851,8 +851,24 @@ void realToFloat(const real_t *vv, float *v) {
   *v = fnRealToFloat(vv);
 }
 
-void realToDouble(const real_t *vv, double *v) {      //Not using double internally, i.e. using float type. Change fnRealToFloat if double is needed in future
-  *v = fnRealToFloat(vv);
+
+static double fnRealToDouble(const real_t *r) {
+    char buffer[64];
+        if (realIsSpecial(r)) {
+        if (realIsNaN(r)) return 0.0 / 0.0;
+        return realIsPositive(r) ? 1.0 / 0.0 : -1.0 / 0.0;
+    }
+    if (realIsZero(r)) {
+        return realIsPositive(r) ? 0.0 : -0.0;
+    }
+    decNumberToString((decNumber*)r, buffer);
+    return strtod(buffer, NULL);
+}
+
+
+
+void realToDouble(const real_t *vv, double *v) {
+  *v = fnRealToDouble(vv);
 }
 
 static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
