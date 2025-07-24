@@ -2098,85 +2098,143 @@ TO_QSPI static const mstr modeNames[] = {
 };
 
 
-static int count_significant_digits(const char* str) {
-    int count = 0;
-    int found_nonzero = 0;
-    const char* p = str;
-    
-    while (*p) {
-        if (*p >= '0' && *p <= '9') {
-            if (*p != '0') {
-                found_nonzero = 1;
-                count++;
-            } else if (found_nonzero) {
-                count++;
-            }
-        }
-        p++;
-    }
-    return count;
+
+//------------------------------------------------------------------ float to sig conversion ----------
+static int checkWidthWithPrefix(const char* itemName, const char* numStr, uint32_t max_width) {
+  char test_buffer[128];
+  snprintf(test_buffer, sizeof(test_buffer), "%s%s", itemName, numStr);
+  return stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width;
 }
 
-static void remove_trailing_zeros(char* str) {
+static void cleanupTrailingZeros(char* str) {
+  char* e_pos = strchr(str, 'E');
+  if (!e_pos) {
+    e_pos = strchr(str, 'e');
+  }
+  if (e_pos && *e_pos == 'e') {
+    *e_pos = 'E';
+  }
+  if (e_pos) {
     char* decimal_pos = strchr(str, '.');
-    if (!decimal_pos) return;
-    int len = strlen(str);
-    int i = len - 1;
-    while (i > decimal_pos - str && str[i] == '0') {
+    if (decimal_pos && decimal_pos < e_pos) {
+      char* p = e_pos - 1;
+      while (p > decimal_pos && *p == '0') {
+        p--;
+      }
+      if (p == decimal_pos) {
+        memmove(decimal_pos, e_pos, strlen(e_pos) + 1);
+      } else {
+        memmove(p + 1, e_pos, strlen(e_pos) + 1);
+      }
+    }
+    e_pos = strchr(str, 'E');
+    if (e_pos) {
+      char* exp_start = e_pos + 1;
+      if (*exp_start == '+') {
+        exp_start++;
+      }
+      if (*exp_start == '-') {
+        exp_start++;
+      }
+      while (*exp_start == '0' && *(exp_start + 1) != '\0') {
+        memmove(exp_start, exp_start + 1, strlen(exp_start + 1) + 1);
+      }
+    }
+  } else {
+    char* decimal_pos = strchr(str, '.');
+    if (decimal_pos) {
+      int len = strlen(str);
+      int i = len - 1;
+      while (i > decimal_pos - str && str[i] == '0') {
         str[i] = '\0';
         i--;
-    }
-    if (i == decimal_pos - str) {
+      }
+      if (i == decimal_pos - str) {
         str[i] = '\0';
+      }
     }
+  }
 }
 
-static void clean_scientific(char* str) {
-    char* e_pos = strchr(str, 'E');
-    if (!e_pos) return;
-    char* exp_start = e_pos + 1;
-    if (*exp_start == '+') {
-        memmove(exp_start, exp_start + 1, strlen(exp_start));
-    }
-    while (*exp_start == '0' && strlen(exp_start) > 1) {
-        memmove(exp_start, exp_start + 1, strlen(exp_start));
-    }
-}
+  
+char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success) {
+  uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  uint8_t saveddisplayFormat = displayFormat;
+  bool_t  ovrENG = getSystemFlag(FLAG_ENGOVR);
+  clearSystemFlag(FLAG_ENGOVR);
+  static char out[128];
+  int actual_max_width = 400 / 6 - 2 - 4;
+  if (real34IsZero(real34)) {
+    strcpy(out, "0");
+    *success = 1;
+    return out;
+  }
 
-char* format_double_width(double value, int decimals, char* result, bool_t* success) {
-   int original_decimals = decimals;
-   uint32_t max_width = 400/6-2;
-   static char temp[30];
-   static char test_buffer[60];
-   do { 
-       sprintf(temp, "%.*f", decimals, value);
-       remove_trailing_zeros(temp);
-       sprintf(test_buffer, "%s%s", result, temp);
-       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
-           *success = (count_significant_digits(temp) >= original_decimals);
-           return temp;
-       }
-   } while (--decimals >= 0);
-   
-   memset(temp, 0, sizeof(temp));
-   int best_decimals = -1;
-   for (decimals = 0; decimals <= 15; decimals++) {
-       sprintf(temp, "%.*E", decimals, value);
-       clean_scientific(temp);
-       sprintf(test_buffer, "%s%s", result, temp);
-       if (stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width) {
-           best_decimals = decimals;
-       }
-   }   
-   if (best_decimals >= 0) {
-       sprintf(temp, "%.*E", best_decimals, value);
-       clean_scientific(temp);
-       *success = (count_significant_digits(temp) >= original_decimals);
-       return temp;
-   }
-   *success = 0;   
-   return temp; // fallback
+  real_t reall10, real;
+  real34ToReal(real34, &real);
+  realLog10(&real, &reall10, &ctxtReal39);
+  if(realToInt32C47(&reall10) < digits) {
+    displayFormat = DF_SF;
+    displayFormatDigits = digits;
+  } else {
+    displayFormat = DF_FIX;
+    displayFormatDigits = 0;
+  }
+  for (int ddd = 8; ddd >= 5; ddd--) {
+
+    updateDisplayValueX = true;
+    displayValueX[0] = 0;
+    real34ToDisplayString(real34, amNone, out, &standardFont, 60, ddd, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+    updateDisplayValueX = false;
+    strcpy(out, displayValueX);
+    //printf("      ---1 %s displayFormat=%d displayFormatDigits=%d\n",out, displayFormat, displayFormatDigits);
+    cleanupTrailingZeros(out);
+    //printf("      ---2 %s\n",out);
+    displayFormatDigits = savedDisplayFormatDigits;
+    displayFormat = saveddisplayFormat;
+    if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
+    if (checkWidthWithPrefix(itemName, out, actual_max_width * 0.85)) {
+       *success = true;
+       return out;
+    }    
+    if (checkWidthWithPrefix(itemName, out, actual_max_width)) {
+       *success = false;
+       return out;
+    }    
+  }
+  strcpy(out,"==");
+  *success = 0;
+  return out;
 }
+//------------------------------------------------------------------ float to sig conversion ----------
+
+
+//void aaaaa(void) {
+//  char* itemName = "QQ";
+//  char tmpS[100];
+//  real_t tmpR;
+//  real34_t tmpR34;
+//  bool_t success;
+//  double test_values[50] = {
+//      0.0, -0.0, 1.0, -1.0, 
+//      0.0001234, -0.0001234, 123456.789, -123456.789,
+//      1e-10, -1e-10, 1e10, -1e10, 999.9999, -999.9999, 999.99995, -999.99995,
+//      0.99999, -0.99999, 0.000009999, -0.000009999,
+//      1.23456789, -1.23456789, 9.9999, -9.9999, 10.0001, -10.0001,
+//      123.4567890123, -123.4567890123, 1.0000001, -1.0000001,
+//      1.00001, -1.00001, 0.10001, -0.10001, 100000.0, -100000.0,
+//      1e-308, -1e-308, 1e308, -1e308, DBL_MIN, -DBL_MIN, DBL_MAX, -DBL_MAX,
+//      2.22507e-308, -2.22507e-308, 1.79769e+308, -1.79769e+308
+//  };
+//  printf("------------------------\n");
+//  for (int i = 0; i < 50; i++) {
+//      double tmpF = test_values[i];
+//      convertDoubleToReal(tmpF, &tmpR, &ctxtReal39);
+//      realToReal34(&tmpR,&tmpR34);
+//      strcpy(tmpS, formatDoubleWidth(&tmpR34, 4, itemName, &success));
+//      printf("Input: %.17g, Output: \"%s\", Success: %d\n", tmpF, tmpS, success);
+//  }
+//}
 
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
@@ -2193,6 +2251,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     * showCb = fnCbIsSet(itemNr%10000);
     * showValue = fnItemShowValue(itemNr%10000);
 
+  //   aaaaa();  //test program for in softkey number formatting
     switch(itemNr%10000) {
 
       case VAR_ACC: {
@@ -2242,7 +2301,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
                       realToFloat(&tmpR, &tmpF);
 
-                      if(tmpF == (int)tmpF && (
+                      if(false && tmpF == (int)tmpF && (
                          (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
                          (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
                          )) {
@@ -2264,8 +2323,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
                         }
                         else {
-                          bool_t success;
-                          strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
+                          bool_t success; 
+                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success));
+                          //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", success");
+                          //printf(") => %s and success = %d\n", tmpS, success);
                           if(!success) {
                             switch(itemNr%10000) {
                               case VAR_ULIM    :
@@ -2284,10 +2345,9 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                                   itemName[1] = 0;
                               default:;
                             }
-                            strcpy(tmpS, format_double_width(tmpF, 4, itemName, &success));
-                          }
-                          if(!success) {
-                            strcpy(tmpS, format_double_width(tmpF, 3, itemName, &success));
+                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success));
+                            //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", success");
+                            //printf(") => %s and success = %d\n", tmpS, success);
                           }
                         }
                       }

@@ -312,6 +312,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 #endif //TESTSUITE_BUILD
 
 
+#undef SOLVERDEBUG
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
@@ -357,8 +358,8 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(real34CompareEqual(x, y)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
 retryLevel:
       if(--getOutOfLevel >= 0) {
-        #ifdef PC_BUILD
-          printf("Retry Level:%i ",getOutOfLevel);
+        #if (defined PC_BUILD) && (defined SOLVERDEBUG) 
+          printf("Solver retry Level:%2i ",getOutOfLevel);
           printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
         #endif //PC_BUILD
         real34Multiply(&antiLevel34,const34_153,&antiLevel34);   //increase it for the next round so long
