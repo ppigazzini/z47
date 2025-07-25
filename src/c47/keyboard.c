@@ -2300,10 +2300,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               goto RELEASE_END;
             }
 
-            if((calcMode == CM_AIM || calcMode == CM_EIM) && getSystemFlag(FLAG_ALPHA) && item != ITM_BACKSPACE) { // if AIM or EIN gets to this point, it means that the character entered on the primary is already in the buffer. Delete before entering the longpress release button
-              fnKeyBackspace(NOPARAM);
-            }
-
             if((item == ITM_BASEMENU) && tam.mode) {
               tamLeaveMode();
             }
