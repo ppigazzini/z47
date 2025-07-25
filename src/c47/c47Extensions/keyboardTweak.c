@@ -308,22 +308,17 @@ void resetKeytimers(void) {
       }
     }                                                                   //yellow and blue function keys ^^
 
-    #undef ALL_AIM_LP_CYCLE
+    #define ALL_AIM_LP_CYCLE
 
     #if defined(ALL_AIM_LP_CYCLE)
-      else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-15
+      else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {
         tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
-        tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
         tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
         if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
           ) {
           if(!shiftF && !shiftG) {
-            longpressDelayedkey1 = tmpf_;
-            tmpf = tmpf_;
-            if(LongPressM == RBX_M1234) {
-              longpressDelayedkey3 = tmpg_;
+              longpressDelayedkey1 = tmpg_;
               tmpg = tmpg_;
-            }
           }
         }
       }                                                                   //yellow and blue function keys ^^
