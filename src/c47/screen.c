@@ -823,7 +823,22 @@ void execTimerApp(uint16_t timerType) {
         char *funcParam;
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
-        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
+
+        if(calcMode == CM_AIM || calcMode == CM_EIM) {
+          fnKeyBackspace(NOPARAM);
+          addItemToBuffer(JM_auto_longpress_enabled);
+          FN_timeouts_in_progress = false;
+          fnTimerStop(TO_FN_LONG);
+          if(calcMode == CM_AIM) {
+            refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
+          } else
+          if(calcMode == CM_EIM) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+            refreshScreen(131);
+          }
+          return;
+        }
+        else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
         else if(funcParam[0] == 0 && (JM_auto_longpress_enabled == ITM_XEQ || JM_auto_longpress_enabled == ITM_GTO)) {  //from KEYA-F longpress
