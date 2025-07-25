@@ -1426,20 +1426,20 @@ void fnStatList() {
 
         if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
           //sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_fixed(grf_x(ixx),7));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format(grf_x(ixx),7));
         }
         else {
           //sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_sci(grf_x(ixx),7));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format(grf_x(ixx),7));
         }
 
         if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
           //sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
-          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_fixed(grf_y(ixx),7));
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format(grf_y(ixx),7));
         }
         else {
           //sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
-          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_sci(grf_y(ixx),7));
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format(grf_y(ixx),7));
         }
 
         strcat(tmpstr1,tmpstr2);

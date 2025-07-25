@@ -77,9 +77,9 @@ char    *radixProcess(char *output, const char * ss);
 void    eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05);
 char    *padEquals(char *output, const char * ss);
 char    *smallE(char *output, const char * ss);
-char    *wrap_format_fixed(double value, int digits);
-char    *wrap_format_sci(double value, int digits);
+char    *wrap_format(double value, int digits);
 char    *wrap_eng(double value, int digits);
+char    *formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width);
 
 int16_t screen_window_x(float x_min, float x, float x_max);
 int16_t screen_window_y(float y_min, float y, float y_max);
