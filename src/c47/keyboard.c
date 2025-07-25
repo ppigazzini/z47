@@ -3903,12 +3903,14 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else {
           if(currentMenu() == -MNU_EQ_EDIT) {
-            parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
-            if(lastErrorCode != 0) {
-              deleteEquation(currentFormula);
-              lastErrorCode = 0;
+            if(allFormulae[currentFormula].pointerToFormulaData != C47_NULL) {
+              parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+              if(lastErrorCode != 0) {
+                deleteEquation(currentFormula);
+                lastErrorCode = 0;
+              }
             }
-            else if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+            else {
               deleteEquation(currentFormula);
             }
             calcModeNormal();
