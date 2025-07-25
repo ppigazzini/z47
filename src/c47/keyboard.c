@@ -10,6 +10,7 @@ TO_QSPI static const char bugScreenNonexistentMenu[] = "In function determineFun
 TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineItem: item was not determined!";
 
 static void executeFunction(const char *data, int16_t item_);
+void fnKeyBackspace(uint16_t unusedButMandatoryParameter);
 
   int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG) { //Added itemshift param JM
     int16_t item = ITM_NOP;
@@ -1107,7 +1108,7 @@ int16_t lastItem = 0;
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(tam.mode) {
                   //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
                   popSoftmenu();
@@ -1264,7 +1265,7 @@ int16_t lastItem = 0;
                   SetSetting(JC_NL);
                 }
                 else if(tam.alpha) {
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
                     assignGetName1();
@@ -1316,7 +1317,7 @@ int16_t lastItem = 0;
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(stringGlyphLength(aimBuffer) > 6) {
                   assignLeaveAlpha();
                   assignGetName2();
@@ -2296,6 +2297,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               goto RELEASE_END;
             }
 
+            if((calcMode == CM_AIM || calcMode == CM_EIM) && getSystemFlag(FLAG_ALPHA) && item != ITM_BACKSPACE) { // if AIM or EIN gets to this point, it means that the character entered on the primary is already in the buffer. Delete before entering the longpress release button
+              fnKeyBackspace(NOPARAM);
+            }
+
             runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2769,7 +2774,7 @@ RELEASE_END:
           else if(tam.mode) {
             if(tam.alpha) {
               if(indexOfItems[item].func == addItemToBuffer || item < 0) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
               }
               else {
                 keyActionProcessed = true;
@@ -2846,11 +2851,10 @@ RELEASE_END:
                   runFunction(item);
                   keyActionProcessed = true;
                 }
-
-//See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
+                  refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
                 }
                 break;
               }
@@ -2861,9 +2865,9 @@ RELEASE_END:
                          printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
                        #endif
                     #endif
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-                refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+                refreshScreen(130);
                 break;
               }
 
@@ -3168,7 +3172,7 @@ RELEASE_END:
               case CM_ASSIGN: {
                 if(item > 0 && itemToBeAssigned == 0) {
                   if(tam.alpha) {
-                    processAimInput(item);
+                    processAimInput(item); // sets keyActionProcessed
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
                       assignGetName1();
@@ -3221,7 +3225,7 @@ RELEASE_END:
                 else if(item != 0 && itemToBeAssigned != 0) {
                   if(tam.alpha && tam.mode != TM_NEWMENU) {
                     if(item > 0) {
-                      processAimInput(item);
+                      processAimInput(item); // sets keyActionProcessed
                       if(stringGlyphLength(aimBuffer) > 6) {
                         assignLeaveAlpha();
                         assignGetName2();
