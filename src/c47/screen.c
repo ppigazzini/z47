@@ -824,7 +824,8 @@ void execTimerApp(uint16_t timerType) {
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
-        if(calcMode == CM_AIM || calcMode == CM_EIM) {
+        //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && !(currentKeyCode == 16 || currentKeyCode == 12) ){ //exclude ENTER and BACKSPACE
           fnKeyBackspace(NOPARAM);
           addItemToBuffer(JM_auto_longpress_enabled);
           FN_timeouts_in_progress = false;
@@ -838,7 +839,8 @@ void execTimerApp(uint16_t timerType) {
           }
           return;
         }
-        else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
+        else 
+        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
         else if(funcParam[0] == 0 && (JM_auto_longpress_enabled == ITM_XEQ || JM_auto_longpress_enabled == ITM_GTO)) {  //from KEYA-F longpress
