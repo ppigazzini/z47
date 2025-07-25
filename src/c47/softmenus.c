@@ -2098,145 +2098,6 @@ TO_QSPI static const mstr modeNames[] = {
 };
 
 
-
-//------------------------------------------------------------------ float to sig conversion ----------
-static int checkWidthWithPrefix(const char* itemName, const char* numStr, uint32_t max_width) {
-  char test_buffer[128];
-  snprintf(test_buffer, sizeof(test_buffer), "%s%s", itemName, numStr);
-  return stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width;
-}
-
-static void cleanupTrailingZeros(char* str) {
-  char* e_pos = strchr(str, 'E');
-  if (!e_pos) {
-    e_pos = strchr(str, 'e');
-  }
-  if (e_pos && *e_pos == 'e') {
-    *e_pos = 'E';
-  }
-  if (e_pos) {
-    char* decimal_pos = strchr(str, '.');
-    if (decimal_pos && decimal_pos < e_pos) {
-      char* p = e_pos - 1;
-      while (p > decimal_pos && *p == '0') {
-        p--;
-      }
-      if (p == decimal_pos) {
-        memmove(decimal_pos, e_pos, strlen(e_pos) + 1);
-      } else {
-        memmove(p + 1, e_pos, strlen(e_pos) + 1);
-      }
-    }
-    e_pos = strchr(str, 'E');
-    if (e_pos) {
-      char* exp_start = e_pos + 1;
-      if (*exp_start == '+') {
-        exp_start++;
-      }
-      if (*exp_start == '-') {
-        exp_start++;
-      }
-      while (*exp_start == '0' && *(exp_start + 1) != '\0') {
-        memmove(exp_start, exp_start + 1, strlen(exp_start + 1) + 1);
-      }
-    }
-  } else {
-    char* decimal_pos = strchr(str, '.');
-    if (decimal_pos) {
-      int len = strlen(str);
-      int i = len - 1;
-      while (i > decimal_pos - str && str[i] == '0') {
-        str[i] = '\0';
-        i--;
-      }
-      if (i == decimal_pos - str) {
-        str[i] = '\0';
-      }
-    }
-  }
-}
-
-  
-char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success) {
-  uint8_t savedDisplayFormatDigits = displayFormatDigits;
-  uint8_t saveddisplayFormat = displayFormat;
-  bool_t  ovrENG = getSystemFlag(FLAG_ENGOVR);
-  clearSystemFlag(FLAG_ENGOVR);
-  static char out[128];
-  int actual_max_width = 400 / 6 - 2 - 4;
-  if (real34IsZero(real34)) {
-    strcpy(out, "0");
-    *success = 1;
-    return out;
-  }
-
-  real_t reall10, real;
-  real34ToReal(real34, &real);
-  realLog10(&real, &reall10, &ctxtReal39);
-  if(realToInt32C47(&reall10) < digits) {
-    displayFormat = DF_SF;
-    displayFormatDigits = digits;
-  } else {
-    displayFormat = DF_FIX;
-    displayFormatDigits = 0;
-  }
-  for (int ddd = 8; ddd >= 5; ddd--) {
-
-    updateDisplayValueX = true;
-    displayValueX[0] = 0;
-    real34ToDisplayString(real34, amNone, out, &standardFont, 60, ddd, LIMITEXP, !FRONTSPACE, NOIRFRAC);
-    updateDisplayValueX = false;
-    strcpy(out, displayValueX);
-    //printf("      ---1 %s displayFormat=%d displayFormatDigits=%d\n",out, displayFormat, displayFormatDigits);
-    cleanupTrailingZeros(out);
-    //printf("      ---2 %s\n",out);
-    displayFormatDigits = savedDisplayFormatDigits;
-    displayFormat = saveddisplayFormat;
-    if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
-    if (checkWidthWithPrefix(itemName, out, actual_max_width * 0.85)) {
-       *success = true;
-       return out;
-    }    
-    if (checkWidthWithPrefix(itemName, out, actual_max_width)) {
-       *success = false;
-       return out;
-    }    
-  }
-  strcpy(out,"==");
-  *success = 0;
-  return out;
-}
-//------------------------------------------------------------------ float to sig conversion ----------
-
-
-//void aaaaa(void) {
-//  char* itemName = "QQ";
-//  char tmpS[100];
-//  real_t tmpR;
-//  real34_t tmpR34;
-//  bool_t success;
-//  double test_values[50] = {
-//      0.0, -0.0, 1.0, -1.0, 
-//      0.0001234, -0.0001234, 123456.789, -123456.789,
-//      1e-10, -1e-10, 1e10, -1e10, 999.9999, -999.9999, 999.99995, -999.99995,
-//      0.99999, -0.99999, 0.000009999, -0.000009999,
-//      1.23456789, -1.23456789, 9.9999, -9.9999, 10.0001, -10.0001,
-//      123.4567890123, -123.4567890123, 1.0000001, -1.0000001,
-//      1.00001, -1.00001, 0.10001, -0.10001, 100000.0, -100000.0,
-//      1e-308, -1e-308, 1e308, -1e308, DBL_MIN, -DBL_MIN, DBL_MAX, -DBL_MAX,
-//      2.22507e-308, -2.22507e-308, 1.79769e+308, -1.79769e+308
-//  };
-//  printf("------------------------\n");
-//  for (int i = 0; i < 50; i++) {
-//      double tmpF = test_values[i];
-//      convertDoubleToReal(tmpF, &tmpR, &ctxtReal39);
-//      realToReal34(&tmpR,&tmpR34);
-//      strcpy(tmpS, formatDoubleWidth(&tmpR34, 4, itemName, &success));
-//      printf("Input: %.17g, Output: \"%s\", Success: %d\n", tmpF, tmpS, success);
-//  }
-//}
-
-
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
   char tmpS[30], tmpSS[20];
@@ -2251,7 +2112,6 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     * showCb = fnCbIsSet(itemNr%10000);
     * showValue = fnItemShowValue(itemNr%10000);
 
-  //   aaaaa();  //test program for in softkey number formatting
     switch(itemNr%10000) {
 
       case VAR_ACC: {
@@ -2324,7 +2184,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                         else {
                           bool_t success; 
-                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success));
+                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4));
                           //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", success");
                           //printf(") => %s and success = %d\n", tmpS, success);
                           if(!success) {
@@ -2345,7 +2205,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                                   itemName[1] = 0;
                               default:;
                             }
-                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success));
+                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4));
                             //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", success");
                             //printf(") => %s and success = %d\n", tmpS, success);
                           }
