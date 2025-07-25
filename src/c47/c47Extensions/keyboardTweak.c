@@ -308,21 +308,18 @@ void resetKeytimers(void) {
       }
     }                                                                   //yellow and blue function keys ^^
 
-    #define ALL_AIM_LP_CYCLE
 
-    #if defined(ALL_AIM_LP_CYCLE)
-      else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {
-        tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
-        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
-        if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
-          ) {
-          if(!shiftF && !shiftG) {
-              longpressDelayedkey1 = tmpg_;
-              tmpg = tmpg_;
-          }
+    else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {
+      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+      tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+        ) {
+        if(!shiftF && !shiftG) {
+            longpressDelayedkey1 = tmpg_;
+            tmpg = tmpg_;
         }
-      }                                                                   //yellow and blue function keys ^^
-    #endif //ALL_AIM_LP_CYCLE
+      }
+    }                                                                   //yellow and blue function keys ^^
 
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
@@ -423,14 +420,12 @@ void resetKeytimers(void) {
               longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               break;
 
-              #if !defined(ALL_AIM_LP_CYCLE)
-                case ITM_ENTER:
-                  if(tam.mode == 0) {
-                    longpressDelayedkey1 = ITM_XEDIT;
-                    longpressDelayedkey3 = ITM_CR;
-                  }
-                  break;
-               #endif //ALL_AIM_LP_CYCLE
+            case ITM_ENTER:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_XEDIT;
+                longpressDelayedkey3 = ITM_CR;
+              }
+              break;
             default:;
           }
           break;
@@ -447,14 +442,12 @@ void resetKeytimers(void) {
             case ITM_EXIT1:
               longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               break;
-              #if !defined(ALL_AIM_LP_CYCLE)
-                case ITM_ENTER:
-                  if(tam.mode == 0) {
-                    longpressDelayedkey1 = ITM_XEDIT;
-                    longpressDelayedkey3 = ITM_CR;
-                  }
-                  break;
-              #endif //ALL_AIM_LP_CYCLE
+            case ITM_ENTER:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_XEDIT;
+                longpressDelayedkey3 = ITM_CR;
+              }
+              break;
             default:;
           }
           break;
