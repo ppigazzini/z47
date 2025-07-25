@@ -10,7 +10,6 @@ TO_QSPI static const char bugScreenNonexistentMenu[] = "In function determineFun
 TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineItem: item was not determined!";
 
 static void executeFunction(const char *data, int16_t item_);
-void fnKeyBackspace(uint16_t unusedButMandatoryParameter);
 
   int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG) { //Added itemshift param JM
     int16_t item = ITM_NOP;
