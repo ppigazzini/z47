@@ -1944,8 +1944,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
@@ -1953,8 +1954,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -3124,7 +3126,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
