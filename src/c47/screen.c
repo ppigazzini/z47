@@ -825,7 +825,15 @@ void execTimerApp(uint16_t timerType) {
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && !(currentKeyCode == 16 || currentKeyCode == 12) ){ //exclude ENTER and BACKSPACE
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && 
+          !( (currentKeyCode == 16 || currentKeyCode == 12) || 
+                          //  ENTER                   BACKSP
+             ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
+                          //                  UP                      DN
+             (!isR47FAM && (currentKeyCode == 17 || currentKeyCode == 22)) )
+                          //                  UP                      DN
+          ){ //exclude ENTER and BACKSPACE
+          
           fnKeyBackspace(NOPARAM);
           addItemToBuffer(JM_auto_longpress_enabled);
           FN_timeouts_in_progress = false;
