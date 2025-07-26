@@ -803,7 +803,7 @@ done:
   return out;
 }
 //**************************************************************************************************************
-static void core_convert(char* out, const char* sign, double value, int width) {
+static void coreConvert(char* out, const char* sign, double value, int width) {
   #if !defined(TESTSUITE_BUILD)
     real34_t value34;
     real_t valueR;
@@ -815,15 +815,15 @@ static void core_convert(char* out, const char* sign, double value, int width) {
   #endif //TESTSUITE_BUILD
 }
 
-static char* format_with_radix(double value, int digits, bool handle_zero) {
+static char* formatWithRadix(double value, int digits, bool handle_zero) {
     static char buf[64];
     static char buf2[64];
     const char* sign = (value < 0.0) ? "-" : "";
     if (value < 0.0) value = -value;
     if (handle_zero && value == 0.0) {
-        sprintf(buf, "%s0.0", sign);
+      sprintf(buf, "%s0.0", sign);
     } else {
-        core_convert(buf, sign, value, 50);
+      coreConvert(buf, sign, value, 50);
     }
     return radixProcess(buf2, buf);
 }
@@ -835,21 +835,21 @@ char* eng(char* result, double value, int digits) {
         sprintf(result, "%s0.0", sign);
         return result;
     }
-    core_convert(result, sign, value, 50);
-  printf("eng()=%s\n", result);
+    coreConvert(result, sign, value, 50);
+    //printf("eng()=%s\n", result);
     return result;
 }
 
 char* wrap_format(double value, int digits) {
-  printf("eng()=%s\n", format_with_radix(value, digits, false));
-    return format_with_radix(value, digits, false);
+    //printf("eng()=%s\n", formatWithRadix(value, digits, false));
+    return formatWithRadix(value, digits, false);
 }
 
 char* wrap_eng(double value, int digits) {
     static char out[64];
     static char buf2[64];
     eng(out, value, digits);
-  printf("wrap_eng()=%s\n", radixProcess(buf2, out));
+    //printf("wrap_eng()=%s\n", radixProcess(buf2, out));
     return radixProcess(buf2, out);
 }
 
