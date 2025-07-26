@@ -795,11 +795,11 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
     }
     strcpy(out,"==");
     *success = 0;
-  #endif //TESTSUITE_BUILD
 done:
-  displayFormatDigits = savedDisplayFormatDigits;
-  displayFormat = saveddisplayFormat;
-  if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
+    displayFormatDigits = savedDisplayFormatDigits;
+    displayFormat = saveddisplayFormat;
+    if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
+  #endif //TESTSUITE_BUILD
   return out;
 }
 //**************************************************************************************************************
