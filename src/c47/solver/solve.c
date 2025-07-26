@@ -79,6 +79,11 @@ void fnSolve(uint16_t labelOrVariable) {
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       int32ToReal34(resultCode, REGISTER_REAL34_DATA(REGISTER_T));
+      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        printf("Close ");
+        printRegisterToConsole(REGISTER_X, "X=", " ");
+        printRegisterToConsole(REGISTER_Y, "Xold=", "\n");
+      #endif
       switch(resultCode) {
         case SOLVER_RESULT_NORMAL: {
           copySourceRegisterToDestRegister(REGISTER_X, labelOrVariable);
@@ -313,6 +318,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 
 #undef SOLVERDEBUG
+#define SOLVERDEBUG2 //only progress indicators
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
@@ -372,6 +378,11 @@ retryLevel:
         }
       }
     }
+    #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      printf("Start %d  ", loop);
+      printReal34ToConsole(&a, "a=", " ");
+      printReal34ToConsole(&b, "b=", "\n");
+    #endif
 
     real34Subtract(&b, &a, &s);
     if(real34CompareAbsLessThan(&s, const34_1e_32)) {
@@ -442,8 +453,11 @@ retryLevel:
       real34ToReal(&fa, &faa);
       real34ToReal(&fb, &fbb);
       real34ToReal(&fb1, &fbb1);
-
-
+      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        printf("Iter %d  ", loop);
+        printReal34ToConsole(&a, "a=", " ");
+        printReal34ToConsole(&b, "b=", "\n");
+      #endif
 
       loop++;
       if(checkHalfSec()) {
@@ -644,6 +658,12 @@ retryLevel:
         break;
       }
     } while(true);
+
+    #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      printf("End iter %d  ", loop);
+      printReal34ToConsole(&a, "a=", " ");
+      printReal34ToConsole(&b, "b=", "\n");
+    #endif
 
     _executeSolver(variable, &b, resZ);
     real34Copy(&b1, resY);
