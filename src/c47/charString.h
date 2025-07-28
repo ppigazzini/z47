@@ -7,6 +7,8 @@
 #if !defined(CHARSTRING_H)
 #define CHARSTRING_H
 
+void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len);
+
 /********************************************//**
  * \brief Returns a pointer to the last glyph of a string
  *
