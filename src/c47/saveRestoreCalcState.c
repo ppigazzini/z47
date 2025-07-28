@@ -5,18 +5,19 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1009     // Change matrix headers, add tag
+#define BACKUP_VERSION                     1010     // Change constant format in equation, adding a # prefix
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
 1006     // 2024-11-07 Remove Aspect and add PLOT_PLUS
 1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
 1008     // 2024-11018 Add lastCenturyHighUsed
+1009     // Change matrix headers, add tag
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000020 // Change bcd
+#define configFileVersion                  10000021 // Change constant format in equation, adding a # prefix
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -32,6 +33,8 @@
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
 10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
+...
+10000020 // Change bcd
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -156,6 +159,25 @@ static char *skip_to_space_newline(const char *str) {
 static char *toInt16_next_word(const char *str, int16_t *val) {
     *val = toInt16(str);
     return next_word(str);
+}
+
+static void _updateConstantsInEquations(void) {
+  for(uint16_t i = 0; i < numberOfFormulae; i++) {
+    if(allFormulae[i].pointerToFormulaData != C47_NULL) {
+      parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+      if(lastErrorCode == 0) {   // if equation is valid, check and update constants
+        const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[i].pointerToFormulaData);
+        strcpy(tmpString, strPtr);
+        updateOldConstants = true;
+        parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        updateOldConstants = false;
+        setEquation(i, tmpString);
+      }
+      else {
+        lastErrorCode = 0;
+      }
+    }
+  }
 }
 #endif
 
@@ -1306,6 +1328,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       }
     }
 
+    if(backupVersion < 1010) {                           //old constant format in equations
+      printf("Version number of configfile < 1010: adding # prefix to constants in equations.\n");
+      _updateConstantsInEquations();
+    }
+
+
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
     while(paramHead) {
@@ -2291,7 +2319,7 @@ int64_t stringToInt64(const char *str) {
         readLine(errorMessage); // Variable name
         read2Lines(aimBuffer,tmpString); // Variable data type & Variable value
 
-        if(( loadMode == LM_ALL || 
+        if(( loadMode == LM_ALL ||
              loadMode == LM_NAMED_VARIABLES ||
             (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0))) ) &&
 
@@ -2669,7 +2697,7 @@ int64_t stringToInt64(const char *str) {
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
- 
+
       #if defined(LOADDEBUG)
         if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
           printf("\n");
@@ -2724,6 +2752,9 @@ int64_t stringToInt64(const char *str) {
           utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
           setEquation(i, tmpString + TMP_STR_LENGTH / 2);
         }
+      }
+      if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
+        _updateConstantsInEquations();
       }
     }
 

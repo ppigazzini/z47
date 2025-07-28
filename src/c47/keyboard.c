@@ -3547,6 +3547,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
             else {
               aimBuffer[0] = 0;
             }
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             break;
           }
         }
@@ -3907,7 +3908,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         else {
           if(currentMenu() == -MNU_EQ_EDIT) {
             if(allFormulae[currentFormula].pointerToFormulaData != C47_NULL) {
-              parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+              parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
               if(lastErrorCode != 0) {
                 deleteEquation(currentFormula);
                 lastErrorCode = 0;
