@@ -834,7 +834,8 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
   fnDrop(NOPARAM);
 }
 
-static void _runEqFunction(char *mvarBuffer, uint16_t item) {
+
+bool isDyadicFunction(uint16_t item) {
   switch(item) {
     case PARSER_OPERATOR_ITM_YX: // dyadic functions
     case ITM_COMB:
@@ -853,16 +854,25 @@ static void _runEqFunction(char *mvarBuffer, uint16_t item) {
     case ITM_HN:
     case ITM_HNP:
     case ITM_Lm:
+    case ITM_LmALPHA:
     case ITM_Pn:
     case ITM_Tn:
     case ITM_Un:
-    case ITM_atan2: {
-      _runDyadicFunction(mvarBuffer, item);
-      break;
-    }
-    default: { // monadic functions
-      _runMonadicFunction(mvarBuffer, item);
-    }
+    case ITM_atan2:
+    case ITM_XTHROOT:
+      return true;
+    default:                     // monadic functions
+      return false;
+  }
+}
+
+
+static void _runEqFunction(char *mvarBuffer, uint16_t item) {
+  if(isDyadicFunction(item)) {    // dyadic functions
+    _runDyadicFunction(mvarBuffer, item);
+  }
+  else {                          // monadic functions
+    _runMonadicFunction(mvarBuffer, item);
   }
 }
 
@@ -1025,7 +1035,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
   }
 }
 
-static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, char *mvarBuffer) {
+static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, char *mvarBuffer, const char *pointerInFormula) {
   uint32_t tmpVal = 0;
   if(parserHint != PARSER_HINT_NUMERIC && stringGlyphLength(strPtr) > 7) {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1041,6 +1051,20 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
   switch(parseMode) {
     case EQUATION_PARSER_MVAR: {
       if(parserHint == PARSER_HINT_VARIABLE) {
+        if(updateOldConstants) { // Need to update constants format by adding a # prefix
+          for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) {
+            if(compareString(indexOfItems[i].itemCatalogName, strPtr, CMP_NAME) == 0) {
+              char *formulaPtr = mvarBuffer + strlen(mvarBuffer);
+              for(uint16_t i = 0; i< strlen(pointerInFormula) + 1; i++) {  //insert # in formula buffer
+                formulaPtr[1] = formulaPtr[0];
+                formulaPtr[0] = '#';
+                formulaPtr-- ;
+              }
+              break;
+            }
+          }
+          return;
+        }
         char *bufPtr = mvarBuffer;
         if(compareString(STD_pi, strPtr, CMP_NAME) == 0) { // check for pi
           return;
@@ -1055,9 +1079,11 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           bufPtr += stringByteLength(bufPtr) + 1;
           ++tmpVal;
         }
-        for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) { // check for constants
-          if(compareString(indexOfItems[i].itemCatalogName, strPtr, CMP_NAME) == 0) {
-            return;
+        if(strPtr[0] == '#') {  // check for constants
+          for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) {
+            if(compareString(indexOfItems[i].itemCatalogName, strPtr + 1, CMP_NAME) == 0) {
+              return;
+            }
           }
         }
         if(validateName(strPtr)) {
@@ -1066,9 +1092,13 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           bufPtr += stringByteLength(strPtr) + 1;
           bufPtr[0] = 0;
           if(((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER ) && var >= FIRST_RESERVED_VARIABLE) {
-            displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            xcopy(errorMessage,strPtr,stringByteLength(strPtr)+1);
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
+            //refreshScreen(400); //This is the second step if screenUpdatingMode = SCRUPD_AUTO does not work, to force a refresh after screenUpdatingMode was set. It may not be needed depending the next normal refresh in the cycle
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              moreInfoOnError("In function _parseWord:", strPtr, "names a register or a reserved variable!", NULL);
+              moreInfoOnError("In function _parseWord:", strPtr, "names a reserved variable!", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
@@ -1123,12 +1153,14 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           fnDrop(NOPARAM);
           return;
         }
-        for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) { // check for constants
-          if(compareString(indexOfItems[i].itemCatalogName, strPtr, CMP_NAME) == 0) {
-            runFunction(i);
-            _pushNumericStack(mvarBuffer, REGISTER_REAL34_DATA(REGISTER_X), const34_0);
-            fnDrop(NOPARAM);
-            return;
+        if(strPtr[0] == '#') {  // check for constants
+          for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) { // check for constants
+            if(compareString(indexOfItems[i].itemCatalogName, strPtr + 1, CMP_NAME) == 0) {
+              runFunction(i);
+              _pushNumericStack(mvarBuffer, REGISTER_REAL34_DATA(REGISTER_X), const34_0);
+              fnDrop(NOPARAM);
+              return;
+            }
           }
         }
         if(validateName(strPtr)) {
@@ -1240,23 +1272,26 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
   #if !defined(TESTSUITE_BUILD)
   const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
   char *bufPtr = buffer;
+  const char *pointerInFormula = strPtr;
   int16_t numericCount = 0;
   bool_t equalAppeared = false, labeled = false, afterClosingParenthesis = false, unaryMinusCanOccur = true, afterSpace = false;
   bool_t inExponent = false, exponentSignCanOccur = false;
 
-  for(uint32_t i = 0; i < PARSER_OPERATOR_STACK_SIZE; ++i) {
-    PARSER_OPERATOR_STACK[i] = 0;
+  if(!updateOldConstants) {
+    for(uint32_t i = 0; i < PARSER_OPERATOR_STACK_SIZE; ++i) {
+      PARSER_OPERATOR_STACK[i] = 0;
+    }
+    real34Zero(PARSER_LEFT_VALUE_REAL);
+    real34Zero(PARSER_LEFT_VALUE_IMAG);
+    for(uint32_t i = 0; i < PARSER_NUMERIC_STACK_SIZE; ++i) {
+      realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2    ]);
+      realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2 + 1]);
+    }
+    *PARSER_NUMERIC_STACK_POINTER = 0;
+   // if(parseMode == EQUATION_PARSER_XEQ) {         //Not sure removing the clear stack will not influence the calc. I don't think so 2024-04-20 jm
+   //   fillStackWithReal0();
+   // }
   }
-  real34Zero(PARSER_LEFT_VALUE_REAL);
-  real34Zero(PARSER_LEFT_VALUE_IMAG);
-  for(uint32_t i = 0; i < PARSER_NUMERIC_STACK_SIZE; ++i) {
-    realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2    ]);
-    realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2 + 1]);
-  }
-  *PARSER_NUMERIC_STACK_POINTER = 0;
- // if(parseMode == EQUATION_PARSER_XEQ) {         //Not sure removing the clear stack will not influence the calc. I don't think so 2024-04-20 jm
- //   fillStackWithReal0();
- // }
 
   for(uint32_t i = 0; i < 7; ++i) {
     strPtr += ((*strPtr) & 0x80) ? 2 : 1;
@@ -1304,9 +1339,10 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
             return;
           }
           else {
-            _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer);
+            _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer,pointerInFormula);
             bufPtr = buffer;
             buffer[0] = 0;
+            pointerInFormula = strPtr;
             numericCount = 0;
             afterClosingParenthesis = false;
             unaryMinusCanOccur = true;
@@ -1337,8 +1373,9 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         else if((bufPtr != buffer) && (*strPtr == '|')) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
           bufPtr = buffer;
+          pointerInFormula = strPtr;
           numericCount = 0;
           *(bufPtr++) = '|';
           *(bufPtr++) = ')';
@@ -1354,9 +1391,10 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           // 'Euler e' (fancy e) as a function
           strcpy(buffer, "EXP");
           strPtr += 2;
-          _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer,pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
+          pointerInFormula = strPtr;
           numericCount = 0;
           afterClosingParenthesis = false;
           unaryMinusCanOccur = true;
@@ -1380,7 +1418,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         else if(bufPtr != buffer) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
           afterClosingParenthesis = (*strPtr == ')');
           unaryMinusCanOccur = false;
           afterSpace = false;
@@ -1393,13 +1431,14 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           buffer[0] = '-';
           buffer[1] = '1';
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_NUMERIC, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_NUMERIC, mvarBuffer,pointerInFormula);
           buffer[0] = PRODUCT_SIGN[0];
           buffer[1] = PRODUCT_SIGN[1];
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
+          pointerInFormula = strPtr;
           numericCount = 0;
           afterClosingParenthesis = false;
           unaryMinusCanOccur = false;
@@ -1421,6 +1460,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
         else if(*strPtr == ')' || *strPtr == '|') {
           if(*strPtr == '|') {
             bufPtr = buffer;
+            pointerInFormula = strPtr;
             numericCount = 0;
             *(bufPtr++) = '|';
             *(bufPtr++) = ')';
@@ -1464,9 +1504,10 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
         else {
           ++strPtr;
         }
-        _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer);
+        _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
         bufPtr = buffer;
         buffer[0] = 0;
+        pointerInFormula = strPtr;
         numericCount = 0;
         inExponent = false;
         exponentSignCanOccur = false;
@@ -1475,8 +1516,9 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       default: {
         if(afterSpace) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
           bufPtr = buffer;
+          pointerInFormula = strPtr;
           numericCount = 0;
           afterSpace = false;
         }
@@ -1487,7 +1529,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           exponentSignCanOccur = false;
         }
 
-        else if((!inExponent) && (*strPtr == 'E') && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
+        else if((!inExponent) && (*strPtr == 'E') && (numericCount != 0) && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
           ++numericCount;
           inExponent = true;
           exponentSignCanOccur = true;
@@ -1500,13 +1542,14 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         if(compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
           buffer[0] = *(strPtr++);
           buffer[1] = *(strPtr++);
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer);
+          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
+          pointerInFormula = strPtr;
           numericCount = 0;
         }
 
@@ -1529,7 +1572,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
   }
   if(bufPtr != buffer) {
     *(bufPtr++) = 0;
-    _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer);
+    _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
   }
 
   if(parseMode == EQUATION_PARSER_MVAR) {

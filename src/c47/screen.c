@@ -829,6 +829,31 @@ void execTimerApp(uint16_t timerType) {
         char *funcParam;
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+
+        //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && 
+          !( (currentKeyCode == 16 || currentKeyCode == 12) || 
+                          //  ENTER                   BACKSP
+             ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
+                          //                  UP                      DN
+             (!isR47FAM && (currentKeyCode == 17 || currentKeyCode == 22)) )
+                          //                  UP                      DN
+          ){ //exclude ENTER and BACKSPACE
+          
+          fnKeyBackspace(NOPARAM);
+          addItemToBuffer(JM_auto_longpress_enabled);
+          FN_timeouts_in_progress = false;
+          fnTimerStop(TO_FN_LONG);
+          if(calcMode == CM_AIM) {
+            refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
+          } else
+          if(calcMode == CM_EIM) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+            refreshScreen(131);
+          }
+          return;
+        }
+        else 
         if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
@@ -1944,8 +1969,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
@@ -1953,8 +1979,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -3124,7 +3151,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)

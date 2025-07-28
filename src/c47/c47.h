@@ -305,6 +305,7 @@
   extern bool_t                 refreshNIMdone;
   extern bool_t                 cleanupAfterShift;
   extern bool_t                 solverEstimatesUsed;
+  extern bool_t                 updateOldConstants;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs

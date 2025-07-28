@@ -1058,6 +1058,7 @@ int16_t lastItem = 0;
               }
 
               if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
+                popSoftmenu();
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               }
@@ -1107,7 +1108,7 @@ int16_t lastItem = 0;
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(tam.mode) {
                   //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
                   popSoftmenu();
@@ -1190,6 +1191,9 @@ int16_t lastItem = 0;
                     (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED
                     )
                   ))  {
+            if(currentMenu() == -MNU_CONST) {  // Add # prefix for constants in equations
+              addItemToBuffer(ITM_NUMBER_SIGN);
+            }
             addItemToBuffer(item);
             while(currentMenu() != -MNU_EQ_EDIT) {
               popSoftmenu();
@@ -1264,7 +1268,7 @@ int16_t lastItem = 0;
                   SetSetting(JC_NL);
                 }
                 else if(tam.alpha) {
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
                     assignGetName1();
@@ -1316,7 +1320,7 @@ int16_t lastItem = 0;
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(stringGlyphLength(aimBuffer) > 6) {
                   assignLeaveAlpha();
                   assignGetName2();
@@ -2565,6 +2569,7 @@ RELEASE_END:
           else if(lastErrorCode != 0) {
             lastErrorCode = 0;
             screenUpdatingMode = SCRUPD_AUTO;
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             refreshScreen(139);
             keyActionProcessed = true;
           }
@@ -2773,7 +2778,7 @@ RELEASE_END:
           else if(tam.mode) {
             if(tam.alpha) {
               if(indexOfItems[item].func == addItemToBuffer || item < 0) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
               }
               else {
                 keyActionProcessed = true;
@@ -2850,11 +2855,10 @@ RELEASE_END:
                   runFunction(item);
                   keyActionProcessed = true;
                 }
-
-//See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
+                  refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
                 }
                 break;
               }
@@ -2865,9 +2869,9 @@ RELEASE_END:
                          printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
                        #endif
                     #endif
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-                refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+                refreshScreen(130);
                 break;
               }
 
@@ -3172,7 +3176,7 @@ RELEASE_END:
               case CM_ASSIGN: {
                 if(item > 0 && itemToBeAssigned == 0) {
                   if(tam.alpha) {
-                    processAimInput(item);
+                    processAimInput(item); // sets keyActionProcessed
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
                       assignGetName1();
@@ -3225,7 +3229,7 @@ RELEASE_END:
                 else if(item != 0 && itemToBeAssigned != 0) {
                   if(tam.alpha && tam.mode != TM_NEWMENU) {
                     if(item > 0) {
-                      processAimInput(item);
+                      processAimInput(item); // sets keyActionProcessed
                       if(stringGlyphLength(aimBuffer) > 6) {
                         assignLeaveAlpha();
                         assignGetName2();
@@ -3534,6 +3538,18 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       case CM_EIM: {
         if(aimBuffer[0] != 0) {
           setEquation(currentFormula, aimBuffer);
+          parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+          if(lastErrorCode != 0) {  // Stay in Edit mode for the current equation
+            const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+            if(equationString) {
+              xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
+            }
+            else {
+              aimBuffer[0] = 0;
+            }
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
+            break;
+          }
         }
         if(currentMenu() == -MNU_EQ_EDIT) {
           calcModeNormal();
@@ -3891,10 +3907,17 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else {
           if(currentMenu() == -MNU_EQ_EDIT) {
-            calcModeNormal();
-            if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+            if(allFormulae[currentFormula].pointerToFormulaData != C47_NULL) {
+              parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+              if(lastErrorCode != 0) {
+                deleteEquation(currentFormula);
+                lastErrorCode = 0;
+              }
+            }
+            else {
               deleteEquation(currentFormula);
             }
+            calcModeNormal();
           }
           popSoftmenu();
         }
