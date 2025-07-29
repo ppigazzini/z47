@@ -242,7 +242,7 @@
               else {
                 reallyRunFunction(tamOperation(), tam.value);
               }
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
             break;
           }
@@ -257,7 +257,7 @@
             break;
           }
           else if(i == 0) {
-            tamLeaveMode();
+            leaveTamModeIfEnabled();
             scrollPemBackwards();
             break;
           }
@@ -296,7 +296,7 @@
           aimBuffer[lg] = 0;
         }
         else if(tam.mode == TM_NEWMENU) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           runFunction(ITM_ASSIGN);
         }
         else {
@@ -398,7 +398,7 @@
         calcModeTamGui();
       }
       else {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         scrollPemBackwards();
       }
       return;
@@ -452,7 +452,7 @@
     }
     else if(!tam.digitsSoFar && !tam.indirect && tam.mode == TM_FLAGW && (item == ITM_BCD || item == ITM_TOPHEX || item == ITM_CB_LEADING_ZERO || item == ITM_OVERFLOW || item == ITM_CARRY)) {
       if(tam.mode) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
       }
       hourGlassIconEnabled = false;
       return;
@@ -463,7 +463,7 @@
           if(item == ITM_Max) { // UP
             if(currentLocalStepNumber == 1) { // We are on 1st step of current program
               if(currentProgramNumber == 1) { // It's the 1st program in memory
-                tamLeaveMode();               // Nothing to do
+                leaveTamModeIfEnabled();      // Nothing to do
                 return;
               }
               else { // It isn't the 1st program in memory
@@ -475,7 +475,7 @@
             }
             reallyRunFunction(ITM_GTOP, tam.value);
             pemCursorIsZerothStep = true;
-            tamLeaveMode();
+            leaveTamModeIfEnabled();
             hourGlassIconEnabled = false;
             return;
           }
@@ -491,7 +491,7 @@
               reallyRunFunction(ITM_GTOP, tam.value);
               pemCursorIsZerothStep = true;
             }
-            tamLeaveMode();
+            leaveTamModeIfEnabled();
             hourGlassIconEnabled = false;
             return;
           }
@@ -515,9 +515,7 @@
                 runFunction(item);
               }
             }
-            if(tam.mode) {
-              tamLeaveMode();
-            }
+            leaveTamModeIfEnabled();
             hourGlassIconEnabled = false;
             return;
           }
@@ -529,7 +527,7 @@
 //                && !tam.alpha && !tam.dot
 //                && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL
               ) {
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
               runFunction(tamOperation());
             }
             return;
@@ -552,9 +550,7 @@
                   reallyRunFunction(tamOperation(), NOPARAM);
                 }
               }
-              if(tam.mode) {
-                tamLeaveMode();
-              }
+              leaveTamModeIfEnabled();
               hourGlassIconEnabled = false;
               return;
             }
@@ -573,7 +569,7 @@
         fnJM_2SI(NOPARAM);   // round  Real -> LI; LI->SI; SI->LI;
         fnLint(NOPARAM);     // change to long integer output
       }
-      tamLeaveMode();
+      leaveTamModeIfEnabled();
       return;
     }
     else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && ((item == ITM_alpha && calcModel == USER_C47) || (item == ITM_REG_F && isR47FAM))) {
@@ -585,7 +581,7 @@
         fnFp(NOPARAM);       // retain data type
         fnToReal(NOPARAM);   // change to real fp output
       }
-      tamLeaveMode();
+      leaveTamModeIfEnabled();
       return;
     }
     else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && (item == ITM_REG_D || item == ITM_ENTER)) {   //ENTER gives base 10
@@ -707,7 +703,7 @@
           tam.value = programList[numberOfPrograms - 1].step;
           reallyRunFunction(ITM_GTOP, tam.value);
         }
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         hourGlassIconEnabled = false;
         return;
       }
@@ -819,34 +815,28 @@
             }
             default: {
               if(tam.mode == TM_MENU) {                        // Leave TAM menu before opening a new menu
-                tamLeaveMode();
+                leaveTamModeIfEnabled();
               }
               reallyRunFunction(tamOperation(), value);
             }
           }
         }
         if(tamOperation() == ITM_M_GOTO_ROW) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           tamEnterMode(ITM_M_GOTO_COLUMN);
         }
         else {
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
         }
       }
       else if(tam.mode == TM_MENU && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU) {
         int16_t value = tam.value;
         if(calcMode == CM_PEM) {
           addStepInProgram(tamOperation());
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
         }
         else {
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
           reallyRunFunction(tamOperation(), value);
         }
       }
@@ -884,9 +874,7 @@
           if(!tam.indirect) {                                                                          //  indirection (XEQ -> 'function') not supported
             for(int i = 0; i < LAST_ITEM; ++i) {
               if((indexOfItems[i].status & CAT_STATUS) == CAT_FNCT && compareString(buffer, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) { //change here to slacken the character check for commands: CMP_CLEANED_STRING_ONLY
-                if(tam.mode) {
-                  tamLeaveMode();
-                }
+                leaveTamModeIfEnabled();
                 if(calcMode == CM_PEM) {
                   aimBuffer[0] = 0;
                   if(!programListEnd) {
@@ -899,9 +887,7 @@
             }
           }
           if(calcMode != CM_PEM) {
-            if(tam.mode) {
-              tamLeaveMode();
-            }
+            leaveTamModeIfEnabled();
             if(!tam.indirect) {
               displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -930,9 +916,7 @@
         }
         else if (calcMode != CM_PEM) {
           reallyRunFunction(tamOperation(), value);
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
           return;
         }
       }
@@ -1010,7 +994,7 @@
         }
         else if(tam.mode == TM_MENU) {
           if(value != INVALID_MENU) {
-            tamLeaveMode();                                // Leave TAM menu before opening a new menu
+            leaveTamModeIfEnabled();                                // Leave TAM menu before opening a new menu
             reallyRunFunction(tamOperation(), value);
           }
         }
@@ -1019,13 +1003,11 @@
         }
       }
       if(tamOperation() == ITM_M_GOTO_ROW) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         tamEnterMode(ITM_M_GOTO_COLUMN);
       }
       else {
-        if(tam.mode) {
-          tamLeaveMode();
-        }
+        leaveTamModeIfEnabled();
       }
     }
   }
@@ -1199,7 +1181,8 @@
 
 
 
-  void tamLeaveMode(void) {
+  void leaveTamModeIfEnabled(void) {
+    if(!tam.mode) return;
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
     }
