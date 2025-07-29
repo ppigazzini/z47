@@ -1072,7 +1072,7 @@ int16_t lastItem = 0;
           }
           else if(tam.function == ITM_GTOP && catalog == CATALOG_PROG) {
             runFunction(item);
-            tamLeaveMode();
+            leaveTamModeIfEnabled();
             hourGlassIconEnabled = false;
             _closeCatalog();
             refreshScreen(112);
@@ -1089,7 +1089,7 @@ int16_t lastItem = 0;
               tam.value = (indexOfItems[item].param & 0xff);
               tam.alpha = true;
               addStepInProgram(tamOperation());
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
           }
 
@@ -1102,7 +1102,7 @@ int16_t lastItem = 0;
               tam.value = (indexOfItems[item].param & 0xff);
               tam.alpha = true;
               addStepInProgram(tamOperation());
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
@@ -1124,7 +1124,7 @@ int16_t lastItem = 0;
               xcopy(aimBuffer, itmLabel, nameLength + 1);
               tam.alpha = true;
               addStepInProgram(tamOperation());
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
             else {
                     #if defined(VERBOSEKEYS)
@@ -1233,11 +1233,11 @@ int16_t lastItem = 0;
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
-                tamLeaveMode();
+                leaveTamModeIfEnabled();
               }
             }
             else if(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK || item == ITM_YY_OFF)) {
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
 
                     #if defined(VERBOSEKEYS)
@@ -2221,7 +2221,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               }
             }
             else {
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
           }
           if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
@@ -2296,8 +2296,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               goto RELEASE_END;
             }
 
-            if((item == ITM_BASEMENU) && tam.mode) {
-              tamLeaveMode();
+            if(item == ITM_BASEMENU) {
+              leaveTamModeIfEnabled();
             }
 
             runFunction(item);
@@ -3654,7 +3654,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                 else {
                     if(currentMenu() == -MNU_SYSFL) {                                                       //JM auto recover out of SYSFL
                       numberOfTamMenusToPop = 2;                                                   //JM
-                      tamLeaveMode();                                                              //JM
+                      leaveTamModeIfEnabled();                                                     //JM
                       return;                                                                      //JM
                     }                                                                              //JM
                     leaveAsmMode();
@@ -3696,7 +3696,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(calcMode == CM_PEM) {
           aimBuffer[0] = 0;
         }
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         if(calcMode == CM_PEM) {
           scrollPemBackwards();
         }
