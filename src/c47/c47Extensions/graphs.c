@@ -1426,24 +1426,8 @@ void fnStatList() {
         ixx = statnum - ix - 1 + ListXYposition;
         char tmpBuf[100];
 
-        if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
-          //sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
           sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", formatCore(grf_x(ixx),7,false,tmpBuf,sizeof(tmpBuf)));
-        }
-        else {
-          //sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", formatCore(grf_x(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
-        }
-
-        if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
-          //sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
           sprintf(tmpstr2,"y%9s%9s, ", "", formatCore(grf_y(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
-        }
-        else {
-          //sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
-          sprintf(tmpstr2,"y%9s%9s, ", "", formatCore(grf_y(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
-        }
-
         strcat(tmpstr1,tmpstr2);
 
         print_numberstr(tmpstr1,false);
