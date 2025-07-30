@@ -11,6 +11,8 @@
 #if !defined(TESTSUITE_BUILD)
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);
   void fnOff                       (uint16_t unsuedParamButMandatory);
+  
+  void check_all_btn_widgets_for_consistency();
 
   /**
    * Sets the calc mode to normal.
