@@ -503,11 +503,12 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
     char buff[32];
     char outstr[bufLen];
-    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_y,acc)));
+    char tmpBuf[100];
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,formatCore(tick_int_y,acc,false,tmpBuf,sizeof(tmpBuf))));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
 
-    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_x,acc)));
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,formatCore(tick_int_x,acc,false,tmpBuf,sizeof(tmpBuf))));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
@@ -521,20 +522,20 @@ void graph_text(void) {
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
-    eformat_eng2(ss, "(", x_max, 2, "");
+    grphNumFormatter(ss, "(", x_max, 2, "");
     uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-    eformat_eng2(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+    grphNumFormatter(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
     uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     ypos += 38;
     n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
     showString(padEquals(tmpbuf, tt), &standardFont, n+3, ypos, vmNormal, false, false);
-    eformat_eng2(ss, "(", x_min, 2, "");
+    grphNumFormatter(ss, "(", x_min, 2, "");
     ypos += 19;
     n = showString(padEquals(tmpbuf, ss), &standardFont,1, ypos, vmNormal, false, false);
-    eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+    grphNumFormatter(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
     showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
-    showGraphTickText1(tick_int_x, tick_int_y, 1, ypos, ypos-12, 5);
+    showGraphTickText1(tick_int_x, tick_int_y, 1, ypos, ypos-12, 3);
     ypos -= 24;
 
     uint32_t minnx, minny;
@@ -1423,23 +1424,24 @@ void fnStatList() {
 
       for(ix = 0; (ix < min(10,statnum)); ++ix) {
         ixx = statnum - ix - 1 + ListXYposition;
+        char tmpBuf[100];
 
         if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
           //sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format(grf_x(ixx),7));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", formatCore(grf_x(ixx),7,false,tmpBuf,sizeof(tmpBuf)));
         }
         else {
           //sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format(grf_x(ixx),7));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", formatCore(grf_x(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
         }
 
         if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
           //sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
-          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format(grf_y(ixx),7));
+          sprintf(tmpstr2,"y%9s%9s, ", "", formatCore(grf_y(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
         }
         else {
           //sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
-          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format(grf_y(ixx),7));
+          sprintf(tmpstr2,"y%9s%9s, ", "", formatCore(grf_y(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
         }
 
         strcat(tmpstr1,tmpstr2);
