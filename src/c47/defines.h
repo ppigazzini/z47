@@ -2079,6 +2079,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)
+#define userAbort(a) do { fprintf(stderr, "%serror:%s %s \n", COLOR_YELLOW, a, COLOR_DEFAULT);fflush(stderr); } while(0)
 
 // To time a piece of code (not on DM42 hardware), you can use the following code snippet:
 // struct timespec stopwatch_start, stopwatch_stop;

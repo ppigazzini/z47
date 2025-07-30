@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1010     // Change constant format in equation, adding a # prefix
+#define BACKUP_VERSION                     1011     // Added reserve variables at the end of the list
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -13,6 +13,8 @@
 1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
 1008     // 2024-11018 Add lastCenturyHighUsed
 1009     // Change matrix headers, add tag
+1010     // Change constant format in equation, adding a # prefix
+1011     // Added reserve variables UY, LY, UEST, LEST.
 */
 
 
@@ -905,9 +907,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
     }
-    else if(backupVersion == 0) {
+    else if(backupVersion == 0 || backupVersion < 1011) {
       refreshScreen(92);
-      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
+      printf("\n");
+      userAbort("Cannot restore calc's memory from file backup.cfg! File backup.cfg has a too low version number.");
+      userAbort("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
       return;
     }
 
