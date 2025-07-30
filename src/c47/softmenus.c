@@ -2171,16 +2171,16 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       else {
                         //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_SUB_0);
                         }
                         else if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"-1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_SUB_0);
                         }
                         else if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
                         }
                         else if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
                         }
                         else {
                           bool_t success; 

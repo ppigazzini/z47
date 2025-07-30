@@ -771,12 +771,12 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
     stringToReal("9E99", &threshold9E99, &ctxtReal39);
     stringToReal("1E-99", &threshold1E_99, &ctxtReal39);
     if (realCompareAbsGreaterThan(&real, &threshold9E99)) {
-      strcpy(buf, isNegative ? "<<<" : ">>>");
+      strcpy(buf, isNegative ? STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L /* <<< */ : STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R /* >>> */);
       *success = 1;
       goto done;
     }
     if (realCompareAbsLessThan(&real, &threshold1E_99)) {
-      strcpy(buf, isNegative ? "<<" : ">>");
+      strcpy(buf, isNegative ? STD_GAUSS_WHITE_L STD_SUB_0 : STD_GAUSS_WHITE_R STD_SUB_0);   //  "<0" : ">0");
       *success = 1;
       goto done;
     }
