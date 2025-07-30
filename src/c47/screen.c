@@ -776,16 +776,12 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
           showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
-          if(tam.mode) {
-            tamLeaveMode();
-          }
+          leaveTamModeIfEnabled();
           BASE_OVERRIDEONCE = true;
           showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
           BASE_OVERRIDEONCE = true;
