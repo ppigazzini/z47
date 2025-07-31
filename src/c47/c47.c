@@ -65,6 +65,7 @@ bool_t                 iterations = false;
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
+bool_t                 solverEstimatesUsed = false;
 bool_t                 updateOldConstants;
 
 

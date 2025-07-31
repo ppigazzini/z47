@@ -49,7 +49,12 @@
 /*  VAR_NO_GRAMOD  40 */ { ""},
 /*  VAR_NO_UX      41 */ { ""},
 /*  VAR_NO_LX      42 */ { ""},
-/*  VAR_NO_CPERONA 43 */ { " Compounding periods YR ="}
+/*  VAR_NO_CPERONA 43 */ { " Compounding periods YR ="},
+/*  VAR_NO_UEST    44 */ { ""},
+/*  VAR_NO_LEST    45v*/ { ""},
+/*  VAR_NO_UY      46 */ { ""},
+/*  VAR_NO_LY      47 */ { ""}
+
 };
 #endif //TESTSUITE_BUILD
 
@@ -100,6 +105,10 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_UX      41 */  { .header = {.pointerToRegisterData = 40,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'X',  0,   0,   0,   0} },
 /*  VAR_NO_LX      42 */  { .header = {.pointerToRegisterData = 44,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'X',  0,   0,   0,   0} },
 /*  VAR_NO_CPERONA 43 */  { .header = {.pointerToRegisterData = 48,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'C', 'P', 'E', 'R', '/', 'a',  0} },
+/*  VAR_NO_UEST    44 */  { .header = {.pointerToRegisterData = 52,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 145, 'E', 'S', 'T',  0,   0} },
+/*  VAR_NO_LEST    45 */  { .header = {.pointerToRegisterData = 56,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 147, 'E', 'S', 'T',  0,   0} },
+/*  VAR_NO_UY      46 */  { .header = {.pointerToRegisterData = 60,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'Y',  0,   0,   0,   0} },
+/*  VAR_NO_LY      47 */  { .header = {.pointerToRegisterData = 64,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'Y',  0,   0,   0,   0} },
 };
 
 // REMEMBER: SET LAST_RESERVED_VARIABLE in defines.h
