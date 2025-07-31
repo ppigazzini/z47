@@ -96,7 +96,7 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
-           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -120,7 +120,7 @@
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
-           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -298,7 +298,7 @@
 
 #define TO_KB_ACTV_MEDIUM 6000
 #define TO_KB_ACTV_CURSOR  480
-#define TO_KB_ACTV_SHORT    40 
+#define TO_KB_ACTV_SHORT    40
 #define PROGRAM_KB_ACTV  60000
 
 
@@ -453,7 +453,7 @@
 #define ERROR_SINGULAR_MATRIX                     22
 #define ERROR_FLASH_MEMORY_FULL                   23
 #define ERROR_INVALID_DATA_TYPE_FOR_OP            24
-#define ERROR_WP34S_COMPAT                        25
+#define ERROR_NO_MVAR_FOUND                       25
 #define ERROR_ENTER_NEW_NAME                      26
 #define ERROR_CANNOT_DELETE_PREDEF_ITEM           27
 #define ERROR_NO_SUMMATION_DATA                   28
@@ -489,33 +489,44 @@
 #define ERROR_IPX_INVALID_FOR_SI                  58
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
+#define ERROR_RESERVED_VARIABLE_NAME              61
+#define LAST_ERROR_MESSAGE                        61
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        61
-#define SAVING_STATE_FILE                         62
-#define RESTORING_STATS                           63
-#define COMPLEX_SOLVER                            64
-#define GRAPHING                                  65
-#define RECALC_SUMS                               66
-#define REAL_SOLVER                               67
+#define LOADING_STATE_FILE                       100
+#define SAVING_STATE_FILE                        101
+#define RESTORING_STATS                          102
+#define COMPLEX_SOLVER                           103
+#define GRAPHING                                 104
+#define RECALC_SUMS                              105
+#define REAL_SOLVER                              106
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        68
-#define TI_State_file_restored                    69
-#define TI_Saved_programs_and_equations           70
-#define TI_appended                               71
-#define TI_Saved_global_and_local_registers       72
-#define TI_w_local_flags_restored                 73
-#define TI_Saved_system_settings_restored         74
-#define TI_Saved_statistic_data_restored          75
-#define TI_Saved_user_variables_restored          76
-#define TI_Program_file_loaded                    77
+#define TI_Backup_restored                       107
+#define TI_State_file_restored                   108
+#define TI_Saved_programs_and_equations          109
+#define TI_appended                              110
+#define TI_Saved_global_and_local_registers      111
+#define TI_w_local_flags_restored                112
+#define TI_Saved_system_settings_restored        113
+#define TI_Saved_statistic_data_restored         114
+#define TI_Saved_user_variables_restored         115
+#define TI_Program_file_loaded                   116
+#define TI_All_user_flags_cleared                117
+#define TI_All_data_prgms_cleared                118
+#define TI_All_user_menus_cleared                119
+#define TI_All_user_vars_cleared                 120
+#define TI_All_user_prgms_deleted                121
+#define TI_All_user_menus_deleted                122
+#define TI_All_user_vars_deleted                 123
 
 //TI & ERROR Messages
-#define ERROR_TI_UNDO_FAILED                      78
+#define TI_Not_on_simulator                      124
+#define TI_Only_on_simulator                     125
+#define ERROR_TI_UNDO_FAILED                     126
 
 
-#define NUMBER_OF_ERROR_CODES                     79
+#define NUMBER_OF_ERROR_CODES                    127
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -658,7 +669,7 @@
 #define SETTING_AMODE                         0x0080 // current angle mode
 #define SETTING_DMX                           0x0081 // denMax
 #define SETTING_SINT_WS                       0x0082 // shortIntegerWordSize
-#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode 
+#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode
 #define SETTING_WATCHICON                     0x0084 // the bit controlling the watch face icon
 #define SETTING_SIOICON                       0x0085 // the bit controlling the serial i/o activity icon
 #define SETTING_PRINTERICON                   0x0086 // the bit controlling the IR printer icon
@@ -783,7 +794,7 @@ typedef enum {
 #define HG_STATUS                            0x6000  // 0110 0000 0000 0000
 #define HG_ENABLED                         ( 0 << 13 ) // Hourglass enabled
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
-#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked 
+#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
 
 #define INC_FLAG                                   0
@@ -1154,15 +1165,15 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
 #define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
 #define X_COMPLEX_MODE_ADJ               -8           // note: auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
-#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
+#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)//
+#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)//
 #define X_BASE_MODE           (X_FRAC_MODE        + 0)//
 #define X_INT_MX_TVM_MODE     (X_BASE_MODE        +77)//
-#define X_OVERFLOW_CARRY      (X_INT_MX_TVM_MODE  +30)// 
-#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
-#define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
-#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
-#define X_ASM                 (X_SSIZE_BEGIN      +11)// 
+#define X_OVERFLOW_CARRY      (X_INT_MX_TVM_MODE  +30)//
+#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)//
+#define X_HOURGLASS           (X_ALPHA_MODE       +11)//
+#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)//
+#define X_ASM                 (X_SSIZE_BEGIN      +11)//
 #define X_STOPWATCH           (X_ASM              + 4)//
 #define X_SERIAL_IO           (X_STOPWATCH        +18)// note: I/O and Printing (soft or hard) cannot happen at the same time
 #define X_PRINTER             (X_SERIAL_IO        + 0)//
@@ -1462,32 +1473,34 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         93
 #define TI_DATA_LOSS                              94
-#define TI_CLEAR_ALL_MENUS                        95    //DL
-#define TI_CLEAR_ALL_VARIABLES                    96    //DL
-#define TI_DEL_ALL_MENUS                          97    //DL
-#define TI_DEL_ALL_VARIABLES                      98    //DL
-#define TI_ROOTS2                                 99
-#define TI_ROOTS3                                100
-#define TI_IJ                                    101
-#define TI_I                                     102
-#define TI_J                                     103
-#define TI_MIJ                                   104
-#define TI_BYTES                                 105
-#define TI_BITS                                  106
-#define TI_SOLVER_VARIABLE_RESULT                107
-#define TI_DATA_NEG_OVRFL                        108
-#define TI_LASTSTATEFILE                         109
-#define TI_FUNCTION                              110
-#define TI_STORCL                                111
-#define TI_TVM_EFF                               112
-#define TI_TVM_IA                                113
-#define TI_NOT_AVAILABLE                         114
-#define TI_DISP_WOY                              115
-#define TI_DISP_JULIAN_WOY                       116
-#define TI_WOY                                   117
-#define TI_WOY_RULE                              118
-#define TI_MIJEQ                                 119
-#define TI_REGTYPE                               120
+#define TI_CLEAR_ALL_FLAGS                        95
+#define TI_CLEAR_ALL_MENUS                        96    //DL
+#define TI_CLEAR_ALL_VARIABLES                    97    //DL
+#define TI_DEL_ALL_PRGMS                          98
+#define TI_DEL_ALL_MENUS                          99    //DL
+#define TI_DEL_ALL_VARIABLES                     100    //DL
+#define TI_ROOTS2                                101
+#define TI_ROOTS3                                102
+#define TI_IJ                                    103
+#define TI_I                                     104
+#define TI_J                                     105
+#define TI_MIJ                                   106
+#define TI_BYTES                                 107
+#define TI_BITS                                  108
+#define TI_SOLVER_VARIABLE_RESULT                109
+#define TI_DATA_NEG_OVRFL                        110
+#define TI_LASTSTATEFILE                         111
+#define TI_FUNCTION                              112
+#define TI_STORCL                                113
+#define TI_TVM_EFF                               114
+#define TI_TVM_IA                                115
+#define TI_NOT_AVAILABLE                         116
+#define TI_DISP_WOY                              117
+#define TI_DISP_JULIAN_WOY                       118
+#define TI_WOY                                   119
+#define TI_WOY_RULE                              120
+#define TI_MIJEQ                                 121
+#define TI_REGTYPE                               122
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

@@ -371,7 +371,7 @@ void fnSetFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _setAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -444,7 +444,7 @@ void fnClearFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _clearAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -518,7 +518,7 @@ void fnFlipFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         if(getSystemFlag(FLAG_ALPHA)) {
           _clearAlpha();
         }
@@ -590,6 +590,13 @@ void fnClFAll(uint16_t confirmation) {
     if(currentLocalFlags != NULL) {
       *currentLocalFlags = 0; // Clear local flags
     }
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_CLEAR_ALL_FLAGS;
+    }
+    else {
+      temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 

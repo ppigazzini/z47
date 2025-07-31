@@ -699,6 +699,7 @@ void fnDeleteUserMenus(uint16_t confirmation) {
     else {
       temporaryInformation = TI_NO_INFO;
     }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 
@@ -718,11 +719,12 @@ void fnClearUserMenus(uint16_t confirmation) {
       createPFN();
     #endif // !TESTSUITE_BUILD
     if(programRunStop != PGM_RUNNING) {
-      temporaryInformation = TI_DEL_ALL_MENUS;
+      temporaryInformation = TI_CLEAR_ALL_MENUS;
     }
     else {
       temporaryInformation = TI_NO_INFO;
     }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 
@@ -1076,7 +1078,7 @@ void setUserKeyArgument(uint16_t position, const char *name) {
 
 void createMenu(const char *name) {
   if(validateName(name)) {
-    if(isUniqueName(name)) {
+    if(isUniqueMenuName(name)) {
       if(numberOfUserMenus == 0) {
         userMenus = allocC47Blocks(TO_BLOCKS(sizeof(userMenu_t)));
       }

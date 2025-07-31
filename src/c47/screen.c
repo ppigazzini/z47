@@ -776,10 +776,12 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
+          leaveTamModeIfEnabled();
           showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
+          leaveTamModeIfEnabled();
           BASE_OVERRIDEONCE = true;
           showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
           BASE_OVERRIDEONCE = true;
@@ -1930,8 +1932,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
@@ -1939,8 +1942,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -2365,7 +2369,8 @@ void createSubstrings(uint8_t number) {
       real_t t;
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
       switch(no) {
-        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
+        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " =");
+                   break;
         case  1: strcpy(noo," =" );
                    if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
                      if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t) == 200) {
@@ -2373,7 +2378,8 @@ void createSubstrings(uint8_t number) {
                      }
                    }
                    break;
-        default:break;
+        default: strcpy(noo," =" );
+                   break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
@@ -2817,7 +2823,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
-        sprintf(tmpString, "Data, programs, and definitions cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_data_prgms_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
@@ -2827,36 +2833,53 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         displayTemporaryInformationOnX(prefix);
       }
 
+      else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_FLAGS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_flags_cleared]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)
       else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
-        sprintf(prefix, "Not available on the simulator");
+        sprintf(prefix, "%s", errorMessages[TI_Not_on_simulator]);
         displayTemporaryInformationOnX(prefix);
       }
-      #endif // PC_BUILD
+      #elif defined(DMCP_BUILD)
+      else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
+        sprintf(prefix, "%s", errorMessages[TI_Only_on_simulator]);
+        displayTemporaryInformationOnX(prefix);
+      }
+      #endif // PC_BUILD/DMCP_BUILD
 
       else if(temporaryInformation == TI_BACKUP_RESTORED && regist == REGISTER_X) {
         clearRegisterLine(REGISTER_X, true, true);
@@ -3087,7 +3110,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)

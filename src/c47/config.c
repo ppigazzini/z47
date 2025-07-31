@@ -1034,7 +1034,7 @@ void fnClAll(uint16_t confirmation) {
     // Clear global flags
     fnClFAll(CONFIRMED);
 
-    temporaryInformation = TI_NO_INFO;
+    temporaryInformation = TI_RESET;
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
     }
@@ -1526,6 +1526,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     iterations = false;
+    updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;

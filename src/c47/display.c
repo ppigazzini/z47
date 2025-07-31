@@ -1419,8 +1419,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   }
 
   real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isComplex, limitIrfrac);
-
-  if(updateDisplayValueX) {                //This is used by ROUND only and it does not seem to work.
+  if(updateDisplayValueX) {
     if(tagPolar) {
       strcat(displayValueX, "j");
     }
@@ -1478,6 +1477,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     else {                                // JM normal full display of the full imag part, + and - shown
       int ii = imagOffset;
       bool_t imagNegative = false;
+      //determine if second term is negative
       while(ii < imagOffset + min(4,stringByteLength(displayString + imagOffset))) {    //scan first 4 chars, covering two glyphs
 
         #if defined(PC_BUILD_TELLTALE)
@@ -1488,7 +1488,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
           printf("AA1: %i/%i Real is non-zero: §%s§%s§ %c § %i §\n", ii, imagOffset + stringByteLength(displayString + imagOffset) - 1, tmp_b, tmp_a, (uint8_t)(displayString[ii]), (uint8_t)(displayString[ii]));
         #endif //PC_BUILD_TELLTALE
 
-        if((displayString[ii] & 0x80)) { // if any two-byte character is reached, it means negative is not in play
+        if((displayString[ii] >= '0' && displayString[ii] <= '9')) { // if digit is reached, it is not negative
           break;
         }
         if(displayString[ii]=='-') {

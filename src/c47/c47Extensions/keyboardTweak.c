@@ -175,13 +175,16 @@ void resetKeytimers(void) {
       }
       else {
         if(getSystemFlag(FLAG_ALPHA)) {
+          leaveTamModeIfEnabled();
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
           if(HOME3) {
+            leaveTamModeIfEnabled();
             showSoftmenu(target_HOME);
           }
           else if(MYM3) {
+            leaveTamModeIfEnabled();
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
@@ -203,6 +206,7 @@ void resetKeytimers(void) {
             fnTimerStop(TO_3S_CTFF);
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
+            leaveTamModeIfEnabled();
             openHOMEorMyM(keypress_fff);
           }
         }
@@ -365,6 +369,7 @@ void resetKeytimers(void) {
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey2 = longpressDelayedkey1;
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
+      longpressDelayedkey3 = ITM_EDIT;
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
@@ -409,6 +414,7 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                   longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                  longpressDelayedkey3 = ITM_EDIT;
                 }
               break;
             case ITM_EXIT1:
@@ -434,6 +440,7 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                longpressDelayedkey3 = ITM_EDIT;
               }
               break;
             case ITM_EXIT1:
@@ -454,6 +461,9 @@ void resetKeytimers(void) {
 
         case CM_PEM : {
           switch(*result) {
+            case ITM_BACKSPACE:
+                longpressDelayedkey1 = ITM_EDIT;
+              break;
             case ITM_EXIT1:
               longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
