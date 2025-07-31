@@ -35,8 +35,8 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
 
-  realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
-  realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
+  real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+  real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
 
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
@@ -170,8 +170,8 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
       case CM_GRAPH: {
         const int8_t RangeHi = +16;
         const int8_t RangeLo = -16;
-        realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
-        realToReal34(const_0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
+        real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+        real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
         PLOT_AXIS = true;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZMY += increment;
