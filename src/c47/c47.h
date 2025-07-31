@@ -439,6 +439,7 @@
   extern int16_t                rbrRegister;
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+  extern int16_t                lastKeyItemDetermined;
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
