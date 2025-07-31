@@ -190,6 +190,7 @@ int16_t                lineTWidth;
 int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+int16_t                lastKeyItemDetermined = 0;
 int16_t                showFunctionNameItem;
 char *                 showFunctionNameArg;
 

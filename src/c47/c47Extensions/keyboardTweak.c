@@ -522,6 +522,7 @@ void resetKeytimers(void) {
     str[1] = 0;
 
     func = determineFunctionKeyItem_C47(str, shiftF, shiftG);
+    lastKeyItemDetermined = func;
 
     #if defined(PC_BUILD)
       //printf(">>> nameFunction fn=%i shifts=%u %u: %s %s\n", fn, shiftF, shiftG, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
