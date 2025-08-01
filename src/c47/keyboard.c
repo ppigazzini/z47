@@ -941,6 +941,7 @@ int16_t lastItem = 0;
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
+        lastKeyItemDetermined = item;
       }
 
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
@@ -1385,7 +1386,7 @@ int16_t lastItem = 0;
   }
 
 
-  bool_t allowShiftsToClearError = false;
+  bool_t shiftKeyClearsError = false;
   #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
@@ -1441,7 +1442,7 @@ int16_t lastItem = 0;
 
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
         fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
@@ -1454,7 +1455,7 @@ int16_t lastItem = 0;
         //reconsider
         temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
       }
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1475,7 +1476,7 @@ int16_t lastItem = 0;
     }
     // Shift g pressed and JM REMOVED shift f not active
     else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
         fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
@@ -1488,7 +1489,7 @@ int16_t lastItem = 0;
         //reconsider
         temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
       }
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1516,7 +1517,7 @@ int16_t lastItem = 0;
       if(ShiftTimoutMode) {
         fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
       }
-      if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       if(temporaryInformation != TI_NO_INFO) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
         if(temporaryInformation == TI_VIEW_REGISTER) {
@@ -1529,7 +1530,7 @@ int16_t lastItem = 0;
         }
       }
 
-      if(lastErrorCode != 0) allowShiftsToClearError = true;
+      if(lastErrorCode != 0) shiftKeyClearsError = true;
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1552,7 +1553,7 @@ int16_t lastItem = 0;
     else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) {   //JM shifts
       temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
 
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1939,6 +1940,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       #endif //DMCP_BUILD
 
       item = determineItem((char *)data);
+      lastKeyItemDetermined = item;
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -2103,7 +2105,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 
 
-  bool_t checkShifts(const char *data) {
+  bool_t checkKeyShifts(const char *data) {
     const calcKey_t *key;
 
     int8_t key_no = stringToKeyNumber(data);
@@ -2206,7 +2208,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-            //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
+            //printf("AA2 shiftKeyClearsError=%u !checkKeyShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",shiftKeyClearsError, !checkKeyShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
         else {
         #if defined(PC_BUILD)
@@ -2327,7 +2329,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 RELEASE_END:
 
-      //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
+      //printf("BB shiftKeyClearsError=%u !checkKeyShifts=%u screenUpdatingMode=%u\n",shiftKeyClearsError, !checkKeyShifts((char *)data), screenUpdatingMode);
 
       switch(last_CM) {
         case CM_REGISTER_BROWSER:
@@ -2346,25 +2348,21 @@ RELEASE_END:
         }
       }
 
-      if(allowShiftsToClearError || !checkShifts((char *)data)) {
-                    #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,">>> btnReleased (%s):   refreshScreen from keyboard.c  which is the main normal place for it.", (char *)data); jm_show_comment(tmp);
-                      jm_show_calc_state("      ##### keyboard.c: btnReleased end");
-                    #endif //PC_BUILD
+    bool_t preventRefreshAtTheEndOfReleasedKey =  
+      ( !shiftKeyClearsError && checkKeyShifts((char *)data) ) ||
+      ( (lastKeyItemDetermined == ITM_UP1 || lastKeyItemDetermined == ITM_DOWN1) && calcMode == CM_GRAPH );
 
-        refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
-                               //2023-06-26 improved by organizing the SCRUPD flags better
-                               //2024-08-12 further improved by managing SCRUPD flags better
-
-      }
-      screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-      allowShiftsToClearError = false;
-
-      fnTimerStop(TO_CL_LONG);    //dr
-
+    if(!preventRefreshAtTheEndOfReleasedKey) {
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> END of btnReleased after (117) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                     #endif // PC_BUILD &&MONITOR_CLRSCR
+      refreshScreen(117);
+    }
+
+    screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
+    shiftKeyClearsError = false;
+
+    fnTimerStop(TO_CL_LONG);
 
     }
 
