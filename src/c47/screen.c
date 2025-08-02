@@ -826,7 +826,7 @@ void execTimerApp(uint16_t timerType) {
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
         if((calcMode == CM_AIM || calcMode == CM_EIM) && 
-          !( (currentKeyCode == 16 || currentKeyCode == 12) || 
+          !( (currentKeyCode == 16 || currentKeyCode == 12) ||                  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                           //  ENTER                   BACKSP
              ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
                           //                  UP                      DN
@@ -847,8 +847,7 @@ void execTimerApp(uint16_t timerType) {
           }
           return;
         }
-        else 
-        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
+        else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
         else if(funcParam[0] == 0 && (JM_auto_longpress_enabled == ITM_XEQ || JM_auto_longpress_enabled == ITM_GTO)) {  //from KEYA-F longpress

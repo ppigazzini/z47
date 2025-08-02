@@ -2839,6 +2839,7 @@ RELEASE_END:
                 break;
               }
 
+              //also AIM Longpress cycle
               case CM_AIM: {
                 //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
                 if(item == ITM_BST || item == ITM_SST) {
