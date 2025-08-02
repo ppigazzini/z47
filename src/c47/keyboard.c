@@ -2146,6 +2146,25 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
+
+      //handle restoring of previous screen after temporary KEYMAP display
+      //  To add || (previousCalcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) below, if/when PEM is included
+      if(calcMode == CM_ASN_BROWSER && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) {      // let longpress dot show the g-layer on AIM/EIM
+        if(previousCalcMode == CM_AIM) {
+          calcModeAim(NOPARAM);
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(117);
+        }
+        if(previousCalcMode == CM_EIM) {
+          calcMode = CM_NORMAL;
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(117);
+          calcMode = previousCalcMode;
+        }
+        goto RELEASE_END;
+      }
+      else
+
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;
         lastItem = 0;
