@@ -817,6 +817,23 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
+//longpress DOT function during AIM EIM and PEM alpha:
+
+//1.  2025-08-02
+//KEYMAP preview using '.':
+//The '.' longpress for PEM alpha needs a different approach as the AIM works on full preveview release only. 
+//  The interactive modes NM and AIM work on press, abandoning before release, not release.
+
+//2.  2025-08-02
+//All currentKeyCode checking below should be replaced with last item checking.
+//  Although it does not really matter because this section is for non-assignable, i.e. hardware keys
+
+//3. 2025-08-02
+// The 'exclude ENTER and BACKSPACE' section below has UP and DN longpress added. This must be checked anyway in PEM.
+//   ... || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA) && !tam.mode) to be added to 'if((calcMode == CM_AIM || calcMode == CM_EIM) &&'
+
+
+
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
@@ -845,6 +862,16 @@ void execTimerApp(uint16_t timerType) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(131);
           }
+
+          //Activate temporary KEYMAP display
+          if(currentKeyCode == 34) {
+                          //   dot
+            fnAsnViewer(NOPARAM);
+            currentAsnScr = 6;
+            fnAsnDisplayUSER = false;
+          refreshScreen(117);
+          }
+
           return;
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
