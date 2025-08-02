@@ -612,7 +612,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         default:;
       }
 
-      if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
+      if(calcMode == CM_PEM && func != ITM_BACKSPACE && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
         #if defined(VERBOSEKEYS)
           printf("items.c: runfunction (before addStepInProgram) func=%i\n",func);
         #endif // VERBOSEKEYS
