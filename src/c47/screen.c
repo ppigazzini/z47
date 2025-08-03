@@ -842,14 +842,29 @@ void execTimerApp(uint16_t timerType) {
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && 
-          !( (currentKeyCode == 16 || currentKeyCode == 12) ||                  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
-                          //  ENTER                   BACKSP
-             ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
-                          //                  UP                      DN
-             (!isR47FAM && (currentKeyCode == 17 || currentKeyCode == 22)) )
-                          //                  UP                      DN
-          ){ //exclude ENTER and BACKSPACE
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+                                                                 // Exclude  BACKSP                   ENTER
+
+          //Activate temporary KEYMAP display
+          bool_t tmpUpLong = isArrowUp(currentKeyCode);
+          bool_t tmpDnLong = isArrowDown(currentKeyCode);
+
+          if( tmpUpLong || tmpDnLong ) {
+            temporaryKeyMap = true;
+            cursorEnabled = false;               // cursor is re-activated automatically elsewhere, after button release
+            T_cursorPos = lastT_cursorPos;       // stored cursor when key was pressed
+            if(calcMode == CM_EIM && tmpUpLong) {
+              fnKeyDown(NOPARAM);                // restore menu navigation when key was pressed
+            } else 
+            if(calcMode == CM_EIM && tmpDnLong) {
+              fnKeyUp(NOPARAM);                  // restore menu navigation when key was pressed
+            }
+            fnAsnViewer(NOPARAM);                // start KEYMAP
+            currentAsnScr = 6;                   // starting KEYMAP screen g-layer AIM
+            fnAsnDisplayUSER = tmpUpLong;        // Up=USER / Down=STD keys
+            refreshScreen(117);
+            return;
+          }
           
           fnKeyBackspace(NOPARAM);
           addItemToBuffer(JM_auto_longpress_enabled);
@@ -862,17 +877,8 @@ void execTimerApp(uint16_t timerType) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(131);
           }
-
-          //Activate temporary KEYMAP display
-          if(currentKeyCode == 34) {
-                          //   dot
-            fnAsnViewer(NOPARAM);
-            currentAsnScr = 6;
-            fnAsnDisplayUSER = false;
-          refreshScreen(117);
-          }
-
           return;
+
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.

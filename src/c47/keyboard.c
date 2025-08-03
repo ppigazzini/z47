@@ -1225,7 +1225,10 @@ int16_t lastItem = 0;
                 }
               }
             }
-            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu())) {
+            if(item == ITM_KEYMAP) {
+              cursorEnabled = false;               // cursor is re-activated automatically elsewhere, after button release
+            }
+            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu() || item == ITM_KEYMAP)) {
               closeAim();
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
@@ -1882,6 +1885,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
+      lastT_cursorPos = T_cursorPos;
 
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
@@ -2127,6 +2131,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
+      int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
 
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
@@ -2140,21 +2145,27 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
-
       //handle restoring of previous screen after temporary KEYMAP display
       //  To add || (previousCalcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) below, if/when PEM is included
-      if(calcMode == CM_ASN_BROWSER && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) {      // let longpress dot show the g-layer on AIM/EIM
+      if(calcMode == CM_ASN_BROWSER && (keyCode == 32 || 
+         ((isArrowUp(keyCode) || isArrowDown(keyCode)) && temporaryKeyMap)
+         ) && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) {      // let longpress dot show the g-layer on AIM/EIM
+
+        temporaryKeyMap = false;
+        if(currentMenu() == -MNU_AIMCATALOG) {
+          popSoftmenu();
+          hideFunctionName();
+        }
         if(previousCalcMode == CM_AIM) {
-          calcModeAim(NOPARAM);
-          screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(117);
+          showSoftmenu(-MNU_ALPHA);
+          calcMode = previousCalcMode;
         }
         if(previousCalcMode == CM_EIM) {
           calcMode = CM_NORMAL;
-          screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(117);
-          calcMode = previousCalcMode;
         }
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(117);
+        calcMode = previousCalcMode;
         goto RELEASE_END;
       }
       else
@@ -2203,7 +2214,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);
         hideFunctionName();
 
-        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
