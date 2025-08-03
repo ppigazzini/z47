@@ -383,6 +383,8 @@
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 #define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
+#define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
+#define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
 
 //fnKeysManagement
 #define JM_ASSIGN        28

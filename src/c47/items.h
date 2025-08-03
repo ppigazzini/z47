@@ -2624,9 +2624,10 @@
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
 #define VAR_LY                      2548
+#define MNU_AIMCATALOG              2549
 
 
-#define LAST_ITEM                   2549
+#define LAST_ITEM                   2550
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
