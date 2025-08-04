@@ -113,12 +113,12 @@
   bool_t         validateName                    (const char *name);
 
   /**
-   * Check if the given name is not yet in use
+   * Check if the given name is not yet in use as a user menu
    *
-   * \param[in] name                 Name of variable/label/menu
+   * \param[in] name                 Name of menu
    * \return `true` if given name is unique, `false` if duplicate
    */
-  bool_t         isUniqueName                    (const char *name);
+  bool_t         isUniqueMenuName                (const char *name);
 
   /**
    * Allocates one named variable.
@@ -263,7 +263,7 @@
   #define getComplexRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
   #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))    // ok. amAngleMask = 15; amPolar = 16
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
-  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))    // Intended to maintain bits 0-3 for amAngle (amAngleMask), clear the polar bit 4, and then OR only the polar bit.  
+  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))    // Intended to maintain bits 0-3 for amAngle (amAngleMask), clear the polar bit 4, and then OR only the polar bit.
 
   #define isXYRegisterMatrix                      ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) || (getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) )
 
