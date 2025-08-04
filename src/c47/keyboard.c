@@ -2226,7 +2226,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                 tam.alpha = false;
               }
             }
-            else {
+            else if(item != ITM_BACKSPACE) {          // [DL] to ensure backspace will be processed in tamProcessInput
               leaveTamModeIfEnabled();
             }
           }
@@ -2306,7 +2306,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               leaveTamModeIfEnabled();
             }
 
-            runFunction(item);
+              runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> btnReleased ran(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
