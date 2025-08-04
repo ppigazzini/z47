@@ -2221,7 +2221,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               }
             }
             else {
-              tamLeaveMode();
+              if(!(item == ITM_BACKSPACE && tam.alpha)) {
+                tamLeaveMode();
+              }
             }
           }
           if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
@@ -2478,8 +2480,8 @@ RELEASE_END:
           else if(tam.mode) {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
           }
-          else if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)) {
-            //let backspace run through to action upon release specifically for PEM, and not for PEM alpha
+          else if(calcMode == CM_PEM) {
+            //convert to Release action: let backspace run through to Release and bypass the next fnKeyBackspace()
             break;
           }
           else {
