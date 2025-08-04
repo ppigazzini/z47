@@ -322,7 +322,22 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
     }
 
     case PARAM_NUMBER_16: {
-      sprintf(tmpString, "%s %u", op, opParam + 256 * *(paramAddress));
+      uint16_t func = (*(paramAddress-3)  << 8) + *(uint8_t *)(paramAddress -2);
+      func &= 0x7fff;
+      if(isFunctionOldParam16(func)) {  // original Param16 functions without indirection support (little endian parameter)
+        sprintf(tmpString, "%s %u", op, opParam + 256 * *(paramAddress));
+      }
+      else {                        // new Param16 functions with indirection support (big endian parameter)
+        if(opParam == INDIRECT_REGISTER) {
+          getIndirectRegister(paramAddress, op);
+        }
+        else if(opParam == INDIRECT_VARIABLE) {
+          getIndirectVariable(paramAddress, op);
+        }
+        else {
+          sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+        }
+      }
       break;
     }
 
@@ -491,6 +506,7 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
 }
 
 static void decodeLiteral(uint8_t *literalAddress) {
+  decodedIntegerBase = 0;
   switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
       reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
@@ -532,6 +548,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
       char *dispStringPtr = tmpString;
       char *sourceStringPtr = tmpStringLabelOrVariableName;
       uint8_t base = (uint8_t)(*literalAddress);
+      decodedIntegerBase = base;
       getStringLabelOrVariableName(literalAddress + 1);
 
       if(!GROUPLEFT_DISABLED) {

@@ -1295,6 +1295,7 @@ typedef struct {
           hexDigits++;
 
           nimNumberPart = NP_INT_16;
+          if(lastIntegerBase <= 10) lastIntegerBase = 16;       // [DL] auto set base to hex when entering A-F digit
           //debugNIM();
         }
         break;
@@ -1983,6 +1984,10 @@ typedef struct {
         break;
       }
 
+      case ITM_NOP: {   // NOP: do nothing in NIM
+        break;
+      }
+
       default: {
         keyActionProcessed = false;
       }
@@ -2105,7 +2110,7 @@ typedef struct {
       }
     }
 
-    else {
+    else if(item != ITM_NOP) {
       #if defined (PC_BUILD)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
       #endif

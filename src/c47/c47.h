@@ -539,6 +539,7 @@
   extern uint32_t               denMax;
   extern uint32_t               lastDenominator;
   extern uint32_t               lastIntegerBase;
+  extern uint32_t               decodedIntegerBase;
   extern uint32_t               xCursor;
   extern uint32_t               yCursor;
   extern uint32_t               tamOverPemYPos;

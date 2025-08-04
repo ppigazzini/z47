@@ -528,9 +528,20 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
           tmpString[2 + cursorInString + 1] = STD_CURSOR[1];
         }
         else if(aimBuffer[0] != 0) {
+          lastIntegerBase = decodedIntegerBase;
+
           char *tstr = tmpString + stringByteLength(tmpString);
-          *(tstr++) = STD_CURSOR[0];
-          *(tstr++) = STD_CURSOR[1];
+          if((lastIntegerBase != 0) && ((nimNumberPart == NP_INT_10) || (nimNumberPart == NP_INT_16))) {
+            tstr -= 2;
+            *(tstr++) = STD_CURSOR[0];
+            *(tstr++) = STD_CURSOR[1];
+            *(tstr++) = baseChars[lastIntegerBase * 2    ];
+            *(tstr++) = baseChars[lastIntegerBase * 2 + 1];
+          }
+          else {
+            *(tstr++) = STD_CURSOR[0];
+            *(tstr++) = STD_CURSOR[1];
+          }
           *(tstr++) = 0;
         }
       }
@@ -587,7 +598,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         pemAlpha(ITM_BACKSPACE);
       }
       else {
-        pemAddNumber(ITM_BACKSPACE);
+        pemAddNumber(ITM_BACKSPACE, true);
       }
 
       clearScreen(13);
@@ -697,7 +708,7 @@ void pemAlpha(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
 
   bool_t editCommand = false;
-  if(item == ITM_ALPHA_EDIT) {
+  if(item == ITM_EDIT) {
     int16_t aimFunc = currentStep[0];
 
     if(aimFunc & 0x80) {
@@ -706,6 +717,7 @@ void pemAlpha(int16_t item) {
       aimFunc |= currentStep[1];
     }
 
+    tam.function = aimFunc;
     decodeOneStep(currentStep);
     uint16_t ll = stringByteLength(tmpString);
     if(aimFunc == ITM_LITERAL)  { // literal
@@ -809,7 +821,7 @@ void pemAlpha(int16_t item) {
     }
     else if(item == ITM_ENTER) {
       pemCloseAlphaInput();
-      --firstDisplayedLocalStepNumber;
+      //--firstDisplayedLocalStepNumber;
       defineFirstDisplayedStep();
         _closeAlphaMenus();
       return;
@@ -921,15 +933,16 @@ void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
     func |= currentStep[1];
   }
   if((func == ITM_LITERAL || func == ITM_REM)) {
-    pemAlpha(ITM_ALPHA_EDIT);
+    pemAlpha(ITM_EDIT);
   }
   hourGlassIconEnabled = false;
 }
 
 
-void pemAddNumber(int16_t item) {
+void pemAddNumber(int16_t item, bool doInsertInProgram) {
   #if !defined(TESTSUITE_BUILD)
   if(aimBuffer[0] == 0) {
+    lastIntegerBase = 0;
     tmpString[0] = ITM_LITERAL;
     tmpString[1] = STRING_LONG_INTEGER;
     tmpString[2] = 0;
@@ -944,7 +957,6 @@ void pemAddNumber(int16_t item) {
         aimBuffer[2] = '.';
         aimBuffer[3] = 0;
         nimNumberPart = NP_REAL_FLOAT_PART;
-        lastIntegerBase = 0;
         break;
       }
 
@@ -992,41 +1004,55 @@ void pemAddNumber(int16_t item) {
   clearSystemFlag(FLAG_ALPHA);
 
   if(aimBuffer[0] != '!') {
-    deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    if(doInsertInProgram) {
+      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    }
     if(aimBuffer[0] != 0) {
+      char *tmpPtr = tmpString;
+      char offset = 3;
       const char *numBuffer = aimBuffer[0] == '+' ? aimBuffer + 1 : aimBuffer;
-      tmpString[0] = ITM_LITERAL;
+      *tmpPtr++ = ITM_LITERAL;
       switch(nimNumberPart) {
-        //case NP_INT_16:
-          //case NP_INT_BASE: {
-        //  tmpString[1] = STRING_SHORT_INTEGER;
-        //  break;
-          //}
+        case NP_INT_10:
+        case NP_INT_16: {
+        //case NP_INT_BASE: {
+          if(lastIntegerBase != 0) {
+            *tmpPtr++ = STRING_SHORT_INTEGER;
+            *tmpPtr++ = lastIntegerBase;
+            offset++;
+          }
+          else {
+            *tmpPtr++ = STRING_LONG_INTEGER;
+          }
+          break;
+        }
         case NP_REAL_FLOAT_PART:
         case NP_REAL_EXPONENT:
         case NP_HP32SII_DENOMINATOR:
         case NP_FRACTION_DENOMINATOR: {
-          tmpString[1] = STRING_REAL34;
+          *tmpPtr++ = STRING_REAL34;
           break;
         }
         case NP_COMPLEX_INT_PART:
         case NP_COMPLEX_FLOAT_PART:
         case NP_COMPLEX_EXPONENT: {
-          tmpString[1] = STRING_COMPLEX34;
+          *tmpPtr++ = STRING_COMPLEX34;
           break;
         }
         default: {
-          tmpString[1] = STRING_LONG_INTEGER;
+          *tmpPtr++ = STRING_LONG_INTEGER;
           break;
         }
       }
-      tmpString[2] = stringByteLength(numBuffer);
-      xcopy(tmpString + 3, numBuffer, stringByteLength(numBuffer));
-      _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + 3);
-      --currentLocalStepNumber;
-      currentStep = findPreviousStep(currentStep);
-      if(!programListEnd) {
-        scrollPemBackwards();
+      *tmpPtr++ = stringByteLength(numBuffer);
+      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
+      if(doInsertInProgram) {
+        _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + offset);
+        --currentLocalStepNumber;
+        currentStep = findPreviousStep(currentStep);
+        if(!programListEnd) {
+          scrollPemBackwards();
+        }
       }
     }
     calcMode = CM_PEM;
@@ -1047,6 +1073,11 @@ void pemCloseNumberInput(void) {
     uint32_t inputLength = stringByteLength(numBuffer);
     bool_t doneWithBinaryLiteral = false;
     int16_t lastChar = strlen(aimBuffer) - 1;
+
+    if((lastIntegerBase != 0) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16)) {
+      sprintf(aimBuffer + strlen(aimBuffer), "#%" PRIu16, (int) lastIntegerBase);
+      nimNumberPart = NP_INT_BASE;
+    }
 
     *(tmpPtr++) = ITM_LITERAL;
     if((nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_REAL_EXPONENT) && (aimBuffer[lastChar] == '+' || aimBuffer[lastChar] == '-') && aimBuffer[lastChar - 1] == 'e') {
@@ -1174,6 +1205,7 @@ void pemCloseNumberInput(void) {
 
   aimBuffer[0] = '!';
   nimNumberPart = NP_EMPTY;
+  lastIntegerBase = 0;
 #endif // TESTSUITE_BUILD
 }
 
@@ -1258,6 +1290,9 @@ void insertStepInProgram(const int16_t func) {
                                   printf("%30s%42s%s\n", "", "insertStepInProgram called from: ", strs[1]);
                                   free(strs);
                                 #endif // PC_BUILD && ANALYSE_REFRESH
+
+  uint32_t opBytes = (func >= 128) ? 2 : 1;
+
   if(func == ITM_END) {
     firstDisplayedLocalStepNumber = 0;
   }
@@ -1289,7 +1324,7 @@ void insertStepInProgram(const int16_t func) {
     return;
   }
   if(indexOfItems[func].func == addItemToBuffer || (!tam.mode && aimBuffer[0] != 0 && (func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT || (nimNumberPart == NP_INT_BASE && (func == ITM_1ONX || func == ITM_LOG10 || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
-    pemAddNumber(func);
+    pemAddNumber(func, true);
     return;
   }
   else if(nimNumberPart == NP_INT_BASE) {
@@ -1306,8 +1341,8 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  
-  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_HMStoTM) {
+
+  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_HMStoTM && func != ITM_EXIT1) {
     if(func == ITM_dotD) {
       _pemCloseDateInput();
       if(aimBuffer[0] == '!') {
@@ -1486,15 +1521,42 @@ void insertStepInProgram(const int16_t func) {
     }
 
     case PTP_NUMBER_16: {
-      tmpString[2] = (char)(tam.value & 0xff); // little endian
-      tmpString[3] = (char)(tam.value >> 8);
-      _insertInProgram((uint8_t *)tmpString, 4);
+      if(isFunctionOldParam16(func)) {  // original Param16 functions without indirection support (little endian parameter)
+        tmpString[2] = (char)(tam.value & 0xff); // little endian
+        tmpString[3] = (char)(tam.value >> 8);
+        _insertInProgram((uint8_t *)tmpString, 4);
+      }
+      else {                        // new Param16 functions with indirection support (big endian parameter)
+        if(tam.alpha && tam.indirect) {
+          uint16_t nameLength = stringByteLength(aimBuffer);
+          tmpString[opBytes    ] = (char)(INDIRECT_VARIABLE);
+          tmpString[opBytes + 1] = nameLength;
+          xcopy(tmpString + opBytes + 2, aimBuffer, nameLength);
+          _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
+        }
+        else if(tam.indirect) {
+          tmpString[opBytes    ] = (char)INDIRECT_REGISTER;
+          tmpString[opBytes + 1] = tam.value + (tam.dot ? FIRST_LOCAL_REGISTER : 0);
+          _insertInProgram((uint8_t *)tmpString, opBytes + 2);
+        }
+        else {
+        tmpString[2] = (char)(tam.value >> 8);   // BIG endian
+        tmpString[3] = (char)(tam.value & 0xff);
+        _insertInProgram((uint8_t *)tmpString, 4);
+        }
+      }
       break;
     }
 
     case PTP_LITERAL:
     case PTP_REM: {
       // nothing to do here
+      break;
+    }
+
+    case PTP_SKIP_BACK: {
+        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : tam.value);
+        _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       break;
     }
 
@@ -1547,10 +1609,12 @@ void insertStepInProgram(const int16_t func) {
         tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
-  }
+    }
   }
 
-  aimBuffer[0] = 0;
+  if(func != ITM_EDIT) {
+    aimBuffer[0] = 0;
+  }
 }
 
 

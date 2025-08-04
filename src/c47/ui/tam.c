@@ -271,7 +271,7 @@
   static void _tamProcessInput(uint16_t item) {
     int16_t min, max, min2, max2, dupNum;
     bool_t forceTry = false, tryOoR = false;
-    bool_t valueParameter = (tam.function == ITM_GTOP || tam.function == ITM_BESTF || tam.function == ITM_SKIP || tam.function == ITM_BACK);
+    bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
     // Shuffle is handled completely differently to everything else
@@ -525,7 +525,7 @@
 
           else if(item == ITM_dddVEL || item == ITM_dddIX) {
             tam.currentOperation = item;
-            if(calcMode != CM_MIM 
+            if(calcMode != CM_MIM
 //                && !tam.alpha && !tam.dot
 //                && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL
               ) {
@@ -618,7 +618,7 @@
 //      tryOoR = true;
 //    }
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
-      if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
+      if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
             case REGISTER_A: tam.value = 100 - 'A' + 'A'; forceTry = true; tryOoR = true; break;
@@ -662,7 +662,7 @@
     else if(item == ITM_0P || item == ITM_1P) {
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       real34Copy(item == ITM_1P ? const34_1 : const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      if(!tam.digitsSoFar && tam.function != ITM_BESTF && tam.function != ITM_CNST && tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB) {
+      if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB) {
         tam.value = TEMP_REGISTER_1;
         forceTry = true;
         // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value

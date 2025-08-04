@@ -1337,7 +1337,7 @@
 
 
 // Curve fitting
-#define ITM_BESTF                   1297
+#define ITM_BESTF_OLD               1297
 #define ITM_T_EXPF                  1298
 #define ITM_T_LINF                  1299
 #define ITM_T_LOGF                  1300
@@ -1350,7 +1350,7 @@
 #define ITM_T_ROOTF                 1307
 #define ITM_SETALLF                 1308
 #define ITM_RSTF                    1309
-#define ITM_1310                    1310
+#define ITM_BESTF                   1310
 #define ITM_1311                    1311
 #define ITM_1312                    1312
 
@@ -1985,7 +1985,7 @@
 #define ITM_STKTO3x1                1931
 #define ITM_XPARSE                  1932
 #define ITM_WRXPALL                 1933
-#define ITM_RNG                     1934
+#define ITM_RNG_OLD                 1934
 #define ITM_FLGSV                   1935
 #define ITM_CPXI                    1936
 #define ITM_CPXJ                    1937
@@ -2067,7 +2067,7 @@
 #define ITM_NVECT                   2013
 #define ITM_SHOWX                   2014
 #define ITM_SHOWY                   2015
-#define ITM_DENMAX2_OLD             2016
+#define ITM_DENMAX2_OLDER           2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
 #define ITM_RMODEQ                  2019
@@ -2247,7 +2247,7 @@
 #define ITM_SCRSUP                  2193
 #define ITM_SCRSUB                  2194
 #define ITM_HIDE                    2195
-#define ITM_DENMAX2                 2196
+#define ITM_DENMAX2_OLD             2196
 #define ITM_SETSIG2                 2197
 #define ITM_VOL                     2198
 #define ITM_VOLQ                    2199
@@ -2287,7 +2287,7 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_YY_DFLT                 2236
+#define ITM_YY_DFLT_OLD             2236
 #define ITM_YY_TRACK                2237
 #define MNU_TAMNONREGTRK            2238
 #define ITM_CLMALL                  2239
@@ -2455,7 +2455,7 @@
 #define ITM_USER_R47bk_fg           2392
 #define ITM_USER_R47fg_bk           2393
 #define ITM_USER_R47fg_g            2394
-#define ITM_EDIT                    2395
+#define ITM_2395                    2395
 
 #define ITM_ANGLEQ                  2396
 #define ITM_DATEQ                   2397
@@ -2466,7 +2466,7 @@
 #define ITM_TYPEQ                   2402
 
 #define MNU_PFN_3                   2403
-#define ITM_ALPHA_EDIT              2404
+#define ITM_EDIT                    2404
 #define ITM_OPEN_MENU               2405
 #define MNU_TAMMENU                 2406
 #define MNU_MENU                    2407
@@ -2620,7 +2620,11 @@
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
 
-#define LAST_ITEM                   2545
+#define ITM_RNG                     2545
+#define ITM_YY_DFLT                 2546
+#define ITM_DENMAX2                 2547
+
+#define LAST_ITEM                   2548
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
@@ -2635,6 +2639,7 @@ char     *lastFuncSoftmenuName  (void);
 int16_t  lastSTORCL             (void);
 int16_t  lastFuncNo             (void);
 uint16_t indirectionType        (uint16_t func);
+bool_t   isFunctionOldParam16   (uint16_t func);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

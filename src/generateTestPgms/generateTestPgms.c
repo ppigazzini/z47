@@ -9578,8 +9578,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_chi2M1 >> 8) | 0x80;
     *(currentStep++) =  ITM_chi2M1       & 0xff;
 
-    *(currentStep++) = (ITM_BESTF >> 8) | 0x80;
-    *(currentStep++) =  ITM_BESTF       & 0xff;
+    *(currentStep++) = (ITM_BESTF_NO_IND >> 8) | 0x80;
+    *(currentStep++) =  ITM_BESTF_NO_IND       & 0xff;
     *(currentStep++) = 20;
     *(currentStep++) = 01;
 

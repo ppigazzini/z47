@@ -7,8 +7,10 @@
 #if !defined(DECODE_H)
   #define DECODE_H
 
-  void decodeOneStep                (uint8_t *step);
-  void decodeOneStep_XPORT          (uint8_t *step);
-  void listPrograms         (void);
-  void listLabelsAndPrograms(void);
+  extern const char           baseChars[];
+
+  void decodeOneStep          (uint8_t *step);
+  void decodeOneStep_XPORT    (uint8_t *step);
+  void listPrograms           (void);
+  void listLabelsAndPrograms  (void);
 #endif // !DECODE_H
