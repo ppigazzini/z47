@@ -1146,6 +1146,7 @@ void graph_plotmem(void) {
         }
 
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
+        static int16_t prev_y_unclipped = 0;
         for(ix = 0; (ix < statnum); ++ix) {
           if(plotmode != _VECT) {
             x = 0;
@@ -1187,17 +1188,25 @@ void graph_plotmem(void) {
           }
           xo = xN1;
           yo = yN1;
-          yN0 = yN1;
+          yN0 = prev_y_unclipped;
 
           xN1 = screen_window_x(x_min,x,x_max);
           yN1 = screen_window_y_nolimit(y_min,y,y_max);
+          int16_t current_y_unclipped = yN1;
 
+          if(ix == 0) {
+            xo = xN1;
+            yo = yN1;
+            yN0 = yN1;
+            prev_y_unclipped = yN1;  // Initialize for next iteration
+            continue;  // Skip clipping for first point
+          }
 
           #if defined(STATDEBUG)
-            printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
+            printf("\n         xN1 = %d : (x_min=%f,x=%f,x_max=%f) ", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
             printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
-            printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
+            printf("   ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
           int16_t minN_y, minN_x;
@@ -1209,63 +1218,75 @@ void graph_plotmem(void) {
           bool_t outOfScreen0  = (yN0 >= SCREEN_HEIGHT_GRAPH || yN0 < minN_y);
 
           #if defined(STATDEBUG)
-            printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
-            printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            printf("Before edge checking: 001 yN1 =%4i yN0=%4i minN_y=%4i : ", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%4i  xo=%4i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            if (!bothOutOfScreen01 && outOfScreen0 && !outOfScreen1) {
+              printf("POTENTIAL ENTRY DEBUG: yN0=%d yN1=%d slope=%s from=%s\n", yN0, yN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE", yN0 >= SCREEN_HEIGHT_GRAPH ? "BOTTOM" : (yN0 < minN_y ? "TOP" : "MIDDLE"));
+            }
           #endif // STATDEBUG
+
+
+            if (!bothOutOfScreen01) {
+              // Coming in from bottom - BOTH positive and negative slopes
+              if (outOfScreen0 && !outOfScreen1 && yN0 >= SCREEN_HEIGHT_GRAPH) {
+                //printf("ENTRY CLIP BOTTOM: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
+                int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
+                if (yN1 != yN0) {
+                  float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
+                  //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
+                  xo = xo + dxN;
+                  yN0 = SCREEN_HEIGHT_GRAPH - 1;
+                  yo = yN0;
+                }
+              }
+              // Coming in from top - BOTH positive and negative slopes  
+              else if (outOfScreen0 && !outOfScreen1 && yN0 < minN_y) {
+                //printf("ENTRY CLIP TOP: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
+                int16_t dY = abs(yN0 - minN_y);
+                if (yN1 != yN0) {
+                  float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
+                  //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
+                  xo = xo + dxN;
+                  yN0 = minN_y;
+                  yo = yN0;
+                }
+              }
+            }
 
           //exceeding the negative y-axis part or the bottom of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
           if((yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
              (yN1 < yN0 && xN1 > xo && yN0 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
+            //printf("EXIT CLIP BOTTOM: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
+            if (yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
-            xN1 = xo + dxN;
+            xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
           }
 
           //exceeding the positive y-axis part or the top of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
           else if((yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
                   (yN1 > yN0 && xN1 > xo && yN0 < minN_y && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
+            //printf("EXIT CLIP TOP: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(yN0 - minN_y);
+            if (yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
-            xN1 = xo + dxN;
+            xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = minN_y;
           }
 
           #if defined(STATDEBUG)
-            printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
-            printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            printf("After  edge checking: 002 yN1 =%4i yN0=%4i minN_y=%4i : ", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%4i xo=%4i minN_x=%4i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
           #endif // STATDEBUG
-
-
- //         // Changed to clean up plotting on the edge of the screen
- //         if(yN1 >= SCREEN_HEIGHT_GRAPH) {
- //           yN1 = SCREEN_HEIGHT_GRAPH - 1;
- //         }
- //         else if(yN < minN_y) {
- //           yN = minN_y;
- //         }
- //         if(xN1 > SCREEN_WIDTH_GRAPH  - 1) {
- //           xN1 = SCREEN_WIDTH_GRAPH - 1;
- //         }
- //         if(xN1 < minN_x) {
- //           xN1 = minN_x;
- //         }
-
 
           if((xN1 < SCREEN_WIDTH_GRAPH && xN1 >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
             yn = yN1;
             xn = xN1;
 
-
-          //ensure initial line is not present and also not coming into the graph area from outside
-          if(ix == 0 || outOfScreen0) {
-            yo = yn;
-            xo = xn;
-          }
-
-
             #if defined(STATDEBUG)
-              printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
+              if(invalid_diff || invalid_intg || invalid_rms)
+                printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
             #endif // STATDEBUG
 
             if(plotmode != _VECT) {
@@ -1343,7 +1364,7 @@ void graph_plotmem(void) {
 
             if(getSystemFlag(FLAG_PLINE)) {
               #if defined(STATDEBUG)
-                printf("Plotting line from xo=%d yo=%d to x=%d y=%d\n", xo, yo, xn, yn);
+                printf("######       Plotting line from xo=%d yo=%d to x=%d y=%d\n\n", xo, yo, xn, yn);
               #endif // STATDEBUG
               plotline2(xo, yo, xn, yn);
             }
@@ -1351,7 +1372,7 @@ void graph_plotmem(void) {
           }
           else {
             #if defined(PC_BUILD)
-              printf("Not plotted: ");
+              printf("             Not plotted: ");
               if(!(xN1 < SCREEN_WIDTH_GRAPH)) {
                 printf("NOT xN1 < SCREEN_WIDTH_GRAPH; ");
               }
@@ -1364,7 +1385,7 @@ void graph_plotmem(void) {
               if(!(yN1 >= minN_y)) {
                 printf("NOT yN1>=minN_y; ");
               }
-              printf("Not plotted: xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
+              printf(" : xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
             #endif // PC_BUILD
           }
           if(exitKeyWaiting()) {
@@ -1373,6 +1394,8 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG) && defined(PC_BUILD)
             fflush(stdout);
           #endif // STATDEBUG
+
+          prev_y_unclipped = current_y_unclipped;
         }
         //#################################################### ^^^ MAIN GRAPH LOOP ^^^ #########################
       }
