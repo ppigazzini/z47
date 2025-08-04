@@ -148,6 +148,8 @@ TVMIChanges,                         xxx,        0,                             
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 RESERVED_VARIABLE_LX,                xxx,        -10,                            xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_UX,                xxx,        10,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_LY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_UY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
@@ -268,6 +270,8 @@ void Sett(int16_t grp) {
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
+        case RESERVED_VARIABLE_LY     :
+        case RESERVED_VARIABLE_UY     :
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
         case RESERVED_VARIABLE_NPPER  :
@@ -1528,6 +1532,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     iterations = false;
+    updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;

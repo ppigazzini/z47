@@ -1456,6 +1456,26 @@ void insertStepInProgram(const int16_t func) {
           break;
         }
 
+        case VAR_UEST:           // 2545
+        case VAR_LEST: {         // 2546
+          tmpString[0] = ITM_STO;
+          tmpString[1] = (char)STRING_LABEL_VARIABLE;
+          tmpString[2] = 5;
+          if(func == VAR_UEST) {
+            tmpString[3] = STD_UP_ARROW[0];
+            tmpString[4] = STD_UP_ARROW[1];
+          }
+          else {
+            tmpString[3] = STD_DOWN_ARROW[0];
+            tmpString[4] = STD_DOWN_ARROW[1];
+          }
+          tmpString[5] = 'E';
+          tmpString[6] = 's';
+          tmpString[7] = 't';
+          _insertInProgram((uint8_t *)tmpString, 8);
+          break;
+        }
+
         case VAR_ULIM:           // 1193
         case VAR_LLIM: {         // 1194
           tmpString[0] = ITM_STO;
@@ -1476,12 +1496,14 @@ void insertStepInProgram(const int16_t func) {
           break;
       }
 
-        case VAR_UX:           //
-        case VAR_LX: {         //
+        case VAR_UY:             // 2547
+        case VAR_LY:             // 2548
+        case VAR_UX:             // 1205
+        case VAR_LX: {           // 1206
           tmpString[0] = ITM_STO;
           tmpString[1] = (char)STRING_LABEL_VARIABLE;
           tmpString[2] = 3;
-          if(func == VAR_UX) {
+          if(func == VAR_UX || func == VAR_UY) {
             tmpString[3] = STD_UP_ARROW[0];
             tmpString[4] = STD_UP_ARROW[1];
           }
@@ -1489,12 +1511,16 @@ void insertStepInProgram(const int16_t func) {
             tmpString[3] = STD_DOWN_ARROW[0];
             tmpString[4] = STD_DOWN_ARROW[1];
           }
-          tmpString[5] = 'X';
+          if(func == VAR_UX || func == VAR_LX) {
+            tmpString[5] = 'X';
+          } else {
+            tmpString[5] = 'Y';
+          }
           _insertInProgram((uint8_t *)tmpString, 6);
           break;
       }
 
-        case ITM_USERMODE: {         // 1729
+        case ITM_USERMODE: {     // 1729
           fnFlipFlag(FLAG_USER);
           break;
         }
@@ -1679,6 +1705,10 @@ void addStepInProgram(int16_t func) {
         case VAR_LLIM:           // 1194
         case VAR_UX:             // 1205
         case VAR_LX:             // 1206
+        case VAR_UEST:           // 2545
+        case VAR_LEST:           // 2546
+        case VAR_UY:             // 2547
+        case VAR_LY:             // 2548
         case ITM_DELP:           // 1425
         case ITM_DELPALL:        // 1426
         case ITM_GTOP:           // 1482

@@ -193,7 +193,7 @@ void fnExecute(uint16_t label) {
     if(lastErrorCode == ERROR_NONE) {
       #if !defined(TESTSUITE_BUILD)
         if(tam.mode) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           refreshScreen(2);
         }
       #endif // TESTSUITE_BUILD*

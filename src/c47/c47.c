@@ -65,6 +65,8 @@ bool_t                 iterations = false;
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
+bool_t                 solverEstimatesUsed = false;
+bool_t                 updateOldConstants;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -188,6 +190,7 @@ int16_t                lineTWidth;
 int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+int16_t                lastKeyItemDetermined = 0;
 int16_t                showFunctionNameItem;
 char *                 showFunctionNameArg;
 

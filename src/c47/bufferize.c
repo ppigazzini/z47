@@ -742,8 +742,14 @@ typedef struct {
             if(item != ITM_EQUAL) {       //block the entry of "="
               stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
               if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                stringCopy(addChar + stringByteLength(addChar), "()");
-                jj = 1;
+                if(isDyadicFunction(item)) {
+                  stringCopy(addChar + stringByteLength(addChar), "(:)");
+                  jj = 2;
+                }
+                else {
+                  stringCopy(addChar + stringByteLength(addChar), "()");
+                  jj = 1;
+                }
               }
             }
           }

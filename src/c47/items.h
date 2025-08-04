@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468           
+#define ITM_BANANAtoMM              2468
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2620,11 +2620,17 @@
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
 
-#define ITM_RNG                     2545
-#define ITM_YY_DFLT                 2546
-#define ITM_DENMAX2                 2547
+#define VAR_UEST                    2545
+#define VAR_LEST                    2546
+#define VAR_UY                      2547
+#define VAR_LY                      2548
 
-#define LAST_ITEM                   2548
+#define ITM_RNG                     2549
+#define ITM_YY_DFLT                 2550
+#define ITM_DENMAX2                 2551
+
+#define LAST_ITEM                   2552
+
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

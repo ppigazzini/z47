@@ -798,7 +798,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
       rows = histo.header.matrixRows;
       cols = histo.header.matrixColumns;
       realToReal34(s,       &histo.matrixElements[(rows-1) * cols    ]);
-      realToReal34(const_0, &histo.matrixElements[(rows-1) * cols + 1]);
+      real34Zero(&histo.matrixElements[(rows-1) * cols + 1]);
       //printf(">>>>>HISTO rows=%d  cols=%d  ",rows, cols);
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols    ],"X:","  ");
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols +1 ],"Y:","  \n");

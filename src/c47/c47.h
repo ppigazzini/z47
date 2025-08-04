@@ -304,6 +304,8 @@
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
   extern bool_t                 cleanupAfterShift;
+  extern bool_t                 solverEstimatesUsed;
+  extern bool_t                 updateOldConstants;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -438,6 +440,7 @@
   extern int16_t                rbrRegister;
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+  extern int16_t                lastKeyItemDetermined;
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
