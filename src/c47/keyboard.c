@@ -2478,6 +2478,10 @@ RELEASE_END:
           else if(tam.mode) {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
           }
+          else if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)) {
+            //let backspace run through to action upon release specifically for PEM, and not for PEM alpha
+            break;
+          }
           else {
             //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
             keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
