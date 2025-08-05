@@ -2221,7 +2221,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               }
             }
             else {
-              if(!(item == ITM_BACKSPACE && tam.alpha)) {
+              if(item != ITM_BACKSPACE) {
                 tamLeaveMode();
               }
             }

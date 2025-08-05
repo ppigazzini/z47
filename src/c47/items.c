@@ -617,8 +617,6 @@ bool_t itemNotAvail(int16_t itemNr) {
           case ITM_EDIT:
           case ITM_ALPHA_EDIT:
                 doNotAddStep |= !getSystemFlag(FLAG_ALPHA); break;
-          case ITM_BACKSPACE:
-                doNotAddStep |= !tam.alpha; break;
           default:;
         }
 
