@@ -287,8 +287,12 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
+
+
 #define GRAPHDEBUG
 //******************************************************************************************************************************
+
+
 typedef struct {
   double x, y;
   double grad;
@@ -305,68 +309,68 @@ typedef struct {
 #define HIGH_RES_SAMPLE_COUNT 3       // Number of high-res points to evaluate
 #define REVERT_THRESHOLD 0.8          // When to revert to previous dx
 
-bool validateDiscontinuityResolution(PlotPoint *buffer, int count, double y_before, double y_after, double discontinuity_threshold) {
+bool validateDiscontinuityResolution(PlotPoint *buffer, int count, double yBefore, double yAfter, double discontinuityThreshold) {
 #ifdef GRAPHDEBUG
-  printf("\n    VALIDATING DISCONTINUITY RESOLUTION:");
-  printf("\n      Points: %d, y_before=%.6f, y_after=%.6f, threshold=%.6f", 
-         count, y_before, y_after, discontinuity_threshold);
+  printf("\nVALIDATING DISCONTINUITY RESOLUTION:");
+  printf("\n  Points: %d, yBefore=%.6f, yAfter=%.6f, threshold=%.6f\n", 
+         count, yBefore, yAfter, discontinuityThreshold);
 #endif
   
   if(count < 3) {
 #ifdef GRAPHDEBUG
-    printf("\n      INVALID: Not enough points");
+    printf("  INVALID: Not enough points\n");
 #endif
     return false;
   }
   
   // Check if the fine-stepped points show smooth transition
-  double max_jump = 0;
-  double total_variation = 0;
+  double maxJump = 0;
+  double totalVariation = 0;
   
   // Check continuity between consecutive fine points
   for(int i = 1; i < count; i++) {
     double jump = fabs(buffer[i].y - buffer[i-1].y);
-    total_variation += jump;
-    if(jump > max_jump) max_jump = jump;
+    totalVariation += jump;
+    if(jump > maxJump) maxJump = jump;
   }
   
   // Also check connection to endpoints
-  double start_jump = fabs(buffer[0].y - y_before);
-  double end_jump = fabs(y_after - buffer[count-1].y);
+  double startJump = fabs(buffer[0].y - yBefore);
+  double endJump = fabs(yAfter - buffer[count-1].y);
   
-  if(start_jump > max_jump) max_jump = start_jump;
-  if(end_jump > max_jump) max_jump = end_jump;
+  if(startJump > maxJump) maxJump = startJump;
+  if(endJump > maxJump) maxJump = endJump;
   
   // If the maximum jump in fine steps is still above threshold, discontinuity persists
-  bool discontinuity_resolved = (max_jump < discontinuity_threshold);
+  bool discontinuityResolved = (maxJump < discontinuityThreshold);
   
   // Additional check: fine points should show reasonable continuity
-  double avg_variation = total_variation / (count - 1);
-  bool smooth_transition = (max_jump < 3.0 * avg_variation) || (max_jump < discontinuity_threshold * 0.5);
+  double avgVariation = totalVariation / (count - 1);
+  bool smoothTransition = (maxJump < 3.0 * avgVariation) || (maxJump < discontinuityThreshold * 0.5);
   
 #ifdef GRAPHDEBUG
-  printf("\n      max_jump=%.6f, avg_variation=%.6f", max_jump, avg_variation);
-  printf("\n      start_jump=%.6f, end_jump=%.6f", start_jump, end_jump);
-  printf("\n      discontinuity_resolved=%d, smooth_transition=%d", discontinuity_resolved, smooth_transition);
+  printf("  maxJump=%.6f, avgVariation=%.6f\n", maxJump, avgVariation);
+  printf("  startJump=%.6f, endJump=%.6f\n", startJump, endJump);
+  printf("  discontinuityResolved=%d, smoothTransition=%d\n", discontinuityResolved, smoothTransition);
 #endif
   
-  return discontinuity_resolved && smooth_transition;
+  return discontinuityResolved && smoothTransition;
 }
 
 double calculateNewStepSize(int discontinuityDetected, double grad1, double grad2, bool grad2IncreaseDetected, double dx0) {
 #ifdef GRAPHDEBUG
-  printf("  calculateNewStepSize: discontinuity=%d, grad1=%.6f, grad2=%.6f, increase=%d, dx0=%.6f\n", discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
+  printf("calculateNewStepSize: discontinuity=%d, grad1=%.6f, grad2=%.6f, increase=%d, dx0=%.6f\n", discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
 #endif
   
   if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
     double newDx = dJMP * dx0;
 #ifdef GRAPHDEBUG
-    printf("    -> Discontinuity mode: newDx=%.6f\n", newDx);
+    printf("  -> Discontinuity mode: newDx=%.6f\n", newDx);
 #endif
     return newDx;
   } else if(grad2 == 0 || grad1 == 0) {
 #ifdef GRAPHDEBUG
-    printf("    -> Zero gradient: keeping dx0=%.6f\n", dx0);
+    printf("  -> Zero gradient: keeping dx0=%.6f\n", dx0);
 #endif
     return dx0;
   } else if(grad2IncreaseDetected) {
@@ -374,26 +378,26 @@ double calculateNewStepSize(int discontinuityDetected, double grad1, double grad
     double ratio2 = grad1/grad2;
     double newDx = dx0 * ((ratio1 > SS1 || ratio2 > SS1) ? 0.5 : 1.0);
 #ifdef GRAPHDEBUG
-    printf("    -> Gradient increase: ratio1=%.3f, ratio2=%.3f, newDx=%.6f\n", ratio1, ratio2, newDx);
+    printf("  -> Gradient increase: ratio1=%.3f, ratio2=%.3f, newDx=%.6f\n", ratio1, ratio2, newDx);
 #endif
     return newDx;
   } else {
 #ifdef GRAPHDEBUG
-    printf("    -> No change: keeping dx0=%.6f\n", dx0);
+    printf("  -> No change: keeping dx0=%.6f\n", dx0);
 #endif
     return dx0;
   }
 }
 
-void enterHighResMode(bool *in_high_res_mode, int *high_res_count, double *high_res_start_x, double *baseline_curvature_change, double *cumulative_curvature_change, double x, double curvature_change) {
+void enterHighResMode(bool *inHighResMode, int *highResCount, double *highResStartX, double *baselineCurvatureChange, double *cumulativeCurvatureChange, double x, double curvatureChange) {
 #ifdef GRAPHDEBUG
-  printf("*** ENTERING HIGH-RES MODE at x=%.6f, curvature_change=%.6f ***\n", x, curvature_change);
+  printf("*** ENTERING HIGH-RES MODE at x=%.6f, curvatureChange=%.6f ***\n", x, curvatureChange);
 #endif
-  *in_high_res_mode = true;
-  *high_res_count = 0;
-  *high_res_start_x = x;
-  *baseline_curvature_change = curvature_change;
-  *cumulative_curvature_change = 0;
+  *inHighResMode = true;
+  *highResCount = 0;
+  *highResStartX = x;
+  *baselineCurvatureChange = curvatureChange;
+  *cumulativeCurvatureChange = 0;
 }
 
 void commitHighResPointsInOrder(PlotPoint *buffer, int count) {
@@ -417,22 +421,83 @@ void commitHighResPointsInOrder(PlotPoint *buffer, int count) {
   }
 }
 
-void abandonHighResMode(int *high_res_count, bool *in_high_res_mode) {
+void abandonHighResMode(int *highResCount, bool *inHighResMode) {
 #ifdef GRAPHDEBUG
-  printf("*** ABANDONING HIGH-RES MODE (discarding %d points) ***\n", *high_res_count);
+  printf("*** ABANDONING HIGH-RES MODE (discarding %d points) ***\n", *highResCount);
 #endif
-  *high_res_count = 0;
-  *in_high_res_mode = false;
+  *highResCount = 0;
+  *inHighResMode = false;
   // High-res points are simply discarded, not added to plot
 }
 
-void resetHighResTracking(int *high_res_count, bool *in_high_res_mode, double *cumulative_curvature_change) {
+void resetHighResTracking(int *highResCount, bool *inHighResMode, double *cumulativeCurvatureChange) {
 #ifdef GRAPHDEBUG
   printf("*** RESETTING HIGH-RES TRACKING ***\n");
 #endif
-  *high_res_count = 0;
-  *in_high_res_mode = false;
-  *cumulative_curvature_change = 0;
+  *highResCount = 0;
+  *inHighResMode = false;
+  *cumulativeCurvatureChange = 0;
+}
+
+// Improved discontinuity detection that distinguishes between genuine discontinuities and normal peaks
+bool detectTrueDiscontinuity(double y0, double y1, double y2, double grad0, double grad1, double grad2, double yAvg, int count) {
+  // Basic checks for infinite/NaN values
+  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) || 
+     ((getRegisterDataType(REGISTER_X) == dtComplex34) && 
+      (real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X))))) {
+    return true;
+  }
+  
+  if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || 
+     ((getRegisterDataType(REGISTER_X) == dtComplex34) && 
+      (real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X))))) {
+    return true;
+  }
+  
+  // Don't trigger on early samples
+  if(count < 4) return false;
+  
+  // Check for extreme magnitude changes (likely discontinuity)
+  bool extremeMagnitudeJump = (fabs(y2) > 100 * yAvg) && (fabs(y1) < 10 * yAvg);
+  
+  // Check for gradient discontinuity (not just sign change)
+  // A true discontinuity shows abrupt gradient change without smooth transition
+  bool gradientDiscontinuity = false;
+  if(grad0 != 0 && grad1 != 0 && grad2 != 0) {
+    // Calculate expected gradient based on trend
+    double expectedGrad = grad1 + (grad1 - grad0); // Linear extrapolation
+    double gradientRatio = fabs(grad2) / (fabs(expectedGrad) + 1e-10);
+    
+    // Only flag if gradient changes by more than 50x AND the function values suggest discontinuity
+    gradientDiscontinuity = (gradientRatio > 50) && 
+                           (fabs(y2 - y1) > 20 * fabs(y1 - y0)) &&
+                           (fabs(y2 - y1) > 5 * yAvg);
+  }
+  
+  // Check for sign oscillation that indicates numerical instability rather than smooth peaks
+  bool signOscillationInstability = false;
+  if(count >= 6) {
+    // Look for rapid alternating signs with increasing magnitude - indicates instability
+    bool y0Pos = (y0 > 0), y1Pos = (y1 > 0), y2Pos = (y2 > 0);
+    if(y0Pos != y1Pos && y1Pos != y2Pos) {
+      // Alternating signs - check if magnitudes are increasing dramatically
+      double mag0 = fabs(y0), mag1 = fabs(y1), mag2 = fabs(y2);
+      signOscillationInstability = (mag2 > 5 * mag1) && (mag1 > 5 * mag0) && (mag2 > 10 * yAvg);
+    }
+  }
+  
+#ifdef GRAPHDEBUG
+  printf("discontinuity check: extreme=%d, gradient=%d, oscillation=%d\n", 
+         extremeMagnitudeJump, gradientDiscontinuity, signOscillationInstability);
+  if(gradientDiscontinuity) {
+    double expectedGrad = grad1 + (grad1 - grad0);
+    double gradientRatio = fabs(grad2) / (fabs(expectedGrad) + 1e-10);
+    printf("  gradient details: expected=%.6f, actual=%.6f, ratio=%.3f\n", 
+           expectedGrad, grad2, gradientRatio);
+  }
+#endif
+  
+  return extremeMagnitudeJump || gradientDiscontinuity || signOscillationInstability;
 }
 
 #if !defined(TESTSUITE_BUILD)
@@ -445,13 +510,14 @@ static void graph_eqn(uint16_t mode) {
   double x01 = x_min;
   double y01 = 0;
   double y02 = 0;
+  double y00 = 0; // Add y00 for improved discontinuity detection
   double dy;
   double dx0 = (x_max-x_min)/SCREEN_WIDTH_GRAPH*10;
   double dx = dx0;
   double grad2 = 1;
   double grad1 = 1;
   double grad0 = 1;
-  double prev_dx = dx0; // Track previous step size
+  double prevDx = dx0; // Track previous step size
   int16_t count = 0;
   int16_t ss0 = 0;
   int16_t ss1 = 0;
@@ -464,7 +530,7 @@ static void graph_eqn(uint16_t mode) {
 
 #ifdef GRAPHDEBUG
   printf("\n=== GRAPH EQUATION DEBUG START ===\n");
-  printf("Initial parameters: x_min=%.6f, x_max=%.6f, dx0=%.6f\n", x_min, x_max, dx0);
+  printf("Initial parameters: xMin=%.6f, xMax=%.6f, dx0=%.6f\n", x_min, x_max, dx0);
   printf("Screen width: %d, SS1=%.1f, SS2=%.1f\n", SCREEN_WIDTH_GRAPH, SS1, SS2);
 #endif
 
@@ -500,14 +566,14 @@ static void graph_eqn(uint16_t mode) {
   //Main loop, default is 40 x 6 point gaps, across the 240 wide screen
   //  If the gradient is increasing, then the dx is reduced.
   //  That helps going forward, but not looking a the last sample which already jumped too far, so the next part steps back.
-  PlotPoint high_res_buffer[HIGH_RES_SAMPLE_COUNT];
-  int high_res_count = 0;
-  bool in_high_res_mode = false;
-  double high_res_start_x = 0;
-  double cumulative_curvature_change = 0;
-  double baseline_curvature_change = 0;
-  double saved_x_before_highres = 0;
-  double saved_dx_before_highres = dx0;
+  PlotPoint highResBuffer[HIGH_RES_SAMPLE_COUNT];
+  int highResCount = 0;
+  bool inHighResMode = false;
+  double highResStartX = 0;
+  double cumulativeCurvatureChange = 0;
+  double baselineCurvatureChange = 0;
+  double savedXBeforeHighres = 0;
+  double savedDxBeforeHighres = dx0;
   int cnt = 0;
   
 #ifdef GRAPHDEBUG
@@ -518,7 +584,8 @@ static void graph_eqn(uint16_t mode) {
 
   for(x = x_min; x <= x_max; x += STEP_OFFSET * dx) {
 #ifdef GRAPHDEBUG
-    printf("\n###################################\n--- Iteration %d: x=%.6f, dx=%.6f ---\n", cnt, x, dx);
+    printf("\n###################################\n");
+    printf("--- Iteration %d: x=%.6f, dx=%.6f ---\n", cnt, x, dx);
 #endif
     
     jumpedBack = false;
@@ -541,7 +608,7 @@ static void graph_eqn(uint16_t mode) {
     y02 = convertRegisterToDouble(REGISTER_Y);
     
 #ifdef GRAPHDEBUG
-    printf("y02=%.6f", y02);
+    printf("y02=%.6f\n", y02);
 #endif
     
     // Calculate gradient and detect anomalies
@@ -550,7 +617,7 @@ static void graph_eqn(uint16_t mode) {
       grad2 = (x != x01) ? dy / (x - x01) : 0.0;
       
 #ifdef GRAPHDEBUG
-      printf(", dy=%.6f, grad2=%.6f", dy, grad2);
+      printf("dy=%.6f, grad2=%.6f\n", dy, grad2);
       
       // Track sign changes for cycle detection
       if(count > 1) {
@@ -558,12 +625,12 @@ static void graph_eqn(uint16_t mode) {
         bool lastPositive = (y01 > 0);
         if(currentPositive != lastPositive) {
           signChangeCount++;
-          printf(" [SIGN CHANGE #%d at x=%.6f, distance from last=%.6f]", 
+          printf("[SIGN CHANGE #%d at x=%.6f, distance from last=%.6f]\n", 
                  signChangeCount, x, x - lastSignChange);
           lastSignChange = x;
           if(signChangeCount % 2 == 0) {
             cycleCount++;
-            printf(" [HALF CYCLE #%d COMPLETE]", cycleCount);
+            printf("[HALF CYCLE #%d COMPLETE]\n", cycleCount);
           }
         }
       }
@@ -577,35 +644,43 @@ static void graph_eqn(uint16_t mode) {
       grad1 = grad2;
       
 #ifdef GRAPHDEBUG
-      printf("\n  Signs: ss0=%d, ss1=%d, ss2=%d", ss0, ss1, ss2);
-      printf("\n  Grads: grad0=%.6f, grad1=%.6f, grad2=%.6f", grad0, grad1, grad2);
+      printf("Signs: ss0=%d, ss1=%d, ss2=%d\n", ss0, ss1, ss2);
+      printf("Grads: grad0=%.6f, grad1=%.6f, grad2=%.6f\n", grad0, grad1, grad2);
 #endif
       
-      // Detect gradient anomalies
+      // Detect gradient anomalies using improved logic
       if(grad1 != 0 && grad2 != 0) {
         bool yRatioCheck1 = (fabs(y02/y01) > 1.01 && fabs(grad2/grad1) > SS2);
         bool yRatioCheck2 = (fabs(y01/y02) > 1.01 && fabs(grad1/grad2) > SS2);
-        bool signOscillation1 = (ss0 == 1  && ss1 == -1 && ss2 == 1);
-        bool signOscillation2 = (ss0 == -1 && ss1 == 1  && ss2 == -1);
-        bool zeroCrossing1 = (ss1 == 1  && ss2 == -1  && y01 > 0 && y02 < 0);
-        bool zeroCrossing2 = (ss1 == -1 && ss2 == 1   && y01 < 0 && y02 > 0);
+        
+        // More conservative oscillation detection - only flag if it's truly problematic
+        bool signOscillation1 = (ss0 == 1  && ss1 == -1 && ss2 == 1) && 
+                               (fabs(y02) > 2 * fabs(y01)) && (fabs(y00) > 2 * fabs(y01));
+        bool signOscillation2 = (ss0 == -1 && ss1 == 1  && ss2 == -1) && 
+                               (fabs(y02) > 2 * fabs(y01)) && (fabs(y00) > 2 * fabs(y01));
+        
+        // Zero crossing detection - only if accompanied by large gradient changes
+        bool zeroCrossing1 = (ss1 == 1  && ss2 == -1  && y01 > 0 && y02 < 0) && 
+                            (fabs(grad2 - grad1) > 10 * fabs(grad1 - grad0));
+        bool zeroCrossing2 = (ss1 == -1 && ss2 == 1   && y01 < 0 && y02 > 0) && 
+                            (fabs(grad2 - grad1) > 10 * fabs(grad1 - grad0));
         
         grad2IncreaseDetected = yRatioCheck1 || yRatioCheck2 || signOscillation1 || signOscillation2 || zeroCrossing1 || zeroCrossing2;
         
 #ifdef GRAPHDEBUG
-        printf("\n  Gradient increase checks:");
-        printf("\n    yRatio1(%.3f>1.01 && %.3f>%.1f): %d", fabs(y02/y01), fabs(grad2/grad1), SS2, yRatioCheck1);
-        printf("\n    yRatio2(%.3f>1.01 && %.3f>%.1f): %d", fabs(y01/y02), fabs(grad1/grad2), SS2, yRatioCheck2);
-        printf("\n    signOsc1(%d,%d,%d): %d", ss0, ss1, ss2, signOscillation1);
-        printf("\n    signOsc2(%d,%d,%d): %d", ss0, ss1, ss2, signOscillation2);
-        printf("\n    zeroCross1(ss=%d->%d, y=%.3f->%.3f): %d", ss1, ss2, y01, y02, zeroCrossing1);
-        printf("\n    zeroCross2(ss=%d->%d, y=%.3f->%.3f): %d", ss1, ss2, y01, y02, zeroCrossing2);
-        printf("\n    => grad2IncreaseDetected: %d", grad2IncreaseDetected);
+        printf("Gradient increase checks:\n");
+        printf("  yRatio1(%.3f>1.01 && %.3f>%.1f): %d\n", fabs(y02/y01), fabs(grad2/grad1), SS2, yRatioCheck1);
+        printf("  yRatio2(%.3f>1.01 && %.3f>%.1f): %d\n", fabs(y01/y02), fabs(grad1/grad2), SS2, yRatioCheck2);
+        printf("  signOsc1(%d,%d,%d): %d\n", ss0, ss1, ss2, signOscillation1);
+        printf("  signOsc2(%d,%d,%d): %d\n", ss0, ss1, ss2, signOscillation2);
+        printf("  zeroCross1(ss=%d->%d, y=%.3f->%.3f): %d\n", ss1, ss2, y01, y02, zeroCrossing1);
+        printf("  zeroCross2(ss=%d->%d, y=%.3f->%.3f): %d\n", ss1, ss2, y01, y02, zeroCrossing2);
+        printf("  => grad2IncreaseDetected: %d\n", grad2IncreaseDetected);
 #endif
       } else {
         grad2IncreaseDetected = false;
 #ifdef GRAPHDEBUG
-        printf("\n  Zero gradient detected, no increase flagged");
+        printf("Zero gradient detected, no increase flagged\n");
 #endif
       }
       
@@ -617,318 +692,289 @@ static void graph_eqn(uint16_t mode) {
       }
       
 #ifdef GRAPHDEBUG
-      printf("\n  yAvg=%.6f", yAvg);
+      printf("yAvg=%.6f\n", yAvg);
 #endif
       
+      // Use improved discontinuity detection
       if(discontinuityDetected == 0) {
-        bool infiniteCheck = (real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) || 
-                             ((getRegisterDataType(REGISTER_X) == dtComplex34) && 
-                              (real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X)))));
-        bool nanCheck = (real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || 
-                        ((getRegisterDataType(REGISTER_X) == dtComplex34) && 
-                         (real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)))));
+        bool trueDiscontinuity = detectTrueDiscontinuity(y00, y01, y02, grad0, grad1, grad2, yAvg, count);
         
-        bool gradJumpCheck = false;
-        if(count > 3 && grad0 != 0 && grad1 != 0) {
-          double expectedGrad = 0.8*grad0 + 0.2*grad1;
-          double gradRatio = fabs(grad2) / (fabs(expectedGrad) + 1e-10);
-          gradJumpCheck = (gradRatio > 20); // 20x more conservative than before!
-#ifdef GRAPHDEBUG
-          printf("\n    NEW gradJump: grad2=%.6f, expected=%.6f, ratio=%.3f (need >20)", 
-                 grad2, expectedGrad, gradRatio);
-#endif
-        }
-        
-        bool yJumpCheck = ((fabs(y02) > 50 * yAvg) && count > 3);
-        
-        if(infiniteCheck || nanCheck || gradJumpCheck || yJumpCheck) {
+        if(trueDiscontinuity) {
           discontinuityDetected = FINE;
 #ifdef GRAPHDEBUG
-          printf("\n  DISCONTINUITY DETECTED: inf=%d, nan=%d, gradJump=%d, yJump=%d", 
-                 infiniteCheck, nanCheck, gradJumpCheck, yJumpCheck);
-          if(yJumpCheck) {
-            printf("\n    yJump: |%.6f| > 50*%.6f", y02, yAvg);
+          printf("TRUE DISCONTINUITY DETECTED\n");
+#endif
+        }
+      }
+      
+      // Handle jump-back logic for discontinuities and gradient increases
+      if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
+#ifdef GRAPHDEBUG
+        printf("JUMPING BACK: discontinuity=%d, gradIncrease=%d\n", discontinuityDetected, grad2IncreaseDetected);
+        printf("  Before jump: x=%.6f, y=%.6f\n", x, y02);
+#endif
+        
+        // If in high-res mode, abandon it since we're jumping back anyway
+        if(inHighResMode) {
+          abandonHighResMode(&highResCount, &inHighResMode);
+        }
+        
+        // Store the current position and original discontinuity trigger
+        double jumpBackStartX = x;
+        double jumpBackStartY = y02;
+        bool wasDiscontinuity = (discontinuityDetected == FINE);
+        double discontinuityThreshold = wasDiscontinuity ? fabs(y02 - y01) * 0.1 : 0; // 10% of original jump
+        
+        x -= dx * JMP;
+        jumpedBack = true;
+        convertDoubleToReal34RegisterPush(x, REGISTER_X);
+        execute_rpn_function();
+        y02 = convertRegisterToDouble(REGISTER_Y);
+        grad2 = (y02 - y01) / (x - x01);
+        ss0 = ss1;
+        ss1 = ss2;
+        ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
+        
+#ifdef GRAPHDEBUG
+        printf("  After jump: x=%.6f, y=%.6f, newGrad=%.6f\n", x, y02, grad2);
+        printf("  Will evaluate %d fine-step points\n", FINE);
+        if(wasDiscontinuity) {
+          printf("  Discontinuity threshold: %.6f\n", discontinuityThreshold);
+        }
+#endif
+
+        // Sample the fine-stepped points
+        PlotPoint jumpBackBuffer[FINE];
+        int jumpBackCount = 0;
+        double jumpBackX = x;
+        double jumpBackDx = dJMP * dx0;
+        
+        for(int jbStep = 0; jbStep < FINE && jumpBackX < jumpBackStartX; jbStep++) {
+          convertDoubleToReal34RegisterPush(jumpBackX, REGISTER_X);
+          execute_rpn_function();
+          double jbY = convertRegisterToDouble(REGISTER_Y);
+          
+          jumpBackBuffer[jumpBackCount].x = jumpBackX;
+          jumpBackBuffer[jumpBackCount].y = jbY;
+          jumpBackBuffer[jumpBackCount].stored = false;
+          jumpBackCount++;
+          
+          jumpBackX += jumpBackDx;
+        }
+        
+        bool shouldCommitPoints = false;
+        
+        if(wasDiscontinuity) {
+          // For discontinuity cases, validate that fine points actually resolve the discontinuity
+          bool discontinuityResolved = validateDiscontinuityResolution(
+            jumpBackBuffer, jumpBackCount, y01, jumpBackStartY, discontinuityThreshold);
+          
+          if(discontinuityResolved) {
+#ifdef GRAPHDEBUG
+            printf("  DISCONTINUITY RESOLVED: committing fine points\n");
+#endif
+            shouldCommitPoints = true;
+            discontinuityDetected = 0; // Clear discontinuity flag
+          } else {
+#ifdef GRAPHDEBUG
+            printf("  DISCONTINUITY PERSISTS: abandoning fine points, but keeping original grid point\n");
+#endif
+            discontinuityDetected = 0; // Clear flag
+            shouldCommitPoints = false;
+            // IMPORTANT: Don't skip the original grid point - restore to original position and let the normal flow handle plotting the original grid point
           }
+        } else {
+          // For gradient increase cases, evaluate if points add significant detail
+          if(jumpBackCount >= 3) {
+            // Calculate curvature variation in the jump-back region
+            double maxCurvatureChange = 0;
+            for(int i = 1; i < jumpBackCount - 1; i++) {
+              double g1 = (jumpBackBuffer[i].y - jumpBackBuffer[i-1].y) / 
+                         (jumpBackBuffer[i].x - jumpBackBuffer[i-1].x);
+              double g2 = (jumpBackBuffer[i+1].y - jumpBackBuffer[i].y) / 
+                         (jumpBackBuffer[i+1].x - jumpBackBuffer[i].x);
+              double curvChange = fabs(g2 - g1);
+              if(curvChange > maxCurvatureChange) {
+                maxCurvatureChange = curvChange;
+              }
+            }
+            
+            // Compare with linear interpolation
+            double linearSlope = (jumpBackStartY - y01) / (jumpBackStartX - x01);
+            double interpolationError = 0;
+            for(int i = 0; i < jumpBackCount; i++) {
+              double expectedY = y01 + linearSlope * (jumpBackBuffer[i].x - x01);
+              double error = fabs(jumpBackBuffer[i].y - expectedY);
+              if(error > interpolationError) {
+                interpolationError = error;
+              }
+            }
+            
+            // Points are useful if they show significant non-linear behavior
+            bool jumpBackPointsUseful = (interpolationError > 0.1 * fabs(jumpBackStartY - y01)) ||
+                                       (maxCurvatureChange > fabs(linearSlope) * 0.5);
+            
+#ifdef GRAPHDEBUG
+            printf("  Gradient increase evaluation: maxCurv=%.6f, interpError=%.6f, useful=%d\n", 
+                   maxCurvatureChange, interpolationError, jumpBackPointsUseful);
 #endif
+            
+            shouldCommitPoints = jumpBackPointsUseful;
+          }
         }
+        
+        if(shouldCommitPoints) {
+          // Commit the fine points
 #ifdef GRAPHDEBUG
-        else if(count > 3) {
-          double expectedGrad = 0.8*grad0 + 0.2*grad1;
-          double gradRatio = fabs(grad2) / (fabs(expectedGrad) + 1e-10);
-          printf("\n  No discontinuity: gradRatio=%.3f < 20, yRatio=%.3f < 50", 
-                 gradRatio, fabs(y02)/yAvg);
-        }
+          printf("  COMMITTING %d jump-back points\n", jumpBackCount);
 #endif
-      }
-      
-
-if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
+          for(int i = 0; i < jumpBackCount; i++) {
+            convertDoubleToReal34RegisterPush(jumpBackBuffer[i].x, REGISTER_X);
+            execute_rpn_function();
+            AddtoDrawMx();
+          }
+          
+          // Also plot the original grid point (jumpBackStartX, jumpBackStartY)
+          convertDoubleToReal34RegisterPush(jumpBackStartX, REGISTER_X);
+          execute_rpn_function();
+          AddtoDrawMx();
+          
+          // Set position to continue from the original grid point
+          x = jumpBackStartX;
+          y02 = jumpBackStartY;
+          dx = dx0; // Reset to original step size
+          jumpedBack = false; // Clear flag since we've handled the plotting
+          
 #ifdef GRAPHDEBUG
-  printf("\n  JUMPING BACK: discontinuity=%d, gradIncrease=%d", discontinuityDetected, grad2IncreaseDetected);
-  printf("\n    Before jump: x=%.6f, y=%.6f", x, y02);
+          printf("  Continuing from original grid point: x=%.6f, y=%.6f\n", x, y02);
 #endif
-  
-  // If in high-res mode, abandon it since we're jumping back anyway
-  if(in_high_res_mode) {
-    abandonHighResMode(&high_res_count, &in_high_res_mode);
-  }
-  
-  // Store the current position and original discontinuity trigger
-  double jump_back_start_x = x;
-  double jump_back_start_y = y02;
-  bool was_discontinuity = (discontinuityDetected == FINE);
-  double discontinuity_threshold = was_discontinuity ? fabs(y02 - y01) * 0.1 : 0; // 10% of original jump
-  
-  x -= dx * JMP;
-  jumpedBack = true;
-  convertDoubleToReal34RegisterPush(x, REGISTER_X);
-  execute_rpn_function();
-  y02 = convertRegisterToDouble(REGISTER_Y);
-  grad2 = (y02 - y01) / (x - x01);
-  ss0 = ss1;
-  ss1 = ss2;
-  ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
-  
+        } else {
 #ifdef GRAPHDEBUG
-  printf("\n    After jump: x=%.6f, y=%.6f, newGrad=%.6f", x, y02, grad2);
-  printf("\n    Will evaluate %d fine-step points", FINE);
-  if(was_discontinuity) {
-    printf("\n    Discontinuity threshold: %.6f", discontinuity_threshold);
-  }
+          printf("  DISCARDING %d jump-back points, but preserving original grid flow\n", jumpBackCount);
 #endif
-
-  // Sample the fine-stepped points
-  PlotPoint jump_back_buffer[FINE];
-  int jump_back_count = 0;
-  double jump_back_x = x;
-  double jump_back_dx = dJMP * dx0;
-  
-  for(int jb_step = 0; jb_step < FINE && jump_back_x < jump_back_start_x; jb_step++) {
-    convertDoubleToReal34RegisterPush(jump_back_x, REGISTER_X);
-    execute_rpn_function();
-    double jb_y = convertRegisterToDouble(REGISTER_Y);
-    
-    jump_back_buffer[jump_back_count].x = jump_back_x;
-    jump_back_buffer[jump_back_count].y = jb_y;
-    jump_back_buffer[jump_back_count].stored = false;
-    jump_back_count++;
-    
-    jump_back_x += jump_back_dx;
-  }
-  
-  bool should_commit_points = false;
-  
-  if(was_discontinuity) {
-    // For discontinuity cases, validate that fine points actually resolve the discontinuity
-    bool discontinuity_resolved = validateDiscontinuityResolution(
-      jump_back_buffer, jump_back_count, y01, jump_back_start_y, discontinuity_threshold);
-    
-    if(discontinuity_resolved) {
+          // Restore to the original grid point and continue normal processing
+          // This ensures the original grid point gets plotted in the normal flow
+          x = jumpBackStartX;
+          y02 = jumpBackStartY;
+          dx = dx0; // Revert to original step size
+          jumpedBack = false; // Clear flag so the original point gets plotted normally
+          
+          // Recalculate gradient for the original point
+          grad2 = (y02 - y01) / (x - x01);
+          ss0 = ss1;
+          ss1 = ss2;
+          ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
+          
 #ifdef GRAPHDEBUG
-      printf("\n    DISCONTINUITY RESOLVED: committing fine points");
+          printf("  Restored to original grid: x=%.6f, y=%.6f, grad=%.6f\n", x, y02, grad2);
+          printf("  Original grid point will be plotted normally\n");
 #endif
-      should_commit_points = true;
-      discontinuityDetected = 0; // Clear discontinuity flag
-    } else {
-#ifdef GRAPHDEBUG
-      printf("\n    DISCONTINUITY PERSISTS: abandoning fine points, but keeping original grid point");
-#endif
-      discontinuityDetected = 0; // Clear flag
-      should_commit_points = false;
-      // IMPORTANT: Don't skip the original grid point - restore to original position and let the normal flow handle plotting the original grid point
-    }
-  } else {
-    // For gradient increase cases, evaluate if points add significant detail
-    if(jump_back_count >= 3) {
-      // Calculate curvature variation in the jump-back region
-      double max_curvature_change = 0;
-      for(int i = 1; i < jump_back_count - 1; i++) {
-        double g1 = (jump_back_buffer[i].y - jump_back_buffer[i-1].y) / 
-                   (jump_back_buffer[i].x - jump_back_buffer[i-1].x);
-        double g2 = (jump_back_buffer[i+1].y - jump_back_buffer[i].y) / 
-                   (jump_back_buffer[i+1].x - jump_back_buffer[i].x);
-        double curv_change = fabs(g2 - g1);
-        if(curv_change > max_curvature_change) {
-          max_curvature_change = curv_change;
         }
       }
-      
-      // Compare with linear interpolation
-      double linear_slope = (jump_back_start_y - y01) / (jump_back_start_x - x01);
-      double interpolation_error = 0;
-      for(int i = 0; i < jump_back_count; i++) {
-        double expected_y = y01 + linear_slope * (jump_back_buffer[i].x - x01);
-        double error = fabs(jump_back_buffer[i].y - expected_y);
-        if(error > interpolation_error) {
-          interpolation_error = error;
-        }
-      }
-      
-      // Points are useful if they show significant non-linear behavior
-      bool jump_back_points_useful = (interpolation_error > 0.1 * fabs(jump_back_start_y - y01)) ||
-                                   (max_curvature_change > fabs(linear_slope) * 0.5);
-      
-#ifdef GRAPHDEBUG
-      printf("\n    Gradient increase evaluation: maxCurv=%.6f, interpError=%.6f, useful=%d", 
-             max_curvature_change, interpolation_error, jump_back_points_useful);
-#endif
-      
-      should_commit_points = jump_back_points_useful;
-    }
-  }
-  
-  if(should_commit_points) {
-    // Commit the fine points
-#ifdef GRAPHDEBUG
-    printf("\n    COMMITTING %d jump-back points", jump_back_count);
-#endif
-    for(int i = 0; i < jump_back_count; i++) {
-      convertDoubleToReal34RegisterPush(jump_back_buffer[i].x, REGISTER_X);
-      execute_rpn_function();
-      AddtoDrawMx();
-    }
-    
-    // Also plot the original grid point (jump_back_start_x, jump_back_start_y)
-    convertDoubleToReal34RegisterPush(jump_back_start_x, REGISTER_X);
-    execute_rpn_function();
-    AddtoDrawMx();
-    
-    // Set position to continue from the original grid point
-    x = jump_back_start_x;
-    y02 = jump_back_start_y;
-    dx = dx0; // Reset to original step size
-    jumpedBack = false; // Clear flag since we've handled the plotting
-    
-#ifdef GRAPHDEBUG
-    printf("\n    Continuing from original grid point: x=%.6f, y=%.6f", x, y02);
-#endif
-  } else {
-#ifdef GRAPHDEBUG
-    printf("\n    DISCARDING %d jump-back points, but preserving original grid flow", jump_back_count);
-#endif
-    // Restore to the original grid point and continue normal processing
-    // This ensures the original grid point gets plotted in the normal flow
-    x = jump_back_start_x;
-    y02 = jump_back_start_y;
-    dx = dx0; // Revert to original step size
-    jumpedBack = false; // Clear flag so the original point gets plotted normally
-    
-    // Recalculate gradient for the original point
-    grad2 = (y02 - y01) / (x - x01);
-    ss0 = ss1;
-    ss1 = ss2;
-    ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
-    
-#ifdef GRAPHDEBUG
-    printf("\n    Restored to original grid: x=%.6f, y=%.6f, grad=%.6f", x, y02, grad2);
-    printf("\n    Original grid point will be plotted normally");
-#endif
-  }
-}
 
       // Calculate curvature change for resolution assessment
-      double curvature_change = 0;
+      double curvatureChange = 0;
       if(count > 1 && grad0 != 0 && grad1 != 0) {
-        curvature_change = fabs((grad2 - grad1) - (grad1 - grad0));
+        curvatureChange = fabs((grad2 - grad1) - (grad1 - grad0));
 #ifdef GRAPHDEBUG
-        printf("\n  curvature_change=%.6f = |(%f-%f)-(%f-%f)|", 
-               curvature_change, grad2, grad1, grad1, grad0);
+        printf("curvatureChange=%.6f = |(%f-%f)-(%f-%f)|\n", 
+               curvatureChange, grad2, grad1, grad1, grad0);
 #endif
       }
       
       // Determine new step size and resolution mode
-      double new_dx = calculateNewStepSize(discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
+      double newDx = calculateNewStepSize(discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
       
       // Check if we're entering high-resolution mode (only if not jumped back)
       // Only trigger high-res for genuine curvature issues, not discontinuity-related step reductions
-      if(!jumpedBack && !in_high_res_mode && new_dx < prev_dx * REVERT_THRESHOLD && 
-         discontinuityDetected == 0 && curvature_change > 0) {
-        saved_x_before_highres = x01;  // Save the last good x position
-        saved_dx_before_highres = prev_dx;
+      if(!jumpedBack && !inHighResMode && newDx < prevDx * REVERT_THRESHOLD && 
+         discontinuityDetected == 0 && curvatureChange > 0) {
+        savedXBeforeHighres = x01;  // Save the last good x position
+        savedDxBeforeHighres = prevDx;
 #ifdef GRAPHDEBUG
-        printf("\n  HIGH-RES TRIGGER: new_dx(%.6f) < prev_dx(%.6f) * threshold(%.2f) = %.6f", 
-               new_dx, prev_dx, REVERT_THRESHOLD, prev_dx * REVERT_THRESHOLD);
-        printf("\n  Curvature-based trigger: discontinuity=%d, curvature_change=%.6f", 
-               discontinuityDetected, curvature_change);
-        printf("\n  Saving state: x=%.6f, dx=%.6f, cycle=%d", saved_x_before_highres, saved_dx_before_highres, cycleCount);
+        printf("HIGH-RES TRIGGER: newDx(%.6f) < prevDx(%.6f) * threshold(%.2f) = %.6f\n", 
+               newDx, prevDx, REVERT_THRESHOLD, prevDx * REVERT_THRESHOLD);
+        printf("Curvature-based trigger: discontinuity=%d, curvatureChange=%.6f\n", 
+               discontinuityDetected, curvatureChange);
+        printf("Saving state: x=%.6f, dx=%.6f, cycle=%d\n", savedXBeforeHighres, savedDxBeforeHighres, cycleCount);
 #endif
-        enterHighResMode(&in_high_res_mode, &high_res_count, &high_res_start_x, &baseline_curvature_change, &cumulative_curvature_change, x, curvature_change);
+        enterHighResMode(&inHighResMode, &highResCount, &highResStartX, &baselineCurvatureChange, &cumulativeCurvatureChange, x, curvatureChange);
       }
 #ifdef GRAPHDEBUG
-      else if(!jumpedBack && !in_high_res_mode && new_dx < prev_dx * REVERT_THRESHOLD) {
-        printf("\n  HIGH-RES BLOCKED: new_dx(%.6f) < threshold but discontinuity=%d or curvature_change=%.6f", 
-               new_dx, discontinuityDetected, curvature_change);
+      else if(!jumpedBack && !inHighResMode && newDx < prevDx * REVERT_THRESHOLD) {
+        printf("HIGH-RES BLOCKED: newDx(%.6f) < threshold but discontinuity=%d or curvatureChange=%.6f\n", 
+               newDx, discontinuityDetected, curvatureChange);
       }
 #endif
       
       // If in high-res mode, buffer the point and assess improvement
-      if(in_high_res_mode && !jumpedBack) {
-        cumulative_curvature_change += curvature_change;
+      if(inHighResMode && !jumpedBack) {
+        cumulativeCurvatureChange += curvatureChange;
         
 #ifdef GRAPHDEBUG
-        printf("\n  HIGH-RES MODE: count=%d/%d, cumCurv=%.6f, baseline=%.6f", 
-               high_res_count, HIGH_RES_SAMPLE_COUNT, cumulative_curvature_change, baseline_curvature_change);
+        printf("HIGH-RES MODE: count=%d/%d, cumCurv=%.6f, baseline=%.6f\n", 
+               highResCount, HIGH_RES_SAMPLE_COUNT, cumulativeCurvatureChange, baselineCurvatureChange);
 #endif
         
-        if(high_res_count < HIGH_RES_SAMPLE_COUNT) {
+        if(highResCount < HIGH_RES_SAMPLE_COUNT) {
           // Buffer high-res points in order
-          high_res_buffer[high_res_count].x = x;
-          high_res_buffer[high_res_count].y = y02;
-          high_res_buffer[high_res_count].grad = grad2;
-          high_res_buffer[high_res_count].stored = false;
-          high_res_count++;
+          highResBuffer[highResCount].x = x;
+          highResBuffer[highResCount].y = y02;
+          highResBuffer[highResCount].grad = grad2;
+          highResBuffer[highResCount].stored = false;
+          highResCount++;
 #ifdef GRAPHDEBUG
-          printf("\n    Buffered point %d: x=%.6f, y=%.6f", high_res_count-1, x, y02);
+          printf("  Buffered point %d: x=%.6f, y=%.6f\n", highResCount-1, x, y02);
 #endif
         } else {
           // Evaluate if high-res provided sufficient improvement
-          double improvement_ratio = (baseline_curvature_change > 0) ? 
-            cumulative_curvature_change / (baseline_curvature_change * HIGH_RES_SAMPLE_COUNT) : 1.0;
+          double improvementRatio = (baselineCurvatureChange > 0) ? 
+            cumulativeCurvatureChange / (baselineCurvatureChange * HIGH_RES_SAMPLE_COUNT) : 1.0;
           
 #ifdef GRAPHDEBUG
-          printf("\n  EVALUATING HIGH-RES: improvement_ratio=%.3f (need %.2f)", 
-                 improvement_ratio, MIN_IMPROVEMENT_RATIO);
-          printf("\n    cumCurv=%.6f, baseline*count=%.6f", 
-                 cumulative_curvature_change, baseline_curvature_change * HIGH_RES_SAMPLE_COUNT);
+          printf("EVALUATING HIGH-RES: improvementRatio=%.3f (need %.2f)\n", 
+                 improvementRatio, MIN_IMPROVEMENT_RATIO);
+          printf("  cumCurv=%.6f, baseline*count=%.6f\n", 
+                 cumulativeCurvatureChange, baselineCurvatureChange * HIGH_RES_SAMPLE_COUNT);
 #endif
           
-          if(improvement_ratio >= MIN_IMPROVEMENT_RATIO) {
+          if(improvementRatio >= MIN_IMPROVEMENT_RATIO) {
             // High-res was beneficial, commit buffered points in sequence
-            commitHighResPointsInOrder(high_res_buffer, high_res_count);
-            resetHighResTracking(&high_res_count, &in_high_res_mode, &cumulative_curvature_change);
+            commitHighResPointsInOrder(highResBuffer, highResCount);
+            resetHighResTracking(&highResCount, &inHighResMode, &cumulativeCurvatureChange);
             // Continue with current step size
           } else {
             // High-res didn't help, abandon and continue from last good point with larger dx
 #ifdef GRAPHDEBUG
-            printf("\n  HIGH-RES FAILED: reverting to x=%.6f, dx=%.6f", 
-                   saved_x_before_highres, saved_dx_before_highres);
+            printf("HIGH-RES FAILED: reverting to x=%.6f, dx=%.6f\n", 
+                   savedXBeforeHighres, savedDxBeforeHighres);
 #endif
-            abandonHighResMode(&high_res_count, &in_high_res_mode);
-            x = saved_x_before_highres + saved_dx_before_highres;
-            dx = saved_dx_before_highres;
+            abandonHighResMode(&highResCount, &inHighResMode);
+            x = savedXBeforeHighres + savedDxBeforeHighres;
+            dx = savedDxBeforeHighres;
             // Don't set jumpedBack since we want to continue forward, just with larger steps
             continue; // Skip to next iteration with the adjusted x
           }
         }
       }
       
-      prev_dx = dx;
-      dx = new_dx;
+      prevDx = dx;
+      dx = newDx;
       
 #ifdef GRAPHDEBUG
-      printf("\n  Step size: prev_dx=%.6f -> dx=%.6f", prev_dx, dx);
+      printf("Step size: prevDx=%.6f -> dx=%.6f\n", prevDx, dx);
 #endif
     }
     
     // Add point to plot (skip if in high-res buffering mode or jumped back)
-    if(!jumpedBack && dx >= 0 && !in_high_res_mode) {
+    if(!jumpedBack && dx >= 0 && !inHighResMode) {
 #ifdef GRAPHDEBUG
-      printf("\n  ADDING POINT TO PLOT: x=%.6f, y=%.6f", x, y02);
+      printf("ADDING POINT TO PLOT: x=%.6f, y=%.6f\n", x, y02);
 #endif
       AddtoDrawMx();
     } else {
 #ifdef GRAPHDEBUG
-      printf("\n  SKIPPING PLOT: jumpedBack=%d, dx=%.6f, in_high_res=%d", jumpedBack, dx, in_high_res_mode);
+      printf("SKIPPING PLOT: jumpedBack=%d, dx=%.6f, inHighRes=%d\n", jumpedBack, dx, inHighResMode);
 #endif
     }
     
@@ -936,6 +982,7 @@ if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2Increa
     if(count > 0) {
       grad1 = grad2;
     }
+    y00 = y01; // Update y00 for improved discontinuity detection
     y01 = y02;
     x01 = x;
     
@@ -964,56 +1011,50 @@ if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2Increa
   }
 
 #ifdef GRAPHDEBUG
-  printf("\n=== GRAPH EQUATION DEBUG END ===");
-  printf("\nTotal iterations: %d", cnt);
-  printf("\nTotal sign changes: %d", signChangeCount);
-  printf("\nTotal half cycles: %d", cycleCount);
-  printf("\n================================\n\n");
+  printf("\n=== GRAPH EQUATION DEBUG END ===\n");
+  printf("Total iterations: %d\n", cnt);
+  printf("Total sign changes: %d\n", signChangeCount);
+  printf("Total half cycles: %d\n", cycleCount);
+  printf("================================\n");
 #endif
   
-  if(in_high_res_mode && high_res_count > 0) {
-    abandonHighResMode(&high_res_count, &in_high_res_mode);
+  if(inHighResMode && highResCount > 0) {
+    abandonHighResMode(&highResCount, &inHighResMode);
   }
+
+#if defined (LOW_GRAPH_ACC)
+  //Change to SDIGS digit operation for fresh stack;
+  ctxtReal34.digits = 34; //Change back to normal operation for stack;
+  ctxtReal39.digits = 39; //Change back to 39 digit operation for stack;
+#endif //LOW_GRAPH_ACC
+  fillStackWithReal0();
+#if defined (LOW_GRAPH_ACC)
+  //Change to SDIGS digit operation for screen graphs;
+  if(significantDigitsForEqnGraphs <= 6) {
+    ctxtReal34.digits = significantDigitsForScreen;
+    ctxtReal39.digits = significantDigitsForScreen+3;
+  }
+#endif //LOW_GRAPH_ACC
+  if(!GRAPHMODE) { //Change over hourglass to the left side
+    clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
+  }
+  calcMode = CM_GRAPH;
+  hourGlassIconEnabled = true;       //clear the current portion of statusbar
+  showHideHourGlass();
+  refreshStatusBar();
+  fnPlot(0);
+#if defined (LOW_GRAPH_ACC)
+  //Change to normal operation for graphs;
+  ctxtReal34.digits = 34;
+  ctxtReal39.digits = 39;
+  ctxtReal51.digits = 51;
+  ctxtReal75.digits = 75;
+#endif //LOW_GRAPH_ACC
+}
+#endif // !TESTSUITE_BUILD
 
 
 //******************************************************************************************************************************
-
-
-    #if defined (LOW_GRAPH_ACC)
-      //Change to SDIGS digit operation for fresh stack;
-      ctxtReal34.digits = 34; //Change back to normal operation for stack;
-      ctxtReal39.digits = 39; //Change back to 39 digit operation for stack;
-    #endif //LOW_GRAPH_ACC
-
-    fillStackWithReal0();
-
-    #if defined (LOW_GRAPH_ACC)
-      //Change to SDIGS digit operation for screen graphs;
-      if(significantDigitsForEqnGraphs <= 6) {
-        ctxtReal34.digits = significantDigitsForScreen;
-        ctxtReal39.digits = significantDigitsForScreen+3;
-      }
-    #endif //LOW_GRAPH_ACC
-
-    if(!GRAPHMODE) { //Change over hourglass to the left side
-      clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
-    }
-    calcMode = CM_GRAPH;
-    hourGlassIconEnabled = true;       //clear the current portion of statusbar
-    showHideHourGlass();
-    refreshStatusBar();
-
-    fnPlot(0);
-
-    #if defined (LOW_GRAPH_ACC)
-      //Change to normal operation for graphs;
-      ctxtReal34.digits = 34;
-      ctxtReal39.digits = 39;
-      ctxtReal51.digits = 51;
-      ctxtReal75.digits = 75;
-    #endif //LOW_GRAPH_ACC
-  }
-#endif // !TESTSUITE_BUILD
 
 
 
