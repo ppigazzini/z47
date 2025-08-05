@@ -2220,10 +2220,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                 tam.alpha = false;
               }
             }
-            else {
-              if(item != ITM_BACKSPACE) {
-                tamLeaveMode();
-              }
+            else if(item != ITM_BACKSPACE) {          // [DL] to ensure backspace will be processed in tamProcessInput
+              leaveTamModeIfEnabled();
             }
           }
           if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
