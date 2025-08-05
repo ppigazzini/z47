@@ -7438,6 +7438,50 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  '4';
     *(currentStep++) =  '5';
 
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_RADIAN;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_GRAD;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_DEGREE;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_MULTPI;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
     *(currentStep++) = ITM_DEG2;
 
     *(currentStep++) = ITM_DMS2;
