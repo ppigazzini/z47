@@ -825,7 +825,31 @@ void execTimerApp(uint16_t timerType) {
         char *funcParam;
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
-        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
+
+        //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && 
+          !( (currentKeyCode == 16 || currentKeyCode == 12) ||                  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+                          //  ENTER                   BACKSP
+             ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
+                          //                  UP                      DN
+             (!isR47FAM && (currentKeyCode == 17 || currentKeyCode == 22)) )
+                          //                  UP                      DN
+          ){ //exclude ENTER and BACKSPACE
+          
+          fnKeyBackspace(NOPARAM);
+          addItemToBuffer(JM_auto_longpress_enabled);
+          FN_timeouts_in_progress = false;
+          fnTimerStop(TO_FN_LONG);
+          if(calcMode == CM_AIM) {
+            refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
+          } else
+          if(calcMode == CM_EIM) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+            refreshScreen(131);
+          }
+          return;
+        }
+        else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
         else if(funcParam[0] == 0 && (JM_auto_longpress_enabled == ITM_XEQ || JM_auto_longpress_enabled == ITM_GTO)) {  //from KEYA-F longpress

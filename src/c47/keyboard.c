@@ -1109,7 +1109,7 @@ int16_t lastItem = 0;
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(tam.mode) {
                   //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
                   popSoftmenu();
@@ -1269,7 +1269,7 @@ int16_t lastItem = 0;
                   SetSetting(JC_NL);
                 }
                 else if(tam.alpha) {
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
                     assignGetName1();
@@ -1321,7 +1321,7 @@ int16_t lastItem = 0;
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(stringGlyphLength(aimBuffer) > 6) {
                   assignLeaveAlpha();
                   assignGetName2();
@@ -2776,7 +2776,7 @@ RELEASE_END:
           else if(tam.mode) {
             if(tam.alpha) {
               if(indexOfItems[item].func == addItemToBuffer || item < 0) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
               }
               else {
                 keyActionProcessed = true;
@@ -2846,6 +2846,7 @@ RELEASE_END:
                 break;
               }
 
+              //also AIM Longpress cycle
               case CM_AIM: {
                 //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
                 if(item == ITM_BST || item == ITM_SST) {
@@ -2853,11 +2854,10 @@ RELEASE_END:
                   runFunction(item);
                   keyActionProcessed = true;
                 }
-
-//See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
+                  refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
                 }
                 break;
               }
@@ -2868,9 +2868,9 @@ RELEASE_END:
                          printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
                        #endif
                     #endif
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-                refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+                refreshScreen(130);
                 break;
               }
 
@@ -3175,7 +3175,7 @@ RELEASE_END:
               case CM_ASSIGN: {
                 if(item > 0 && itemToBeAssigned == 0) {
                   if(tam.alpha) {
-                    processAimInput(item);
+                    processAimInput(item); // sets keyActionProcessed
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
                       assignGetName1();
@@ -3228,7 +3228,7 @@ RELEASE_END:
                 else if(item != 0 && itemToBeAssigned != 0) {
                   if(tam.alpha && tam.mode != TM_NEWMENU) {
                     if(item > 0) {
-                      processAimInput(item);
+                      processAimInput(item); // sets keyActionProcessed
                       if(stringGlyphLength(aimBuffer) > 6) {
                         assignLeaveAlpha();
                         assignGetName2();
