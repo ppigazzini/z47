@@ -573,10 +573,10 @@ void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
 
   for (int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
-    realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    real34Zero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     if(i != 0) {
       realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i*3]));
-      realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
+      real34Zero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
     }
   }
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);

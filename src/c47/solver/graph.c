@@ -1296,6 +1296,7 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     fnRCL(SREG_Y2);
     fnRCL(SREG_X1);
     fnRCL(SREG_X2);
+    copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
@@ -1362,23 +1363,25 @@ void fnEqSolvGraph (uint16_t func) {
   switch(func) {
     case EQ_CPXSOLVE_LU:
     case EQ_REALSOLVE_LU: {
-      if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
+      if(getRegisterAsReal(RESERVED_VARIABLE_LEST, &y) && getRegisterAsReal(RESERVED_VARIABLE_UEST, &x)) {
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
         realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
+        solverEstimatesUsed = true;
       }
       break;
     }
     case EQ_CPXSOLVE:
     case EQ_REALSOLVE: {
       if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
-        reallocateRegister(RESERVED_VARIABLE_ULIM, dtReal34, 0, amNone);
-        reallocateRegister(RESERVED_VARIABLE_LLIM, dtReal34, 0, amNone);
-        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
-        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+        reallocateRegister(RESERVED_VARIABLE_UEST, dtReal34, 0, amNone);
+        reallocateRegister(RESERVED_VARIABLE_LEST, dtReal34, 0, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UEST));
+        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LEST));
+        solverEstimatesUsed = false;
       }
       break;
     }

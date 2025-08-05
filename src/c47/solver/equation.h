@@ -58,4 +58,13 @@
    * \param[out] mvarBuffer   For `EQUATION_PARSER_MVAR`, resulting `MVAR` list. for `EQUATION_PARSER_XEQ`, operator buffer.
    */
   void   parseEquation  (uint16_t equationId, uint16_t parseMode, char *buffer, char *mvarBuffer);
+
+  /**
+   * Check the number of function parameters.
+   *
+   * \param[in]  item         Function item
+   * \param[out] true/false   True for dyadic functions, false for monadic functions.
+   */
+  bool   isDyadicFunction (uint16_t item);
+
 #endif // !EQUATION_H

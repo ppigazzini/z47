@@ -776,10 +776,12 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
+          leaveTamModeIfEnabled();
           showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
+          leaveTamModeIfEnabled();
           BASE_OVERRIDEONCE = true;
           showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
           BASE_OVERRIDEONCE = true;
@@ -1721,7 +1723,7 @@ return res;
 
   static void stats_param_display(const char *name, calcRegister_t reg, char *prefix, char *tmpString, calcRegister_t rowReg) {
     int16_t prefixWidth;
-    char regS[5], *p;
+    char regS[16], *p;
     real_t t;
     real34_t u;
     uint32_t angleMode;
@@ -1731,10 +1733,18 @@ return res;
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_");
-    regS[3] = letteredRegisterName(reg);
+    if(reg == RESERVED_VARIABLE_UEST) {
+      sprintf(prefix, "Upper estimate =");
+      strcpy(regS,name);
+    } else if (reg == RESERVED_VARIABLE_LEST) {
+      sprintf(prefix, "Lower estimate =");
+      strcpy(regS,name);
+    } else {
+        strcpy(regS, "Reg_");
+        regS[3] = letteredRegisterName(reg);
+        sprintf(prefix, "= %s =", name);
+    }
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
-    sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
     if(getRegisterAsRealQuiet(reg, &t)) {
@@ -1930,8 +1940,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
@@ -1939,8 +1950,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -2365,7 +2377,8 @@ void createSubstrings(uint8_t number) {
       real_t t;
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
       switch(no) {
-        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
+        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " =");
+                   break;
         case  1: strcpy(noo," =" );
                    if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
                      if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t) == 200) {
@@ -2373,7 +2386,8 @@ void createSubstrings(uint8_t number) {
                      }
                    }
                    break;
-        default:break;
+        default: strcpy(noo," =" );
+                   break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
@@ -3009,13 +3023,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           inputRegName(prefix, &prefixWidth);
         }
 
-        // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
+
+        // STATISTICAL DISTR & SOLVER
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
-
           switch(currentMenu()) {
+            case -MNU_Solver_TOOL:
+              r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
+              r_j = indexOfItems[VAR_UEST].itemCatalogName; register_j = RESERVED_VARIABLE_UEST;
+              break;
             case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -3104,7 +3122,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3880,14 +3905,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_ULIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_UP_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_UP_ARROW " Upper limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_LLIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_DOWN_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_DOWN_ARROW " Lower limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
