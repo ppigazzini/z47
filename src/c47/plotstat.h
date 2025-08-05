@@ -62,6 +62,7 @@ void    plotrect           (uint16_t a, uint8_t b, uint16_t c, uint8_t d); // Pl
 void    pixelline          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal);              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
 void    plotline           (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn);
 void    plotline2          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn);
+void    plotline3          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t first_time, bool_t final_segment);
 void    graphAxisDraw      (void);
 void    graph_axis         (void);
 float   auto_tick          (float tick_int_f);

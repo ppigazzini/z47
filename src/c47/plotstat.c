@@ -276,6 +276,180 @@ void plotline2(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {              
  }
 
 
+// plotline3 does curve fitting every 2, 3, 4, and 5 points plotted.
+//           it needs to be started prior to data using plotline3(0,0,0,0,true,false)
+//           it needs to be stopped after the last data plotline3(0,0,0,0,false,true) which will plot the last segment provided there were more than 4 points
+
+static void evalHermite(
+    float t,
+    float x1, float x2, float tx1, float tx2,
+    float y1, float y2, float ty1, float ty2,
+    float *ox, float *oy)
+{
+    float h1 =  2*t*t*t - 3*t*t + 1;
+    float h2 = -2*t*t*t + 3*t*t;
+    float h3 =    t*t*t - 2*t*t + t;
+    float h4 =    t*t*t -   t*t;
+
+    *ox = h1*x1 + h2*x2 + h3*tx1 + h4*tx2;
+    *oy = h1*y1 + h2*y2 + h3*ty1 + h4*ty2;
+}
+
+void plotline3(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t first_time, bool_t final_segment) {
+    static uint16_t px[5];
+    static uint8_t  py[5];
+    static int count = 0;
+    static int z[5] = {0}; // Accumulated distances, used for the number of steps a section of line is broken up into. rough over estimate but beats a fixed number
+
+    if (first_time) {
+        count = 0;
+        memset(z, 0, sizeof(z));
+        return;
+    }
+
+    if(!final_segment) {
+
+        // Push new point into history
+        if (count < 5) {
+            px[count] = xn;
+            py[count] = yn;
+            
+            // Calculate and accumulate distance
+            if (count > 0) {
+                int dx = abs((int)px[count] - (int)px[count-1]);
+                int dy = abs((int)py[count] - (int)py[count-1]);
+                z[count] = (int)ceilf(sqrtf(dx*dx + dy*dy));
+            }
+            
+            count++;
+        } else {
+            for (int i = 0; i < 4; i++) {
+                px[i] = px[i+1];
+                py[i] = py[i+1];
+                z[i] = z[i+1];
+            }
+            px[4] = xn;
+            py[4] = yn;
+            
+            // Calculate distance for the last point
+            int dx = abs((int)px[4] - (int)px[3]);
+            int dy = abs((int)py[4] - (int)py[3]);
+            z[4] = (int)ceilf(sqrtf(dx*dx + dy*dy));
+        }
+
+        if (count < 2) return;
+
+        if (count == 2) {
+            // Linear
+            float prev_x = px[0], prev_y = py[0];
+            int steps = z[1];
+            for (int i = 1; i <= steps; i++) {
+                float t = (float)i / steps;
+                float sx = (1 - t) * px[0] + t * px[1];
+                float sy = (1 - t) * py[0] + t * py[1];
+                plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+                prev_x = sx; prev_y = sy;
+            }
+        }
+        else if (count == 3) {
+            // Quadratic Bézier
+            float prev_x = px[0], prev_y = py[0];
+            int steps = z[1] + z[2];
+            for (int i = 1; i <= steps; i++) {
+                float t = (float)i / steps;
+                float u = 1 - t;
+                float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
+                float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
+                plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+                prev_x = sx; prev_y = sy;
+            }
+        }
+        else if (count == 4) {
+            // Catmull–Rom: one segment (px[1]..px[2])
+            float t1x = (px[2] - px[0]) / 2.0f;
+            float t1y = (py[2] - py[0]) / 2.0f;
+            float t2x = (px[3] - px[1]) / 2.0f;
+            float t2y = (py[3] - py[1]) / 2.0f;
+
+            float prev_x = px[1], prev_y = py[1];
+            int steps = z[1] + z[2] + z[3];
+            for (int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps,
+                        px[1], px[2], t1x, t2x,
+                        py[1], py[2], t1y, t2y,
+                        &sx, &sy);
+            plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+            prev_x = sx; prev_y = sy;
+            }
+        }
+        else { // count == 5
+            // Segment 1: px[1] → px[2]
+            {
+                float t1x = (px[2] - px[0]) / 2.0f;
+                float t1y = (py[2] - py[0]) / 2.0f;
+                float t2x = (px[3] - px[1]) / 2.0f;
+                float t2y = (py[3] - py[1]) / 2.0f;
+
+                float prev_x = px[1], prev_y = py[1];
+                int steps = z[1] + z[2];
+                for (int i = 1; i <= steps; i++) {
+                    float sx, sy;
+                    evalHermite((float)i / steps,
+                                px[1], px[2], t1x, t2x,
+                                py[1], py[2], t1y, t2y,
+                                &sx, &sy);
+                    plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+                    prev_x = sx; prev_y = sy;
+                }
+            }
+
+            // Segment 2: px[2] → px[3]
+            {
+                float t1x = (px[3] - px[1]) / 2.0f;
+                float t1y = (py[3] - py[1]) / 2.0f;
+                float t2x = (px[4] - px[2]) / 2.0f;
+                float t2y = (py[4] - py[2]) / 2.0f;
+
+                float prev_x = px[2], prev_y = py[2];
+                int steps = z[2] + z[3] + z[4];
+                for (int i = 1; i <= steps; i++) {
+                    float sx, sy;
+                    evalHermite((float)i / steps,
+                                px[2], px[3], t1x, t2x,
+                                py[2], py[3], t1y, t2y,
+                                &sx, &sy);
+                    plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+                    prev_x = sx; prev_y = sy;
+                }
+            }
+        }
+    } else
+    if (final_segment && count == 5) {
+        // Draw final segment using last two points
+        float t1x = (px[4] - px[2]) / 2.0f;
+        float t1y = (py[4] - py[2]) / 2.0f;
+        float t2x = (px[4] - px[3]) / 2.0f;
+        float t2y = (py[4] - py[3]) / 2.0f;
+
+        float prev_x = px[3], prev_y = py[3];
+        int steps = z[3] + z[4];
+        for (int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps,
+                        px[3], px[4], t1x, t2x,
+                        py[3], py[4], t1y, t2y,
+                        &sx, &sy);
+            plotline2((int)prev_x, (int)prev_y, (int)sx, (int)sy);
+            prev_x = sx; prev_y = sy;
+        }
+    }
+}
+
+
+
+
+
 //Exhange the name of this routine with pixelline() above to try Bresenham
 void pixelline(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
