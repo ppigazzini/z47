@@ -309,6 +309,8 @@ typedef struct {
 #define HIGH_RES_SAMPLE_COUNT 3       // Number of high-res points to evaluate
 #define REVERT_THRESHOLD 0.8          // When to revert to previous dx
 
+#define ASYMPTOTECHECKING false
+
 bool validateDiscontinuityResolution(PlotPoint *buffer, int count, double yBefore, double yAfter, double discontinuityThreshold) {
 #ifdef GRAPHDEBUG
   printf("\nVALIDATING DISCONTINUITY RESOLUTION:");
@@ -500,6 +502,307 @@ bool detectTrueDiscontinuity(double y0, double y1, double y2, double grad0, doub
   return extremeMagnitudeJump || gradientDiscontinuity || signOscillationInstability;
 }
 
+
+
+
+// =============================================================================
+// ASYMPTOTE DETECTION AND RENDERING HELPER FUNCTIONS
+// Add this code block before your existing graph_eqn() function
+// =============================================================================
+
+typedef struct {
+  double x;           // x-coordinate of asymptote
+  double gapWidth;    // width of the discontinuity gap
+  bool hasPositive;   // approaches +infinity
+  bool hasNegative;   // approaches -infinity
+  double maxHeight;   // standard maximum height for rendering
+} AsymptoteInfo;
+
+#define MAX_ASYMPTOTES 10
+#define ASYMPTOTE_HEIGHT_RATIO 0.8  // 80% of y-axis range
+#define MIN_GAP_WIDTH_RATIO 0.001   // Minimum gap width as ratio of x-range
+#define ASYMPTOTE_SAMPLE_POINTS 5   // Points to sample on each side
+
+// Helper function to detect and characterize asymptotes
+bool detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, double yRight, 
+                                   double xGap, double gapWidth, AsymptoteInfo *asymptote) {
+#ifdef GRAPHDEBUG
+  printf("Checking asymptote at x=%.6f, gap=%.6f\n", xGap, gapWidth);
+  printf("  Left: x=%.6f, y=%.6f\n", xLeft, yLeft);
+  printf("  Right: x=%.6f, y=%.6f\n", xRight, yRight);
+#endif
+  
+  // Check if gap is significant enough
+  double xRange = x_max - x_min;
+  if(gapWidth < MIN_GAP_WIDTH_RATIO * xRange) {
+#ifdef GRAPHDEBUG
+    printf("  Gap too small: %.6f < %.6f\n", gapWidth, MIN_GAP_WIDTH_RATIO * xRange);
+#endif
+    return false;
+  }
+  
+  // Sample only 2 points on each side to minimize memory usage
+  double leftMaxY = yLeft, rightMaxY = yRight;
+  double leftMinY = yLeft, rightMinY = yRight;
+  
+  // Sample just 2 points on each side (minimal sampling)
+  for(int i = 1; i <= 2; i++) {
+    // Left side samples (approaching asymptote from left)
+    double sampleX = xLeft + (xGap - xLeft) * (0.7 + 0.2 * i / 2);
+    convertDoubleToReal34RegisterPush(sampleX, REGISTER_X);
+    execute_rpn_function();
+    
+    // Skip if we get invalid results
+    if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || 
+       real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
+      continue;
+    }
+    
+    double sampleY = convertRegisterToDouble(REGISTER_Y);
+    if(sampleY > leftMaxY) leftMaxY = sampleY;
+    if(sampleY < leftMinY) leftMinY = sampleY;
+    
+    // Right side samples (approaching asymptote from right)
+    sampleX = xGap + (xRight - xGap) * (0.2 * i / 2);
+    convertDoubleToReal34RegisterPush(sampleX, REGISTER_X);
+    execute_rpn_function();
+    
+    if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || 
+       real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
+      continue;
+    }
+    
+    sampleY = convertRegisterToDouble(REGISTER_Y);
+    if(sampleY > rightMaxY) rightMaxY = sampleY;
+    if(sampleY < rightMinY) rightMinY = sampleY;
+  }
+  
+  // Determine if we have a vertical asymptote based on extreme values
+  double yRange = y_max - y_min;
+  double extremeThreshold = yRange * 2.0; // Values beyond 2x the plot range
+  
+  bool leftGoesPositive = (leftMaxY > y_max + extremeThreshold);
+  bool leftGoesNegative = (leftMinY < y_min - extremeThreshold);
+  bool rightGoesPositive = (rightMaxY > y_max + extremeThreshold);
+  bool rightGoesNegative = (rightMinY < y_min - extremeThreshold);
+  
+  // Must have extreme behavior on at least one side
+  if(!(leftGoesPositive || leftGoesNegative || rightGoesPositive || rightGoesNegative)) {
+#ifdef GRAPHDEBUG
+    printf("  No extreme behavior detected\n");
+    printf("    Left: max=%.3f, min=%.3f (need >%.3f or <%.3f)\n", 
+           leftMaxY, leftMinY, y_max + extremeThreshold, y_min - extremeThreshold);
+    printf("    Right: max=%.3f, min=%.3f\n", rightMaxY, rightMinY);
+#endif
+    return false;
+  }
+  
+  // Fill asymptote info
+  asymptote->x = xGap;
+  asymptote->gapWidth = gapWidth;
+  asymptote->hasPositive = leftGoesPositive || rightGoesPositive;
+  asymptote->hasNegative = leftGoesNegative || rightGoesNegative;
+  asymptote->maxHeight = yRange * ASYMPTOTE_HEIGHT_RATIO;
+  
+#ifdef GRAPHDEBUG
+  printf("  ASYMPTOTE DETECTED at x=%.6f (memory efficient)\n", asymptote->x);
+  printf("    Gap width: %.6f\n", asymptote->gapWidth);
+  printf("    Goes positive: %d, negative: %d\n", asymptote->hasPositive, asymptote->hasNegative);
+  printf("    Standard height: %.3f\n", asymptote->maxHeight);
+#endif
+  
+  return true;
+}
+
+// CAREFUL: Add 3 points in sequence to create clean vertical line
+void renderAsymptote(AsymptoteInfo *asymptote) {
+  double x_center = asymptote->x;
+  double offset = 1e-3;  // Small x offset
+  double asymptoteHeight = 10000.0;
+  
+#ifdef GRAPHDEBUG
+  printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
+#endif
+  
+  if(asymptote->hasPositive && asymptote->hasNegative) {
+    // Two-way asymptote: straight vertical line
+    
+    // Point 1: (x-offset, -10000) - bottom left
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    // Point 2: (x-offset, +10000) - top left (straight up)
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    // Point 3: (x+offset, +10000) - top right (continue horizontally)
+    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
+    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+  } else if(asymptote->hasPositive) {
+    // Positive only: bottom to top
+    
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(0.0, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
+    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+  } else if(asymptote->hasNegative) {
+    // Negative only: top to bottom
+    
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(0.0, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
+    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+    
+    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
+    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
+#if !defined(TESTSUITE_BUILD)
+    AddtoDrawMx();
+#endif
+  }
+  
+#ifdef GRAPHDEBUG
+  printf("Added 3 asymptote points in clean vertical sequence\n");
+#endif
+}
+
+// asymptote detection that checks for sign changes with large gradients
+bool detectVerticalAsymptote(double y0, double y1, double y2, double grad0, double grad1, double grad2, 
+                            double x0, double x1, double x2, int count) {
+  if(count < 3) return false;
+  
+  // Check for sign change with large gradient magnitudes (typical of vertical asymptotes)
+  bool signChange = ((y1 > 0 && y2 < 0) || (y1 < 0 && y2 > 0));
+  bool largeGradients = (fabs(grad1) > 50 || fabs(grad2) > 50);
+  bool gradientJump = (fabs(grad2 - grad1) > fabs(grad1) * 2);
+  
+#ifdef GRAPHDEBUG
+  printf("Vertical asymptote check: signChange=%d, largeGrads=%d, gradJump=%d\n", 
+         signChange, largeGradients, gradientJump);
+  printf("  y1=%.3f, y2=%.3f, grad1=%.3f, grad2=%.3f\n", y1, y2, grad1, grad2);
+#endif
+  
+  // Asymptote likely if we have sign change AND (large gradients OR gradient jump)
+  return signChange && (largeGradients || gradientJump);
+}
+
+// discontinuity detection that also checks for asymptotes
+bool detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, double grad0, double grad1, double grad2, 
+                                          double yAvg, int count, double x0, double x1, double x2, 
+                                          AsymptoteInfo *asymptotes, int *asymptoteCount) {
+  // First check for vertical asymptote pattern (sign change + large gradient)
+  bool isVerticalAsymptote = ASYMPTOTECHECKING && detectVerticalAsymptote(y0, y1, y2, grad0, grad1, grad2, x0, x1, x2, count);
+  
+  if(isVerticalAsymptote && *asymptoteCount < MAX_ASYMPTOTES) {
+#ifdef GRAPHDEBUG
+    printf("VERTICAL ASYMPTOTE PATTERN DETECTED\n");
+#endif
+    
+    // Calculate asymptote position (midpoint between the sign change)
+    double xAsymptote = (x1 + x2) / 2.0;
+    double gapWidth = fabs(x2 - x1) * 2.0; // Assume gap extends beyond our sample points
+    
+    AsymptoteInfo candidateAsymptote;
+    
+    // For tan-like functions, we know it goes both ways
+    candidateAsymptote.x = xAsymptote;
+    candidateAsymptote.gapWidth = gapWidth;
+    candidateAsymptote.hasPositive = true;  // Assume both directions for now
+    candidateAsymptote.hasNegative = true;
+    candidateAsymptote.maxHeight = (y_max - y_min) * ASYMPTOTE_HEIGHT_RATIO;
+    
+    // Store and render the asymptote
+    asymptotes[*asymptoteCount] = candidateAsymptote;
+    (*asymptoteCount)++;
+    
+    renderAsymptote(&candidateAsymptote);
+    
+#ifdef GRAPHDEBUG
+    printf("Vertical asymptote rendered at x=%.6f\n", xAsymptote);
+#endif
+    
+    // Return false to prevent normal discontinuity handling since we handled it as asymptote
+    return false;
+  }
+  
+  // If not a vertical asymptote, do original discontinuity detection
+  bool hasDiscontinuity = detectTrueDiscontinuity(y0, y1, y2, grad0, grad1, grad2, yAvg, count);
+  
+  if(hasDiscontinuity && count >= 4 && *asymptoteCount < MAX_ASYMPTOTES) {
+    // Check if this discontinuity might be an asymptote using the detailed method
+    double gapWidth = fabs(x2 - x0);
+    double xGap = (x0 + x2) / 2.0;
+    
+#ifdef GRAPHDEBUG
+    printf("Checking complex discontinuity for asymptote: x0=%.6f, x1=%.6f, x2=%.6f\n", x0, x1, x2);
+    printf("  Gap center: %.6f, width: %.6f\n", xGap, gapWidth);
+#endif
+    
+    AsymptoteInfo candidateAsymptote;
+    
+    if(detectAndCharacterizeAsymptote(x0, y0, x2, y2, xGap, gapWidth, &candidateAsymptote)) {
+      // Store the asymptote
+      asymptotes[*asymptoteCount] = candidateAsymptote;
+      (*asymptoteCount)++;
+      
+      // Render the asymptote immediately
+      renderAsymptote(&candidateAsymptote);
+      
+#ifdef GRAPHDEBUG
+      printf("Complex asymptote detected and rendered\n");
+#endif
+      
+      // Return false to prevent normal discontinuity handling
+      return false;
+    }
+  }
+  
+#ifdef GRAPHDEBUG
+  if(hasDiscontinuity) {
+    printf("Regular discontinuity detected, not an asymptote\n");
+  }
+#endif
+  
+  return hasDiscontinuity;
+}
+
+// =============================================================================
+// END OF ASYMPTOTE HELPER FUNCTIONS
+// =============================================================================
+
+
+
+
 #if !defined(TESTSUITE_BUILD)
 static void graph_eqn(uint16_t mode) {
   currentKeyCode = 255;
@@ -527,6 +830,8 @@ static void graph_eqn(uint16_t mode) {
   double yAvg = 0.1;
   int loop = 0;
   bool_t jumpedBack = false;
+  AsymptoteInfo asymptotes[MAX_ASYMPTOTES];
+  int asymptoteCount = 0;
 
 #ifdef GRAPHDEBUG
   printf("\n=== GRAPH EQUATION DEBUG START ===\n");
@@ -558,6 +863,7 @@ static void graph_eqn(uint16_t mode) {
   if(mode == initDrwMx) {
     fnClDrawMx(3);
     strcpy(plotStatMx,"DrwMX");
+    asymptoteCount = 0; // Reset asymptote tracking for new plot
   }
 #if defined(GRAPHDEBUG)
   printf("dx0=%f discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, discontinuityDetected, grad2IncreaseDetected);
@@ -697,8 +1003,8 @@ static void graph_eqn(uint16_t mode) {
       
       // Use improved discontinuity detection
       if(discontinuityDetected == 0) {
-        bool trueDiscontinuity = detectTrueDiscontinuity(y00, y01, y02, grad0, grad1, grad2, yAvg, count);
-        
+        double x00 = (count > 1) ? x01 - dx : x_min;
+        bool trueDiscontinuity = detectTrueDiscontinuityWithAsymptote(y00, y01, y02, grad0, grad1, grad2, yAvg, count, x00, x01, x, asymptotes, &asymptoteCount);
         if(trueDiscontinuity) {
           discontinuityDetected = FINE;
 #ifdef GRAPHDEBUG
