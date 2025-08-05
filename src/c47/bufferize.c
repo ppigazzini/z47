@@ -1031,7 +1031,7 @@ typedef struct {
   }
 
   void addItemToNimBuffer(int16_t item) {
-    //printf("addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);
+    //printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -1039,7 +1039,7 @@ typedef struct {
 
     if((calcMode == CM_NIM || calcMode == CM_NORMAL) && Input_Default == ID_LI && item == ITM_PERIOD) {
       return;
-    }  
+    }
 
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
@@ -1173,7 +1173,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1238,7 +1238,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_COMPLEX_HP32SII_DENOMINATOR:
           case NP_COMPLEX_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1876,7 +1876,7 @@ typedef struct {
           }
         }
         break;
-    }
+      }
 
       case ITM_dotD: {
         if(nimNumberPart == NP_REAL_FLOAT_PART) {
@@ -1920,7 +1920,7 @@ typedef struct {
           closeNim();               //JM
         }
         break;
-    }
+      }
 
       case ITM_ms : {                      //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
@@ -2295,7 +2295,7 @@ typedef struct {
     if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
       nimBufferToDisplayBuffer(buffer, displayBuffer);
       strcat(displayBuffer, STD_SPACE_4_PER_EM);
-      
+
       for(index=2; buffer[index]!=' '; index++) {
       }
     }

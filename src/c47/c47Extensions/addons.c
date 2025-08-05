@@ -57,10 +57,59 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         }
         else {
           switch(getRegisterDataType(REGISTER_X)) {
+            case dtLongInteger: {
+              #define NIM_BUFFER_EXTENDED_LENGTH    1400      // provision for very long integers (up to 1000 digits + separators)
+              memset(nimBufferDisplay, 0, NIM_BUFFER_EXTENDED_LENGTH);
+              longInteger_t lgInt;
+              convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
+              longIntegerToAllocatedString(lgInt, nimBufferDisplay, NIM_BUFFER_EXTENDED_LENGTH);
+              if(longIntegerIsPositiveOrZero(lgInt)) {
+                aimBuffer[0] = '+';
+                strcpy(aimBuffer + 1, nimBufferDisplay);
+              }
+              else {
+                strcpy(aimBuffer, nimBufferDisplay);
+              }
+              longIntegerFree(lgInt);
+              if(grpGroupingLeft > 0) {
+                int16_t len = strlen(nimBufferDisplay);
+                for(int16_t i=len - grpGroupingLeft; i>0; i-=grpGroupingLeft) {
+                  if(i != 1 || nimBufferDisplay[0] != '-') {
+                    xcopy(nimBufferDisplay + i + 2, nimBufferDisplay + i, len - i + 1);
+                    nimBufferDisplay[i] = *(STD_SPACE_PUNCTUATION);
+                    nimBufferDisplay[i + 1] = *(&STD_SPACE_PUNCTUATION[1]);
+                    len += 2;
+                  }
+                }
+              }
+
+              // Test if long inter number display string will fit on two lines in standard font, if not do nothing (cannot edit)
+              if(stringWidth(nimBufferDisplay, &standardFont, true, true) < (SCREEN_WIDTH * 2)  - 8) { // 8 is the standard font cursor width
+                //printf("**[DL]** aimBuffer %s \n nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+                calcMode = CM_NIM;
+                clearSystemFlag(FLAG_ALPHA);
+                freeRegisterData(REGISTER_X);
+                setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+                setRegisterDataType(REGISTER_X, dtReal34, amNone);
+                real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+                hexDigits = 0;
+                nimNumberPart = NP_INT_10;
+                //clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                xCursor = 1;
+                //yCursor = Y_POSITION_OF_NIM_LINE;
+                cursorEnabled = true;
+                cursorFont = &numericFont;
+              }
+              else {
+                memset(nimBufferDisplay, 0, NIM_BUFFER_EXTENDED_LENGTH);
+                aimBuffer[0] = 0;
+                nimBufferDisplay[0] = 0;
+              }
+              break;
+            }
+
             case dtString: {
-            //else if(getRegisterDataType(REGISTER_X) == dtString) {
-              //calcModeAim(NOPARAM);
-              //runFunction(ITM_XEDIT);
               setSystemFlag(FLAG_ASLIFT);
               if(stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) < AIM_BUFFER_LENGTH) {
                 strcpy(aimBuffer, REGISTER_STRING_DATA(REGISTER_X));
@@ -326,7 +375,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 showSoftmenu(-MNU_TAM);
                 --numberOfTamMenusToPop;
               }
-        
+
               regNumber = opParam;
               if((paramMode == PARAM_REGISTER) || (paramMode == PARAM_COMPARE) || tam.indirect) {
                 if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
