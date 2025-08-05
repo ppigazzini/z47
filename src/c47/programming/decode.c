@@ -596,6 +596,22 @@ static void decodeLiteral(uint8_t *literalAddress) {
       break;
     }
 
+    case STRING_ANGLE_RADIAN:
+    case STRING_ANGLE_GRAD:
+    case STRING_ANGLE_DEGREE:
+    case STRING_ANGLE_MULTPI: {
+      getStringLabelOrVariableName(literalAddress);
+      _decodeNumeral(tmpString, tmpStringLabelOrVariableName, false, NULL, NULL);
+       switch(*(literalAddress - 1)) {
+          case STRING_ANGLE_RADIAN: strcat(tmpString,STD_SUP_r); break;
+          case STRING_ANGLE_GRAD:   strcat(tmpString,STD_SUP_g); break;
+          case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
+          case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
+          default: break;
+        }      
+      break;
+    }
+
     case STRING_COMPLEX34:  {
       char *dispStringPtr = tmpString;
       char *sourceStringPtr = tmpStringLabelOrVariableName;
