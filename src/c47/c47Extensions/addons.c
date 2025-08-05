@@ -94,10 +94,6 @@ void fnEdit (uint16_t unusedParamButMandatory) {
       case CM_PEM : {
         if(pemCursorIsZerothStep) return;
         //printf("**[DL]** currentLocalStepNumber %d\n",currentLocalStepNumber);fflush(stdout);
-        //currentStep = findPreviousStep(currentStep);
-        //if(currentLocalStepNumber > 1) {
-        //  --currentLocalStepNumber;
-        //}
         int16_t i = 0;
         int16_t func = currentStep[i++];
         if(func & 0x80) {
@@ -124,9 +120,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             pemAlphaEdit(NOPARAM);
           }
           else if((opParam == BINARY_SHORT_INTEGER) || (opParam == STRING_SHORT_INTEGER) || (opParam == STRING_LONG_INTEGER) ||
-                  (opParam == BINARY_REAL34)        || (opParam == STRING_REAL34) ||
-                  (opParam == BINARY_COMPLEX34)     || (opParam == STRING_COMPLEX34) ||
-                  (opParam == STRING_DATE)          || (opParam == STRING_TIME))    {
+                  (opParam == BINARY_REAL34)        || (opParam == STRING_REAL34)        ||
+                  (opParam == BINARY_COMPLEX34)     || (opParam == STRING_COMPLEX34)     ||
+                  (opParam == STRING_DATE)          || (opParam == STRING_TIME)          || (opParam == STRING_ANGLE_DMS))    {
             char *tempBuffer = errorMessage + 3000;
             bool chsNeeded = false;
             bool isDate = (opParam == STRING_DATE ? true : false);
@@ -239,6 +235,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                     chsNeeded = false;
                     pemAddNumber(ITM_EXPONENT, false);
                   }
+                  else if(tempBuffer[i] == STD_DEGREE[1]) {
+                    pemAddNumber(ITM_PERIOD, false);
+                  }
                   break;
                 case 0xa1:
                   i++;
@@ -286,8 +285,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             //printf("**[DL]** fnEdit aimBuffer %s\n",aimBuffer);fflush(stdout);
           }
           else {
-            //currentLocalStepNumber++;
-            //currentStep = findNextStep(currentStep);
+            ;
           }
         }
         else {
@@ -396,7 +394,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 varOrLblName[6] = 0;  // Ensure name is 6 characters maximum
                 strcpy(aimBuffer, varOrLblName);
                 T_cursorPos = strlen(varOrLblName);
-                tamProcessInput(ITM_NOP);
+                tamProcessInput(ITM_NOP);                 // to insert the resulting string in program
               }
 
               break;
@@ -417,8 +415,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
 
             default: {
-              //currentLocalStepNumber++;
-              //currentStep = findNextStep(currentStep);
+              ;
             }
           }
         }
