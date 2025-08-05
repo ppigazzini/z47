@@ -2208,7 +2208,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-            //printf("AA2 shiftKeyClearsError=%u !checkKeyShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",shiftKeyClearsError, !checkKeyShifts((char *)data), screenUpdatingMode, temporaryInformation);
+            //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
         else {
         #if defined(PC_BUILD)
@@ -2329,7 +2329,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 RELEASE_END:
 
-      //printf("BB shiftKeyClearsError=%u !checkKeyShifts=%u screenUpdatingMode=%u\n",shiftKeyClearsError, !checkKeyShifts((char *)data), screenUpdatingMode);
+      //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
 
       switch(last_CM) {
         case CM_REGISTER_BROWSER:
@@ -2484,8 +2484,8 @@ RELEASE_END:
           else if(tam.mode) {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
           }
-          else if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)) {
-            //let backspace run through to action upon release specifically for PEM, and not for PEM alpha
+          else if(calcMode == CM_PEM) {
+            //convert to Release action: let backspace run through to Release and bypass the next fnKeyBackspace()
             break;
           }
           else {

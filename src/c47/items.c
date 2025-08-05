@@ -277,7 +277,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {
           temporaryInformation = TI_NOT_AVAILABLE;
-        }
+        } 
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -306,7 +306,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
     }
-
+    
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
@@ -412,7 +412,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_STOELPLUS   :
         case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
         case ITM_INDEX:
-        case ITM_IPLUS       :
+        case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
         case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
@@ -585,7 +585,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         } else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
-          }
+          } 
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -602,33 +602,48 @@ bool_t isFunctionOldParam16(uint16_t func) {
         #endif // VERBOSEKEYS
         return;
       }
-      bool_t doNotAddStep = ((func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32);                 // longpress commands not to be added
-      switch(func) {
-        case ITM_T_UP_ARROW:
-        case ITM_T_DOWN_ARROW:
-        case ITM_T_LLEFT_ARROW:
-        case ITM_T_RRIGHT_ARROW:
-        case ITM_T_LEFT_ARROW:
-        case ITM_T_RIGHT_ARROW:
-        case ITM_ASSIGN:
-        case ITM_XSWAP:
-        case ITM_XPARSE:
-        case CHR_case:
-        case CHR_num:
-        case ITM_SCR:
-        case ITM_USERMODE:
-                doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
-        case ITM_EDIT:
-                doNotAddStep |= (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)); break;
-        default:;
-      }
 
-      if(calcMode == CM_PEM && func != ITM_BACKSPACE && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
+      if(calcMode == CM_PEM) {
+        bool_t doNotAddStep = false;
+        switch(func) {
+          case ITM_EXIT1:
+          case ITM_CLRMOD:
+          case ITM_SNAP:
+          case ITM_NOP:
+          case ITM_BASEMENU:
+                doNotAddStep = currentKeyCode == 32; break;
+          case ITM_T_UP_ARROW:
+          case ITM_T_DOWN_ARROW:
+          case ITM_T_LLEFT_ARROW:
+          case ITM_T_RRIGHT_ARROW:
+          case ITM_T_LEFT_ARROW:
+          case ITM_T_RIGHT_ARROW:
+          case ITM_ASSIGN:
+          case ITM_XSWAP:
+          case ITM_XPARSE:
+          case CHR_case:
+          case CHR_num:
+          case ITM_SCR:
+          case ITM_USERMODE:
+                doNotAddStep =  getSystemFlag(FLAG_ALPHA); break;
+          case ITM_EDIT:
+                doNotAddStep = !getSystemFlag(FLAG_ALPHA); break;
+          default:;
+        }
+
         #if defined(VERBOSEKEYS)
-          printf("items.c: runfunction (before addStepInProgram) func=%i\n",func);
+          printf("$$ PEM:    func=%d  showFunctionNameItem1=%d doNotAddStep=%d tam.mode=%d getSystemFlag(FLAG_ALPHA)=%d tam.alpha=%d\n", func, showFunctionNameItem, doNotAddStep, tam.mode, getSystemFlag(FLAG_ALPHA), tam.alpha);
+          fflush(stdout);
         #endif // VERBOSEKEYS
-        addStepInProgram(func);
-        return;
+
+        if(( !tam.mode && func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) ){
+          #if defined(VERBOSEKEYS)
+            printf("$$         items.c: runfunction: add step (before addStepInProgram) func=%i\n",func);
+            fflush(stdout);
+          #endif // VERBOSEKEYS
+          addStepInProgram(func);
+          return;
+        }
       }
     }
 
@@ -762,7 +777,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -4042,6 +4057,6 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2550 */  { fnYYDflt,                     TM_VALUE_TRK,                "YY",                                          "YY",                                          (0 << TAM_MAX_BITS) |  9999, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 2551 */  { fnDenMax,                     TM_VALUE_MAX,                "DMX",                                         "DMX",                                         (0 << TAM_MAX_BITS) |MAX_DENMAX,CAT_FNCT|SLS_ENABLED  | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 
-/* 2552 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2549 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };
