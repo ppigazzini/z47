@@ -605,7 +605,7 @@ bool_t itemNotAvail(int16_t itemNr) {
           case ITM_SNAP:
           case ITM_NOP:
           case ITM_BASEMENU:
-                doNotAddStep |= currentKeyCode == 32; break;
+                doNotAddStep = currentKeyCode == 32; break;
           case ITM_T_UP_ARROW:
           case ITM_T_DOWN_ARROW:
           case ITM_T_LLEFT_ARROW:
@@ -619,12 +619,9 @@ bool_t itemNotAvail(int16_t itemNr) {
           case CHR_num:
           case ITM_SCR:
           case ITM_USERMODE:
-                doNotAddStep |=  getSystemFlag(FLAG_ALPHA); break;
+                doNotAddStep =  getSystemFlag(FLAG_ALPHA); break;
           case ITM_EDIT:
-          case ITM_ALPHA_EDIT:
-                doNotAddStep |= !getSystemFlag(FLAG_ALPHA); break;
-          case ITM_BACKSPACE:
-                doNotAddStep |= !tam.alpha; break;
+                doNotAddStep = !getSystemFlag(FLAG_ALPHA); break;
           default:;
         }
 
@@ -633,7 +630,7 @@ bool_t itemNotAvail(int16_t itemNr) {
           fflush(stdout);
         #endif // VERBOSEKEYS
 
-        if(( !tam.mode && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) ){
+        if(( !tam.mode && func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) ){
           #if defined(VERBOSEKEYS)
             printf("$$         items.c: runfunction: add step (before addStepInProgram) func=%i\n",func);
             fflush(stdout);
