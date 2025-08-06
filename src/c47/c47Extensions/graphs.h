@@ -19,6 +19,7 @@ void    fnPline            (uint16_t unusedButMandatoryParameter);
 void    fnPcros            (uint16_t unusedButMandatoryParameter);
 void    fnPplus            (uint16_t unusedButMandatoryParameter);
 void    fnPbox             (uint16_t unusedButMandatoryParameter);
+void    fnPcurve           (uint16_t unusedButMandatoryParameter);
 void    fnPintg            (uint16_t unusedButMandatoryParameter);
 void    fnPdiff            (uint16_t unusedButMandatoryParameter);
 void    fnPrms             (uint16_t unusedButMandatoryParameter);
