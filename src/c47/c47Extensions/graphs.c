@@ -32,6 +32,7 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_SCALE);
   setSystemFlag(FLAG_PLINE);
   setSystemFlag(FLAG_PBOX);
+  setSystemFlag(FLAG_PCURVE);
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
 
@@ -69,6 +70,9 @@ void fnPline(uint16_t unusedButMandatoryParameter) {
   flipSystemFlag(FLAG_PLINE);
   if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
     setSystemFlag(FLAG_PBOX);
+  }
+  if(!getSystemFlag(FLAG_PLINE)) {
+    clearSystemFlag(FLAG_PCURVE);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
@@ -109,6 +113,15 @@ void fnPbox (uint16_t unusedButMandatoryParameter) {
     clearSystemFlag(FLAG_PPLUS);
   }
   if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+    setSystemFlag(FLAG_PLINE);
+  }
+  fnRefreshState();                //jm
+  fnPlotSQ(0);
+}
+
+void fnPcurve (uint16_t unusedButMandatoryParameter) {
+  flipSystemFlag(FLAG_PCURVE);
+  if(getSystemFlag(FLAG_PCURVE)) {
     setSystemFlag(FLAG_PLINE);
   }
   fnRefreshState();                //jm
