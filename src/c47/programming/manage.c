@@ -424,7 +424,6 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t linesOfCurrentStep = 1;
     lastIntegerBase = 0;
 
-
     if(calcMode != CM_PEM) {
       showSoftmenu(-MNU_PFN);
       screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
@@ -807,7 +806,7 @@ void pemAlpha(int16_t item) {
     }
     else if(item == ITM_BACKSPACE) {
       if(aimBuffer[0] == 0) {
-        deleteStepsFromTo(currentStep, findNextStep(currentStep));
+          deleteStepsFromTo(currentStep, findNextStep(currentStep));
         clearSystemFlag(FLAG_ALPHA);
         calcModeNormalGui();
         _closeAlphaMenus();
@@ -1291,13 +1290,19 @@ static void _pemCloseAngleInput(int item) {
         char *numBuffer = aimBuffer[0] == '+' ? aimBuffer + 1 : aimBuffer;
         char *tmpPtr = tmpString;
         *(tmpPtr++) = ITM_LITERAL;
-        switch(item) {
-          case ITM_DEG2  : *(tmpPtr++) = STRING_ANGLE_DEGREE; break;
-          case ITM_DMS2  : *(tmpPtr++) = STRING_ANGLE_DMS; break;
-          case ITM_GRAD2 : *(tmpPtr++) = STRING_ANGLE_GRAD; break;
-          case ITM_MULPI2: *(tmpPtr++) = STRING_ANGLE_MULTPI; break;
-          case ITM_RAD2  : *(tmpPtr++) = STRING_ANGLE_RADIAN; break;
-          default: break;
+        static const int angle_ids[] = {
+            [ITM_DEG2]   = STRING_ANGLE_DEGREE,
+            [ITM_DMS2]   = STRING_ANGLE_DMS,
+            [ITM_GRAD2]  = STRING_ANGLE_GRAD,
+            [ITM_MULPI2] = STRING_ANGLE_MULTPI,
+            [ITM_RAD2]   = STRING_ANGLE_RADIAN
+        };
+        int id = -1;
+        if (item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
+            id = angle_ids[item];
+        }
+        if (id != -1) {
+            *(tmpPtr++) = id;
         }
         *(tmpPtr++) = stringByteLength(numBuffer);
         xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
@@ -1683,7 +1688,7 @@ void insertStepInProgram(const int16_t func) {
         tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
-    }
+  }
   }
 
   if(func != ITM_EDIT) {
