@@ -1722,11 +1722,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //#define BINARY_ANGLE_DEGREE                       15
 //#define BINARY_ANGLE_DMS                          16
 //#define BINARY_ANGLE_MULTPI                       17
-//#define STRING_ANGLE_RADIAN                       18
-//#define STRING_ANGLE_GRAD                         19
-//#define STRING_ANGLE_DEGREE                       20
+#define STRING_ANGLE_RADIAN                       18
+#define STRING_ANGLE_GRAD                         19
+#define STRING_ANGLE_DEGREE                       20
 #define STRING_ANGLE_DMS                          21
-//#define STRING_ANGLE_MULTPI                       22
+#define STRING_ANGLE_MULTPI                       22
 
 // OP parameter type
 #define PARAM_DECLARE_LABEL                        1
