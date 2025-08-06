@@ -1159,7 +1159,12 @@ void graph_plotmem(void) {
         }
 
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
+        bool_t plotInCurves = getSystemFlag(FLAG_PCURVE);
+
         static int16_t prev_y_unclipped = 0;
+        if(plotInCurves) {
+          plotline3(0,0,0,0,true,false); //reset
+        }
         for(ix = 0; (ix < statnum); ++ix) {
           if(plotmode != _VECT) {
             x = 0;
@@ -1379,7 +1384,11 @@ void graph_plotmem(void) {
               #if defined(STATDEBUG)
                 printf("######       Plotting line from xo=%d yo=%d to x=%d y=%d\n\n", xo, yo, xn, yn);
               #endif // STATDEBUG
-              plotline2(xo, yo, xn, yn);
+              if(plotInCurves) {
+                plotline3(xo, yo, xn, yn, false, false);
+              } else {
+                plotline2(xo, yo, xn, yn);
+              }
             }
 
           }
@@ -1411,6 +1420,13 @@ void graph_plotmem(void) {
           prev_y_unclipped = current_y_unclipped;
         }
         //#################################################### ^^^ MAIN GRAPH LOOP ^^^ #########################
+        if(getSystemFlag(FLAG_PLINE) && plotInCurves) {
+          #if defined(STATDEBUG)
+            printf("######       Plotting last line segment from xo=%d yo=%d to x=%d y=%d\n\n", xo, yo, xn, yn);
+          #endif // STATDEBUG
+          plotline3(0,0,0,0,false,true); //last line segment
+        }
+
       }
       else {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
