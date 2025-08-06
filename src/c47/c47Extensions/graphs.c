@@ -1159,7 +1159,7 @@ void graph_plotmem(void) {
         }
 
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
-        bool_t plotInCurves = true;
+        bool_t plotInCurves = getSystemFlag(FLAG_PCURVE);
 
         static int16_t prev_y_unclipped = 0;
         if(plotInCurves) {
