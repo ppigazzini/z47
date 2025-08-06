@@ -799,7 +799,7 @@ TO_QSPI const int16_t menu_PLOTFUNC[]    = {  VAR_LX,                       VAR_
 
                                               ITM_PCROS,                    ITM_PPLUS,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_PLINE,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_PCURVE,                   ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_RMS,                      ITM_SHADE,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -813,7 +813,7 @@ TO_QSPI const int16_t menu_PLOT_STAT[]    = {
 
                                              ITM_PCROS,                 ITM_PPLUS,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_PLINE,                 ITM_PBOX,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
-                                             ITM_NULL,                  ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_PCURVE,                ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
 
                                              ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
