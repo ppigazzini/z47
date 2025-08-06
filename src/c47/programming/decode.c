@@ -10,6 +10,7 @@
 TO_QSPI const char shuffleReg[4] = {'x', 'y', 'z', 't'};
 TO_QSPI const char supDigit[24] = STD_SUP_0 STD_SUP_1 STD_SUP_2 STD_SUP_3 STD_SUP_4 STD_SUP_5 STD_SUP_6 STD_SUP_7 STD_SUP_8 STD_SUP_9;
 TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BASE_4 STD_BASE_5 STD_BASE_6 STD_BASE_7 STD_BASE_8 STD_BASE_9 STD_BASE_10 STD_BASE_11 STD_BASE_12 STD_BASE_13 STD_BASE_14 STD_BASE_15 STD_BASE_16;
+TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir;
 
 #if !defined(DMCP_BUILD)
   void listPrograms(void) {
@@ -608,7 +609,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
           case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
           case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
           default: break;
-        }      
+        }
       break;
     }
 

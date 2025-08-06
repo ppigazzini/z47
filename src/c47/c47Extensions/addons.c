@@ -160,7 +160,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           }
           varOrLblName[index] = 0;
         }
-        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d\n",func,opParam,opParam2);fflush(stdout);
+        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
           memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
@@ -171,7 +171,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           else if((opParam == BINARY_SHORT_INTEGER) || (opParam == STRING_SHORT_INTEGER) || (opParam == STRING_LONG_INTEGER) ||
                   (opParam == BINARY_REAL34)        || (opParam == STRING_REAL34)        ||
                   (opParam == BINARY_COMPLEX34)     || (opParam == STRING_COMPLEX34)     ||
-                  (opParam == STRING_DATE)          || (opParam == STRING_TIME)          || (opParam == STRING_ANGLE_DMS))    {
+                  (opParam == STRING_DATE)          || (opParam == STRING_TIME)          || (opParam == STRING_ANGLE_DMS)    ||
+                  (opParam == STRING_ANGLE_RADIAN)  || (opParam == STRING_ANGLE_GRAD)    ||
+                  (opParam == STRING_ANGLE_DEGREE)  || (opParam == STRING_ANGLE_MULTPI)) {
             char *tempBuffer = errorMessage + 3000;
             bool chsNeeded = false;
             bool isDate = (opParam == STRING_DATE ? true : false);
@@ -284,7 +286,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                     chsNeeded = false;
                     pemAddNumber(ITM_EXPONENT, false);
                   }
-                  else if(tempBuffer[i] == STD_DEGREE[1]) {
+                  else if((tempBuffer[i] == STD_DEGREE[1]) && (opParam == STRING_ANGLE_DMS)) {
                     pemAddNumber(ITM_PERIOD, false);
                   }
                   break;
@@ -330,8 +332,16 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
             if(chsNeeded) pemAddNumber(ITM_CHS, false);
+            if((opParam == STRING_ANGLE_RADIAN) || (opParam == STRING_ANGLE_GRAD)  ||
+               (opParam == STRING_ANGLE_DEGREE) || (opParam == STRING_ANGLE_MULTPI)) {
+              lastAngleSymbol = opParam - STRING_ANGLE_RADIAN + 1;
+            }
+            else {
+              lastAngleSymbol = 0;
+            }
+
             pemAddNumber(ITM_NOP, true);    // to insert the resulting number in program
-            //printf("**[DL]** fnEdit aimBuffer %s\n",aimBuffer);fflush(stdout);
+            //printf("**[DL]** fnEdit lastAngleSymbol %d aimBuffer %s\n",lastAngleSymbol,aimBuffer);fflush(stdout);
           }
           else {
             ;

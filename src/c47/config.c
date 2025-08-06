@@ -452,6 +452,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     popSoftmenu();
     lastIntegerBase = 0;
     decodedIntegerBase = 0;
+    lastAngleSymbol = 0;
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;

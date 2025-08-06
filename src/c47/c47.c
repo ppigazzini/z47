@@ -255,6 +255,7 @@ int16_t               *menu_RAM;
 int16_t                numberOfTamMenusToPop;
 int16_t                itemToBeAssigned;
 int16_t                cachedDynamicMenu;
+uint8_t                lastAngleSymbol;
 
 uint16_t               globalFlags[8];
 uint16_t               freeProgramBytes;
@@ -807,7 +808,7 @@ int convertKeyCode(int key) {
                                                   // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
                                                   // print_linestr(rrr,true);
                                                   // rrr[0]=0;
-                                                  // print_linestr(rrr,false);                                                  
+                                                  // print_linestr(rrr,false);
                                                   // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
                                                   // print_linestr(rrr,false);
 
