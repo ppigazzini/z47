@@ -171,7 +171,7 @@ static void executeFunction(const char *data, int16_t item_);
       case MNU_REALS:
       case MNU_ANGLES:
       case MNU_LINTS:
-      case MNU_ALLVARS: 
+      case MNU_ALLVARS:
       {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
@@ -289,7 +289,7 @@ static void executeFunction(const char *data, int16_t item_);
         case MNU_REALS:
         case MNU_ANGLES:
         case MNU_LINTS:
-        case MNU_ALLVARS: 
+        case MNU_ALLVARS:
 
 
          {
@@ -422,7 +422,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_REALS:
           case MNU_ANGLES:
           case MNU_LINTS:
-          case MNU_ALLVARS: 
+          case MNU_ALLVARS:
           {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
@@ -1710,8 +1710,8 @@ int16_t lastItem = 0;
                   {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
                   {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
                   {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
-                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0      
-                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2      
+                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0
+                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2
                   {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
                   {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
@@ -2348,7 +2348,7 @@ RELEASE_END:
         }
       }
 
-    bool_t preventRefreshAtTheEndOfReleasedKey =  
+    bool_t preventRefreshAtTheEndOfReleasedKey =
       ( !shiftKeyClearsError && checkKeyShifts((char *)data) ) ||
       ( (lastKeyItemDetermined == ITM_UP1 || lastKeyItemDetermined == ITM_DOWN1) && calcMode == CM_GRAPH );
 
