@@ -38,6 +38,173 @@ All the below: because both Last x and savestack does not work due to multiple s
   }
 #endif // !TESTSUITE_BUILD
 
+
+void fractionToString(calcRegister_t regist, char *displayString) {
+  int16_t  sign, lessEqualGreater;
+  uint64_t intPart, numer, denom;
+
+  fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
+
+  if(getSystemFlag(FLAG_PROPFR)) { // a b/c
+    sprintf(displayString, "%s%" PRIu64 " %" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), intPart, numer, denom);
+  }
+
+  else { // FT_IMPROPER d/
+    sprintf(displayString, "%s%" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), numer, denom);
+
+  }
+}
+
+
+#if !defined(TESTSUITE_BUILD)
+static void _hmsTimeToReal() {
+  int16_t i = 0;
+  int16_t j = 0;
+  bool decimalflag = false;
+
+  timeToDisplayString(REGISTER_X, tmpString, true);
+
+  while(tmpString[i] != 0) {
+    switch((uint8_t)tmpString[i]) {
+      case '0' :
+      case '1' :
+      case '2' :
+      case '3' :
+      case '4' :
+      case '5' :
+      case '6' :
+      case '7' :
+      case '8' :
+      case '9' :
+      case '+' :
+      case '-' :
+        tmpString[j++] = (uint8_t)tmpString[i];
+        break;
+      case ':' :
+        if(!decimalflag) {
+          decimalflag = true;
+          tmpString[j++] = '.';
+        }
+        break;
+      default:
+        break;
+    }
+    i++;
+  }
+  tmpString[j] = 0;
+
+  if(tmpString[0] != 0) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
+  }
+}
+
+
+static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDisplay) {
+// nimInput   : used to fill aimBuffer
+// nimDisplay : used to fill nimBufferDisplay
+  uint16_t i;
+  uint8_t grpGroupingLeftOld  = grpGroupingLeft;
+  uint8_t grpGroupingRightOld = grpGroupingRight;
+
+  grpGroupingLeft  = 0;
+  grpGroupingRight = 0;
+  real34ToDisplayString(real34, amNone, tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, true, STD_SPACE_PUNCTUATION, true);
+  grpGroupingRight = grpGroupingRightOld;
+  grpGroupingLeft  = grpGroupingLeftOld;
+  //printf("**[DL]** _real34ToNim tmpString %s\n",tmpString);fflush(stdout);
+
+  bool noDisplayExponent = true;
+  for(i = 0; i < strlen(tmpString); i++) {
+    if((tmpString[i] == STD_SUB_10[0]) && (tmpString[i+1] == STD_SUB_10[1])) {
+      noDisplayExponent = false;
+    }
+  }
+  grpGroupingLeft  = 0;
+  grpGroupingRight = 0;
+  real34ToString(real34, nimDisplay);
+  grpGroupingRight = grpGroupingRightOld;
+  grpGroupingLeft  = grpGroupingLeftOld;
+  //printf("**[DL]** _real34ToNim nimBufferDisplay %s\n",nimBufferDisplay);fflush(stdout);
+  bool dotFound = false;
+  if(noDisplayExponent) {                                // if no exponent in display string but exponent in real34ToString, use the display string
+    for(i = 0; i < strlen(nimDisplay); i++) {
+      if((nimDisplay[i] == 'e') || (nimDisplay[i] == 'E')) {
+        strcpy(nimDisplay, tmpString + (tmpString[0] == '-'? 0 : 1));
+        break;
+      }
+      if(nimDisplay[i] == '.') {
+        dotFound = true;
+      }
+    }
+    if(dotFound) {
+      for(i = strlen(nimDisplay)-1; i > 0; i--) {
+        if(nimDisplay[i] == '0') {
+          nimDisplay[i] = 0;              // remove trailing zeros
+        }
+        else {
+          break;
+        }
+      }
+    }
+  }
+  if(real34IsPositive(real34)) {
+    nimInput[0] = '+';
+    strcpy(nimInput + 1, nimDisplay);
+  }
+  else {
+    strcpy(nimInput, nimDisplay);
+  }
+  //printf("**[DL]** _real34ToNim nimInput %s\n",nimInput);fflush(stdout);
+  bool exponentFound = false;
+  dotFound = false;
+  for(i = 0; i < strlen(nimInput); i++) {
+    if(nimInput[i] == 'E') {
+      nimInput[i] = 'e';
+      dotFound = true;
+      exponentFound = true;
+      exponentSignLocation = i + 1;
+      nimNumberPart = NP_REAL_EXPONENT;
+    }
+    if(nimInput[i] == '.') {
+      dotFound = true;
+      nimNumberPart = NP_REAL_FLOAT_PART;
+    }
+  }
+  if(!dotFound) {
+    nimInput[i] = '.';
+    nimNumberPart = NP_REAL_FLOAT_PART;
+  }
+  strcpy(nimDisplay, STD_SPACE_HAIR);
+  nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
+  //printf("**[DL]** _real34ToNim nimDisplay %s\n",nimDisplay+2);fflush(stdout);
+  for(i=stringByteLength(nimDisplay) - 1; i>0; i--) {
+    if(nimDisplay[i] == (char)0xab) {
+      nimDisplay[i] = SEPARATOR_LEFT[0];
+      if(nimDisplay[i+1] == 1) {
+        nimDisplay[i+1] = SEPARATOR_LEFT[1];
+      }
+    }
+    if(nimDisplay[i] == (char)0xbb) {
+      nimDisplay[i] = SEPARATOR_RIGHT[0];
+      if(nimDisplay[i+1] == 1) {
+        nimDisplay[i+1] = SEPARATOR_RIGHT[1];
+      }
+    }
+  }
+  if(exponentFound) {
+    exponentToDisplayString(stringToInt32(nimInput + exponentSignLocation), nimDisplay + stringByteLength(nimDisplay), NULL, true);
+    if(nimInput[exponentSignLocation + 1] == 0 && nimInput[exponentSignLocation] == '-') {
+      strcat(nimDisplay, STD_SUP_MINUS);
+    }
+    else if(nimInput[exponentSignLocation + 1] == '0' && nimInput[exponentSignLocation] == '+') {
+      strcat(nimDisplay, STD_SUP_0);
+    }
+  }
+}
+#endif // !TESTSUITE_BUILD
+
+
 void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
@@ -97,7 +264,6 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 //clearRegisterLine(NIM_REGISTER_LINE, true, true);
                 if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
                 xCursor = 1;
-                //yCursor = Y_POSITION_OF_NIM_LINE;
                 cursorEnabled = true;
                 cursorFont = &numericFont;
               }
@@ -106,6 +272,83 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 aimBuffer[0] = 0;
                 nimBufferDisplay[0] = 0;
               }
+              break;
+            }
+
+            case dtReal34: {
+              edit_dtReal34:
+              grpGroupingLeftOld  = grpGroupingLeft;
+              grpGroupingRightOld = grpGroupingRight;
+              angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
+
+              memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
+              memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
+
+              if(xangularMode == amMultPi) {
+                real_t multPi;
+
+                real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &multPi);
+                realDivide(&multPi, const_pi, &multPi, &ctxtReal39);
+                realToReal34(&multPi, REGISTER_REAL34_DATA(REGISTER_X));
+              }
+              else if(xangularMode == amDMS) {
+                real34FromDegToDms(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+              }
+
+              if (getSystemFlag(FLAG_FRACT)) {
+                grpGroupingLeft  = 0;
+                grpGroupingRight = 0;
+                fractionToString(REGISTER_X, aimBuffer);
+                grpGroupingRight = grpGroupingRightOld;
+                grpGroupingLeft  = grpGroupingLeftOld;
+
+                nimNumberPart = NP_FRACTION_DENOMINATOR;
+                strcpy(nimBufferDisplay, STD_SPACE_HAIR);
+                nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+                strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
+
+                for(index=2; aimBuffer[index]!=' '; index++) {
+                }
+                supNumberToDisplayString(stringToInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+
+                strcat(nimBufferDisplay, "/");
+
+                for(; aimBuffer[index]!='/'; index++) {
+                }
+                if(aimBuffer[++index] != 0) {
+                  subNumberToDisplayString(stringToInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
+                }
+              }
+              else {
+                _real34ToNim(REGISTER_REAL34_DATA(REGISTER_X), aimBuffer, nimBufferDisplay);
+              }
+              //printf("**[DL]** dtReal34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+
+              calcMode = CM_NIM;
+              clearSystemFlag(FLAG_ALPHA);
+              freeRegisterData(REGISTER_X);
+              setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+              setRegisterDataType(REGISTER_X, dtReal34, amNone);
+              //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
+              real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+              //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
+              hexDigits = 0;
+              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              xCursor = 1;
+              cursorEnabled = true;
+              cursorFont = &numericFont;
+              break;
+            }
+
+            case dtTime: {
+              _hmsTimeToReal();
+              goto edit_dtReal34;
+              break;
+            }
+
+            case dtDate: {
+              convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
+              goto edit_dtReal34;
               break;
             }
 
