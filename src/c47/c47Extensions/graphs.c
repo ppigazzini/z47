@@ -162,15 +162,13 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
   void fnPMzoom (uint16_t param) { //param = 2: positive; param = 1: negative
     switch(calcMode){
       case CM_PLOT_STAT: {
-        const int8_t RangeHi = 0;
-        const int8_t RangeLo = -3;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZOOM += increment;
-        if(PLOT_ZOOM > RangeHi) {
-          PLOT_ZOOM = RangeLo;
+        if(PLOT_ZOOM > statZoomRangeHi) {
+          PLOT_ZOOM = statZoomRangeLo;
         }
-        else if(PLOT_ZOOM < RangeLo) {
-          PLOT_ZOOM = RangeHi;
+        else if(PLOT_ZOOM < statZoomRangeLo) {
+          PLOT_ZOOM = statZoomRangeHi;
         }
         if(PLOT_ZOOM != 0) {
            PLOT_AXIS = true;
@@ -181,18 +179,19 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
         break;
       }
       case CM_GRAPH: {
-        const int8_t RangeHi = +16;
-        const int8_t RangeLo = -16;
-        real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
-        real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
+        //real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+        //real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
         PLOT_AXIS = true;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZMY += increment;
-        if(PLOT_ZMY > RangeHi) {
-          PLOT_ZMY = RangeLo;
+        if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
+          PLOT_ZMY = 0;
+        } else
+        if(PLOT_ZMY > zoomOverride+1) {
+          PLOT_ZMY = zoomRangeLo;
         }
-        else if(PLOT_ZMY < RangeLo) {
-          PLOT_ZMY = RangeHi;
+        else if(PLOT_ZMY < zoomRangeLo) {
+          PLOT_ZMY = zoomRangeHi;
         }
         fnRefreshState();
         fnPlotSQ(0);
@@ -697,6 +696,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
   #endif // STATDEBUG
 
   //Calc zoom scales
+  float plotzoomy = 1;
+  float plotzoomx = 1;
   if(mode == PLOTSTAT) {
     //the ZOOM command from outside the PLOT mode only works for PLSTAT
 //    const int8_t RangeHi = 0;
@@ -708,33 +709,45 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 //      PLOT_ZOOM = RangeLo;
 //    }
     float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
-    float plotzoomx = 1;
     calculateZoomFactor(PLOT_ZOOM * 0.75, &plotzoomx);
-    float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
+    plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
     multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
     if(drawHistogram == 1) {
       y_min = 0;
     }
   }
   else { //mode != PLOTSTAT
-    const int8_t RangeHi = +16;
-    const int8_t RangeLo = -16;
-    if(PLOT_ZMY > RangeHi) {
-      PLOT_ZMY = RangeHi;
+    if(PLOT_ZMY != zoomOverride) {
+      if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
+        PLOT_ZMY = 0;
+      } else if(PLOT_ZMY > zoomOverride+1) {
+        PLOT_ZMY = zoomRangeLo;
+      }
+      else if(PLOT_ZMY < zoomRangeLo) {
+        PLOT_ZMY = zoomRangeHi;
+      }
+      calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
+      //use this line if the x-display-range is to be the same as the y-display-range
+      //plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
+      multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+      //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
     }
-    else if(PLOT_ZMY < RangeLo) {
-      PLOT_ZMY = RangeLo;
+    else {
+
+      //PLOT_ZMY = 18, special case to allow Ylo Yhi
+      //_LY _UY override only if ZOOM is not set, AND Yup and Ylo are not zero
+      if(fabs(plotzoomx-1) < 0.00001 && fabs(plotzoomy-1) < 0.00001 && !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) && real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))) {
+        y_min = convertRegisterToDouble(RESERVED_VARIABLE_LY);
+        y_max = convertRegisterToDouble(RESERVED_VARIABLE_UY);
+      } else {
+        y_min = -10;
+        y_max = 10;
+      }
+
     }
-    float plotzoomy = 1;
-    calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
-    float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
-    multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
-    //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
   }
-  if(!real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) || !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY))) {
-    y_min = convertRegisterToDouble(RESERVED_VARIABLE_LY);
-    y_max = convertRegisterToDouble(RESERVED_VARIABLE_UY);
-  }
+
+
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f \n", x_min,y_min,x_max,y_max, dx, dy);

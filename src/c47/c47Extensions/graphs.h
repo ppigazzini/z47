@@ -12,6 +12,13 @@
 #if !defined(GRAPHS_H)
 #define GRAPHS_H
 
+#define statZoomRangeHi  0
+#define statZoomRangeLo -3
+#define zoomRangeHi +16
+#define zoomRangeLo -16
+#define zoomOverride 18 
+
+
 //Graph functions
 void    graph_reset        (void);
 void    fnClGrf            (uint16_t unusedButMandatoryParameter);

@@ -2272,7 +2272,7 @@ void fnEqSolvGraph (uint16_t func) {
     case EQ_PLOT_LU:
     case EQ_PLOT: {
 
-      PLOT_ZMY = 0;
+//      PLOT_ZMY = 0; removed default zeroing of the zoom factor in eqn as it is irritating with the new y range control
       double higherXStartValue = convertRegisterToDouble(REGISTER_X);
       double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
       #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)

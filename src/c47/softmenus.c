@@ -2139,6 +2139,15 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
                     }
 
+      case ITM_PZOOMY  :
+      case ITM_MZOOMY  : 
+                      if(PLOT_ZMY == zoomOverride) {
+                        strcpy(tmpS, STD_SPACE_6_PER_EM STD_SUB_X);
+                        *showValue = NOVAL;
+                        stringCopy(showText + stringByteLength(showText), tmpS);
+                      }
+                      break;
+
       case VAR_ULIM    :
       case VAR_LLIM    :
       case VAR_UX      :
