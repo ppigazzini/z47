@@ -102,67 +102,66 @@ void statGraphReset(void){
   }
 
 
-  int16_t screen_window_x(float x_min, float x, float x_max) {
-    int16_t temp; float tempr;
+#define ROUND_F2I(f) ((int)((f) >= 0 ? (f) + 0.5f : (f) - 0.5f))
+
+int16_t screen_window_x(float x_min, float x, float x_max) {
+    int16_t temp;
+    float tempr;
 
     tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
-    if(tempr > 32766) {
-      temp = 32767;
-    }
-    else {
-      if(tempr < -32766) {
+
+    if (tempr > 32766) {
+        temp = 32767;
+    } else if (tempr < -32766) {
         temp = -32767;
-      }
-      else {
-        temp = (int16_t) tempr;
-      }
+    } else {
+        temp = (int16_t)ROUND_F2I(tempr);
     }
-    if(temp > SCREEN_HEIGHT_GRAPH-1) {
-      temp = SCREEN_HEIGHT_GRAPH-1;
+
+    if (temp > SCREEN_HEIGHT_GRAPH - 1) {
+        temp = SCREEN_HEIGHT_GRAPH - 1;
+    } else if (temp < 0) {
+        temp = 0;
     }
-    else if(temp < 0) {
-      temp = 0;
-    }
+
     return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
-  }
+}
 
 
-
-  int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
+int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
     int16_t temp, minn;
     float tempr;
 
     minn = 0;
 
     tempr = ((y - y_min) / (y_max - y_min) * (float)(SCREEN_HEIGHT_GRAPH - 1 - minn));
-    if(tempr > 32766) {
-      temp = 32767;
-    }
-    else {
-      if(tempr < -32766) {
+
+    if (tempr > 32766) {
+        temp = 32767;
+    } else if (tempr < -32766) {
         temp = -32767;
-      }
-      else {
-        temp = (int16_t) tempr;
-      }
+    } else {
+        temp = (int16_t)ROUND_F2I(tempr);
     }
 
-    if(!nolimit) {
-      if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-        temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
-      }
-      else if(temp < 0) {
-        temp=0;
-      }
+    if (!nolimit) {
+        if (temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
+            temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
+        } else if (temp < 0) {
+            temp = 0;
+        }
     }
 
     #if defined(PC_BUILD)
-      if(SCREEN_HEIGHT_GRAPH-1 - temp<0 || SCREEN_HEIGHT_GRAPH-1 - temp>239) {
-        printf("In function screen_window_y Y EXCEEDED %d %d",temp,SCREEN_HEIGHT_GRAPH-1 - temp);
-      }
+    if (SCREEN_HEIGHT_GRAPH - 1 - temp < 0 || 
+        SCREEN_HEIGHT_GRAPH - 1 - temp > 239) {
+        printf("In function screen_window_y Y EXCEEDED %d %d",
+               temp, SCREEN_HEIGHT_GRAPH - 1 - temp);
+    }
     #endif
+
     return (SCREEN_HEIGHT_GRAPH - 1 - temp);
-  }
+}
 
   #define nolimit true
   #define limit false
@@ -274,6 +273,174 @@ void plotline2(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {              
    //   pixelline(xo+1,yo,xn+1,yn,1);   //Do not use the full doubling, without it give as nice profile if the slope changes
    //   pixelline(xo,yo+1,xn,yn+1,1);
  }
+
+
+// plotline3 does curve fitting every 2, 3, 4, and 5 points plotted.
+//           it needs to be started prior to data using plotline3(0,0,0,0,true,false)
+//           it needs to be stopped after the last data plotline3(0,0,0,0,false,true) which will plot the last segment provided there were more than 4 points
+
+static void evalHermite(
+    float t,
+    float x1, float x2, float tx1, float tx2,
+    float y1, float y2, float ty1, float ty2,
+    float *ox, float *oy)
+{
+    float h1 =  2*t*t*t - 3*t*t + 1;
+    float h2 = -2*t*t*t + 3*t*t;
+    float h3 =    t*t*t - 2*t*t + t;
+    float h4 =    t*t*t -   t*t;
+
+    *ox = h1*x1 + h2*x2 + h3*tx1 + h4*tx2;
+    *oy = h1*y1 + h2*y2 + h3*ty1 + h4*ty2;
+}
+
+
+void plotline3(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn,
+               bool_t first_time, bool_t final_segment) {
+    static uint16_t px[5];
+    static uint8_t  py[5];
+    static int count = 0;
+    static int z[5] = {0};
+
+    if (first_time) {
+        count = 0;
+        memset(z, 0, sizeof(z));
+        return;
+    }
+
+    if (!final_segment) {
+        if (count < 5) {
+            px[count] = xn;
+            py[count] = yn;
+
+            if (count > 0) {
+                int dx = abs((int)px[count] - (int)px[count - 1]);
+                int dy = abs((int)py[count] - (int)py[count - 1]);
+                z[count] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+            }
+
+            count++;
+        } else {
+            for (int i = 0; i < 4; i++) {
+                px[i] = px[i + 1];
+                py[i] = py[i + 1];
+                z[i] = z[i + 1];
+            }
+            px[4] = xn;
+            py[4] = yn;
+
+            int dx = abs((int)px[4] - (int)px[3]);
+            int dy = abs((int)py[4] - (int)py[3]);
+            z[4] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+        }
+
+        if (count < 2) return;
+
+        if (count == 2) {
+            float prev_x = px[0], prev_y = py[0];
+            int steps = z[1];
+            for (int i = 1; i <= steps; i++) {
+                float t = (float)i / steps;
+                float sx = (1 - t) * px[0] + t * px[1];
+                float sy = (1 - t) * py[0] + t * py[1];
+                plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                          ROUND_F2I(sx),     ROUND_F2I(sy));
+                prev_x = sx; prev_y = sy;
+            }
+        } else if (count == 3) {
+            float prev_x = px[0], prev_y = py[0];
+            int steps = z[1] + z[2];
+            for (int i = 1; i <= steps; i++) {
+                float t = (float)i / steps;
+                float u = 1 - t;
+                float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
+                float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
+                plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                          ROUND_F2I(sx),     ROUND_F2I(sy));
+                prev_x = sx; prev_y = sy;
+            }
+        } else if (count == 4) {
+            float t1x = (px[2] - px[0]) / 2.0f;
+            float t1y = (py[2] - py[0]) / 2.0f;
+            float t2x = (px[3] - px[1]) / 2.0f;
+            float t2y = (py[3] - py[1]) / 2.0f;
+
+            float prev_x = px[1], prev_y = py[1];
+            int steps = z[1] + z[2] + z[3];
+            for (int i = 1; i <= steps; i++) {
+                float sx, sy;
+                evalHermite((float)i / steps,
+                            px[1], px[2], t1x, t2x,
+                            py[1], py[2], t1y, t2y,
+                            &sx, &sy);
+                plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                          ROUND_F2I(sx),     ROUND_F2I(sy));
+                prev_x = sx; prev_y = sy;
+            }
+        } else { // count == 5
+            {
+                float t1x = (px[2] - px[0]) / 2.0f;
+                float t1y = (py[2] - py[0]) / 2.0f;
+                float t2x = (px[3] - px[1]) / 2.0f;
+                float t2y = (py[3] - py[1]) / 2.0f;
+
+                float prev_x = px[1], prev_y = py[1];
+                int steps = z[1] + z[2];
+                for (int i = 1; i <= steps; i++) {
+                    float sx, sy;
+                    evalHermite((float)i / steps,
+                                px[1], px[2], t1x, t2x,
+                                py[1], py[2], t1y, t2y,
+                                &sx, &sy);
+                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                              ROUND_F2I(sx),     ROUND_F2I(sy));
+                    prev_x = sx; prev_y = sy;
+                }
+            }
+
+            {
+                float t1x = (px[3] - px[1]) / 2.0f;
+                float t1y = (py[3] - py[1]) / 2.0f;
+                float t2x = (px[4] - px[2]) / 2.0f;
+                float t2y = (py[4] - py[2]) / 2.0f;
+
+                float prev_x = px[2], prev_y = py[2];
+                int steps = z[2] + z[3] + z[4];
+                for (int i = 1; i <= steps; i++) {
+                    float sx, sy;
+                    evalHermite((float)i / steps,
+                                px[2], px[3], t1x, t2x,
+                                py[2], py[3], t1y, t2y,
+                                &sx, &sy);
+                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                              ROUND_F2I(sx),     ROUND_F2I(sy));
+                    prev_x = sx; prev_y = sy;
+                }
+            }
+        }
+    } else if (final_segment && count == 5) {
+        float t1x = (px[4] - px[2]) / 2.0f;
+        float t1y = (py[4] - py[2]) / 2.0f;
+        float t2x = (px[4] - px[3]) / 2.0f;
+        float t2y = (py[4] - py[3]) / 2.0f;
+
+        float prev_x = px[3], prev_y = py[3];
+        int steps = z[3] + z[4];
+        for (int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps,
+                        px[3], px[4], t1x, t2x,
+                        py[3], py[4], t1y, t2y,
+                        &sx, &sy);
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),
+                      ROUND_F2I(sx),     ROUND_F2I(sy));
+            prev_x = sx; prev_y = sy;
+        }
+    }
+}
+
+
+
 
 
 //Exhange the name of this routine with pixelline() above to try Bresenham
