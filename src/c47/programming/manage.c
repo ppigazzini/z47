@@ -1227,7 +1227,7 @@ static void _pemCloseDateInput(void) {
   #endif // !TESTSUITE_BUILD
 }
 
-static void _pemCloseDmsInput(void) {
+static void _pemCloseAngleInput(int item) {
   #if !defined(TESTSUITE_BUILD)
   switch(nimNumberPart) {
     case NP_INT_10:
@@ -1237,7 +1237,20 @@ static void _pemCloseDmsInput(void) {
         char *numBuffer = aimBuffer[0] == '+' ? aimBuffer + 1 : aimBuffer;
         char *tmpPtr = tmpString;
         *(tmpPtr++) = ITM_LITERAL;
-        *(tmpPtr++) = STRING_ANGLE_DMS;
+        static const int angle_ids[] = {
+            [ITM_DEG2]   = STRING_ANGLE_DEGREE,
+            [ITM_DMS2]   = STRING_ANGLE_DMS,
+            [ITM_GRAD2]  = STRING_ANGLE_GRAD,
+            [ITM_MULPI2] = STRING_ANGLE_MULTPI,
+            [ITM_RAD2]   = STRING_ANGLE_RADIAN
+        };
+        int id = -1;
+        if (item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
+            id = angle_ids[item];
+        }
+        if (id != -1) {
+            *(tmpPtr++) = id;
+        }
         *(tmpPtr++) = stringByteLength(numBuffer);
         xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + (int32_t)(tmpPtr - tmpString));
@@ -1301,12 +1314,24 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  else if(func == ITM_DMS && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART)) {
-    _pemCloseDmsInput();
+  else if((func == ITM_DMS || func == ITM_DMS2 || func == ITM_DEG2 || func == ITM_GRAD2 || func == ITM_RAD2 || func == ITM_MULPI2) && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART)) {
+    _pemCloseAngleInput(func);
     aimBuffer[0] = 0;
     return;
   }
-  
+  else if((func == ITM_DRG) && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART)) {
+    switch(currentAngularMode) {
+      case amRadian : _pemCloseAngleInput(ITM_RAD2); break;
+      case amGrad   : _pemCloseAngleInput(ITM_GRAD2); break;
+      case amDegree : _pemCloseAngleInput(ITM_DEG2); break;
+      case amDMS    : _pemCloseAngleInput(ITM_DMS2); break;
+      case amMultPi : _pemCloseAngleInput(ITM_MULPI2); break;
+      default: return;
+    }
+    aimBuffer[0] = 0;
+    return;
+  }
+
   if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_HMStoTM) {
     if(func == ITM_dotD) {
       _pemCloseDateInput();
