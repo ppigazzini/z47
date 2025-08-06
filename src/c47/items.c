@@ -596,34 +596,48 @@ bool_t itemNotAvail(int16_t itemNr) {
         #endif // VERBOSEKEYS
         return;
       }
-      bool_t doNotAddStep = ((func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32);                 // longpress commands not to be added
-      switch(func) {
-        case ITM_T_UP_ARROW:
-        case ITM_T_DOWN_ARROW:
-        case ITM_T_LLEFT_ARROW:
-        case ITM_T_RRIGHT_ARROW:
-        case ITM_T_LEFT_ARROW:
-        case ITM_T_RIGHT_ARROW:
-        case ITM_ASSIGN:
-        case ITM_XSWAP:
-        case ITM_XPARSE:
-        case CHR_case:
-        case CHR_num:
-        case ITM_SCR:
-        case ITM_USERMODE:
-                doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
-        case ITM_EDIT:
-        case ITM_ALPHA_EDIT:
-                doNotAddStep |= (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)); break;
-        default:;
-      }
 
-      if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
+      if(calcMode == CM_PEM) {
+        bool_t doNotAddStep = false;
+        switch(func) {
+          case ITM_EXIT1:
+          case ITM_CLRMOD:
+          case ITM_SNAP:
+          case ITM_NOP:
+          case ITM_BASEMENU:
+                doNotAddStep = currentKeyCode == 32; break;
+          case ITM_T_UP_ARROW:
+          case ITM_T_DOWN_ARROW:
+          case ITM_T_LLEFT_ARROW:
+          case ITM_T_RRIGHT_ARROW:
+          case ITM_T_LEFT_ARROW:
+          case ITM_T_RIGHT_ARROW:
+          case ITM_ASSIGN:
+          case ITM_XSWAP:
+          case ITM_XPARSE:
+          case CHR_case:
+          case CHR_num:
+          case ITM_SCR:
+          case ITM_USERMODE:
+                doNotAddStep =  getSystemFlag(FLAG_ALPHA); break;
+          case ITM_EDIT:
+                doNotAddStep = !getSystemFlag(FLAG_ALPHA); break;
+          default:;
+        }
+
         #if defined(VERBOSEKEYS)
-          printf("items.c: runfunction (before addStepInProgram) func=%i\n",func);
+          printf("$$ PEM:    func=%d  showFunctionNameItem1=%d doNotAddStep=%d tam.mode=%d getSystemFlag(FLAG_ALPHA)=%d tam.alpha=%d\n", func, showFunctionNameItem, doNotAddStep, tam.mode, getSystemFlag(FLAG_ALPHA), tam.alpha);
+          fflush(stdout);
         #endif // VERBOSEKEYS
-        addStepInProgram(func);
-        return;
+
+        if(( !tam.mode && func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) ){
+          #if defined(VERBOSEKEYS)
+            printf("$$         items.c: runfunction: add step (before addStepInProgram) func=%i\n",func);
+            fflush(stdout);
+          #endif // VERBOSEKEYS
+          addStepInProgram(func);
+          return;
+        }
       }
     }
 
