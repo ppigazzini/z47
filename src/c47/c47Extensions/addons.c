@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
+#include <inttypes.h>
 
 /*
 Math changes:
