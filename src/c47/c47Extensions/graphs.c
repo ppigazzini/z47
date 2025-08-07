@@ -32,7 +32,7 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_SCALE);
   setSystemFlag(FLAG_PLINE);
   setSystemFlag(FLAG_PBOX);
-  setSystemFlag(FLAG_PCURVE);
+  clearSystemFlag(FLAG_PCURVE);
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
 
