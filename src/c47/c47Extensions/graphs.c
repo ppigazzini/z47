@@ -376,7 +376,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 
 
 #if !defined(TESTSUITE_BUILD)
-  void plotarrow(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+  static void plotarrow(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     float dx, dy, ddx, dydx, zz, zzz;
     dydx = yn-yo;
     ddx = xn-xo;
@@ -388,8 +388,8 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       printf("%d %d  %d %d  ddx=%f, dydx=%f, zz=%f  zzz=%f, dx=%f, dy=%f \n", xo, yo, xn, yn, ddx, dydx, zz, zzz, dx, dy);
     #endif // STATDEBUG
     if(!(xo==xn && yo==yn)){
-      plotline(xn+(-3*dx +dy), yn+(-3*dy -dx), xn, yn);
-      plotline(xn+(-3*dx -dy), yn+(-3*dy +dx), xn, yn);
+      plotline1(xn+(-3*dx +dy), yn+(-3*dy -dx), xn, yn);
+      plotline1(xn+(-3*dx -dy), yn+(-3*dy +dx), xn, yn);
     }
     else {
       placePixel(xn,yn);
@@ -411,10 +411,10 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-5,+6,+0,-2},
       {0,0,0,0,0},
     };
-  void plotdeltabig(uint16_t xn, uint8_t yn) {              // Plots ldifferential sign; uses temporary x1,y1
+  static void plotdeltabig(int16_t xn, int16_t yn) {              // Plots ldifferential sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaBig[ii].valid == 1) {
-      plotline(xn+tabDeltaBig[ii].xd1, yn+tabDeltaBig[ii].yd1, xn+tabDeltaBig[ii].xd2, yn+tabDeltaBig[ii].yd2);
+      plotline1(xn+tabDeltaBig[ii].xd1, yn+tabDeltaBig[ii].yd1, xn+tabDeltaBig[ii].xd2, yn+tabDeltaBig[ii].yd2);
       ii++;
     }
   }
@@ -435,7 +435,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,+1,+2,0,0},
       {0,0,0,0,0},
     };
-  void plotdelta(uint16_t xn, uint8_t yn) {             // Plots ldifferential sign; uses temporary x1,y1
+  static void plotdelta(int16_t xn, int16_t yn) {             // Plots ldifferential sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDelta[ii].valid == 1) {
       placePixel(xn+tabDelta[ii].xd1, yn+tabDelta[ii].yd1);
@@ -453,10 +453,10 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,+1,-2+7,+1,-2+0},
       {0,0,0,0,0},
     };
-  void plotintbig(uint16_t xn, uint8_t yn) {            // Plots integral sign; uses temporary x1,y1
+  static void plotintbig(int16_t xn, int16_t yn) {            // Plots integral sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaIntBig[ii].valid == 1) {
-      plotline(xn+tabDeltaIntBig[ii].xd1, yn+tabDeltaIntBig[ii].yd1, xn+tabDeltaIntBig[ii].xd2, yn+tabDeltaIntBig[ii].yd2);
+      plotline1(xn+tabDeltaIntBig[ii].xd1, yn+tabDeltaIntBig[ii].yd1, xn+tabDeltaIntBig[ii].xd2, yn+tabDeltaIntBig[ii].yd2);
       ii++;
     }
   }
@@ -472,7 +472,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-1,+2,0,0},
       {0,0,0,0,0},
     };
-  void plotint(uint16_t xn, uint8_t yn) {               // Plots integral sign; uses temporary x1,y1
+  static void plotint(int16_t xn, int16_t yn) {               // Plots integral sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaInt[ii].valid == 1) {
       placePixel(xn+tabDeltaInt[ii].xd1, yn+tabDeltaInt[ii].yd1);
@@ -493,7 +493,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-0,+1,0,0},
       {0,0,0,0,0},
     };
-  void plotrms(uint16_t xn, uint8_t yn) {               // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+  static void plotrms(int16_t xn, int16_t yn) {               // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaRms[ii].valid == 1) {
       placePixel(xn+tabDeltaRms[ii].xd1, yn+tabDeltaRms[ii].yd1);
@@ -530,7 +530,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 void graph_text(void) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
-    uint16_t ii;
+    int16_t ii;
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
@@ -571,10 +571,10 @@ void graph_text(void) {
     ii = showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
     if(tmpString[ stringByteLength(tmpString)-1 ] == '0') {
       #define sp 15
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos+2+sp), (uint16_t)(ii-11), (uint8_t)(ypos+2+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos+1+sp), (uint16_t)(ii-11), (uint8_t)(ypos+1+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos-1+sp), (uint16_t)(ii-11), (uint8_t)(ypos-1+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos-2+sp), (uint16_t)(ii-11), (uint8_t)(ypos-2+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos+2+sp), (int16_t)(ii-11), (int16_t)(ypos+2+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos+1+sp), (int16_t)(ii-11), (int16_t)(ypos+1+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos-1+sp), (int16_t)(ii-11), (int16_t)(ypos-1+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos-2+sp), (int16_t)(ii-11), (int16_t)(ypos-2+sp));
     }
     ypos += 48 + 2*19;
 
@@ -1353,10 +1353,10 @@ void graph_plotmem(void) {
                 #if defined(STATDEBUG)
                   printf("Plotting Integral x=%f intg(x)=%f\n", x-ddx/2, inty);
                 #endif // STATDEBUG
-                uint16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
+                int16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
                 //uint16_t xN1   = screen_window_x(x_min, grf_x(ix), x_max);
-                uint16_t yNintg= screen_window_y(y_min, inty, y_max);
-                uint16_t xAvg  = ((xN0+xN1) >> 1);
+                int16_t yNintg= screen_window_y(y_min, inty, y_max);
+                int16_t xAvg  = ((xN0+xN1) >> 1);
 
                 if(abs((int16_t)(xN1-xN0)>=6)) {
                   plotint( xAvg, yNintg );
@@ -1367,20 +1367,20 @@ void graph_plotmem(void) {
                 }
 
                 if(abs((int16_t)(xN1-xN0) >= 6)) {
-                  plotline(xN1,    yNintg, xAvg+2, yNintg);
-                  plotline(xAvg-2, yNintg, xN0,    yNintg);
+                  plotline1(xN1,    yNintg, xAvg+2, yNintg);
+                  plotline1(xAvg-2, yNintg, xN0,    yNintg);
                 }
                 else if(abs((int16_t)(xN1-xN0) >= 4)) {
-                  plotline(xN1,    yNintg, xAvg+2, yNintg);
-                  plotline(xAvg-2, yNintg, xN0,    yNintg);
+                  plotline1(xN1,    yNintg, xAvg+2, yNintg);
+                  plotline1(xAvg-2, yNintg, xN0,    yNintg);
                 }
 
                 if(PLOT_SHADE) {
-                  uint16_t yNoff = screen_window_y(y_min, 0, y_max);
+                  int16_t yNoff = screen_window_y(y_min, 0, y_max);
                   plotrect(xN0, yN0,   xN1, yN1);
                   plotrect(xN0, yNoff, xN1, yN0);
                   if(abs((int16_t)(xN1-xN0) >= 6)) {
-                    plotline(xN0, yN0,   xN1, yN1);
+                    plotline1(xN0, yN0,   xN1, yN1);
                   }
                 }
               }
