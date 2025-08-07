@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
-#include <inttypes.h>
 
 /*
 Math changes:
@@ -47,11 +46,13 @@ void fractionToString(calcRegister_t regist, char *displayString) {
   fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
 
   if(getSystemFlag(FLAG_PROPFR)) { // a b/c
-    sprintf(displayString, "%s%" PRIu64 " %" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), intPart, numer, denom);
+  //sprintf(displayString, "%s%" PRIu64 " %" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), intPart, numer, denom);
+    sprintf(displayValueX, "%s%" PRIu32 " %" PRIu32 "/%" PRIu32, (sign == -1 ? "-" : "+"), (uint32_t)intPart, (uint32_t)numer, (uint32_t)denom);
   }
 
   else { // FT_IMPROPER d/
-    sprintf(displayString, "%s%" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), numer, denom);
+  //sprintf(displayString, "%s%" PRIu64 "/%" PRIu64, (sign == -1 ? "-" : "+"), numer, denom);
+    sprintf(displayValueX, "%s%" PRIu32 "/%" PRIu32, (sign == -1 ? "-" : "+"), (uint32_t)numer, (uint32_t)denom);
 
   }
 }
