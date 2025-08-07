@@ -2001,7 +2001,6 @@ typedef struct {
 
     if(done) {
       //Convert nimBuffer to display string
-      printf("**[DL]** done nimBufferDisplay %s\n",nimBufferDisplay+2);fflush(stdout);
       strcpy(nimBufferDisplay, STD_SPACE_HAIR);
 
       switch(nimNumberPart) {

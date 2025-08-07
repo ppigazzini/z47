@@ -244,10 +244,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 int16_t len = strlen(nimBufferDisplay);
                 for(int16_t i=len - grpGroupingLeft; i>0; i-=grpGroupingLeft) {
                   if(i != 1 || nimBufferDisplay[0] != '-') {
-                    xcopy(nimBufferDisplay + i + 2, nimBufferDisplay + i, len - i + 1);
-                    nimBufferDisplay[i] = *(STD_SPACE_PUNCTUATION);
-                    nimBufferDisplay[i + 1] = *(&STD_SPACE_PUNCTUATION[1]);
-                    len += 2;
+                    if(gapItemLeft != ITM_NULL) {  // insert gapCharLeft
+                      uint8_t lenGapItem = strlen(indexOfItems[gapItemLeft].itemSoftmenuName);
+                      xcopy(nimBufferDisplay + i + lenGapItem, nimBufferDisplay + i, len - i + 1);
+                      xcopy(nimBufferDisplay + i , indexOfItems[gapItemLeft].itemSoftmenuName, lenGapItem);
+                      len += lenGapItem;
+                    }
                   }
                 }
               }
