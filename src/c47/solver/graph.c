@@ -614,82 +614,61 @@ bool detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, d
   return true;
 }
 
-// CAREFUL: Add 3 points in sequence to create clean vertical line
+
+  typedef struct {
+      double dx;
+      double dy;
+  } PointOffset;
+
+  // Three possible templates for asymptotes
+  TO_QSPI const PointOffset asymptote_offsets_both[] = {
+      { -1.0, -1.0 }, // (x - offset, -height)
+      { -1.0,  1.0 }, // (x - offset, +height)
+      {  1.0,  1.0 }  // (x + offset, +height)
+  };
+
+  TO_QSPI const PointOffset asymptote_offsets_positive[] = {
+      { -1.0,  0.0 }, // (x - offset, 0)
+      { -1.0,  1.0 }, // (x - offset, +height)
+      {  1.0,  1.0 }  // (x + offset, +height)
+  };
+
+  TO_QSPI const PointOffset asymptote_offsets_negative[] = {
+      { -1.0,  0.0 }, // (x - offset, 0)
+      { -1.0, -1.0 }, // (x - offset, -height)
+      {  1.0, -1.0 }  // (x + offset, -height)
+  };
+
 void renderAsymptote(AsymptoteInfo *asymptote) {
+#if !defined(TESTSUITE_BUILD)
   double x_center = asymptote->x;
   double offset = 1e-3;  // Small x offset
   double asymptoteHeight = 10000.0;
   
-#ifdef GRAPHDEBUG
-  printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
-#endif
+  #ifdef GRAPHDEBUG
+    printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
+  #endif
   
-  if(asymptote->hasPositive && asymptote->hasNegative) {
-    // Two-way asymptote: straight vertical line
-    
-    // Point 1: (x-offset, -10000) - bottom left
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    // Point 2: (x-offset, +10000) - top left (straight up)
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    // Point 3: (x+offset, +10000) - top right (continue horizontally)
-    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
-    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-  } else if(asymptote->hasPositive) {
-    // Positive only: bottom to top
-    
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(0.0, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
-    convertDoubleToReal34Register(asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-  } else if(asymptote->hasNegative) {
-    // Negative only: top to bottom
-    
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(0.0, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    convertDoubleToReal34Register(x_center - offset, REGISTER_X);
-    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
-    
-    convertDoubleToReal34Register(x_center + offset, REGISTER_X);
-    convertDoubleToReal34Register(-asymptoteHeight, REGISTER_Y);
-#if !defined(TESTSUITE_BUILD)
-    AddtoDrawMx();
-#endif
+  const PointOffset* offsets = NULL;
+
+  if (asymptote->hasPositive && asymptote->hasNegative) {
+      offsets = asymptote_offsets_both;
+  } else if (asymptote->hasPositive) {
+      offsets = asymptote_offsets_positive;
+  } else if (asymptote->hasNegative) {
+      offsets = asymptote_offsets_negative;
   }
+
+  if (offsets) {
+      for (int i = 0; i < 3; i++) {
+          double x = x_center + offsets[i].dx * offset;
+          double y = offsets[i].dy * ((offsets[i].dy == 0.0) ? 0.0 : asymptoteHeight);
+          convertDoubleToReal34Register(x, REGISTER_X);
+          convertDoubleToReal34Register(y, REGISTER_Y);
+          AddtoDrawMx();
+      }
+  }
+#endif //TESTSUITE_BUILD
   
 #ifdef GRAPHDEBUG
   printf("Added 3 asymptote points in clean vertical sequence\n");
