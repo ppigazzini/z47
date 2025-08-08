@@ -288,14 +288,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
               memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
 
-              if(xangularMode == amMultPi) {
-                real_t multPi;
-
-                real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &multPi);
-                realDivide(&multPi, const_pi, &multPi, &ctxtReal39);
-                realToReal34(&multPi, REGISTER_REAL34_DATA(REGISTER_X));
-              }
-              else if(xangularMode == amDMS) {
+              if(xangularMode == amDMS) {
                 real34FromDegToDms(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
               }
 
@@ -332,7 +325,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               clearSystemFlag(FLAG_ALPHA);
               freeRegisterData(REGISTER_X);
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-              setRegisterDataType(REGISTER_X, dtReal34, amNone);
+              setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
               //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
               real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
               //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
