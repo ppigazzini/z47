@@ -4683,15 +4683,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
     switch(angularMode) {
       case amMultPi: {
-        showString(STD_pi, font, x, y, vmNormal, true, true);
+        showString(STD_SUP_pir, font, x, y, vmNormal, true, true);
         break;
       }
       case amRadian: {
-        showString(STD_SUP_r, font, x, y, vmNormal, true, true);
+        showString(STD_SUP_BOLD_r, font, x, y, vmNormal, true, true);
         break;
       }
       case amGrad: {
-        showString(STD_SUP_g, font, x, y, vmNormal, true, true);
+        showString(STD_SUP_BOLD_g, font, x, y, vmNormal, true, true);
         break;
       }
       case amDegree: {
@@ -4720,7 +4720,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         showString(lastBase, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
       }
       else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
-        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE);
+        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset);
       }
     }
     else if(stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) { // 8 is the standard font cursor width
@@ -4732,7 +4732,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, true, true);
       }
       else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
-        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE);
+        _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6);
       }
     }
     else {
