@@ -82,7 +82,7 @@ All the below: because both Last x and savestack does not work due to multiple s
                                                         #if defined(MODDEBUG)
                                                           realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "FMA output:","\n");
                                                         #endif //MODDEBUG
-    WP34S_Mod((real_t *)&x, (real_t *) modulus(angleMode)&aa, (real_t *)&x, &c);
+    WP34S_Mod((real_t *)&x, (real_t *)modulus(angleMode), (real_t *)&x, &c);
                                                         #if defined(MODDEBUG)
                                                           realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "MOD output:","\n");
                                                         #endif //MODDEBUG
