@@ -1225,10 +1225,12 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       convertLongIntegerRegisterToLongInteger(regist, angle);
       mpz_get_str(tmpString, 10, angle);
       //printf("Input String: %s\n", tmpString);
-      decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);  // Cast to decNumber *
-      WP34S_Mod((real_t *)&reducedAngleTmp, const1071_2pi, (real_t *)&reducedAngleTmp2, &c);  // Cast both
+      decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
+      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
       realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
       //printRealToConsole(reducedAngle, "Out Real:","\n");
+      realCopy(const_1,(real_t *)&reducedAngleTmp);
+      realCopy(const_1,(real_t *)&reducedAngleTmp2);
       longIntegerFree(angle);
       return;
     }
@@ -1242,6 +1244,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
   uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
   longIntegerFree(angle);
 }
+
 
 
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {

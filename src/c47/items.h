@@ -1790,7 +1790,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_1743                    1743
+#define ITM_XPMODANGLE              1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746

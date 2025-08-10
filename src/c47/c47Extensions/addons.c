@@ -31,6 +31,84 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 
+
+
+  #undef MODDEBUG
+  void fnMulModAngle (uint16_t unusedButMandatoryParameter){
+    #define modulus(a) (a == amRadian ? const1071_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_NaN)
+    longInteger_t angle;
+    real1071_t x;
+    real_t out, y, z;
+    realContext_t c = ctxtReal75;
+    c.digits = 1071;
+    angularMode_t angleMode;
+
+    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+      angleMode = currentAngularMode;
+      convertLongIntegerRegisterToLongInteger(REGISTER_X, angle);
+      mpz_get_str(tmpString, 10, angle);
+      longIntegerFree(angle);
+                                                        #if defined(MODDEBUG)
+                                                          printf("Input String: %s\n", tmpString);
+                                                        #endif //MODDEBUG
+      decNumberFromString((real_t *)&x, tmpString, &c);
+    } else {
+      if(getRegisterDataType(REGISTER_X) == dtReal34) {
+         angleMode = getRegisterAngularMode(REGISTER_X);
+      } else {
+         angleMode = currentAngularMode;
+      }
+      if(!getRegisterAsReal(REGISTER_X, (real_t *)&x)) {
+        return;
+      }
+    }
+    if(!getRegisterAsReal(REGISTER_Y, &y)){ //ignore anglemode
+      return;
+    }
+    if(!getRegisterAsReal(REGISTER_Z, &z)){ //ignore anglemode
+      return;
+    }
+                                                        #if defined(MODDEBUG)
+                                                          real_t tmp;
+                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input x:","\n");
+                                                          realPlus((real_t *)&y, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input y:","\n");
+                                                          realPlus((real_t *)&z, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input z:","\n");
+                                                        #endif //MODDEBUG
+    realMultiply((real_t *)&x, (real_t *)&y, (real_t *)&x, &c);
+                                                        #if defined(MODDEBUG)
+                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "FM output:","\n");
+                                                        #endif //MODDEBUG
+    realAdd((real_t *)&x, (real_t *)&z, (real_t *)&x, &c);
+                                                        #if defined(MODDEBUG)
+                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "FMA output:","\n");
+                                                        #endif //MODDEBUG
+    WP34S_Mod((real_t *)&x, (real_t *) modulus(angleMode)&aa, (real_t *)&x, &c);
+                                                        #if defined(MODDEBUG)
+                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "MOD output:","\n");
+                                                        #endif //MODDEBUG
+    realPlus((real_t *)&x, &out, &ctxtReal75);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    convertRealToReal34ResultRegister(&out, REGISTER_X);
+    realCopy(const_1,(real_t *)&x);
+
+    adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
+    if(lastErrorCode == 0) {
+      fnDropY(NOPARAM);
+    }
+                                                        #if defined(MODDEBUG)
+                                                          printRegisterToConsole(REGISTER_X,"X:","\n");
+                                                        #endif //MODDEBUG
+    return;
+  }
+
+
+
+
+
+
+
+
+
 void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
