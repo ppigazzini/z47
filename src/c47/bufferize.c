@@ -1879,7 +1879,13 @@ typedef struct {
       }
 
       case ITM_dotD: {
-        if(nimNumberPart == NP_REAL_FLOAT_PART) {
+        angularMode_t xangularMode;
+        xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
+
+        if(xangularMode < amNone) {  // If editing with angular mode, then cancel angular mode
+          xangularMode = amNone;
+        }
+        else if(nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;

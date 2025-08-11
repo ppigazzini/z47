@@ -1375,6 +1375,11 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
+  else if ((func == ITM_dotD) && lastAngleSymbol != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel angle type and close number input
+    lastAngleSymbol = 0;
+    pemCloseNumberInput();
+    aimBuffer[0] = '!';
+  } 
   else if((func == ITM_DRG) && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART)) {
     switch(currentAngularMode) {
       case amRadian : _pemCloseAngleInput(ITM_RAD2); break;

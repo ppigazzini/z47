@@ -241,6 +241,7 @@ uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
+uint8_t                lastAngleSymbol;
 
 int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
@@ -255,7 +256,6 @@ int16_t               *menu_RAM;
 int16_t                numberOfTamMenusToPop;
 int16_t                itemToBeAssigned;
 int16_t                cachedDynamicMenu;
-uint8_t                lastAngleSymbol;
 
 uint16_t               globalFlags[8];
 uint16_t               freeProgramBytes;
