@@ -327,9 +327,15 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
+              uint16_t dataType = getRegisterDataType(REGISTER_X);
               freeRegisterData(REGISTER_X);
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-              setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
+              if((dataType == dtTime) || (dataType == dtDate)) {
+                setRegisterDataType(REGISTER_X, dataType, xangularMode);   // Keep time and date datatypes
+              }
+              else {
+                setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
+              }
               real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
               //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
               hexDigits = 0;
@@ -342,12 +348,14 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
             case dtTime: {
               _hmsTimeToReal();
+              setRegisterDataType(REGISTER_X, dtTime, amNone);  // Force time data type to preserve it when closing NIM
               goto edit_dtReal34;
               break;
             }
 
             case dtDate: {
               convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
+              setRegisterDataType(REGISTER_X, dtDate, amNone);  // Force date data type to preserve it when closing NIM
               goto edit_dtReal34;
               break;
             }
@@ -575,16 +583,22 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
             if(chsNeeded) pemAddNumber(ITM_CHS, false);
-            if((opParam == STRING_ANGLE_RADIAN) || (opParam == STRING_ANGLE_GRAD)  ||
-               (opParam == STRING_ANGLE_DEGREE) || (opParam == STRING_ANGLE_MULTPI)) {
-              lastAngleSymbol = opParam - STRING_ANGLE_RADIAN + 1;
+            switch (opParam) {
+              case STRING_DATE:
+              case STRING_TIME:
+              case STRING_ANGLE_RADIAN:
+              case STRING_ANGLE_GRAD:
+              case STRING_ANGLE_DEGREE:
+              case STRING_ANGLE_DMS:
+              case STRING_ANGLE_MULTPI: {
+                editingLiteralType = opParam;
+                break;
+              }
+              default:
+                editingLiteralType = 0;
             }
-            else {
-              lastAngleSymbol = 0;
-            }
-
             pemAddNumber(ITM_NOP, true);    // to insert the resulting number in program
-            //printf("**[DL]** fnEdit lastAngleSymbol %d aimBuffer %s\n",lastAngleSymbol,aimBuffer);fflush(stdout);
+            //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n",editingLiteralType,aimBuffer);fflush(stdout);
           }
           else {
             ;

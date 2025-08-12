@@ -484,7 +484,7 @@
   extern uint8_t                fgLN;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
-  extern uint8_t                lastAngleSymbol;
+  extern uint8_t                editingLiteralType;
 
   // Variables from jm.h
   extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.

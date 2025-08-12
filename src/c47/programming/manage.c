@@ -64,6 +64,8 @@
 //  freeProgramBytes = 1
 
 static void _pemCloseAngleInput(int item);
+static void _pemCloseDateInput(void);
+static void _pemCloseTimeInput(void);
 
 bool_t isAtEndOfPrograms(const uint8_t *step) {
   return (step == NULL) || (*step == 255 && *(step + 1) == 255);
@@ -404,6 +406,25 @@ int32_t pemLeftOffset(int32_t y) {
   }
 }
 
+
+#if !defined(TESTSUITE_BUILD)
+  static bool_t _isAngleType(uint8_t literalType) {
+    switch (literalType) {
+      case STRING_ANGLE_RADIAN:
+      case STRING_ANGLE_GRAD:
+      case STRING_ANGLE_DEGREE:
+      case STRING_ANGLE_MULTPI: {
+        return true;
+        break;
+      }
+      default: {
+        return false;
+      }
+    }
+  }
+#endif // !TESTSUITE_BUILD
+
+
 void fnPem(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_10)
   #if !defined(TESTSUITE_BUILD)
@@ -537,12 +558,12 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
             *(tstr++) = baseChars[lastIntegerBase * 2    ];
             *(tstr++) = baseChars[lastIntegerBase * 2 + 1];
           }
-          else if(lastAngleSymbol > 0) {
+          else if(_isAngleType(editingLiteralType)) {
             tstr -= 2;                    // to overwrite angle symbol with cursor
             *(tstr++) = STD_CURSOR[0];
             *(tstr++) = STD_CURSOR[1];
-            *(tstr++) = angleChars[(lastAngleSymbol - 1) * 2    ];
-            *(tstr++) = angleChars[(lastAngleSymbol - 1) * 2 + 1];
+            *(tstr++) = angleChars[(editingLiteralType - STRING_ANGLE_RADIAN) * 2    ];
+            *(tstr++) = angleChars[(editingLiteralType - STRING_ANGLE_RADIAN) * 2 + 1];
           }
           else {
             *(tstr++) = STD_CURSOR[0];
@@ -949,7 +970,7 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
   #if !defined(TESTSUITE_BUILD)
   if(aimBuffer[0] == 0) {
     lastIntegerBase = 0;
-    lastAngleSymbol = 0;
+    editingLiteralType = 0;
     tmpString[0] = ITM_LITERAL;
     tmpString[1] = STRING_LONG_INTEGER;
     tmpString[2] = 0;
@@ -1051,8 +1072,8 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
           break;
         }
       }
-      if(lastAngleSymbol > 0) {
-        *(tmpPtr - 1) = STRING_ANGLE_RADIAN + lastAngleSymbol -1;  // [DL] force literal type when editing angles
+      if(_isAngleType(editingLiteralType)) {
+        *(tmpPtr - 1) = editingLiteralType;  // [DL] force literal type when editing angles
       }
       *tmpPtr++ = stringByteLength(numBuffer);
       xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
@@ -1076,12 +1097,14 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
 
 void pemCloseNumberInput(void) {
   #if !defined(TESTSUITE_BUILD)
-  if(lastAngleSymbol > 0) {  // For EDIT: close number input with the right angle type
-    switch(STRING_ANGLE_RADIAN + lastAngleSymbol -1) {
-      case STRING_ANGLE_RADIAN : _pemCloseAngleInput(ITM_RAD2); break;
-      case STRING_ANGLE_GRAD   : _pemCloseAngleInput(ITM_GRAD2); break;
-      case STRING_ANGLE_DEGREE : _pemCloseAngleInput(ITM_DEG2); break;
-      //case STRING_ANGLE_DMS    : _pemCloseAngleInput(ITM_DMS2); break;
+  if(editingLiteralType > 0) {     // For EDIT: close number input with the right data or angle type
+    switch(editingLiteralType) {
+      case STRING_DATE         : _pemCloseDateInput();            break;
+      case STRING_TIME         : _pemCloseTimeInput();            break;
+      case STRING_ANGLE_RADIAN : _pemCloseAngleInput(ITM_RAD2);   break;
+      case STRING_ANGLE_GRAD   : _pemCloseAngleInput(ITM_GRAD2);  break;
+      case STRING_ANGLE_DEGREE : _pemCloseAngleInput(ITM_DEG2);   break;
+      case STRING_ANGLE_DMS    : _pemCloseAngleInput(ITM_DMS2);   break;
       case STRING_ANGLE_MULTPI : _pemCloseAngleInput(ITM_MULPI2); break;
       default:     ;
     }
@@ -1308,7 +1331,7 @@ static void _pemCloseAngleInput(int item) {
         xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + (int32_t)(tmpPtr - tmpString));
       }
-      lastAngleSymbol = 0;
+      editingLiteralType = 0;
       aimBuffer[0] = '!';
       break;
     }
@@ -1375,11 +1398,11 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  else if ((func == ITM_dotD) && lastAngleSymbol != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel angle type and close number input
-    lastAngleSymbol = 0;
+  else if ((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
+    editingLiteralType = 0;
     pemCloseNumberInput();
     aimBuffer[0] = '!';
-  } 
+  }
   else if((func == ITM_DRG) && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART)) {
     switch(currentAngularMode) {
       case amRadian : _pemCloseAngleInput(ITM_RAD2); break;
@@ -1394,29 +1417,34 @@ void insertStepInProgram(const int16_t func) {
   }
 
   if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_HMStoTM && func != ITM_EXIT1) {
-    if(func == ITM_dotD) {
+    if((func == ITM_dotD) || ((editingLiteralType == STRING_DATE) && ( func != ITM_ms)))  {
       _pemCloseDateInput();
       if(aimBuffer[0] == '!') {
         aimBuffer[0] = 0;
         return;
       }
     }
-    else if(func == ITM_ms) {
+    else if((func == ITM_ms) || (editingLiteralType == STRING_TIME)) {
       _pemCloseTimeInput();
       if(aimBuffer[0] == '!') {
         aimBuffer[0] = 0;
         return;
       }
     }
-    switch(STRING_ANGLE_RADIAN + lastAngleSymbol -1) {  // For EDIT: close number input with the right angle type
-      case STRING_ANGLE_RADIAN : _pemCloseAngleInput(ITM_RAD2); break;
-      case STRING_ANGLE_GRAD   : _pemCloseAngleInput(ITM_GRAD2); break;
-      case STRING_ANGLE_DEGREE : _pemCloseAngleInput(ITM_DEG2); break;
-      //case STRING_ANGLE_DMS    : _pemCloseAngleInput(ITM_DMS2); break;
-      case STRING_ANGLE_MULTPI : _pemCloseAngleInput(ITM_MULPI2); break;
-      default:     pemCloseNumberInput();
+    else {
+      switch(editingLiteralType) {   // For EDIT: close number input with the right angle type
+        case STRING_ANGLE_RADIAN : _pemCloseAngleInput(ITM_RAD2); break;
+        case STRING_ANGLE_GRAD   : _pemCloseAngleInput(ITM_GRAD2); break;
+        case STRING_ANGLE_DEGREE : _pemCloseAngleInput(ITM_DEG2); break;
+        case STRING_ANGLE_DMS    : _pemCloseAngleInput(ITM_DMS2); break;
+        case STRING_ANGLE_MULTPI : _pemCloseAngleInput(ITM_MULPI2); break;
+        default:     pemCloseNumberInput();
+      }
+      aimBuffer[0] = 0;
+      if(func == ITM_ENTER) {  // just close number editing, don't insert ENTER
+        return;
+      }
     }
-    aimBuffer[0] = 0;
   }
 
   char buffer[16];

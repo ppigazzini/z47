@@ -1904,7 +1904,7 @@ typedef struct {
           }
 
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtDate) {
             convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
             temporaryInformation = TI_DAY_OF_WEEK;
@@ -1935,7 +1935,7 @@ typedef struct {
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtTime) {
             if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
               convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
             }
@@ -2737,6 +2737,51 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
+            uint16_t dataType = getRegisterDataType(REGISTER_X);
+            if(dataType == dtTime) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+                  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                }
+
+                hmmssInRegisterToSeconds(REGISTER_X);
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferC\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+              }
+            }
+            else if(dataType == dtDate) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
+                checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
+                temporaryInformation = TI_DAY_OF_WEEK;
+
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferB\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+                //return;
+              }
+            }
+            else {
+
               if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, 0, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
@@ -2752,7 +2797,8 @@ typedef struct {
                 if(xangularMode == amDMS) {
                   real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
                 }
-              }                                                                       //JM Input default type
+              }              //JM Input default type
+            }
 
           }
           else if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
