@@ -32,9 +32,329 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 
 
+  // ******************************************************
+  // ** XTRIG: Full 1071 digit TRIG
+  // ** T : Real / Longinteger (0=SIN, 1=COS, 2=TAN)
+  // ** Z : Real / Longinteger
+  // ** Y : Real / Longinteger
+  // ** X : Longinteger
+  // **
+  // ** SIN( X*Y + T )
+  // **
+  // ******************************************************
+
+
+void Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
+  bool_t sinNeg = false, cosNeg = false, swap = false;
+  real1071_t x, x2, s, c, temp;
+  int n;
+
+  if(realIsNaN(an)) {
+    if(sinOut != NULL) realCopy(const_NaN, (real_t*)sinOut);
+    if(cosOut != NULL) realCopy(const_NaN, (real_t*)cosOut);
+    if(tanOut != NULL) realCopy(const_NaN, (real_t*)tanOut);
+    return;
+  }
+
+  realPlus((real_t*)an, (real_t*)&x, realContext);
+  if(realIsNegative(&x)) {
+    sinNeg = true;
+    realSetPositiveSign(&x);
+  }
+
+  // Range reduction
+  // Check if x >= π (= 2π/2)
+  realDivide(const1071_2pi, const_2, (real_t*)&x2, realContext);  // x2 = π (temp var)
+  if(realCompareGreaterEqual((real_t*)&x, (real_t*)&x2)) {
+    realSubtract((real_t*)&x, (real_t*)&x2, (real_t*)&x, realContext);
+    sinNeg = !sinNeg; cosNeg = !cosNeg;
+  }
+  // Check if x >= π/2 (= π/2)
+  realDivide((real_t*)&x2, const_2, (real_t*)&x2, realContext);  // x2 = π/2 (reuse x2)
+  if(realCompareGreaterEqual((real_t*)&x, (real_t*)&x2)) {
+    realSubtract((real_t*)&x, (real_t*)&x2, (real_t*)&x, realContext);
+    swap = true; cosNeg = !cosNeg;
+  }
+  // Check if x > π/4 (= π/4)
+  realDivide((real_t*)&x2, const_2, (real_t*)&temp, realContext);  // temp = π/4
+  if(realCompareGreaterThan((real_t*)&x, (real_t*)&temp)) {
+    realSubtract((real_t*)&x2, (real_t*)&x, (real_t*)&x, realContext);
+    swap = !swap;
+  }
+  // Special case: exact π/4
+  if(realCompareEqual((real_t*)&x, (real_t*)&temp)) {
+    realDivide(const_1, const_2, (real_t*)&s, realContext);  // s = 1/2
+    realSquareRoot((real_t*)&s, (real_t*)&s, realContext);              // s = √(1/2)
+
+    if(sinOut != NULL) {
+      realPlus((real_t*)&s, (real_t*)sinOut, realContext);
+      if(sinNeg) realSetNegativeSign((real_t*)sinOut);
+    }
+    if(cosOut != NULL) {
+      realPlus((real_t*)&s, (real_t*)cosOut, realContext);
+      if(cosNeg) realSetNegativeSign((real_t*)cosOut);
+    }
+    if(tanOut != NULL) {
+      realPlus(const_1, (real_t*)tanOut, realContext);  // tanOut = 1
+      if(sinNeg) realSetNegativeSign((real_t*)tanOut);
+    }
+    return;
+  }
+
+  realMultiply((real_t*)&x, (real_t*)&x, (real_t*)&x2, realContext);
+  #ifdef DEBUGTAYLOR
+    realToString((real_t*)&x, tmpString);
+    printf("Taylor starts: x = %s\n", tmpString);
+  #endif //DEBUGTAYLOR
+
+  // Initialize: sin(x) = x, cos(x) = 1
+  realPlus((real_t*)&x, (real_t*)&s, realContext);
+  realCopy(const_1, (real_t*)&c);
+  real1071_t sin_term, cos_term, factorial_2n, factorial_2n1;
+  real1071_t sin_term_add, cos_term_add, abs_term, epsilon;
+  char tmpEpsilon[16];
+
+  sprintf(tmpEpsilon, "1E-%d", acc);
+  stringToReal(tmpEpsilon, (real_t*)&epsilon, realContext);
+
+  realMultiply((real_t*)&x2, (real_t*)&x, (real_t*)&sin_term, realContext);  // x³
+  realPlus((real_t*)&x2, (real_t*)&cos_term, realContext);                   // x²
+  realCopy(const_2, (real_t*)&factorial_2n);   // 2!
+  realCopy(const_6, (real_t*)&factorial_2n1);  // 3!
+
+  // First cos term: -x²/2!
+  realDivide((real_t*)&cos_term, (real_t*)&factorial_2n, (real_t*)&cos_term_add, realContext);
+  realSetNegativeSign((real_t*)&cos_term_add);
+  realAdd((real_t*)&c, (real_t*)&cos_term_add, (real_t*)&c, realContext);
+
+  #ifdef DEBUGTAYLOR
+    printf("Taylor: Starting series starts\n");
+  #endif //DEBUGTAYLOR
+
+  for(n = 1; n < 300; n++) {
+    // Sin term: ±x^(2n+1)/(2n+1)!
+    realDivide((real_t*)&sin_term, (real_t*)&factorial_2n1, (real_t*)&sin_term_add, realContext);
+    if(n & 1) realSetNegativeSign((real_t*)&sin_term_add);
+    else realSetPositiveSign((real_t*)&sin_term_add);
+    realAdd((real_t*)&s, (real_t*)&sin_term_add, (real_t*)&s, realContext);
+
+    realMultiply((real_t*)&cos_term, (real_t*)&x2, (real_t*)&cos_term, realContext);
+    uInt32ToReal((2*n+1), (real_t*)&temp);
+    realMultiply((real_t*)&factorial_2n, (real_t*)&temp, (real_t*)&factorial_2n, realContext);
+    uInt32ToReal((2*n+2), (real_t*)&temp);
+    realMultiply((real_t*)&factorial_2n, (real_t*)&temp, (real_t*)&factorial_2n, realContext);
+
+    uInt32ToReal((2*n+2), (real_t*)&temp);
+    realMultiply((real_t*)&factorial_2n1, (real_t*)&temp, (real_t*)&factorial_2n1, realContext);
+    uInt32ToReal((2*n+3), (real_t*)&temp);
+    realMultiply((real_t*)&factorial_2n1, (real_t*)&temp, (real_t*)&factorial_2n1, realContext);
+
+    // Cos term: ±x^(2n+2)/(2n+2)!
+    realDivide((real_t*)&cos_term, (real_t*)&factorial_2n, (real_t*)&cos_term_add, realContext);
+    if(n & 1) realSetPositiveSign((real_t*)&cos_term_add);
+    else realSetNegativeSign((real_t*)&cos_term_add);
+    realAdd((real_t*)&c, (real_t*)&cos_term_add, (real_t*)&c, realContext);
+
+    realMultiply((real_t*)&sin_term, (real_t*)&x2, (real_t*)&sin_term, realContext);
+
+    // Check convergence on both sin and cos terms
+    realCopyAbs((real_t*)&sin_term_add, (real_t*)&abs_term);
+    if(realCompareLessThan((real_t*)&abs_term, (real_t*)&epsilon)) {
+      realCopyAbs((real_t*)&cos_term_add, (real_t*)&abs_term);
+      if(realCompareLessThan((real_t*)&abs_term, (real_t*)&epsilon)) {
+        #ifdef DEBUGTAYLOR
+          printf("Taylor: Converged at iteration %d\n", n);
+        #endif //DEBUGTAYLOR
+        break;
+      }
+    }
+
+    #ifdef DEBUGTAYLOR
+      if(n % 20 == 0) {
+        realToString((real_t*)&s, tmpString);
+        printf("Taylor finished: n=%d, sin=%s\n", n, tmpString);
+      }
+    #endif //DEBUGTAYLOR
+  }
+
+  #ifdef DEBUGTAYLOR
+    realToString((real_t*)&s, tmpString);
+    printf("Taylor: Final sin = %s\n", tmpString);
+    realToString((real_t*)&c, tmpString);
+    printf("Taylor: Final cos = %s\n", tmpString);
+  #endif //DEBUGTAYLOR
+
+  if(sinOut != NULL) {
+    realPlus(swap ? (real_t*)&c : (real_t*)&s, (real_t*)sinOut, realContext);
+    if(sinNeg) realSetNegativeSign((real_t*)sinOut);
+    if(realIsZero((real_t*)sinOut)) realSetPositiveSign((real_t*)sinOut);
+  }
+  if(cosOut != NULL) {
+    realPlus(swap ? (real_t*)&s : (real_t*)&c, (real_t*)cosOut, realContext);
+    if(cosNeg) realSetNegativeSign((real_t*)cosOut);
+    if(realIsZero((real_t*)cosOut)) realSetPositiveSign((real_t*)cosOut);
+  }
+  if(tanOut != NULL) {
+    if(sinOut == NULL || cosOut == NULL) {
+      realCopy(const_NaN, (real_t*)tanOut);
+    } else {
+      realDivide((real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+    }
+  }
+}
+
+void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
+  bool_t sinNeg = false, cosNeg = false, swap = false;
+  real1071_t angle;
+  real1071_t x2, temp;
+  const real_t *angle45, *angle90, *angle180;
+  angle45  = const_0;
+  angle90  = const_0;
+  angle180 = const_0;
+
+  if(realIsNaN(an)) {
+    if(sinOut != NULL) {
+      realCopy(const_NaN, (real_t*)sinOut);
+    }
+    if(cosOut != NULL) {
+      realCopy(const_NaN, (real_t*)cosOut);
+    }
+    if(tanOut != NULL) {
+      realCopy(const_NaN, (real_t*)tanOut);
+    }
+    return;
+  }
+
+  realCopy((real_t*)an, (real_t*)&angle);
+
+  // sin(-x) = -sin(x), cos(-x) = cos(x)
+  if(realIsNegative(&angle)) {
+    sinNeg = true;
+    realSetPositiveSign((real_t*)&angle);
+  }
+
+  switch(angularMode) {
+    case amRadian: {
+      realDivide(const1071_2pi, const_2, (real_t*)&x2, realContext);  // x2 = π
+      angle180 = (real_t*)&x2;
+      realDivide((real_t*)&x2, const_2, (real_t*)&x2, realContext);   // x2 = π/2
+      angle90 = (real_t*)&x2;
+      realDivide((real_t*)&x2, const_2, (real_t*)&temp, realContext); // temp = π/4
+      angle45 = (real_t*)&temp;
+      WP34S_Mod((real_t*)&angle, const1071_2pi, (real_t*)&angle, realContext); // mod(angle, 2pi) --> angle
+      break;
+    }
+
+    case amMultPi: {
+      angle45 = const_1on4;
+      angle90 = const_1on2;
+      angle180 = const_1;
+      WP34S_Mod((real_t*)&angle, const_2, (real_t*)&angle, realContext); // mod(angle, 2) --> angle
+      break;
+    }
+
+    case amGrad: {
+      angle45 = const_50;
+      angle90 = const_100;
+      angle180 = const_200;
+      WP34S_Mod((real_t*)&angle, const_400, (real_t*)&angle, realContext); // mod(angle, 400g) --> angle
+      break;
+    }
+
+    case amDegree:
+    case amDMS: {
+      angle45 = const_45;
+      angle90 = const_90;
+      angle180 = const_180;
+      WP34S_Mod((real_t*)&angle, const_360, (real_t*)&angle, realContext); // mod(angle, 360°) --> angle
+      angularMode = amDegree;
+      break;
+    }
+
+    default: {
+    }
+  }
+
+  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
+  if(realCompareGreaterEqual((real_t*)&angle, angle180)) {        // angle >= 180°
+    realSubtract((real_t*)&angle, angle180, (real_t*)&angle, realContext); // angle - 180° --> angle
+    sinNeg = !sinNeg;
+    cosNeg = !cosNeg;
+  }
+
+  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
+  if(realCompareGreaterEqual((real_t*)&angle, angle90)) {        // angle >= 90°
+    realSubtract((real_t*)&angle, angle90, (real_t*)&angle, realContext); // angle - 90° --> angle
+    swap = true;
+    cosNeg = !cosNeg;
+  }
+
+  // sin(90-x) = cos(x), cos(90-x) = sin(x)
+  if (realCompareEqual((real_t*)&angle, angle45)) { // angle == 45°
+    realDivide(const_1, const_2, (real_t*)&temp, realContext);  // √(1/2)
+    realSquareRoot((real_t*)&temp, (real_t*)&temp, realContext);
+    if (sinOut != NULL) {
+        realCopy((real_t*)&temp, (real_t*)sinOut);
+    }
+    if (cosOut != NULL) {
+        realCopy((real_t*)&temp, (real_t*)cosOut);
+    }
+    if (tanOut != NULL) {
+        realCopy(const_1, (real_t*)tanOut);
+    }
+  }
+  else { // angle < 90
+    if(realCompareGreaterThan((real_t*)&angle, angle45)) {         // angle > 45°
+      realSubtract(angle90, (real_t*)&angle, (real_t*)&angle, realContext); // 90° - angle  --> angle
+      swap = !swap;
+    }
+
+    convertAngleFromTo((real_t*)&angle, angularMode, amRadian, realContext);
+    Cvt2RadSinCosTan2(&angle, amRadian, swap?cosOut:sinOut, swap?sinOut:cosOut, tanOut, realContext, acc); // angle in radian
+  }
+
+  if(sinOut != NULL) {
+    if(sinNeg) {
+      realSetNegativeSign((real_t*)sinOut);
+      if(tanOut != NULL) {
+        realSetNegativeSign((real_t*)tanOut);
+      }
+    }
+    if(realIsZero((real_t*)sinOut)) {
+      realSetPositiveSign((real_t*)sinOut);
+      if(tanOut != NULL) {
+        realSetPositiveSign((real_t*)tanOut);
+      }
+    }
+    realPlus((real_t*)sinOut, (real_t*)sinOut, realContext);
+  }
+
+  if(cosOut != NULL) {
+    if(cosNeg) {
+      realSetNegativeSign((real_t*)cosOut);
+      if(tanOut != NULL) {
+        realChangeSign((real_t*)tanOut);
+      }
+    }
+    if(realIsZero((real_t*)cosOut)) {
+      realSetPositiveSign((real_t*)cosOut);
+    }
+    realPlus((real_t*)cosOut, (real_t*)cosOut, realContext);
+  }
+
+  if(tanOut != NULL && realIsZero((real_t*)cosOut)) {
+    realSetPositiveSign((real_t*)tanOut);
+    realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
+  }
+}
+
+
+
+
+
 
   #undef MODDEBUG
-  void fnMulModAngle (uint16_t unusedButMandatoryParameter){
+  void fnXtrig(uint16_t unusedButMandatoryParameter){
     #define modulus(a) (a == amRadian ? const1071_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_NaN)
     longInteger_t angle;
     real1071_t x;
@@ -68,24 +388,62 @@ All the below: because both Last x and savestack does not work due to multiple s
     if(!getRegisterAsReal(REGISTER_Z, &z)){ //ignore anglemode
       return;
     }
+
+    int function;
+    if(getRegisterDataType(REGISTER_T) == dtString) {
+      stringToUtf8(REGISTER_STRING_DATA(REGISTER_T), (uint8_t *)tmpString);
+      function = strcmp(tmpString, "SIN") == 0 ? 0 : strcmp(tmpString, "COS") == 0 ? 1 : strcmp(tmpString, "TAN") == 0 ? 2 :
+                 strcmp(tmpString, "sin") == 0 ? 0 : strcmp(tmpString, "cos") == 0 ? 1 : strcmp(tmpString, "tan") == 0 ? 2 : 99;
+      if(function == 99) {
+        return;
+      }
+    } else {
+      return;
+    }
+
                                                         #if defined(MODDEBUG)
                                                           real_t tmp;
                                                           realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input x:","\n");
                                                           realPlus((real_t *)&y, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input y:","\n");
                                                           realPlus((real_t *)&z, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input z:","\n");
+                                                          printf("FUNCTION:%s = %d\n", tmpString, function);
                                                         #endif //MODDEBUG
-    realMultiply((real_t *)&x, (real_t *)&y, (real_t *)&x, &c);
+    realMultiply((real_t *)&x, &y, (real_t *)&x, &c);
                                                         #if defined(MODDEBUG)
-                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "FM output:","\n");
+                                                          //realPlus((real_t *)&x, &tmp, &ctxtReal75);  printRealToConsole(&tmp, "FM output:","\n");
+                                                          realToString((real_t *)&x, tmpString); printf("FM  full angle full output: %s\n",tmpString);
                                                         #endif //MODDEBUG
-    realAdd((real_t *)&x, (real_t *)&z, (real_t *)&x, &c);
+    realAdd((real_t *)&x, &z, (real_t *)&x, &c);
                                                         #if defined(MODDEBUG)
-                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "FMA output:","\n");
+                                                          //realPlus((real_t *)&x, &tmp, &ctxtReal75);  printRealToConsole(&tmp, "FMA output:","\n");
+                                                          realToString((real_t *)&x, tmpString); printf("FMA full angle full output: %s\n",tmpString);
                                                         #endif //MODDEBUG
-    WP34S_Mod((real_t *)&x, (real_t *)modulus(angleMode), (real_t *)&x, &c);
+    WP34S_Mod((real_t *)&x, modulus(angleMode), (real_t *)&x, &c);
                                                         #if defined(MODDEBUG)
-                                                          realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "MOD output:","\n");
+                                                          //realPlus((real_t *)&x, &tmp, &ctxtReal75);  printRealToConsole(&tmp, "MOD output:","\n");
+                                                          realToString((real_t *)&x, tmpString); printf(" reduced angle full output: %s\n",tmpString);
                                                         #endif //MODDEBUG
+    if(realIsSpecial((real_t *)&x)) {
+      realCopy(const_NaN, (real_t *)&x);
+    }
+    else {
+      switch(function) {
+//      case 0: WP34S_Cvt2RadSinCosTan((real_t *)&x, angleMode, (real_t *)&x, NULL,          NULL,         &c); break; //sin
+  //    case 1: WP34S_Cvt2RadSinCosTan((real_t *)&x, angleMode, NULL,         (real_t *)&x,  NULL,         &c); break; //cos
+    //  case 2: WP34S_Cvt2RadSinCosTan((real_t *)&x, angleMode, NULL,         NULL,          (real_t *)&x, &c); break; //tan
+        case 0: C47Cvt2RadSinCosTan2(&x, angleMode,             &x, NULL, NULL, &c, 39); break; //sin
+        case 1: C47Cvt2RadSinCosTan2(&x, angleMode, NULL,       &x, NULL,       &c, 39); break; //cos
+        case 2: C47Cvt2RadSinCosTan2(&x, angleMode, NULL, NULL, &x,             &c, 39); break; //tan
+        default: realCopy(const_NaN,(real_t *)&x); break;
+      }
+    }
+                                                        #if defined(MODDEBUG)
+                                                          //realPlus((real_t *)&x, &tmp, &ctxtReal75);  printRealToConsole(&tmp, "Trig output:","\n");
+                                                          realToString((real_t *)&x, tmpString); printf("Trig Full output: %s\n",tmpString);
+                                                        #endif //MODDEBUG
+
+
+
     realPlus((real_t *)&x, &out, &ctxtReal75);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&out, REGISTER_X);
@@ -93,6 +451,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 
     adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
     if(lastErrorCode == 0) {
+      fnDropY(NOPARAM);
       fnDropY(NOPARAM);
     }
                                                         #if defined(MODDEBUG)
@@ -697,7 +1056,7 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
     if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
       return false;
     }
-  } 
+  }
   else if(d < 2) {
     realCopy(d == 1 ? const_1 : const_0, &x[p].r);
   }
@@ -716,7 +1075,7 @@ void fnConvertStkToMx(uint16_t constVector) {
 
   if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
   if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
-  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 &&
      !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
 
   if(!saveLastX()) {
@@ -1780,10 +2139,10 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 // **                  : DMX maximum setting 32500
 // **                  : Output numerator, excluding IR factor: 999 999 999
 // **                  : internal max 1E9-1 after IR constant divided
-// **                  : Accuracy 24 digits; 
+// **                  : Accuracy 24 digits;
 // **                  : Internally uses 12 digits in denom seeker for integer conversions
 // **                  : Internally uses 26 digits for denom seeker real
-// **                  : Internally uses 26 digits for fraction comparison, 
+// **                  : Internally uses 26 digits for fraction comparison,
 // ** ************************************************************************************
 // **
 // ** 24 digits guaranteed. 24+2 used, as this has proven to need only 24+1
