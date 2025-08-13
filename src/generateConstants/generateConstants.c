@@ -9,8 +9,8 @@
 
 #include "c47.h"
 
-realContext_t ctxtReal34, ctxtReal39, ctxtReal51, ctxtReal75, ctxtReal1071;
-unsigned int cntReal34, cntReal39, cntReal51, cntReal75, cntReal1071;
+realContext_t ctxtReal34, ctxtReal39, ctxtReal51, ctxtReal75, ctxtReal1071, ctxtReal2139;
+unsigned int cntReal34, cntReal39, cntReal51, cntReal75, cntReal1071, cntReal2139;
 
 char whiteSpace[50], temp[10000];
 char externalDeclarations[1000000]; // .h file
@@ -149,6 +149,24 @@ void generateConstantArray1071(char *name, char *value) {
 
   emitConstant(name, "real_t", &real1071, REAL1071_SIZE_IN_BYTES, "const1071_");
   cntReal1071++;
+}
+
+
+void generateConstantArray2139(char *name, char *value) {
+  real2139_t real2139;
+
+  #if defined(DEBUG)
+    printf("generateConstantArray2139: %-9.9s = %s\n", name, value);
+  #endif // DEBUG
+
+  memset(&real2139, 0, REAL2139_SIZE_IN_BYTES);
+  stringToReal(value, (real_t *)&real2139, &ctxtReal2139);
+
+  strcpy(whiteSpace, "                                        ");
+  whiteSpace[9 - strlen(name)] = 0;
+
+  emitConstant(name, "real_t", &real2139, REAL2139_SIZE_IN_BYTES, "const2139_");
+  cntReal2139++;
 }
 
 
@@ -756,6 +774,29 @@ void generateAllConstants(void) {
                                             //"0555445220508829844315300901624135434714240543604859362124075531576743338182188361489756280981510356" // 20001
                                             //"4077130781982095518828264308656881250060360551433930164192854696829391452795768512016906242813187161");//20101
 
+  generateConstantArray2139("2pi",       "+6.2831853071795864769252867665590057683943387987502116419498891846156328125724179972560696506842341359" //   101
+                                            "6429617302656461329418768921910116446345071881625696223490056820540387704221111928924589790986076392" //   201
+                                            "8857621951331866892256951296467573566330542403818291297133846920697220908653296426787214520498282547" //   301
+                                            "4491740132126311763497630418419256585081834307287357851807200226610610976409330427682939038830232188" //   401
+                                            "6611454073151918390618437223476386522358621023709614892475992549913470377150544978245587636602389825" //   501
+                                            "9667346724881313286172042789892790449474381404359721887405541078434352586353504769349636935338810264" //   601
+                                            "0011362542905271216555715426855155792183472743574429368818024499068602930991707421015845593785178470" //   701
+                                            "8403991222425804392172806883631962725954954261992103741442269999999674595609990211946346563219263719" //   801
+                                            "0048918910693816605285044616506689370070523862376342020006275677505773175066416762841234355338294607" //   901
+                                            "1965069808575109374623191257277647075751875039155637155610643424536132260038557532223918184328403978" //  1001
+                                            "7619051440213097172655773187230676365593646060390407060370593799154724519882778249944355056695826303"// 1101
+                                            "1149714484908301391901659066233723455711778150196763509274929878638510120801855403342278019697648025" //  1201
+                                            "7167232071274153202094203638859111923978935356748988965107595494536942080950692924160933685181389825" //  1301
+                                            "8662735405797830420950432411393204811607630038702250676486007117528049499294652782839854520853984559" //  1401
+                                            "3564709563272018683443282439849172630060572365949111413499677010989177173853991381854421595018605910" //  1501
+                                            "6423306899744055119204729613309982397636695955071327396148530850557251036368351493457819555455876001" //  1601
+                                            "6329412003229049838434643442954470028288394713709632272231470510426695148369893687704664781478828666" //  1701
+                                            "9095524833725037967138971124198438444368545100508513775343580989203306933609977254465583572171568767" //  1801
+                                            "6559359533629082019077675727219013601284502504102347859697921682569772538912084839305700444213223726" //  1901
+                                            "1348855724407838989009424742757392191272874383457493552931514792482778173166529199162678095605518019" //  2001
+                                            "8931528157902538936796705191419651645241044978815453438956536965202953981805280272788874910610136406" //  2101
+                                            "99250490349879930286285961838131850187"); //  2139
+
   generateConstantArray34("_4712",       "-4.712000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray34("0",           "+0.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray34("1e_32",       "+1.000000000000000000000000000000000000000000000000000000e-32");
@@ -818,6 +859,7 @@ int main(int argc, char* argv[]) {
   decContextDefault(&ctxtReal51,   DEC_INIT_DECQUAD);
   decContextDefault(&ctxtReal75,   DEC_INIT_DECQUAD);
   decContextDefault(&ctxtReal1071, DEC_INIT_DECQUAD);
+  decContextDefault(&ctxtReal2139, DEC_INIT_DECQUAD);
   ctxtReal39.digits = 39;
   ctxtReal39.traps  = 0;
   ctxtReal51.digits = 51;
@@ -826,11 +868,13 @@ int main(int argc, char* argv[]) {
   ctxtReal75.traps  = 0;
   ctxtReal1071.digits  = 1071;
   ctxtReal1071.traps   = 0;
+  ctxtReal2139.digits  = 2139;
+  ctxtReal2139.traps   = 0;
 
   externalDeclarations[0] = 0;
   strcat(externalDeclarations, "  extern const uint8_t constants[];\n");
   realArray[0] = 0;
-  cntReal34 = cntReal39 = cntReal51 = cntReal75 = cntReal1071 = 0;
+  cntReal34 = cntReal39 = cntReal51 = cntReal75 = cntReal1071 = cntReal2139 = 0;
 
   generateAllConstants();
 
@@ -860,6 +904,7 @@ int main(int argc, char* argv[]) {
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_39   %u\n", cntReal39);
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_51   %u\n", cntReal51);
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_1071 %u\n", cntReal1071);
+  fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_2139 %u\n", cntReal2139);
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_34   %u\n", cntReal34);
 
   fprintf(constantsH, "#endif // !CONSTANTPOINTERS_H\n");
