@@ -49,7 +49,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 // Only the mod reduction needs double the digits. The Taylor function has 1071 only, and the internal angle manipulation (and reduction) is on 1071.
 // That means the major bignumber  reduction must be done outside Taylor
 
-#define DEBUG_XTRIG
+#undef DEBUG_XTRIG
 #undef DEBUGTAYLOR
 
 void Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
