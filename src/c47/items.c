@@ -1416,7 +1416,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnGetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnEdit                     (uint16_t unusedButMandatoryParameter) {}
-  void fnXtrig                    (uint16_t unusedButMandatoryParameter) {}
+  void fnXfn                      (uint16_t unusedButMandatoryParameter) {}
 
 
 #endif // GENERATE_CATALOGS
@@ -3224,7 +3224,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1740 */  { fnAim,                        NOPARAM,                     STD_alpha,                                     STD_alpha,                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_DISABLED        },
 /* 1741 */  { fnKeyDotD,                    NOPARAM,                     ".d",                                          ".d",                                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1742 */  { fnC47Show,                    NOPARAM,                     "SHOW",                                        "SHOW",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1743 */  { fnXtrig,                      NOPARAM,                     "XTRIG",                                       "XTRIG",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1743 */  { fnXfn,                        TM_REGISTER,                 "XFN",                                         "XFN",                                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 1744 */  { SetSetting,                   FLAG_FRACT,                  "FRACT",                                       "FRACT",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1745 */  { fnVectorAngle,                NOPARAM,                     STD_MEASURED_ANGLE STD_SPACE_6_PER_EM STD_v_BAR "," STD_SPACE_6_PER_EM STD_v_BAR, STD_MEASURED_ANGLE STD_SPACE_6_PER_EM STD_v_BAR "," STD_SPACE_6_PER_EM STD_v_BAR, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1746 */  { fnHarmonicMeanXY,             NOPARAM,                     STD_x_BAR STD_SUB_H,                           STD_x_BAR STD_SUB_H,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

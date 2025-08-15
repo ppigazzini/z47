@@ -11,7 +11,7 @@ int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 void standardScreenDump(void);
 
-void fnXtrig        (uint16_t unusedButMandatoryParameter);
+void fnXfn          (uint16_t registerNo);
 
 void fnEdit         (uint16_t unusedParamButMandatory);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
