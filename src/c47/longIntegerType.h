@@ -36,7 +36,7 @@
   static inline void              int32ToLongInteger(int32_t source, mpz_ptr destination)                                                 {mpz_set_si(destination, source);}
   static inline void              longIntegerCopy(mpz_srcptr source, mpz_ptr destination)                                                 {mpz_set(destination, source);}                       // Previous implementation: mpz_add_ui(destination, source, 0);
   static inline int32_t           stringToLongInteger(const char *source, int32_t radix, mpz_ptr destination)                             {return mpz_set_str(destination, source, radix);}
-  static inline void              LongIntegerToString(mpz_ptr source, int32_t radix, char *destination)                                   {mpz_get_str(destination, radix, source);}
+  static inline void              longIntegerToString(mpz_ptr source, int32_t radix, char *destination)                                   {mpz_get_str(destination, radix, source);}
   static inline void              longIntegerChangeSign(mpz_ptr op)                                                                       {(op)->_mp_size = -((op)->_mp_size);}
   static inline void              longIntegerSetPositiveSign(mpz_ptr op)                                                                  {(op)->_mp_size = abs((op)->_mp_size);}
   static inline void              longIntegerSetNegativeSign(mpz_ptr op)                                                                  {(op)->_mp_size = -abs((op)->_mp_size);}
