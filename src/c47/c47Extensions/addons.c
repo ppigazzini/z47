@@ -37,7 +37,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 // Only the mod reduction needs double the digits. The Taylor function has 1071 only, and the internal angle manipulation (and reduction) is on 1071.
 // That means the major bignumber  reduction must be done outside Taylor
 
-#define DEBUG_XFN
+#undef DEBUG_XFN
 #undef DEBUGTAYLOR
 
 void Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
@@ -475,7 +475,75 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 
   #define XFN_HIGH_ACCURACY
 
+  typedef struct {
+      const char* name;
+      int function_id;
+  } FunctionLookup;
+
+  //niladic
+  #define XFN_PI    0
+  //monadic
+  #define XFN_SIN   10
+  #define XFN_COS   11
+  #define XFN_TAN   12
+  #define XFN_LN    13
+  #define XFN_LOG   14
+  #define XFN_EXP   15
+  #define XFN_10X   16
+  #define XFN_SQRT  17
+  //dyadic todo
+  #define XFN_PLUS  30
+  #define XFN_MINUS 31
+  #define XFN_POWER 32
+  #define XFN_MULT  33
+  #define XFN_DIV   34
+  #define XFB_SQRT  35
+
+  TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
+      {"PI",    XFN_PI},
+      {"pi",    XFN_PI},
+
+      {"SIN",   XFN_SIN},
+      {"sin",   XFN_SIN},
+      {"COS",   XFN_COS},
+      {"cos",   XFN_COS},
+      {"TAN",   XFN_TAN},
+      {"tan",   XFN_TAN},
+      {"LN",    XFN_LN},
+      {"ln",    XFN_LN},
+      {"LOG",   XFN_LOG},
+      {"log",   XFN_LOG},
+      {"EXP",   XFN_EXP},
+      {"exp",   XFN_EXP},
+      {"10x",   XFN_10X},
+      {"10X",   XFN_10X},
+      {"sqrt",  XFN_SQRT},
+      {"SQRT",  XFB_SQRT},
+
+      {"PLUS",  XFN_PLUS},
+      {"plus",  XFN_PLUS},
+      {"MINUS", XFN_MINUS},
+      {"minus", XFN_MINUS},
+      {"POWER", XFN_POWER},
+      {"power", XFN_POWER},
+      {"MULT",  XFN_MULT},
+      {"mult",  XFN_MULT},
+      {"DIV",   XFN_DIV},
+      {"div",   XFN_DIV},
+      {NULL, 0}  // Sentinel value to mark end of table
+  };
+
+  static int lookupFunction(const char* name) {
+      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name != NULL; entry++) {
+          if (strcmp(name, entry->name) == 0) {
+              return entry->function_id;
+          }
+      }
+      return 99;  // Not found
+  }
+
   void fnXfn(uint16_t registerNo){
+    #if !defined(TESTSUITE_BUILD)
     #if defined(XFN_HIGH_ACCURACY)
       #define accuracy 1071 // passed to Taylor to set accuracy expectation. Can be set down to say 1000 to create 71 guard digits
       #define maxXfnExponent 999
@@ -486,44 +554,26 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
       #define modulus(a) (a == amRadian ? const1071_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_NaN)
     #endif
 
-    real1071_t x,xx;
-    real_t out, y, z;
+    real1071_t x,xx,xxx;
+    real_t out, y, z, yyy, zzz;
     realContext_t c = ctxtReal75;
     c.digits = 1071;
     angularMode_t angleMode;
-
-    #define XFN_SIN   0
-    #define XFN_COS   1
-    #define XFN_TAN   2
-    #define XFN_PI    3
-    #define XFN_LN    4
-    #define XFN_LOG   5
-    #define XFN_PLUS  6
-    #define XFN_POWER 7
-    #define XFN_MULT  8
-    #define XFN_DIV   9
-
-    int function = 99;
     int location = 0;
-    if(getRegisterDataType(REGISTER_X) == dtString) {
-      stringToUtf8(REGISTER_STRING_DATA(REGISTER_X), (uint8_t *)tmpString);
-      function = 
-        strcmp(tmpString, "SIN")   == 0 ? XFN_SIN  : strcmp(tmpString, "COS")   == 0 ? XFN_COS  : strcmp(tmpString, "TAN") == 0 ? XFN_TAN :
-        strcmp(tmpString, "sin")   == 0 ? XFN_SIN  : strcmp(tmpString, "cos")   == 0 ? XFN_COS  : strcmp(tmpString, "tan") == 0 ? XFN_TAN :
-        strcmp(tmpString, "pi")    == 0 ? XFN_PI   : strcmp(tmpString, "PI")    == 0 ? XFN_PI   :
-        strcmp(tmpString, "ln")    == 0 ? XFN_LN   : strcmp(tmpString, "LN")    == 0 ? XFN_LN   :
-        strcmp(tmpString, "log")   == 0 ? XFN_LOG  : strcmp(tmpString, "LOG")   == 0 ? XFN_LOG  :
-        strcmp(tmpString, "plus")  == 0 ? XFN_PLUS : strcmp(tmpString, "PLUS")  == 0 ? XFN_PLUS :
-        strcmp(tmpString, "power") == 0 ? XFN_POWER: strcmp(tmpString, "POWER") == 0 ? XFN_POWER:
-        99;
-      if(function == 99) {
-        return;
-      }
-    } else {
-      location = 1;
-      goto noFunction;
-    }
 
+
+    //--------//--------//-- Parsing input --//--------//--------//--------
+    int function = 99;
+    if(getRegisterDataType(REGISTER_X) == dtString) {
+        stringToUtf8(REGISTER_STRING_DATA(REGISTER_X), (uint8_t *)tmpString);
+        function = lookupFunction(tmpString);
+        if(function == 99) {
+            return;
+        }
+    } else {
+        location = 1;
+        goto noFunction;
+    }
 
     //NILADIC, 0 register pairs used
     switch(function) {
@@ -536,17 +586,17 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
         ; //continue to monadic
       }
     }
-    //--------
 
 
     
+    //--------//--------//-- loading input --//--------//--------//--------
     //MONADIC & DYADIC, at least 1 register pair used
     //Read 1 register pair: Real, Longint
     //angleMode set here but only used with SIN, COS, TAN
     if(getRegisterDataType(registerNo+1) == dtLongInteger) {
       angleMode = currentAngularMode;
       longInteger_t lint;
-      convertLongIntegerRegisterToLongInteger(registerNo+1, lint);      //replaced mpz_get_str(tmpString, 10, lint);
+      convertLongIntegerRegisterToLongInteger(registerNo+1, lint);
       longIntegerToString(lint, 10, tmpString);
       longIntegerFree(lint);
       decNumberFromString((real_t *)&x, tmpString, &c);
@@ -566,22 +616,16 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     if(!getRegisterAsReal(registerNo+2, &z)){ //ignore anglemode
       return;
     }
-                                                    #if defined(DEBUG_XFN)
-                                                      real_t tmp;
-                                                      printf("FUNCTION:%s = %d\n", tmpString, function);
-                                                      realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input x:","\n");
-                                                      realPlus((real_t *)&y, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input y:","\n");
-                                                      realPlus((real_t *)&z, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input z:","\n");
-                                                    #endif //DEBUG_XFN
     realMultiply((real_t *)&x, &y, (real_t *)&x, &c);
     realAdd((real_t *)&x, &z, (real_t *)&x, &c);
-                                                    #if defined(DEBUG_XFN)
-                                                      realToString((real_t *)&x, tmpString); printf("x * y + z: %s\n",tmpString);
-                                                    #endif //DEBUG_XFN
+    #if defined(DEBUG_XFN)
+      realToString((real_t *)&x, tmpString); printf("VAR1: x * y + z: %s\n",tmpString);
+    #endif //DEBUG_XFN
+
     if(realGetExponent(&x) > maxXfnExponent) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Total X*Y exceeds the maximum exponent %d > %d",realGetExponent(&x), maxXfnExponent);
+        sprintf(errorMessage, "Total r0*r1+r2 exceeds the maximum exponent %d > %d",realGetExponent(&x), maxXfnExponent);
         moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -589,11 +633,16 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 
 
     switch(function) {
+
+      //monadic
       case XFN_SIN:
       case XFN_COS:
       case XFN_TAN: 
       case XFN_LN:
-      case XFN_LOG: {
+      case XFN_LOG:
+      case XFN_EXP:
+      case XFN_10X:
+      case XFN_SQRT: {
 
         switch(function) {
           case XFN_SIN:
@@ -638,6 +687,18 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
             realDivide((real_t *)&x, (real_t *)&xx, (real_t *)&x, &c);
             break;
           }
+          case XFN_EXP: {
+            decNumberExp((real_t *)&x, (real_t *)&x, &c);
+            break;
+          }
+          case XFN_10X: {
+            realPower(const_10, (real_t *)&x, (real_t *)&x, &c);
+            break;
+          }
+          case XFN_SQRT: {
+            realPower((real_t *)&x, const_1on2, (real_t *)&x, &c);
+            break;
+          }
           default: {
             location = 4;
             goto noFunction;
@@ -645,20 +706,79 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
         }
         break;
       }
-//todo
+
+      //dyadic todo
       case XFN_PLUS:
+      case XFN_MINUS:
       case XFN_POWER:
       case XFN_MULT:
       case XFN_DIV: {
-        location = 5;
-        goto noFunction;
-      }
 
+        if(getRegisterDataType(registerNo+3+1) == dtLongInteger) {
+          longInteger_t lint;
+          convertLongIntegerRegisterToLongInteger(registerNo+3+1, lint);
+          longIntegerToString(lint, 10, tmpString);
+          longIntegerFree(lint);
+          decNumberFromString((real_t *)&xxx, tmpString, &c);
+        } else {
+          if(!getRegisterAsReal(registerNo+3+1, (real_t *)&xxx)) {
+            return;
+          }
+        }
+        if(!getRegisterAsReal(registerNo+3, &yyy)) { //ignore anglemode
+          return;
+        }
+        if(!getRegisterAsReal(registerNo+3+2, &zzz)) { //ignore anglemode
+          return;
+        }
+        realMultiply((real_t *)&xxx, &yyy, (real_t *)&xxx, &c);
+        realAdd((real_t *)&xxx, &zzz, (real_t *)&xxx, &c);
+        #if defined(DEBUG_XFN)
+          realToString((real_t *)&xxx, tmpString); printf("VAR2: x * y + z: %s\n",tmpString);
+        #endif //DEBUG_XFN       
+        if(realGetExponent(&xxx) > maxXfnExponent) {
+          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Total VAR2: r3*r4+r5 exceeds the maximum exponent %d > %d",realGetExponent(&xxx), maxXfnExponent);
+            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return;
+        }
+
+        switch(function) {
+          case XFN_PLUS: {
+            realAdd       ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);
+            break;
+          }
+          case XFN_MINUS: {
+            realSubtract  ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);
+            break;
+          }
+          case XFN_POWER: {
+            realPower     ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);
+            break;
+          }
+          case XFN_MULT: {
+            realMultiply  ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);          
+            break;
+          }
+          case XFN_DIV: {
+            realDivide    ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);
+            break;
+          }
+          default: {
+            location = 5;
+            goto noFunction;
+          }
+        }
+        break;
+      }
       default: {
         location = 6;
-        goto noFunction;
+        goto noFunction;        
       }
     }
+
 
 functionResultInX:
                                                         #if defined(DEBUG_XFN)
@@ -708,7 +828,8 @@ noFunction:
       moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
-  }
+  #endif //TESTSUITE_BUILD
+}
 
 
 
