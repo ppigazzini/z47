@@ -1267,6 +1267,12 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
       *xAngularMode = getRegisterAngularMode(reg);
       if(*xAngularMode == amNone)
         *xAngularMode = currentAngularMode;
+      if(*xAngularMode == amRadian && realGetExponent(val) > 999) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      }
       break;
 
     case dtComplex34:
