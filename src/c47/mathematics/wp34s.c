@@ -1130,53 +1130,17 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
 }
 
 
-// Manual replacement for big due to to realDivideRemainder not working on very very large input
-// set up for 1071 input, with internal mod reduction for double the digits for the following example which illustrates you need to process double the digits for 2pi
-// const_2139_2pi is available but commented out in generateCatalogs.
-//
-// Start with example, filling 6 digits, 2pi being 6 digits
-//   1000000 MOD 2pi
-//   1000000 / 2pi    =  159155
-//   floor()          =  159155
-//   floorval x 2pi   =  999999    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
-//   subtract from org=  1
-//
-// redo example, with 12 digits, 2pi being 12 digits
-//   1000000 MOD 2pi
-//   1000000 / 2pi    =  159154.943092
-//   floor()          =  159154
-//   floorval x 2pi   =  999994.074379    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
-//   subtract from org=  5.925621
-//
-// Hence the 1071 input below, with 'internal 2139' calculation
-
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-    real2139_t out, out2;
-    real1071_t floorval;
-    realContext_t c = *realContext;
+  /* Declare a structure large enough to hold a really long number.
+   * This structure is likely to be larger than is required.
+   */
+  real2139_t out;
+  realContext_t c = *realContext;
 
-    c.digits = 1071;
-    realDivide(x, y, (real_t *)&out, &c);                                           // Divide x by y to get quotient
-    realToIntegralValue((real_t *)&out, (real_t *)&floorval, RM_FLOOR, &c);         // Floor the quotient 
-    c.digits = 2139;
-    realMultiply((real_t *)&floorval, y, (real_t *)&out, &c);                       // Multiply floored quotient by divisor
-    realSubtract(x, (real_t *)&out, (real_t *)&out2, &c);                           // Subtract from original dividend to get remainder
-    c.digits = 1071;
-    realPlus((real_t *)&out2, res, &c);
+  c.digits = 2139;
+  realDivideRemainder(x, y, (real_t *)&out, &c);
+  realPlus((real_t *)&out, res, realContext);
 }
-
-// Original
-// void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-//   /* Declare a structure large enough to hold a really long number.
-//    * This structure is likely to be larger than is required.
-//    */
-//   real2139_t out;
-//   realContext_t c = *realContext;
-// 
-//   c.digits = 2139;
-//   realDivideRemainder(x, y, (real_t *)&out, &c);
-//   realPlus((real_t *)&out, res, realContext);
-// }
 
 
 static void gser(const real_t *a, const real_t *x, const real_t *gln, real_t *res, realContext_t *realContext) {

@@ -311,14 +311,51 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
     }
 }
 
+// Does not seem needed and solved with the larger pi
+// Manual replacement for big due to to realDivideRemainder not working on very very large input
+// set up for 1071 input, with internal mod reduction for double the digits for the following example which illustrates you need to process double the digits for 2pi
+// const_2139_2pi is available but commented out in generateCatalogs.
+//
+// Start with example, filling 6 digits, 2pi being 6 digits
+//   1000000 MOD 2pi
+//   1000000 / 2pi    =  159155
+//   floor()          =  159155
+//   floorval x 2pi   =  999999    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
+//   subtract from org=  1
+//
+// redo example, with 12 digits, 2pi being 12 digits
+//   1000000 MOD 2pi
+//   1000000 / 2pi    =  159154.943092
+//   floor()          =  159154
+//   floorval x 2pi   =  999994.074379    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
+//   subtract from org=  5.925621
+//
+// Hence the 1071 input below, with 'internal 2139' calculation
+
+//void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+//    real2139_t out, out2;
+//    real1071_t floorval;
+//    realContext_t c = *realContext;
+//
+//    c.digits = 1071;
+//    realDivide(x, y, (real_t *)&out, &c);                                           // Divide x by y to get quotient
+//    realToIntegralValue((real_t *)&out, (real_t *)&floorval, RM_FLOOR, &c);         // Floor the quotient
+//    c.digits = 2139;
+//    realMultiply((real_t *)&floorval, y, (real_t *)&out, &c);                       // Multiply floored quotient by divisor
+//    realSubtract(x, (real_t *)&out, (real_t *)&out2, &c);                           // Subtract from original dividend to get remainder
+//    c.digits = 1071;
+//    realPlus((real_t *)&out2, res, &c);
+//}
+
+
 
 // Python code to check XFN
 // import mpmath
-// 
+//
 // # Set VERY high precision for intermediate calculations
 // mpmath.mp.dps = 5000  # Much higher than needed for intermediate work
 // print("Computing with ultra-high precision...")
-// 
+//
 // # Your large number - use exact string representation
 // big_num_str = '828750482128618081847748861163357'
 // big_num = mpmath.mpf(big_num_str)
@@ -326,28 +363,28 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 // full_number = big_num * power_of_ten
 // offset = mpmath.mpf('0.01')
 // total = full_number + offset
-// 
+//
 // # Calculate 2π with very high precision
 // two_pi = 2 * mpmath.pi
 // print("Step 2: 2π computed with high precision")
-// 
+//
 // # Critical: Use fmod for better numerical stability with large numbers
 // mod_result = mpmath.fmod(total, two_pi)
 // print("Step 3: Modulo operation completed")
-// 
+//
 // # Calculate sine
 // result = mpmath.sin(mod_result)
 // print("Step 4: Sine computed")
-// 
+//
 // # Display intermediate results for verification
 // print(f"\nIntermediate mod result (first 1070 digits):")
 // print(mpmath.nstr(mod_result, 1071))
-// 
+//
 // print(f"\nFinal sine result (1071 decimal places):")
 // # Set final output precision to exactly 1071
 // final_result = mpmath.nstr(result, 1071)
 // print(final_result)
-// 
+//
 // # Verification: compute sin of just the mod result again
 // verification = mpmath.sin(mod_result)
 // print(f"\nVerification (should match above):")
@@ -392,49 +429,49 @@ int32_t realGetDigits(const real1071_t* x) {
 }
 
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
-    #define maxAllowedDigits 999                        // integer part has at most 1000 digits    
+    #define maxAllowedDigits 999                        // integer part has at most 1000 digits
     int32_t exponent = realGetExponent(x);
     int32_t digits = realGetDigits(x);
     digits = (digits < c->digits) ? digits : c->digits; //smaller of reported digits or context precision
-    
+
     if (digits <= 34) {                                 //if the data fits a real, assign the integer to 1
         uInt32ToLongInteger(1, integerPart);
         realCopy((real_t*)x, (real_t*)fractionalPart);
         return;
     }
-    
+
     int32_t wouldBeDigits = exponent + digits;
     if (wouldBeDigits > maxAllowedDigits) {
         digits = maxAllowedDigits - exponent;
         if (digits < 1) digits = 1;                   // Ensure at least 1 digit
     }
-    
-    
+
+
     real1071_t tempReal;                            //?????
     realPlus((real_t*)x, (real_t*)&tempReal, c);
     int32_t trueDigits = realGetDigits(&tempReal);
-    
+
     if (trueDigits <= 34) {                           // Fits in real34: integer = 1, fractional = original
         uInt32ToLongInteger(1, integerPart);
         realCopy((real_t*)x, (real_t*)fractionalPart);
         return;
     }
-    
+
     real1071_t mantissa;                               // Get mantissa by removing the decimal point entirely
     realPlus((real_t*)x, (real_t*)&mantissa, c);      // Normalize to remove trailing zeros with full precision
     int32_t actualDigits = realGetDigits(&mantissa);   // Get actual significant digits after normalization
     realToString((real_t*)&mantissa, tmpString);
     bool hasDecimalPoint = (strchr(tmpString, '.') != NULL);
-    
+
     if (actualDigits <= 34) {                         // Fits in real34: integer = 1, fractional = original
         uInt32ToLongInteger(1, integerPart);
         realCopy((real_t*)x, (real_t*)fractionalPart);
         return;
     }
-    
+
     int32_t actualExponent = realGetExponent(&mantissa);  // For numbers with >34 digits: extract all significant digits as integer, up to 1000
     if (actualDigits > 1000) actualDigits = 1000;
-    
+
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     if (scaleAmount > 0) {
         for (int32_t i = 0; i < scaleAmount; i++) {
@@ -445,15 +482,15 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
             realDivide((real_t*)&mantissa, const_10, (real_t*)&mantissa, c);
         }
     }
-    
+
     real1071_t integralPart;
     realContext_t cc = *c;
-    cc.round = DEC_ROUND_FLOOR; 
+    cc.round = DEC_ROUND_FLOOR;
     decNumberToIntegralExact((real_t*)&integralPart, (real_t*)&mantissa, &cc);
-    
+
     realToString((real_t*)&integralPart, tmpString);  // Convert real to string and load string into integerPart
-    
-    
+
+
     if (hasDecimalPoint) {                            // Trim trailing zeros
         int32_t len = strlen(tmpString);
         for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
@@ -463,9 +500,9 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
             strcpy(tmpString, "1");
         }
     }
-    
+
     stringToLongInteger(tmpString, 10, integerPart);
-    
+
     real1071_t integerAsReal;
     convertLongIntegerToReal(integerPart, (real_t*)&integerAsReal, c);
     realDivide((real_t*)x, (real_t*)&integerAsReal, (real_t*)fractionalPart, c);
@@ -588,7 +625,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     }
 
 
-    
+
     //--------//--------//-- loading input --//--------//--------//--------
     //MONADIC & DYADIC, at least 1 register pair used
     //Read 1 register pair: Real, Longint
@@ -637,7 +674,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
       //monadic
       case XFN_SIN:
       case XFN_COS:
-      case XFN_TAN: 
+      case XFN_TAN:
       case XFN_LN:
       case XFN_LOG:
       case XFN_EXP:
@@ -735,7 +772,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
         realAdd((real_t *)&xxx, &zzz, (real_t *)&xxx, &c);
         #if defined(DEBUG_XFN)
           realToString((real_t *)&xxx, tmpString); printf("VAR2: x * y + z: %s\n",tmpString);
-        #endif //DEBUG_XFN       
+        #endif //DEBUG_XFN
         if(realGetExponent(&xxx) > maxXfnExponent) {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -759,7 +796,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
             break;
           }
           case XFN_MULT: {
-            realMultiply  ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);          
+            realMultiply  ((real_t*)&xxx, (real_t*)&x, (real_t*)&x, &c);
             break;
           }
           case XFN_DIV: {
@@ -775,7 +812,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
       }
       default: {
         location = 6;
-        goto noFunction;        
+        goto noFunction;
       }
     }
 
@@ -813,7 +850,7 @@ functionResultInX:
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&out, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-    
+
                                                         #if defined(DEBUG_XFN)
                                                           printRegisterToConsole(REGISTER_X,"X:","\n");
                                                           printRegisterToConsole(REGISTER_Y,"Y:","\n");
