@@ -1231,7 +1231,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
-      LongIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
+      longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
       decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
       WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
       realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
