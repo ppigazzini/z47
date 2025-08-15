@@ -1229,6 +1229,8 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        longIntegerFree(angle);
+        return;
       }
 
       longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
@@ -1272,6 +1274,7 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
       }
       break;
 
