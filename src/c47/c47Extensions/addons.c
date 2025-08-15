@@ -546,7 +546,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
       angleMode = currentAngularMode;
       longInteger_t lint;
       convertLongIntegerRegisterToLongInteger(registerNo+1, lint);      //replaced mpz_get_str(tmpString, 10, lint);
-      LongIntegerToString(lint, 10, tmpString);
+      longIntegerToString(lint, 10, tmpString);
       longIntegerFree(lint);
       decNumberFromString((real_t *)&x, tmpString, &c);
     } else {
