@@ -376,11 +376,12 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 // ** XFN: Full 1071 digit Math, 2139 internal mod reduction
 // ** XFN reg with the command to be executed in X in a string COS, SIN, PI, etc.
 // ** input register reg, reg+1, and X
-// ** Reg   : Real / Longinteger  containing the real multiplier, typically the exponent 1E-234, but could be any real multiplier
+// ** Reg   : Real / Longinteger containing the real multiplier, typically the exponent 1E-234, but could be any real multiplier
 // ** Reg+1 : Longinteger containing the 1000 digit mantissa
-// ** output register X & Y, pushing the stack with one (the command is dropped)
-// ** if the input register reg = Y, Y and Z will be dropped.
-// ** Typ: SIN( X*Y )
+// ** Reg+2 : Real addtion after multiplication
+// ** output register X & Y & Z (the command in X is dropped)
+// ** if the input register reg = Y, YZT will be dropped.
+// ** Typ: SIN( Y*Z+T ) or SIN (r00*r01+r02) or SIN (M*N+O)
 // **
 // ******************************************************
 
@@ -486,7 +487,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     #endif
 
     real1071_t x,xx;
-    real_t out, y;
+    real_t out, y, z;
     realContext_t c = ctxtReal75;
     c.digits = 1071;
     angularMode_t angleMode;
@@ -562,15 +563,20 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     if(!getRegisterAsReal(registerNo, &y)){ //ignore anglemode
       return;
     }
+    if(!getRegisterAsReal(registerNo+2, &z)){ //ignore anglemode
+      return;
+    }
                                                     #if defined(DEBUG_XFN)
                                                       real_t tmp;
                                                       printf("FUNCTION:%s = %d\n", tmpString, function);
                                                       realPlus((real_t *)&x, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input x:","\n");
                                                       realPlus((real_t *)&y, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input y:","\n");
+                                                      realPlus((real_t *)&z, &tmp, &ctxtReal39);  printRealToConsole(&tmp, "Input z:","\n");
                                                     #endif //DEBUG_XFN
     realMultiply((real_t *)&x, &y, (real_t *)&x, &c);
+    realAdd((real_t *)&x, &z, (real_t *)&x, &c);
                                                     #if defined(DEBUG_XFN)
-                                                      realToString((real_t *)&x, tmpString); printf("x * y: %s\n",tmpString);
+                                                      realToString((real_t *)&x, tmpString); printf("x * y + z: %s\n",tmpString);
                                                     #endif //DEBUG_XFN
     if(realGetExponent(&x) > maxXfnExponent) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -662,21 +668,27 @@ functionResultInX:
 
     //If the user uses the lowest part of the stack, drop the stack
     if(registerNo == REGISTER_Y && lastErrorCode == 0) {
-      fnDropY(NOPARAM);
-      fnDropY(NOPARAM);
+      fnDropY(NOPARAM); //y
+      fnDropY(NOPARAM); //z
+      fnDropY(NOPARAM); //t
     }
 
+
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    realCopy(const_0, &z);
+    convertRealToReal34ResultRegister(&z, REGISTER_X);
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
     longInteger_t integerOutput;
     longIntegerInit(integerOutput);
     decomposeReal(&x, integerOutput, &x, &c);
     convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
     longIntegerFree(integerOutput);
-                                                        #if defined(DEBUG_XFN)
-                                                          printRegisterToConsole(REGISTER_X,"X integerOutput:","\n");
-                                                        #endif //DEBUG_XFN
+
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-
     realPlus((real_t *)&x, &out, &ctxtReal75);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&out, REGISTER_X);
@@ -685,6 +697,7 @@ functionResultInX:
                                                         #if defined(DEBUG_XFN)
                                                           printRegisterToConsole(REGISTER_X,"X:","\n");
                                                           printRegisterToConsole(REGISTER_Y,"Y:","\n");
+                                                          printRegisterToConsole(REGISTER_Y,"Z:","\n");
                                                         #endif //DEBUG_XFN
     return;
 
