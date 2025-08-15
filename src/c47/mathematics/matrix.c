@@ -4195,11 +4195,13 @@ static void sortEigenvalues(real_t *eig, uint16_t size, uint16_t begin_a, uint16
   }
 }
 
+#define EIGENDEBUG
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t shiftRe, shiftIm;
   uint16_t i, j;
   bool_t converged;
+  uint16_t iteration = 0;
 
   if(size == 2) {
     calculateEigenvalues22(a, size, eig, eig + 1, eig + 6, eig + 7, realContext);
@@ -4224,7 +4226,25 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       realCopy(const_1e_37, &tol);
     }
 
-    while(true) {
+    while(iteration++ < 10000) {
+
+      #if defined(EIGENDEBUG)
+        printRealToConsole(&tol,"\nTol:",": ");
+        printf("\n---iteration %d ",iteration++);
+      #endif //EIGENDEBUG
+
+      if(checkHalfSec()) {
+        char ss[30];
+        sprintf(ss,"Tol: 1E%d Iter: ", realGetExponent(&tol));
+        if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        }
+      }
+      if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
+
       if(shifted) {
         calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
         if((realIsZero(&shiftRe) && realIsZero(&shiftIm)) || realIsSpecial(&shiftRe) || realIsSpecial(&shiftIm)) {
@@ -4237,8 +4257,46 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         }
       }
+
       QR_decomposition_householder(a, size, q, r, realContext);
+
+      #if defined(EIGENDEBUG)
+      if ((iteration % 100) == 0) {
+          real_t tmp;
+          char realStr[32], imagStr[32];
+          const int colWidth = 24;
+          int i, j;
+
+          // Print Q matrix
+          printf("\nQ matrix:\n");
+          for (i = 0; i < size; i++) {
+              for (j = 0; j < size; j++) {
+                  realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
+                  realToString(&tmp, realStr);
+                  realPlus(q + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                  realToString(&tmp, imagStr);
+                  printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+              }
+              printf("\n");
+          }
+
+          // Print R matrix
+          printf("\nR matrix:\n");
+          for (i = 0; i < size; i++) {
+              for (j = 0; j < size; j++) {
+                  realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
+                  realToString(&tmp, realStr);
+                  realPlus(r + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                  realToString(&tmp, imagStr);
+                  printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+              }
+              printf("\n");
+          }
+      }
+      #endif
+
       mulCpxMat(r, q, size, size, size, eig, realContext);
+
       if(shifted) {
         for(i = 0; i < size; i++) {
           realAdd(a   + (i * size + i) * 2,     &shiftRe, a   + (i * size + i) * 2,     realContext);
@@ -4250,6 +4308,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
       converged = true;
       for(i = 0; i < size; i++) {
+        #if defined(EIGENDEBUG)
+          printf("\nC%1d",i);
+        #endif //EIGENDEBUG
         if(realIsNaN(eig + i * 2) || realIsNaN(eig + i * 2 + 1)) {
           for(j = 0; j < size * size * 2; j++) {
             realCopy(a + j, eig + j);
@@ -4259,6 +4320,31 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
         }
         else if(!WP34S_RelativeError(a + (i * size + i) * 2, eig + (i * size + i) * 2, &tol, realContext) || !WP34S_RelativeError(a + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1, &tol, realContext)) {
           converged = false;
+          #if defined(EIGENDEBUG)
+              printf(" not converged ");
+              real_t tmp;
+              for(int k = 0; k < 1; k++) { // just to scope tmp, optional
+                  // real part of a
+                  realPlus(a + (i * size + i) * 2, &tmp, &ctxtReal4);
+                  realToString(&tmp, tmpString);
+                  printf("%*s ", 15, tmpString);  // 15-char field
+
+                  // imaginary part of a
+                  realPlus(a + (i * size + i) * 2 + 1, &tmp, &ctxtReal4);
+                  realToString(&tmp, tmpString);
+                  printf("%*s ", 15, tmpString);
+
+                  // real part of eig
+                  realPlus(eig + (i * size + i) * 2, &tmp, &ctxtReal4);
+                  realToString(&tmp, tmpString);
+                  printf("%*s ", 15, tmpString);
+
+                  // imaginary part of eig
+                  realPlus(eig + (i * size + i) * 2 + 1, &tmp, &ctxtReal4);
+                  realToString(&tmp, tmpString);
+                  printf("%*s ", 15, tmpString);
+              }
+          #endif //EIGENDEBUG
         }
       }
       if(converged) {
@@ -4276,15 +4362,15 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     // at least one of eigenvalues is 0 if and only if the given matrix is singular
     sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
     complexMagnitude(eig, eig + 1, &maxM, realContext);
-    for(i = 0; i < size; i++) {
+    for(i = 1; i < size; i++) {
       complexMagnitude(eig + (i * size + i) * 2, eig + (i * size + i) * 2 + 1, &tmpM, realContext);
       if(!realIsZero(&tmpM) && !realIsZero(&maxM) && realCompareLessThan(&tmpM, &tol)) { // ill-conditioned: possibly singular
         realMultiply(&maxM, &tol, &minM, realContext);
-        for(i = 1; i < size; i++) {
-          complexMagnitude(eig + (i * size + i) * 2, eig + (i * size + i) * 2 + 1, &tmpM, realContext);
+        for(j = 1; j < size; j++) {
+          complexMagnitude(eig + (j * size + j) * 2, eig + (j * size + j) * 2 + 1, &tmpM, realContext);
           if(realCompareLessThan(&tmpM, &minM)) {
-            realZero(eig + (i * size + i) * 2    );
-            realZero(eig + (i * size + i) * 2 + 1);
+            realZero(eig + (j * size + j) * 2    );
+            realZero(eig + (j * size + j) * 2 + 1);
           }
         }
       }
