@@ -2151,30 +2151,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
-      //handle restoring of previous screen after temporary KEYMAP display
-      //  To add || (previousCalcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) below, if/when PEM is included
-      if(calcMode == CM_ASN_BROWSER && (keyCode == 32 || 
-         ((isArrowUp(keyCode) || isArrowDown(keyCode)) && temporaryKeyMap)
-         ) && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) {      // let longpress dot show the g-layer on AIM/EIM
-
-        temporaryKeyMap = false;
-        if(currentMenu() == -MNU_AIMCATALOG) {
-          popSoftmenu();
-          hideFunctionName();
-        }
-        if(previousCalcMode == CM_AIM) {
-          showSoftmenu(-MNU_ALPHA);
-          calcMode = previousCalcMode;
-        }
-        if(previousCalcMode == CM_EIM) {
-          calcMode = CM_NORMAL;
-        }
-        screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(117);
-        calcMode = previousCalcMode;
-        goto RELEASE_END;
-      }
-      else
 
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;
@@ -3958,12 +3934,22 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
         if(calcMode == CM_TIMER) {
           previousCalcMode = CM_NORMAL;
+        }
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
         }
         break;
       }
@@ -4341,16 +4327,22 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-      //case CM_ASM_OVER_NORMAL:
-      //  addItemToBuffer(ITM_BACKSPACE);
-      //  break;
-      //}
-
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         calcMode = previousCalcMode;
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
+        }
+        screenUpdatingMode = SCRUPD_AUTO;
         break;
       }
 
@@ -4359,7 +4351,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
        case CM_LISTXY:
        case CM_GRAPH:
        case CM_PLOT_STAT:
-      case CM_CONFIRMATION: {
+       case CM_CONFIRMATION: {
         temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;

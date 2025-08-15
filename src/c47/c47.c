@@ -67,7 +67,6 @@ bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
 bool_t                 solverEstimatesUsed = false;
 bool_t                 updateOldConstants;
-bool_t                 temporaryKeyMap = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
