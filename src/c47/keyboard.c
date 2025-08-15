@@ -171,7 +171,7 @@ static void executeFunction(const char *data, int16_t item_);
       case MNU_REALS:
       case MNU_ANGLES:
       case MNU_LINTS:
-      case MNU_ALLVARS: 
+      case MNU_ALLVARS:
       {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
@@ -289,7 +289,7 @@ static void executeFunction(const char *data, int16_t item_);
         case MNU_REALS:
         case MNU_ANGLES:
         case MNU_LINTS:
-        case MNU_ALLVARS: 
+        case MNU_ALLVARS:
 
 
          {
@@ -422,7 +422,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_REALS:
           case MNU_ANGLES:
           case MNU_LINTS:
-          case MNU_ALLVARS: 
+          case MNU_ALLVARS:
           {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
@@ -1708,8 +1708,8 @@ int16_t lastItem = 0;
                   {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
                   {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
                   {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
-                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0      
-                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2      
+                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0
+                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2
                   {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
                   {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
@@ -2145,30 +2145,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
-      //handle restoring of previous screen after temporary KEYMAP display
-      //  To add || (previousCalcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) below, if/when PEM is included
-      if(calcMode == CM_ASN_BROWSER && (keyCode == 32 || 
-         ((isArrowUp(keyCode) || isArrowDown(keyCode)) && temporaryKeyMap)
-         ) && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) {      // let longpress dot show the g-layer on AIM/EIM
-
-        temporaryKeyMap = false;
-        if(currentMenu() == -MNU_AIMCATALOG) {
-          popSoftmenu();
-          hideFunctionName();
-        }
-        if(previousCalcMode == CM_AIM) {
-          showSoftmenu(-MNU_ALPHA);
-          calcMode = previousCalcMode;
-        }
-        if(previousCalcMode == CM_EIM) {
-          calcMode = CM_NORMAL;
-        }
-        screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(117);
-        calcMode = previousCalcMode;
-        goto RELEASE_END;
-      }
-      else
 
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;
@@ -3928,7 +3904,6 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
@@ -3936,6 +3911,16 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           previousCalcMode = CM_NORMAL;
         }
         break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
+        }
       }
 
       case CM_TIMER: {
@@ -4311,16 +4296,21 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-      //case CM_ASM_OVER_NORMAL:
-      //  addItemToBuffer(ITM_BACKSPACE);
-      //  break;
-      //}
-
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         calcMode = previousCalcMode;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
+        }
+        screenUpdatingMode = SCRUPD_AUTO;
         break;
       }
 
@@ -4329,7 +4319,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
        case CM_LISTXY:
        case CM_GRAPH:
        case CM_PLOT_STAT:
-      case CM_CONFIRMATION: {
+       case CM_CONFIRMATION: {
         temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;

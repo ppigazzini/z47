@@ -65,7 +65,6 @@ bool_t                 iterations = false;
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
-bool_t                 temporaryKeyMap = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -805,7 +804,7 @@ int convertKeyCode(int key) {
                                                   // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
                                                   // print_linestr(rrr,true);
                                                   // rrr[0]=0;
-                                                  // print_linestr(rrr,false);                                                  
+                                                  // print_linestr(rrr,false);
                                                   // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
                                                   // print_linestr(rrr,false);
 

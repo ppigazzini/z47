@@ -1,4 +1,4 @@
-  // SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
@@ -139,7 +139,7 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       previousCalcMode = calcMode;
       calcMode = CM_ASN_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentAsnScr = 1;
+      currentAsnScr = (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) ? 6 : 1;
       return;
     }
   fnAsnDisplay(currentAsnScr);

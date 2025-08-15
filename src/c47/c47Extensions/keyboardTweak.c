@@ -165,8 +165,8 @@ void resetKeytimers(void) {
       }
       #endif // PC_BUILD
 
-      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME); 
-      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu); 
+      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
+      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
 
       if(HOME3 && currentMenu() == target_HOME) {
         if(situation == keypress_fff) {
@@ -269,8 +269,8 @@ void resetKeytimers(void) {
 #define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
 //Note:
 // ITM_BASEMENU is used by the LongpressEXIT1 macro, which does some logic to determine what EXIT must do.
-// LongpressEXIT1 has an item number as output, which is fed into the longpress/command preview/runFunction systems, to open a menu. The menu is opened by fnBaseMenu(), 
-// and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose. 
+// LongpressEXIT1 has an item number as output, which is fed into the longpress/command preview/runFunction systems, to open a menu. The menu is opened by fnBaseMenu(),
+// and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose.
 // fnBaseMenu() opens MNU_MyMenu, and due to the reasons given, MNU_MyMenu cannot be used directly, as it needs to first set some flags, hence in a way it is like an invisible pseudo-menu, opened by an item.
 
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
@@ -453,11 +453,6 @@ void resetKeytimers(void) {
               longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               longpressDelayedkey1 = -MNU_PFN;
               break;
-            case ITM_ENTER:
-              if(tam.mode == 0) {
-                longpressDelayedkey1 = ITM_CR;   //XEDIT removed, as it makes no sense and does not work in PEM
-              }
-              break;
             default:;
           }
           break;
@@ -469,7 +464,7 @@ void resetKeytimers(void) {
               if(calcModel == USER_C47) {
                 longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               } else {
-                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD               
+                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
                 longpressDelayedkey1 = ITM_SNAP;
               }
               break;

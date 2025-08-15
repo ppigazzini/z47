@@ -304,7 +304,6 @@
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
   extern bool_t                 cleanupAfterShift;
-  extern bool_t                 temporaryKeyMap;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -593,7 +592,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)

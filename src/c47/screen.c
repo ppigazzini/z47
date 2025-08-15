@@ -819,11 +819,6 @@ void execTimerApp(uint16_t timerType) {
 
 //longpress DOT function during AIM EIM and PEM alpha:
 
-//1.  2025-08-02
-//KEYMAP preview using '.':
-//The '.' longpress for PEM alpha needs a different approach as the AIM works on full preveview release only. 
-//  The interactive modes NM and AIM work on press, abandoning before release, not release.
-
 //2.  2025-08-02
 //All currentKeyCode checking below should be replaced with last item checking.
 //  Although it does not really matter because this section is for non-assignable, i.e. hardware keys
@@ -844,28 +839,11 @@ void execTimerApp(uint16_t timerType) {
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
         if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
-
-          //Activate temporary KEYMAP display
-          bool_t tmpUpLong = isArrowUp(currentKeyCode);
-          bool_t tmpDnLong = isArrowDown(currentKeyCode);
-
-          if( tmpUpLong || tmpDnLong ) {
-            temporaryKeyMap = true;
-            cursorEnabled = false;               // cursor is re-activated automatically elsewhere, after button release
-            T_cursorPos = lastT_cursorPos;       // stored cursor when key was pressed
-            if(calcMode == CM_EIM && tmpUpLong) {
-              fnKeyDown(NOPARAM);                // restore menu navigation when key was pressed
-            } else 
-            if(calcMode == CM_EIM && tmpDnLong) {
-              fnKeyUp(NOPARAM);                  // restore menu navigation when key was pressed
-            }
-            fnAsnViewer(NOPARAM);                // start KEYMAP
-            currentAsnScr = 6;                   // starting KEYMAP screen g-layer AIM
-            fnAsnDisplayUSER = tmpUpLong;        // Up=USER / Down=STD keys
-            refreshScreen(117);
+          if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
+            // stub for code to process on up1/down longpress
             return;
           }
-          
+
           fnKeyBackspace(NOPARAM);
           addItemToBuffer(JM_auto_longpress_enabled);
           FN_timeouts_in_progress = false;
