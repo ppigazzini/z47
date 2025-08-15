@@ -3921,6 +3921,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           showSoftmenu(-MNU_ALPHA);
         }
+        break;
       }
 
       case CM_TIMER: {
@@ -4300,6 +4301,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
       case CM_FLAG_BROWSER:
       case CM_FONT_BROWSER: {
         calcMode = previousCalcMode;
+        break;
       }
 
       case CM_ASN_BROWSER: {
