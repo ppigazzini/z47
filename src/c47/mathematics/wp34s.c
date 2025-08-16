@@ -56,7 +56,7 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
       angle45 = const_piOn4_75;
       angle90 = const_piOn2_75;
       angle180 = const_pi_75;
-      WP34S_Mod(&angle, const1071_2pi, &angle, realContext); // mod(angle, 2pi) --> angle
+      mod2Pi(&angle, &angle, realContext); // mod(angle, 2pi) --> angle
       break;
     }
 
@@ -1121,10 +1121,10 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
   /* Declare a structure large enough to hold a really long number.
    * This structure is likely to be larger than is required.
    */
-  real1071_t out;
+  real6147_t out;
   realContext_t c = *realContext;
 
-  c.digits = 1071;
+  c.digits = 6147;
   realDivideRemainder(x, y, (real_t *)&out, &c);
   realPlus((real_t *)&out, res, realContext);
 }
@@ -1134,14 +1134,18 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
   /* Declare a structure large enough to hold a really long number.
    * This structure is likely to be larger than is required.
    */
-  real2139_t out;
+  real12321_t out;
   realContext_t c = *realContext;
 
-  c.digits = 2139;
+  c.digits = 12321;
   realDivideRemainder(x, y, (real_t *)&out, &c);
   realPlus((real_t *)&out, res, realContext);
 }
 
+
+void mod2Pi(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_BigMod(x, const6147_2pi, res, realContext);
+}
 
 static void gser(const real_t *a, const real_t *x, const real_t *gln, real_t *res, realContext_t *realContext) {
   real_t ap, del, sum, t, u;
