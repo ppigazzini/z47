@@ -477,9 +477,6 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     if (actualDigits > maxAllowedDigits) actualDigits = maxAllowedDigits;
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     mantissa.exponent += scaleAmount;
-    realToString((real_t*)&mantissa, tmpString);
-    bool mantissaHasDecimalPoint = (strchr(tmpString, '.') != NULL);
-
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
     cc.round = DEC_ROUND_FLOOR;
     decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
