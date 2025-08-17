@@ -134,7 +134,28 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
     realToString((real_t *)&x, tmpString); printf("Taylor: Starting series starts\nTaylor:x: %s\n",tmpString);
   #endif //DEBUGTAYLOR
 
-  for(n = 1; n < 300; n++) {
+  realCopy(const_0,(real_t*)&sin_term_add);
+  realCopy(const_0,(real_t*)&cos_term_add);
+
+  #define TaylorIterationMax 1000
+  for(n = 1; n < TaylorIterationMax; n++) {
+
+    if(checkHalfSec()) {
+      char ss[256]; 
+      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", n, TaylorIterationMax, -(int16_t)max((int16_t)realGetExponent(&sin_term_add), (int16_t)realGetExponent(&cos_term_add)));
+      ss[40] = 0; //Hard limit to screen display
+      #if defined(DEBUGTAYLOR) || defined (DEBUG_XFN)
+        printf("%s%d\n",ss,accNumberDigits);
+      #endif //DEBUGTAYLOR || DEBUG_XFN
+      if(progressHalfSecUpdate_Integer(timed, ss, accNumberDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      }
+    }
+    if(exitKeyWaiting()) {
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",n, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+      break;
+    }
+
     // Sin term: ±x^(2n+1)/(2n+1)!
     realDivide((real_t*)&sin_term, (real_t*)&factorial_2n1, (real_t*)&sin_term_add, realContext);
     if(n & 1) realSetNegativeSign((real_t*)&sin_term_add);
@@ -495,7 +516,7 @@ returnUnity:
 }
 
 
-  #define accuracy 1010 // passed to Taylor to set accuracy expectation. Can be set down to say 1000 to create 71 guard digits
+  #define accuracy 1050 // passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
   #define maxXfnExponent 1000
 
   //niladic
@@ -668,7 +689,9 @@ typedef struct {
 
     angularMode_t angleMode = currentAngularMode;
     angularMode_t tmpAngle;
-    int location = 0;
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      int location = 0;
+    #endif //EXTRA_INFO_ON_CALC_ERROR
 
 //--------//--------//-- Parsing function --//--------//--------//--------
     int function = XFN_NOTFOUND;
@@ -677,11 +700,15 @@ typedef struct {
         stringToUtf8(REGISTER_STRING_DATA(REGISTER_X), (uint8_t *)tmpString);
         function = lookupFunction(tmpString, &functionType);
         if(function == XFN_NOTFOUND) {
-          location = 1;
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            location = 1;
+          #endif //EXTRA_INFO_ON_CALC_ERROR
           goto noFunction;
         }
     } else {
-        location = 2;
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          location = 2;
+        #endif //EXTRA_INFO_ON_CALC_ERROR
         goto noFunction;
     }
 
@@ -695,7 +722,9 @@ typedef struct {
         }
       }
     } else {
-      location = 3;
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        location = 3;
+      #endif //EXTRA_INFO_ON_CALC_ERROR
       goto noFunction;
     }
 
@@ -739,7 +768,9 @@ typedef struct {
             case XFN_COS: C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); break;
             case XFN_TAN: C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    NULL,    &paramX, &c, accuracy); break;
             default: {
-              location = 4;
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                location = 4;
+              #endif //EXTRA_INFO_ON_CALC_ERROR
               goto noFunction;
             }
           }
@@ -817,7 +848,9 @@ typedef struct {
       }
 //--------//No function
       default: {
-        location = 5;
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          location = 5;
+        #endif //EXTRA_INFO_ON_CALC_ERROR
         goto noFunction;
       }
     }
