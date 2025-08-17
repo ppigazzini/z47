@@ -215,6 +215,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
 #define TMP_PI_2(tmp)         do { TMP_PI(tmp); realDivide((real_t*)(tmp), const_2, (real_t*)(tmp), realContext); } while(0)
 #define TMP_PI_4(tmp)         do { TMP_PI_2(tmp); realDivide((real_t*)(tmp), const_2, (real_t*)(tmp), realContext); } while(0)
 #define TMP_ROOT2_ON_2(tmp)   do { realDivide(const_1, const_2, (real_t*)(tmp), realContext); realSquareRoot((real_t*)(tmp), (real_t*)(tmp), realContext); } while(0)
+#define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
     bool_t sinNeg = false, cosNeg = false, swap = false;
