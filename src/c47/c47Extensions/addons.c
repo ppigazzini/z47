@@ -712,6 +712,9 @@ typedef struct {
         goto noFunction;
     }
 
+    if(functionType == FT_NILADIC) {
+      ; //no input needed, continue
+    } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &angleMode, &c)) {   //use the angle of the 1st param only, if set
         return;
