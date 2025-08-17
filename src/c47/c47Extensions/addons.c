@@ -485,14 +485,12 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
 
-    if (mantissaHasDecimalPoint) {                        // Trim trailing zeros
-        int32_t len = strlen(tmpString);
-        for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
-            tmpString[i] = '\0';
-        }
-        if (strlen(tmpString) == 0) {                     // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
-            strcpy(tmpString, "0");
-        }
+    int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
+    for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
+        tmpString[i] = '\0';
+    }
+    if (strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
+        strcpy(tmpString, "0");
     }
 
     #if defined(DEBUG_XFN)
