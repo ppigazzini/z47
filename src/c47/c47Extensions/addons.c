@@ -240,7 +240,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
 
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
     bool_t sinNeg = false, cosNeg = false, swap = false;
-    real1071_t angle, tmp1, tmp2;
+    real1071_t angle, angle45, angle90, angle180;
 
     if (realIsNaN(an)) {
         if (sinOut != NULL) realCopy(const_NaN, (real_t*)sinOut);
@@ -258,50 +258,74 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
     }
 
     switch (angularMode) {
-        case amRadian: WP34S_Mod((real_t*)&angle, const1071_2pi, (real_t*)&angle, realContext); break;
-        case amMultPi: WP34S_Mod((real_t*)&angle, const_2, (real_t*)&angle, realContext); break;
-        case amGrad:   WP34S_Mod((real_t*)&angle, const_400, (real_t*)&angle, realContext); break;
+        case amRadian: {
+            TMP_PI_4(&angle45);
+            TMP_PI_2(&angle90);
+            TMP_PI(&angle180);
+            WP34S_BigMod((real_t*)&angle, const1071_2pi, (real_t*)&angle, realContext);
+            break;
+        }
+
+        case amMultPi: {
+            realDivide(const_1, const_4, (real_t*)&angle45, realContext);
+            realDivide(const_1, const_2, (real_t*)&angle90, realContext);
+            realCopy(const_1, (real_t*)&angle180);
+            WP34S_BigMod((real_t*)&angle, const_2, (real_t*)&angle, realContext);
+            break;
+        }
+
+        case amGrad: {
+            uInt32ToReal(50, (real_t*)&angle45);
+            uInt32ToReal(100, (real_t*)&angle90);
+            uInt32ToReal(200, (real_t*)&angle180);
+            WP34S_BigMod((real_t*)&angle, const_400, (real_t*)&angle, realContext);
+            break;
+        }
+
         case amDegree:
         case amDMS: {
-              WP34S_Mod((real_t*)&angle, const_360, (real_t*)&angle, realContext);
-              angularMode = amDegree;
-              break;
-            }
+            uInt32ToReal(45, (real_t*)&angle45);
+            uInt32ToReal(90, (real_t*)&angle90);
+            uInt32ToReal(180, (real_t*)&angle180);
+            WP34S_BigMod((real_t*)&angle, const_360, (real_t*)&angle, realContext);
+            angularMode = amDegree;
+            break;
+        }
+
         default:
             break;
     }
 
-    // 180° offset
-    TMP_PI(&tmp1); // tmp1 = π (180° in radians mode)
-    if (realCompareGreaterEqual((real_t*)&angle, (real_t*)&tmp1)) {
-        realSubtract((real_t*)&angle, (real_t*)&tmp1, (real_t*)&angle, realContext);
+    // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
+    if (realCompareGreaterEqual((real_t*)&angle, (real_t*)&angle180)) {
+        realSubtract((real_t*)&angle, (real_t*)&angle180, (real_t*)&angle, realContext);
         sinNeg = !sinNeg;
         cosNeg = !cosNeg;
     }
-    // 90° offset
-    TMP_PI_2(&tmp1); // tmp1 = π/2
-    if (realCompareGreaterEqual((real_t*)&angle, (real_t*)&tmp1)) {
-        realSubtract((real_t*)&angle, (real_t*)&tmp1, (real_t*)&angle, realContext);
+
+    // sin(90+x) = cos(x), cos(90+x) = -sin(x)
+    if (realCompareGreaterEqual((real_t*)&angle, (real_t*)&angle90)) {
+        realSubtract((real_t*)&angle, (real_t*)&angle90, (real_t*)&angle, realContext);
         swap = true;
         cosNeg = !cosNeg;
     }
-    // 45° special case
-    TMP_PI_4(&tmp1); // tmp1 = π/4
-    if (realCompareEqual((real_t*)&angle, (real_t*)&tmp1)) {
-        TMP_ROOT2_ON_2(&tmp2);
-        if (sinOut) realCopy((real_t*)&tmp2, (real_t*)sinOut);
-        if (cosOut) realCopy((real_t*)&tmp2, (real_t*)cosOut);
+
+    // sin(90-x) = cos(x), cos(90-x) = sin(x)
+    if (realCompareEqual((real_t*)&angle, (real_t*)&angle45)) {
+        TMP_ROOT2_ON_2(&angle180);
+        if (sinOut) realCopy((real_t*)&angle180, (real_t*)sinOut);
+        if (cosOut) realCopy((real_t*)&angle180, (real_t*)cosOut);
         if (tanOut) realCopy(const_1, (real_t*)tanOut);
     }
     else {
-        if (realCompareGreaterThan((real_t*)&angle, (real_t*)&tmp1)) {
-            TMP_PI_2(&tmp2);
-            realSubtract((real_t*)&tmp2, (real_t*)&angle, (real_t*)&angle, realContext);
+        if (realCompareGreaterThan((real_t*)&angle, (real_t*)&angle45)) {
+            realSubtract((real_t*)&angle90, (real_t*)&angle, (real_t*)&angle, realContext);
             swap = !swap;
         }
 
         convertAngleFromTo((real_t*)&angle, angularMode, amRadian, realContext);
 
+        radSinCosTanTaylor(&angle, amRadian, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
     }
 
     // Apply signs
@@ -332,7 +356,6 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realSetPositiveSign((real_t*)tanOut);
         realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
     }
-        radSinCosTanTaylor(&angle, amRadian, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
 }
 
 // Does not seem needed and solved with the larger pi
