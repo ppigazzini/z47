@@ -221,9 +221,9 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
     real1071_t angle, tmp1, tmp2;
 
     if (realIsNaN(an)) {
-        if (sinOut) realCopy(const_NaN, (real_t*)sinOut);
-        if (cosOut) realCopy(const_NaN, (real_t*)cosOut);
-        if (tanOut) realCopy(const_NaN, (real_t*)tanOut);
+        if (sinOut != NULL) realCopy(const_NaN, (real_t*)sinOut);
+        if (cosOut != NULL) realCopy(const_NaN, (real_t*)cosOut);
+        if (tanOut != NULL) realCopy(const_NaN, (real_t*)tanOut);
         return;
     }
 
@@ -280,7 +280,6 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 
         convertAngleFromTo((real_t*)&angle, angularMode, amRadian, realContext);
 
-        Cvt2RadSinCosTan2(&angle, amRadian, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
     }
 
     // Apply signs
@@ -311,6 +310,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realSetPositiveSign((real_t*)tanOut);
         realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
     }
+        radSinCosTanTaylor(&angle, amRadian, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
 }
 
 // Does not seem needed and solved with the larger pi
