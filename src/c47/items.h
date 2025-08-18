@@ -2624,13 +2624,13 @@
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
 #define VAR_LY                      2548
-#define MNU_AIMCATALOG              2549
 
 #define ITM_RNG                     2549
 #define ITM_YY_DFLT                 2550
 #define ITM_DENMAX2                 2551
+#define MNU_AIMCATALOG              2552
 
-#define LAST_ITEM                   2552
+#define LAST_ITEM                   2553
 
 
 #define NOPARAM                       9876 // Item for function who don't need an item
