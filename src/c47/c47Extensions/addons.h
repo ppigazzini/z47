@@ -10,6 +10,7 @@ int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 
 void standardScreenDump(void);
+void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc);
 
 void fnXfn          (uint16_t registerNo);
 
