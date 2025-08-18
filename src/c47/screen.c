@@ -858,7 +858,6 @@ void execTimerApp(uint16_t timerType) {
             refreshScreen(131);
           }
           return;
-
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
@@ -3064,6 +3063,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
+
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
               r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
@@ -3159,7 +3159,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
               sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
-              
+
               showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
             }
             else {
@@ -4691,9 +4691,37 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     _refreshRegisterLine(REGISTER_T, RESTORE_T);
   }
 
+  static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
+    switch(angularMode) {
+      case amMultPi: {
+        showString(STD_SUP_pir, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amRadian: {
+        showString(STD_SUP_BOLD_r, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amGrad: {
+        showString(STD_SUP_BOLD_g, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amDegree: {
+        showString(STD_DEGREE, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amSecond: {
+        showString("s", font, x, y, vmNormal, true, true);
+        break;
+      }
+      default: {
+      }
+    }
+  }
+
 
   void displayNim(const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard) {
     int16_t w;
+    angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
     if(stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) { // 16 is the numeric font cursor width
       xCursor = showString(nim, &numericFont, 0, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
       yCursor = Y_POSITION_OF_NIM_LINE;
@@ -4701,6 +4729,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
         showString(lastBase, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
+      }
+      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset);
       }
     }
     else if(stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) { // 8 is the standard font cursor width
@@ -4710,6 +4741,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
         showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, true, true);
+      }
+      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+        _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6);
       }
     }
     else {
@@ -4733,6 +4767,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1] == '/')) {
           showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, true, true);
+        }
+        else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+          _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18);
         }
       }
     }

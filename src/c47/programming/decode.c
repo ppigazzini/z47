@@ -10,6 +10,7 @@
 TO_QSPI const char shuffleReg[4] = {'x', 'y', 'z', 't'};
 TO_QSPI const char supDigit[24] = STD_SUP_0 STD_SUP_1 STD_SUP_2 STD_SUP_3 STD_SUP_4 STD_SUP_5 STD_SUP_6 STD_SUP_7 STD_SUP_8 STD_SUP_9;
 TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BASE_4 STD_BASE_5 STD_BASE_6 STD_BASE_7 STD_BASE_8 STD_BASE_9 STD_BASE_10 STD_BASE_11 STD_BASE_12 STD_BASE_13 STD_BASE_14 STD_BASE_15 STD_BASE_16;
+TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir;
 
 #if !defined(DMCP_BUILD)
   void listPrograms(void) {
@@ -322,7 +323,22 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
     }
 
     case PARAM_NUMBER_16: {
-      sprintf(tmpString, "%s %u", op, opParam + 256 * *(paramAddress));
+      uint16_t func = (*(paramAddress-3)  << 8) + *(uint8_t *)(paramAddress -2);
+      func &= 0x7fff;
+      if(isFunctionOldParam16(func)) {  // original Param16 functions without indirection support (little endian parameter)
+        sprintf(tmpString, "%s %u", op, opParam + 256 * *(paramAddress));
+      }
+      else {                        // new Param16 functions with indirection support (big endian parameter)
+        if(opParam == INDIRECT_REGISTER) {
+          getIndirectRegister(paramAddress, op);
+        }
+        else if(opParam == INDIRECT_VARIABLE) {
+          getIndirectVariable(paramAddress, op);
+        }
+        else {
+          sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+        }
+      }
       break;
     }
 
@@ -491,6 +507,7 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
 }
 
 static void decodeLiteral(uint8_t *literalAddress) {
+  decodedIntegerBase = 0;
   switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
       reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
@@ -532,6 +549,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
       char *dispStringPtr = tmpString;
       char *sourceStringPtr = tmpStringLabelOrVariableName;
       uint8_t base = (uint8_t)(*literalAddress);
+      decodedIntegerBase = base;
       getStringLabelOrVariableName(literalAddress + 1);
 
       if(!GROUPLEFT_DISABLED) {
@@ -591,7 +609,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
           case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
           case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
           default: break;
-        }      
+        }
       break;
     }
 

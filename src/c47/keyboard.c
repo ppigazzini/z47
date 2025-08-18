@@ -1069,7 +1069,7 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
+          if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
             // disabled
           }
           else if(tam.function == ITM_GTOP && catalog == CATALOG_PROG) {
@@ -1087,7 +1087,7 @@ int16_t lastItem = 0;
                    (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
             //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
-            if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
+            if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && (item != ITM_INDIRECTION) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
               tam.alpha = true;
               addStepInProgram(tamOperation());
@@ -1098,7 +1098,7 @@ int16_t lastItem = 0;
           else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
-
+ 
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -1143,7 +1143,7 @@ int16_t lastItem = 0;
           }
           else if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) && (item == ITM_toINT || item == ITM_HASH_JM)) {
             if(aimBuffer[0]!=0) {
-              pemAddNumber(ITM_toINT);
+              pemAddNumber(ITM_toINT, true);
               screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
               refreshScreen(115);
               return;
@@ -1161,7 +1161,7 @@ int16_t lastItem = 0;
           // an item from the catalog, but a function key press should put the item in the AIM (or TAM) buffer
           // Use this variable to distinguish between the two
           fnKeyInCatalog = 1;
-          if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
+          if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
             // disabled
           }
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK || item == ITM_YY_OFF))) {
@@ -2311,7 +2311,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               leaveTamModeIfEnabled();
             }
 
-            runFunction(item);
+              runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> btnReleased ran(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
@@ -3160,7 +3160,7 @@ RELEASE_END:
                   if(item == ITM_HASH_JM ) {
                     item = ITM_toINT;
                   }
-                  pemAddNumber(item);
+                  pemAddNumber(item, true);
                   keyActionProcessed = true;
                   if(item == ITM_RCL) {
                     currentStep = findPreviousStep(currentStep);
@@ -4180,7 +4180,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
 
       case CM_PEM: {
         if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
-          pemAddNumber(ITM_CC);
+          pemAddNumber(ITM_CC, true);
         }
         break;
       }
@@ -4405,7 +4405,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
-          pemAddNumber(ITM_BACKSPACE);
+          pemAddNumber(ITM_BACKSPACE, true);
           if(aimBuffer[0] == 0 && currentLocalStepNumber > 1) {
             currentStep = findPreviousStep(currentStep);
             --currentLocalStepNumber;

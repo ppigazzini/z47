@@ -249,7 +249,7 @@ DISTNMENU2(menu_Norml,      ITM_NORMLP,     ITM_NORML,      ITM_NORMLU,     ITM_
 
 TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN_1,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_LOOP,                 -MNU_TEST,
-                                             ITM_ALPHA_EDIT,            ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_PFN_3,                -MNU_PFN_2                     };
+                                             ITM_EDIT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_PFN_3,                -MNU_PFN_2                     };
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_INPUT,                 ITM_AVIEW,                 ITM_PROMPT,                ITM_PAUSE,                 ITM_TICKS,                 -MNU_PFN_2,
                                              ITM_MSG,                   ITM_ERR,                   ITM_REM,                   ITM_KEYQ,                  ITM_KTYP,                  ITM_PUTK,
@@ -261,7 +261,7 @@ TO_QSPI const int16_t menu_PFN_2[]       = { ITM_KEYG,                  ITM_KEYX
 
 TO_QSPI const int16_t menu_PFN_3[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN,
                                              ITM_SKIP,                  ITM_BACK,                  ITM_XEQP1,                 ITM_RTNP1,                 -MNU_LOOP,                 -MNU_TEST,
-                                             ITM_ALPHA_EDIT,            ITM_CASE,                  ITM_RCLP1,                 ITM_NULL,                  ITM_NULL,                  ITM_USER_PRESET                };
+                                             ITM_EDIT,                  ITM_CASE,                  ITM_RCLP1,                 ITM_NULL,                  ITM_NULL,                  ITM_USER_PRESET                };
 
 
 TO_QSPI const int16_t menu_STAT[]        = { ITM_SIGMAPLUS,                 ITM_XBAR,                   ITM_STDDEVWEIGHTED,       ITM_STDDEV,            ITM_SM,                      ITM_XRMS,

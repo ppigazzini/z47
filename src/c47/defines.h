@@ -539,6 +539,7 @@
 // stroke programs code and in C programs
 // unlike registers
 #define NUMBER_OF_GLOBAL_FLAGS                   112
+#define LAST_GLOBAL_FLAG                         111
 #define FIRST_LOCAL_FLAG                         112 // There are 112 global flag from 0 to 111
 #define NUMBER_OF_LOCAL_FLAGS                     32
 #define LAST_LOCAL_FLAG                          143
