@@ -2198,7 +2198,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         else {
                           bool_t success;
                           char tmpBuf[100];
-                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, sizeof(tmpBuf)));
+                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, 60));
                           //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", success");
                           //printf(") => %s and success = %d\n", tmpS, success);
                           if(!success) {
@@ -2219,7 +2219,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                                   itemName[1] = 0;
                               default:;
                             }
-                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, sizeof(tmpBuf)));
+                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, 60));
                             //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", success");
                             //printf(") => %s and success = %d\n", tmpS, success);
                           }

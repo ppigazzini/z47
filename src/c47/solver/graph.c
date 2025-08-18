@@ -526,6 +526,8 @@ typedef struct {
 // Helper function to detect and characterize asymptotes
 bool detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, double yRight, 
                                    double xGap, double gapWidth, AsymptoteInfo *asymptote) {
+#if !defined(TESTSUITE_BUILD)
+
 #ifdef GRAPHDEBUG
   printf("Checking asymptote at x=%.6f, gap=%.6f\n", xGap, gapWidth);
   printf("  Left: x=%.6f, y=%.6f\n", xLeft, yLeft);
@@ -610,6 +612,7 @@ bool detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, d
   printf("    Goes positive: %d, negative: %d\n", asymptote->hasPositive, asymptote->hasNegative);
   printf("    Standard height: %.3f\n", asymptote->maxHeight);
 #endif
+#endif //TESTSUITE_BUILD
   
   return true;
 }
