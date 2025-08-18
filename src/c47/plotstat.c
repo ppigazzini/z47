@@ -946,7 +946,7 @@ char * smallE(char *output, const char * ss) {
 #endif //TESTSUITE_BUILD
 
 
-char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int lengthBuf) {
+char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int digitswidthLimit) {
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
     uint8_t saveddisplayFormat = displayFormat;
@@ -985,15 +985,11 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
     for (int ddd = 8; ddd >= 2; ddd--) {
       updateDisplayValueX = true;
       displayValueX[0] = 0;
-      real34ToDisplayString(real34, amNone, buf, &standardFont, 60, ddd, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+      real34ToDisplayString(real34, amNone, buf, &standardFont, digitswidthLimit == 0 ? 60 : digitswidthLimit, ddd, LIMITEXP, !FRONTSPACE, NOIRFRAC);
       updateDisplayValueX = false;
       strcpy(buf, displayValueX);
       cleanupTrailingZeros(buf);
 
-      if (checkWidthWithPrefix(itemName, buf, actual_max_width * 0.85)) {
-         *success = true;
-         goto done;
-      }
       if (checkWidthWithPrefix(itemName, buf, actual_max_width)) {
          *success = false;
          goto done;
@@ -1009,8 +1005,7 @@ done:
   return buf;
 }
 
-char* formatCore(double value, int digits, bool handle_zero, char* buf, int lengthBuf) {
-    char buf2[64];
+char* formatCore(double value, int digits, bool handle_zero, char* buf, int widthLimit) {
     const char* sign = (value < 0.0) ? "-" : "";
     if (value < 0.0) value = -value;
 
@@ -1025,17 +1020,18 @@ char* formatCore(double value, int digits, bool handle_zero, char* buf, int leng
         convertDoubleToReal(value, &valueR, &ctxtReal39);
         realToReal34(&valueR, &value34);
         strcpy(buf, sign);
-        strcat(buf, formatDoubleWidth(&value34, digits, "", &success, 50, tmpBuf, sizeof(tmpBuf)));
+        strcat(buf, formatDoubleWidth(&value34, digits, "", &success, widthLimit == 0 ? 50 : widthLimit, tmpBuf, widthLimit == 0 ? 50 : widthLimit));
       #else
         buf[0] = '\0';
       #endif //TESTSUITE_BUILD
     }
-    return radixProcess(buf2, buf);
+    radixProcess(buf, buf);
+    return  buf;//radixProcess(buf2, buf);
 }
 
 void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, const char* s05) {
   char format_buf[64];
-  formatCore(inreal, digits, false, format_buf, sizeof(format_buf));
+  formatCore(inreal, digits, false, format_buf, 70);
   sprintf(s02, "%s%s%s", s01, format_buf, s05);
   nanCheck(s02);
 }
@@ -1679,7 +1675,7 @@ void graphDrawLRline(uint16_t selection) {
         }
 
         char tmpBuf[100];
-        strcpy(ss,formatCore(rr,5,false,tmpBuf, sizeof(tmpBuf)));
+        strcpy(ss,formatCore(rr,5,false,tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
         strcpy(ss, "r" STD_SUP_2 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
@@ -1698,22 +1694,22 @@ void graphDrawLRline(uint16_t selection) {
       }
       else {                          //ORTHOF
         char tmpBuf[100];
-        strcpy(ss,formatCore(a0,3,false,tmpBuf, sizeof(tmpBuf)));
+        strcpy(ss,formatCore(a0,3,false,tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(ssa0,3, false,tmpBuf, sizeof(tmpBuf)));
+        strcpy(ss,formatCore(ssa0,3, false,tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(a1,3,false,tmpBuf, sizeof(tmpBuf)));
+        strcpy(ss,formatCore(a1,3,false,tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(ssa1,3,false,tmpBuf, sizeof(tmpBuf)));
+        strcpy(ss,formatCore(ssa1,3,false,tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
@@ -1731,7 +1727,7 @@ void graphDrawLRline(uint16_t selection) {
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
         }
         else {
-          strcpy(ss,formatCore(rr,3,false,tmpBuf, 100));
+          strcpy(ss,formatCore(rr,3,false,tmpBuf, 50));
           showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
           strcpy(ss, "r" STD_SUP_2 "=");
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);

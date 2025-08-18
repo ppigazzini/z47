@@ -516,11 +516,11 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
     char buff[32];
     char outstr[bufLen];
     char tmpBuf[100];
-    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,formatCore(tick_int_y,acc,false,tmpBuf,sizeof(tmpBuf))));
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,formatCore(tick_int_y,acc,false,tmpBuf,50)));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
 
-    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,formatCore(tick_int_x,acc,false,tmpBuf,sizeof(tmpBuf))));
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,formatCore(tick_int_x,acc,false,tmpBuf,50)));
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
@@ -1491,8 +1491,8 @@ void fnStatList() {
         ixx = statnum - ix - 1 + ListXYposition;
         char tmpBuf[100];
 
-          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", formatCore(grf_x(ixx),7,false,tmpBuf,sizeof(tmpBuf)));
-          sprintf(tmpstr2,"y%9s%9s, ", "", formatCore(grf_y(ixx),7, false,tmpBuf, sizeof(tmpBuf)));
+          sprintf(tmpstr1,"[%3d] x%4s%14s, ",ixx+1, "", formatCore(grf_x(ixx),10,false,tmpBuf, 150));
+          sprintf(tmpstr2,"y%4s%14s, ", "", formatCore(grf_y(ixx),10, false,tmpBuf, 150));
         strcat(tmpstr1,tmpstr2);
 
         print_numberstr(tmpstr1,false);

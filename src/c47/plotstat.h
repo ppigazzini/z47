@@ -78,8 +78,8 @@ char    *radixProcess(char *output, const char * ss);
 void    grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, const char* s05);
 char    *padEquals(char *output, const char * ss);
 char    *smallE(char *output, const char * ss);
-char    *formatCore(double value, int digits, bool handle_zero, char* buf, int lengthBuf);
-char    *formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int lengthBuf);
+char    *formatCore(double value, int digits, bool handle_zero, char* buf, int widthLimit);
+char    *formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int digitswidthLimit);
 
 int16_t screen_window_x(float x_min, float x, float x_max);
 int16_t screen_window_y(float y_min, float y, float y_max);
