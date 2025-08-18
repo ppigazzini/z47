@@ -211,13 +211,13 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
   #endif // DEBUGTAYLOR
   
   if (sinOut != NULL) {
-    realCopy(swap ? (real_t*)&c : (real_t*)&s, (real_t*)sinOut);  // swap=true: use c, swap=false: use s
+    realPlus(swap ? (real_t*)&c : (real_t*)&s, (real_t*)sinOut, realContext);  // swap=true: use c, swap=false: use s
     if (sinNeg) realSetNegativeSign((real_t*)sinOut);
     if (realIsZero((real_t*)sinOut)) realSetPositiveSign((real_t*)sinOut);
   }
   
   if (cosOut != NULL) {
-    realCopy(swap ? (real_t*)&s : (real_t*)&c, (real_t*)cosOut);  // swap=true: use s, swap=false: use c
+    realPlus(swap ? (real_t*)&s : (real_t*)&c, (real_t*)cosOut, realContext);  // swap=true: use s, swap=false: use c
     if (cosNeg) realSetNegativeSign((real_t*)cosOut);
     if (realIsZero((real_t*)cosOut)) realSetPositiveSign((real_t*)cosOut);
   }
@@ -369,6 +369,279 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
     }
 }
+
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+// Especially convergence modified
+void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
+  int doubles = 0;
+  int invert;
+  int n;
+  int neg = realIsNegative((real_t*)x);
+  char tmpEpsilon[16]; //-- for epsilon string conversion
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopy((real_t*)x, (real_t*)&a);
+
+  // arrange for a >= 0
+  if(neg) {
+    realChangeSign((real_t*)&a);
+  }
+
+  // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
+  invert = realCompareGreaterThan((real_t*)&a, const_1);
+  if(invert) {
+    realDivide(const_1, (real_t*)&a, (real_t*)&a, realContext);
+  }
+
+  // Range reduce to small enough limit to use taylor series using:
+  //  tan(x/2) = tan(x)/(1+sqrt(1+tan(x)²))
+  //-- create const_1on10 equivalent for 1071 precision
+  uInt32ToReal(10, (real_t*)&z);
+  realDivide(const_1, (real_t*)&z, (real_t*)&z, realContext);
+  for(n=0; n<1000; n++) {
+    if(realCompareLessEqual((real_t*)&a, (real_t*)&z)) {
+      break;
+    }
+    doubles++;
+    // a = a/(1+sqrt(1+a²)) -- at most 3 iterations.
+    realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&b, realContext);
+    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
+    realSquareRoot((real_t*)&b, (real_t*)&b, realContext);
+    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
+    realDivide((real_t*)&a, (real_t*)&b, (real_t*)&a, realContext);
+  }
+
+  // Now Taylor series
+  // atan(x) = x(1-x²/3+x⁴/5-x⁶/7...)
+  // We calculate pairs of terms and stop when the estimate doesn't change
+  //-- use epsilon convergence instead of exact equality
+  sprintf(tmpEpsilon, "1E-%d", accNumberDigits);
+  stringToReal(tmpEpsilon, (real_t*)&epsilon, realContext);
+
+  uInt32ToReal(3, (real_t*)angle);
+  uInt32ToReal(5, (real_t*)&j);
+  realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&a2, realContext); // a²
+  realCopy((real_t*)&a2, (real_t*)&t);
+  realDivide((real_t*)&t, (real_t*)angle, (real_t*)angle, realContext); // s = 1-t/3 -- first two terms
+  realSubtract(const_1, (real_t*)angle, (real_t*)angle, realContext);
+
+  do { // Loop until there is no digits changed
+    realCopy((real_t*)angle, (real_t*)&last);
+
+    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
+    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
+    realAdd((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
+
+    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
+
+    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
+    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
+    realSubtract((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
+
+    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
+
+    //-- use epsilon convergence test instead of exact equality
+    realSubtract((real_t*)angle, (real_t*)&last, (real_t*)&b, realContext);
+    realCopyAbs((real_t*)&b, (real_t*)&b);
+  } while(!realCompareLessThan((real_t*)&b, (real_t*)&epsilon));
+
+  realMultiply((real_t*)angle, (real_t*)&a, (real_t*)angle, realContext);
+
+  while(doubles) {
+    realAdd((real_t*)angle, (real_t*)angle, (real_t*)angle, realContext);
+    doubles--;
+  }
+
+  if(invert) {
+    //-- use high precision π/2 constant
+    realDivide(const1071_2pi, const_4, (real_t*)&a, realContext);
+    realSubtract((real_t*)&a, (real_t*)angle, (real_t*)angle, realContext);
+  }
+
+  if(neg) {
+    realChangeSign((real_t*)angle);
+  }
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t abx, z;
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopyAbs((real_t*)x, (real_t*)&abx);
+  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  // angle = 2*atan(x/(1+sqrt(1-x*x)))
+  realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
+  realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
+  realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
+  realAdd((real_t*)&z, const_1, (real_t*)&z, realContext);
+  realDivide((real_t*)x, (real_t*)&z, (real_t*)&z, realContext);
+  WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
+  realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t abx, z;
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopyAbs((real_t*)x, (real_t*)&abx);
+  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  // angle = 2*atan((1-x)/sqrt(1-x*x))
+  if(realCompareEqual((real_t*)x, const_1)) {
+    realZero((real_t*)angle);
+  }
+  else {
+    realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
+    realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
+    realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
+    realSubtract(const_1, (real_t*)x, (real_t*)&abx, realContext);
+    realDivide((real_t*)&abx, (real_t*)&z, (real_t*)&z, realContext);
+    WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
+    realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
+  }
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext, int accNumberDigits) {
+  real1071_t r, t; //-- removed pi constants, calculate on demand
+  const bool_t xNeg = realIsNegative((real_t*)x);
+  const bool_t yNeg = realIsNegative((real_t*)y);
+
+  if(realIsNaN((real_t*)x) || realIsNaN((real_t*)y)) {
+    realCopy(const_NaN, (real_t*)atan);
+    return;
+  }
+
+  if(realCompareEqual((real_t*)y, const_0)) {
+    if(yNeg) {
+      if(realCompareEqual((real_t*)x, const_0)) {
+        if(xNeg) {
+          realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
+          realMinus((real_t*)&t, (real_t*)atan, realContext);
+        }
+        else {
+          realCopy((real_t*)y, (real_t*)atan);
+        }
+      }
+      else if(xNeg) {
+        realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
+        realMinus((real_t*)&t, (real_t*)atan, realContext);
+      }
+      else {
+        realCopy((real_t*)y, (real_t*)atan);
+      }
+    }
+    else {
+      if(realCompareEqual((real_t*)x, const_0)) {
+        if(xNeg) {
+          realDivide(const1071_2pi, const_2, (real_t*)atan, realContext); //-- calculate π
+        }
+        else {
+          realZero((real_t*)atan);
+        }
+      }
+      else if(xNeg) {
+        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate -π
+      }
+      else {
+        realZero((real_t*)atan);
+      }
+    }
+    return;
+  }
+
+  if(realCompareEqual((real_t*)x, const_0)) {
+    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    if(yNeg) {
+      realSetNegativeSign((real_t*)atan);
+    }
+    return;
+  }
+
+  if(realIsInfinite((real_t*)x)) {
+    if(xNeg) {
+      if(realIsInfinite((real_t*)y)) {
+        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate 3π/4
+        uInt32ToReal(3, (real_t*)&r);
+        realMultiply((real_t*)&t, (real_t*)&r, (real_t*)atan, realContext);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+      else {
+        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate π 
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+    }
+    else {
+      if(realIsInfinite((real_t*)y)) {
+        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate π/4
+        realDivide((real_t*)&t, const_2, (real_t*)atan, realContext);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+      else {
+        realZero((real_t*)atan);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+    }
+    return;
+  }
+
+  if(realIsInfinite((real_t*)y)) {
+    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    if(yNeg) {
+      realSetNegativeSign((real_t*)atan);
+    }
+    return;
+  }
+
+  realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
+  WP34S_Atan1071(&t, &r, realContext, accNumberDigits);
+  if(xNeg) {
+]    realDivide(const1071_2pi, const_2, (real_t*)&t, realContext); //-- calculate π 
+    if(yNeg) {
+     realSetNegativeSign((real_t*)&t);
+    }
+  }
+  else {
+    realZero((real_t*)&t);
+  }
+
+  realAdd((real_t*)&r, (real_t*)&t, (real_t*)atan, realContext);
+  if(realCompareEqual((real_t*)atan, const_0) && yNeg) {
+    realSetNegativeSign((real_t*)atan);
+  }
+}
+
 
 // Does not seem needed and solved with the larger pi
 // Manual replacement for big due to to realDivideRemainder not working on very very large input
@@ -818,16 +1091,21 @@ static int lookupFunction(const char* name, int* functionType) {                
       }
 
       case XFN_ASIN: {
+WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
         break;
       }
       case XFN_ACOS: {
+WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
       case XFN_ATAN: {
+
+WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
+
   //      WP34S_Atan((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
@@ -886,6 +1164,7 @@ static int lookupFunction(const char* name, int* functionType) {                
         break;
       }
       case XFN_ATAN2: {
+WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
         break;
       }
 
