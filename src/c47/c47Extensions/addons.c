@@ -39,7 +39,9 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 #undef DEBUG_XFN
 #undef DEBUGTAYLOR
+#define lll 100
 
+// Loosely based on the original wp34 module in the C47 code : 2025-08-17 JM
 void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
 
   #if defined(DEBUGTAYLOR)
@@ -104,7 +106,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
 
   realMultiply((real_t*)&x, (real_t*)&x, (real_t*)&x2, realContext);
   #if defined(DEBUGTAYLOR)
-    realToString((real_t*)&x, tmpString); printf("Taylor starts: x = %s\n", tmpString);
+    realToString((real_t*)&x, tmpString); tmpString[lll]=0; printf("Taylor starts: x = %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // Initialize: sin(x) = x, cos(x) = 1
@@ -117,7 +119,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
   sprintf(tmpEpsilon, "1E-%d", accNumberDigits);
   stringToReal(tmpEpsilon, (real_t*)&epsilon, realContext);
   #ifdef DEBUGTAYLOR
-    realToString((real_t *)&epsilon, tmpString); printf("Taylor:epsilon: %s\n",tmpString);
+    realToString((real_t *)&epsilon, tmpString); tmpString[lll]=0; printf("Taylor:epsilon: %s\n",tmpString);
   #endif //DEBUGTAYLOR
 
   realMultiply((real_t*)&x2, (real_t*)&x, (real_t*)&sin_term, realContext);  // x³
@@ -131,7 +133,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
   realAdd((real_t*)&c, (real_t*)&cos_term_add, (real_t*)&c, realContext);
 
   #if defined(DEBUGTAYLOR) || defined (DEBUG_XFN)
-    realToString((real_t *)&x, tmpString); printf("Taylor: Starting series starts\nTaylor:x: %s\n",tmpString);
+    realToString((real_t *)&x, tmpString); tmpString[lll]=0; printf("Taylor: Starting series starts\nTaylor:x: %s\n",tmpString);
   #endif //DEBUGTAYLOR
 
   realCopy(const_0,(real_t*)&sin_term_add);
@@ -182,7 +184,7 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
     realMultiply((real_t*)&sin_term, (real_t*)&x2, (real_t*)&sin_term, realContext);
 
     #if defined(DEBUGTAYLOR)
-      realToString((real_t *)&s, tmpString); printf("Taylor:s: %s\n",tmpString);
+      realToString((real_t *)&s, tmpString); tmpString[lll]=0; printf("Taylor:s: %s\n",tmpString);
     #endif //DEBUGTAYLOR
     // Check convergence on both sin and cos terms
     realCopyAbs((real_t*)&sin_term_add, (real_t*)&abs_term);
@@ -198,37 +200,45 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
 
     #ifdef DEBUGTAYLOR
       if(n % 20 == 0) {
-        realToString((real_t*)&s, tmpString);
-        printf("Taylor finished: n=%d, sin=%s\n", n, tmpString);
+        realToString((real_t*)&s, tmpString); tmpString[lll]=0; printf("Taylor progress: n=%d, sin=%s\n", n, tmpString);
       }
     #endif //DEBUGTAYLOR
   }
 
-  #ifdef DEBUGTAYLOR
-    realToString((real_t*)&s, tmpString);
-    printf("Taylor: Final sin = %s\n", tmpString);
-    realToString((real_t*)&c, tmpString);
-    printf("Taylor: Final cos = %s\n", tmpString);
-  #endif //DEBUGTAYLOR
-
-  if(sinOut != NULL) {
-    realPlus(swap ? (real_t*)&c : (real_t*)&s, (real_t*)sinOut, realContext);
-    if(sinNeg) realSetNegativeSign((real_t*)sinOut);
-    if(realIsZero((real_t*)sinOut)) realSetPositiveSign((real_t*)sinOut);
+#if defined(DEBUGTAYLOR) || defined (DEBUG_XFN)
+    realToString((real_t*)&s, tmpString); tmpString[lll]=0; printf("Taylor: Final s = %s\n", tmpString);
+    realToString((real_t*)&c, tmpString); tmpString[lll]=0; printf("Taylor: Final c = %s\n", tmpString);
+  #endif // DEBUGTAYLOR
+  
+  if (sinOut != NULL) {
+    realCopy(swap ? (real_t*)&c : (real_t*)&s, (real_t*)sinOut);  // swap=true: use c, swap=false: use s
+    if (sinNeg) realSetNegativeSign((real_t*)sinOut);
+    if (realIsZero((real_t*)sinOut)) realSetPositiveSign((real_t*)sinOut);
   }
-  if(cosOut != NULL) {
-    realPlus(swap ? (real_t*)&s : (real_t*)&c, (real_t*)cosOut, realContext);
-    if(cosNeg) realSetNegativeSign((real_t*)cosOut);
-    if(realIsZero((real_t*)cosOut)) realSetPositiveSign((real_t*)cosOut);
+  
+  if (cosOut != NULL) {
+    realCopy(swap ? (real_t*)&s : (real_t*)&c, (real_t*)cosOut);  // swap=true: use s, swap=false: use c
+    if (cosNeg) realSetNegativeSign((real_t*)cosOut);
+    if (realIsZero((real_t*)cosOut)) realSetPositiveSign((real_t*)cosOut);
   }
-  if(tanOut != NULL) {
-    if(sinOut == NULL || cosOut == NULL) {
-      realCopy(const_NaN, (real_t*)tanOut);
+  
+  if (sinOut != NULL && cosOut != NULL && tanOut != NULL) {
+    // Use the already correctly computed sinOut and cosOut values
+    if (realIsZero((real_t*)cosOut)) {
+        realCopy(const_NaN, (real_t*)tanOut);
     } else {
-      realDivide((real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+        realDivide((real_t*)cosOut, (real_t*)sinOut, (real_t*)tanOut, realContext);  // sinOut/cosOut
+        if (realIsZero((real_t*)tanOut)) realSetPositiveSign((real_t*)tanOut);
     }
   }
+  
+  #if defined(DEBUGTAYLOR) || defined (DEBUG_XFN)
+    if (sinOut != NULL) {realToString((real_t*)sinOut, tmpString); tmpString[lll]=0; printf("Taylor: FinalB sinOut = %s\n", tmpString);}
+    if (cosOut != NULL) {realToString((real_t*)cosOut, tmpString); tmpString[lll]=0; printf("Taylor: FinalB cosOut = %s\n", tmpString);}
+    if (tanOut != NULL) {realToString((real_t*)tanOut, tmpString); tmpString[lll]=0; printf("Taylor: FinalB tanOut = %s\n", tmpString);}
+  #endif //DEBUGTAYLOR
 }
+
 
 
 // Slow but memory efficient as-required on the fly calculation of 1071 digit constants
@@ -238,6 +248,8 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
 #define TMP_ROOT2_ON_2(tmp)   do { realDivide(const_1, const_2, (real_t*)(tmp), realContext); realSquareRoot((real_t*)(tmp), (real_t*)(tmp), realContext); } while(0)
 #define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
     bool_t sinNeg = false, cosNeg = false, swap = false;
     real1071_t angle, angle45, angle90, angle180;
@@ -329,7 +341,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
     }
 
     // Apply signs
-    if (sinOut) {
+    if (sinOut != NULL) {
         if (sinNeg) {
             realSetNegativeSign((real_t*)sinOut);
             if (tanOut) realSetNegativeSign((real_t*)tanOut);
@@ -341,7 +353,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realPlus((real_t*)sinOut, (real_t*)sinOut, realContext);
     }
 
-    if (cosOut) {
+    if (cosOut != NULL) {
         if (cosNeg) {
             realSetNegativeSign((real_t*)cosOut);
             if (tanOut) realChangeSign((real_t*)tanOut);
@@ -352,7 +364,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realPlus((real_t*)cosOut, (real_t*)cosOut, realContext);
     }
 
-    if (tanOut && realIsZero((real_t*)cosOut)) {
+    if (tanOut != NULL && realIsZero((real_t*)cosOut)) {
         realSetPositiveSign((real_t*)tanOut);
         realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
     }
@@ -478,7 +490,7 @@ int32_t realGetDigits(const real1071_t* x) {
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
     #define maxAllowedDigits 1000                          // integer part has at most 1000 digits
     #if defined(DEBUG_XFN)
-      realToString((real_t *)x, tmpString); printf("decomposeReal: input: %s\n", tmpString);
+      realToString((real_t *)x, tmpString); tmpString[lll]=0; printf("decomposeReal: input: %s\n", tmpString);
     #endif //DEBUG_XFN
 //--------//--------//--------//--------//-------- pre-check on original x
     int32_t digits = realGetDigits(x);
@@ -546,12 +558,13 @@ returnUnity:
   #define XFN_ASIN     13
   #define XFN_ACOS     14
   #define XFN_ATAN     15
-  #define XFN_LN       16
-  #define XFN_LOG      17
-  #define XFN_EXP      18
-  #define XFN_10X      19
-  #define XFN_SQRT     20
-  #define XFN_MODANGLE 21
+  #define XFN_ATAN2    16
+  #define XFN_LN       17
+  #define XFN_LOG      18
+  #define XFN_EXP      19
+  #define XFN_10X      20
+  #define XFN_SQRT     21
+  #define XFN_MODANGLE 22
   //dyadic todo
   #define XFN_PLUS     30
   #define XFN_MINUS    31
@@ -577,9 +590,9 @@ typedef struct {
       {"SIN",   XFN_SIN      ,FT_MONADIC },
       {"COS",   XFN_COS      ,FT_MONADIC },
       {"TAN",   XFN_TAN      ,FT_MONADIC },
-//      {"ASIN",  XFN_ASIN     ,FT_MONADIC },
-//      {"ACOS",  XFN_ACOS     ,FT_MONADIC },
-//      {"ATAN",  XFN_ATAN     ,FT_MONADIC },
+      {"ASIN",  XFN_ASIN     ,FT_MONADIC },
+      {"ACOS",  XFN_ACOS     ,FT_MONADIC },
+      {"ATAN",  XFN_ATAN     ,FT_MONADIC },
       {"LN",    XFN_LN       ,FT_MONADIC },
       {"LOG",   XFN_LOG      ,FT_MONADIC },
       {"EXP",   XFN_EXP      ,FT_MONADIC },
@@ -600,15 +613,24 @@ typedef struct {
       {NULL,    0            ,0   }
   };
 
-  static int lookupFunction(const char* name, int* functionType) {
+static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
     for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
-        if (compareString(name, entry->name, CMP_NAME) == 0) {
+        const char* a = name;
+        const char* b = entry->name;
+        while ((*a && *b) &&
+               ((*a >= 'a' && *a <= 'z' ? *a & ~0x20 : *a) ==
+                (*b >= 'a' && *b <= 'z' ? *b & ~0x20 : *b))) {
+            a++;
+            b++;
+        }
+        if (*a == 0 && *b == 0) {
             *functionType = entry->function_type;
             return entry->function_id;
         }
     }
     return XFN_NOTFOUND;
-  }
+}
+
 
   static bool getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
@@ -762,41 +784,37 @@ typedef struct {
         realDivide((real_t*)&paramX, const_2, (real_t*)&paramX, &c);
         break;
       }
+
 //--------//MONADIC FUNCTIONS
       case XFN_SIN:
       case XFN_COS:
       case XFN_TAN: {
-        #if defined(DEBUG_XFN)
-          realToString((real_t*)&paramX, tmpString);   printf("ParamX = %s\n", tmpString);
-          realToString(modulus(angleMode), tmpString); printf("Modulus= %s\n", tmpString);
-          printf("angleMode %d\n", angleMode);
-        #endif //DEBUG_XFN
-
-        WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
-
-        #if defined(DEBUG_XFN)
-          realToString((real_t *)&paramX, tmpString); printf(" ParamX reduced angle: %s\n",tmpString);
-        #endif //DEBUG_XFN
-
-        if(realIsSpecial((real_t *)&paramX)) {
           #if defined(DEBUG_XFN)
-            printf("Real is Special before SIN/COS/TAN, forcing NaN output, bypassing Taylor et al.\n");
+            realToString((real_t*)&paramX, tmpString);   tmpString[lll]=0; printf("ParamX = %s\n", tmpString);
+            realToString(modulus(angleMode), tmpString); tmpString[lll]=0; printf("Modulus= %s\n", tmpString);
+            printf("angleMode %d\n", angleMode);
           #endif //DEBUG_XFN
-          realCopy(const_NaN, (real_t *)&paramX);
-        } else {
-          switch(function) {
-            case XFN_SIN: C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); break;
-            case XFN_COS: C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); break;
-            case XFN_TAN: C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    NULL,    &paramX, &c, accuracy); break;
-            default: {
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                location = 4;
-              #endif //EXTRA_INFO_ON_CALC_ERROR
-              goto noFunction;
-            }
+
+          WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+
+          #if defined(DEBUG_XFN)
+            realToString((real_t *)&paramX, tmpString); tmpString[lll]=0; printf(" ParamX reduced angle: %s\n",tmpString);
+          #endif //DEBUG_XFN
+
+          if(realIsSpecial((real_t *)&paramX)) {
+            #if defined(DEBUG_XFN)
+              printf("Real is Special before SIN/COS/TAN, forcing NaN output, bypassing Taylor et al.\n");
+            #endif //DEBUG_XFN
+            realCopy(const_NaN, (real_t *)&paramX);
+          } else {
+            real1071_t aa,bb; 
+            realCopy(const_0,(real_t*)&aa);
+            realCopy(const_0,(real_t*)&bb);
+            if(function == XFN_SIN) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
+            if(function == XFN_COS) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
+            if(function == XFN_TAN) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
           }
-        }
-        break;
+          break;
       }
 
       case XFN_ASIN: {
@@ -867,6 +885,10 @@ typedef struct {
         WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
+      case XFN_ATAN2: {
+        break;
+      }
+
 //--------//No function
       default: {
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -877,7 +899,8 @@ typedef struct {
     }
 
     #if defined(DEBUG_XFN)
-      realToString((real_t *)&paramX, tmpString); printf("Output: %s\n",tmpString);
+      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+      realToString((real_t *)&paramX, tmpString); tmpString[lll]=0; printf("Output: %s\n",tmpString);
     #endif //DEBUG_XFN
 
 //--------//--------//-- Processing stack output  --//--------//--------//--------
@@ -916,9 +939,9 @@ typedef struct {
 
     //Step 3: debug stack output 
     #if defined(DEBUG_XFN)
-      printRegisterToConsole(REGISTER_X,"X:","\n");
-      printRegisterToConsole(REGISTER_Y,"Y:","\n");
-      printRegisterToConsole(REGISTER_Y,"Z:","\n");
+      printRegisterToConsole(REGISTER_Z,"\nZ:","\n");
+      printRegisterToConsole(REGISTER_Y,"\nY:","\n");
+      printRegisterToConsole(REGISTER_X,"\nX:","\n");
     #endif //DEBUG_XFN
 
     return;
