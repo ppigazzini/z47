@@ -55,13 +55,14 @@ extern  uint32_t yzero;
 void    placePixel         (uint32_t x, uint32_t y);
 void    removePixel        (uint32_t x, uint32_t y);
 void    clearScreenPixels  ();
-void    plotcross          (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-void    plotplus           (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-void    plotbox            (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-void    plotrect           (uint16_t a, uint8_t b, uint16_t c, uint8_t d); // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
-void    pixelline          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal);              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-void    plotline           (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn);
-void    plotline2          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn);
+void    plotcross          (int16_t xn, int16_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void    plotplus           (int16_t xn, int16_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void    plotbox            (int16_t xn, int16_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void    plotrect           (int16_t a,  int16_t b,  int16_t c, int16_t d); // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
+void    pixelline          (int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal);              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void    plotline1          (int16_t xo, int16_t yo, int16_t xn, int16_t yn);
+void    plotline2          (int16_t xo, int16_t yo, int16_t xn, int16_t yn);
+void    plotline3          (int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time, bool_t final_segment);
 void    graphAxisDraw      (void);
 void    graph_axis         (void);
 float   auto_tick          (float tick_int_f);

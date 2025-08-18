@@ -102,67 +102,66 @@ void statGraphReset(void){
   }
 
 
-  int16_t screen_window_x(float x_min, float x, float x_max) {
-    int16_t temp; float tempr;
+#define ROUND_F2I(f) ((int)((f) >= 0 ? (f) + 0.5f : (f) - 0.5f))
 
-    tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
-    if(tempr > 32766) {
-      temp = 32767;
-    }
-    else {
-      if(tempr < -32766) {
-        temp = -32767;
-      }
-      else {
-        temp = (int16_t) tempr;
-      }
-    }
-    if(temp > SCREEN_HEIGHT_GRAPH-1) {
-      temp = SCREEN_HEIGHT_GRAPH-1;
-    }
-    else if(temp < 0) {
-      temp = 0;
-    }
-    return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
-  }
-
-
-
-  int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
-    int16_t temp, minn;
+int16_t screen_window_x(float x_min, float x, float x_max) {
+    int16_t temp;
     float tempr;
 
-    minn = 0;
+    tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
+
+    if (tempr > 32766) {
+        temp = 32767;
+    } else if (tempr < -32766) {
+        temp = -32767;
+    } else {
+        temp = (int16_t)ROUND_F2I(tempr);
+    }
+
+    if (temp > SCREEN_HEIGHT_GRAPH - 1) {
+        temp = SCREEN_HEIGHT_GRAPH - 1;
+    } else if (temp < 0) {
+        temp = 0;
+    }
+
+    return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
+}
+
+
+#define minn 0
+int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
+    int32_t temp;
+    float tempr;
 
     tempr = ((y - y_min) / (y_max - y_min) * (float)(SCREEN_HEIGHT_GRAPH - 1 - minn));
-    if(tempr > 32766) {
-      temp = 32767;
-    }
-    else {
-      if(tempr < -32766) {
+
+    if (tempr > 32766) {
+        temp = 32767;
+    } else if (tempr < -32766) {
         temp = -32767;
-      }
-      else {
-        temp = (int16_t) tempr;
-      }
+    } else {
+        temp = (int16_t)ROUND_F2I(tempr);
     }
 
-    if(!nolimit) {
-      if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-        temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
-      }
-      else if(temp < 0) {
-        temp=0;
-      }
+    if (!nolimit) {
+        if (temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
+            temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
+        } else if (temp < 0) {
+            temp = 0;
+        }
     }
 
     #if defined(PC_BUILD)
-      if(SCREEN_HEIGHT_GRAPH-1 - temp<0 || SCREEN_HEIGHT_GRAPH-1 - temp>239) {
-        printf("In function screen_window_y Y EXCEEDED %d %d",temp,SCREEN_HEIGHT_GRAPH-1 - temp);
-      }
+    if (SCREEN_HEIGHT_GRAPH - 1 - temp < 0) {
+        printf("In function screen_window_y Y NEGATIVE %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
+    }
+    if (SCREEN_HEIGHT_GRAPH - 1 - temp > 239) {
+        printf("In function screen_window_y Y EXCEEDED %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
+    }
     #endif
-    return (SCREEN_HEIGHT_GRAPH - 1 - temp);
-  }
+
+    return (int16_t)(SCREEN_HEIGHT_GRAPH - 1 - temp);
+}
 
   #define nolimit true
   #define limit false
@@ -182,10 +181,6 @@ void statGraphReset(void){
 
 void placePixel(uint32_t x, uint32_t y) {
   #if !defined(TESTSUITE_BUILD)
-  uint32_t minn;
-
-  minn = 0;
-
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setBlackPixel(x, y);
   }
@@ -195,10 +190,6 @@ void placePixel(uint32_t x, uint32_t y) {
 
 void removePixel(uint32_t x, uint32_t y) {
   #if !defined(TESTSUITE_BUILD)
-  uint32_t minn;
-
-  minn = 0;
-
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setWhitePixel(x, y);
   }
@@ -216,68 +207,271 @@ void clearScreenPixels(void) {
 
 
 #if !defined(TESTSUITE_BUILD)
-void plotcross(uint16_t xn, uint8_t yn) {              // Plots cross at xn,yn
-  plotline(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);                       //   PLOT a cross
-  plotline(max((int16_t)xn-2,0),yn+2,xn+2,max((int16_t)yn-2,0));
+void plotcross(int16_t xn, int16_t yn) {              // Plots cross at xn,yn
+  plotline1(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);                       //   PLOT a cross
+  plotline1(max((int16_t)xn-2,0),yn+2,xn+2,max((int16_t)yn-2,0));
 }
 
 
-void plotplus(uint16_t xn, uint8_t yn) {              // Plots plus xn,yn
-  plotline(max((int16_t)xn-3,0),yn,xn+3,yn);          // PLOT a plus
-  plotline(xn,yn+3,xn,max((int16_t)yn-3,0));
+void plotplus(int16_t xn, int16_t yn) {              // Plots plus xn,yn
+  plotline1(max((int16_t)xn-3,0),yn,xn+3,yn);          // PLOT a plus
+  plotline1(xn,yn+3,xn,max((int16_t)yn-3,0));
 }
 
 
-void plotbox(uint16_t xn, uint8_t yn) {                // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-  plotline  (max((int16_t)xn-2,0),max((int16_t)yn-2,0),max((int16_t)xn-2,0),max((int16_t)yn-1,0));                       //   PLOT a box
-  placePixel(max((int16_t)xn-1,0),max((int16_t)yn-2,0));
-  plotline  (max((int16_t)xn-2,0),yn+2,max((int16_t)xn-2,0),yn+1);
-  placePixel(max((int16_t)xn-1,0),yn+2);
-  plotline  (xn+2,max((int16_t)yn-2,0),xn+1,max((int16_t)yn-2,0));
-  placePixel(xn+2,max((int16_t)yn-1,0));
-  plotline  (xn+2,yn+2,xn+2,yn+1);
-  placePixel(xn+1,yn+2);
+void plotbox(int16_t xn, int16_t yn) {                // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+  plotline1   (max((int16_t)xn-2,0),max((int16_t)yn-2,0),max((int16_t)xn-2,0),max((int16_t)yn-1,0));                       //   PLOT a box
+  placePixel  (max((int16_t)xn-1,0),max((int16_t)yn-2,0));
+  plotline1   (max((int16_t)xn-2,0),yn+2,max((int16_t)xn-2,0),yn+1);
+  placePixel  (max((int16_t)xn-1,0),yn+2);
+  plotline1   (xn+2,max((int16_t)yn-2,0),xn+1,max((int16_t)yn-2,0));
+  placePixel  (xn+2,max((int16_t)yn-1,0));
+  plotline1   (xn+2,yn+2,xn+2,yn+1);
+  placePixel  (xn+1,yn+2);
 }
 
 
-void plotrect(uint16_t a, uint8_t b, uint16_t c, uint8_t d) {                // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
-  plotline(a, b, c, b);
-  plotline(a, b, a, d);
-  plotline(c, d, c, b);
-  plotline(c, d, a, d);
+void plotrect(int16_t a, int16_t b, int16_t c, int16_t d) {                // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
+  plotline1(a, b, c, b);
+  plotline1(a, b, a, d);
+  plotline1(c, d, c, b);
+  plotline1(c, d, a, d);
 }
 
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
-  static void plotHisto_col(uint16_t x, uint16_t y, uint16_t y_min, uint16_t y_wid, int16_t colw) {  //x is 0..(n-1)
+  static void plotHisto_coln(int16_t x, int16_t y, int16_t y_min, int16_t y_wid, int16_t colw) {  //x is 0..(n-1)
     plotrect(max((int16_t)x - colw,0), y_min + y_wid,  x + colw, y);
     }
 #endif //SAVE_SPACE_DM42_13GRF
 
 
 
-void plotbox_fat(uint16_t xn, uint8_t yn) {                                         // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void plotbox_fat(int16_t xn, int16_t yn) {                                         // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   plotrect(max((int16_t)xn-3,0),max((int16_t)yn-3,0),xn+3,yn+3);
   plotrect(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);
 }
-#endif //!TESTSUITE_BUILD
 
 
-void plotline(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void plotline1(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
    pixelline(xo,yo,xn,yn,1);
- }
+}
 
-void plotline2(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+
+void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+   //printf("From (%8d,%8d) to (%8d, %8d)\n", xo,yo,xn,yn);
    pixelline(xo,yo,xn,yn,1);
    pixelline(max((int16_t)xo-1,0),yo,max((int16_t)xn-1,0),yn,1);
    pixelline(xo,max((int16_t)yo-1,0),xn,max((int16_t)yn-1,0),1);
    //   pixelline(xo+1,yo,xn+1,yn,1);   //Do not use the full doubling, without it give as nice profile if the slope changes
    //   pixelline(xo,yo+1,xn,yn+1,1);
- }
+}
+
+
+
+// plotline3 does curve fitting every 2, 3, 4, and 5 points plotted.
+//           it needs to be started prior to data using plotline3(0,0,0,0,true,false)
+//           it needs to be stopped after the last data plotline3(0,0,0,0,false,true) which will plot the last segment provided there were more than 4 points
+
+static void evalHermite(
+    float t,
+    float x1, float x2, float tx1, float tx2,
+    float y1, float y2, float ty1, float ty2,
+    float *ox, float *oy)
+{
+    float h1 =  2*t*t*t - 3*t*t + 1;
+    float h2 = -2*t*t*t + 3*t*t;
+    float h3 =    t*t*t - 2*t*t + t;
+    float h4 =    t*t*t -   t*t;
+
+    *ox = h1*x1 + h2*x2 + h3*tx1 + h4*tx2;
+    *oy = h1*y1 + h2*y2 + h3*ty1 + h4*ty2;
+}
+
+
+static bool_t ifAnyMax(uint16_t *px, uint16_t *py, int cnt) {
+    for(int rr = 0; rr < cnt; rr++) {
+        //printf("%d %d\n",px[rr],py[rr]);
+        if(px[rr] < 1 || px[rr] > 398 || py[rr] < 1 || py[rr] > 238) return true;
+    }
+    return false;
+}
+
+void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time, bool_t final_segment) {
+    //printf("plotline3: %10d %10d %10d %10d ", xo,yo, xn, yn);
+    #define maxSteps 6
+    static uint16_t px[5];
+    static uint16_t  py[5];
+    static int count = 0;
+    static int z[5] = {0};
+
+    if (first_time) {
+        count = 0;
+        memset(z, 0, sizeof(z));
+        return;
+    }
+
+    if (!final_segment) {
+        if (count < 5) {
+            px[count] = xn;
+            py[count] = yn;
+
+            if (count > 0) {
+                int dx = abs((int)px[count] - (int)px[count - 1]);
+                int dy = abs((int)py[count] - (int)py[count - 1]);
+                z[count] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+            }
+
+            count++;
+        } else {
+            for (int i = 0; i < 4; i++) {
+                px[i] = px[i + 1];
+                py[i] = py[i + 1];
+                z[i] = z[i + 1];
+            }
+            px[4] = xn;
+            py[4] = yn;
+
+            int dx = abs((int)px[4] - (int)px[3]);
+            int dy = abs((int)py[4] - (int)py[3]);
+            z[4] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+        }
+
+        if (count < 2) return;
+
+        if (count == 2) {
+            float prev_x = px[0], prev_y = py[0];
+            if(ifAnyMax(px, py, count)) {
+                int steps = min(1,max(maxSteps,z[1]));
+                for (int i = 1; i <= steps; i++) {
+                    float t = (float)i / steps;
+                    float sx = (1 - t) * px[0] + t * px[1];
+                    float sy = (1 - t) * py[0] + t * py[1];
+                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+                    prev_x = sx; prev_y = sy;
+                }
+            } else {
+                    plotline2(ROUND_F2I(px[0]), ROUND_F2I(py[0]), ROUND_F2I(px[1]), ROUND_F2I(py[1]));
+            }
+
+
+
+        } else if (count == 3) {
+            float prev_x = px[0], prev_y = py[0];
+            if(!ifAnyMax(px, py, count)) {
+                int steps = min(1,max(maxSteps,z[1] + z[2]));
+                for (int i = 1; i <= steps; i++) {
+                    float t = (float)i / steps;
+                    float u = 1 - t;
+                    float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
+                    float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
+                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+                    prev_x = sx; prev_y = sy;
+                }
+            } else {
+                    plotline2(ROUND_F2I(px[1]), ROUND_F2I(py[1]), ROUND_F2I(px[2]), ROUND_F2I(py[2]));
+            }
+
+
+
+        } else if (count == 4) {
+            float t1x = (px[2] - px[0]) / 2.0f;
+            float t1y = (py[2] - py[0]) / 2.0f;
+            float t2x = (px[3] - px[1]) / 2.0f;
+            float t2y = (py[3] - py[1]) / 2.0f;
+
+            float prev_x = px[1], prev_y = py[1];
+            if(!ifAnyMax(px, py, count)) {
+                int steps = min(1,max(maxSteps,z[1] + z[2] + z[3]));
+                for (int i = 1; i <= steps; i++) {
+                    float sx, sy;
+                    evalHermite((float)i / steps,
+                                px[1], px[2], t1x, t2x,
+                                py[1], py[2], t1y, t2y,
+                                &sx, &sy);
+                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+                    prev_x = sx; prev_y = sy;
+                }
+            } else {
+                    plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+            }
+
+
+        } else { // count == 5
+            {
+                float t1x = (px[2] - px[0]) / 2.0f;
+                float t1y = (py[2] - py[0]) / 2.0f;
+                float t2x = (px[3] - px[1]) / 2.0f;
+                float t2y = (py[3] - py[1]) / 2.0f;
+
+                float prev_x = px[1], prev_y = py[1];
+                if(!ifAnyMax(px, py, 5)) {
+                    int steps = min(1,max(maxSteps,z[1] + z[2]));
+                    for (int i = 1; i <= steps; i++) {
+                        float sx, sy;
+                        evalHermite((float)i / steps, px[1], px[2], t1x, t2x, py[1], py[2], t1y, t2y, &sx, &sy);
+                        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+                        prev_x = sx; prev_y = sy;
+                    }
+                } else {
+                        plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+                }
+            }
+
+            {
+                float t1x = (px[3] - px[1]) / 2.0f;
+                float t1y = (py[3] - py[1]) / 2.0f;
+                float t2x = (px[4] - px[2]) / 2.0f;
+                float t2y = (py[4] - py[2]) / 2.0f;
+
+                float prev_x = px[2], prev_y = py[2];
+                if(!ifAnyMax(px, py, 5)) {
+                    int steps = min(1,max(maxSteps,z[2] + z[3] + z[4]));
+                    for (int i = 1; i <= steps; i++) {
+                        float sx, sy;
+                        evalHermite((float)i / steps, px[2], px[3], t1x, t2x, py[2], py[3], t1y, t2y, &sx, &sy);
+                        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+                        prev_x = sx; prev_y = sy;
+                    }
+                } else {
+                    ;
+                }
+            }
+        }
+
+
+    } else if (final_segment && count == 5) {
+        float t1x = (px[4] - px[2]) / 2.0f;
+        float t1y = (py[4] - py[2]) / 2.0f;
+        float t2x = (px[4] - px[3]) / 2.0f;
+        float t2y = (py[4] - py[3]) / 2.0f;
+
+        if(!ifAnyMax(px, py, count)) {
+            float prev_x = px[3], prev_y = py[3];
+            int steps = min(1,max(maxSteps,z[3] + z[4]));
+            for (int i = 1; i <= steps; i++) {
+                float sx, sy;
+                evalHermite((float)i / steps,
+                            px[3], px[4], t1x, t2x,
+                            py[3], py[4], t1y, t2y,
+                            &sx, &sy);
+                plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),ROUND_F2I(sx), ROUND_F2I(sy));
+
+                prev_x = sx; prev_y = sy;
+            }
+        } else {
+                plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+        }
+    }
+}
+#endif //TESTSUITE_BUILD
+
+
+
 
 
 //Exhange the name of this routine with pixelline() above to try Bresenham
-void pixelline(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void pixelline(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
     printf("pixelline 1: xo,yo,xn,yn: %d %d   %d %d \n",xo,yo,xn,yn);
   #endif // STATDEBUG_VERBOSE && PC_BUILD
@@ -751,7 +945,7 @@ char * smallE(char *output, const char * ss) {
   }
 #endif //TESTSUITE_BUILD
 
-  
+
 char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int lengthBuf) {
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
@@ -763,7 +957,7 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
       *success = 1;
       return buf;
     }
-    
+
     real_t reall10, real;
     real34ToReal(real34, &real);
     bool isNegative = realIsNegative(&real);
@@ -795,15 +989,15 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
       updateDisplayValueX = false;
       strcpy(buf, displayValueX);
       cleanupTrailingZeros(buf);
-      
+
       if (checkWidthWithPrefix(itemName, buf, actual_max_width * 0.85)) {
          *success = true;
          goto done;
-      }    
+      }
       if (checkWidthWithPrefix(itemName, buf, actual_max_width)) {
          *success = false;
          goto done;
-      }    
+      }
     }
     strcpy(buf, "??");
     *success = 0;
@@ -819,7 +1013,7 @@ char* formatCore(double value, int digits, bool handle_zero, char* buf, int leng
     char buf2[64];
     const char* sign = (value < 0.0) ? "-" : "";
     if (value < 0.0) value = -value;
-    
+
     if (handle_zero && value == 0.0) {
       sprintf(buf, "%s0.0", sign);
     } else {
@@ -853,13 +1047,13 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 //          printf("formatCore(%d)\tgrphNumFormatter(%d)\t", d, d);
 //      }
 //      printf("\n");
-//      
+//
 //      printf("===========\t\t");
 //      for (int d = 2; d <= 8; d++) {
 //          printf("============\t================\t");
 //      }
 //      printf("\n");
-//      
+//
 //      // Test values spanning the full range
 //      double test_values[] = {
 //          1.123e-130, 5.67e-120, 2.34e-100, 8.91e-80, 4.56e-60,
@@ -878,13 +1072,13 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 //          // Special cases
 //          0.0, -0.0, 1.0, -1.0, 10.0, -10.0, 100.0, -100.0
 //      };
-//      
+//
 //      int num_values = sizeof(test_values) / sizeof(test_values[0]);
 //      char result_buf[256];
-//      
+//
 //      for (int i = 0; i < num_values; i++) {
 //          printf("%.3e\t\t", test_values[i]);
-//          
+//
 //          for (int digits = 2; digits <= 8; digits++) {
 //              formatCore(test_values[i], digits, false, result_buf, 256);
 //              printf("%s\t", result_buf);
@@ -892,11 +1086,11 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 //              printf("%s\t", result_buf);
 //          }
 //          printf("\n");
-//          
+//
 //          if (i % 15 == 14) printf("\n"); // Add spacing every 15 values
 //      }
-//      
-//      printf("\nTotal test cases: %d values × 7 digit settings × 2 functions = %d tests\n", 
+//
+//      printf("\nTotal test cases: %d values × 7 digit settings × 2 functions = %d tests\n",
 //             num_values, num_values * 7 * 2);
 //  }
 
@@ -963,7 +1157,7 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
     #if defined(STATDEBUG) && defined(PC_BUILD)
       printf("Plotting line to x=%d y=%d\n",xn,yn);
     #endif // STATDEBUG && PC_BUILD
-    plotline(xo, yo, xn, yn);
+    plotline1(xo, yo, xn, yn);
   }
 }
 #endif // !TESTSUITE_BUILD
@@ -981,8 +1175,8 @@ currentKeyCode = 255;
   #endif // STATDEBUG && PC_BUILD
   #if !defined(TESTSUITE_BUILD)
   uint16_t  cnt, ix, numberOfPlotPoints;
-  uint16_t  xo, xn, xN;
-  uint8_t   yo, yn, yN;
+  int16_t  xo, xn, xN;
+  int16_t  yo, yn, yN;
   float x;
   float y;
 
@@ -1121,7 +1315,7 @@ currentKeyCode = 255;
           xn = xN;
 
           if(drawHistogram != 0) {
-            plotHisto_col(xN, yN, minN_y, SCREEN_HEIGHT_GRAPH - minN_y, colw);
+            plotHisto_coln(xN, yN, minN_y, SCREEN_HEIGHT_GRAPH - minN_y, colw);
           }
 
           plotPointGeneric(xn, yn, xo, yo,
@@ -1355,8 +1549,8 @@ void graphDrawLRline(uint16_t selection) {
         return;
       }
       double  ix;
-      uint16_t  xo = 0, xn, xN = 0;
-      uint8_t   yo = 0, yn, yN = 0;
+      int16_t   xo = 0, xn, xN = 0;
+      int16_t   yo = 0, yn, yN = 0;
       double    x = x_min;
       double    y = 0.0;
       int16_t   Intervals = numberIntervals; //starting point to calculate dx
