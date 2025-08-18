@@ -241,6 +241,7 @@ uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
+uint8_t                editingLiteralType;
 
 int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
@@ -300,6 +301,7 @@ uint32_t               firstGregorianDay;
 uint32_t               denMax;
 uint32_t               lastDenominator = 4;
 uint32_t               lastIntegerBase;
+uint32_t               decodedIntegerBase;
 uint32_t               xCursor;
 uint32_t               yCursor;
 uint32_t               tamOverPemYPos;
@@ -806,7 +808,7 @@ int convertKeyCode(int key) {
                                                   // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
                                                   // print_linestr(rrr,true);
                                                   // rrr[0]=0;
-                                                  // print_linestr(rrr,false);                                                  
+                                                  // print_linestr(rrr,false);
                                                   // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
                                                   // print_linestr(rrr,false);
 

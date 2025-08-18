@@ -439,8 +439,21 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
 
     case PARAM_NUMBER_16: {
-      reallyRunFunction(op, opParam + 256 * *(paramAddress));
-      break;
+        if(isFunctionOldParam16(op)) {  // original Param16 functions without indirection support (little endian parameter)
+          reallyRunFunction(op, opParam + 256 * *(paramAddress));
+        }
+        else {                        // new Param16 functions with indirection support (big endian parameter)
+          if(opParam == INDIRECT_REGISTER) {
+            _executeWithIndirectRegister(paramAddress, op);
+          }
+          else if(opParam == INDIRECT_VARIABLE) {
+            _executeWithIndirectVariable(paramAddress, op);
+          }
+          else {
+            reallyRunFunction(op, (opParam * 256) + *(paramAddress));
+          }
+        }
+        break;
       }
 
     case PARAM_REGISTER:
