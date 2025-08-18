@@ -274,7 +274,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
             TMP_PI_4(&angle45);
             TMP_PI_2(&angle90);
             TMP_PI(&angle180);
-            WP34S_BigMod((real_t*)&angle, const1071_2pi, (real_t*)&angle, realContext);
+            WP34S_Mod((real_t*)&angle, const1071_2pi, (real_t*)&angle, realContext);
             break;
         }
 
@@ -282,7 +282,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
             realDivide(const_1, const_4, (real_t*)&angle45, realContext);
             realDivide(const_1, const_2, (real_t*)&angle90, realContext);
             realCopy(const_1, (real_t*)&angle180);
-            WP34S_BigMod((real_t*)&angle, const_2, (real_t*)&angle, realContext);
+            WP34S_Mod((real_t*)&angle, const_2, (real_t*)&angle, realContext);
             break;
         }
 
@@ -290,7 +290,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
             uInt32ToReal(50, (real_t*)&angle45);
             uInt32ToReal(100, (real_t*)&angle90);
             uInt32ToReal(200, (real_t*)&angle180);
-            WP34S_BigMod((real_t*)&angle, const_400, (real_t*)&angle, realContext);
+            WP34S_Mod((real_t*)&angle, const_400, (real_t*)&angle, realContext);
             break;
         }
 
@@ -299,7 +299,7 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
             uInt32ToReal(45, (real_t*)&angle45);
             uInt32ToReal(90, (real_t*)&angle90);
             uInt32ToReal(180, (real_t*)&angle180);
-            WP34S_BigMod((real_t*)&angle, const_360, (real_t*)&angle, realContext);
+            WP34S_Mod((real_t*)&angle, const_360, (real_t*)&angle, realContext);
             angularMode = amDegree;
             break;
         }
@@ -627,7 +627,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
   WP34S_Atan1071(&t, &r, realContext, accNumberDigits);
   if(xNeg) {
-]    realDivide(const1071_2pi, const_2, (real_t*)&t, realContext); //-- calculate π 
+    realDivide(const1071_2pi, const_2, (real_t*)&t, realContext); //-- calculate π 
     if(yNeg) {
      realSetNegativeSign((real_t*)&t);
     }
