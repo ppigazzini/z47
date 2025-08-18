@@ -218,6 +218,7 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
 uint8_t                overrideShowBottomLine;

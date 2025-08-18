@@ -355,7 +355,10 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
-TO_QSPI const int16_t menu_CATALOG[]     = { -MNU_FCNS,                    -MNU_CONST,                  -MNU_CHARS,               -MNU_PROGS,            -MNU_VARS,                   -MNU_MENUS                    };
+TO_QSPI const int16_t menu_CATALOG[]     = { -MNU_FCNS,                    -MNU_CONST,                  -MNU_CHARS,               -MNU_PROGS,            -MNU_VARS,                   -MNU_MENUS,
+                                              ITM_NULL,                    ITM_NULL,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_KEYMAP,                   };
+
+TO_QSPI const int16_t menu_AIMCATALOG[]  = { -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,            -MNU_ALPHAMATH,           -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_KEYMAP                    };
 
 TO_QSPI const int16_t menu_CHARS[]       = { -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,            -MNU_ALPHAMATH,           -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_NULL                      };
 
@@ -726,7 +729,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
 
 
 //LAYOUT and KEYS menus different for C47hw, R47hw and SIM
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_KEYMAP,                ITM_USERMODE,
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
 #if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
                                               ITM_NULL,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              -MNU_LAYOUTS,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
@@ -736,7 +739,7 @@ TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIB
 
 
 #if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_KEYMAP,                ITM_USERMODE,
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
                                              ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL          };
 #else
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  };
@@ -1008,7 +1011,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 158 */  {.menuItem = -MNU_PARETO,      .numItems = sizeof(menu_Pareto        )/sizeof(int16_t), .softkeyItem = menu_Pareto         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 159 */  {.menuItem = -MNU_VECCONV,     .numItems = sizeof(menu_VECCONV       )/sizeof(int16_t), .softkeyItem = menu_VECCONV        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 160 */  {.menuItem = -MNU_BITSET,      .numItems = sizeof(menu_BITSET        )/sizeof(int16_t), .softkeyItem = menu_BITSET         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 161 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 161 */  {.menuItem = -MNU_AIMCATALOG,  .numItems = sizeof(menu_AIMCATALOG    )/sizeof(int16_t), .softkeyItem = menu_AIMCATALOG     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 162 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

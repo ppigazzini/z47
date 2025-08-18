@@ -1230,7 +1230,10 @@ int16_t lastItem = 0;
                 }
               }
             }
-            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu())) {
+            if(item == ITM_KEYMAP) {
+              cursorEnabled = false;               // cursor is re-activated automatically elsewhere, after button release
+            }
+            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu() || item == ITM_KEYMAP)) {
               closeAim();
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
@@ -1887,6 +1890,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
+      lastT_cursorPos = T_cursorPos;
 
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
@@ -2133,6 +2137,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
+      int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
 
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
@@ -2146,6 +2151,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
+
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;
         lastItem = 0;
@@ -2190,7 +2196,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);
         hideFunctionName();
 
-        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
@@ -3929,12 +3934,22 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
         if(calcMode == CM_TIMER) {
           previousCalcMode = CM_NORMAL;
+        }
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
         }
         break;
       }
@@ -4312,16 +4327,22 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-      //case CM_ASM_OVER_NORMAL:
-      //  addItemToBuffer(ITM_BACKSPACE);
-      //  break;
-      //}
-
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         calcMode = previousCalcMode;
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
+        }
+        screenUpdatingMode = SCRUPD_AUTO;
         break;
       }
 
@@ -4330,7 +4351,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
        case CM_LISTXY:
        case CM_GRAPH:
        case CM_PLOT_STAT:
-      case CM_CONFIRMATION: {
+       case CM_CONFIRMATION: {
         temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
@@ -4579,7 +4600,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_ASN_BROWSER: {
         currentAsnScr++;                          //JM removed the 3-x part
         if(currentAsnScr == 0 ||currentAsnScr >= 7) {
-          currentAsnScr = 1;
+          currentAsnScr = (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) ? 4 : 1;
         }
         break;
       }
@@ -4803,7 +4824,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_ASN_BROWSER: {
         currentAsnScr--;
-        if(currentAsnScr == 0 || currentAsnScr >= 7) {
+        if(currentAsnScr == 0 || currentAsnScr >= 7 || ((previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) && currentAsnScr < 4)) {
           currentAsnScr = 6;
         }
         break;
