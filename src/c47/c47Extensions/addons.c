@@ -31,6 +31,16 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 
+
+
+//void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+//  C47Cvt2RadSinCosTan2((real1071_t*)an, angularMode, (real1071_t*)sinOut, (real1071_t*)cosOut, (real1071_t*)tanOut, realContext, 500);
+//}
+
+//void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
+//  C47radSinCosTanTaylor((real1071_t*)a, swap, (real1071_t*)sinOut, (real1071_t*)cosOut, (real1071_t*)tanOut, realContext, 75);
+//}
+
 // Replacement Taylor sin/cos/tan function for high accuracy
 // Capable of 1071 digit input and a final accuracy parameter, being the number of required digits.
 //
@@ -41,8 +51,9 @@ All the below: because both Last x and savestack does not work due to multiple s
 #undef DEBUGTAYLOR
 #define debugLongNumberLimit 100
 
+
 // Loosely based on the original wp34 module in the C47 code : 2025-08-17 JM
-void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
+void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
 
   #if defined(DEBUGTAYLOR)
     realToString((real_t *)an, tmpString); printf("Taylor:an: %s\n",tmpString);
@@ -225,13 +236,14 @@ void radSinCosTanTaylor(real1071_t *an, angularMode_t angularMode, real1071_t *s
   }
 
   if (sinOut != NULL && cosOut != NULL && tanOut != NULL) {
-    // Use the already correctly computed sinOut and cosOut values
     if (realIsZero((real_t*)cosOut)) {
         realCopy(const_NaN, (real_t*)tanOut);
     } else {
-        realDivide((real_t*)cosOut, (real_t*)sinOut, (real_t*)tanOut, realContext);  // sinOut/cosOut
-        if (realIsZero((real_t*)tanOut)) realSetPositiveSign((real_t*)tanOut);
+        realDivide((real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
     }
+    bool tanNeg = (sinNeg && !cosNeg) || (!sinNeg && cosNeg);
+    if (tanNeg) realSetNegativeSign((real_t*)tanOut);
+    if (realIsZero((real_t*)tanOut)) realSetPositiveSign((real_t*)tanOut);
   }
 
   #if defined(DEBUGTAYLOR) || defined (DEBUG_XFN)
@@ -339,18 +351,16 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 
         convertAngleFromTo((real_t*)&angle, angularMode, amRadian, realContext);
 
-        radSinCosTanTaylor(&angle, amRadian, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
+        C47radSinCosTanTaylor(&angle, swap, swap ? cosOut : sinOut, swap ? sinOut : cosOut, tanOut, realContext, acc);
     }
 
     // Apply signs
     if (sinOut != NULL) {
         if (sinNeg) {
             realSetNegativeSign((real_t*)sinOut);
-            if (tanOut) realSetNegativeSign((real_t*)tanOut);
         }
         if (realIsZero((real_t*)sinOut)) {
             realSetPositiveSign((real_t*)sinOut);
-            if (tanOut) realSetPositiveSign((real_t*)tanOut);
         }
         realPlus((real_t*)sinOut, (real_t*)sinOut, realContext);
     }
@@ -358,7 +368,6 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
     if (cosOut != NULL) {
         if (cosNeg) {
             realSetNegativeSign((real_t*)cosOut);
-            if (tanOut) realChangeSign((real_t*)tanOut);
         }
         if (realIsZero((real_t*)cosOut)) {
             realSetPositiveSign((real_t*)cosOut);
@@ -366,9 +375,20 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
         realPlus((real_t*)cosOut, (real_t*)cosOut, realContext);
     }
 
-    if (tanOut != NULL && realIsZero((real_t*)cosOut)) {
-        realSetPositiveSign((real_t*)tanOut);
-        realPlus((real_t*)tanOut, (real_t*)tanOut, realContext);
+    //-- Fixed tangent calculation logic based on template
+    if (tanOut != NULL) {
+        if (sinOut != NULL && cosOut != NULL) {
+            if (realIsZero((real_t*)cosOut)) {
+                realCopy(const_NaN, (real_t*)tanOut);
+            } else {
+                realDivide((real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+                bool tanNeg = (sinNeg && !cosNeg) || (!sinNeg && cosNeg);
+                if (tanNeg) realSetNegativeSign((real_t*)tanOut);
+                if (realIsZero((real_t*)tanOut)) realSetPositiveSign((real_t*)tanOut);
+            }
+        } else {
+            realCopy(const_NaN, (real_t*)tanOut);
+        }
     }
 }
 
