@@ -2142,4 +2142,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
     printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
     printf("\n");                                                                                    \
   } while(0)
+
+#if defined(DMCP_BUILD)
+  /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */
+  #define IMPORT_BIN(sect, file, sym) asm (\
+      ".section " #sect "\n"                  /* Change section */\
+      ".balign 4\n"                           /* Word alignment */\
+      ".global " #sym "\n"                    /* Export the object address */\
+      #sym ":\n"                              /* Define the object label */\
+      ".incbin \"" file "\"\n"                /* Import the file */\
+      ".global _sizeof_" #sym "\n"            /* Export the object size */\
+      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */\
+      ".balign 4\n"                           /* Word alignment */\
+      ".section \".text\"\n")                 /* Restore section */
+#endif // DMCP_BUILD
+
 #endif // !DEFINES_H
