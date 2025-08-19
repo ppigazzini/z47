@@ -175,13 +175,16 @@ void resetKeytimers(void) {
       }
       else {
         if(getSystemFlag(FLAG_ALPHA)) {
+          leaveTamModeIfEnabled();
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
           if(HOME3) {
+            leaveTamModeIfEnabled();
             showSoftmenu(target_HOME);
           }
           else if(MYM3) {
+            leaveTamModeIfEnabled();
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
@@ -203,6 +206,7 @@ void resetKeytimers(void) {
             fnTimerStop(TO_3S_CTFF);
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
+            leaveTamModeIfEnabled();
             openHOMEorMyM(keypress_fff);
           }
         }
@@ -513,6 +517,7 @@ void resetKeytimers(void) {
     str[1] = 0;
 
     func = determineFunctionKeyItem_C47(str, shiftF, shiftG);
+    lastKeyItemDetermined = func;
 
     #if defined(PC_BUILD)
       //printf(">>> nameFunction fn=%i shifts=%u %u: %s %s\n", fn, shiftF, shiftG, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);

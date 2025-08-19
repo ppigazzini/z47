@@ -49,7 +49,12 @@
 /*  VAR_NO_GRAMOD  40 */ { ""},
 /*  VAR_NO_UX      41 */ { ""},
 /*  VAR_NO_LX      42 */ { ""},
-/*  VAR_NO_CPERONA 43 */ { " Compounding periods YR ="}
+/*  VAR_NO_CPERONA 43 */ { " Compounding periods YR ="},
+/*  VAR_NO_UEST    44 */ { ""},
+/*  VAR_NO_LEST    45v*/ { ""},
+/*  VAR_NO_UY      46 */ { ""},
+/*  VAR_NO_LY      47 */ { ""}
+
 };
 #endif //TESTSUITE_BUILD
 
@@ -100,6 +105,10 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_UX      41 */  { .header = {.pointerToRegisterData = 40,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'X',  0,   0,   0,   0} },
 /*  VAR_NO_LX      42 */  { .header = {.pointerToRegisterData = 44,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'X',  0,   0,   0,   0} },
 /*  VAR_NO_CPERONA 43 */  { .header = {.pointerToRegisterData = 48,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'C', 'P', 'E', 'R', '/', 'a',  0} },
+/*  VAR_NO_UEST    44 */  { .header = {.pointerToRegisterData = 52,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 145, 'E', 'S', 'T',  0,   0} },
+/*  VAR_NO_LEST    45 */  { .header = {.pointerToRegisterData = 56,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 147, 'E', 'S', 'T',  0,   0} },
+/*  VAR_NO_UY      46 */  { .header = {.pointerToRegisterData = 60,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'Y',  0,   0,   0,   0} },
+/*  VAR_NO_LY      47 */  { .header = {.pointerToRegisterData = 64,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'Y',  0,   0,   0,   0} },
 };
 
 // REMEMBER: SET LAST_RESERVED_VARIABLE in defines.h
@@ -729,25 +738,17 @@ bool_t validateName(const char *name) {
 
 
 
-bool_t isUniqueName(const char *name) {
-  // Built-in items
+bool_t isUniqueMenuName(const char *name) {
+
+  // Built-in menu items
   for(uint32_t i = 0; i < LAST_ITEM; ++i) {
     switch(indexOfItems[i].status & CAT_STATUS) {
-      case CAT_FNCT:
-      case CAT_MENU:
-      case CAT_CNST:
-      case CAT_RVAR:
-      case CAT_SYFL: {
+      case CAT_MENU: {
         if(compareString(name, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
           return false;
         }
+      }
     }
-  }
-  }
-
-  // Variable menus
-  if(findNamedVariable(name) != INVALID_VARIABLE) {
-    return false;
   }
 
   // User menus
@@ -768,12 +769,13 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
   if(len < 1 || len > 7) {
     return INVALID_VARIABLE;
   }
-int i;
+
+  int i;
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
   //printf("|%20s|%20s|\n",(char *)(allReservedVariables[0].reservedVariableName + 1), variableName);
-  for(/*int*/ i = 0; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
+  for(/*int*/ i = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
     if(compareString((char *)(allReservedVariables[i].reservedVariableName + 1), variableName, CMP_NAME) == 0) {
       //return i + FIRST_RESERVED_VARIABLE;
       goto found;
@@ -914,14 +916,6 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
   }
   regist = findNamedVariable(variableName);
   if(regist == INVALID_VARIABLE && numberOfNamedVariables <= (LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE)) {
-    if(!isUniqueName(variableName)) {
-      displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-        sprintf(errorMessage, "the name %s", variableName);
-        moreInfoOnError("In function allocateNamedVariable:", errorMessage, "is already in use!", NULL);
-      #endif // PC_BUILD
-      return regist;
-    }
     allocateNamedVariable(variableName, dtReal34, REAL34_SIZE_IN_BLOCKS);
     if(lastErrorCode == ERROR_NONE) {
       // New variables are zero by default - although this might be immediately overridden, it might require an
@@ -1699,7 +1693,9 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
     if(parameterType == INDPM_REGISTER) {
-      value = regKStoC(value);
+      if(value <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to W, or Local register from .00 to .98
+        value = regKStoC(value);
+      }
     }
     else if((parameterType == INDPM_FLAG) && (value > LAST_LOCAL_FLAG) && (value < FLAG_M)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);

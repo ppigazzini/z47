@@ -290,7 +290,7 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
                                              ITM_SIGMAMINUS,                ITM_SIGMAylnx,             ITM_SIGMAlnxy,             ITM_SIGMAxlny,         ITM_SIGMAx2lny,              ITM_SIGMAx2ony,
                                              ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                   };
 
-TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    ITM_DRAW_LU,               ITM_NULL,              ITM_NULL,                    ITM_DRAW,                     };
+TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    VAR_LY,                    VAR_UY,                ITM_DRAW_LU,                 ITM_DRAW,                     };
 
 TO_QSPI const int16_t menu_PLOT_SCATR[]  = {
                                              ITM_PLOT_CENTRL,               ITM_SMI,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -590,7 +590,7 @@ TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                       ITM_
  /*same*/                                    ITM_NULL,                      CST_77,                     CST_78,                   ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
 
 // ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,                   ITM_CPXSLV,                 ITM_CPXSLV_LU,            VAR_LLIM,              VAR_ULIM,                    -MNU_GRAPHS,
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,                   ITM_CPXSLV,                 ITM_CPXSLV_LU,            VAR_LEST,              VAR_UEST,                    -MNU_GRAPHS,
                                              ITM_NULL,                      ITM_REALSLV,                ITM_REALSLV_LU,           ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
 
 
@@ -2147,6 +2147,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_LLIM    :
       case VAR_UX      :
       case VAR_LX      :
+      case VAR_UEST    :
+      case VAR_LEST    :
+      case VAR_UY      :
+      case VAR_LY      :
 
       case VAR_IPonA   :
       case VAR_NPPER   :
@@ -2161,8 +2165,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
                       realToFloat(&tmpR, &tmpF);
 
-//                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? const_1e5 : const_1e6) && realCompareGreaterEqual(&tmpR, const_0)) {
-                      if(tmpF == (int)tmpF && (
+                      if(false && tmpF == (int)tmpF && (
                          (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
                          (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
                          )) {
@@ -2172,70 +2175,46 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       else {
                         //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_SUB_0);
                         }
                         else if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"-1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_SUB_0);
                         }
                         else if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
                         }
                         else if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
                         }
                         else {
-                          if(fabsf(tmpF) < 10000 && itemNr%10000 == VAR_IPonA) {    //force single decimal for percentage
-                            sprintf(tmpS,"%6.1f",tmpF);
-                          }
-                          else if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) {
-                            sprintf(tmpS,"%8.0f",tmpF);
-                          }
-                          else if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
-                            sprintf(tmpS,"%8.2f",tmpF);
-                          }
-                          else if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
-                            sprintf(tmpS,"%8.4f",tmpF);
-                          }
-                          else if(tmpF<0 && tmpF>-0.01) {
-                            sprintf(tmpS,"%8.1E",tmpF);
-                          }
-                          else if(tmpF>0 && tmpF<0.001) {
-                            sprintf(tmpS,"%8.2E",tmpF);
-                          }
-                          else {
-                            sprintf(tmpS,"%8.1G",tmpF);
-                          }
-
-                          strcpy(tmpS, eatSpacesMid(tmpS));
-                          uint16_t ii = stringByteLength(tmpS);
-                          if(tmpS[ii-4] == 'E' && (tmpS[ii-3] == '+' || tmpS[ii-3] == '-') && tmpS[ii-2] == '0') {
-                            tmpS[ii-2] = tmpS[ii-1];
-                            tmpS[ii-1] = 0;
+                          bool_t success; 
+                          char tmpBuf[100];
+                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, sizeof(tmpBuf)));
+                          //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", success");
+                          //printf(") => %s and success = %d\n", tmpS, success);
+                          if(!success) {
+                            switch(itemNr%10000) {
+                              case VAR_ULIM    :
+                              case VAR_LLIM    :
+                              case VAR_UEST    :
+                              case VAR_LEST    :
+                                  itemName[3] = 0;
+                                break;
+                              case VAR_IPonA   :
+                              case VAR_NPPER   :
+                              case VAR_PPERonA :
+                              case VAR_CPERonA :
+                              case VAR_PV      :
+                              case VAR_FV      :
+                              case VAR_PMT     :
+                                  itemName[1] = 0;
+                              default:;
+                            }
+                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, sizeof(tmpBuf)));
+                            //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", success");
+                            //printf(") => %s and success = %d\n", tmpS, success);
                           }
                         }
-                      }
-
-                      //Note this section requires knowledge of where single and double byte unicode letters are in the names
-                      //Future: Improve this to read the unicode characters
-                      int buttonDigits = 0;
-                      switch(itemNr%10000) {
-                        case VAR_ULIM    :
-                        case VAR_LLIM    :
-                          if(stringByteLength(tmpS) > 5) {
-                            itemName[3] = 0;
-                          }
-                          break;
-                        case VAR_IPonA   :
-                        case VAR_NPPER    : buttonDigits = 5; break;
-                        case VAR_PPERonA :
-                        case VAR_CPERonA : buttonDigits = 4; break;
-                        case VAR_PV      :
-                        case VAR_FV      : buttonDigits = 6; break;
-                        case VAR_PMT     : buttonDigits = 5; break;
-                        default:;
-                      }
-                      if(buttonDigits != 0 && (stringByteLength(tmpS) > buttonDigits )) {
-                        itemName[1] = 0;
                       }
 
                       radixProcess(tmpSS,tmpS);
@@ -3233,6 +3212,8 @@ void showSoftmenuCurrentPart(void) {
         }
       }
       id = -MNU_DYNAMIC;
+    } else if(id == -MNU_Solver_TOOL) {
+        solverEstimatesUsed = false;
     }
 
 

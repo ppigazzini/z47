@@ -851,8 +851,24 @@ void realToFloat(const real_t *vv, float *v) {
   *v = fnRealToFloat(vv);
 }
 
-void realToDouble(const real_t *vv, double *v) {      //Not using double internally, i.e. using float type. Change fnRealToFloat if double is needed in future
-  *v = fnRealToFloat(vv);
+
+static double fnRealToDouble(const real_t *r) {
+    char buffer[64];
+        if (realIsSpecial(r)) {
+        if (realIsNaN(r)) return 0.0 / 0.0;
+        return realIsPositive(r) ? 1.0 / 0.0 : -1.0 / 0.0;
+    }
+    if (realIsZero(r)) {
+        return realIsPositive(r) ? 0.0 : -0.0;
+    }
+    decNumberToString((decNumber*)r, buffer);
+    return strtod(buffer, NULL);
+}
+
+
+
+void realToDouble(const real_t *vv, double *v) {
+  *v = fnRealToDouble(vv);
 }
 
 static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
@@ -1201,7 +1217,30 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       oneTurn = 360;
       break;
     }
-    default: {
+    case amRadian: {
+      //incoming longInteger, converted via tempString to real1071, modulus 2pi into real1071, convert to real75
+      real1071_t reducedAngleTmp, reducedAngleTmp2;
+      realContext_t c = ctxtReal75;
+      c.digits = 1071;
+      convertLongIntegerRegisterToLongInteger(regist, angle);
+
+      if(longIntegerBase10Digits(angle) > 1000) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        longIntegerFree(angle);
+        return;
+      }
+
+      longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
+      decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
+      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
+      realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
+      longIntegerFree(angle);
+      return;
+    }
+    default: { //amNone
       convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
       return;
     }
@@ -1213,10 +1252,12 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 }
 
 
+
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, val);
+      longIntegerAngleReduction(reg, currentAngularMode, val); 
+      // out of range error rolled into longIntegerAngleReduction as the longintegr is not accessible here except for converting again
       *xAngularMode = currentAngularMode;
       break;
 
@@ -1230,6 +1271,13 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
       *xAngularMode = getRegisterAngularMode(reg);
       if(*xAngularMode == amNone)
         *xAngularMode = currentAngularMode;
+      if(*xAngularMode == amRadian && realGetExponent(val) > 999) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
       break;
 
     case dtComplex34:

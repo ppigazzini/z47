@@ -1078,7 +1078,7 @@ void setUserKeyArgument(uint16_t position, const char *name) {
 
 void createMenu(const char *name) {
   if(validateName(name)) {
-    if(isUniqueName(name)) {
+    if(isUniqueMenuName(name)) {
       if(numberOfUserMenus == 0) {
         userMenus = allocC47Blocks(TO_BLOCKS(sizeof(userMenu_t)));
       }
