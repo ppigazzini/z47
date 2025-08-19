@@ -273,6 +273,7 @@ void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                
 //           it needs to be started prior to data using plotline3(0,0,0,0,true,false)
 //           it needs to be stopped after the last data plotline3(0,0,0,0,false,true) which will plot the last segment provided there were more than 4 points
 
+#if defined(USECURVES)
 static void evalHermite(
     float t,
     float x1, float x2, float tx1, float tx2,
@@ -296,8 +297,17 @@ static bool_t ifAnyMax(uint16_t *px, uint16_t *py, int cnt) {
     }
     return false;
 }
+#endif //USECURVES
+
 
 void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time, bool_t final_segment) {
+
+  #if !defined(USECURVES)
+    plotline2(xo,yo,xn,yn);
+  #endif //USECURVES
+
+
+  #if defined(USECURVES)
     //printf("plotline3: %10d %10d %10d %10d ", xo,yo, xn, yn);
     #define maxSteps 6
     static uint16_t px[5];
@@ -463,6 +473,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
                 plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
         }
     }
+  #endif //USECURVES
 }
 #endif //TESTSUITE_BUILD
 
