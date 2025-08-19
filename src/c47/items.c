@@ -107,6 +107,17 @@ bool_t itemNotAvail(int16_t itemNr) {
       case TM_MENU    : {
         return INDPM_MENU;
       }
+      case TM_SOLVE   : {
+        if(func == ITM_SOLVE) {
+          return INDPM_REGISTER;
+        }
+        else if(func == ITM_PGMSLV) {
+          return INDPM_LABEL;
+        }
+        else {
+          return INDPM_PARAM;
+        }
+      }
       default:          {
         return INDPM_PARAM;
       }
@@ -271,7 +282,7 @@ bool_t itemNotAvail(int16_t itemNr) {
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {
           temporaryInformation = TI_NOT_AVAILABLE;
-        } 
+        }
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -300,7 +311,7 @@ bool_t itemNotAvail(int16_t itemNr) {
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
     }
-    
+
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
@@ -406,7 +417,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_STOELPLUS   :
         case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
         case ITM_INDEX:
-        case ITM_IPLUS       : 
+        case ITM_IPLUS       :
         case ITM_IMINUS      :
         case ITM_JPLUS       :
         case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
@@ -579,7 +590,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         } else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
-          } 
+          }
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -771,7 +782,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
