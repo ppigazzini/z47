@@ -1435,6 +1435,12 @@ bool_t itemNotAvail(int16_t itemNr) {
 //#define DT      "D" STD_SUB_T
 #define TM      STD_TIME_T
 #define DT      STD_DATE_D
+#if defined(USECURVES)
+  #define conditionalPCURVE fnPcurve
+#else
+  #define conditionalPCURVE itemToBeCoded
+#endif
+
 
 /* Helper macro for multiplicative unit conversions */
 #define UNIT_CONV(unit, invert, cat, menu)      \
@@ -3466,7 +3472,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1977 */  { itemToBeCoded,                NOPARAM,                     "1977",                                        "1977",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1978 */  { itemToBeCoded,                NOPARAM,                     "1978",                                        "1978",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1979 */  { itemToBeCoded,                NOPARAM,                     "1979",                                        "1979",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1980 */  { fnPcurve,                     NOPARAM,                     "CURVE",                                       "CURVE",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//GRAPH
+/* 1980 */  { conditionalPCURVE,            NOPARAM,                     "CURVE",                                       "CURVE",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//GRAPH
 /* 1981 */  { fnToPolar_HP,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1982 */  { fnToRect_HP,                  NOPARAM,                     STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1983 */  { fnToPolar_CX,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
