@@ -109,7 +109,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
       case TM_SOLVE   : {
         if(func == ITM_SOLVE) {
-          return INDPM_REGISTER;
+          return (programRunStop == PGM_RUNNING ? INDPM_REGISTER : INDPM_LABEL);
         }
         else if(func == ITM_PGMSLV) {
           return INDPM_LABEL;
