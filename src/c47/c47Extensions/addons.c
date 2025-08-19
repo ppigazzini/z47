@@ -884,6 +884,7 @@ typedef struct {
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
       {"PI",    XFN_PI       ,FT_NILADIC },
+      {STD_pi,  XFN_PI       ,FT_NILADIC },
       {"SIN",   XFN_SIN      ,FT_MONADIC },
       {"COS",   XFN_COS      ,FT_MONADIC },
       {"TAN",   XFN_TAN      ,FT_MONADIC },
@@ -895,7 +896,7 @@ typedef struct {
       {"EXP",   XFN_EXP      ,FT_MONADIC },
       {"10X",   XFN_10X      ,FT_MONADIC },
       {"SQRT",  XFN_SQRT     ,FT_MONADIC },
-      {"MODPI", XFN_MODANGLE ,FT_MONADIC },
+      {"MODANG",XFN_MODANGLE ,FT_MONADIC },
       {"PLUS",  XFN_PLUS     ,FT_DYADIC  },
       {"MINUS", XFN_MINUS    ,FT_DYADIC  },
       {"POWER", XFN_POWER    ,FT_DYADIC  },
@@ -1034,7 +1035,8 @@ typedef struct {
     int function = XFN_NOTFOUND;
     int functionType = XFN_NOTFOUND;
     if(getRegisterDataType(REGISTER_X) == dtString) {
-        stringToUtf8(REGISTER_STRING_DATA(REGISTER_X), (uint8_t *)tmpString);
+        stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
+
         function = lookupFunction(tmpString, &functionType);
         if(function == XFN_NOTFOUND) {
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
