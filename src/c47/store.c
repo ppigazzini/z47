@@ -168,6 +168,9 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 static void _storeValue(uint16_t regist) {
+  if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
+    PLOT_ZMY = zoomOverride;  //PLOT EQN
+  }
   if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnLint(NOPARAM);

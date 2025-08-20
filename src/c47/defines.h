@@ -182,6 +182,9 @@
   #undef     VERBOSE_DETERMINEITEM
   #define    VERBOSE_REGISTERS
   #undef     VERBOSE_REGISTERS
+  #define    GRAPHDEBUG
+  #undef     GRAPHDEBUG
+
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
@@ -348,6 +351,7 @@
 #define BIG_SCREEN_COEF                  1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
 #define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
 #define NARROW_SCREEN                    1 // 400x1280 portrait screen
+#undef  USECURVES                          // activate spline curve option in the plot menu
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
@@ -664,8 +668,9 @@
 #define FLAG_SBwoy                            0x8057
 #define FLAG_TOPHEX                           0x8058
 #define FLAG_BCD                              0x8059 //26
+#define FLAG_PCURVE                           0x805A //27
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+26 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+27 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode

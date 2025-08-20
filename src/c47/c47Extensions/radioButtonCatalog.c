@@ -131,6 +131,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SHOWX,            FLAG_SHOWX  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_SHOWY,            FLAG_SHOWY  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PBOX,             FLAG_PBOX   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PCURVE,           FLAG_PCURVE   ,         CB_JC},  // graph EQN & PLSTAT options
   {ITM_PCROS,            FLAG_PCROS  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PPLUS,            FLAG_PPLUS  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PLINE,            FLAG_PLINE  ,           CB_JC},  // graph EQN & PLSTAT options
@@ -354,6 +355,7 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SHOWX  :
             case FLAG_SHOWY  :
             case FLAG_PBOX   :
+            case FLAG_PCURVE :
             case FLAG_PCROS  :
             case FLAG_PPLUS  :
             case FLAG_PLINE  :
