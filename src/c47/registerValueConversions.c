@@ -752,12 +752,12 @@ void sci_fmt(char *buf, int n, double x) {
   void convertDoubleToReal34Register(double x, calcRegister_t destination) {
     char buff[100];
 
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertDoubleToString(x, 100, buff);
-    stringToReal34(buff, REGISTER_REAL34_DATA(REGISTER_X));
+    stringToReal34(buff, REGISTER_REAL34_DATA(destination));
 
     #if defined(PC_BUILD)
-      if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) {
+      if(real34IsNaN(REGISTER_REAL34_DATA(destination))) {
         snprintf(buff, 100, "%.16e", x);
         printf("ERROR in convertDoubleToReal34Register: %s\n",buff);
       }
@@ -1217,7 +1217,30 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       oneTurn = 360;
       break;
     }
-    default: {
+    case amRadian: {
+      //incoming longInteger, converted via tempString to real1071, modulus 2pi into real1071, convert to real75
+      real1071_t reducedAngleTmp, reducedAngleTmp2;
+      realContext_t c = ctxtReal75;
+      c.digits = 1071;
+      convertLongIntegerRegisterToLongInteger(regist, angle);
+
+      if(longIntegerBase10Digits(angle) > 1000) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        longIntegerFree(angle);
+        return;
+      }
+
+      longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
+      decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
+      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
+      realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
+      longIntegerFree(angle);
+      return;
+    }
+    default: { //amNone
       convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
       return;
     }
@@ -1229,10 +1252,12 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 }
 
 
+
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, val);
+      longIntegerAngleReduction(reg, currentAngularMode, val); 
+      // out of range error rolled into longIntegerAngleReduction as the longintegr is not accessible here except for converting again
       *xAngularMode = currentAngularMode;
       break;
 
@@ -1246,6 +1271,13 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
       *xAngularMode = getRegisterAngularMode(reg);
       if(*xAngularMode == amNone)
         *xAngularMode = currentAngularMode;
+      if(*xAngularMode == amRadian && realGetExponent(val) > 999) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
       break;
 
     case dtComplex34:

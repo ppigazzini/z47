@@ -1693,7 +1693,9 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
     if(parameterType == INDPM_REGISTER) {
-      value = regKStoC(value);
+      if(value <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to W, or Local register from .00 to .98
+        value = regKStoC(value);
+      }
     }
     else if((parameterType == INDPM_FLAG) && (value > LAST_LOCAL_FLAG) && (value < FLAG_M)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);

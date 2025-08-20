@@ -113,6 +113,17 @@ bool_t isFunctionOldParam16(uint16_t func) {
       case TM_MENU    : {
         return INDPM_MENU;
       }
+      case TM_SOLVE   : {
+        if(func == ITM_SOLVE) {
+          return (programRunStop == PGM_RUNNING ? INDPM_REGISTER : INDPM_LABEL);
+        }
+        else if(func == ITM_PGMSLV) {
+          return INDPM_LABEL;
+        }
+        else {
+          return INDPM_PARAM;
+        }
+      }
       default:          {
         return INDPM_PARAM;
       }
@@ -336,6 +347,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       case ITM_INTG:
       case ITM_SHADE:
       case ITM_PBOX:
+      case ITM_PCURVE:
       case ITM_VECT:
       case ITM_SHOWX:
       case ITM_SHOWY:
@@ -1325,6 +1337,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
   void fnPplus                    (uint16_t unusedButMandatoryParameter) {}
   void fnPbox                     (uint16_t unusedButMandatoryParameter) {}
+  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {} 
   void fnPintg                    (uint16_t unusedButMandatoryParameter) {}
   void fnPdiff                    (uint16_t unusedButMandatoryParameter) {}
   void fnPrms                     (uint16_t unusedButMandatoryParameter) {}
@@ -1439,6 +1452,12 @@ bool_t isFunctionOldParam16(uint16_t func) {
 //#define DT      "D" STD_SUB_T
 #define TM      STD_TIME_T
 #define DT      STD_DATE_D
+#if defined(USECURVES)
+  #define conditionalPCURVE fnPcurve
+#else
+  #define conditionalPCURVE itemToBeCoded
+#endif
+
 
 /* Helper macro for multiplicative unit conversions */
 #define UNIT_CONV(unit, invert, cat, menu)      \
@@ -3470,7 +3489,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1977 */  { itemToBeCoded,                NOPARAM,                     "1977",                                        "1977",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1978 */  { itemToBeCoded,                NOPARAM,                     "1978",                                        "1978",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1979 */  { itemToBeCoded,                NOPARAM,                     "1979",                                        "1979",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1980 */  { itemToBeCoded,                NOPARAM,                     "1980",                                        "1980",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1980 */  { conditionalPCURVE,            NOPARAM,                     "CURVE",                                       "CURVE",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//GRAPH
 /* 1981 */  { fnToPolar_HP,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1982 */  { fnToRect_HP,                  NOPARAM,                     STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1983 */  { fnToPolar_CX,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3770,7 +3789,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2274 */  { fnGetSystemFlag,              FLAG_SBwoy,                  "SBwoy",                                       "SBwoy",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2275 */  { fnGetSystemFlag,              FLAG_TOPHEX,                 "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       "KEY" STD_SUB_A STD_SUB_MINUS STD_SUB_F,       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2276 */  { fnGetSystemFlag,              FLAG_BCD,                    "BCD",                                         "BCD",                                         (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2277 */  { itemToBeCoded,                NOPARAM,                     "2278",                                        "2278",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2276 */  { fnGetSystemFlag,              FLAG_PCURVE,                 "PLcurve",                                     "PLcurve",                                     (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2278 */  { itemToBeCoded,                NOPARAM,                     "2279",                                        "2279",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2279 */  { itemToBeCoded,                NOPARAM,                     "2279",                                        "2279",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2280 */  { itemToBeCoded,                NOPARAM,                     "2280",                                        "2280",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
@@ -4056,7 +4075,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2549 */  { fnRange,                      TM_VALUE,                    "RNG",                                         "RNG",                                         (0 << TAM_MAX_BITS) |  6145, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 2550 */  { fnYYDflt,                     TM_VALUE_TRK,                "YY",                                          "YY",                                          (0 << TAM_MAX_BITS) |  9999, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 2551 */  { fnDenMax,                     TM_VALUE_MAX,                "DMX",                                         "DMX",                                         (0 << TAM_MAX_BITS) |MAX_DENMAX,CAT_FNCT|SLS_ENABLED  | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
+/* 2552 */  { itemToBeCoded,                NOPARAM,                     STD_alpha "CAT",                               STD_alpha "CAT",                                (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },// JM
 
-/* 2549 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2553 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };

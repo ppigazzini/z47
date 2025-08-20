@@ -1,4 +1,4 @@
-  // SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
@@ -18,18 +18,24 @@
     char Name[16];
     xx = 0;
     yy = 1;
+    if(previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) {
+      if(currentAsnScr < 4) {
+        currentAsnScr = 6;
+      }
+    }
+
     clearScreen(12);
     showSoftmenuCurrentPart();
-        showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
-        switch(page) {
-          case 1:   showString("unshifted keyboard mapping", &standardFont, 30, YOFF, vmNormal, false, false); break;
-          case 2:   showString("f-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
-          case 3:   showString("g-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
-          case 4:   showString("alpha keyboard mapping",     &standardFont, 30, YOFF, vmNormal, false, false); break;
-          case 5:   showString("alpha f-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
-          case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
-          default:break;
-        }
+    showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
+    switch(page) {
+      case 1:   showString("unshifted keyboard mapping", &standardFont, 30, YOFF, vmNormal, false, false); break;
+      case 2:   showString("f-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+      case 3:   showString("g-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+      case 4:   showString("alpha keyboard mapping",     &standardFont, 30, YOFF, vmNormal, false, false); break;
+      case 5:   showString("alpha f-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+      case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+      default:break;
+    }
     showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] View STD keys", &standardFont, 30, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
@@ -133,7 +139,7 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       previousCalcMode = calcMode;
       calcMode = CM_ASN_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentAsnScr = 1;
+      currentAsnScr = (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) ? 6 : 1;
       return;
     }
   fnAsnDisplay(currentAsnScr);

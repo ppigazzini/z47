@@ -218,6 +218,7 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
 uint8_t                overrideShowBottomLine;
@@ -354,6 +355,11 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)
+
+#if (CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
+  IMPORT_BIN(".qspi_dm42", "../c47-dmcp/DM42_qspi_3.x.bin", DM42_qspi);
+#endif  // include DM42 QSPI
+
   #if defined(JMSHOWCODES)                                        //JM Test
     int8_t            telltale_pos;                         //JM Test
     int8_t            telltale_lastkey;                     //JM Test
