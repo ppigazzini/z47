@@ -113,6 +113,17 @@ bool_t isFunctionOldParam16(uint16_t func) {
       case TM_MENU    : {
         return INDPM_MENU;
       }
+      case TM_SOLVE   : {
+        if(func == ITM_SOLVE) {
+          return (programRunStop == PGM_RUNNING ? INDPM_REGISTER : INDPM_LABEL);
+        }
+        else if(func == ITM_PGMSLV) {
+          return INDPM_LABEL;
+        }
+        else {
+          return INDPM_PARAM;
+        }
+      }
       default:          {
         return INDPM_PARAM;
       }
