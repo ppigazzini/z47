@@ -2619,6 +2619,7 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
+
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
