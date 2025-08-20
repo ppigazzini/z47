@@ -355,6 +355,11 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)
+
+#if (CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
+  IMPORT_BIN(".qspi_dm42", "../c47-dmcp/DM42_qspi_3.x.bin", DM42_qspi);
+#endif  // include DM42 QSPI
+
   #if defined(JMSHOWCODES)                                        //JM Test
     int8_t            telltale_pos;                         //JM Test
     int8_t            telltale_lastkey;                     //JM Test
