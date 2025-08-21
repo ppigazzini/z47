@@ -164,11 +164,13 @@ void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, 
         if(progressHalfSecUpdate_Integer(timed, ss, accNumberDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         }
       }
-      if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",n, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-        break;
-      }
+      #if defined(PC_BUILD)
+        if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",n, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          break;
+        }
+      #endif //PC_BUILD
     #endif //TESTSUITE_BUILD
 
     // Sin term: ±x^(2n+1)/(2n+1)!
