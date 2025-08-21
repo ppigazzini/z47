@@ -1857,7 +1857,7 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
     if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
       return false;
     }
-  }
+  } 
   else if(d < 2) {
     realCopy(d == 1 ? const_1 : const_0, &x[p].r);
   }
@@ -1876,7 +1876,7 @@ void fnConvertStkToMx(uint16_t constVector) {
 
   if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
   if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
-  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 &&
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
      !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
 
   if(!saveLastX()) {
@@ -2940,10 +2940,10 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 // **                  : DMX maximum setting 32500
 // **                  : Output numerator, excluding IR factor: 999 999 999
 // **                  : internal max 1E9-1 after IR constant divided
-// **                  : Accuracy 24 digits;
+// **                  : Accuracy 24 digits; 
 // **                  : Internally uses 12 digits in denom seeker for integer conversions
 // **                  : Internally uses 26 digits for denom seeker real
-// **                  : Internally uses 26 digits for fraction comparison,
+// **                  : Internally uses 26 digits for fraction comparison, 
 // ** ************************************************************************************
 // **
 // ** 24 digits guaranteed. 24+2 used, as this has proven to need only 24+1
