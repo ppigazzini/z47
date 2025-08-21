@@ -1098,7 +1098,7 @@ int16_t lastItem = 0;
           else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
- 
+
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -2904,6 +2904,7 @@ RELEASE_END:
                   if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
                     //printf("1. Change NIM to LI\n");
                     lastIntegerBase = 0;
+                    nimNumberPart = (hexDigits == 0 ? NP_INT_10 : NP_INT_16);
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;

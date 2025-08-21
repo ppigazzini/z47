@@ -55,6 +55,80 @@ void fractionToString(calcRegister_t regist, char *displayString, int16_t *lessE
   }
 }
 
+void shortIntegerToString(calcRegister_t regist, char *displayString) {
+  int16_t i, j, k, unit, base;
+  uint64_t number, sign;
+
+  base    = getRegisterTag(regist);
+  number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
+
+  if(base <= 1 || base >= 17) {
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", base, "base");
+    displayBugScreen(errorMessage);
+    base = 10;
+  }
+
+  //number &= shortIntegerMask;
+
+  if(shortIntegerMode == SIM_UNSIGN || base == 2 || base == 4 || base == 8 || base == 16) {
+    sign = 0;
+  }
+  else {
+    sign = number & shortIntegerSignBit;
+  }
+
+  if(sign) {
+    if(shortIntegerMode == SIM_2COMPL) {
+      number |= ~shortIntegerMask;
+      number = ~number + 1;
+    }
+    else if(shortIntegerMode == SIM_1COMPL) {
+      number = ~number;
+    }
+    else if(shortIntegerMode == SIM_SIGNMT) {
+      number &= ~shortIntegerSignBit;
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", shortIntegerMode, "shortIntegerMode");
+      displayBugScreen(errorMessage);
+    }
+
+    number &= shortIntegerMask;
+  }
+
+  i = ERROR_MESSAGE_LENGTH / 2;
+
+  if(number == 0) {
+    displayString[i++] = '0';
+  }
+
+  while(number) {
+    unit = number % base;
+    number /= base;
+    displayString[i++] = hexadecimalDigits[unit];
+  }
+
+  if(sign) {
+    displayString[i++] = '-';
+  }
+  else {
+    displayString[i++] = '+';
+  }
+
+  for(k=i-1, j=0; k>=ERROR_MESSAGE_LENGTH / 2; k--, j++) {
+    if(displayString[k] == ' ') {
+      displayString[j++] = STD_SPACE_PUNCTUATION[0];
+      displayString[j]   = STD_SPACE_PUNCTUATION[1];
+    }
+    else {
+      displayString[j] = displayString[k];
+    }
+  }
+  displayString[j] = 0;
+
+  return;
+}
+
 
 #if !defined(TESTSUITE_BUILD)
 static void _hmsTimeToReal() {
@@ -179,13 +253,13 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
   //printf("**[DL]** _real34ToNim nimDisplay %s\n",nimDisplay+2);fflush(stdout);
   for(i=stringByteLength(nimDisplay) - 1; i>0; i--) {
-    if(nimDisplay[i] == (char)0xab) {
+    if(nimDisplay[i] == (char)0xab) {    //token
       nimDisplay[i] = SEPARATOR_LEFT[0];
       if(nimDisplay[i+1] == 1) {
         nimDisplay[i+1] = SEPARATOR_LEFT[1];
       }
     }
-    if(nimDisplay[i] == (char)0xbb) {
+    if(nimDisplay[i] == (char)0xbb) {    //token
       nimDisplay[i] = SEPARATOR_RIGHT[0];
       if(nimDisplay[i+1] == 1) {
         nimDisplay[i+1] = SEPARATOR_RIGHT[1];
@@ -375,11 +449,63 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               }
               break;
             }
+
             case dtReal34Matrix:
             case dtComplex34Matrix: {
               fnEditMatrix(NOPARAM);
               break;
             }
+
+            case dtShortInteger: {
+              uint16_t i;
+              grpGroupingLeftOld  = grpGroupingLeft;
+              grpGroupingRightOld = grpGroupingRight;
+
+              memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
+              memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
+
+              lastIntegerBase  = getRegisterTag(REGISTER_X);
+              nimNumberPart = (lastIntegerBase <= 10 ? NP_INT_10 : NP_INT_16);
+
+              grpGroupingLeft  = 0;
+              grpGroupingRight = 0;
+              shortIntegerToString(REGISTER_X, aimBuffer);
+              grpGroupingRight = grpGroupingRightOld;
+              grpGroupingLeft  = grpGroupingLeftOld;
+
+              hexDigits   = 0;
+              for(i = 0; i < strlen(aimBuffer); i++) {
+                if((aimBuffer[i] >= 'A') && (aimBuffer[i] <= 'F')) {
+                  hexDigits++;
+                }
+              }
+
+              strcpy(nimBufferDisplay, STD_SPACE_HAIR);
+              nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+              for(i=stringByteLength(nimBufferDisplay) - 1; i>0; i--) {
+                if(nimBufferDisplay[i] == (char)0xab) {    //token
+                  nimBufferDisplay[i] = SEPARATOR_LEFT[0];
+                  if(nimBufferDisplay[i+1] == 1) {
+                    nimBufferDisplay[i+1] = SEPARATOR_LEFT[1];
+                  }
+                }
+              }
+
+              printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+
+              calcMode = CM_NIM;
+              clearSystemFlag(FLAG_ALPHA);
+              freeRegisterData(REGISTER_X);
+              setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+              setRegisterDataType(REGISTER_X, dtReal34, amNone);
+              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              xCursor = 1;
+              cursorEnabled = true;
+              cursorFont = &numericFont;
+              break;
+            }
+
+            // case dtConfig: Not relevant for EDIT
             default: {
               goto err;
             }
