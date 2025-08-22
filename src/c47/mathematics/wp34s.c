@@ -229,8 +229,8 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
 
     #ifdef DEBUGTAYLOR
       if(i % 1 == 0) {
-        realToString((real_t*)&sin, tmpString); mpString[80]=0; printf("Taylor progress: n=%d, sin=%s", i, tmpString);
-        realToString((real_t*)&cos, tmpString); mpString[80]=0; printf(" cos=%s\n", tmpString);
+        realToString((real_t*)&sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%d, sin=%s", i, tmpString);
+        realToString((real_t*)&cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
   }
