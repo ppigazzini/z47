@@ -14,7 +14,8 @@
 
 
 /****************************************************************************************************
- * Modified for direct handling of 1071 digit contexts. Not suitable for small memory devices
+ * Modified for direct handling of 1071 digit contexts. 
+ * Take care not to use the 1071 version for the DM42 hardware
  ****************************************************************************************************/
 #undef DEBUGTAYLOR
 
@@ -25,15 +26,137 @@
 
 
 
+void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
+  const real_t *angle45, *angle90, *angle180;
+  angle45  = const_0;
+  angle90  = const_0;
+  angle180 = const_0;
+  
+  // sin(-x) = -sin(x), cos(-x) = cos(x)
+  if(realIsNegative((real_t*)angle)) {
+    *sinNeg = true;
+    realSetPositiveSign((real_t*)angle);
+  }
+
+  switch(angularMode) {
+    case amRadian: {
+      if(savedContextDigits >= 1071) {
+        angle45 = const1071_piOn4;
+        angle90 = const1071_piOn2;
+        angle180 = const1071_pi;
+        WP34S_BigMod((real_t*)angle, const2139_2pi, angle, realContext); // mod(angle, 2pi) --> angle
+      } else {
+        angle45 = const_piOn4_75;
+        angle90 = const_piOn2_75;
+        angle180 = const_pi_75;
+        WP34S_Mod((real_t*)angle, const1071_2pi, angle, realContext); // mod(angle, 2pi) --> angle
+      } 
+      break;
+    }
+    case amMultPi: {
+      angle45 = const_1on4;
+      angle90 = const_1on2;
+      angle180 = const_1;
+      WP34S_Mod((real_t*)angle, const_2, angle, realContext); // mod(angle, 2) --> angle
+      break;
+    }
+    case amGrad: {
+      angle45 = const_50;
+      angle90 = const_100;
+      angle180 = const_200;
+      WP34S_Mod((real_t*)angle, const_400, angle, realContext); // mod(angle, 400g) --> angle
+      break;
+    }
+    case amDegree:
+    case amDMS: {
+      angle45 = const_45;
+      angle90 = const_90;
+      angle180 = const_180;
+      WP34S_Mod((real_t*)angle, const_360, angle, realContext); // mod(angle, 360°) --> angle
+      angularMode = amDegree;
+      break;
+    }
+    default: {
+    }
+  }
+
+  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
+  if(realCompareGreaterEqual((real_t*)angle, angle180)) {        // angle >= 180°
+    realSubtract(angle, angle180, angle, realContext); // angle - 180° --> angle
+    *sinNeg = !(*sinNeg);
+    *cosNeg = !(*cosNeg);
+  }
+  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
+  if(realCompareGreaterEqual((real_t*)angle, angle90)) {        // angle >= 90°
+    realSubtract((real_t*)angle, angle90, angle, realContext); // angle - 90° --> angle
+    *swap = true;
+    *cosNeg = !(*cosNeg);
+  }
+  // sin(90-x) = cos(x), cos(90-x) = sin(x)
+  if(realCompareEqual((real_t*)angle, angle45)) { // angle == 45°
+    if(sinOut != NULL) {
+     realCopy(const_root2on2, sinOut);
+    }
+    if(cosOut != NULL) {
+      realCopy(const_root2on2, cosOut);
+    }
+    if(tanOut != NULL) {
+      realCopy(const_1, tanOut);
+    }
+  }
+  else { // angle < 90
+    if(realCompareGreaterThan((real_t*)angle, angle45)) {         // angle > 45°
+      realSubtract(angle90, (real_t*)angle, (real_t*)angle, realContext); // 90° - angle  --> angle
+      *swap = !(*swap);
+    }
+    convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
+    if(savedContextDigits >= 1071) {
+      C47_WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+    } else {
+      WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+    }
+  }
+
+  realContext->digits = savedContextDigits;
+  if(sinOut != NULL) {
+    if(*sinNeg) {
+      realSetNegativeSign(sinOut);
+      if(tanOut != NULL) {
+        realSetNegativeSign(tanOut);
+      }
+    }
+    if(realIsZero(sinOut)) {
+      realSetPositiveSign(sinOut);
+      if(tanOut != NULL) {
+        realSetPositiveSign(tanOut);
+      }
+    }
+    realPlus(sinOut, sinOut, realContext);
+  }
+  if(cosOut != NULL) {
+    if(*cosNeg) {
+      realSetNegativeSign(cosOut);
+      if(tanOut != NULL) {
+        realChangeSign(tanOut);
+      }
+    }
+    if(realIsZero(cosOut)) {
+      realSetPositiveSign(cosOut);
+    }
+    realPlus(cosOut, cosOut, realContext);
+  }
+  if(tanOut != NULL && realIsZero(cosOut)) {
+    realSetPositiveSign(tanOut);
+    realPlus(tanOut, tanOut, realContext);
+  }
+}
+
+
 // Have to be careful here to ensure that every function we call can handle
 // the increased size of the numbers we're using.
 void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
-  const real_t *angle45, *angle90, *angle180;
-  angle45  = const_0;
-  angle90  = const_0;
-  angle180 = const_0;
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
@@ -50,12 +173,6 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
 
   realCopy(an, &angle);
 
-  // sin(-x) = -sin(x), cos(-x) = cos(x)
-  if(realIsNegative(&angle)) {
-    sinNeg = true;
-    realSetPositiveSign(&angle);
-  }
-
   int32_t savedContextDigits = realContext->digits;
   if(realContext->digits > 51) {
     realContext->digits = 75;
@@ -64,115 +181,10 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
     realContext->digits = 51;
   }
 
-  switch(angularMode) {
-    case amRadian: {
-      angle45 = const_piOn4_75;
-      angle90 = const_piOn2_75;
-      angle180 = const_pi_75;
-      WP34S_Mod(&angle, const1071_2pi, &angle, realContext); // mod(angle, 2pi) --> angle
-      break;
-    }
-
-    case amMultPi: {
-      angle45 = const_1on4;
-      angle90 = const_1on2;
-      angle180 = const_1;
-      WP34S_Mod(&angle, const_2, &angle, realContext); // mod(angle, 2) --> angle
-      break;
-    }
-
-    case amGrad: {
-      angle45 = const_50;
-      angle90 = const_100;
-      angle180 = const_200;
-      WP34S_Mod(&angle, const_400,     &angle, realContext); // mod(angle, 400g) --> angle
-      break;
-    }
-
-    case amDegree:
-    case amDMS: {
-      angle45 = const_45;
-      angle90 = const_90;
-      angle180 = const_180;
-      WP34S_Mod(&angle, const_360,     &angle, realContext); // mod(angle, 360°) --> angle
-      angularMode = amDegree;
-      break;
-    }
-
-    default: {
-    }
+  doWP34S_SinCosTanTaylor((real_t*)&angle, &sinNeg, &cosNeg, &swap, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, angularMode, savedContextDigits, realContext);
   }
 
-  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-  if(realCompareGreaterEqual(&angle, angle180)) {        // angle >= 180°
-    realSubtract(&angle, angle180, &angle, realContext); // angle - 180° --> angle
-    sinNeg = !sinNeg;
-    cosNeg = !cosNeg;
-  }
 
-  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-  if(realCompareGreaterEqual(&angle, angle90)) {        // angle >= 90°
-    realSubtract(&angle, angle90, &angle, realContext); // angle - 90° --> angle
-    swap = true;
-    cosNeg = !cosNeg;
-  }
-
-  // sin(90-x) = cos(x), cos(90-x) = sin(x)
-  if(realCompareEqual(&angle, angle45)) { // angle == 45°
-    if(sinOut != NULL) {
-     realCopy(const_root2on2, sinOut);
-    }
-    if(cosOut != NULL) {
-      realCopy(const_root2on2, cosOut);
-    }
-    if(tanOut != NULL) {
-      realCopy(const_1, tanOut);
-    }
-  }
-  else { // angle < 90
-    if(realCompareGreaterThan(&angle, angle45)) {         // angle > 45°
-      realSubtract(angle90, &angle, &angle, realContext); // 90° - angle  --> angle
-      swap = !swap;
-    }
-
-    convertAngleFromTo(&angle, angularMode, amRadian, realContext);
-    WP34S_SinCosTanTaylor(&angle, swap, swap?cosOut:sinOut, swap?sinOut:cosOut, tanOut, realContext); // angle in radian
-  }
-
-  realContext->digits = savedContextDigits;
-
-  if(sinOut != NULL) {
-    if(sinNeg) {
-      realSetNegativeSign(sinOut);
-      if(tanOut != NULL) {
-        realSetNegativeSign(tanOut);
-      }
-    }
-    if(realIsZero(sinOut)) {
-      realSetPositiveSign(sinOut);
-      if(tanOut != NULL) {
-        realSetPositiveSign(tanOut);
-      }
-    }
-    realPlus(sinOut, sinOut, realContext);
-  }
-  if(cosOut != NULL) {
-    if(cosNeg) {
-      realSetNegativeSign(cosOut);
-      if(tanOut != NULL) {
-        realChangeSign(tanOut);
-      }
-    }
-    if(realIsZero(cosOut)) {
-      realSetPositiveSign(cosOut);
-    }
-    realPlus(cosOut, cosOut, realContext);
-  }
-  if(tanOut != NULL && realIsZero(cosOut)) {
-    realSetPositiveSign(tanOut);
-    realPlus(tanOut, tanOut, realContext);
-  }
-}
 
 
 
@@ -313,10 +325,6 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real1071_t angle;
-  const real_t *angle45, *angle90, *angle180;
-  angle45  = const_0;
-  angle90  = const_0;
-  angle180 = const_0;
 
 
   if(realIsNaN(an)) {
@@ -334,122 +342,12 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 
   realCopy(an, (real_t*)&angle);
 
-  // sin(-x) = -sin(x), cos(-x) = cos(x)
-  if(realIsNegative((real_t*)&angle)) {
-    sinNeg = true;
-    realSetPositiveSign((real_t*)&angle);
+  int32_t savedContextDigits = realContext->digits;
+
+  doWP34S_SinCosTanTaylor((real_t*)&angle, &sinNeg, &cosNeg, &swap, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, angularMode, savedContextDigits, realContext);
+
   }
 
-  switch(angularMode) {
-    case amRadian: {
-      angle45 =  const1071_piOn4;
-      angle90 =  const1071_piOn2;
-      angle180 = const1071_pi;
-      WP34S_BigMod((real_t*)&angle, const2139_2pi, (real_t*)&angle, realContext); // mod(angle, 2pi) --> angle
-      break;
-    }
-
-    case amMultPi: {
-      angle45 = const_1on4;
-      angle90 = const_1on2;
-      angle180 = const_1;
-      WP34S_Mod((real_t*)&angle, const_2, (real_t*)&angle, realContext); // mod(angle, 2) --> angle
-      break;
-    }
-
-    case amGrad: {
-      angle45 = const_50;
-      angle90 = const_100;
-      angle180 = const_200;
-      WP34S_Mod((real_t*)&angle, const_400,     (real_t*)&angle, realContext); // mod(angle, 400g) --> angle
-      break;
-    }
-
-    case amDegree:
-    case amDMS: {
-      angle45 = const_45;
-      angle90 = const_90;
-      angle180 = const_180;
-      WP34S_Mod((real_t*)&angle, const_360,     (real_t*)&angle, realContext); // mod(angle, 360°) --> angle
-      angularMode = amDegree;
-      break;
-    }
-
-    default: {
-    }
-  }
-
-  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-  if(realCompareGreaterEqual((real_t*)&angle, angle180)) {        // angle >= 180°
-    realSubtract((real_t*)&angle, angle180, (real_t*)&angle, realContext); // angle - 180° --> angle
-    sinNeg = !sinNeg;
-    cosNeg = !cosNeg;
-  }
-
-  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-  if(realCompareGreaterEqual((real_t*)&angle, angle90)) {        // angle >= 90°
-    realSubtract((real_t*)&angle, angle90, (real_t*)&angle, realContext); // angle - 90° --> angle
-    swap = true;
-    cosNeg = !cosNeg;
-  }
-
-  // sin(90-x) = cos(x), cos(90-x) = sin(x)
-  if(realCompareEqual((real_t*)&angle, angle45)) { // angle == 45°
-    if(sinOut != NULL) {
-     realCopy(const_2, sinOut);
-     realSquareRoot(sinOut, sinOut, realContext);
-    }
-    if(cosOut != NULL) {
-      realCopy(const_2, sinOut);
-      realSquareRoot(cosOut, cosOut, realContext);
-    }
-    if(tanOut != NULL) {
-      realCopy(const_1, tanOut);
-    }
-  }
-  else { // angle < 90
-    if(realCompareGreaterThan((real_t*)&angle, angle45)) {         // angle > 45°
-      realSubtract(angle90, (real_t*)&angle, (real_t*)&angle, realContext); // 90° - angle  --> angle
-      swap = !swap;
-    }
-    convertAngleFromTo((real_t*)&angle, angularMode, amRadian, realContext);
-    C47_WP34S_SinCosTanTaylor((real_t*)&angle, swap, swap?cosOut:sinOut, swap?sinOut:cosOut, tanOut, realContext); // angle in radian
-  }
-
-  if(sinOut != NULL) {
-    if(sinNeg) {
-      realSetNegativeSign(sinOut);
-      if(tanOut != NULL) {
-        realSetNegativeSign(tanOut);
-      }
-    }
-    if(realIsZero(sinOut)) {
-      realSetPositiveSign(sinOut);
-      if(tanOut != NULL) {
-        realSetPositiveSign(tanOut);
-      }
-    }
-    realPlus(sinOut, sinOut, realContext);
-  }
-
-  if(cosOut != NULL) {
-    if(cosNeg) {
-      realSetNegativeSign(cosOut);
-      if(tanOut != NULL) {
-        realChangeSign(tanOut);
-      }
-    }
-    if(realIsZero(cosOut)) {
-      realSetPositiveSign(cosOut);
-    }
-    realPlus(cosOut, cosOut, realContext);
-  }
-
-  if(tanOut != NULL && realIsZero(cosOut)) {
-    realSetPositiveSign(tanOut);
-    realPlus(tanOut, tanOut, realContext);
-  }
-}
 
 
 // Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
