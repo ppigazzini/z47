@@ -50,7 +50,6 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 // That means the major bignumber  reduction must be done outside Taylor
 
 #undef DEBUG_XFN
-#undef DEBUGTAYLOR
 #define debugLongNumberLimit 100
 
 #define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
@@ -687,7 +686,11 @@ typedef struct {
     real1071_t paramX, paramY, x2;
     real_t tmpR;
     realContext_t c = ctxtReal75;
-    c.digits = 1071;
+
+    // 75 digit for DM42 hardware, and 1071 digit for DM42n and simulator
+    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+      c.digits = 1071;
+    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
 
     angularMode_t angleMode = currentAngularMode;
     angularMode_t tmpAngle;
