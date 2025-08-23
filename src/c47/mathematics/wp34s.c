@@ -16,13 +16,12 @@
 /****************************************************************************************************
  * Modified for direct handling of 1071 digit contexts. Not suitable for small memory devices
  ****************************************************************************************************/
-#define DEBUGTAYLOR
+#undef DEBUGTAYLOR
 
 #define TaylorIterationMax 1000
 #if !defined(PC_BUILD)
   #undef DEBUGTAYLOR
 #endif
-
 
 
 
@@ -35,7 +34,6 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   angle45  = const_0;
   angle90  = const_0;
   angle180 = const_0;
-
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
@@ -158,7 +156,6 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
     }
     realPlus(sinOut, sinOut, realContext);
   }
-
   if(cosOut != NULL) {
     if(cosNeg) {
       realSetNegativeSign(cosOut);
@@ -171,7 +168,6 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
     }
     realPlus(cosOut, cosOut, realContext);
   }
-
   if(tanOut != NULL && realIsZero(cosOut)) {
     realSetPositiveSign(tanOut);
     realPlus(tanOut, tanOut, realContext);
@@ -189,83 +185,47 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
     stringToReal(tmpEpsilon, (real_t*)epsilonOrCompare, realContext);
   }
-//printf("aaa1\n");
-//realToString((real_t*)epsilonOrCompare, tmpString); printf("%s\n", tmpString);
-
   realCopy(a, (real_t*)angle);
   realMultiply((real_t*)angle, (real_t*)angle, (real_t*)a2, realContext);
   uInt32ToReal(1, (real_t*)j);
   uInt32ToReal(1, (real_t*)t);
   uInt32ToReal(1, (real_t*)sin);
   uInt32ToReal(1, (real_t*)cos);
-//printf("aaa2\n");
-//realToString((real_t*)j, tmpString); printf("%s\n", tmpString);
-//realToString((real_t*)t, tmpString); printf("%s\n", tmpString);
-//realToString((real_t*)sin, tmpString); printf("%s\n", tmpString);
-//realToString((real_t*)cos, tmpString); printf("%s\n", tmpString);
-
 
   for(i=1; !(endSin && endCos) && i<TaylorIterationMax; i++) { // it goes up to 31 max in the test suite
-//printf("aaa3\n");
     realAdd((real_t*)j, const_1, (real_t*)j, realContext);
-//printf("aaa33\n");
     realDivide((real_t*)a2, (real_t*)j, (real_t*)z, realContext);
-//printf("aaa333\n");
     realMultiply((real_t*)t, (real_t*)z, (real_t*)t, realContext);
-//printf("aaa3333\n");
     realChangeSign((real_t*)t);
-//printf("aaa33333\n");
     int tExp = realGetExponent((real_t*)t);
-//printf("aaa333333 %d\n", tExp);
 
     if(!endCos) {
-//printf("aaa6a\n");
       realCopy((real_t*)cos, (real_t*)z);
-//printf("aaa6b\n");
       realAdd((real_t*)cos, (real_t*)t, (real_t*)cos, realContext);
-//printf("aaa6c\n");
       if(doEpsilon) {
-//printf("aaa6d\n");
         realCopyAbs((real_t*)t, (real_t*)z);
       }
       else {
-//printf("aaa6e\n");
         realCompare((real_t*)cos, (real_t*)z, (real_t*)epsilonOrCompare, realContext);
       }
-//printf("aaa6f\n");
-//printf("6f:%d\n",realIsZero((real_t*)epsilonOrCompare));
-//printf("6g:%d\n",realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
-
       endCos = (!doEpsilon && realIsZero((real_t*)epsilonOrCompare)) || (doEpsilon && realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
     }
 
-//printf("aaa4\n");
     realAdd((real_t*)j, const_1, (real_t*)j, realContext);
-//printf("aaa44\n");
     realDivide((real_t*)t, (real_t*)j, (real_t*)t, realContext);
-//printf("aaa444\n");
     tExp = max(tExp, realGetExponent((real_t*)t));
-//printf("aaa4444\n");
 
     if(!endSin) {
-//printf("aaa5\n");
       realCopy((real_t*)sin, (real_t*)z);
-//printf("aaa55\n");
       realAdd((real_t*)sin, (real_t*)t, (real_t*)sin, realContext);
-//printf("aaa555\n");
       if(doEpsilon) {
-//printf("aaa6\n");
         realCopyAbs((real_t*)t, (real_t*)z);
       }
       else {
-//printf("aaa7\n");
         realCompare((real_t*)sin, (real_t*)z, (real_t*)epsilonOrCompare, realContext);
       }
-//printf("aaa8\n");
       endSin = (!doEpsilon && realIsZero((real_t*)epsilonOrCompare)) || (doEpsilon && realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
-//printf("aaa9\n");
     }
-//printf("aaa4\n");
 
    #if !defined(TESTSUITE_BUILD)
      if(checkHalfSec()) {
@@ -288,31 +248,25 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
    #endif //TESTSUITE_BUILD
 
     #ifdef DEBUGTAYLOR
-      if(i > 1 && i % 1 == 0) {
+      if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
         realToString((real_t*)sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%d, sin=%s", i, tmpString);
         realToString((real_t*)cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
-//printf("aaa5\n");
   }
-//printf("aaa444\n");
 
   if(realIsZero((real_t*)cos)) {
     realSetPositiveSign((real_t*)&cos);
   }
-
   if(realIsZero((real_t*)sin)) {
     realSetPositiveSign((real_t*)sin);
   }
-
   realMultiply((real_t*)sin, (real_t*)angle, (real_t*)sin, realContext);
-
 }
 
 
 // Calculate sin, cos by Taylor series and tan by division
 void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
-//printf("000\n");
   const bool_t doEpsilon = false;
   int   epsilonDigits;
   real_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
@@ -508,11 +462,9 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
   if(sinOut != NULL) {
     realPlus((real_t*)&sin, sinOut, realContext);
   }
-
   if(cosOut != NULL) {
     realPlus((real_t*)&cos, cosOut, realContext);
   }
-
   if(tanOut != NULL) {
     if(sinOut == NULL || cosOut == NULL) {
       realCopy(const_NaN, tanOut);
