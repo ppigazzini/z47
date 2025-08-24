@@ -506,55 +506,37 @@ typedef struct {
 
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      {"PI",       ITM_pi_XFN       ,FT_NILADIC },
-      {STD_pi,     ITM_pi_XFN       ,FT_NILADIC },
-      {"SIN",      ITM_sin_XFN      ,FT_MONADIC },
-      {"COS",      ITM_cos_XFN      ,FT_MONADIC },
-      {"TAN",      ITM_tan_XFN      ,FT_MONADIC },
-      {"ASIN",     ITM_arcsin_XFN   ,FT_MONADIC },
-      {"ACOS",     ITM_arccos_XFN   ,FT_MONADIC },
-      {"ATAN",     ITM_arctan_XFN   ,FT_MONADIC },
-      {"LN",       ITM_LN_XFN       ,FT_MONADIC },
-      {"LOG",      ITM_LOG_XFN      ,FT_MONADIC },
-      {"EXP",      ITM_EXP_XFN      ,FT_MONADIC },
-      {"10X",      ITM_10X_XFN      ,FT_MONADIC },
-      {"SQRT",     ITM_SQRT_XFN     ,FT_MONADIC },
-      {"MODANG",   ITM_MODANG_XFN   ,FT_MONADIC },
-      {"ATAN2",    ITM_atan2_XFN    ,FT_DYADIC  },
-      {"ADD",      ITM_ADD_XFN      ,FT_DYADIC  },
-      {"SUB",      ITM_SUB_XFN      ,FT_DYADIC  },
-      {"POWER",    ITM_POWER_XFN    ,FT_DYADIC  },
-      {"MULT",     ITM_MULT_XFN     ,FT_DYADIC  },
-      {"DIV",      ITM_DIV_XFN      ,FT_DYADIC  },
-      {"MOD",      ITM_MOD_XFN      ,FT_DYADIC  },
-      {"+",        ITM_ADD_XFN      ,FT_DYADIC  },
-      {"-",        ITM_SUB_XFN      ,FT_DYADIC  },
-      {"^",        ITM_POWER_XFN    ,FT_DYADIC  },
-      {"*",        ITM_MULT_XFN     ,FT_DYADIC  },
-      {"/",        ITM_DIV_XFN      ,FT_DYADIC  },
-      {STD_DIVIDE, ITM_DIV_XFN      ,FT_DYADIC  },
-      {NULL,    0            ,0   }
+      {"",    ITM_pi_XFN      ,FT_NILADIC },
+      {"",    ITM_pi_XFN      ,FT_NILADIC },
+      {"",    ITM_sin_XFN     ,FT_MONADIC },
+      {"",    ITM_cos_XFN     ,FT_MONADIC },
+      {"",    ITM_tan_XFN     ,FT_MONADIC },
+      {"",    ITM_arcsin_XFN  ,FT_MONADIC },
+      {"",    ITM_arccos_XFN  ,FT_MONADIC },
+      {"",    ITM_arctan_XFN  ,FT_MONADIC },
+      {"",    ITM_LN_XFN      ,FT_MONADIC },
+      {"",    ITM_LOG_XFN     ,FT_MONADIC },
+      {"",    ITM_EXP_XFN     ,FT_MONADIC },
+      {"",    ITM_10X_XFN     ,FT_MONADIC },
+      {"",    ITM_SQRT_XFN    ,FT_MONADIC },
+      {"",    ITM_MODANG_XFN  ,FT_MONADIC },
+      {"",    ITM_atan2_XFN   ,FT_DYADIC  },
+      {"",    ITM_ADD_XFN     ,FT_DYADIC  },
+      {"",    ITM_SUB_XFN     ,FT_DYADIC  },
+      {"",    ITM_POWER_XFN   ,FT_DYADIC  },
+      {"",    ITM_MULT_XFN    ,FT_DYADIC  },
+      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
+      {"",    ITM_MOD_XFN     ,FT_DYADIC  },
+      {"",    ITM_ADD_XFN     ,FT_DYADIC  },
+      {"",    ITM_SUB_XFN     ,FT_DYADIC  },
+      {"",    ITM_POWER_XFN   ,FT_DYADIC  },
+      {"",    ITM_MULT_XFN    ,FT_DYADIC  },
+      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
+      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
+      {NULL,  0               ,0   }
   };
 
 
-//  static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
-//    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
-//        const char* a = name;
-//        const char* b = entry->name;
-//        while ((*a && *b) &&
-//               ((*a >= 'a' && *a <= 'z' ? *a & ~0x20 : *a) ==
-//                (*b >= 'a' && *b <= 'z' ? *b & ~0x20 : *b))) {
-//            a++;
-//            b++;
-//        }
-//        if (*a == 0 && *b == 0) {
-//            *functionType = entry->function_type;
-//            return entry->function_id;
-//        }
-//    }
-//    return XFN_NOTFOUND;
-//  }
-//
   static int lookupFunctionId(int function_id) {
       for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
           if (entry->function_id == function_id) {
@@ -657,22 +639,6 @@ typedef struct {
       ErrorLocation = 11;
     }
     doXfn(REGISTER_X, function, functionType, ErrorLocation);
-  }
-
-  void fnXfn(uint16_t registerNo) {  //--------//--------//-- Parsing function --//--------//--------//--------
-//    int ErrorLocation = 0;
-//    int function = XFN_NOTFOUND;
-//    int functionType = XFN_NOTFOUND;
-//    if(getRegisterDataType(REGISTER_X) == dtString) {
-//        stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
-//        function = lookupFunction(tmpString, &functionType);
-//        if(function == XFN_NOTFOUND) {
-//          ErrorLocation = 12;
-//        }
-//    } else {
-//        ErrorLocation = 13;
-//    }
-//    doXfn(registerNo, function, functionType, ErrorLocation);
   }
 
   void fnXfnIndirect(uint16_t registerNo, uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------

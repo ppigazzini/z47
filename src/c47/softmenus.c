@@ -353,7 +353,7 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
                                              ITM_am,                        ITM_NULL,                   ITM_NULL,                 ITM_Fphik,             ITM_Ephik,                   ITM_ZETAphik                                        };
 
 TO_QSPI const int16_t menu_XXFCNS[]=       { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
-                                             /*ITM_XFN*/ITM_NULL,           ITM_pi_XFN,                 ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
+                                             ITM_NULL,                      ITM_pi_XFN,                 ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_LN_XFN,                    ITM_LOG_XFN,                ITM_EXP_XFN,              ITM_10X_XFN,           ITM_POWER_XFN,               ITM_SQRT_XFN,

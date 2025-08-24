@@ -1429,9 +1429,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnGetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnEdit                     (uint16_t unusedButMandatoryParameter) {}
-  void fnXfn                      (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn                     (uint16_t unusedButMandatoryParameter) {}
-
   void fnXXfn_sin                 (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_cos                 (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_tan                 (uint16_t unusedButMandatoryParameter) {}
@@ -4096,7 +4094,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2553 */  { itemToBeCoded,                NOPARAM,                     "2553",                                        "2553",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2554 */  { itemToBeCoded,                NOPARAM,                     "2554",                                        "2554",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2555 */  { itemToBeCoded,                NOPARAM,                     "2555",                                        "2555",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
-/* 2556 */  { fnXfn,                        TM_REGISTER,                 "XFN",                                         "XFN",                                         (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2553 */  { itemToBeCoded,                NOPARAM,                     "2556",                                        "2556",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2557 */  { itemToBeCoded,                NOPARAM,                     "XFCNS",                                       "XFCNS",                                       (0 << TAM_MAX_BITS) |    97, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2558 */  { fnXXfn_sin,                   TM_REGISTER,                 "XSIN",                                        "XSIN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2559 */  { fnXXfn_cos,                   TM_REGISTER,                 "XCOS",                                        "XCOS",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
