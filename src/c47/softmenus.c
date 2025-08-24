@@ -339,7 +339,7 @@ TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_
                                              ITM_WM,                        ITM_WP,                     ITM_WM1,                  ITM_IXYZ,              ITM_BETAXY,                  ITM_LNBETA,
                                             -MNU_ELLIPT,                   -MNU_ORTHOG,                 ITM_JYX,                  ITM_YYX,               ITM_ERF,                     ITM_ERFC,
 
-                                             ITM_MIN,                       ITM_MAX,                    ITM_XTRIG,                ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_MIN,                       ITM_MAX,                   -MNU_XXFN,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
@@ -351,6 +351,16 @@ TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_
 
 TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_cn,                     ITM_dn,                   ITM_Kk,                ITM_Ek,                      ITM_PInk,
                                              ITM_am,                        ITM_NULL,                   ITM_NULL,                 ITM_Fphik,             ITM_Ephik,                   ITM_ZETAphik                                        };
+
+
+TO_QSPI const int16_t menu_XXFN[]=         { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_xsin,               ITM_xcos,                     ITM_xtan,
+                                             ITM_xpi,                       ITM_NULL,                   ITM_xatan2,               ITM_xarcsin,            ITM_xarccos,                  ITM_xarctan,
+                                             ITM_XTRIG,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,               ITM_NULL,                     ITM_NULL,
+
+                                             ITM_xLN,                       ITM_xLOG,                   ITM_xEXP,                 ITM_x10X,               ITM_xPOWER,                   ITM_xSQRT,
+                                             ITM_xADD,                      ITM_xSUB,                   ITM_xMULT,                ITM_xDIV,               ITM_xMOD,                     ITM_xMODANG                };
+
+
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -1008,7 +1018,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 158 */  {.menuItem = -MNU_PARETO,      .numItems = sizeof(menu_Pareto        )/sizeof(int16_t), .softkeyItem = menu_Pareto         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 159 */  {.menuItem = -MNU_VECCONV,     .numItems = sizeof(menu_VECCONV       )/sizeof(int16_t), .softkeyItem = menu_VECCONV        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 160 */  {.menuItem = -MNU_BITSET,      .numItems = sizeof(menu_BITSET        )/sizeof(int16_t), .softkeyItem = menu_BITSET         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 161 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 161 */  {.menuItem = -MNU_XXFN,        .numItems = sizeof(menu_XXFN          )/sizeof(int16_t), .softkeyItem = menu_XXFN           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 162 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

@@ -506,32 +506,7 @@ returnUnity:
   #define accuracy 1050 // passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
   #define maxXfnExponent 1000
 
-  //niladic
-  #define XFN_PI       0
-  //monadic
-  #define XFN_SIN      10
-  #define XFN_COS      11
-  #define XFN_TAN      12
-  #define XFN_ASIN     13
-  #define XFN_ACOS     14
-  #define XFN_ATAN     15
-  #define XFN_ATAN2    16
-  #define XFN_LN       17
-  #define XFN_LOG      18
-  #define XFN_EXP      19
-  #define XFN_10X      20
-  #define XFN_SQRT     21
-  #define XFN_MODANGLE 22
-  //dyadic todo
-  #define XFN_PLUS     30
-  #define XFN_MINUS    31
-  #define XFN_POWER    32
-  #define XFN_MULT     33
-  #define XFN_DIV      34
-  #define XFN_MOD      35
-  //not found
   #define XFN_NOTFOUND 99
-
   #define FT_NILADIC  100
   #define FT_MONADIC  101
   #define FT_DYADIC   102
@@ -545,34 +520,36 @@ typedef struct {
 
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      {"PI",       XFN_PI       ,FT_NILADIC },
-      {STD_pi,     XFN_PI       ,FT_NILADIC },
-      {"SIN",      XFN_SIN      ,FT_MONADIC },
-      {"COS",      XFN_COS      ,FT_MONADIC },
-      {"TAN",      XFN_TAN      ,FT_MONADIC },
-      {"ASIN",     XFN_ASIN     ,FT_MONADIC },
-      {"ACOS",     XFN_ACOS     ,FT_MONADIC },
-      {"ATAN",     XFN_ATAN     ,FT_MONADIC },
-      {"LN",       XFN_LN       ,FT_MONADIC },
-      {"LOG",      XFN_LOG      ,FT_MONADIC },
-      {"EXP",      XFN_EXP      ,FT_MONADIC },
-      {"10X",      XFN_10X      ,FT_MONADIC },
-      {"SQRT",     XFN_SQRT     ,FT_MONADIC },
-      {"MODANG",   XFN_MODANGLE ,FT_MONADIC },
-      {"PLUS",     XFN_PLUS     ,FT_DYADIC  },
-      {"MINUS",    XFN_MINUS    ,FT_DYADIC  },
-      {"POWER",    XFN_POWER    ,FT_DYADIC  },
-      {"MULT",     XFN_MULT     ,FT_DYADIC  },
-      {"DIV",      XFN_DIV      ,FT_DYADIC  },
-      {"MOD",      XFN_MOD      ,FT_DYADIC  },
-      {"+",        XFN_PLUS     ,FT_DYADIC  },
-      {"-",        XFN_MINUS    ,FT_DYADIC  },
-      {"^",        XFN_POWER    ,FT_DYADIC  },
-      {"*",        XFN_MULT     ,FT_DYADIC  },
-      {"/",        XFN_DIV      ,FT_DYADIC  },
-      {STD_DIVIDE, XFN_DIV      ,FT_DYADIC  },
+      {"PI",       ITM_xpi       ,FT_NILADIC },
+      {STD_pi,     ITM_xpi       ,FT_NILADIC },
+      {"SIN",      ITM_xsin      ,FT_MONADIC },
+      {"COS",      ITM_xcos      ,FT_MONADIC },
+      {"TAN",      ITM_xtan      ,FT_MONADIC },
+      {"ASIN",     ITM_xarcsin   ,FT_MONADIC },
+      {"ACOS",     ITM_xarccos   ,FT_MONADIC },
+      {"ATAN",     ITM_xarctan   ,FT_MONADIC },
+      {"LN",       ITM_xLN       ,FT_MONADIC },
+      {"LOG",      ITM_xLOG      ,FT_MONADIC },
+      {"EXP",      ITM_xEXP      ,FT_MONADIC },
+      {"10X",      ITM_x10X      ,FT_MONADIC },
+      {"SQRT",     ITM_xSQRT     ,FT_MONADIC },
+      {"MODANG",   ITM_xMODANG   ,FT_MONADIC },
+      {"ATAN2",    ITM_xatan2    ,FT_DYADIC  },
+      {"ADD",      ITM_xADD      ,FT_DYADIC  },
+      {"SUB",      ITM_xSUB      ,FT_DYADIC  },
+      {"POWER",    ITM_xPOWER    ,FT_DYADIC  },
+      {"MULT",     ITM_xMULT     ,FT_DYADIC  },
+      {"DIV",      ITM_xDIV      ,FT_DYADIC  },
+      {"MOD",      ITM_xMOD      ,FT_DYADIC  },
+      {"+",        ITM_xADD      ,FT_DYADIC  },
+      {"-",        ITM_xSUB      ,FT_DYADIC  },
+      {"^",        ITM_xPOWER    ,FT_DYADIC  },
+      {"*",        ITM_xMULT     ,FT_DYADIC  },
+      {"/",        ITM_xDIV      ,FT_DYADIC  },
+      {STD_DIVIDE, ITM_xDIV      ,FT_DYADIC  },
       {NULL,    0            ,0   }
   };
+
 
   static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
     for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
@@ -592,6 +569,14 @@ typedef struct {
     return XFN_NOTFOUND;
   }
 
+  static int lookupFunctionId(int function_id) {
+      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
+          if (entry->function_id == function_id) {
+              return entry->function_type;
+          }
+      }
+      return XFN_NOTFOUND;
+  }
 
   static bool getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
@@ -680,25 +665,14 @@ typedef struct {
 
 
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
+  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
 
-  void fnXfn(uint16_t registerNo){
-    #if !defined(TESTSUITE_BUILD)
-    real1071_t paramX, paramY, x2;
-    real_t tmpR;
-    realContext_t c = ctxtReal75;
+  void fnXXfn(uint16_t function) {   //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
+    doXfn(REGISTER_X, function, lookupFunctionId(function), 0);
+  }
 
-    // 75 digit for DM42 hardware, and 1071 digit for DM42n and simulator
-    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-      c.digits = 1071;
-    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
-
-    angularMode_t angleMode = currentAngularMode;
-    angularMode_t tmpAngle;
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      int location = 0;
-    #endif //EXTRA_INFO_ON_CALC_ERROR
-
-//--------//--------//-- Parsing function --//--------//--------//--------
+  void fnXfn(uint16_t registerNo) {  //--------//--------//-- Parsing function --//--------//--------//--------
+    int ErrorLocation = 0;
     int function = XFN_NOTFOUND;
     int functionType = XFN_NOTFOUND;
     if(getRegisterDataType(REGISTER_X) == dtString) {
@@ -707,16 +681,44 @@ typedef struct {
         function = lookupFunction(tmpString, &functionType);
         if(function == XFN_NOTFOUND) {
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            location = 1;
+            ErrorLocation = 1;
           #endif //EXTRA_INFO_ON_CALC_ERROR
-          goto noFunction;
         }
     } else {
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          location = 2;
+          ErrorLocation = 2;
         #endif //EXTRA_INFO_ON_CALC_ERROR
-        goto noFunction;
     }
+
+    doXfn(registerNo, function, functionType, ErrorLocation);
+  }
+
+
+  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation){
+    #if !defined(TESTSUITE_BUILD)
+
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      int location = 0;
+    #endif //EXTRA_INFO_ON_CALC_ERROR
+
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      if(ErrorLocation != 0) {
+        location = ErrorLocation;
+        goto noFunction;
+      }
+    #endif //EXTRA_INFO_ON_CALC_ERROR
+  
+    real1071_t paramX, paramY, x2;
+    real_t tmpR;
+
+    realContext_t c = ctxtReal75;
+    // 75 digit for DM42 hardware, and 1071 digit for DM42n and simulator
+    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+      c.digits = 1071;
+    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
+
+    angularMode_t angleMode = currentAngularMode;
+    angularMode_t tmpAngle;
 
     if(functionType == FT_NILADIC) {
       ; //no input needed, continue
@@ -745,16 +747,16 @@ typedef struct {
     switch(function) {
 
 //--------//NILADIC FUNCTIONS
-      case XFN_PI: {
+      case ITM_xpi: {
         realCopy(const1071_2pi, (real_t*)&paramX);
         realDivide((real_t*)&paramX, const_2, (real_t*)&paramX, &c);
         break;
       }
 
 //--------//MONADIC FUNCTIONS
-      case XFN_SIN:
-      case XFN_COS:
-      case XFN_TAN: {
+      case ITM_xsin:
+      case ITM_xcos:
+      case ITM_xtan: {
           #if defined(DEBUG_XFN)
             realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
             realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
@@ -776,26 +778,26 @@ typedef struct {
             real1071_t aa,bb;
             realCopy(const_0,(real_t*)&aa);
             realCopy(const_0,(real_t*)&bb);
-            if(function == XFN_SIN) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
-            if(function == XFN_COS) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
-            if(function == XFN_TAN) {                   C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
+            if(function == ITM_xsin) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
+            if(function == ITM_xcos) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
+            if(function == ITM_xtan) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
           }
           break;
       }
 
-      case XFN_ASIN: {
+      case ITM_xarcsin: {
 WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
         break;
       }
-      case XFN_ACOS: {
+      case ITM_xarccos: {
 WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
-      case XFN_ATAN: {
+      case ITM_xarctan: {
 
 WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
 
@@ -803,60 +805,59 @@ WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
     //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
-
-
-      case XFN_LN: {
+    
+      case ITM_xLN: {
         decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case XFN_LOG: {
+      case ITM_xLOG: {
         decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
         decNumberLn((real_t *)&x2, const_10, &c);
         realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
         break;
       }
-      case XFN_EXP: {
+      case ITM_xEXP: {
         decNumberExp((real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case XFN_10X: {
+      case ITM_x10X: {
         realPower(const_10, (real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case XFN_SQRT: {
+      case ITM_xSQRT: {
         realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
         break;
       }
-      case XFN_MODANGLE: {
+      case ITM_xMODANG: {
         WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
         break;
       }
 //--------//DYADIC FUNCTIONS
-      case XFN_PLUS: {
+      case ITM_xADD: {
         realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_MINUS: {
+      case ITM_xSUB: {
         realSubtract  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_POWER: {
+      case ITM_xPOWER: {
         realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_MULT: {
+      case ITM_xMULT: {
         realMultiply  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_DIV: {
+      case ITM_xDIV: {
         realDivide    ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_MOD: {
+      case ITM_xMOD: {
         WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case XFN_ATAN2: {
+      case ITM_xatan2: {
 WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
         break;
       }
@@ -879,8 +880,10 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
 
 
     //If the input registers were Y, Z, T, then drop the stack input
-    if(registerNo == REGISTER_Y && lastErrorCode == 0) {
-      fnDropY(NOPARAM); //y
+    if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
+      if(registerNo == REGISTER_Y) {
+        fnDropY(NOPARAM); //y
+      }
       fnDropY(NOPARAM); //z
       fnDropY(NOPARAM); //t
     }
