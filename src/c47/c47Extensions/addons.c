@@ -508,35 +508,34 @@ typedef struct {
   } FunctionLookup;
 
 
-#if !defined(TESTSUITE_BUILD)
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      {"PI",       ITM_xpi       ,FT_NILADIC },
-      {STD_pi,     ITM_xpi       ,FT_NILADIC },
-      {"SIN",      ITM_xsin      ,FT_MONADIC },
-      {"COS",      ITM_xcos      ,FT_MONADIC },
-      {"TAN",      ITM_xtan      ,FT_MONADIC },
-      {"ASIN",     ITM_xarcsin   ,FT_MONADIC },
-      {"ACOS",     ITM_xarccos   ,FT_MONADIC },
-      {"ATAN",     ITM_xarctan   ,FT_MONADIC },
-      {"LN",       ITM_xLN       ,FT_MONADIC },
-      {"LOG",      ITM_xLOG      ,FT_MONADIC },
-      {"EXP",      ITM_xEXP      ,FT_MONADIC },
-      {"10X",      ITM_x10X      ,FT_MONADIC },
-      {"SQRT",     ITM_xSQRT     ,FT_MONADIC },
-      {"MODANG",   ITM_xMODANG   ,FT_MONADIC },
-      {"ATAN2",    ITM_xatan2    ,FT_DYADIC  },
-      {"ADD",      ITM_xADD      ,FT_DYADIC  },
-      {"SUB",      ITM_xSUB      ,FT_DYADIC  },
-      {"POWER",    ITM_xPOWER    ,FT_DYADIC  },
-      {"MULT",     ITM_xMULT     ,FT_DYADIC  },
-      {"DIV",      ITM_xDIV      ,FT_DYADIC  },
-      {"MOD",      ITM_xMOD      ,FT_DYADIC  },
-      {"+",        ITM_xADD      ,FT_DYADIC  },
-      {"-",        ITM_xSUB      ,FT_DYADIC  },
-      {"^",        ITM_xPOWER    ,FT_DYADIC  },
-      {"*",        ITM_xMULT     ,FT_DYADIC  },
-      {"/",        ITM_xDIV      ,FT_DYADIC  },
-      {STD_DIVIDE, ITM_xDIV      ,FT_DYADIC  },
+      {"PI",       ITM_pi_XFN       ,FT_NILADIC },
+      {STD_pi,     ITM_pi_XFN       ,FT_NILADIC },
+      {"SIN",      ITM_sin_XFN      ,FT_MONADIC },
+      {"COS",      ITM_cos_XFN      ,FT_MONADIC },
+      {"TAN",      ITM_tan_XFN      ,FT_MONADIC },
+      {"ASIN",     ITM_arcsin_XFN   ,FT_MONADIC },
+      {"ACOS",     ITM_arccos_XFN   ,FT_MONADIC },
+      {"ATAN",     ITM_arctan_XFN   ,FT_MONADIC },
+      {"LN",       ITM_LN_XFN       ,FT_MONADIC },
+      {"LOG",      ITM_LOG_XFN      ,FT_MONADIC },
+      {"EXP",      ITM_EXP_XFN      ,FT_MONADIC },
+      {"10X",      ITM_10X_XFN      ,FT_MONADIC },
+      {"SQRT",     ITM_SQRT_XFN     ,FT_MONADIC },
+      {"MODANG",   ITM_MODANG_XFN   ,FT_MONADIC },
+      {"ATAN2",    ITM_atan2_XFN    ,FT_DYADIC  },
+      {"ADD",      ITM_ADD_XFN      ,FT_DYADIC  },
+      {"SUB",      ITM_SUB_XFN      ,FT_DYADIC  },
+      {"POWER",    ITM_POWER_XFN    ,FT_DYADIC  },
+      {"MULT",     ITM_MULT_XFN     ,FT_DYADIC  },
+      {"DIV",      ITM_DIV_XFN      ,FT_DYADIC  },
+      {"MOD",      ITM_MOD_XFN      ,FT_DYADIC  },
+      {"+",        ITM_ADD_XFN      ,FT_DYADIC  },
+      {"-",        ITM_SUB_XFN      ,FT_DYADIC  },
+      {"^",        ITM_POWER_XFN    ,FT_DYADIC  },
+      {"*",        ITM_MULT_XFN     ,FT_DYADIC  },
+      {"/",        ITM_DIV_XFN      ,FT_DYADIC  },
+      {STD_DIVIDE, ITM_DIV_XFN      ,FT_DYADIC  },
       {NULL,    0            ,0   }
   };
 
@@ -649,7 +648,6 @@ typedef struct {
     }
     return true;
   }
-#endif //TESTSUITE_BUILDests
 
 
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
@@ -682,8 +680,6 @@ typedef struct {
 
 
   static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation){
-    #if !defined(TESTSUITE_BUILD)
-
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -734,16 +730,16 @@ typedef struct {
     switch(function) {
 
 //--------//NILADIC FUNCTIONS
-      case ITM_xpi: {
+      case ITM_pi_XFN: {
         realCopy(const1071_2pi, (real_t*)&paramX);
         realDivide((real_t*)&paramX, const_2, (real_t*)&paramX, &c);
         break;
       }
 
 //--------//MONADIC FUNCTIONS
-      case ITM_xsin:
-      case ITM_xcos:
-      case ITM_xtan: {
+      case ITM_sin_XFN:
+      case ITM_cos_XFN:
+      case ITM_tan_XFN: {
           #if defined(DEBUG_XFN)
             realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
             realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
@@ -765,84 +761,84 @@ typedef struct {
             real1071_t aa,bb;
             realCopy(const_0,(real_t*)&aa);
             realCopy(const_0,(real_t*)&bb);
-            if(function == ITM_xsin) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
-            if(function == ITM_xcos) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
-            if(function == ITM_xtan) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
+            if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
+            if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
+            if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
           }
           break;
       }
 
-      case ITM_xarcsin: {
+      case ITM_arcsin_XFN: {
 WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
         convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
         break;
       }
-      case ITM_xarccos: {
+      case ITM_arccos_XFN: {
 WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
         convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
-      case ITM_xarctan: {
+      case ITM_arctan_XFN: {
 WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Atan((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
         convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
 
-      case ITM_xLN: {
+      case ITM_LN_XFN: {
         decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case ITM_xLOG: {
+      case ITM_LOG_XFN: {
         decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
         decNumberLn((real_t *)&x2, const_10, &c);
         realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
         break;
       }
-      case ITM_xEXP: {
+      case ITM_EXP_XFN: {
         decNumberExp((real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case ITM_x10X: {
+      case ITM_10X_XFN: {
         realPower(const_10, (real_t *)&paramX, (real_t *)&paramX, &c);
         break;
       }
-      case ITM_xSQRT: {
+      case ITM_SQRT_XFN: {
         realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
         break;
       }
-      case ITM_xMODANG: {
+      case ITM_MODANG_XFN: {
         WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
         break;
       }
 //--------//DYADIC FUNCTIONS
-      case ITM_xADD: {
+      case ITM_ADD_XFN: {
         realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xSUB: {
+      case ITM_SUB_XFN: {
         realSubtract  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xPOWER: {
+      case ITM_POWER_XFN: {
         realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xMULT: {
+      case ITM_MULT_XFN: {
         realMultiply  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xDIV: {
+      case ITM_DIV_XFN: {
         realDivide    ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xMOD: {
+      case ITM_MOD_XFN: {
         WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
         break;
       }
-      case ITM_xatan2: {
+      case ITM_atan2_XFN: {
 WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
         convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
@@ -903,10 +899,10 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
     realPlus((real_t *)&paramX, &tmpR, &ctxtReal75);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     switch(function) {
-      case ITM_xarcsin:
-      case ITM_xarccos:
-      case ITM_xarctan:
-      case ITM_xatan2: {
+      case ITM_arcsin:
+      case ITM_arccos:
+      case ITM_arctan:
+      case ITM_atan2: {
         convertRealToResultRegister(&tmpR, REGISTER_X, currentAngularMode);
         break;
       }
@@ -935,7 +931,6 @@ noFunction:
       moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
-  #endif //TESTSUITE_BUILD
 }
 
 
