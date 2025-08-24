@@ -2031,7 +2031,7 @@
 #define ITM_1977                    1977
 #define ITM_1978                    1978
 #define ITM_1979                    1979
-#define ITM_1980                    1980
+#define ITM_PCURVE                  1980
 #define ITM_toPOL_HP                1981
 #define ITM_toREC_HP                1982
 #define ITM_toPOL_CX                1983
@@ -2330,7 +2330,7 @@
 #define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
 #define SFL_BCD                     2276 // The SFL item names are not used
-#define SFL_2277                    2277 // The SFL item names are not used
+#define SFL_PCURVE                  2277 // The SFL item names are not used
 #define SFL_2278                    2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468
+#define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2624,10 +2624,9 @@
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
 #define VAR_LY                      2548
+#define MNU_AIMCATALOG              2549
 
 
-
-#define ITM_2549                    2549
 #define ITM_2550                    2550
 #define ITM_2551                    2551
 #define ITM_2552                    2552
