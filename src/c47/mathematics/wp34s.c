@@ -11,16 +11,160 @@
  * This functions are borrowed from the WP34S project
  ******************************************************/
 
-// Have to be careful here to ensure that every function we call can handle
-// the increased size of the numbers we're using.
-void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
-  bool_t sinNeg = false, cosNeg = false, swap = false;
-  real_t angle;
+
+
+/****************************************************************************************************
+ * Modified for direct handling of 1071 digit contexts.
+ * Take care not to use the 1071 version for the DM42 hardware
+ ****************************************************************************************************/
+#undef DEBUGTAYLOR
+
+#define TaylorIterationMax 1000
+#if !defined(PC_BUILD)
+  #undef DEBUGTAYLOR
+#endif
+
+
+
+void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
   const real_t *angle45, *angle90, *angle180;
   angle45  = const_0;
   angle90  = const_0;
   angle180 = const_0;
 
+  #if defined(DEBUGTAYLOR)
+   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Angle:   %s\n", tmpString);
+  #endif //DEBUGTAYLOR
+
+  // sin(-x) = -sin(x), cos(-x) = cos(x)
+  if(realIsNegative((real_t*)angle)) {
+    *sinNeg = true;
+    realSetPositiveSign((real_t*)angle);
+  }
+
+  switch(angularMode) {
+    case amRadian: {
+      if(savedContextDigits >= 1071) {
+        angle45 = const1071_piOn4;
+        angle90 = const1071_piOn2;
+        angle180 = const1071_pi;
+        WP34S_BigMod((real_t*)angle, const2139_2pi, angle, realContext); // mod(angle, 2pi) --> angle
+      } else {
+        angle45 = const_piOn4_75;
+        angle90 = const_piOn2_75;
+        angle180 = const_pi_75;
+        WP34S_Mod((real_t*)angle, const1071_2pi, angle, realContext); // mod(angle, 2pi) --> angle
+      }
+      break;
+    }
+    case amMultPi: {
+      angle45 = const_1on4;
+      angle90 = const_1on2;
+      angle180 = const_1;
+      WP34S_Mod((real_t*)angle, const_2, angle, realContext); // mod(angle, 2) --> angle
+      break;
+    }
+    case amGrad: {
+      angle45 = const_50;
+      angle90 = const_100;
+      angle180 = const_200;
+      WP34S_Mod((real_t*)angle, const_400, angle, realContext); // mod(angle, 400g) --> angle
+      break;
+    }
+    case amDegree:
+    case amDMS: {
+      angle45 = const_45;
+      angle90 = const_90;
+      angle180 = const_180;
+      WP34S_Mod((real_t*)angle, const_360, angle, realContext); // mod(angle, 360°) --> angle
+      angularMode = amDegree;
+      break;
+    }
+    default: {
+    }
+  }
+  #if defined(DEBUGTAYLOR)
+   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Reduced: %s\n", tmpString);
+  #endif //DEBUGTAYLOR
+
+  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
+  if(realCompareGreaterEqual((real_t*)angle, angle180)) {        // angle >= 180°
+    realSubtract(angle, angle180, angle, realContext); // angle - 180° --> angle
+    *sinNeg = !(*sinNeg);
+    *cosNeg = !(*cosNeg);
+  }
+  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
+  if(realCompareGreaterEqual((real_t*)angle, angle90)) {        // angle >= 90°
+    realSubtract((real_t*)angle, angle90, angle, realContext); // angle - 90° --> angle
+    *swap = true;
+    *cosNeg = !(*cosNeg);
+  }
+
+  // sin(90-x) = cos(x), cos(90-x) = sin(x)
+  if(realCompareEqual((real_t*)angle, angle45)) { // angle == 45°
+    if(sinOut != NULL) {
+     realCopy(const_root2on2, sinOut);
+    }
+    if(cosOut != NULL) {
+      realCopy(const_root2on2, cosOut);
+    }
+    if(tanOut != NULL) {
+      realCopy(const_1, tanOut);
+    }
+  }
+  else { // angle < 90
+    if(realCompareGreaterThan((real_t*)angle, angle45)) {         // angle > 45°
+      realSubtract(angle90, (real_t*)angle, (real_t*)angle, realContext); // 90° - angle  --> angle
+      *swap = !(*swap);
+    }
+    convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
+    if(savedContextDigits >= 1071) {
+      C47_WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+    } else {
+      WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+    }
+  }
+
+  realContext->digits = savedContextDigits;
+  if(sinOut != NULL) {
+    if(*sinNeg) {
+      realSetNegativeSign(sinOut);
+      if(tanOut != NULL) {
+        realSetNegativeSign(tanOut);
+      }
+    }
+    if(realIsZero(sinOut)) {
+      realSetPositiveSign(sinOut);
+      if(tanOut != NULL) {
+        realSetPositiveSign(tanOut);
+      }
+    }
+    realPlus(sinOut, sinOut, realContext);
+  }
+  if(cosOut != NULL) {
+    if(*cosNeg) {
+      realSetNegativeSign(cosOut);
+      if(tanOut != NULL) {
+        realChangeSign(tanOut);
+      }
+    }
+    if(realIsZero(cosOut)) {
+      realSetPositiveSign(cosOut);
+    }
+    realPlus(cosOut, cosOut, realContext);
+  }
+  if(tanOut != NULL && realIsZero(cosOut)) {
+    realSetPositiveSign(tanOut);
+    realPlus(tanOut, tanOut, realContext);
+  }
+}
+
+
+// Have to be careful here to ensure that every function we call can handle
+// the increased size of the numbers we're using.
+void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+  bool_t sinNeg = false, cosNeg = false, swap = false;
+  real_t angle;
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
@@ -37,12 +181,6 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
 
   realCopy(an, &angle);
 
-  // sin(-x) = -sin(x), cos(-x) = cos(x)
-  if(realIsNegative(&angle)) {
-    sinNeg = true;
-    realSetPositiveSign(&angle);
-  }
-
   int32_t savedContextDigits = realContext->digits;
   if(realContext->digits > 51) {
     realContext->digits = 75;
@@ -51,173 +189,120 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
     realContext->digits = 51;
   }
 
-  switch(angularMode) {
-    case amRadian: {
-      angle45 = const_piOn4_75;
-      angle90 = const_piOn2_75;
-      angle180 = const_pi_75;
-      WP34S_Mod(&angle, const1071_2pi, &angle, realContext); // mod(angle, 2pi) --> angle
-      break;
-    }
-
-    case amMultPi: {
-      angle45 = const_1on4;
-      angle90 = const_1on2;
-      angle180 = const_1;
-      WP34S_Mod(&angle, const_2, &angle, realContext); // mod(angle, 2) --> angle
-      break;
-    }
-
-    case amGrad: {
-      angle45 = const_50;
-      angle90 = const_100;
-      angle180 = const_200;
-      WP34S_Mod(&angle, const_400,     &angle, realContext); // mod(angle, 400g) --> angle
-      break;
-    }
-
-    case amDegree:
-    case amDMS: {
-      angle45 = const_45;
-      angle90 = const_90;
-      angle180 = const_180;
-      WP34S_Mod(&angle, const_360,     &angle, realContext); // mod(angle, 360°) --> angle
-      angularMode = amDegree;
-      break;
-    }
-
-    default: {
-    }
+  doWP34S_SinCosTanTaylor((real_t*)&angle, &sinNeg, &cosNeg, &swap, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, angularMode, savedContextDigits, realContext);
   }
 
-  // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-  if(realCompareGreaterEqual(&angle, angle180)) {        // angle >= 180°
-    realSubtract(&angle, angle180, &angle, realContext); // angle - 180° --> angle
-    sinNeg = !sinNeg;
-    cosNeg = !cosNeg;
+
+
+
+
+static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* j, real_t* z, real_t* sin, real_t* cos, real_t *sinOut, real_t *cosOut, real_t* epsilonOrCompare, const bool_t doEpsilon, const int epsilonDigits, realContext_t *realContext) {
+  char tmpEpsilon[16];
+  bool_t endSin = (sinOut == NULL), endCos = (cosOut == NULL);
+  int i;
+
+  if(doEpsilon) {
+    sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
+    stringToReal(tmpEpsilon, (real_t*)epsilonOrCompare, realContext);
   }
+  realCopy(a, (real_t*)angle);
+  realMultiply((real_t*)angle, (real_t*)angle, (real_t*)a2, realContext);
+  uInt32ToReal(1, (real_t*)j);
+  uInt32ToReal(1, (real_t*)t);
+  uInt32ToReal(1, (real_t*)sin);
+  uInt32ToReal(1, (real_t*)cos);
 
-  // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-  if(realCompareGreaterEqual(&angle, angle90)) {        // angle >= 90°
-    realSubtract(&angle, angle90, &angle, realContext); // angle - 90° --> angle
-    swap = true;
-    cosNeg = !cosNeg;
-  }
+  for(i=1; !(endSin && endCos) && i<TaylorIterationMax; i++) { // it goes up to 31 max in the test suite
+    realAdd((real_t*)j, const_1, (real_t*)j, realContext);
+    realDivide((real_t*)a2, (real_t*)j, (real_t*)z, realContext);
+    realMultiply((real_t*)t, (real_t*)z, (real_t*)t, realContext);
+    realChangeSign((real_t*)t);
+    int tExp = realGetExponent((real_t*)t);
 
-  // sin(90-x) = cos(x), cos(90-x) = sin(x)
-  if(realCompareEqual(&angle, angle45)) { // angle == 45°
-    if(sinOut != NULL) {
-     realCopy(const_root2on2, sinOut);
-    }
-    if(cosOut != NULL) {
-      realCopy(const_root2on2, cosOut);
-    }
-    if(tanOut != NULL) {
-      realCopy(const_1, tanOut);
-    }
-  }
-  else { // angle < 90
-    if(realCompareGreaterThan(&angle, angle45)) {         // angle > 45°
-      realSubtract(angle90, &angle, &angle, realContext); // 90° - angle  --> angle
-      swap = !swap;
-    }
-
-    convertAngleFromTo(&angle, angularMode, amRadian, realContext);
-    WP34S_SinCosTanTaylor(&angle, swap, swap?cosOut:sinOut, swap?sinOut:cosOut, tanOut, realContext); // angle in radian
-  }
-
-  realContext->digits = savedContextDigits;
-
-  if(sinOut != NULL) {
-    if(sinNeg) {
-      realSetNegativeSign(sinOut);
-      if(tanOut != NULL) {
-        realSetNegativeSign(tanOut);
+    if(!endCos) {
+      realCopy((real_t*)cos, (real_t*)z);
+      realAdd((real_t*)cos, (real_t*)t, (real_t*)cos, realContext);
+      if(doEpsilon) {
+        realCopyAbs((real_t*)t, (real_t*)z);
       }
-    }
-    if(realIsZero(sinOut)) {
-      realSetPositiveSign(sinOut);
-      if(tanOut != NULL) {
-        realSetPositiveSign(tanOut);
+      else {
+        realCompare((real_t*)cos, (real_t*)z, (real_t*)epsilonOrCompare, realContext);
       }
+      endCos = (!doEpsilon && realIsZero((real_t*)epsilonOrCompare)) || (doEpsilon && realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
     }
-    realPlus(sinOut, sinOut, realContext);
+
+    realAdd((real_t*)j, const_1, (real_t*)j, realContext);
+    realDivide((real_t*)t, (real_t*)j, (real_t*)t, realContext);
+    tExp = max(tExp, realGetExponent((real_t*)t));
+
+    if(!endSin) {
+      realCopy((real_t*)sin, (real_t*)z);
+      realAdd((real_t*)sin, (real_t*)t, (real_t*)sin, realContext);
+      if(doEpsilon) {
+        realCopyAbs((real_t*)t, (real_t*)z);
+      }
+      else {
+        realCompare((real_t*)sin, (real_t*)z, (real_t*)epsilonOrCompare, realContext);
+      }
+      endSin = (!doEpsilon && realIsZero((real_t*)epsilonOrCompare)) || (doEpsilon && realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
+    }
+
+   #if !defined(TESTSUITE_BUILD)
+     if(checkHalfSec()) {
+       char ss[100];
+       sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
+       ss[40] = 0; //Hard limit to screen display
+       #if defined(DEBUGTAYLOR)
+         printf("%s%d\n",ss,epsilonDigits);
+       #endif //DEBUGTAYLOR
+       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+       }
+     }
+     #if !defined(PC_BUILD)
+       if(exitKeyWaiting()) {
+           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+         break;
+       }
+     #endif //PC_BUILD
+   #endif //TESTSUITE_BUILD
+
+    #ifdef DEBUGTAYLOR
+      if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
+        realToString((real_t*)sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
+        realToString((real_t*)cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
+      }
+    #endif //DEBUGTAYLOR
   }
 
-  if(cosOut != NULL) {
-    if(cosNeg) {
-      realSetNegativeSign(cosOut);
-      if(tanOut != NULL) {
-        realChangeSign(tanOut);
-      }
-    }
-    if(realIsZero(cosOut)) {
-      realSetPositiveSign(cosOut);
-    }
-    realPlus(cosOut, cosOut, realContext);
+  if(realIsZero((real_t*)cos)) {
+    realSetPositiveSign((real_t*)&cos);
   }
-
-  if(tanOut != NULL && realIsZero(cosOut)) {
-    realSetPositiveSign(tanOut);
-    realPlus(tanOut, tanOut, realContext);
+  if(realIsZero((real_t*)sin)) {
+    realSetPositiveSign((real_t*)sin);
   }
+  realMultiply((real_t*)sin, (real_t*)angle, (real_t*)sin, realContext);
 }
 
 
 // Calculate sin, cos by Taylor series and tan by division
 void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
-  real_t angle, a2, t, j, z, sin, cos, compare;
-  int i;
-  bool_t endSin = (sinOut == NULL), endCos = (cosOut == NULL);
+  const bool_t doEpsilon = false;
+  int   epsilonDigits;
+  real_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
+
   int32_t savedContextDigits = realContext->digits;
 
   if(realContext->digits > 51) {
     realContext->digits = 75;
+    epsilonDigits = 39;           //only applicable if doEpsilon is true
   }
   else {
     realContext->digits = 51;
+    epsilonDigits = 39;           //only applicable if doEpsilon is true
   }
 
-  realCopy(a, &angle);
-  realMultiply(&angle, &angle, &a2, realContext);
-  uInt32ToReal(1, &j);
-  uInt32ToReal(1, &t);
-  uInt32ToReal(1, &sin);
-  uInt32ToReal(1, &cos);
-
-  for(i=1; !(endSin && endCos) && i<1000; i++) { // it goes up to 31 max in the test suite
-    realAdd(&j, const_1, &j, realContext);
-    realDivide(&a2, &j, &z, realContext);
-    realMultiply(&t, &z, &t, realContext);
-    realChangeSign(&t);
-
-    if(!endCos) {
-      realCopy(&cos, &z);
-      realAdd(&cos, &t, &cos, realContext);
-      realCompare(&cos, &z, &compare, realContext);
-      endCos = realIsZero(&compare);
-    }
-
-    realAdd(&j, const_1, &j, realContext);
-    realDivide(&t, &j, &t, realContext);
-
-    if(!endSin) {
-      realCopy(&sin, &z);
-      realAdd(&sin, &t, &sin, realContext);
-      realCompare(&sin, &z, &compare, realContext);
-      endSin = realIsZero(&compare);
-    }
-  }
-
-  if(realIsZero(&cos)) {
-    realSetPositiveSign(&cos);
-  }
-
-  if(realIsZero(&sin)) {
-    realSetPositiveSign(&sin);
-  }
-
-  realMultiply(&sin, &angle, &sin, realContext);
+  doTaylorIterations(a, &angle, &a2, &t, &j, &z, &sin, &cos, sinOut, cosOut, &epsilonOrCompare, doEpsilon, epsilonDigits, realContext);
 
   realContext->digits = savedContextDigits;
 
@@ -243,6 +328,64 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
     }
   }
 }
+
+
+void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+  bool_t sinNeg = false, cosNeg = false, swap = false;
+  real1071_t angle;
+
+
+  if(realIsNaN(an)) {
+    if(sinOut != NULL) {
+     realCopy(const_NaN, sinOut);
+    }
+    if(cosOut != NULL) {
+      realCopy(const_NaN, cosOut);
+    }
+    if(tanOut != NULL) {
+      realCopy(const_NaN, tanOut);
+    }
+   return;
+  }
+
+  realCopy(an, (real_t*)&angle);
+
+  int32_t savedContextDigits = realContext->digits;
+
+  doWP34S_SinCosTanTaylor((real_t*)&angle, &sinNeg, &cosNeg, &swap, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, angularMode, savedContextDigits, realContext);
+
+  }
+
+
+
+// Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
+void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
+  const bool_t doEpsilon = false;
+  real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
+
+  doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, doEpsilon, 1010, realContext);
+
+  if(sinOut != NULL) {
+    realPlus((real_t*)&sin, sinOut, realContext);
+  }
+  if(cosOut != NULL) {
+    realPlus((real_t*)&cos, cosOut, realContext);
+  }
+  if(tanOut != NULL) {
+    if(sinOut == NULL || cosOut == NULL) {
+      realCopy(const_NaN, tanOut);
+    }
+    else {
+      if(swap) {
+        realDivide((real_t*)&cos, (real_t*)&sin, tanOut, realContext);
+      }
+      else {
+        realDivide((real_t*)&sin, (real_t*)&cos, tanOut, realContext);
+      }
+    }
+  }
+}
+
 
 
 void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {

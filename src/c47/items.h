@@ -2630,7 +2630,36 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define LAST_ITEM                   2553
+
+#define ITM_2553                    2553
+#define ITM_2554                    2554
+#define ITM_2555                    2555
+
+#define ITM_XFN                     2556
+#define MNU_XXFCNS                  2557
+#define ITM_xsin                    2558
+#define ITM_xcos                    2559
+#define ITM_xtan                    2560
+#define ITM_xpi                     2561
+#define ITM_2562                    2562
+#define ITM_xatan2                  2563
+#define ITM_xarcsin                 2564
+#define ITM_xarccos                 2565
+#define ITM_xarctan                 2566
+#define ITM_xLN                     2567
+#define ITM_xLOG                    2568
+#define ITM_xEXP                    2569
+#define ITM_x10X                    2570
+#define ITM_xPOWER                  2571
+#define ITM_xSQRT                   2572
+#define ITM_xADD                    2573
+#define ITM_xSUB                    2574
+#define ITM_xMULT                   2575
+#define ITM_xDIV                    2576
+#define ITM_xMOD                    2577
+#define ITM_xMODANG                 2578
+
+#define LAST_ITEM                   2579
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

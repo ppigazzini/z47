@@ -279,6 +279,917 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
 #endif // !TESTSUITE_BUILD
 
 
+
+
+
+
+//void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
+//  C47_WP34S_SinCosTanTaylor((real_t*)an, swapTemp, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+//}
+void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
+  C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+}
+
+// Replacement Taylor sin/cos/tan function for high accuracy
+// Capable of 1071 digit input and a final accuracy parameter, being the number of required digits.
+//
+// Only the mod reduction needs double the digits. The Taylor function has 1071 only, and the internal angle manipulation (and reduction) is on 1071.
+// That means the major bignumber  reduction must be done outside Taylor
+
+#undef DEBUG_XFN
+
+
+#if !defined(PC_BUILD)
+  #undef DEBUG_XFN
+#endif
+
+#define debugLongNumberLimit 100
+#define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
+
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+// Especially convergence modified
+void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
+  int doubles = 0;
+  int invert;
+  int n;
+  int neg = realIsNegative((real_t*)x);
+  char tmpEpsilon[16]; //-- for epsilon string conversion
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopy((real_t*)x, (real_t*)&a);
+
+  // arrange for a >= 0
+  if(neg) {
+    realChangeSign((real_t*)&a);
+  }
+
+  // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
+  invert = realCompareGreaterThan((real_t*)&a, const_1);
+  if(invert) {
+    realDivide(const_1, (real_t*)&a, (real_t*)&a, realContext);
+  }
+
+  // Range reduce to small enough limit to use taylor series using:
+  //  tan(x/2) = tan(x)/(1+sqrt(1+tan(x)²))
+  //-- create const_1on10 equivalent for 1071 precision
+  uInt32ToReal(10, (real_t*)&z);
+  realDivide(const_1, (real_t*)&z, (real_t*)&z, realContext);
+  for(n=0; n<1000; n++) {
+    if(realCompareLessEqual((real_t*)&a, (real_t*)&z)) {
+      break;
+    }
+    doubles++;
+    // a = a/(1+sqrt(1+a²)) -- at most 3 iterations.
+    realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&b, realContext);
+    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
+    realSquareRoot((real_t*)&b, (real_t*)&b, realContext);
+    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
+    realDivide((real_t*)&a, (real_t*)&b, (real_t*)&a, realContext);
+  }
+
+  // Now Taylor series
+  // atan(x) = x(1-x²/3+x⁴/5-x⁶/7...)
+  // We calculate pairs of terms and stop when the estimate doesn't change
+  //-- use epsilon convergence instead of exact equality
+  sprintf(tmpEpsilon, "1E-%d", accNumberDigits);
+  stringToReal(tmpEpsilon, (real_t*)&epsilon, realContext);
+
+  uInt32ToReal(3, (real_t*)angle);
+  uInt32ToReal(5, (real_t*)&j);
+  realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&a2, realContext); // a²
+  realCopy((real_t*)&a2, (real_t*)&t);
+  realDivide((real_t*)&t, (real_t*)angle, (real_t*)angle, realContext); // s = 1-t/3 -- first two terms
+  realSubtract(const_1, (real_t*)angle, (real_t*)angle, realContext);
+
+  do { // Loop until there is no digits changed
+    realCopy((real_t*)angle, (real_t*)&last);
+
+    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
+    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
+    realAdd((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
+
+    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
+
+    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
+    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
+    realSubtract((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
+
+    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
+
+    //-- use epsilon convergence test instead of exact equality
+    realSubtract((real_t*)angle, (real_t*)&last, (real_t*)&b, realContext);
+    realCopyAbs((real_t*)&b, (real_t*)&b);
+  } while(!realCompareLessThan((real_t*)&b, (real_t*)&epsilon));
+
+  realMultiply((real_t*)angle, (real_t*)&a, (real_t*)angle, realContext);
+
+  while(doubles) {
+    realAdd((real_t*)angle, (real_t*)angle, (real_t*)angle, realContext);
+    doubles--;
+  }
+
+  if(invert) {
+    //-- use high precision π/2 constant
+    realDivide(const1071_2pi, const_4, (real_t*)&a, realContext);
+    realSubtract((real_t*)&a, (real_t*)angle, (real_t*)angle, realContext);
+  }
+
+  if(neg) {
+    realChangeSign((real_t*)angle);
+  }
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t abx, z;
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopyAbs((real_t*)x, (real_t*)&abx);
+  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  // angle = 2*atan(x/(1+sqrt(1-x*x)))
+  realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
+  realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
+  realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
+  realAdd((real_t*)&z, const_1, (real_t*)&z, realContext);
+  realDivide((real_t*)x, (real_t*)&z, (real_t*)&z, realContext);
+  WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
+  realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
+  real1071_t abx, z;
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  realCopyAbs((real_t*)x, (real_t*)&abx);
+  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return;
+  }
+
+  // angle = 2*atan((1-x)/sqrt(1-x*x))
+  if(realCompareEqual((real_t*)x, const_1)) {
+    realZero((real_t*)angle);
+  }
+  else {
+    realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
+    realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
+    realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
+    realSubtract(const_1, (real_t*)x, (real_t*)&abx, realContext);
+    realDivide((real_t*)&abx, (real_t*)&z, (real_t*)&z, realContext);
+    WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
+    realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
+  }
+}
+
+// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
+void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext, int accNumberDigits) {
+  real1071_t r, t; //-- removed pi constants, calculate on demand
+  const bool_t xNeg = realIsNegative((real_t*)x);
+  const bool_t yNeg = realIsNegative((real_t*)y);
+
+  if(realIsNaN((real_t*)x) || realIsNaN((real_t*)y)) {
+    realCopy(const_NaN, (real_t*)atan);
+    return;
+  }
+
+  if(realCompareEqual((real_t*)y, const_0)) {
+    if(yNeg) {
+      if(realCompareEqual((real_t*)x, const_0)) {
+        if(xNeg) {
+          realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
+          realMinus((real_t*)&t, (real_t*)atan, realContext);
+        }
+        else {
+          realCopy((real_t*)y, (real_t*)atan);
+        }
+      }
+      else if(xNeg) {
+        realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
+        realMinus((real_t*)&t, (real_t*)atan, realContext);
+      }
+      else {
+        realCopy((real_t*)y, (real_t*)atan);
+      }
+    }
+    else {
+      if(realCompareEqual((real_t*)x, const_0)) {
+        if(xNeg) {
+          realDivide(const1071_2pi, const_2, (real_t*)atan, realContext); //-- calculate π
+        }
+        else {
+          realZero((real_t*)atan);
+        }
+      }
+      else if(xNeg) {
+        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate -π
+      }
+      else {
+        realZero((real_t*)atan);
+      }
+    }
+    return;
+  }
+
+  if(realCompareEqual((real_t*)x, const_0)) {
+    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    if(yNeg) {
+      realSetNegativeSign((real_t*)atan);
+    }
+    return;
+  }
+
+  if(realIsInfinite((real_t*)x)) {
+    if(xNeg) {
+      if(realIsInfinite((real_t*)y)) {
+        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate 3π/4
+        uInt32ToReal(3, (real_t*)&r);
+        realMultiply((real_t*)&t, (real_t*)&r, (real_t*)atan, realContext);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+      else {
+        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate π
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+    }
+    else {
+      if(realIsInfinite((real_t*)y)) {
+        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate π/4
+        realDivide((real_t*)&t, const_2, (real_t*)atan, realContext);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+      else {
+        realZero((real_t*)atan);
+        if(yNeg) {
+          realSetNegativeSign((real_t*)atan);
+        }
+      }
+    }
+    return;
+  }
+
+  if(realIsInfinite((real_t*)y)) {
+    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    if(yNeg) {
+      realSetNegativeSign((real_t*)atan);
+    }
+    return;
+  }
+
+  realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
+  WP34S_Atan1071(&t, &r, realContext, accNumberDigits);
+  if(xNeg) {
+    realDivide(const1071_2pi, const_2, (real_t*)&t, realContext); //-- calculate π
+    if(yNeg) {
+     realSetNegativeSign((real_t*)&t);
+    }
+  }
+  else {
+    realZero((real_t*)&t);
+  }
+
+  realAdd((real_t*)&r, (real_t*)&t, (real_t*)atan, realContext);
+  if(realCompareEqual((real_t*)atan, const_0) && yNeg) {
+    realSetNegativeSign((real_t*)atan);
+  }
+}
+
+
+// Does not seem needed and solved with the larger pi
+// Manual replacement for big due to to realDivideRemainder not working on very very large input
+// set up for 1071 input, with internal mod reduction for double the digits for the following example which illustrates you need to process double the digits for 2pi
+// const_2139_2pi is available but commented out in generateCatalogs.
+//
+// Start with example, filling 6 digits, 2pi being 6 digits
+//   1000000 MOD 2pi
+//   1000000 / 2pi    =  159155
+//   floor()          =  159155
+//   floorval x 2pi   =  999999    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
+//   subtract from org=  1
+//
+// redo example, with 12 digits, 2pi being 12 digits
+//   1000000 MOD 2pi
+//   1000000 / 2pi    =  159154.943092
+//   floor()          =  159154
+//   floorval x 2pi   =  999994.074379    it is at this point where it is visible that you have only 1 digit of 'info', and to have a reduced angle of 6 digits again, it is clear that you needed 12 digits of pi to start with
+//   subtract from org=  5.925621
+//
+// Hence the 1071 input below, with 'internal 2139' calculation
+
+
+
+// Python code to check XFN
+// import mpmath
+//
+// # Set VERY high precision for intermediate calculations
+// mpmath.mp.dps = 5000  # Much higher than needed for intermediate work
+// print("Computing with ultra-high precision...")
+//
+// # Your large number - use exact string representation
+// big_num_str = '828750482128618081847748861163357'
+// big_num = mpmath.mpf(big_num_str)
+// power_of_ten = mpmath.mpf(10) ** 958
+// full_number = big_num * power_of_ten
+// offset = mpmath.mpf('0.01')
+// total = full_number + offset
+//
+// # Calculate 2π with very high precision
+// two_pi = 2 * mpmath.pi
+// print("Step 2: 2π computed with high precision")
+//
+// # Critical: Use fmod for better numerical stability with large numbers
+// mod_result = mpmath.fmod(total, two_pi)
+// print("Step 3: Modulo operation completed")
+//
+// # Calculate sine
+// result = mpmath.sin(mod_result)
+// print("Step 4: Sine computed")
+//
+// # Display intermediate results for verification
+// print(f"\nIntermediate mod result (first 1070 digits):")
+// print(mpmath.nstr(mod_result, 1071))
+//
+// print(f"\nFinal sine result (1071 decimal places):")
+// # Set final output precision to exactly 1071
+// final_result = mpmath.nstr(result, 1071)
+// print(final_result)
+//
+// # Verification: compute sin of just the mod result again
+// verification = mpmath.sin(mod_result)
+// print(f"\nVerification (should match above):")
+// print(mpmath.nstr(verification, 1071))
+
+
+
+// sine(828750482128618081847748861163357*1E958 + 0.01)
+//
+// PYTHON
+// Intermediate mod result (first 1070 digits):
+// 0.00999999999999999999999999999999991814885893445064422653625528425365316545581953952090469113185628665043733893027080294246576255799624916492090580928341203716963235919507905294264589743146454719532618107341558043169524829017019655050718265859153945024514576959509785098429870467904362402857871970677952284363621425264416384163752566897684332098917619947601931690757044690385178939900639461872624431478968452883037867524595065030330527898870393637804585537512849811147957563083468262913096446074534997011144137575125252181183986245469624315826513790029251505353196858731095651770471821186268165128873540403080943374132678037356016006569941578455819530923337651576168203877996886921302863909892834074235217412636488459607831326808030515844522014285588168489372383240038783267970114902284801153209292440939018522158301093396953707532538635258467568427681542439856158318232971025114920529175544937676510041211042672855284774409177480736721294429908611370473686953902734260514642574760872988949248409864440172671518055632351184646717593537629145137124203303517899831871579423177
+// Final sine result (1071 decimal places):
+// 0.00999983333416666468254243826909964719191584275956241665060790038109737751943136062939182678813774992554629473229750332370715621490346771274042364260733481207579930091833666676865890516708312946658232415495074187566808782438690170848819366309250557240217689230883539964588501343345942503424345401918092640381708871245561262047626890390014927053715590184931856775150614365468723544769684479980591372101638466376032901017889632492616369602918954241317181784298429785029919065092556265136383832781265412371057494279679338767411538542308606925978688772822504718716194090443738323711329780142274102858347138370409683460820768287949200219622288621626395908529914668913564803675082144201652535388459730308277315146734661602328132581896297324525376510542274221570889669260386819583302831170951465269835060685433596401023466236694429027943523078704870353804056216760518070198456557633718920657033656393388926507047300101643252827101266993919619632371422883695358328510790801517693915153363916841513959977838611691213280308131376074641588281164896256764878574949537949167383853119218
+//
+// Taylor 2139, WP34S_BigMod & WP34S_Mod the same: Full accuracy 1071 digits !!!
+// C47 REDUCED ANGLE
+// 0.00999999999999999999999999999999991814885893445064422653625528425365316545581953952090469113185628665043733893027080294246576255799624916492090580928341203716963235919507905294264589743146454719532618107341558043169524829017019655050718265859153945024514576959509785098429870467904362402857871970677952284363621425264416384163752566897684332098917619947601931690757044690385178939900639461872624431478968452883037867524595065030330527898870393637804585537512849811147957563083468262913096446074534997011144137575125252181183986245469624315826513790029251505353196858731095651770471821186268165128873540403080943374132678037356016006569941578455819530923337651576168203877996886921302863909892834074235217412636488459607831326808030515844522014285588168489372383240038783267970114902284801153209292440939018522158301093396953707532538635258467568427681542439856158318232971025114920529175544937676510041211042672855284774409177480736721294429908611370473686953902734260514642574760872988949248409864440172671518055632351184646717593537629145137124203303517899831871579423177
+// C47 Sine
+// 0.00999983333416666468254243826909964719191584275956241665060790038109737751943136062939182678813774992554629473229750332370715621490346771274042364260733481207579930091833666676865890516708312946658232415495074187566808782438690170848819366309250557240217689230883539964588501343345942503424345401918092640381708871245561262047626890390014927053715590184931856775150614365468723544769684479980591372101638466376032901017889632492616369602918954241317181784298429785029919065092556265136383832781265412371057494279679338767411538542308606925978688772822504718716194090443738323711329780142274102858347138370409683460820768287949200219622288621626395908529914668913564803675082144201652535388459730308277315146734661602328132581896297324525376510542274221570889669260386819583302831170951465269835060685433596401023466236694429027943523078704870353804056216760518070198456557633718920657033656393388926507047300101643252827101266993919619632371422883695358328510790801517693915153363916841513959977838611691213280308131376074641588281164896256764878574949537949167383853119215
+//
+// Taylor 1071, WP34S_BigMod & WP34S_Mod the same: accuracy 80 digits !!!
+
+
+// ******************************************************
+// ** XFN: Full 1071 digit Math, 2139 internal mod reduction
+// ** XFN reg with the command to be executed in X in a string COS, SIN, PI, etc.
+// ** input register reg, reg+1, and X
+// ** Reg   : Real / Longinteger containing the real multiplier, typically the exponent 1E-234, but could be any real multiplier
+// ** Reg+1 : Longinteger containing the 1000 digit mantissa
+// ** Reg+2 : Real addtion after multiplication
+// ** output register X & Y & Z (the command in X is dropped)
+// ** if the input register reg = Y, YZT will be dropped.
+// ** Typ: SIN( Y*Z+T ) or SIN (r00*r01+r02) or SIN (M*N+O)
+// **
+// ******************************************************
+
+
+
+int32_t realGetDigits(const real1071_t* x) {
+    return ((decNumber*)x)->digits;
+}
+
+void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
+    #define maxAllowedDigits 1000                          // integer part has at most 1000 digits
+    #if defined(DEBUG_XFN)
+      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal: input: %s\n", tmpString);
+    #endif //DEBUG_XFN
+//--------//--------//--------//--------//-------- pre-check on original x
+    int32_t digits = realGetDigits(x);
+    digits = (digits < c->digits) ? digits : c->digits;   // smaller of reported digits or context precision
+    if (digits <= 34) {                                   // if the data fits a real, assign the integer to 1
+      goto returnUnity;
+    }
+
+//--------//--------//--------//--------//-------- normalize using realPlus() and re-check if it fits
+    real1071_t mantissa;
+    realPlus((real_t*)x, (real_t*)&mantissa, c);          // Normalize to remove trailing zeros with full precision
+    int32_t actualDigits = realGetDigits(&mantissa);      // Get actual significant digits after normalization
+    if (actualDigits <= 34) {                             // Fits in real34: integer = 1, fractional = original
+      goto returnUnity;
+    }
+
+//--------//--------//--------//--------//-------- adjust mantissa to form integer 'mantissa'
+    int32_t actualExponent = realGetExponent(&mantissa);  // For numbers with >34 digits: extract all significant digits as integer, up to 1000
+    if (actualDigits > maxAllowedDigits) actualDigits = maxAllowedDigits;
+    int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
+    mantissa.exponent += scaleAmount;
+    realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
+    cc.round = DEC_ROUND_FLOOR;
+    decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
+    realSetPositiveSign((real_t*)&mantissa);
+    realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
+
+    int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
+    for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
+        tmpString[i] = '\0';
+    }
+    if (strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
+        strcpy(tmpString, "0");
+    }
+
+    #if defined(DEBUG_XFN)
+      printf("decomposeReal: longintegerstring: %s\n", tmpString);
+    #endif //DEBUG_XFN
+
+    stringToLongInteger(tmpString, 10, integerPart);
+    if(longIntegerIsZero(integerPart)) {                  // failed string manipulation
+      goto returnUnity;
+    }
+    real1071_t integerAsReal;
+    convertLongIntegerToReal(integerPart, (real_t*)&integerAsReal, c);             // use the actual integer (from the text) that will be output
+    realDivide((real_t*)x, (real_t*)&integerAsReal, (real_t*)fractionalPart, c);   // to calculate the real multiplier, normally the exponent
+    return;
+
+returnUnity:
+    uInt32ToLongInteger(1, integerPart);
+    realCopy((real_t*)x, (real_t*)fractionalPart);
+    return;
+
+}
+
+
+  #define accuracy 1050 // passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
+  #define maxXfnExponent 1000
+
+  #define XFN_NOTFOUND 99
+  #define FT_NILADIC  100
+  #define FT_MONADIC  101
+  #define FT_DYADIC   102
+
+typedef struct {
+      const char* name;
+      int function_id;
+      int function_type;
+  } FunctionLookup;
+
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
+      {"PI",       ITM_xpi       ,FT_NILADIC },
+      {STD_pi,     ITM_xpi       ,FT_NILADIC },
+      {"SIN",      ITM_xsin      ,FT_MONADIC },
+      {"COS",      ITM_xcos      ,FT_MONADIC },
+      {"TAN",      ITM_xtan      ,FT_MONADIC },
+      {"ASIN",     ITM_xarcsin   ,FT_MONADIC },
+      {"ACOS",     ITM_xarccos   ,FT_MONADIC },
+      {"ATAN",     ITM_xarctan   ,FT_MONADIC },
+      {"LN",       ITM_xLN       ,FT_MONADIC },
+      {"LOG",      ITM_xLOG      ,FT_MONADIC },
+      {"EXP",      ITM_xEXP      ,FT_MONADIC },
+      {"10X",      ITM_x10X      ,FT_MONADIC },
+      {"SQRT",     ITM_xSQRT     ,FT_MONADIC },
+      {"MODANG",   ITM_xMODANG   ,FT_MONADIC },
+      {"ATAN2",    ITM_xatan2    ,FT_DYADIC  },
+      {"ADD",      ITM_xADD      ,FT_DYADIC  },
+      {"SUB",      ITM_xSUB      ,FT_DYADIC  },
+      {"POWER",    ITM_xPOWER    ,FT_DYADIC  },
+      {"MULT",     ITM_xMULT     ,FT_DYADIC  },
+      {"DIV",      ITM_xDIV      ,FT_DYADIC  },
+      {"MOD",      ITM_xMOD      ,FT_DYADIC  },
+      {"+",        ITM_xADD      ,FT_DYADIC  },
+      {"-",        ITM_xSUB      ,FT_DYADIC  },
+      {"^",        ITM_xPOWER    ,FT_DYADIC  },
+      {"*",        ITM_xMULT     ,FT_DYADIC  },
+      {"/",        ITM_xDIV      ,FT_DYADIC  },
+      {STD_DIVIDE, ITM_xDIV      ,FT_DYADIC  },
+      {NULL,    0            ,0   }
+  };
+
+
+  static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
+    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
+        const char* a = name;
+        const char* b = entry->name;
+        while ((*a && *b) &&
+               ((*a >= 'a' && *a <= 'z' ? *a & ~0x20 : *a) ==
+                (*b >= 'a' && *b <= 'z' ? *b & ~0x20 : *b))) {
+            a++;
+            b++;
+        }
+        if (*a == 0 && *b == 0) {
+            *functionType = entry->function_type;
+            return entry->function_id;
+        }
+    }
+    return XFN_NOTFOUND;
+  }
+
+  static int lookupFunctionId(int function_id) {
+      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
+          if (entry->function_id == function_id) {
+              return entry->function_type;
+          }
+      }
+      return XFN_NOTFOUND;
+  }
+
+  static bool getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
+    if(getRegisterDataType(registerNo) == dtLongInteger) {
+        longInteger_t lint;
+        convertLongIntegerRegisterToLongInteger(registerNo, lint);
+        longIntegerToString(lint, 10, tmpString);
+        longIntegerFree(lint);
+        decNumberFromString((real_t *)result, tmpString, c);
+        return true;
+    } else {
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Invalid longinteger register");
+            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+    }
+  }
+
+  static angularMode_t getAngleModeForRegister(int registerNo) {
+    if(getRegisterDataType(registerNo) == dtReal34) {
+        if(getRegisterAngularMode(registerNo) == amNone) {
+          return currentAngularMode;
+        } else {
+          return getRegisterAngularMode(registerNo);
+        }
+    } else {
+        return currentAngularMode;
+    }
+  }
+
+  static bool calculateExpression(real1071_t* x, const real_t* y, const real_t* z, realContext_t* c) {
+    realMultiply((real_t *)x, y, (real_t *)x, c);
+    realAdd((real_t *)x, z, (real_t *)x, c);
+    return true;
+  }
+
+  static bool validateExponent(const real1071_t* x) {
+    if(realGetExponent(x) > maxXfnExponent) {
+        return false;
+    }
+    return true;
+  }
+
+  static bool readThreeRegisters(int registerNo, real1071_t* x, real_t* y, real_t* z, realContext_t* c) {
+    if(!getLongintegerRegisterAsReal1071(registerNo+1, x, c)) {    // check for long integer first, to first have that error message if invalid number
+        return false;
+    }
+    if(!getRegisterAsReal(registerNo, y)) { //ignore anglemode
+        return false;
+    }
+    if(!getRegisterAsReal(registerNo+2, z)) { //ignore anglemode
+        return false;
+    }
+    return true;
+  }
+
+  static bool getCombinedParameter(int param, int registerNo, real1071_t* x, angularMode_t* angleMode, realContext_t* c) {
+    real_t y, z;
+    *angleMode = getAngleModeForRegister(registerNo);
+    if(!readThreeRegisters(registerNo, x, &y, &z, c)) {
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Invalid input registers");
+            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+    }
+    calculateExpression(x, &y, &z, c);
+    #if defined(DEBUG_XFN)
+        realToString((real_t *)x, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
+    #endif //DEBUG_XFN
+    if(!validateExponent(x)) {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(x), maxXfnExponent);
+            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+    }
+    return true;
+  }
+#endif //TESTSUITE_BUILDests
+
+
+//--------//--------//-- MAIN function dispatcher --//--------//--------//--------
+  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
+
+  void fnXXfn(uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------
+    int ErrorLocation = 0;
+    int functionType = lookupFunctionId(function);
+    if(functionType == XFN_NOTFOUND) {
+      ErrorLocation = 11;
+    }
+    doXfn(REGISTER_X, function, functionType, ErrorLocation);
+  }
+
+  void fnXfn(uint16_t registerNo) {  //--------//--------//-- Parsing function --//--------//--------//--------
+    int ErrorLocation = 0;
+    int function = XFN_NOTFOUND;
+    int functionType = XFN_NOTFOUND;
+    if(getRegisterDataType(REGISTER_X) == dtString) {
+        stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
+        function = lookupFunction(tmpString, &functionType);
+        if(function == XFN_NOTFOUND) {
+          ErrorLocation = 12;
+        }
+    } else {
+        ErrorLocation = 13;
+    }
+    doXfn(registerNo, function, functionType, ErrorLocation);
+  }
+
+
+  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation){
+    #if !defined(TESTSUITE_BUILD)
+
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      int location = 0;
+    #endif //EXTRA_INFO_ON_CALC_ERROR
+
+    if(ErrorLocation != 0 || function == XFN_NOTFOUND || functionType == XFN_NOTFOUND) {
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        location = ErrorLocation;
+      #endif //EXTRA_INFO_ON_CALC_ERROR
+      goto noFunction;
+      }
+
+    real1071_t paramX, paramY, x2;
+    real_t tmpR;
+
+    realContext_t c = ctxtReal75;
+    // Automatic change over to 75 digits for DM42 hardware, and 1071 digits for DM42n and simulator
+    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+      c.digits = 1071;
+    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
+
+    angularMode_t angleMode = currentAngularMode;
+    angularMode_t tmpAngle;
+
+    if(functionType == FT_NILADIC) {
+      ; //no input needed, continue
+    } else
+    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+      if(!getCombinedParameter(1, registerNo, &paramX, &angleMode, &c)) {   //use the angle of the 1st param only, if set
+        return;
+      }
+      if(functionType == FT_DYADIC) {
+        if(!getCombinedParameter(2, registerNo + 3, &paramY, &tmpAngle, &c)) { // ignore angle
+          return;
+        }
+      }
+    } else {
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        location = 3;
+      #endif //EXTRA_INFO_ON_CALC_ERROR
+      goto noFunction;
+    }
+
+    #if defined(DEBUG_XFN)
+      printf("Angle mode = %d;  function number = %d\n", angleMode, function);
+    #endif //DEBUG_XFN
+
+//--------//--------//-- Executing function --//--------//--------//--------
+    switch(function) {
+
+//--------//NILADIC FUNCTIONS
+      case ITM_xpi: {
+        realCopy(const1071_2pi, (real_t*)&paramX);
+        realDivide((real_t*)&paramX, const_2, (real_t*)&paramX, &c);
+        break;
+      }
+
+//--------//MONADIC FUNCTIONS
+      case ITM_xsin:
+      case ITM_xcos:
+      case ITM_xtan: {
+          #if defined(DEBUG_XFN)
+            realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
+            realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
+            printf("angleMode %d\n", angleMode);
+          #endif //DEBUG_XFN
+
+          //WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+
+          #if defined(DEBUG_XFN)
+            realToString((real_t *)&paramX, tmpString); /*tmpString[debugLongNumberLimit]=0; */printf(" ParamX reduced angle: %s\n",tmpString);
+          #endif //DEBUG_XFN
+
+          if(realIsSpecial((real_t *)&paramX)) {
+            #if defined(DEBUG_XFN)
+              printf("Real is Special before SIN/COS/TAN, forcing NaN output, bypassing Taylor et al.\n");
+            #endif //DEBUG_XFN
+            realCopy(const_NaN, (real_t *)&paramX);
+          } else {
+            real1071_t aa,bb;
+            realCopy(const_0,(real_t*)&aa);
+            realCopy(const_0,(real_t*)&bb);
+            if(function == ITM_xsin) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
+            if(function == ITM_xcos) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
+            if(function == ITM_xtan) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
+          }
+          break;
+      }
+
+      case ITM_xarcsin: {
+WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
+  //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+        break;
+      }
+      case ITM_xarccos: {
+WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
+  //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
+        break;
+      }
+      case ITM_xarctan: {
+WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
+  //      WP34S_Atan((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
+        break;
+      }
+
+      case ITM_xLN: {
+        decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
+        break;
+      }
+      case ITM_xLOG: {
+        decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
+        decNumberLn((real_t *)&x2, const_10, &c);
+        realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
+        break;
+      }
+      case ITM_xEXP: {
+        decNumberExp((real_t *)&paramX, (real_t *)&paramX, &c);
+        break;
+      }
+      case ITM_x10X: {
+        realPower(const_10, (real_t *)&paramX, (real_t *)&paramX, &c);
+        break;
+      }
+      case ITM_xSQRT: {
+        realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
+        break;
+      }
+      case ITM_xMODANG: {
+        WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+        break;
+      }
+//--------//DYADIC FUNCTIONS
+      case ITM_xADD: {
+        realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xSUB: {
+        realSubtract  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xPOWER: {
+        realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xMULT: {
+        realMultiply  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xDIV: {
+        realDivide    ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xMOD: {
+        WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+        break;
+      }
+      case ITM_xatan2: {
+WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
+        break;
+      }
+
+//--------//No function
+      default: {
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          location = 5;
+        #endif //EXTRA_INFO_ON_CALC_ERROR
+        goto noFunction;
+      }
+    }
+
+    #if defined(DEBUG_XFN)
+      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+      realToString((real_t *)&paramX, tmpString); tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
+    #endif //DEBUG_XFN
+
+//--------//--------//-- Processing stack output  --//--------//--------//--------
+
+
+    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+      //If the input registers were Y, Z, T, then drop the stack input
+      if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
+        if(registerNo == REGISTER_Y) {
+          fnDropY(NOPARAM); //y
+        }
+        fnDropY(NOPARAM); //z
+        fnDropY(NOPARAM); //t
+      }
+    } else
+
+    if(functionType == FT_NILADIC && registerNo == REGISTER_X) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+    }
+
+
+    //Step 1: Send a 0 addition term to the stack output
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    realCopy(const_0, &tmpR);
+    convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+    //Step 1: Send integer part to stack output
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    longInteger_t integerOutput;
+    longIntegerInit(integerOutput);
+    decomposeReal(&paramX, integerOutput, &paramX, &c);
+    convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
+    longIntegerFree(integerOutput);
+
+    //Step 2: Send real multiplier to the stack output
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    realPlus((real_t *)&paramX, &tmpR, &ctxtReal75);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    switch(function) {
+      case ITM_xarcsin:
+      case ITM_xarccos:
+      case ITM_xarctan:
+      case ITM_xatan2: {
+        convertRealToResultRegister(&tmpR, REGISTER_X, currentAngularMode);
+        break;
+      }
+      default: {
+        convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
+        break;
+      }
+    }
+
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+    //Step 3: debug stack output
+    #if defined(DEBUG_XFN)
+      printRegisterToConsole(REGISTER_Z,"\nZ:","\n");
+      printRegisterToConsole(REGISTER_Y,"\nY:","\n");
+      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+    #endif //DEBUG_XFN
+
+    return;
+
+
+noFunction:
+    displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Incorrect function code %d (location %d)", function, location);
+      moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  #endif //TESTSUITE_BUILD
+}
+
+
+
+
+
 void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
@@ -2962,8 +3873,11 @@ void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
     realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
   }
+  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_2139) { // 2139 digit constant
+    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
+  }
   else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), rVal);
+    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_2139 * REAL2139_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071 - NUMBER_OF_CONSTANTS_2139) * REAL34_SIZE_IN_BYTES), rVal);
   }
 }
 

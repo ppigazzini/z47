@@ -10,6 +10,11 @@ int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 
 void standardScreenDump(void);
+void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc);
+void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits);
+
+void fnXfn          (uint16_t registerNo);
+void fnXXfn         (uint16_t function);
 
 void fnEdit         (uint16_t unusedParamButMandatory);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
