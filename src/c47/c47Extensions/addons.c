@@ -35,10 +35,9 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 
 
-void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
-  C47_WP34S_SinCosTanTaylor((real_t*)an, swapTemp, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
-}
-
+//void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
+//  C47_WP34S_SinCosTanTaylor((real_t*)an, swapTemp, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
+//}
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
   C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
 }
@@ -50,8 +49,13 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 // That means the major bignumber  reduction must be done outside Taylor
 
 #undef DEBUG_XFN
-#define debugLongNumberLimit 100
 
+
+#if !defined(PC_BUILD)
+  #undef DEBUG_XFN
+#endif
+
+#define debugLongNumberLimit 100
 #define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
 
@@ -347,21 +351,6 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
 //   subtract from org=  5.925621
 //
 // Hence the 1071 input below, with 'internal 2139' calculation
-
-//void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-//    real2139_t out, out2;
-//    real1071_t floorval;
-//    realContext_t c = *realContext;
-//
-//    c.digits = 1071;
-//    realDivide(x, y, (real_t *)&out, &c);                                           // Divide x by y to get quotient
-//    realToIntegralValue((real_t *)&out, (real_t *)&floorval, RM_FLOOR, &c);         // Floor the quotient
-//    c.digits = 2139;
-//    realMultiply((real_t *)&floorval, y, (real_t *)&out, &c);                       // Multiply floored quotient by divisor
-//    realSubtract(x, (real_t *)&out, (real_t *)&out2, &c);                           // Subtract from original dividend to get remainder
-//    c.digits = 1071;
-//    realPlus((real_t *)&out2, res, &c);
-//}
 
 
 
@@ -667,8 +656,13 @@ typedef struct {
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
   static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
 
-  void fnXXfn(uint16_t function) {   //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
-    doXfn(REGISTER_X, function, lookupFunctionId(function), 0);
+  void fnXXfn(uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------
+    int ErrorLocation = 0;
+    int functionType = lookupFunctionId(function);
+    if(functionType == XFN_NOTFOUND) {
+      ErrorLocation = 11;
+    }
+    doXfn(REGISTER_X, function, functionType, ErrorLocation);
   }
 
   void fnXfn(uint16_t registerNo) {  //--------//--------//-- Parsing function --//--------//--------//--------
@@ -677,19 +671,13 @@ typedef struct {
     int functionType = XFN_NOTFOUND;
     if(getRegisterDataType(REGISTER_X) == dtString) {
         stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
-
         function = lookupFunction(tmpString, &functionType);
         if(function == XFN_NOTFOUND) {
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            ErrorLocation = 1;
-          #endif //EXTRA_INFO_ON_CALC_ERROR
+          ErrorLocation = 12;
         }
     } else {
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          ErrorLocation = 2;
-        #endif //EXTRA_INFO_ON_CALC_ERROR
+        ErrorLocation = 13;
     }
-
     doXfn(registerNo, function, functionType, ErrorLocation);
   }
 
@@ -701,18 +689,18 @@ typedef struct {
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
 
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      if(ErrorLocation != 0) {
+    if(ErrorLocation != 0 || function == XFN_NOTFOUND || functionType == XFN_NOTFOUND) {
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         location = ErrorLocation;
-        goto noFunction;
+      #endif //EXTRA_INFO_ON_CALC_ERROR
+      goto noFunction;
       }
-    #endif //EXTRA_INFO_ON_CALC_ERROR
-  
+
     real1071_t paramX, paramY, x2;
     real_t tmpR;
 
     realContext_t c = ctxtReal75;
-    // 75 digit for DM42 hardware, and 1071 digit for DM42n and simulator
+    // Automatic change over to 75 digits for DM42 hardware, and 1071 digits for DM42n and simulator
     #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
       c.digits = 1071;
     #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
@@ -788,24 +776,22 @@ typedef struct {
       case ITM_xarcsin: {
 WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
-    //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
         break;
       }
       case ITM_xarccos: {
-WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
+WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
   //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
-    //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
       case ITM_xarctan: {
-
 WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
-
   //      WP34S_Atan((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
-    //    convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
-    
+
       case ITM_xLN: {
         decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
         break;
@@ -859,6 +845,7 @@ WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
       }
       case ITM_xatan2: {
 WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
+        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
         break;
       }
 
@@ -879,13 +866,20 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
 //--------//--------//-- Processing stack output  --//--------//--------//--------
 
 
-    //If the input registers were Y, Z, T, then drop the stack input
-    if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
-      if(registerNo == REGISTER_Y) {
-        fnDropY(NOPARAM); //y
+    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+      //If the input registers were Y, Z, T, then drop the stack input
+      if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
+        if(registerNo == REGISTER_Y) {
+          fnDropY(NOPARAM); //y
+        }
+        fnDropY(NOPARAM); //z
+        fnDropY(NOPARAM); //t
       }
-      fnDropY(NOPARAM); //z
-      fnDropY(NOPARAM); //t
+    } else
+
+    if(functionType == FT_NILADIC && registerNo == REGISTER_X) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
     }
 
 
@@ -909,7 +903,20 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
     liftStack();
     realPlus((real_t *)&paramX, &tmpR, &ctxtReal75);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
+    switch(function) {
+      case ITM_xarcsin:
+      case ITM_xarccos:
+      case ITM_xarctan:
+      case ITM_xatan2: {
+        convertRealToResultRegister(&tmpR, REGISTER_X, currentAngularMode);
+        break;
+      }
+      default: {
+        convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
+        break;
+      }
+    }
+
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
     //Step 3: debug stack output
@@ -1524,7 +1531,7 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
     if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
       return false;
     }
-  } 
+  }
   else if(d < 2) {
     realCopy(d == 1 ? const_1 : const_0, &x[p].r);
   }
@@ -1543,7 +1550,7 @@ void fnConvertStkToMx(uint16_t constVector) {
 
   if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
   if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
-  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 &&
      !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
 
   if(!saveLastX()) {
@@ -2607,10 +2614,10 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 // **                  : DMX maximum setting 32500
 // **                  : Output numerator, excluding IR factor: 999 999 999
 // **                  : internal max 1E9-1 after IR constant divided
-// **                  : Accuracy 24 digits; 
+// **                  : Accuracy 24 digits;
 // **                  : Internally uses 12 digits in denom seeker for integer conversions
 // **                  : Internally uses 26 digits for denom seeker real
-// **                  : Internally uses 26 digits for fraction comparison, 
+// **                  : Internally uses 26 digits for fraction comparison,
 // ** ************************************************************************************
 // **
 // ** 24 digits guaranteed. 24+2 used, as this has proven to need only 24+1

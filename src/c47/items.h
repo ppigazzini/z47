@@ -1790,7 +1790,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_XTRIG                   1743
+#define ITM_1743                    1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
@@ -2634,14 +2634,14 @@
 #define ITM_2553                    2553
 #define ITM_2554                    2554
 #define ITM_2555                    2555
-#define ITM_2556                    2556
-#define ITM_2557                    2557
 
+#define ITM_XFN                     2556
+#define MNU_XXFCNS                  2557
 #define ITM_xsin                    2558
 #define ITM_xcos                    2559
 #define ITM_xtan                    2560
 #define ITM_xpi                     2561
-#define MNU_XXFN                    2562
+#define ITM_2562                    2562
 #define ITM_xatan2                  2563
 #define ITM_xarcsin                 2564
 #define ITM_xarccos                 2565
