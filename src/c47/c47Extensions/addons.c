@@ -35,9 +35,6 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 
 
-//void C47radSinCosTanTaylor(real1071_t *an, bool_t swapTemp, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int accNumberDigits) {
-//  C47_WP34S_SinCosTanTaylor((real_t*)an, swapTemp, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
-//}
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
   C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
 }
@@ -540,24 +537,24 @@ typedef struct {
   };
 
 
-  static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
-    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
-        const char* a = name;
-        const char* b = entry->name;
-        while ((*a && *b) &&
-               ((*a >= 'a' && *a <= 'z' ? *a & ~0x20 : *a) ==
-                (*b >= 'a' && *b <= 'z' ? *b & ~0x20 : *b))) {
-            a++;
-            b++;
-        }
-        if (*a == 0 && *b == 0) {
-            *functionType = entry->function_type;
-            return entry->function_id;
-        }
-    }
-    return XFN_NOTFOUND;
-  }
-
+//  static int lookupFunction(const char* name, int* functionType) {                 //collapses the case bit
+//    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
+//        const char* a = name;
+//        const char* b = entry->name;
+//        while ((*a && *b) &&
+//               ((*a >= 'a' && *a <= 'z' ? *a & ~0x20 : *a) ==
+//                (*b >= 'a' && *b <= 'z' ? *b & ~0x20 : *b))) {
+//            a++;
+//            b++;
+//        }
+//        if (*a == 0 && *b == 0) {
+//            *functionType = entry->function_type;
+//            return entry->function_id;
+//        }
+//    }
+//    return XFN_NOTFOUND;
+//  }
+//
   static int lookupFunctionId(int function_id) {
       for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
           if (entry->function_id == function_id) {
@@ -663,20 +660,126 @@ typedef struct {
   }
 
   void fnXfn(uint16_t registerNo) {  //--------//--------//-- Parsing function --//--------//--------//--------
-    int ErrorLocation = 0;
-    int function = XFN_NOTFOUND;
-    int functionType = XFN_NOTFOUND;
-    if(getRegisterDataType(REGISTER_X) == dtString) {
-        stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
-        function = lookupFunction(tmpString, &functionType);
-        if(function == XFN_NOTFOUND) {
-          ErrorLocation = 12;
-        }
-    } else {
-        ErrorLocation = 13;
-    }
-    doXfn(registerNo, function, functionType, ErrorLocation);
+//    int ErrorLocation = 0;
+//    int function = XFN_NOTFOUND;
+//    int functionType = XFN_NOTFOUND;
+//    if(getRegisterDataType(REGISTER_X) == dtString) {
+//        stringCopy(tmpString, REGISTER_STRING_DATA(REGISTER_X));
+//        function = lookupFunction(tmpString, &functionType);
+//        if(function == XFN_NOTFOUND) {
+//          ErrorLocation = 12;
+//        }
+//    } else {
+//        ErrorLocation = 13;
+//    }
+//    doXfn(registerNo, function, functionType, ErrorLocation);
   }
+
+  void fnXfnIndirect(uint16_t registerNo, uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------
+    int ErrorLocation = 0;
+    int functionType = lookupFunctionId(function);
+    if(functionType == XFN_NOTFOUND) {
+      ErrorLocation = 14;
+    }
+    if((functionType == FT_NILADIC)      ||
+       (functionType == FT_MONADIC && (registerNo <= FIRST_LETTERED_REGISTER - 3 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 3) ))  ||
+       (functionType == FT_DYADIC  && (registerNo <= FIRST_LETTERED_REGISTER - 6 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 6) )))   {
+      doXfn(registerNo, function, functionType, ErrorLocation);
+      return;
+    }
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Specified register numbers out of range");
+      moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+
+
+  void fnXXfn_sin                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_tan_XFN);
+  }
+  void fnXXfn_cos                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_cos_XFN);
+  }
+  void fnXXfn_tan                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_sin_XFN);
+  }
+  void fnXXfn_pi                  (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_pi_XFN);
+  }
+  void fnXXfn_atan2               (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_atan2_XFN);
+  }
+  void fnXXfn_arcsin              (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_arcsin_XFN);
+  }
+  void fnXXfn_arccos              (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_arccos_XFN);
+  }
+  void fnXXfn_arctan              (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_arctan_XFN);
+  }
+  void fnXXfn_LN                  (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_LN_XFN);
+  }
+  void fnXXfn_LOG                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_LOG_XFN);
+  }
+  void fnXXfn_EXP                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_EXP_XFN);
+  }
+  void fnXXfn_10X                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_10X_XFN);
+  }
+  void fnXXfn_POWER               (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_POWER_XFN);
+  }
+  void fnXXfn_SQRT                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_SQRT_XFN);
+  }
+  void fnXXfn_ADD                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_ADD_XFN);
+  }
+  void fnXXfn_SUB                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_SUB_XFN);
+  }
+  void fnXXfn_MULT                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_MULT_XFN);
+  }
+  void fnXXfn_DIV                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_DIV_XFN);
+  }
+  void fnXXfn_MOD                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_MOD_XFN);
+  }
+  void fnXXfn_MODANG              (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_MODANG_XFN);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation){
