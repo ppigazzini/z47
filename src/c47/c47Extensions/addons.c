@@ -461,6 +461,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
     cc.round = DEC_ROUND_FLOOR;
     decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
+    realSetPositiveSign((real_t*)&mantissa);
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
 
     int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
@@ -627,14 +628,12 @@ typedef struct {
     real_t y, z;
     *angleMode = getAngleModeForRegister(registerNo);
     if(!readThreeRegisters(registerNo, x, &y, &z, c)) {
-      if(lastErrorCode == 0) {
         displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Invalid input registers");
             moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
-      }
     }
     calculateExpression(x, &y, &z, c);
     #if defined(DEBUG_XFN)
