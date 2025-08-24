@@ -691,6 +691,10 @@ typedef struct {
       goto noFunction;
       }
 
+    if(!saveLastX()) {
+      return;
+    }
+
     real1071_t paramX, paramY, x2;
     real_t tmpR;
 
