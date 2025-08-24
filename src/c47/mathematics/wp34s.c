@@ -14,7 +14,7 @@
 
 
 /****************************************************************************************************
- * Modified for direct handling of 1071 digit contexts. 
+ * Modified for direct handling of 1071 digit contexts.
  * Take care not to use the 1071 version for the DM42 hardware
  ****************************************************************************************************/
 #undef DEBUGTAYLOR
@@ -31,7 +31,11 @@ void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* sw
   angle45  = const_0;
   angle90  = const_0;
   angle180 = const_0;
-  
+
+  #if defined(DEBUGTAYLOR)
+   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Angle:   %s\n", tmpString);
+  #endif //DEBUGTAYLOR
+
   // sin(-x) = -sin(x), cos(-x) = cos(x)
   if(realIsNegative((real_t*)angle)) {
     *sinNeg = true;
@@ -50,7 +54,7 @@ void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* sw
         angle90 = const_piOn2_75;
         angle180 = const_pi_75;
         WP34S_Mod((real_t*)angle, const1071_2pi, angle, realContext); // mod(angle, 2pi) --> angle
-      } 
+      }
       break;
     }
     case amMultPi: {
@@ -79,6 +83,9 @@ void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* sw
     default: {
     }
   }
+  #if defined(DEBUGTAYLOR)
+   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Reduced: %s\n", tmpString);
+  #endif //DEBUGTAYLOR
 
   // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
   if(realCompareGreaterEqual((real_t*)angle, angle180)) {        // angle >= 180°
@@ -92,6 +99,7 @@ void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* sw
     *swap = true;
     *cosNeg = !(*cosNeg);
   }
+
   // sin(90-x) = cos(x), cos(90-x) = sin(x)
   if(realCompareEqual((real_t*)angle, angle45)) { // angle == 45°
     if(sinOut != NULL) {
@@ -261,7 +269,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 
     #ifdef DEBUGTAYLOR
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
-        realToString((real_t*)sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%d, sin=%s", i, tmpString);
+        realToString((real_t*)sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
         realToString((real_t*)cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
