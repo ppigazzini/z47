@@ -731,8 +731,7 @@ typedef struct {
 
 //--------//NILADIC FUNCTIONS
       case ITM_pi_XFN: {
-        realCopy(const1071_2pi, (real_t*)&paramX);
-        realDivide((real_t*)&paramX, const_2, (real_t*)&paramX, &c);
+        realCopy(const1071_pi, (real_t*)&paramX);
         break;
       }
 
