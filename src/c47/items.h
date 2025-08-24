@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468           
+#define ITM_BANANAtoMM              2468
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2619,7 +2619,6 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
-
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
@@ -2637,27 +2636,27 @@
 
 #define ITM_XFN                     2556
 #define MNU_XXFCNS                  2557
-#define ITM_xsin                    2558
-#define ITM_xcos                    2559
-#define ITM_xtan                    2560
-#define ITM_xpi                     2561
+#define ITM_sin_XFN                 2558
+#define ITM_cos_XFN                 2559
+#define ITM_tan_XFN                 2560
+#define ITM_pi_XFN                  2561
 #define ITM_2562                    2562
-#define ITM_xatan2                  2563
-#define ITM_xarcsin                 2564
-#define ITM_xarccos                 2565
-#define ITM_xarctan                 2566
-#define ITM_xLN                     2567
-#define ITM_xLOG                    2568
-#define ITM_xEXP                    2569
-#define ITM_x10X                    2570
-#define ITM_xPOWER                  2571
-#define ITM_xSQRT                   2572
-#define ITM_xADD                    2573
-#define ITM_xSUB                    2574
-#define ITM_xMULT                   2575
-#define ITM_xDIV                    2576
-#define ITM_xMOD                    2577
-#define ITM_xMODANG                 2578
+#define ITM_atan2_XFN               2563
+#define ITM_arcsin_XFN              2564
+#define ITM_arccos_XFN              2565
+#define ITM_arctan_XFN              2566
+#define ITM_LN_XFN                  2567
+#define ITM_LOG_XFN                 2568
+#define ITM_EXP_XFN                 2569
+#define ITM_10X_XFN                 2570
+#define ITM_POWER_XFN               2571
+#define ITM_SQRT_XFN                2572
+#define ITM_ADD_XFN                 2573
+#define ITM_SUB_XFN                 2574
+#define ITM_MULT_XFN                2575
+#define ITM_DIV_XFN                 2576
+#define ITM_MOD_XFN                 2577
+#define ITM_MODANG_XFN              2578
 
 #define LAST_ITEM                   2579
 
