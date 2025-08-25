@@ -1116,17 +1116,21 @@ void WP34S_ComplexLnGamma(const real_t *zinReal, const real_t *zinImag, real_t *
   WP34S_ComplexGammaLnGamma(&zReal, &zImag, true, resReal, resImag, realContext);
 }
 
+static union {
+    real6147_t r6147;
+    real12321_t r12321;
+} bigReals;
 
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
   /* Declare a structure large enough to hold a really long number.
    * This structure is likely to be larger than is required.
    */
-  real6147_t out;
+  real6147_t *out = &bigReals.r6147;
   realContext_t c = *realContext;
 
   c.digits = 6147;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+  realDivideRemainder(x, y, (real_t *)out, &c);
+  realPlus((real_t *)out, res, realContext);
 }
 
 
@@ -1134,12 +1138,12 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
   /* Declare a structure large enough to hold a really long number.
    * This structure is likely to be larger than is required.
    */
-  real12321_t out;
+  real12321_t *out = &bigReals.r12321;
   realContext_t c = *realContext;
 
   c.digits = 12321;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+  realDivideRemainder(x, y, (real_t *)out, &c);
+  realPlus((real_t *)out, res, realContext);
 }
 
 
