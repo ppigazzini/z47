@@ -449,7 +449,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     mantissa.exponent += scaleAmount;
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
-    cc.round = DEC_ROUND_FLOOR;
+    cc.round = DEC_ROUND_HALF_UP;
     decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
     realSetPositiveSign((real_t*)&mantissa);
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
