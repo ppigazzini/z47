@@ -45,14 +45,16 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
   switch(max(itemNr,-itemNr)) {
     #ifdef DMCP_BUILD
       case ITM_WRXPALL   :
+                          return  _TO_ITM_ERR;
     #elif PC_BUILD
       case ITM_SAVEAUT  :
       case ITM_SETDAT   :
       case ITM_SETTIM   :
       case ITM_SYSTEM2  :
       case ITM_ACTUSB   :
-    #endif //PC_BUILD
                           return  _TO_ITM_ERR;
+    #endif //PC_BUILD
+
     #ifdef PC_BUILD
       case ITM_DISK     :
       case ITM_BUZZ     :
