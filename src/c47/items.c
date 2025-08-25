@@ -45,14 +45,16 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
   switch(max(itemNr,-itemNr)) {
     #ifdef DMCP_BUILD
       case ITM_WRXPALL   :
+                          return  _TO_ITM_ERR;
     #elif PC_BUILD
       case ITM_SAVEAUT  :
       case ITM_SETDAT   :
       case ITM_SETTIM   :
       case ITM_SYSTEM2  :
       case ITM_ACTUSB   :
-    #endif //PC_BUILD
                           return  _TO_ITM_ERR;
+    #endif //PC_BUILD
+
     #ifdef PC_BUILD
       case ITM_DISK     :
       case ITM_BUZZ     :
@@ -4106,7 +4108,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2558 */  { fnXXfn_sin,                   TM_REGISTER,                 "XSIN",                                        "XSIN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2559 */  { fnXXfn_cos,                   TM_REGISTER,                 "XCOS",                                        "XCOS",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2560 */  { fnXXfn_tan,                   TM_REGISTER,                 "XTAN",                                        "XTAN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
-/* 2561 */  { fnXXfn_pi,                    TM_REGISTER,                 "X" STD_pi,                                    "X" STD_pi,                                    (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
+/* 2561 */  { fnXXfn,                       ITM_pi_XFN,                  "X" STD_pi,                                    "X" STD_pi,                                    (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2562 */  { fnXXfn,                       NOPARAM,                     "XFNTEST",                                     "XFNTEST",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2563 */  { fnXXfn_atan2,                 TM_REGISTER,                 "XATAN2",                                      "XATAN2",                                      (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 2564 */  { fnXXfn_arcsin,                TM_REGISTER,                 "XASIN",                                       "XASIN",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },

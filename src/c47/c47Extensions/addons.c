@@ -392,9 +392,7 @@ void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext
   }
 
   if(invert) {
-    //-- use high precision π/2 constant
-    realDivide(const1071_2pi, const_4, (real_t*)&a, realContext);
-    realSubtract((real_t*)&a, (real_t*)angle, (real_t*)angle, realContext);
+    realSubtract(const1071_piOn2, (real_t*)angle, (real_t*)angle, realContext);
   }
 
   if(neg) {
@@ -459,7 +457,7 @@ void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext
 
 // Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
 void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext, int accNumberDigits) {
-  real1071_t r, t; //-- removed pi constants, calculate on demand
+  real1071_t r, t;
   const bool_t xNeg = realIsNegative((real_t*)x);
   const bool_t yNeg = realIsNegative((real_t*)y);
 
@@ -472,16 +470,14 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
     if(yNeg) {
       if(realCompareEqual((real_t*)x, const_0)) {
         if(xNeg) {
-          realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
-          realMinus((real_t*)&t, (real_t*)atan, realContext);
+          realMinus(const1071_pi, (real_t*)atan, realContext);
         }
         else {
           realCopy((real_t*)y, (real_t*)atan);
         }
       }
       else if(xNeg) {
-        realDivide(const1071_2pi, const_2, (real_t*)&t, realContext);  //-- calculate -π
-        realMinus((real_t*)&t, (real_t*)atan, realContext);
+        realMinus(const1071_pi, (real_t*)atan, realContext);
       }
       else {
         realCopy((real_t*)y, (real_t*)atan);
@@ -490,14 +486,14 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
     else {
       if(realCompareEqual((real_t*)x, const_0)) {
         if(xNeg) {
-          realDivide(const1071_2pi, const_2, (real_t*)atan, realContext); //-- calculate π
+          realCopy(const1071_pi, (real_t*)atan);
         }
         else {
           realZero((real_t*)atan);
         }
       }
       else if(xNeg) {
-        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate -π
+        realCopy(const1071_pi, (real_t*)atan);
       }
       else {
         realZero((real_t*)atan);
@@ -507,7 +503,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   }
 
   if(realCompareEqual((real_t*)x, const_0)) {
-    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    realCopy(const1071_piOn2, (real_t*)atan);
     if(yNeg) {
       realSetNegativeSign((real_t*)atan);
     }
@@ -517,15 +513,13 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   if(realIsInfinite((real_t*)x)) {
     if(xNeg) {
       if(realIsInfinite((real_t*)y)) {
-        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate 3π/4
-        uInt32ToReal(3, (real_t*)&r);
-        realMultiply((real_t*)&t, (real_t*)&r, (real_t*)atan, realContext);
+        realCopy(const1071_3piOn4, (real_t*)atan);
         if(yNeg) {
           realSetNegativeSign((real_t*)atan);
         }
       }
       else {
-        realDivide(const1071_2pi, const_2, (real_t*)atan, realContext);  //-- calculate π
+        realCopy(const1071_pi, (real_t*)atan);
         if(yNeg) {
           realSetNegativeSign((real_t*)atan);
         }
@@ -533,8 +527,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
     }
     else {
       if(realIsInfinite((real_t*)y)) {
-        realDivide(const1071_2pi, const_4, (real_t*)&t, realContext);   //-- calculate π/4
-        realDivide((real_t*)&t, const_2, (real_t*)atan, realContext);
+        realCopy(const1071_piOn4, (real_t*)atan);
         if(yNeg) {
           realSetNegativeSign((real_t*)atan);
         }
@@ -550,7 +543,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   }
 
   if(realIsInfinite((real_t*)y)) {
-    realDivide(const1071_2pi, const_4, (real_t*)atan, realContext);  //-- calculate π/2
+    realCopy(const1071_piOn2, (real_t*)atan);
     if(yNeg) {
       realSetNegativeSign((real_t*)atan);
     }
@@ -560,7 +553,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
   WP34S_Atan1071(&t, &r, realContext, accNumberDigits);
   if(xNeg) {
-    realDivide(const1071_2pi, const_2, (real_t*)&t, realContext); //-- calculate π
+    realCopy(const1071_pi, (real_t*)&t);
     if(yNeg) {
      realSetNegativeSign((real_t*)&t);
     }
@@ -704,7 +697,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     mantissa.exponent += scaleAmount;
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
-    cc.round = DEC_ROUND_FLOOR;
+    cc.round = DEC_ROUND_HALF_UP;
     decNumberToIntegralExact((real_t*)&mantissa, (real_t*)&mantissa, &cc);
     realSetPositiveSign((real_t*)&mantissa);
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
@@ -1130,7 +1123,12 @@ WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
         break;
       }
       case ITM_MODANG_XFN: {
-        WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+        if(angleMode == amRadian) {
+          WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+          // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
+        } else {
+          WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+        }
         break;
       }
 //--------//DYADIC FUNCTIONS
@@ -3925,28 +3923,6 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       return false;            //unsuccessful IRFRAC conversion, displaying as decimal
     }
   }
-
-
-void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
-  uint16_t constant =constantAddr;
-  *constNr = constant;
-  //printf(">>> %u\n",constant);
-  if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_2139) { // 2139 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
-  }
-  else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_2139 * REAL2139_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071 - NUMBER_OF_CONSTANTS_2139) * REAL34_SIZE_IN_BYTES), rVal);
-  }
-}
 
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
