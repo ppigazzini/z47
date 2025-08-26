@@ -666,13 +666,32 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
 // ******************************************************
 
 
+  const bool_t user1071Flag = true;
+
+
+  #if defined(TESTSUITE_BUILD)
+    const bool_t use1071 = true;
+  #else  
+    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
+      #define HIMEMORY true  
+    #else
+      #define HIMEMORY false
+    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
+    const bool_t use1071 = HIMEMORY && user1071Flag;
+  #endif //TESTSUITE_BUILD
+
+  #define accuracy          (use1071 ? 1044 : 72) // 1050 // 1000 mantissa longint, 34 remainder in Real, 37 guard digits, passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
+  #define maxAllowedDigits  (use1071 ? 1000 : 68) // 1000
+  #define maxContextDigits  (use1071 ? 1071 : 75) // 1071
+
+
 
 int32_t realGetDigits(const real1071_t* x) {
     return ((decNumber*)x)->digits;
 }
 
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
-    #define maxAllowedDigits 1000                          // integer part has at most 1000 digits
+    // integer part has at most maxAllowedDigits (1000) digits
     #if defined(DEBUG_XFN)
       realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal: input: %s\n", tmpString);
     #endif //DEBUG_XFN
@@ -704,6 +723,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 
     int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
     for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
+        if(i == actualExponent && i <= 34) break;
         tmpString[i] = '\0';
     }
     if (strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
@@ -731,9 +751,6 @@ returnUnity:
 }
 
 
-  #define accuracy 1050 // passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
-  #define maxXfnExponent 1000
-
   #define XFN_NOTFOUND 99
   #define FT_NILADIC  100
   #define FT_MONADIC  101
@@ -748,7 +765,8 @@ typedef struct {
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
       {"",    ITM_pi_XFN      ,FT_NILADIC },
-      {"",    ITM_pi_XFN      ,FT_NILADIC },
+      {"",    ITM_DEG2_XFN    ,FT_MONADIC },
+      {"",    ITM_RAD2_XFN    ,FT_MONADIC },
       {"",    ITM_sin_XFN     ,FT_MONADIC },
       {"",    ITM_cos_XFN     ,FT_MONADIC },
       {"",    ITM_tan_XFN     ,FT_MONADIC },
@@ -768,12 +786,6 @@ typedef struct {
       {"",    ITM_MULT_XFN    ,FT_DYADIC  },
       {"",    ITM_DIV_XFN     ,FT_DYADIC  },
       {"",    ITM_MOD_XFN     ,FT_DYADIC  },
-      {"",    ITM_ADD_XFN     ,FT_DYADIC  },
-      {"",    ITM_SUB_XFN     ,FT_DYADIC  },
-      {"",    ITM_POWER_XFN   ,FT_DYADIC  },
-      {"",    ITM_MULT_XFN    ,FT_DYADIC  },
-      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
-      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
       {NULL,  0               ,0   }
   };
 
@@ -824,7 +836,7 @@ typedef struct {
   }
 
   static bool validateExponent(const real1071_t* x) {
-    if(realGetExponent(x) > maxXfnExponent) {
+    if(realGetExponent(x) > maxAllowedDigits) {
         return false;
     }
     return true;
@@ -861,7 +873,7 @@ typedef struct {
     if(!validateExponent(x)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(x), maxXfnExponent);
+            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(x), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
@@ -873,7 +885,7 @@ typedef struct {
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
   static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
 
-  void fnXXfn(uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------
+  void fnXXfn(uint16_t function) {                               //--------//--------//-- Known function, X --//--------//--------//--------
     int ErrorLocation = 0;
     int functionType = lookupFunctionId(function);
     if(functionType == XFN_NOTFOUND) {
@@ -882,13 +894,13 @@ typedef struct {
     doXfn(REGISTER_X, function, functionType, ErrorLocation);
   }
 
-  void fnXfnIndirect(uint16_t registerNo, uint16_t function) {   //--------//--------//-- Known function  --//--------//--------//--------
+  void fnXfnIndirect(uint16_t registerNo, uint16_t function) {   //--------//--------//-- Known function, register no  --//--------//--------//--------
     int ErrorLocation = 0;
     int functionType = lookupFunctionId(function);
     if(functionType == XFN_NOTFOUND) {
       ErrorLocation = 14;
     }
-    if((functionType == FT_NILADIC)      ||
+    if((functionType == FT_NILADIC) ||
        (functionType == FT_MONADIC && (registerNo <= FIRST_LETTERED_REGISTER - 3 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 3) ))  ||
        (functionType == FT_DYADIC  && (registerNo <= FIRST_LETTERED_REGISTER - 6 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 6) )))   {
       doXfn(registerNo, function, functionType, ErrorLocation);
@@ -902,14 +914,22 @@ typedef struct {
   }
 
 
+
+
+  void fnXXfn_ToDEG               (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_DEG2_XFN);
+  }
+  void fnXXfn_ToRAD               (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_RAD2_XFN);
+  }
   void fnXXfn_sin                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_tan_XFN);
+    fnXfnIndirect(registerNo, ITM_sin_XFN);
   }
   void fnXXfn_cos                 (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_cos_XFN);
   }
   void fnXXfn_tan                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_sin_XFN);
+    fnXfnIndirect(registerNo, ITM_tan_XFN);
   }
   void fnXXfn_pi                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_pi_XFN);
@@ -966,30 +986,7 @@ typedef struct {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation){
+  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -1006,13 +1003,11 @@ typedef struct {
     }
 
     real1071_t paramX, paramY, x2;
+    realCopy(const_0,(real_t*)&paramX);
     real_t tmpR;
 
     realContext_t c = ctxtReal75;
-    // Automatic change over to 75 digits for DM42 hardware, and 1071 digits for DM42n and simulator
-    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-      c.digits = 1071;
-    #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
+    c.digits = maxContextDigits;           // Automatic change over to 75 digits for DM42 hardware, and 1071 digits for DM42n and simulator
 
     angularMode_t angleMode = currentAngularMode;
     angularMode_t tmpAngle;
@@ -1040,134 +1035,145 @@ typedef struct {
       printf("Angle mode = %d;  function number = %d\n", angleMode, function);
     #endif //DEBUG_XFN
 
-//--------//--------//-- Executing function --//--------//--------//--------
-    switch(function) {
 
-//--------//NILADIC FUNCTIONS
-      case ITM_pi_XFN: {
-        realCopy(const1071_pi, (real_t*)&paramX);
-        break;
-      }
+    if(realIsSpecial((real_t *)&paramX)) {
+      #if defined(DEBUG_XFN)
+        printf("Real is Special, forcing NaN output, bypassing calculations\n");
+        realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX is Special = %s\n", tmpString);
+      #endif //DEBUG_XFN
+      realCopy(const_NaN, (real_t *)&paramX);
+    }
+    else {
+      switch(function) {
+  //--------//--------//-- Executing function --//--------//--------//--------
 
-//--------//MONADIC FUNCTIONS
-      case ITM_sin_XFN:
-      case ITM_cos_XFN:
-      case ITM_tan_XFN: {
-          #if defined(DEBUG_XFN)
-            realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
-            realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
-            printf("angleMode %d\n", angleMode);
-          #endif //DEBUG_XFN
+  //--------//NILADIC FUNCTIONS
+        case ITM_pi_XFN: {
+          realCopy(const1071_pi, (real_t*)&paramX);
+          break;
+        }
 
-          //WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+  //--------//MONADIC FUNCTIONS
+        case ITM_RAD2_XFN: {
+          realDivide((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
+          realMultiply((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);        
+          break;
+        }
+        case ITM_DEG2_XFN: {
+          realDivide((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);
+          realMultiply((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
+          break;
+        }
 
-          #if defined(DEBUG_XFN)
-            realToString((real_t *)&paramX, tmpString); /*tmpString[debugLongNumberLimit]=0; */printf(" ParamX reduced angle: %s\n",tmpString);
-          #endif //DEBUG_XFN
-
-          if(realIsSpecial((real_t *)&paramX)) {
+        case ITM_sin_XFN:
+        case ITM_cos_XFN:
+        case ITM_tan_XFN: {
             #if defined(DEBUG_XFN)
-              printf("Real is Special before SIN/COS/TAN, forcing NaN output, bypassing Taylor et al.\n");
+              realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
+              realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
+              printf("angleMode %d\n", angleMode);
             #endif //DEBUG_XFN
-            realCopy(const_NaN, (real_t *)&paramX);
-          } else {
+
+            //WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+
+            #if defined(DEBUG_XFN)
+              realToString((real_t *)&paramX, tmpString); /*tmpString[debugLongNumberLimit]=0; */printf(" ParamX reduced angle: %s\n",tmpString);
+            #endif //DEBUG_XFN
+
             real1071_t aa,bb;
             realCopy(const_0,(real_t*)&aa);
             realCopy(const_0,(real_t*)&bb);
             if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
             if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
             if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
+            }
+            break;
+
+        case ITM_arcsin_XFN: {
+          WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
+          convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+          break;
+        }
+        case ITM_arccos_XFN: {
+          WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
+          convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+          break;
+        }
+        case ITM_arctan_XFN: {
+          WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
+          convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+          break;
+        }
+
+        case ITM_LN_XFN: {
+          decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_LOG_XFN: {
+          decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
+          decNumberLn((real_t *)&x2, const_10, &c);
+          realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_EXP_XFN: {
+          decNumberExp((real_t *)&paramX, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_10X_XFN: {
+          realPower(const_10, (real_t *)&paramX, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_SQRT_XFN: {
+          realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_MODANG_XFN: {
+          if(angleMode == amRadian) {
+            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+            // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
+          } else {
+            WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
           break;
-      }
-
-      case ITM_arcsin_XFN: {
-WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
-  //      WP34S_Asin((real_t *)&paramX, (real_t *)&paramX, &c);
-        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
-        break;
-      }
-      case ITM_arccos_XFN: {
-WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
-  //      WP34S_Acos((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
-        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
-        break;
-      }
-      case ITM_arctan_XFN: {
-WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
-  //      WP34S_Atan((real_t *)&paramX, (real_t *)&paramX, &ctxtReal75);
-        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
-        break;
-      }
-
-      case ITM_LN_XFN: {
-        decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
-        break;
-      }
-      case ITM_LOG_XFN: {
-        decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
-        decNumberLn((real_t *)&x2, const_10, &c);
-        realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
-        break;
-      }
-      case ITM_EXP_XFN: {
-        decNumberExp((real_t *)&paramX, (real_t *)&paramX, &c);
-        break;
-      }
-      case ITM_10X_XFN: {
-        realPower(const_10, (real_t *)&paramX, (real_t *)&paramX, &c);
-        break;
-      }
-      case ITM_SQRT_XFN: {
-        realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
-        break;
-      }
-      case ITM_MODANG_XFN: {
-        if(angleMode == amRadian) {
-          WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
-          // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
-        } else {
-          WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
         }
-        break;
-      }
-//--------//DYADIC FUNCTIONS
-      case ITM_ADD_XFN: {
-        realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_SUB_XFN: {
-        realSubtract  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_POWER_XFN: {
-        realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_MULT_XFN: {
-        realMultiply  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_DIV_XFN: {
-        realDivide    ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_MOD_XFN: {
-        WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
-        break;
-      }
-      case ITM_atan2_XFN: {
-WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
-        convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &ctxtReal75);
-        break;
-      }
+  //--------//DYADIC FUNCTIONS
+        case ITM_ADD_XFN: {
+          realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_SUB_XFN: {
+          realSubtract  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_POWER_XFN: {
+          realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_MULT_XFN: {
+          realMultiply  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_DIV_XFN: {
+          realDivide    ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_MOD_XFN: {
+          WP34S_BigMod  ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_atan2_XFN: {
+          WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
+          convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
+          break;
+        }
 
-//--------//No function
-      default: {
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          location = 5;
-        #endif //EXTRA_INFO_ON_CALC_ERROR
-        goto noFunction;
+  //--------//No function
+        default: {
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            location = 5;
+          #endif //EXTRA_INFO_ON_CALC_ERROR
+          goto noFunction;
+        }
       }
     }
 
@@ -1176,11 +1182,11 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
       realToString((real_t *)&paramX, tmpString); tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
     #endif //DEBUG_XFN
 
-//--------//--------//-- Processing stack output  --//--------//--------//--------
+//--------//--------//-- Processing stack output with paramX as the output --//--------//--------//--------
 
 
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
-      //If the input registers were Y, Z, T, then drop the stack input
+      //If the input registers are XYZ then drop the stack input
       if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
         if(registerNo == REGISTER_Y) {
           fnDropY(NOPARAM); //y
@@ -1202,37 +1208,82 @@ WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-    //Step 1: Send integer part to stack output
+    //Step 2: Send integer part to stack output
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     longInteger_t integerOutput;
     longIntegerInit(integerOutput);
-    decomposeReal(&paramX, integerOutput, &paramX, &c);
+    decomposeReal(&paramX, integerOutput, &paramY, &c);
     convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
     longIntegerFree(integerOutput);
 
-    //Step 2: Send real multiplier to the stack output
+    //Step 3: Send real multiplier to the stack output
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    realPlus((real_t *)&paramX, &tmpR, &ctxtReal75);
+    realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     switch(function) {
-      case ITM_arcsin:
-      case ITM_arccos:
-      case ITM_arctan:
-      case ITM_atan2: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, currentAngularMode);
+      case ITM_arcsin_XFN:
+      case ITM_arccos_XFN:
+      case ITM_arctan_XFN:
+      case ITM_atan2_XFN: {
+        convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
+        break;
+      }
+      case ITM_RAD2_XFN: {
+        convertRealToResultRegister(&tmpR, REGISTER_X, amRadian);
+        break;
+      }
+      case ITM_DEG2_XFN: {
+        convertRealToResultRegister(&tmpR, REGISTER_X, amDegree);
         break;
       }
       default: {
-        convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
+        convertRealToResultRegister(&tmpR, REGISTER_X, amNone);
         break;
       }
     }
-
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-    //Step 3: debug stack output
+
+
+
+
+    //Step 4: update difference term;         re-using paramY
+    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+      if(!getCombinedParameter(1, REGISTER_X, &paramY, &tmpAngle, &c)) {   //ignore angle
+  printf("ERROR\n");
+        return;
+      }
+      realSubtract((real_t *)&paramX, (real_t *)&paramY, (real_t *)&paramY, &c);
+      realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
+      switch(function) {
+        case ITM_arcsin_XFN:
+        case ITM_arccos_XFN:
+        case ITM_arctan_XFN:
+        case ITM_atan2_XFN: {
+          convertRealToResultRegister(&tmpR, REGISTER_Z, angleMode);
+          break;
+        }
+        case ITM_RAD2_XFN: {
+          convertRealToResultRegister(&tmpR, REGISTER_Z, amRadian);
+          break;
+        }
+        case ITM_DEG2_XFN: {
+          convertRealToResultRegister(&tmpR, REGISTER_Z, amDegree);
+          break;
+        }
+         default: {
+          convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
+          break;
+        }
+      }
+    }
+
+
+
+
+    //Step 5: debug stack output
     #if defined(DEBUG_XFN)
       printRegisterToConsole(REGISTER_Z,"\nZ:","\n");
       printRegisterToConsole(REGISTER_Y,"\nY:","\n");

@@ -4433,7 +4433,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
-            w = stringWidth(tmpString, &standardFont, false, true);
+            w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
             tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
