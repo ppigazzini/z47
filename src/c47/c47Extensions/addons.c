@@ -655,13 +655,13 @@ typedef struct {
 
 
   void fnXXfn_sin                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_tan_XFN);
+    fnXfnIndirect(registerNo, ITM_sin_XFN);
   }
   void fnXXfn_cos                 (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_cos_XFN);
   }
   void fnXXfn_tan                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_sin_XFN);
+    fnXfnIndirect(registerNo, ITM_tan_XFN);
   }
   void fnXXfn_pi                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_pi_XFN);
