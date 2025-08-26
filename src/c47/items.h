@@ -2631,10 +2631,10 @@
 #define ITM_2551                    2551
 #define ITM_2552                    2552
 #define ITM_2553                    2553
-#define ITM_2554                    2554
-#define ITM_2555                    2555
+#define ITM_DEG2_XFN                2554
+#define ITM_RAD2_XFN                2555
 
-#define ITM_XFN                     2556
+#define ITM_2556                    2556
 #define MNU_XXFCNS                  2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
