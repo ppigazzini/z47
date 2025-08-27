@@ -2232,7 +2232,7 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
-    real34ToDisplayString(&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+    real34ToDisplayString(&tmpReal34, amNone, displayString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
 
     if(removeTrailingRadix) {
