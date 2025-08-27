@@ -4195,7 +4195,18 @@ static void sortEigenvalues(real_t *eig, uint16_t size, uint16_t begin_a, uint16
   }
 }
 
-#define EIGENDEBUG
+
+
+
+#if defined PC_BUILD
+  #define maxEigenIter 10000
+  #define EIGENDEBUG
+  //#undef EIGENDEBUG
+#else
+  #define maxEigenIter 1000
+  #undef EIGENDEBUG
+#endif //PC_BUILD
+
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t shiftRe, shiftIm;
@@ -4226,7 +4237,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       realCopy(const_1e_37, &tol);
     }
 
-    while(iteration++ < 10000) {
+    while(iteration++ < maxEigenIter) {
 
       #if defined(EIGENDEBUG)
         printRealToConsole(&tol,"\nTol:",": ");
@@ -4239,11 +4250,13 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
         if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         }
       }
-      if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-        break;
-      }
+      #if !defined(PC_BUILD)
+        if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          break;
+        }
+      #endif //!PC_BUILD
 
       if(shifted) {
         calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
