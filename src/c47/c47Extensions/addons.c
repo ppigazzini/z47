@@ -551,7 +551,7 @@ typedef struct {
       return XFN_NOTFOUND;
   }
 
-  static bool getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
+  static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
         longInteger_t lint;
         convertLongIntegerRegisterToLongInteger(registerNo, lint);
@@ -581,20 +581,20 @@ typedef struct {
     }
   }
 
-  static bool calculateExpression(real1071_t* x, const real_t* y, const real_t* z, realContext_t* c) {
+  static bool_t calculateExpression(real1071_t* x, const real_t* y, const real_t* z, realContext_t* c) {
     realMultiply((real_t *)x, y, (real_t *)x, c);
     realAdd((real_t *)x, z, (real_t *)x, c);
     return true;
   }
 
-  static bool validateExponent(const real1071_t* x) {
+  static bool_t validateExponent(const real1071_t* x) {
     if(realGetExponent(x) > maxAllowedDigits) {
         return false;
     }
     return true;
   }
 
-  static bool readThreeRegisters(int registerNo, real1071_t* x, real_t* y, real_t* z, realContext_t* c) {
+  static bool_t readThreeRegisters(int registerNo, real1071_t* x, real_t* y, real_t* z, realContext_t* c) {
     if(!getLongintegerRegisterAsReal1071(registerNo+1, x, c)) {    // check for long integer first, to first have that error message if invalid number
         return false;
     }
