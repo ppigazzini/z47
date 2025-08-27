@@ -607,6 +607,17 @@ typedef struct {
     return true;
   }
 
+
+
+  #define registerIsNoAngle(r)     ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+
+  #define inputIsNoAngle(r)        ( registerIsNoAngle(r) && registerIsNoAngle(r+2) )
+
+  #define inputAngleError(r)       ( (registerIsNoAngle(r) &&   getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r+2) != currentAngularMode && getRegisterAngularMode(r+2) != amNone) ||\
+                                     (registerIsNoAngle(r+2) && getRegisterDataType(r)   == dtReal34 &&   getRegisterAngularMode(r) != currentAngularMode && getRegisterAngularMode(r)   != amNone) )
+
+
+
   static bool getCombinedParameter(int param, int registerNo, real1071_t* x, angularMode_t* angleMode, realContext_t* c) {
     real_t y, z;
     *angleMode = getAngleModeForRegister(registerNo);
@@ -801,21 +812,38 @@ typedef struct {
 
   //--------//NILADIC FUNCTIONS
         case ITM_pi_XFN: {
-          realCopy(const1071_pi, (real_t*)&paramX);
+          realCopy(const1071_pi, (real_t *)&paramX);
+//          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
           break;
         }
 
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
-          realDivide((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
-          realMultiply((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);        
+          if(inputIsNoAngle(registerNo)) {
+            angleMode = amRadian;
+            break;
+          } else
+          if(!inputAngleError(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+            realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
+          }
+          angleMode = amRadian;
           break;
         }
+
         case ITM_DEG2_XFN: {
-          realDivide((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);
-          realMultiply((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
+          if(inputIsNoAngle(registerNo)) {
+            angleMode = amDegree;
+            break;
+          } else
+          if(!inputAngleError(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+            realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
+          }
+          angleMode = amDegree;
           break;
         }
+
 
         case ITM_sin_XFN:
         case ITM_cos_XFN:
@@ -937,6 +965,7 @@ typedef struct {
 //--------//--------//-- Processing stack output with paramX as the output --//--------//--------//--------
 
 
+    //Step 0: Prep the stack
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       //If the input registers are XYZ then drop the stack input
       if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
@@ -954,11 +983,29 @@ typedef struct {
     }
 
 
-    //Step 1: Send a 0 addition term to the stack output
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    switch(function) {
+      case ITM_arcsin_XFN:
+      case ITM_arccos_XFN:
+      case ITM_arctan_XFN:
+      case ITM_atan2_XFN:
+      case ITM_RAD2_XFN:
+      case ITM_DEG2_XFN: {
+        //leave angleMode
+        break;
+      }
+      default: {
+        angleMode = amNone;
+        break;
+      }
+    }
+
+
+    //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
+    reallocateRegister(REGISTER_X, dtReal34, 0, angleMode);
     realCopy(const_0, &tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
 
     //Step 2: Send integer part to stack output
     setSystemFlag(FLAG_ASLIFT);
@@ -969,67 +1016,29 @@ typedef struct {
     convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
     longIntegerFree(integerOutput);
 
+
     //Step 3: Send real multiplier to the stack output
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    switch(function) {
-      case ITM_arcsin_XFN:
-      case ITM_arccos_XFN:
-      case ITM_arctan_XFN:
-      case ITM_atan2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
-        break;
-      }
-      case ITM_RAD2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amRadian);
-        break;
-      }
-      case ITM_DEG2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amDegree);
-        break;
-      }
-      default: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amNone);
-        break;
-      }
-    }
+//    reallocateRegister(REGISTER_X, dtReal34, 0, angleMode);
+    convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
 
+//    setRegisterAngularMode(REGISTER_Z, angleMode);
 
 
 
     //Step 4: update difference term;         re-using paramY
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+    if(functionType == FT_NILADIC || functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, REGISTER_X, &paramY, &tmpAngle, &c)) {   //ignore angle
   printf("ERROR\n");
         return;
       }
       realSubtract((real_t *)&paramX, (real_t *)&paramY, (real_t *)&paramY, &c);
       realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
-      switch(function) {
-        case ITM_arcsin_XFN:
-        case ITM_arccos_XFN:
-        case ITM_arctan_XFN:
-        case ITM_atan2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, angleMode);
-          break;
-        }
-        case ITM_RAD2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amRadian);
-          break;
-        }
-        case ITM_DEG2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amDegree);
-          break;
-        }
-         default: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
-          break;
-        }
-      }
+      convertRealToResultRegister(&tmpR, REGISTER_Z, angleMode);
     }
 
 
