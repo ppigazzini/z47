@@ -752,12 +752,12 @@ void sci_fmt(char *buf, int n, double x) {
   void convertDoubleToReal34Register(double x, calcRegister_t destination) {
     char buff[100];
 
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertDoubleToString(x, 100, buff);
-    stringToReal34(buff, REGISTER_REAL34_DATA(REGISTER_X));
+    stringToReal34(buff, REGISTER_REAL34_DATA(destination));
 
     #if defined(PC_BUILD)
-      if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) {
+      if(real34IsNaN(REGISTER_REAL34_DATA(destination))) {
         snprintf(buff, 100, "%.16e", x);
         printf("ERROR in convertDoubleToReal34Register: %s\n",buff);
       }

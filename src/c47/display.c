@@ -2969,7 +2969,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
     while((*source < *last) &&
-          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
+          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
           (*dest < TMP_STR_LENGTH - 6)
          ) {
       #if defined(MONITOR_SHOW)
@@ -2989,6 +2989,9 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       tmpString[++*dest] = 0;
       (*source)++;
     }
+    #if defined(MONITOR_SHOW)
+      printf("  --->d=%i wid=%i\n",d,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)));
+    #endif
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
       if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[*dest-2] == SEPARATOR_LEFT[0] && tmpString[*dest-1] == SEPARATOR_LEFT[1]) ||

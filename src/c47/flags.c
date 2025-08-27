@@ -88,6 +88,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :
@@ -697,6 +698,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :

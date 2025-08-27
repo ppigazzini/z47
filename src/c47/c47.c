@@ -218,6 +218,7 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
 uint8_t                overrideShowBottomLine;
@@ -241,6 +242,7 @@ uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
+uint8_t                editingLiteralType;
 
 int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
@@ -300,6 +302,7 @@ uint32_t               firstGregorianDay;
 uint32_t               denMax;
 uint32_t               lastDenominator = 4;
 uint32_t               lastIntegerBase;
+uint32_t               decodedIntegerBase;
 uint32_t               xCursor;
 uint32_t               yCursor;
 uint32_t               tamOverPemYPos;
@@ -352,6 +355,11 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)
+
+#if (CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
+  IMPORT_BIN(".qspi_dm42", "../c47-dmcp/DM42_qspi_3.x.bin", DM42_qspi);
+#endif  // include DM42 QSPI
+
   #if defined(JMSHOWCODES)                                        //JM Test
     int8_t            telltale_pos;                         //JM Test
     int8_t            telltale_lastkey;                     //JM Test
@@ -806,7 +814,7 @@ int convertKeyCode(int key) {
                                                   // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
                                                   // print_linestr(rrr,true);
                                                   // rrr[0]=0;
-                                                  // print_linestr(rrr,false);                                                  
+                                                  // print_linestr(rrr,false);
                                                   // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
                                                   // print_linestr(rrr,false);
 
