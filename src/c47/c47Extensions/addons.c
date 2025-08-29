@@ -580,28 +580,16 @@ typedef struct {
   }
 
 
-  #define inputAngleMode(r)        ( (getRegisterAngularMode(r) == getRegisterAngularMode(r+2) && getRegisterAngularMode(r) == getRegisterAngularMode(r+1)) ? getRegisterAngularMode(r) : amNone)   //excludes the error condition, not needed to test again
+  #define inputAngleMode(r)           (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 
-  #define deemedInputAngleMode(r)  (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
+  #define deemedInputAngleMode(r)     (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
 
-  #define registerIsNoAngle(r)     ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+  #define registerIsNoAngle(r)        ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
 
-  #define inputIsNoAngle(r)        ( registerIsNoAngle(r) && registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ) //suspect, check
+  #define inputIsNoAngle(r)           (registerIsNoAngle(r) || (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2)))
 
-  #define registerPairIsInError(r,s) ((registerIsNoAngle(r) &&   getRegisterDataType(s) == dtReal34 && getRegisterAngularMode(s) != currentAngularMode && getRegisterAngularMode(s) != amNone))
+  #define inputAngleError(r)          (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2))
 
-  #define inputAngleError(r)       ( registerPairIsInError(r, r+2) || registerPairIsInError(r, r+1) || registerPairIsInError(r+1, r+2) ||\
-                                     (!registerIsNoAngle(r)               && !registerIsNoAngle(r+1)              && !registerIsNoAngle(r+2) &&\
-                                       getRegisterDataType(r) == dtReal34 && getRegisterDataType(r+1) == dtReal34 && getRegisterDataType(r+2) == dtReal34 &&\
-                                       getRegisterAngularMode(r) != getRegisterAngularMode(r+1) && getRegisterAngularMode(r) != getRegisterAngularMode(r+2)\
-                                     )\
-                                   )
-
-//  #define inputAngleError(r)       ( (registerIsNoAngle(r)   &&   getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r+2) != currentAngularMode && getRegisterAngularMode(r+2) != amNone) ||\
-//                                     (registerIsNoAngle(r+2) &&   getRegisterDataType(r)   == dtReal34 &&   getRegisterAngularMode(r) != currentAngularMode && getRegisterAngularMode(r)   != amNone) ||\
-//                                     (!registerIsNoAngle(r)  &&  !registerIsNoAngle(r+2) && getRegisterDataType(r) == dtReal34 && getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r) != getRegisterAngularMode(r+2))\
-//                                   )
-//
 
   static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
     if(!inputAngleError(registerNo)) {
