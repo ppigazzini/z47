@@ -569,23 +569,52 @@ typedef struct {
     }
   }
 
-  static angularMode_t getAngleModeForRegister(int registerNo) {
-    if(getRegisterDataType(registerNo) == dtReal34) {
-        if(getRegisterAngularMode(registerNo) == amNone) {
-          return currentAngularMode;
-        } else {
-          return getRegisterAngularMode(registerNo);
-        }
-    } else {
-        return currentAngularMode;
+
+  #define inputAngleMode(r)        (getRegisterAngularMode(r) == getRegisterAngularMode(r+2) ? getRegisterAngularMode(r) : amNone)   //ecludes the error condition, not needed to test again
+
+  #define deemedInputAngleMode(r)  (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
+
+  #define registerIsNoAngle(r)     ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+
+  #define inputIsNoAngle(r)        ( registerIsNoAngle(r) && registerIsNoAngle(r+2) )
+
+  #define inputAngleError(r)       ( (registerIsNoAngle(r) &&   getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r+2) != currentAngularMode && getRegisterAngularMode(r+2) != amNone) ||\
+                                     (registerIsNoAngle(r+2) && getRegisterDataType(r)   == dtReal34 &&   getRegisterAngularMode(r) != currentAngularMode && getRegisterAngularMode(r)   != amNone) ||\
+                                     (!registerIsNoAngle(r) && !registerIsNoAngle(r+2) && getRegisterDataType(r) == dtReal34 && getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r) != getRegisterAngularMode(r+2))\
+                                   )
+
+
+  static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
+    if(!inputAngleError(registerNo)) {
+      *angleMode = deemedInputAngleMode(registerNo);
+      return true;
     }
-  }
+    return false;
+
+    //Temporarily keep the old angle check as reference. 
+    //    if(getRegisterDataType(registerNo) == dtReal34) {
+    //        if(getRegisterAngularMode(registerNo) == amNone) {
+    //          *angleMode = currentAngularMode;
+    //          return true;
+    //        } else {
+    //          *angleMode =  getRegisterAngularMode(registerNo);
+    //          return true;
+    //        }
+    //    } else {
+    //        *angleMode = currentAngularMode;
+    //        return true;
+    //    }
+    //    *angleMode = amNone; //cannot proceed to here, all conditions covered above
+    //    return false;
+   }
+
 
   static bool_t calculateExpression(real1071_t* x, const real_t* y, const real_t* z, realContext_t* c) {
     realMultiply((real_t *)x, y, (real_t *)x, c);
     realAdd((real_t *)x, z, (real_t *)x, c);
     return true;
   }
+
 
   static bool_t validateExponent(const real1071_t* x) {
     if(realGetExponent(x) > maxAllowedDigits) {
@@ -594,49 +623,48 @@ typedef struct {
     return true;
   }
 
-  static bool_t readThreeRegisters(int registerNo, real1071_t* x, real_t* y, real_t* z, realContext_t* c) {
-    if(!getLongintegerRegisterAsReal1071(registerNo+1, x, c)) {    // check for long integer first, to first have that error message if invalid number
+
+  static bool_t readThreeRegisters(int registerNo, real_t* RegX, real1071_t* RegY, real_t* RegZ, realContext_t* c) {
+    if(!getRegisterAsReal(registerNo, RegX)) {                        //ignore anglemode, it is handled elsewhere
         return false;
     }
-    if(!getRegisterAsReal(registerNo, y)) { //ignore anglemode
+    if(!getLongintegerRegisterAsReal1071(registerNo+1, RegY, c)) {    // check for long integer first, to first have that error message if invalid number
         return false;
     }
-    if(!getRegisterAsReal(registerNo+2, z)) { //ignore anglemode
+    if(!getRegisterAsReal(registerNo+2, RegZ)) {                      //ignore anglemode, it is handled elsewhere
         return false;
     }
     return true;
   }
 
 
+  static bool getCombinedParameter (int param, int registerNo, real1071_t* combined, angularMode_t* angleMode, realContext_t* c) {
+    real_t multiplier, addterm;
 
-  #define registerIsNoAngle(r)     ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
-
-  #define inputIsNoAngle(r)        ( registerIsNoAngle(r) && registerIsNoAngle(r+2) )
-
-  #define inputAngleError(r)       ( (registerIsNoAngle(r) &&   getRegisterDataType(r+2) == dtReal34 && getRegisterAngularMode(r+2) != currentAngularMode && getRegisterAngularMode(r+2) != amNone) ||\
-                                     (registerIsNoAngle(r+2) && getRegisterDataType(r)   == dtReal34 &&   getRegisterAngularMode(r) != currentAngularMode && getRegisterAngularMode(r)   != amNone) )
-
-
-
-  static bool getCombinedParameter(int param, int registerNo, real1071_t* x, angularMode_t* angleMode, realContext_t* c) {
-    real_t y, z;
-    *angleMode = getAngleModeForRegister(registerNo);
-    if(!readThreeRegisters(registerNo, x, &y, &z, c)) {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Invalid input registers");
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+    if(!getAngleModeForRegister(registerNo, angleMode)) {
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister ");
+          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
     }
-    calculateExpression(x, &y, &z, c);
+    if(!readThreeRegisters(registerNo, &multiplier, combined, &addterm, c)) {
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input registers: readThreeRegisters");
+          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+    calculateExpression(combined, &multiplier, &addterm, c);
     #if defined(DEBUG_XFN)
-        realToString((real_t *)x, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
+        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
     #endif //DEBUG_XFN
-    if(!validateExponent(x)) {
+    if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(x), maxAllowedDigits);
+            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
