@@ -531,6 +531,7 @@ typedef struct {
       {"",    ITM_10X_XFN     ,FT_MONADIC },
       {"",    ITM_SQRT_XFN    ,FT_MONADIC },
       {"",    ITM_MODANG_XFN  ,FT_MONADIC },
+      {"",    ITM_1ONX_XFN    ,FT_MONADIC },
       {"",    ITM_atan2_XFN   ,FT_DYADIC  },
       {"",    ITM_ADD_XFN     ,FT_DYADIC  },
       {"",    ITM_SUB_XFN     ,FT_DYADIC  },
@@ -698,7 +699,7 @@ typedef struct {
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Specified register numbers out of range");
+      sprintf(errorMessage, "Specified register numbers out of range: %d",registerNo);
       moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -753,6 +754,9 @@ typedef struct {
   }
   void fnXXfn_SQRT                (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_SQRT_XFN);
+  }
+  void fnXXfn_1ONX                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_1ONX_XFN);
   }
   void fnXXfn_ADD                 (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_ADD_XFN);
@@ -932,6 +936,10 @@ typedef struct {
         }
         case ITM_SQRT_XFN: {
           realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_1ONX_XFN: {
+          realDivide(const_1, (real_t *)&paramX, (real_t *)&paramX, &c);
           break;
         }
         case ITM_MODANG_XFN: {

@@ -30,6 +30,7 @@ void fnXXfn_EXP     (uint16_t registerNo);
 void fnXXfn_10X     (uint16_t registerNo);
 void fnXXfn_POWER   (uint16_t registerNo);
 void fnXXfn_SQRT    (uint16_t registerNo);
+void fnXXfn_1ONX    (uint16_t registerNo);
 void fnXXfn_ADD     (uint16_t registerNo);
 void fnXXfn_SUB     (uint16_t registerNo);
 void fnXXfn_MULT    (uint16_t registerNo);

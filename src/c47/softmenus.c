@@ -354,11 +354,11 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 
 TO_QSPI const int16_t menu_XXFCNS[]=       { ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN, 
                                              ITM_DEG,                       ITM_RAD,                    ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
-                                             ITM_LARGELI,                   ITM_DREAL,                  ITM_MODANG_XFN,           ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
+                                             ITM_LARGELI,                   ITM_DREAL,                  ITM_1ONX_XFN,             ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
 
                                              ITM_LN_XFN,                    ITM_LOG_XFN,                ITM_EXP_XFN,              ITM_10X_XFN,           ITM_POWER_XFN,               ITM_SQRT_XFN,
                                              ITM_EE_STO_Z,                  ITM_EE_RCL_Z,               ITM_EE_STO_V,             ITM_EE_RCL_V,          ITM_EE_STO_I,                ITM_EE_RCL_I,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_MOD_XFN,              ITM_NULL,              ITM_NULL,                    ITM_atan2_XFN                 };
+                                             ITM_NULL,                      ITM_NULL,                   ITM_MOD_XFN,              ITM_MODANG_XFN,        ITM_NULL,                    ITM_atan2_XFN                 };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
