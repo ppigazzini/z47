@@ -554,19 +554,28 @@ typedef struct {
   static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
         longInteger_t lint;
-        convertLongIntegerRegisterToLongInteger(registerNo, lint);
-        longIntegerToString(lint, 10, tmpString);
-        longIntegerFree(lint);
-        decNumberFromString((real_t *)result, tmpString, c);
-        return true;
-    } else {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Invalid longinteger register");
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+        bool_t frac = false;
+        if(getRegisterAsLongInt(registerNo, lint, &frac)) {
+          if(!frac) {   //cannot be false due to longint type check
+            longIntegerToString(lint, 10, tmpString);
+            longIntegerFree(lint);
+            decNumberFromString((real_t *)result, tmpString, c);
+          }
+          return true;
+        }
+    } else
+    if(getRegisterDataType(registerNo) == dtReal34) {
+//must still deal with the angle if applicable in Y
+        if(getRegisterAsReal(registerNo, (real_t *)result)) {
+          return true;
+        }
     }
+    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Invalid input register");
+        moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
   }
 
 
@@ -632,6 +641,7 @@ typedef struct {
         return false;
     }
     if(!getRegisterAsReal(registerNo+2, RegZ)) {                      //ignore anglemode, it is handled elsewhere
+//Must still deal with getRegisterAsReal should TI or error if dataloss will occur
         return false;
     }
     return true;
