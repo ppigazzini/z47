@@ -208,9 +208,9 @@ void removePixel(uint32_t x, uint32_t y) {
 
 void clearScreenPixels(void) {
   #if !defined(TESTSUITE_BUILD)
-    lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, 0);
-    lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, 0);
-    lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, 0);
+    lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, LCD_SET_VALUE);
+    lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, LCD_SET_VALUE);
+    lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, LCD_SET_VALUE);
   #endif //!TESTSUITE_BUILD
 }
 
@@ -425,7 +425,7 @@ void graphAxisDraw (void){
     }
 
     //DRAW YAXIS
-    lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,0xFF);
+    lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,LCD_EMPTY_VALUE);
 
     //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
 
@@ -610,72 +610,20 @@ char * radixProcess(char *output, const char * ss) {  //  .  HIERDIE WERK GLAD N
   return output;
 }
 
-
 void nanCheck(char* s02) { //eg. change (nanE-3 or ;nanE-3) to NaN
   if(stringByteLength(s02) > 2) {
-    for(int ix = 2; s02[ix]!=0; ix++) {
+    for (int ix = 2; s02[ix]!=0; ix++) {
       if(s02[ix]=='n' && s02[ix-1]=='a' && s02[ix-2]=='n') { //check for nan
-        if(s02[0] == '(' && s02[ix+1] != 0) {
-          strcpy(s02,"(NaN");
+        if (s02[0] == '(' && s02[ix+1] != 0) {
+          strcpy(s02, "(NaN");
         }
         else if(s02[0] == ';' && s02[stringByteLength(s02)-1] == ')' && s02[ix+1] != 0 && s02[ix+2] != 0) {
-          strcpy(s02,";NaN)");
+          strcpy(s02, ";NaN)");
         }
       }
     }
   }
 }
-
-void eformat (char* s02, const char* s01, double inreal, uint8_t prec, const char* s05) {
-  char s03[100];
-  char tmpbuf[PLOT_TMP_BUF_SIZE];
-
-  if(((fabs(inreal) > 1000000.0 || fabs(inreal) < 0.001)) && (inreal != 0.0)) {
-    sprintf(s03,"%.*e",prec,inreal);
-  }
-  else {
-    sprintf(s03,"%.*f",prec,inreal);
-  }
-  strcpy(s02,s01);
-  if(inreal > 0) {
-    strcat(s02,"");  //in place of negative sign
-  }
-  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s03)));
-  strcat(s02,s05);
-  nanCheck(s02);
-}
-
-
-void eformat_fix3 (char* s02, const char* s01, double inreal) {
-  char *sign;
-  char s03[100]; char s04[100];
-  char tmpbuf[PLOT_TMP_BUF_SIZE];
-
-  s04[0]=0;
-  if(inreal<0.0) {
-    sign = "-";
-    inreal = -inreal;
-  }
-  else {
-    sign = " ";                              //changed from 0.001 to force more digits
-  }
-  if(((fabs(inreal) > 100000000.0f || fabs(inreal) < 0.1f)) && (inreal != 0.0f)) {
-    sprintf(s03,"%s%.3e",sign,inreal);
-  }
-  else {
-    sprintf(s03,"%s%.3f",sign,inreal);
-  }
-
-  strcpy(s02,s01);
-
-  if(inreal > 0) {
-    strcpy(s04, " ");  //in place of negative sign
-  }
-  strcat(s04,s03);
-  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s04)));
-  nanCheck(s02);
-}
-
 
 char * padEquals(char *output, const char * ss) {
   int8_t ix = 0, iy = 0;
@@ -705,96 +653,342 @@ char * padEquals(char *output, const char * ss) {
   return output;
 }
 
+char * smallE(char *output, const char * ss) {
+  int8_t ix = 0, iy = 0;
 
-//parts taken from:
-//  http://jkorpela.fi/c/eng.html
-//  David Hoerl
-static char *eng(char *result, double value, int digits) {
-  double display, fract, old;
-  int expof10;
-  char *sign;
-
-  // assert(isnormal(value)); // could also return NULL
-
-  if(value < 0.0) {
-    sign = "-";
-    value = -value;
+  while( ss[ix] != 0 ){
+    if(!(ss[ix] & 0x80)) {
+      if(ss[ix]=='E') {
+        output[iy++] = STD_SUB_E[0];
+        output[iy++] = STD_SUB_E[1];
+      }
+      else {
+        output[iy++] = ss[ix];
+      }
+    }
+    else {
+      output[iy++] = ss[ix];
+      if(ss[ix+1] != 0) {
+        output[iy++] = ss[++ix];
+      }
+    }
+    ix++;
   }
-  else {
-    sign = " ";
-  }
-
-  old = value;
-
-  // correctly round to desired precision
-  expof10 = lrint( floor( log10(value) ) );
-  value *= pow(10.0, digits - 1 - expof10);
-
-  fract = modf(value, &display);
-  if(fract >= 0.5) {
-    display += 1.0;
-  }
-
-  value = display * pow(10.0, expof10 - digits + 1);
-
-
-  if(expof10 > 0) {
-    expof10 = (expof10/3)*3;
-  }
-  else {
-    expof10 = ((-expof10+3)/3)*(-3);
-  }
-
-  value *= pow(10.0, -expof10);
-  if(value >= 1000.0) {
-    value /= 1000.0;
-    expof10 += 3;
-  }
-  else if(value >= 100.0) {
-         digits -= 2;
-  }
-  else if(value >= 10.0) {
-    digits -= 1;
-  }
-
-  if(isnan(old) || isinf(old)) {
-    sprintf(result, "%s%f", sign, old);
-  }
-
-
-  if(old>=100   && old<100000.0  ) {
-    sprintf(result,"%s%.i",     sign, (int)(roundf(old)));
-  }
-  else if(old>=1     && old<100.0    ) {
-    sprintf(result,"%s%.*f",    sign, digits-1, old);
-  }
-  else if(old>=0.01   && old<1.0     ) {
-    sprintf(result,"%s%.*f",    sign, digits+2, old);
-  }
-  else if(old == 0.0) {
-    sprintf(result,"%s%.*f",    " ",  digits-1, old);
-  }
-  else if(digits-1 <= 0) {
-    sprintf(result,"%s%.0fE%d", sign, value, expof10);
-  }
-  else {
-    sprintf(result,"%s%.*fE%d", sign, digits-1, value, expof10);
-  }
-  return result;
+  output[iy] = '\0';
+  return output;
 }
 
 
+
+
+
+
+//**************************************************************************************************************
+//** The below piece was originally generated by free ChatGpt AI and modified.
+//** Replacement of the eng() function previously used, which used a handful of functions not supported by nano.
+
+// Constants to adjust available digits
+const int SCI_ADJUST = 0;   // Digits lost to 'E±NN'
+const int FIX_ADJUST = -1;   // Digits lost to decimal point (not counted)
+
+// Count significant digits (excluding sign, decimal point, and exponent)
+int count_sig(const char* s) {
+    int n = 0;
+    int seen_digit = 0;
+    int after_decimal = 0;
+    int lastSeq0 = 0;
+    for (; *s && *s != 'E'; ++s) {
+      if (*s == '.') {
+          after_decimal = 1;
+          continue;
+      }
+      if (*s >= '1' && *s <= '9') {
+          seen_digit = 1;
+          n++;
+          lastSeq0 = 0;
+      } else if (*s == '0') {
+          lastSeq0++;
+          if (seen_digit || after_decimal) n++;
+      }
+    }
+    if(*s == 'E') { // not relevant for SCI
+      lastSeq0 = 0;
+    }
+    if(lastSeq0 >= 4) {
+      n = max(1, n - (lastSeq0-1)); //subtract the number of zeroes from the sig digits, because E notation for 2.0E4 is better than 20000
+    }
+    return n;
+}
+
+static void format_fixed(char* out, const char* sign, int digits, double value) {
+    if (digits <= 0) {
+        sprintf(out, "%s0.0", sign);
+        return;
+    }
+
+    unsigned long long int_part = (unsigned long long)value;
+    int int_digits = 1;
+    for (unsigned long long n = int_part; n >= 10; n /= 10) int_digits++;
+
+    int frac_digits = digits - int_digits;
+    if (frac_digits < 1) frac_digits = 1; // Always show one digit after decimal
+
+    double scale = 1.0;
+    for (int i = 0; i < frac_digits; ++i) scale *= 10.0;
+
+    unsigned long long frac = (unsigned long long)((value - int_part) * scale + 0.5);
+    if (frac >= (unsigned long long)scale) { // rounding might carry
+        int_part += 1;
+        frac = 0;
+    }
+
+    char buf[32];
+    sprintf(buf, "%s%u.%0*u", sign, (unsigned int)int_part, frac_digits, (unsigned int)frac);
+
+    // Trim trailing zeroes from the right, but leave at least one after the decimal point
+    char* p = buf + strlen(buf) - 1;
+    while (p > buf && *p == '0' && *(p - 1) != '.') {
+        *p-- = '\0';
+    }
+
+    strcpy(out, buf);
+}
+
+static void format_sci(char* out, const char* sign, int digits, double value, int unused_exp) {
+    if (digits <= 0) {
+        sprintf(out, "%s0.0E+0", sign);
+        return;
+    }
+
+    double norm = value;
+    int exp10 = 0;
+    while (norm >= 10.0) {
+        norm /= 10.0;
+        exp10++;
+    }
+    while (norm < 1.0) {
+        norm *= 10.0;
+        exp10--;
+    }
+
+    if (exp10 == 0) {
+        sprintf(out, "%s%.1f", sign, value);
+        return;
+    }
+
+    int mantissa_digits = digits - 1;
+    if (mantissa_digits < 1) mantissa_digits = 1;
+
+    double scale = 1.0;
+    for (int i = 0; i < mantissa_digits; ++i) scale *= 10.0;
+
+    unsigned long long rounded = (unsigned long long)(norm * scale + 0.5);
+    unsigned long long int_part = rounded / (unsigned long long)scale;
+    unsigned long long frac = rounded % (unsigned long long)scale;
+
+    char buf[32];
+    sprintf(buf, "%s%u.%0*uE%+i", sign, (unsigned int)int_part, mantissa_digits, (unsigned int)frac, (int)exp10);
+
+    // Trim trailing zeroes from the mantissa, but leave at least one after the decimal point
+    char* dot = strchr(buf, '.');
+    char* e = strchr(buf, 'E');
+    if (dot && e) {
+        char* p = e - 1;
+        while (p > dot && *p == '0' && *(p - 1) != '.') {
+            memmove(p, p + 1, strlen(p));
+            --e;
+            --p;
+        }
+    }
+
+    strcpy(out, buf);
+}
+
+static char* eng(char* result, double value, int digits) {
+    const char* sign = (value < 0.0) ? "-" : "";
+    if (value < 0.0) value = -value;
+
+    if (value == 0.0) {
+        sprintf(result, "%s0.0", sign);
+        return result;
+    }
+
+    int budget_fix = digits - (sign[0] ? 1 : 0) - FIX_ADJUST;
+    int budget_sci = digits - (sign[0] ? 1 : 0) - SCI_ADJUST;
+    if (budget_fix < 1) budget_fix = 1;
+    if (budget_sci < 1) budget_sci = 1;
+
+    char buf_fix[32] = {0}, buf_sci[32] = {0};
+    format_fixed(buf_fix, sign, budget_fix, value);
+    format_sci(buf_sci, sign, budget_sci, value, 0);
+
+    int sig_fix = count_sig(buf_fix);
+    int sig_sci = count_sig(buf_sci);
+
+    // Choose better format; prefer fixed if equal
+    if(stringByteLength(buf_fix) > digits && stringByteLength(buf_sci) <= digits && sig_fix <= sig_sci) {
+      sprintf(result, "%s", buf_sci);
+      goto Return;
+    } else if(stringByteLength(buf_sci) > digits && stringByteLength(buf_fix) > digits) {
+      if(stringByteLength(buf_sci) > stringByteLength(buf_fix) && sig_fix >= sig_sci) {
+        sprintf(result, "%s", buf_fix);
+        goto Return;
+      } else {
+        sprintf(result, "%s", buf_sci);
+        goto Return;
+      }
+    } else if ((sig_fix > sig_sci) || (sig_fix == sig_sci)) {// && fabs(value) >= 1e-3 && fabs(value) < 1e+4)) {     // Choose better format; prefer fixed if equal
+        sprintf(result, "%s", buf_fix);
+    } else {
+        sprintf(result, "%s", buf_sci);
+    }
+Return:
+    // Uncomment these for debugging:
+    // printf("[DEBUG] FIX='%13s' SIG=%4d STRL=%4d Digits=%d\n", buf_fix, sig_fix, stringByteLength(buf_fix), digits);
+    // printf("[DEBUG] SCI='%13s' SIG=%4d STRL=%4d Digits=%d\n", buf_sci, sig_sci, stringByteLength(buf_sci), digits);
+    // printf("[DEBUG] FINAL='%s'\n\n", result);
+    return result;
+}
+
+char* wrap_format_fixed(double value, int digits) {
+    static char buf[64];  // adjust size if needed
+    static char buf2[64];  // adjust size if needed
+    const char* sign = "";
+
+    if (value < 0) {
+        sign = "-";
+        value = -value;
+    }
+
+    format_fixed(buf, sign, digits, value);
+    return radixProcess(buf2,buf);
+}
+
+char* wrap_format_sci(double value, int digits) {
+    static char buf[64];  // adjust size if needed
+    static char buf2[64];  // adjust size if needed
+    const char* sign = "";
+
+    if (value < 0) {
+        sign = "-";
+        value = -value;
+    }
+
+    format_sci(buf, sign, digits, value, 0);  // pass 0 for unused_exp
+    return radixProcess(buf2,buf);
+}
+
+char* wrap_eng(double value, int digits) {
+    static char out[64];
+    static char buf2[64];  // adjust size if needed
+    eng(out, value, digits);
+    return radixProcess(buf2, out);
+}
+
+
+
+//---------------
+
+// Structure to hold test values
+// typedef struct {
+//     double value;
+//     char description[20];
+// } TestValue;
+// 
+// // Function to find the maximum width needed for output alignment
+// int calculate_max_width(TestValue *test_values, int count, int max_digits) {
+//     int max_width = 0;
+//     char result[64];
+//     
+//     for (int d = 1; d <= max_digits; d++) {
+//         for (int i = 0; i < count; i++) {
+//             eng(result, test_values[i].value, d);
+//             int len = strlen(result);
+//             if (len > max_width) {
+//                 max_width = len;
+//             }
+//         }
+//     }
+//     
+//     return max_width;
+// }
+
 void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05) {
   char s03[PLOT_TMP_BUF_SIZE], tmpbuf[PLOT_TMP_BUF_SIZE];
+// 
+//     // Define test values
+//     TestValue test_values[] = {
+//         {0.161176, "0.161176"},
+//         {-0.156457, "-0.156457"},
+//         {0.029644, "0.029644"},
+//         {5.300000, "5.300000"},
+//         {1.001569, "1.001569"},
+//         {-1.300000, "-1.300000"},
+//         {-0.649629, "-0.649629"},
+//         {161.17634, "161.17634"},
+//         {0.0029694, "0.0029694"},
+//         {12.001569, "12.001569"},
+//         {-0.0649629, "-0.0649629"}
+//     };
+//     
+//     int num_tests = sizeof(test_values) / sizeof(TestValue);
+//     int max_digits = 5;
+//     
+//     // Calculate maximum width for alignment
+//     int max_width = calculate_max_width(test_values, num_tests, max_digits) + 2;
+//     
+//     // Print header
+//     printf("%-20s", "Input");
+//     for (int d = 1; d <= max_digits; d++) {
+//         printf("  %-*s", max_width, "digits");
+//     }
+//     printf("\n");
+//     
+//     printf("%-20s", "");
+//     for (int d = 1; d <= max_digits; d++) {
+//         char header[10];
+//         sprintf(header, "d=%d", d);
+//         printf("  %-*s", max_width, header);
+//     }
+//     printf("\n");
+//     
+//     // Print separator
+//     printf("%-20s", "--------------------");
+//     for (int d = 1; d <= max_digits; d++) {
+//         printf("  %-*s", max_width, "----------------");
+//     }
+//     printf("\n");
+//     
+//     // Process each test value
+//     for (int i = 0; i < num_tests; i++) {
+//         printf("%-20s", test_values[i].description);
+//         
+//         // Test for each digit setting
+//         for (int d = 1; d <= max_digits; d++) {
+//             char result[64];
+//             eng(result, test_values[i].value, d);
+//             printf("  %-*s", max_width, result);
+//         }
+//         printf("\n");
+//     }
+    
 
-  sprintf(s02, "%s%s%s", s01, eatSpacesMid(radixProcess(tmpbuf, eng(s03, inreal, digits))), s05);
+
+//  printf("In:%10f out:%s\n",inreal, eng(s03, inreal, digits));
+  sprintf(s02, "%s%s%s", s01, 
+    eatSpacesMid(
+      radixProcess(tmpbuf, 
+        eng(s03, inreal, digits)
+      )
+    )
+    , s05);
   nanCheck(s02);
 }
 
 
 #define horOffsetR 109+5 //digit righ side aliognment
-#define autoinc 20 //text line spacing
-#define autoshift -5 //text line spacing
+#define autoinc 19 //text line spacing
+#define autoshift -4 //text line offset
 #define horOffset 1 //labels from the left
 
 
@@ -859,6 +1053,21 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
 #endif // !TESTSUITE_BUILD
 
 
+//Removed - old portion ex WP43, replaced by graphs.c, where PLSTAT and EQN draw lives - remove when sure
+//   Also, the 'D' reference in pltStatMx need to be surgically removed, bearing in mind that the PLSTAT and EQN draw in plotstat may need it.
+//printf("XXXX5 plotStatMx=%s\n",plotStatMx);
+//void showGraphTickText(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
+//  char ss[100];
+//  char tmpbuf[PLOT_TMP_BUF_SIZE];
+//  eformat_eng2(ss, "x: ", tick_int_x, acc, "/tick1");
+//  showString(smallE(tmpbuf,padEquals(tmpbuf, ss)), &standardFont, xoff, yoff1, vmNormal, false, false);
+//  eformat_eng2(ss, "y: ", tick_int_y, acc, "/tick2");
+//  showString(smallE(tmpbuf,padEquals(tmpbuf, ss)), &standardFont, xoff, yoff2, vmNormal, false, false);
+//}
+
+
+//ASSESS; HISTO; SCATR
+
 void graphPlotstat(uint16_t selection){
 currentKeyCode = 255;
 #if !defined(SAVE_SPACE_DM42_13GRF)
@@ -873,12 +1082,16 @@ currentKeyCode = 255;
   float y;
 
   numberOfPlotPoints = 0;
-  if(calcMode == CM_GRAPH) {
-    roundedTicks = true;
-   }
-   else {
+
+//Removed - old portion ex WP43, replaced by graphs.c, where PLSTAT and EQN draw lives - remove when sure
+//   Also, the 'D' reference in pltStatMx need to be surgically removed, bearing in mind that the PLSTAT and EQN draw in plotstat may need it.
+//printf("XXXX1 plotStatMx=%s\n",plotStatMx);
+//  if(calcMode == CM_GRAPH) {
+//    roundedTicks = true;
+//   }
+//   else {
      roundedTicks = false;
-   }
+//   }
 
   if((plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
      (plotStatMx[0]=='D' && drawMxN() >= 2) ||
@@ -958,12 +1171,16 @@ currentKeyCode = 255;
 
 
     //graphAxisDraw();
-    if(calcMode == CM_GRAPH) {
-      roundedTicks = true;
-    }
-    else {
+
+//Removed - old portion ex WP43, replaced by graphs.c, where PLSTAT and EQN draw lives - remove when sure
+//   Also, the 'D' reference in pltStatMx need to be surgically removed, bearing in mind that the PLSTAT and EQN draw in plotstat may need it.
+//printf("XXXX2 plotStatMx=%s\n",plotStatMx);
+//    if(calcMode == CM_GRAPH) {
+//      roundedTicks = true;
+//    }
+//    else {
       roundedTicks = false;
-    }
+//    }
 
     if(x_min <= FLoatingMin || x_max <= FLoatingMin || y_min <= FLoatingMin || y_max <= FLoatingMin) {
        goto scaleMinusInfinity;
@@ -1051,29 +1268,30 @@ currentKeyCode = 255;
       clearScreenGraphs(4, clrTextArea, !clrGraphArea);
     } //continue with text only
 
-    if(calcMode == CM_GRAPH) {
-      int16_t index = -1;
-
-      char ss[100], tt[100];
-      char tmpbuf[PLOT_TMP_BUF_SIZE];
-      int32_t n;
-      eformat_eng2(ss,"(",x_max, 2,"");
-      eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
-      strcat(tt,padEquals(tmpbuf, ss));
-      n = showString(padEquals(tmpbuf, ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_max, 2, ")");
-      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++      +autoshift + 2, vmNormal, false, false);
-      eformat_eng2(ss, "(", x_min, 2, "");
-      n = showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
-      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
-
-      eformat_eng2(ss, "x: ", tick_int_x, 2, "/tick");
-      showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
-      eformat_eng2(ss, "y: ", tick_int_y, 2, "/tick");
-      showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
-      }
-
+//Removed - old portion ex WP43, replaced by graphs.c, where PLSTAT and EQN draw lives - remove when sure
+//   Also, the 'D' reference in pltStatMx need to be surgically removed, bearing in mind that the PLSTAT and EQN draw in plotstat may need it.
+//printf("XXXX3 plotStatMx=%s\n",plotStatMx);
+//    if(calcMode == CM_GRAPH) {
+//      int16_t index = -1;
+//
+//      char ss[100], tt[100];
+//      char tmpbuf[PLOT_TMP_BUF_SIZE];
+//      int32_t n;
+//      eformat_eng2(ss,"(",x_max, 2,"");
+//      eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
+//      strcat(tt,padEquals(tmpbuf, ss));
+//      n = showString(padEquals(tmpbuf, ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
+//      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+//      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++      +autoshift + 2, vmNormal, false, false);
+//      eformat_eng2(ss, "(", x_min, 2, "");
+//      n = showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
+//      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+//      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
+//      showGraphTickText(tick_int_x, tick_int_y, horOffset, 
+//                        Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2 + autoshift, 
+//                        Y_POSITION_OF_REGISTER_Z_LINE + autoinc*(index+1) + 2 + autoshift, 2);
+//      index += 2;
+//    }
 
     if(drawHistogram == 1 && selection == 0) { // HISTO
       int32_t n;
@@ -1089,8 +1307,9 @@ currentKeyCode = 255;
       realToFloat(&hBr, &hB);
       realToFloat(&nBr, &nB);
 
-      strcpy(ss,histElementXorY == 1 ? "  Histogram(y)" : "  Histogram(x)");
-      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+      strcpy(ss, "Histogram(");
+      strcat(ss,histElementXorY == 1 ? "y)" : "x)");
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -7 +autoshift, vmNormal, false, false);
 
       eformat_eng2(ss, "(", x_max, 2, "");
       eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
@@ -1356,13 +1575,14 @@ void graphDrawLRline(uint16_t selection) {
       if(lrCountOnes(lrSelection)>1 && selection == lrChosen) {
         strcat(ss,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
       }
-      showString(ss, &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
+      showString(ss, &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
       if(selection != CF_GAUSS_FITTING && selection != CF_CAUCHY_FITTING) {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
       else {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
+        compressString = 1;
         showString(          ss,  &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
     }
@@ -1393,7 +1613,7 @@ void graphDrawLRline(uint16_t selection) {
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
         }
 
-        eformat(ss, "", rr, 4, "");
+        strcpy(ss,wrap_format_fixed(rr,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
         strcpy(ss, "r" STD_SUP_2 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
@@ -1411,22 +1631,22 @@ void graphDrawLRline(uint16_t selection) {
 
       }
       else {                          //ORTHOF
-        eformat_fix3(ss, "", a0);
+        strcpy(ss,wrap_eng(a0,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "",ssa0);
+        strcpy(ss,wrap_eng(ssa0,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "", a1);
+        strcpy(ss,wrap_eng(a1,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-        eformat_fix3(ss, "", ssa1);
+        strcpy(ss,wrap_eng(ssa1,5));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
@@ -1444,16 +1664,11 @@ void graphDrawLRline(uint16_t selection) {
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
         }
         else {
-          eformat(ss, "", rr, 4, "");
+          strcpy(ss,wrap_eng(rr,5));
           showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
           strcpy(ss, "r" STD_SUP_2 "=");
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
         }
-
-        //eformat(ss,"x,y" STD_SUB_m STD_SUB_i STD_SUB_n "=", x_min,5);
-        //showString(ss, &standardFont, 0, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
-        //eformat(ss,"x,y" STD_SUB_m STD_SUB_a STD_SUB_x "=", x_max,5);
-        //showString(ss, &standardFont, 0, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
       }
     }
     else {
@@ -1560,7 +1775,11 @@ void fnPlotStat(uint16_t plotMode){
     if(!GRAPHMODE) { //Change over hourglass to the left side
       clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
     }
-    calcMode = CM_GRAPH;
+
+//Removed - old portion ex WP43, replaced by graphs.c, where PLSTAT and EQN draw lives - remove when sure
+//   Also, the 'D' reference in pltStatMx need to be surgically removed, bearing in mind that the PLSTAT and EQN draw in plotstat may need it.
+//printf("XXXX4 plotStatMx=%s\n",plotStatMx);
+//    calcMode = CM_GRAPH;
     hourGlassIconEnabled = true;       //clear the current portion of statusbar
     showHideHourGlass();
     refreshStatusBar();

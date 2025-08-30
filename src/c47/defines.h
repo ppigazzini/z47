@@ -8,7 +8,13 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b7"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+
+// Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
+// Version 7b6 is a quick bugfix version
+// Version 7c6 fixes a gitlab compile issue, no other changes.
+// Version 7a7 internal alpha test
+// Version 7b7 bugfix version, supplementing nano with float libraries
 
 
 #if !defined(CALCMODEL)
@@ -84,6 +90,7 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -107,6 +114,7 @@
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -122,7 +130,7 @@
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
 #define significantDigitsForEqnGraphs (significantDigits == 0 ? 12 : significantDigits)   //If 6 is chosen by user, all four types are changes as follows: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+6; 75 to SDIGS+9
-#define significantDigitsForScreen    4                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
+#define significantDigitsForScreen    3                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
 
 
 //Testing and debugging
@@ -147,8 +155,6 @@
 #define   FN_TIME_DEBUG1
 #undef    FN_TIME_DEBUG1
 
-
-
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
@@ -156,6 +162,8 @@
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
+  #define    ANALYSE_REFRESH              //various refresh backtraces
+  #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
   #define    VERBOSE_DETERMINEITEM
@@ -184,9 +192,12 @@
     #undef DEBUGUNDO
     #define DEBUG_EXECUTE
     #undef DEBUG_EXECUTE
+    #define DEBUG_PGM       // backtrace from insert step
+    #undef DEBUG_PGM        //
   #else // !PC_BUILD
     #undef DEBUGUNDO
     #undef DEBUG_EXECUTE
+    #undef DEBUG_PGM
   #endif // PC_BUILD
 
 
@@ -306,37 +317,25 @@
 //*********************************
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
-#define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
-#define DEBUG_REGISTER_L                 0 //1 JM Showing register L content on the PC GUI
-#define SHOW_MEMORY_STATUS               0 //1 JM Showing the memory status on the PC GUI
-#define MMHG_PA_133_3224                 0 //1 JM mmHg to Pa conversion coefficient is 133.3224 an not 133.322387415
-#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 //JMMAX 9965   // 43S:3328 //JMMAX // 1001 decimal digits: 3328 ≃ log2(10^1001)
-#define MAX_FACTORIAL                    450  //JMMAX 1142   // 43S: 450 //JMMAX
-
-                               // bits  digits  43S     x digits   x! digits
-                               //                         69!            98
-                               //                        210!           398
-                               // 3328  1001    450!     449!           998
-                               //                        807!          1997
-                               //                        977!          2499
-                               // 9965  3000            1142!          2998
-                               //15000  4515            1388!
-                               //                       2122!          6140
-
+#define DEBUG_PANEL                      0 // Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
+#define DEBUG_REGISTER_L                 0 // Showing register L content on the PC GUI
+#define SHOW_MEMORY_STATUS               0 // Showing the memory status on the PC GUI
+#define MMHG_PA_133_3224                 1 // mmHg to Pa conversion coefficient is 133.3224 and not 133.322387415
+#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 // 1001 decimal digits: 3328 ≃ log2(10^1001)
+#define MAX_FACTORIAL                    450  // Auto conversion to Real for > 450
 #define SHORT_INTEGER_SIZE_IN_BLOCKS     2 // 2 blocks = 8 bytes = 64 bits
 #define SHORT_INTEGER_SIZE_IN_BYTES      8 // 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
-#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
+#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // 1 for PRINTXY to be done after every evaluation of the formula; Or the complex solver for every iteration;
+#define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
-
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
-
-#define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
-#define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
-#define NARROW_SCREEN                1 // 400x1280 portrait screen
+#define BIG_SCREEN_COEF                  1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
+#define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
+#define NARROW_SCREEN                    1 // 400x1280 portrait screen
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
@@ -610,7 +609,7 @@
 #define FLAG_SBtvm                            0x8034
 #define FLAG_SBoc                             0x8035
 #define FLAG_SBss                             0x8036
-#define FLAG_SBclk                            0x8037
+#define FLAG_SBstpw                           0x8037
 #define FLAG_SBser                            0x8038
 #define FLAG_SBprn                            0x8039
 #define FLAG_SBbatV                           0x803A
@@ -627,7 +626,7 @@
 #define FLAG_ERPN                             0x8045
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
-#define FLAG_IRF_ON                           0x8048
+#define FLAG_IRFRQ                            0xc048
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
 #define FLAG_CPXPLOT                          0x804B
@@ -641,8 +640,21 @@
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
+#define FLAG_MNUp1                            0x8056
+#define FLAG_SBwoy                            0x8057
+#define FLAG_TOPHEX                           0x8058
 
-#define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+25 // We can have a maximum of 128 system flags
+
+                                                     // only used as bit count for setting change detection
+#define SETTING_AMODE                         0x0080 // current angle mode
+#define SETTING_DMX                           0x0081 // denMax
+#define SETTING_SINT_WS                       0x0082 // shortIntegerWordSize
+#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode 
+#define SETTING_WATCHICON                     0x0084 // the bit controlling the watch face icon
+#define SETTING_SIOICON                       0x0085 // the bit controlling the serial i/o activity icon
+#define SETTING_PRINTERICON                   0x0086 // the bit controlling the IR printer icon
+
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -709,13 +721,13 @@ typedef enum {
 #define TAM_MAX_MASK                          0x3fff
 
 // Stack Lift Status (2 bits)
-#define SLS_STATUS                            0x0003
+#define SLS_STATUS                            0x0003 // 0000 0011
 #define SLS_ENABLED                        ( 0 << 0) // Stack lift enabled after item execution
 #define SLS_DISABLED                       ( 1 << 0) // Stack lift disabled after item execution
 #define SLS_UNCHANGED                      ( 2 << 0) // Stack lift unchanged after item execution
 
 // Undo Status (2 bits)
-#define US_STATUS                             0x000c
+#define US_STATUS                             0x000c // 0000 1100
 #define US_ENABLED                         ( 0 << 2) // The command saves the stack, the statistical sums, and the system flags for later UNDO
 #define US_CANCEL                          ( 1 << 2) // The command cancels the last UNDO data
 #define US_UNCHANGED                       ( 2 << 2) // The command leaves the existing UNDO data as is
@@ -741,7 +753,7 @@ typedef enum {
 #define EIM_ENABLED                         (1 << 8) // Function enabled in EIM
 
 // Parameter Type in Program status (4 bit)
-#define PTP_STATUS                            0x1e00
+#define PTP_STATUS                            0x1e00 // 0001 1110 0000 0000
 #define PTP_NONE                           ( 0 << 9) // No parameters
 #define PTP_DECLARE_LABEL                  ( 1 << 9) // These
 #define PTP_LABEL                          ( 2 << 9) //   parameter
@@ -758,6 +770,12 @@ typedef enum {
 #define PTP_LITERAL                        (13 << 9) // Literal
 #define PTP_REM                            (14 << 9) //
 #define PTP_DISABLED                       (15 << 9) // Not programmable
+
+// Hourglass enable (2 bits)
+#define HG_STATUS                            0x6000  // 0110 0000 0000 0000
+#define HG_ENABLED                         ( 0 << 13 ) // Hourglass enabled
+#define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
+#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked 
 
 
 #define INC_FLAG                                   0
@@ -1040,6 +1058,9 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define RBR_INCDEC1 10
+#define LAST_GLOBAL_REGISTER_SCREEN LAST_SPARE_REGISTER - modulo(LAST_SPARE_REGISTER, RBR_INCDEC1)
+
 #define FAILED_INDIRECTION                      9999
 
 /* Convertion from a key stroke program register code to a C register number
@@ -1094,6 +1115,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Status bar updating mode
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
+#define SBARUPD_WoY                             (getSystemFlag(FLAG_SBwoy  ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
 #define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
@@ -1106,7 +1128,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_AlphaMode                       ( 1                         )
 #define SBARUPD_HourGlass                       ( 1                         )
 #define SBARUPD_StackSize                       (getSystemFlag(FLAG_SBss   ))
-#define SBARUPD_Watch                           (getSystemFlag(FLAG_SBclk  ))
+#define SBARUPD_StopWatch                       (getSystemFlag(FLAG_SBstpw ))
 #define SBARUPD_SerialIO                        (getSystemFlag(FLAG_SBser  ))
 #define SBARUPD_Printer                         (getSystemFlag(FLAG_SBprn  ))
 #define SBARUPD_UserMode                        ( 1                         )
@@ -1118,33 +1140,36 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 
 // Horizontal offsets in the status bar
-#define X_DATE                                   (SBARUPD_Time ? 1 : 25)
-#define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
-#define X_REAL_COMPLEX                           136
-#define X_COMPLEX_MODE                           146
-#define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE                           160
-#define X_FRAC_MODE                              187
-#define X_INTEGER_MODE                           262
-#define X_OVERFLOW_CARRY                         292
-#define X_ALPHA_MODE                             300
-#define X_SSIZE_BEGIN                            327 -5
-#define X_HOURGLASS                              312
-#define X_ASM                                    (X_ALPHA_MODE + 34)
-#define X_HOURGLASS_GRAPHS                       140
-#define X_WATCH                                  337
-#define X_SERIAL_IO                              353
-#define X_PRINTER                                362
-#define X_USER_MODE                              375
-#define X_BATTERY                                389
-#define DX_BATTERY                                 8  // <=2.054 V - minimum bar (one fine line)
-#define DY_BATTERY                                20  // >=3.045 V - maximum bars (tip of battery against the edge)
-                                                      // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
-#define X_SHIFT_L                                  0
-#define X_SHIFT_R                                (X_USER_MODE - 15)
+#define X_DATE                           ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
+#define X_TIME                                     45 // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
+#define X_REAL_COMPLEX        (X_TIME             +91)// note: this is for both dow or time, not both
+#define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
+#define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
+#define X_COMPLEX_MODE_ADJ               -8           // note: auto moved left if REAL_COMPLEX is not present
+#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
+#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
+#define X_BASE_MODE           (X_FRAC_MODE        + 0)//
+#define X_INTEGER_MODE        (X_BASE_MODE        +77)//
+#define X_MATRIX_MODE         (X_INTEGER_MODE     + 0)//
+#define X_TVM_MODE            (X_MATRIX_MODE      + 0)//
+#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)// 
+#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
+#define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
+#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
+#define X_ASM                 (X_SSIZE_BEGIN      +11)// 
+#define X_STOPWATCH           (X_ASM              + 4)//
+#define X_SERIAL_IO           (X_STOPWATCH        +18)// note: I/O and Printing (soft or hard) cannot happen at the same time
+#define X_PRINTER             (X_SERIAL_IO        + 0)//
+#define X_USER_MODE           (X_PRINTER          +14)//
+#define X_BATTERY             (X_USER_MODE        +13)//
+#define DX_BATTERY                                  8  // <=2.054 V - minimum bar (one fine line)
+#define DY_BATTERY                                 20  // >=3.045 V - maximum bars (tip of battery against the edge)
+                                                       // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
+#define X_SHIFT_L                                   0
+#define X_SHIFT_R                                (X_PRINTER - 1)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
+#define Y_SHIFT                                  (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
 
 
 
@@ -1182,7 +1207,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_DIGITS                  16
+#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 2)   //used for time consuming functions, divides, etc.
+#define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
 #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has about 64Kb for user usable RAM
@@ -1330,6 +1356,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NP_COMPLEX_INT_PART                        7 // Integer part of the complex imaginary part
 #define NP_COMPLEX_FLOAT_PART                      8 // Decimal part of the complex imaginary part
 #define NP_COMPLEX_EXPONENT                        9 // Ten exponent of the complex imaginary part
+#define NP_HP32SII_DENOMINATOR                    10 // Denominator of the fraction (HP32SII mode)
+#define NP_COMPLEX_FRACTION_DENOMINATOR           11 // Denominator of the complex imaginary part fraction
+#define NP_COMPLEX_HP32SII_DENOMINATOR            12 // Denominator of the complex imaginary part fraction (HP32SII mode)
 
 // Temporary information
 #define TI_NO_INFO                                 0
@@ -1434,17 +1463,24 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS2                                 99
 #define TI_ROOTS3                                100
 #define TI_IJ                                    101
-#define TI_MIJ                                   102
-#define TI_BYTES                                 103
-#define TI_BITS                                  104
-#define TI_SOLVER_VARIABLE_RESULT                105
-#define TI_DATA_NEG_OVRFL                        106
-#define TI_LASTSTATEFILE                         107
-#define TI_FUNCTION                              108
-#define TI_STORCL                                109
-#define TI_TVM_EFF                               110
-#define TI_TVM_IA                                111
-#define TI_NOT_AVAILABLE                         112
+#define TI_I                                     102
+#define TI_J                                     103
+#define TI_MIJ                                   104
+#define TI_BYTES                                 105
+#define TI_BITS                                  106
+#define TI_SOLVER_VARIABLE_RESULT                107
+#define TI_DATA_NEG_OVRFL                        108
+#define TI_LASTSTATEFILE                         109
+#define TI_FUNCTION                              110
+#define TI_STORCL                                111
+#define TI_TVM_EFF                               112
+#define TI_TVM_IA                                113
+#define TI_NOT_AVAILABLE                         114
+#define TI_DISP_WOY                              115
+#define TI_DISP_JULIAN_WOY                       116
+#define TI_WOY                                   117
+#define TI_WOY_RULE                              118
+#define TI_MIJEQ                                 119
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1482,7 +1518,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_REALS                             16
 #define CATALOG_CPXS                              17
 #define CATALOG_MVAR                              18
-#define NUMBER_OF_CATALOGS                        19
+#define CATALOG_CONFIGS                           19
+#define CATALOG_ALLVARS                           20
+#define CATALOG_NUMBRS                            21
+#define NUMBER_OF_CATALOGS                        22
 
 // String comparison type
 #define CMP_BINARY                                 0
@@ -1514,7 +1553,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PGM_RESUMING                               5
 #define PGM_SINGLE_STEP                            6
 #define PGM_UNDEFINED                            255
-#define PGM_DEFINED_MASK                        0x7f
 
 // Save mode
 #define SM_MANUAL_SAVE                             0
@@ -1536,7 +1574,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SCRUPD_MANUAL_STACK                     0x02       //0000 0010
 #define SCRUPD_MANUAL_MENU                      0x04       //0000 0100
 #define SCRUPD_MANUAL_SHIFT_STATUS              0x08       //0000 1000
-//#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10     //0001 0000   16d
+#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10       //0001 0000   16d
 #define SCRUPD_SKIP_STACK_ONE_TIME              0x20       //0010 0000   32d
 #define SCRUPD_SKIP_MENU_ONE_TIME               0x40       //0100 0000   64d
 //#define SCRUPD_SHIFT_STATUS                     0x80
@@ -1602,7 +1640,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     230 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1621,12 +1659,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 
+#define RAM_SIZE_IN_BLOCKS_OLD_HW              (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+#define RAM_SIZE_IN_BLOCKS_NEW_HW              (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #elif defined(DMCP_BUILD) && !defined(NEW_HW) // DMCP
-  #define RAM_SIZE_IN_BLOCKS                   (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_OLD_HW
 #else // !DMCP_BUILD
-  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   RAM_SIZE_IN_BLOCKS_NEW_HW
 #endif // DMCP_BUILD
 
 #define CONFIG_SIZE_IN_BLOCKS                  TO_BLOCKS(sizeof(dtConfigDescriptor_t))
@@ -1784,9 +1824,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
-// The number of elements in an array
-#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
-
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
@@ -1811,7 +1848,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= PROBMENUSTART && -softmenu[softmenuStack[0].softmenuId].menuItem <= PROBMENUEND)
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE))
 #define BASEMODEREGISTERX                    (BASEMODEACTIVE && \
@@ -1923,7 +1960,24 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
+#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define getTagAngularMode(tag)               ( tag & amAngleMask)
+#define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
+#define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
+#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+
+#if defined(DMCP_BUILD)
+  #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
+#else //!DMCP_BUILD
+  #define runningOnSimOrUSB true
+#endif //!DMCP_BUILD
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
@@ -1993,13 +2047,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 /* Turn off -Wunused-result for a specific function call */
 #define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
-#if defined(DMCP_BUILD)
-  #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
-#else // !DMCP_BUILD
-  #define TMP_STR_LENGTH     2560 //2560 //JMMAX ORG:2560, changed back from 3000; 2023-09-26
-#endif // DMCP_BUILD
+#define TMP_STR_LENGTH         2560
 #define WRITE_BUFFER_LEN       4096
-#define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
+#define ERROR_MESSAGE_LENGTH    512
 #define DISPLAY_VALUE_LEN        80
 
 #define FILENAMELEN              40

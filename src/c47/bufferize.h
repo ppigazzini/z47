@@ -8,7 +8,6 @@
 #define BUFFERIZE_H
 
   extern bool_t delayCloseNim;
-  extern bool_t changeFractionModeOnENTER;
 
   void     fnAim                    (uint16_t unusedButMandatoryParameter);
   void     resetAlphaSelectionBuffer(void);

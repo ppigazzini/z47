@@ -1,5 +1,5 @@
 project('c47', 'c',
-  meson_version   : '>=0.56.0',
+  meson_version   : '>=0.57.0',
   license         : 'GPL-3.0-only',
   default_options : ['warning_level=2']
 )
@@ -32,12 +32,16 @@ if get_option('RASPBERRY')
   add_project_arguments('-DRASPBERRY',  native : true, language : 'c')
 endif
 
+if get_option('DECNUMBER_FASTMUL')
+  add_project_arguments('-DDECNUMBER_FASTMUL=1',  native : false, language : 'c')
+endif
+
 # DMCP arguments
 add_project_arguments('-DDMCP_BUILD', native : false, language : 'c')
 add_project_arguments('-DOS32BIT',    native : false, language : 'c')
 
 git = find_program('git')
-run_command(git, 'submodule', 'update', '--init', '--recursive', meson.project_source_root())
+run_command(git, 'submodule', 'update', '--init', '--recursive', meson.project_source_root(), check: false)
 
 cc = meson.get_compiler('c')
 ft_dep  = dependency('freetype2', native : true)
@@ -58,7 +62,7 @@ endif
 
 conf_data = configuration_data()
 commit_tag = get_option('CI_COMMIT_TAG')
-today = run_command('date', '+%Y-%m-%d')
+today = run_command('date', '+%Y-%m-%d', check: false)
 conf_data.set('TODAY', today.stdout().strip())
 if commit_tag != ''
   conf_data.set('CI_USE_TAG',    true)
@@ -67,7 +71,7 @@ else
   conf_data.set('CI_COMMIT_TAG', '')
 endif
 
-cvs_version_info = run_command('python3', 'tag2ver.py')
+cvs_version_info = run_command('python3', 'tag2ver.py', check: false)
 if cvs_version_info.returncode() == 0
   version_data = cvs_version_info.stdout().strip().split(';')
   conf_data.set('VERSION_WINRS',  version_data[0])
@@ -92,7 +96,10 @@ if meson.is_cross_build()
   add_pgm_chsum = files('tools/add_pgm_chsum')[0]
   modify_crc    = files('tools/modify_crc')[0]
   gen_qspi_crc  = files('tools/gen_qspi_crc')[0]
+  calc_sizes    = files('tools/size.py')[0]
+  py3           = find_program('python3')
   arm_objcopy   = find_program('arm-none-eabi-objcopy')
+  arm_readelf   = find_program('arm-none-eabi-readelf')
   bash          = find_program('bash')
   subproject('gmp-6.2.1')
   arm_gmp_dep   = dependency('arm-gmp-6.2.1', native : false)

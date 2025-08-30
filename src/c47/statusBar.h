@@ -9,31 +9,37 @@
 #if !defined(STATUSBAR_H)
   #define STATUSBAR_H
 
+   #if defined (PC_BUILD)
+    void mockupSB(void);
+  #endif //PC_BUILD
+
   #if !defined(TESTSUITE_BUILD)
   /**
    * Refreshes the status bar.
    */
+  void forceSBupdate          (void);
   void refreshStatusBar       (void);
 
   /**
    * Displays date and time in the status bar.
    */
-  void showDateTime           (void);
+  bool_t timeChanged          (void);
+  bool_t showDateTime         (void);
 
   /**
    * Displays the complex result mode C or R in the status bar.
    */
-  void showRealComplexResult  (void);
+//  void showRealComplexResult  (void);
 
   /**
    * Displays the complex mode rectangular or polar in the status bar.
    */
-  void showComplexMode        (void);
+//  void showComplexMode        (void);
 
   /**
    * Displays the angular mode in the status bar.
    */
-  void showAngularMode        (void);
+//  void showAngularMode        (void);
 
   /**
    * Displays the faction mode in the status bar.
@@ -43,22 +49,22 @@
   /**
    * Displays the integer mode icon in the status bar.
    */
-  void showIntegerMode        (void);
+//  void showIntegerMode        (void);
 
   /**
    * Displays the matrix mode icon in the status bar.
    */
-  void showMatrixMode         (void);
+//  void showMatrixMode         (void);
 
   /**
    * Displays the TVM mode icon in the status bar.
    */
-  void showTvmMode            (void);
+//  void showTvmMode            (void);
 
   /**
    * Displays the overflow flag and the carry flag.
    */
-  void showOverflowCarry      (void);
+//  void showOverflowCarry      (void);
 
   /**
    * Shows or hides the alpha mode.
@@ -73,32 +79,32 @@
   /**
    * Shows ASB icon in the status bar.
    */
-  void light_ASB_icon         (void);
+//  void light_ASB_icon         (void);
 
   /**
    * Hides ASB icon in the status bar.
    */
-  void kill_ASB_icon          (void);
+//  void kill_ASB_icon          (void);
 
   /**
    * Shows or hides the watch icon in the status bar.
    */
-  void showHideWatch          (void);
+//  void showHideWatch          (void);
 
   /**
    * Shows or hides the serial I/O icon in the status bar.
    */
-  void showHideSerialIO       (void);
+//  void showHideSerialIO       (void);
 
   /**
    * Shows or hides the printer icon in the status bar.
    */
-  void showHidePrinter        (void);
+//  void showHidePrinter        (void);
 
   /**
    * Shows or hides the user mode icon in the status bar.
    */
-  void showHideUserMode       (void);
+//  void showHideUserMode       (void);
 
   /**
    * Shows or hides the USB or low battery icon in the status bar.
@@ -110,7 +116,7 @@
    */
   void showHideStackLift      (void);
 
-  void showHideASB            (void);       //JM
+//  void showHideASB            (void);       //JM
 
   #endif // !TESTSUITE_BUILD
 #endif // !STATUSBAR_H

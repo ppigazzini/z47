@@ -20,6 +20,9 @@
 
 #else
   static bool_t checkParamBinomial(real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if( !getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_P, i)
         || !getRegisterAsReal(REGISTER_N, j))
@@ -59,10 +62,6 @@
   void fnBinomialP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamBinomial(&val, &prob, &num)) {
       if(realIsAnInteger(&val)) {
         WP34S_Pdf_Binomial(&val, &prob, &num, &ans, &ctxtReal39);
@@ -87,10 +86,6 @@
   void fnBinomialL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamBinomial(&val, &prob, &num)) {
       WP34S_Cdf_Binomial(&val, &prob, &num, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
@@ -110,10 +105,6 @@
   void fnBinomialR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamBinomial(&val, &prob, &num)) {
       WP34S_Cdfu_Binomial(&val, &prob, &num, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
@@ -132,10 +123,6 @@
 
   void fnBinomialI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamBinomial(&val, &prob, &num)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {

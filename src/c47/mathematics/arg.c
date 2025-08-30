@@ -74,7 +74,9 @@ static void argRema(void) {
 
   for(int i = 0; i < numOfElements; ++i) {
     real34ToReal(&x.matrixElements[i], &r);
-    realToReal34(realArg(&r), &x.matrixElements[i]);
+    r = *realArg(&r);
+    convertAngleFromTo(&r, amDegree, currentAngularMode, &ctxtReal39);
+    realToReal34(&r, &x.matrixElements[i]);
   }
 
   convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);

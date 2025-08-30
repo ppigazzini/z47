@@ -150,6 +150,7 @@ void scanLabelsAndPrograms(void) {
   freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
 
   defineCurrentProgramFromCurrentStep();
+  defineFirstDisplayedStep();
 #endif // !SAVE_SPACE_DM42_10
 }
 
@@ -461,7 +462,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
       #if defined(DMCP_BUILD)                                                      // vvv
-        if( !(!getSystemFlag(FLAG_USB) && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
+        if( !(!runningOnSimOrUSB && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
       #endif
 
         lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);
@@ -571,7 +572,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       else {
         pemAddNumber(ITM_BACKSPACE);
       }
-      clearScreen();
+      clearScreen(13);
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
@@ -581,7 +582,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         ++firstDisplayedLocalStepNumber;
       }
       defineFirstDisplayedStep();
-      clearScreen();
+      clearScreen(14);
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
@@ -980,7 +981,8 @@ void pemAddNumber(int16_t item) {
           //}
         case NP_REAL_FLOAT_PART:
         case NP_REAL_EXPONENT:
-          case NP_FRACTION_DENOMINATOR: {
+        case NP_HP32SII_DENOMINATOR:
+        case NP_FRACTION_DENOMINATOR: {
           tmpString[1] = STRING_REAL34;
           break;
           }
@@ -1064,6 +1066,7 @@ void pemCloseNumberInput(void) {
       }
       case NP_REAL_FLOAT_PART:
       case NP_REAL_EXPONENT:
+      case NP_HP32SII_DENOMINATOR:
       case NP_FRACTION_DENOMINATOR: {
         if(inputLength >= REAL34_SIZE_IN_BYTES) {
           real34_t val;
@@ -1216,6 +1219,13 @@ static void _pemCloseDmsInput(void) {
 }
 
 void insertStepInProgram(int16_t func) {
+                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "insertStepInProgram called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   char buffer[16];
   uint32_t opBytes = (func >= 128) ? 2 : 1;
 
@@ -1531,8 +1541,18 @@ void insertUserItemInProgram(int16_t func, char *funcParam) {
   }
 }
 
+#if defined(PC_BUILD) && defined(DEBUG_PGM)
+  #include <execinfo.h>
+#endif // PC_BUILD &&MONITOR_CLRSCR
 
 void addStepInProgram(int16_t func) {
+                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "addStepInProgram called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
     ++currentLocalStepNumber;

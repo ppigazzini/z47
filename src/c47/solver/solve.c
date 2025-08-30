@@ -304,10 +304,10 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
           clearRegisterLine(REGISTER_X, true, true);
 
           displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           showString(real34IsSpecial(fa) ? "?" : real34IsZero(fa) ? "" : real34IsPositive(fa) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           displayFormatDigits = savedDisplayFormatDigits;
@@ -664,6 +664,7 @@ retryLevel:
     }
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
+      bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
       setSystemFlag(FLAG_SOLVING);
       real34Copy(const34_1e_32, &tmp);
       while(true) {
@@ -692,8 +693,10 @@ retryLevel:
           break;
         }
       }
+      if(!retainSolvingFlag) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
     }
-    clearSystemFlag(FLAG_SOLVING);
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;

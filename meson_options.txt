@@ -15,3 +15,9 @@ option('DMCPVERSION',
   value       : '',
   description : 'dmcp or dmcp5'
 )
+
+option('DECNUMBER_FASTMUL',
+  type        : 'boolean',
+  value       : false,
+  description : 'Set if use decnumber with enabled FASTMUL option'
+)

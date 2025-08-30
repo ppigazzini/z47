@@ -76,33 +76,42 @@ static void execute_rpn_function(void){
   calcRegister_t regStats = graphVariabl1;
   if(regStats != INVALID_VARIABLE) {
     fnStore(regStats);                  //place X register into x
-
-    #if defined(PC_BUILD) //PC_BUILD
-      printf("Graph variable x=%u: ",graphVariabl1);
-      printRegisterToConsole(graphVariabl1, " = ","\n");
-    #endif //PC_BUILD
+                                  #if defined(PC_BUILD) //PC_BUILD
+                                    printf("Graph variable x=%u: ",graphVariabl1);
+                                    printRegisterToConsole(graphVariabl1, " = ","\n");
+                                  #endif //PC_BUILD
 
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-    #if defined(PC_BUILD) //PC_BUILD
-      printf("Graph variable y ");
-      printRegisterToConsole(REGISTER_X, " = ","\n");
-    #endif //PC_BUILD
+                                  #if defined(PC_BUILD) //PC_BUILD
+                                    printf("Graph variable y ");
+                                    printRegisterToConsole(REGISTER_X, " = ","\n");
+                                  #endif //PC_BUILD
 
-    #if defined(PC_BUILD)
-      if(lastErrorCode != 0) {
-        #if defined(VERBOSE_SOLVER00)
-        printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
-        #endif // VERBOSE_SOLVER00
-        lastErrorCode = 0;
-      }
-    #endif // PC_BUILD
+                                  #if defined(PC_BUILD)
+                                    if(lastErrorCode != 0) {
+                                      #if defined(VERBOSE_SOLVER00)
+                                      printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
+                                      #endif // VERBOSE_SOLVER00
+                                      lastErrorCode = 0;
+                                    }
+                                  #endif // PC_BUILD
     fnRCL(regStats);
-    #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
-      printRegisterToConsole(REGISTER_X,">>> Calc x=","");
-      printRegisterToConsole(REGISTER_Y," y=","");
-    #endif // VERBOSE_SOLVER0 && PC_BUILD
+
+                                  #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
+                                    printRegisterToConsole(REGISTER_X,">>> Calc x=","");
+                                    printRegisterToConsole(REGISTER_Y," y=","");
+                                  #endif // VERBOSE_SOLVER0 && PC_BUILD
+
+                                  if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
+                                    copySourceRegisterToDestRegister(REGISTER_X,REGISTER_J);
+                                    copySourceRegisterToDestRegister(REGISTER_Y,REGISTER_K);
+                                    fnP_All_Regs(PRN_XYr);
+                                    copySourceRegisterToDestRegister(REGISTER_J,REGISTER_X);
+                                    copySourceRegisterToDestRegister(REGISTER_K,REGISTER_Y);
+                                  }
+
   }
   else {
     #if defined(PC_BUILD)
@@ -278,9 +287,11 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
-void graph_eqn(uint16_t mode) {
-  currentKeyCode = 255;
-  #if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD)
+  static void graph_eqn(uint16_t mode) {
+    currentKeyCode = 255;
+    calcMode = CM_GRAPH;
+    saveForUndo();
     regStatsXY = findNamedVariable(plotStatMx);
     double x;
     double x01 = x_min;
@@ -487,6 +498,7 @@ void graph_eqn(uint16_t mode) {
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           break;
         }
       #endif //DMCP_BUILD
@@ -526,14 +538,13 @@ void graph_eqn(uint16_t mode) {
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
     #endif //LOW_GRAPH_ACC
+  }
+#endif // !TESTSUITE_BUILD
 
-  #endif // !TESTSUITE_BUILD
-}
 
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-
     saveForUndo();
     strcpy(plotStatMx,"STATS");
 
@@ -1199,6 +1210,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;
         screenUpdatingMode = SCRUPD_AUTO;
+        screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         break;
       }
                                   #if defined(PC_BUILD)
@@ -1206,6 +1218,15 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
                                     printRegisterToConsole(SREG_X1,"X = "," ");
                                     printRegisterToConsole(REGISTER_Y,"Y = ","\n");
                                   #endif // PC_BUILD
+
+                                  if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
+                                    copySourceRegisterToDestRegister(REGISTER_X,REGISTER_K);
+                                    copySourceRegisterToDestRegister(SREG_X1,REGISTER_X);
+                                    fnP_All_Regs(PRN_XYr);
+                                    copySourceRegisterToDestRegister(REGISTER_K,REGISTER_X);
+                                  }
+
+
 
     }  //Iteration end
 
@@ -1325,7 +1346,6 @@ void fnEqSolvGraph (uint16_t func) {
     }
     case EQ_PLOT_LU: {           //uses limits
       if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
-        saveForUndo();
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         liftStack();
@@ -1341,7 +1361,6 @@ void fnEqSolvGraph (uint16_t func) {
         reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNone);
         realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
         realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
-        saveForUndo();
         }
       break;
     }
@@ -1426,8 +1445,13 @@ void fnEqSolvGraph (uint16_t func) {
       initialize_function();
       graph_eqn(noInitDrwMx);
 
+      if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+        setSystemFlag(FLAG_PLINE);
+      }
+
       reDraw = true;
       screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       refreshScreen(239);
       break;
     }

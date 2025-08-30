@@ -7,6 +7,10 @@
 #if !defined(ROTATEBITS_H)
 #define ROTATEBITS_H
 
+void fnSl_1  (uint16_t unusedButMandatoryParameter);
+void fnSr_1  (uint16_t unusedButMandatoryParameter);
+void fnRl_1  (uint16_t unusedButMandatoryParameter);
+void fnRr_1  (uint16_t unusedButMandatoryParameter);
 void fnAsr   (uint16_t numberOfShifts);
 void fnSl    (uint16_t numberOfShifts);
 void fnSr    (uint16_t numberOfShifts);
@@ -14,8 +18,10 @@ void fnRl    (uint16_t numberOfShifts);
 void fnRlc   (uint16_t numberOfShifts);
 void fnRr    (uint16_t numberOfShifts);
 void fnRrc   (uint16_t numberOfShifts);
-void fnLj    (uint16_t numberOfShifts);
-void fnRj    (uint16_t numberOfShifts);
+void fnLj    (uint16_t unusedButMandatoryParameter);
+void fnRj    (uint16_t unusedButMandatoryParameter);
 void fnMirror(uint16_t unusedButMandatoryParameter);
-void fnSwapEndian(uint8_t bitWidth);                  //JM
+void fnZip   (uint16_t unusedButMandatoryParameter);
+void fnUnzip (uint16_t unusedButMandatoryParameter);
+void fnSwapEndian(uint16_t bitWidth);                  //JM
 #endif // !ROTATEBITS_H

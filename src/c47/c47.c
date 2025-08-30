@@ -46,6 +46,7 @@ bool_t                 fnKeyInCatalog;
 bool_t                 hourGlassIconEnabled;
 bool_t                 watchIconEnabled;
 bool_t                 printerIconEnabled;
+bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
 bool_t                 showContent;
@@ -54,7 +55,6 @@ bool_t                 updateDisplayValueX;
 bool_t                 thereIsSomethingToUndo;
 bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
-bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 secTick1;
 bool_t                 halfSecTick2;
@@ -63,6 +63,7 @@ bool_t                 skippedStackLines = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
+bool_t                 cleanupAfterShift = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -70,8 +71,6 @@ realContext_t          ctxtReal34;   //   34 digits
 realContext_t          ctxtReal39;   //   39 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal51;   //   51 digits: used for 34 digits intermediate calculations
 realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
-realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
-realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
 subroutineLevels_t       allSubroutineLevels;
 subroutineLevelHeader_t *currentSubroutineLevelData;
@@ -165,13 +164,13 @@ uint8_t                numLinesStandardFont;
 uint8_t                numLinesTinyFont;
 uint8_t                cursorEnabled;
 uint8_t                nimNumberPart;
+uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
 uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
-uint8_t                lastProgramRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                keyStateCode;
@@ -230,7 +229,6 @@ bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
-bool_t                 topHex = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;
@@ -244,6 +242,7 @@ int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
 int16_t                imaginaryExponentSignLocation;
 int16_t                imaginaryMantissaSignLocation;
+int16_t                imaginaryDenominatorLocation;
 int16_t                exponentLimit;
 int16_t                exponentHideLimit;
 int16_t                showFunctionNameCounter;
@@ -343,6 +342,9 @@ char                   fileNameSelected[stateFileNameVarLength];
 char                   filename_csv[FILENAMELEN]; //JMMAX   //JM_CSV
 uint32_t               mem__32;                             //JM_CSV
 bool_t                 cancelFilename;
+
+uint8_t                firstDayOfWeek = 1;     // Monday
+uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)
@@ -1032,11 +1034,15 @@ int convertKeyCode(int key) {
                                                       telltale_pos++;
                                                       telltale_pos = telltale_pos & 0x03;
                                                       char aaa[100];
-                                                      sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
                                                       sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #if defined(BUFFER_CLICK_DETECTION)
+                                                        sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      #endif
                                                       showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
                                                     }
                                                   #endif // JMSHOWCODES

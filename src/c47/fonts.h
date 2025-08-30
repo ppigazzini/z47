@@ -31,7 +31,7 @@
   #define STD_NOCHAR                    1
 
 
-  //<------------ Numeric font glyphs -----------> Not used for now
+  //<------------ Numeric font glyphs -----------> Experimentally used by IRFRAC
   #define NUM_0_b                       "\xa4\x73"
   #define NUM_1_b                       "\xa4\x74"
   #define NUM_2_b                       "\xa4\x75"
@@ -202,6 +202,8 @@
 #define STD_i_GRAVE                   "\x80\xec"
 #define STD_i_ACUTE                   "\x80\xed"
 #define STD_i_CIRC                    "\x80\xee"
+#define STD_j_CIRC                    "\x81\x35"
+#define STD_k_CIRC                    "\x81\x37"
 #define STD_i_DIARESIS                "\x80\xef"
 #define STD_eth                       "\x80\xf0"
 #define STD_n_TILDE                   "\x80\xf1"
@@ -348,7 +350,8 @@
 #define STD_epsilon                   "\x83\xb5"
 #define STD_zeta                      "\x83\xb6"
 #define STD_eta                       "\x83\xb7"
-#define STD_theta                     "\x83\xb8"
+#define STD_theta                     "\x83\xd1"
+#define STD_theta_m                   "\x83\xb8"
 #define STD_iota                      "\x83\xb9"
 #define STD_kappa                     "\x83\xba"
 #define STD_lambda                    "\x83\xbb"
@@ -371,7 +374,7 @@
 #define STD_omicron_TONOS             "\x83\xcc"
 #define STD_upsilon_TONOS             "\x83\xcd"
 #define STD_omega_TONOS               "\x83\xce"
-
+#define STD_phi_m                     "\x83\xd5"
 #define STD_QOPPA                     "\x83\xd8"  //JM GREEK
 #define STD_qoppa                     "\x83\xd9"  //JM GREEK
 #define STD_DIGAMMA                   "\x83\xdc"  //JM GREEK
@@ -397,6 +400,14 @@
 #define STD_DC                        "\xA3\x93" //2393
 #define STD_SUBSET_OF                 "\xA2\x82" //2282
 #define STD_NOT_SUBSET_OF             "\xA2\x84" //2284
+
+#define STD_u_BAR                     "\x83\x80"
+#define STD_v_BAR                     "\x83\x81"
+#define STD_w_BAR                     "\x83\x82"
+#define STD_z_BAR                     "\x83\x83"
+#define STD_v_CIRC                    "\x83\x8B"
+#define STD_z_CIRC                    "\x83\x8D"
+#define STD_u_CIRC2                   "\x83\xA2"
 
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
@@ -605,6 +616,7 @@
 #define STD_GAUSS_BLACK_R             "\xa4\x33"
 #define STD_USB_SYMBOL                "\xa4\x34"
 #define STD_BATTERYHALF               "\xa4\x35" //2435
+#define STD_BASE_0                    "\xa4\xEA"
 #define STD_BASE_1                    "\xa4\x60"
 #define STD_BASE_2                    "\xa4\x61"
 #define STD_BASE_3                    "\xa4\x62"

@@ -11,94 +11,94 @@ Func: fnDot
 ;=======================================
 ; Dot(Complex, Complex) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Cplx:"123.456 i +1.1234" RX=Cplx:"456.123 i +11.38"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RX=Real:"56323.905380"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Cplx:"123.456 i +1.1234" RX=Cplx:"456.123 i +11.38"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RY=Cplx:"38i48" RX=Real:"56323.905380"
 
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Cplx:"1.000000000000000000001 i 1.000000000000000000001" RX=Cplx:"1.000000000000000000001 i -1"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.000000000000000000001 i -1" RX=Real:"0.000000000000000000001000000000000000000001"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Cplx:"1.000000000000000000001 i 1.000000000000000000001" RX=Cplx:"1.000000000000000000001 i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.000000000000000000001 i -1" RY=Cplx:"38i48" RX=Real:"0.000000000000000000001000000000000000000001"
 
 ;=======================================
 ; Dot(Real, Complex) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=Cplx:"456.123 i +11.38"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RX=Real:"56311.1210880"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Real:"123.456" RX=Cplx:"456.123 i +11.38"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RY=Cplx:"38i48" RX=Real:"56311.1210880"
 
 ;=======================================
 ; Dot(Complex, Real) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Cplx:"123.456 i +1.1234" RX=Real:"456.123"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"456.123" RX=Real:"56311.1210880"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Cplx:"123.456 i +1.1234" RX=Real:"456.123"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=Real:"456.123" RX=Real:"56311.1210880"
 
 ;=======================================
 ; Dot(Complex, Long Integer) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Cplx:"123.456 i +1.1234" RX=LonI:"456"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RX=Real:"56295.9360"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Cplx:"123.456 i +1.1234" RX=LonI:"456"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=Cplx:"38i48" RX=Real:"56295.9360"
 
 ;=======================================
 ; Dot(Long Integer, Complex) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=LonI:"123" RX=Cplx:"456.123 i +11.38"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RX=Real:"56103.1290"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=LonI:"123" RX=Cplx:"456.123 i +11.38"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RY=Cplx:"38i48" RX=Real:"56103.1290"
 
 ;=======================================
 ; Dot(Complex, Short Integer) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Cplx:"123.456 i +1.1234" RX=ShoI:"456#10"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"456#10" RX=Real:"56295.9360"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=Cplx:"123.456 i +1.1234" RX=ShoI:"456#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"456#10" RY=Cplx:"38i48" RX=Real:"56295.9360"
 
 ;=======================================
 ; Dot(Short Integer, Complex) --> Real
 ;=======================================
-In:  FL_ASLIFT=1 FL_CPXRES=1 RY=ShoI:"123#10" RX=Cplx:"456.123 i +11.38"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RX=Real:"56103.1290"
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Cplx:"38i48" RY=ShoI:"123#10" RX=Cplx:"456.123 i +11.38"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"456.123 i +11.38" RY=Cplx:"38i48" RX=Real:"56103.1290"
 
 ;=======================================
 ; Dot(Real Matrix, Real Matrix) --> Real
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M1,2[1,3]" RX=ReMa:"M2,1[-1,1]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,1[-1,1]" RX=Real:"2"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RZ=Cplx:"38i48" RY=ReMa:"M1,2[1,3]" RX=ReMa:"M2,1[-1,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"38i48" RL=ReMa:"M2,1[-1,1]" RX=Real:"2"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M3,1[1,3,5]" RX=ReMa:"M1,3[2,4,6]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[2,4,6]" RX=Real:"44"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RZ=Cplx:"38i48" RY=ReMa:"M3,1[1,3,5]" RX=ReMa:"M1,3[2,4,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"38i48" RL=ReMa:"M1,3[2,4,6]" RX=Real:"44"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M4,1[1,3,5,7]" RX=ReMa:"M4,1[2,4,6,8]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,1[2,4,6,8]" RX=Real:"100"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RZ=Cplx:"38i48" RY=ReMa:"M4,1[1,3,5,7]" RX=ReMa:"M4,1[2,4,6,8]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"38i48" RL=ReMa:"M4,1[2,4,6,8]" RX=Real:"100"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M1,5[1,3,5,7,9]" RX=ReMa:"M1,5[2,4,6,8,10]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,5[2,4,6,8,10]" RX=Real:"190"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RZ=Cplx:"38i48" RY=ReMa:"M1,5[1,3,5,7,9]" RX=ReMa:"M1,5[2,4,6,8,10]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"38i48" RL=ReMa:"M1,5[2,4,6,8,10]" RX=Real:"190"
 
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RZ=Cplx:"38i48" RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
 Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
 
 ;=======================================
 ; Dot(Real Matrix, Complex Matrix) --> Complex
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=ReMa:"M1,2[1,5]" RX=CxMa:"M2,1[3i4,7i8]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[3i4,7i8]" RX=Cplx:"38i44"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=ReMa:"M1,2[1,5]" RX=CxMa:"M2,1[3i4,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=CxMa:"M2,1[3i4,7i8]" RX=Cplx:"38i44"
 
 ;=======================================
 ; Dot(Complex Matrix, Real Matrix) --> Complex
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M1,2[1i2,5i6]" RX=ReMa:"M2,1[3,7]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,1[3,7]" RX=Cplx:"38i48"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M1,2[1i2,5i6]" RX=ReMa:"M2,1[3,7]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=ReMa:"M2,1[3,7]" RX=Cplx:"38i48"
 
 ;=======================================
 ; Dot(Complex Matrix, Complex Matrix) --> Complex
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M1,2[1i2,5i6]" RX=CxMa:"M2,1[3i4,7i8]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[3i4,7i8]" RX=Cplx:"-18i92"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M1,2[1i2,5i6]" RX=CxMa:"M2,1[3i4,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=CxMa:"M2,1[3i4,7i8]" RX=Cplx:"-18i92"
 
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M3,1[1i2,5i6,9i10]" RX=CxMa:"M1,3[3i4,7i8,11i12]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=Cplx:"-39i310"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M3,1[1i2,5i6,9i10]" RX=CxMa:"M1,3[3i4,7i8,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=Cplx:"-39i310"
 
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M4,1[1i2,5i6,9i10,13i14]" RX=CxMa:"M4,1[3i4,7i8,11i12,15i16]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M4,1[3i4,7i8,11i12,15i16]" RX=Cplx:"-68i728"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M4,1[1i2,5i6,9i10,13i14]" RX=CxMa:"M4,1[3i4,7i8,11i12,15i16]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=CxMa:"M4,1[3i4,7i8,11i12,15i16]" RX=Cplx:"-68i728"
 
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M1,5[1i2,5i6,9i10,13i14,17i18]" RX=CxMa:"M1,5[3i4,7i8,11i12,15i16,19i20]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[3i4,7i8,11i12,15i16,19i20]" RX=Cplx:"-105i1410"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M1,5[1i2,5i6,9i10,13i14,17i18]" RX=CxMa:"M1,5[3i4,7i8,11i12,15i16,19i20]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"38i48" RL=CxMa:"M1,5[3i4,7i8,11i12,15i16,19i20]" RX=Cplx:"-105i1410"
 
-In:  FL_ASLIFT=0 FL_CPXRES=1 RY=CxMa:"M2,3[1i2,5i6,9i10,13i14,17i18,21i22]" RX=CxMa:"M2,3[3i4,7i8,11i12,15i16,19i20,23i24]"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"38i48" RY=CxMa:"M2,3[1i2,5i6,9i10,13i14,17i18,21i22]" RX=CxMa:"M2,3[3i4,7i8,11i12,15i16,19i20,23i24]"
 Out: EC=21 FL_CPXRES=1 FL_ASLIFT=0 RY=CxMa:"M2,3[1i2,5i6,9i10,13i14,17i18,21i22]" RX=CxMa:"M2,3[3i4,7i8,11i12,15i16,19i20,23i24]"
 
 ;=======================================

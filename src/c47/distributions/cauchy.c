@@ -21,6 +21,9 @@
 
 #else
   static bool_t checkParamCauchy(real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if( !getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
         || !getRegisterAsReal(REGISTER_S, j))
@@ -46,10 +49,6 @@
   void fnCauchyP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, x0, gamma;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Pdf_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
@@ -60,10 +59,6 @@
 
   void fnCauchyL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, x0, gamma;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Cdf_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
@@ -76,10 +71,6 @@
   void fnCauchyR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, x0, gamma;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Cdfu_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
@@ -90,10 +81,6 @@
 
   void fnCauchyI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, x0, gamma;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamCauchy(&val, &x0, &gamma)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {

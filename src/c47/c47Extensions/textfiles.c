@@ -23,25 +23,6 @@ typedef struct {
 
 
 
-
-
-void addChrBothSides(uint8_t t, char * str) {
-  char tt[4];
-  tt[0] = t;
-  tt[1] = 0;
-  xcopy(str + 1, str, stringByteLength(str) + 1);
-  str[0] = t;
-  strcat(str, tt);
-}
-
-
-void addStrBothSides(char * str, char * str_b, char * str_e) {
-  xcopy(str + stringByteLength(str_b), str, stringByteLength(str) + 1);
-  xcopy(str, str_b, stringByteLength(str_b));
-  xcopy(str + stringByteLength(str), str_e, stringByteLength(str_e) + 1);
-}
-
-
 void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString) {
   #if !defined(TESTSUITE_BUILD)
     switch(getRegisterDataType(regist)) {
@@ -161,10 +142,10 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
   #endif // !TESTSUITE_BUILD
 }
 
-void aimBuffer_csv_out(void) {
+void tmpString_csv_out(uint8_t nn) {
   #if !defined(TESTSUITE_BUILD)
     export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(ClipBoardMsg[5].itemName);  //"Alpha buffer: " //Output append to CSV file
+    export_append_line(ClipBoardMsg[nn].itemName);  //"Alpha buffer: " //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
     export_append_line(CSV_TAB);                    //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
@@ -294,39 +275,3 @@ void displaywords(char *line1) {  //Preprocessor and display
 }
 
 
-uint32_t t_line_x, t_line_y;
-
-void print_inlinestr(const char *line1, bool_t endline) {
-  #if !defined(TESTSUITE_BUILD)
-    char l1[100];    //Clip the string at 40
-    l1[0] = 0;
-    int16_t ix = 0;
-    int16_t ixx;
-    ixx = stringByteLength(line1);
-    while(ix < ixx && ix < 98 && t_line_x + stringWidth(l1, &standardFont, true, true) < SCREEN_WIDTH-12) {
-      xcopy(l1, line1, ix+1);
-      l1[ix+1] = 0;
-      ix = stringNextGlyph(line1, ix);
-    }
-    if(t_line_y < SCREEN_HEIGHT) {
-      t_line_x = showString(l1, &standardFont, t_line_x, t_line_y, vmNormal, true, true);
-    }
-    if(endline) {
-      t_line_y += 20;
-      t_line_x = 0;
-    }
-    force_refresh(force);
-  #endif // !TESTSUITE_BUILD
-}
-
-
-void print_Register_line(calcRegister_t regist, char *before, char *after, bool_t line_init) {
-  #if !defined(TESTSUITE_BUILD)
-    char str[TMP_STR_LENGTH];
-
-    copyRegisterToClipboardString2(regist, str);
-    addStrBothSides(str, before, after);
-
-    print_numberstr(str, line_init);
-  #endif // !TESTSUITE_BUILD
-}

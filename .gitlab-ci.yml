@@ -16,10 +16,10 @@ macOS:
   stage: build
   image: macos-14-xcode-15
   script:
-    - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio
+    - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio xlsxio
     - pip3 install --upgrade pip
-    - python3 -m pip install --user meson
-    - USER_BASE_BIN=$(python3 -m site --user-base)/bin 
+    - python3 -m pip install --user meson==1.7.2
+    - USER_BASE_BIN=$(python3 -m site --user-base)/bin
     - export PATH="$USER_BASE_BIN:$PATH"  # Add local bin to PATH
     - make dist_macos
   artifacts:
@@ -34,7 +34,10 @@ macOS:
   - apt-get install -qq -y git zip
   - apt-get install -qq -y pkgconf build-essential ninja-build meson
   - apt-get install -qq -y cmake libgmp-dev libgtk-3-dev
-  - apt-get install -qq -y xvfb
+  - apt-get install -qq -y xvfb libminizip-dev
+  - git clone https://github.com/brechtsanders/xlsxio.git           # Compilation and installation of xlsxio
+  - cd xlsxio/build && cmake .. && make && make install && cd ../.. # needed to convert sortingOrder.xlsx to csv
+  - ldconfig
 
 linux:
   stage: build

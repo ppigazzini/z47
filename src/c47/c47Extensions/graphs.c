@@ -338,7 +338,7 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if((plotStatMx[0]=='S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+  if((plotStatMx[0]=='D' ? (drawMxN() >= 1) : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
     }
@@ -488,43 +488,31 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 
 
 //###################################################################################
-void convertDigits(char * refstr, uint16_t ii, uint16_t * oo, char * outstr) {
-  switch(refstr[ii]) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = refstr[ii] + (0x80 - 48); break; //.
-    case 'x': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb3; break; //x ok
-    case 'y': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb4; break; //y ok
-    case 'a': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9c; break; //a ok
-    case 's': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xae; break; //s ok
-    case ':': outstr[(*oo)++] = 0xa2; outstr[(*oo)++] = 0x36; break; //: ok
-    case '+': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8a; break; //+ ok
-    case '-': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8b; break; //- ok
-    case '.': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x1a; break; //. ok
-    case '/': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x25; break; /// ok
-    case 't': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xaf; break; //t \xa4\xaf
-    case 'i': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa4; break; //i ok
-    case 'c': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9e; break; //c ok
-    case 'k': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa6; break; //k ok
-    default:  outstr[(*oo)++] = refstr[ii];
+
+//PLSTAT; EQN Graph;
+
+#define bufLen 40
+
+
+#if !defined(TESTSUITE_BUILD)
+  static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
+    char buff[32];
+    char outstr[bufLen];
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_y,acc)));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
+
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,wrap_eng(tick_int_x,acc)));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
-}
+#endif // !TESTSUITE_BUILD
 
 
 void graph_text(void) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
     uint16_t ii;
-    #define bufLen 40
-    static uint16_t oo;
-    static char outstr[bufLen];
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
@@ -541,31 +529,8 @@ void graph_text(void) {
     eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
     showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
-
-    snprintf(tmpString, bufLen, "  y %.3f/tick  ", tick_int_y);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
-    snprintf(tmpString, bufLen, "  x %.3f/tick  ", tick_int_x);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii,&oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
+    showGraphTickText1(tick_int_x, tick_int_y, 1, ypos, ypos-12, 5);
+    ypos -= 24;
 
     uint32_t minnx, minny;
     minny = 0;
@@ -577,19 +542,14 @@ void graph_text(void) {
       case 0: strcpy(tmpString,"            ");                    break;
       case 1: snprintf(tmpString, bufLen, "  y-axis x 0"); break;
       case 2: snprintf(tmpString, bufLen, "  x-axis y 0"); break;
-      case 3: snprintf(tmpString, bufLen, "  axis 0.0 ");  break;
+      case 3: snprintf(tmpString, bufLen, "  axis 0%s0 ", radixProcess(tmpbuf,"."));  break;
       default: ;
     }
 
     //Change to the small characters and fabricate a small = char
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo, outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
+    static char outstr[bufLen];
+    convertDigits(tmpString, outstr);
+
     ii = showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
     if(tmpString[ stringByteLength(tmpString)-1 ] == '0') {
       #define sp 15
@@ -851,6 +811,7 @@ void graph_plotmem(void) {
       float y;
       float sx, sy;
       float ddx = FLoatingMax;
+      float dxx = FLoatingMax;
       float dydx = FLoatingMax;
       float inty = 0;
       float inty_off = 0;
@@ -1183,35 +1144,30 @@ void graph_plotmem(void) {
             if(ix !=0 && ( (PLOT_DIFF && !invalid_diff) || (PLOT_INTG && !invalid_intg) || (PLOT_RMS && !invalid_rms) )) {
               ddx = grf_x(ix) - grf_x(ix-1);
               if(PLOT_DIFF && ddx != 0) {
-                if(ix == 1) {                               // only two samples available
+                if(ix == 1 || ( fabs( ((grf_x(ix) - grf_x(ix-1)) / (grf_x(ix-1) - grf_x(ix-2))) - 1) > 0.0001 )) {                               // only two samples available
                   dydx = (grf_y(ix) - grf_y(ix-1)) / ddx;   // Differential
+                  dxx = (grf_x(ix) + grf_x(ix-1) )/2;
                 }
                 else { //if(ix >= 2)                        // ix >= 2 three samples available 0 1 2
                   dydx = ( grf_y(ix-2) - 4.0 * grf_y(ix-1) + 3.0 * grf_y(ix) ) / 2.0 / ddx; //ChE 205 — Formulas for Numerical Differentiation, formule 32
+                  dxx = (grf_x(ix));
                 }
               }
               else {
                 dydx = FLoatingMax;
               }
 
-              x = (grf_x(ix) + grf_x(ix-1))/2;
-              if(PLOT_DIFF) {
-                y = dydx;                 //y is the default graph
-              }
               if(PLOT_RMS)  {
                 rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
-                y = rmsy;                 //y is the default graph
               }
               if(PLOT_INTG) {
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
-                y = inty;                 //y is the default graph
               }
             }
 
-            if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS)) {
-              x = grf_x(ix);
-              y = grf_y(ix);
-            }
+            x = grf_x(ix);
+            y = grf_y(ix);
+ 
           }
           else { //_VECT
             sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
@@ -1230,7 +1186,7 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG)
             printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
+            printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
@@ -1317,9 +1273,9 @@ void graph_plotmem(void) {
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
-                  printf("Plotting Delta x=%f dy=%f \n", x - ddx/2, dydx);
+                  printf("Plotting Delta x=%f dy=%f \n", dxx, dydx);
                 #endif // STATDEBUG
-                plotdelta(screen_window_x( x_min, x - ddx/2, x_max), screen_window_y(y_min, dydx, y_max));
+                plotdelta(screen_window_x( x_min, dxx, x_max), screen_window_y(y_min, dydx, y_max));
               }
 
 
@@ -1436,30 +1392,13 @@ void fnStatList() {
     char tmpstr1[100], tmpstr2[100];
     int16_t ix, ixx, statnum;
 
-    clearScreen();
+    clearScreen(1);
     refreshStatusBar();
 
-    if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
-      plotmode = _VECT;
-    }
-    else {
-      plotmode = _SCAT;
-    }
-
-    if(regStatsXY != INVALID_VARIABLE &&
-      ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
-
-      if(plotStatMx[0] == 'S') {
-        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time
-      }
-      else {
-        statnum = drawMxN();
-      }
-
+    if(regStatsXY != INVALID_VARIABLE && (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+      statnum = drawMxN();
       fnStatSum(0);
-      //      runFunction(ITM_NSIGMA);
-      sprintf(tmpString, "Stat data: N = %d", statnum);
-      //      runFunction(ITM_DROP);
+      sprintf(tmpString, "Graph data: N = %d", statnum);
       print_linestr(tmpString, true);
 
                                   #if defined(STATDEBUG)
@@ -1477,17 +1416,21 @@ void fnStatList() {
         ixx = statnum - ix - 1 + ListXYposition;
 
         if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
-          sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
+          //sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_fixed(grf_x(ixx),7));
         }
         else {
-          sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
+          //sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
+          sprintf(tmpstr1,"[%3d] x%9s%9s, ",ixx+1, "", wrap_format_sci(grf_x(ixx),7));
         }
 
         if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
-          sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
+          //sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_fixed(grf_y(ixx),7));
         }
         else {
-          sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
+          //sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
+          sprintf(tmpstr2,"y%9s%9s, ", "", wrap_format_sci(grf_y(ixx),7));
         }
 
         strcat(tmpstr1,tmpstr2);

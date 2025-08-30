@@ -65,9 +65,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_M_GROW,           ITM_M_GROW,             RB_GW},  // SFL_PRTACT
   {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},  // SFL_PRTACT
 
-  {ITM_PRTACT0,          PRTACT0,                RB_PRN},  // SFL_PRTACT
-  {ITM_PRTACT1,          PRTACT1,                RB_PRN},  // SFL_PRTACT
-
   {ITM_T_LINF,           JC_LINEAR_FITTING,      CB_JC},  //fnCurveFitting
   {ITM_T_EXPF,           JC_EXPONENTIAL_FITTING, CB_JC},  //fnCurveFitting
   {ITM_T_LOGF,           JC_LOGARITHMIC_FITTING, CB_JC},  //fnCurveFitting
@@ -121,6 +118,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_CB_SPCRES,        FLAG_SPCRES ,           CB_JC},  //SetSetting
   {ITM_CB_LEADING_ZERO,  FLAG_LEAD0  ,           CB_JC},  //SetSetting
   {ITM_HPRP,             FLAG_HPRP   ,           CB_JC},
+  {ITM_MNUp1 ,           FLAG_MNUp1  ,           CB_JC},
   {ITM_HPBASE,           FLAG_HPBASE ,           CB_JC},
   {ITM_2TO10,            FLAG_2TO10  ,           CB_JC},
   {ITM_DENANY,           FLAG_DENANY ,           CB_JC},
@@ -152,7 +150,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {CHR_case,             JC_UC,                  CB_JC},  //
   {ITM_SCR,              JC_SS,                  CB_JC},  //
   {ITM_BCD,              JC_BCD,                 CB_JC},  //
-  {ITM_TOPHEX,           JC_TOPHEX,              CB_JC},  //
+  {ITM_TOPHEX,           FLAG_TOPHEX,            CB_JC},  //
 
   {ITM_2BIN,             2,                      RB_HX},  //fnChangeBaseJM
   {ITM_2OCT,             8,                      RB_HX},  //fnChangeBaseJM
@@ -299,10 +297,6 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_RX:  rb_param = gapItemRadix;
                      break;
 
-        case RB_PRN: if(getSystemFlag(FLAG_PRTACT)) rb_param = PRTACT1;
-                     else                           rb_param = PRTACT0;
-                     break;
-
         case RB_KY:  rb_param = calcModel;
                      if(itemNr == ITM_USER_EXPR) {
                        switch(calcModel) {
@@ -358,6 +352,7 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SPCRES :
             case FLAG_LEAD0  :
             case FLAG_HPRP   :
+            case FLAG_MNUp1  :
             case FLAG_HPBASE :
             case FLAG_2TO10  :
             case FLAG_DENANY :
@@ -384,12 +379,12 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SH_LONGPRESS:
             case FLAG_DREAL       :
             case FLAG_CPXMULT     :
+            case FLAG_TOPHEX      :
                        cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
 
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
-            case JC_TOPHEX:              cb_param = topHex;                                                           break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;
                                          break;
@@ -480,9 +475,9 @@ char tmp[16];
 void add_digitglyph_to_tmp2(char* tmp2, int16_t xx) {
   tmp2[0] = 0;
 
-  stringCopy(tmp2, STD_SUB_0);
+  stringCopy(tmp2, STD_BASE_0);     //can also be STD_SUB_0 for a slightly raised look
   if(1 <= xx && xx <= 16) {
-    stringCopy(tmp2, STD_BASE_1);
+    stringCopy(tmp2, STD_BASE_1);   //can also be STD_SUB_1 for a slightly raised look
     tmp2[1] += (xx-1);
   }
 }

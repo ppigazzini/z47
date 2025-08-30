@@ -2,6 +2,9 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
+#if defined(PC_BUILD) && defined(DEBUGUNDO)
+  #include <execinfo.h>
+#endif // PC_BUILD &&MONITOR_CLRSCR
 
 void fnClX(uint16_t unusedButMandatoryParameter) {
   clearRegister(REGISTER_X);
@@ -215,6 +218,13 @@ void fnGetStackSize(uint16_t unusedButMandatoryParameter) {
 
 
 void saveForUndo(void) {
+                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "saveForUndo called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   if(((calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_MIM) && thereIsSomethingToUndo) || calcMode == CM_NO_UNDO) {
     #if defined(DEBUGUNDO)
       if(thereIsSomethingToUndo) {
@@ -302,6 +312,13 @@ failed:
 
 
 void fnUndo(uint16_t unusedButMandatoryParameter) {
+                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
+                                  void *callstack[128];
+                                  int frames = backtrace(callstack, 128);
+                                  char **strs = backtrace_symbols(callstack, frames);
+                                  printf("%30s%42s%s\n", "", "fnUndo called from: ", strs[1]);
+                                  free(strs);
+                                #endif // PC_BUILD && ANALYSE_REFRESH
   if(thereIsSomethingToUndo) {
     undo();
   }
@@ -313,6 +330,10 @@ void undo(void) {
   #if defined(DEBUGUNDO)
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
+
+  const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);
+  const bool_t wasInting = getSystemFlag(FLAG_INTING);
+
   recallStatsMatrix();
 
   if(currentInputVariable != INVALID_VARIABLE) {
@@ -366,6 +387,14 @@ void undo(void) {
   SAVED_SIGMA_lastAddRem = SIGMA_NONE;
   thereIsSomethingToUndo = false;
   clearRegister(TEMP_REGISTER_2_SAVED_STATS);
+
+  if(wasSolving != getSystemFlag(FLAG_SOLVING)) {
+    flipSystemFlag(FLAG_SOLVING);
+  }
+  if(wasInting != getSystemFlag(FLAG_INTING)) {
+    flipSystemFlag(FLAG_INTING);
+  }
+
   #if defined(DEBUGUNDO)
     printf(">>> Undone, calcMode = %i\n", calcMode);
   #endif // DEBUGUNDO

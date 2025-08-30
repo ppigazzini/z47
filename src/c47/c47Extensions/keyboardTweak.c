@@ -80,6 +80,7 @@ void showShiftState(void) {
         clearShiftState();
         clear_fg_jm();
         showHideAlphaMode();
+        cleanupAfterShift = true;
       }
     }
   #endif // !TESTSUITE_BUILD
@@ -142,7 +143,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if(HOME3 || MYM3) {
+    if((HOME3 || MYM3) && !GRAPHMODE) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
@@ -181,7 +182,7 @@ void resetKeytimers(void) {
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
-      if(HOME3 || MYM3) {
+      if((HOME3 || MYM3) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
@@ -218,11 +219,12 @@ void resetKeytimers(void) {
   }
 
 
-  int16_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
+  int16_t Check_Norm_Key_00_Assigned(int16_t * result, int16_t tempkey) {
     //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
     if(!getSystemFlag(FLAG_USER) && (Norm_Key_00_key != -1) &&
        (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER || calcMode == CM_ASSIGN) &&
        (!catalog || (catalog && (Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != KEY_fg))) &&
+       (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX))) &&
        (  ( ((!shiftF && !shiftG) || isR47FAM) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||   //f & g allowed in R47, not allowed in C47 Σ+
           ((Norm_Key_00.func == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result))  )
        ) {
@@ -272,7 +274,7 @@ void resetKeytimers(void) {
          || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
-        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
+        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX) && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
           if(LongPressM == RBX_M1234) {
@@ -313,7 +315,7 @@ void resetKeytimers(void) {
       longpressDelayedkey3 = -MNU_PFN;
     }
 
-    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && topHex) {
+    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)) {
        longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].primary  : kbd_std[*result - ITM_A].primary;
        longpressDelayedkey2 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].fShifted : kbd_std[*result - ITM_A].fShifted;
        longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].gShifted : kbd_std[*result - ITM_A].gShifted;
@@ -757,7 +759,7 @@ void resetKeytimers(void) {
       else if(!shiftF && shiftG) {
         offset = 12;
       }
-      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE);
+      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE); // if it times out, it goes to execFnTimeout
 
       #if defined(VERBOSEKEYS)
         printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n",(char*)data,((char*)data)[0], FN_key_pressed, offset);
@@ -1250,6 +1252,10 @@ bool_t fullKeyBuffer(void) {
 bool_t emptyKeyBuffer(void) {
   return buffer.read == buffer.write;
 }
+
+void clearKeyBuffer(void) {
+  buffer.read = buffer.write;
+}
 #endif // DMCP_BUILD                                                    //^^
 
 
@@ -1381,6 +1387,7 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
    fnKeyBackspace(0);
    setSystemFlag(FLAG_ASLIFT);
    screenUpdatingMode = SCRUPD_AUTO;
+   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 //   refreshScreen();
   #endif // !TESTSUITE_BUILD
 }

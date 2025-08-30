@@ -20,6 +20,9 @@
 
 #else
   static bool_t checkParamNegBinom(real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_P, i)
         || !getRegisterAsReal(REGISTER_N, j))
@@ -59,10 +62,6 @@
   void fnNegBinomialP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamNegBinom(&val, &prob, &num)) {
       if(realIsAnInteger(&val)) {
         pdf_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
@@ -79,18 +78,13 @@
       else {
         convertRealToResultRegister(&ans, REGISTER_X, amNone);
       }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnNegBinomialL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNegBinom(&val, &prob, &num)) {
       cdf_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
@@ -103,18 +97,13 @@
       else {
         convertRealToResultRegister(&ans, REGISTER_X, amNone);
       }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnNegBinomialR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNegBinom(&val, &prob, &num)) {
       cdfu_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
@@ -127,18 +116,13 @@
       else {
         convertRealToResultRegister(&ans, REGISTER_X, amNone);
       }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnNegBinomialI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob, num;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamNegBinom(&val, &prob, &num)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -163,9 +147,8 @@
         return;
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

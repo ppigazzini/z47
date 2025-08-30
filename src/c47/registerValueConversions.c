@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+static float fnRealToFloat(const real_t *r);
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t regist) {
   uint16_t sizeInBytes = longIntegerSizeInBytes(lgInt);
 
@@ -356,6 +358,13 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   convertRealToImag34ResultRegister(imag, dest);
 }
 
+void convertComplexToResultRegisterRPangle(const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag) {
+  reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, angl);
+  convertRealToReal34ResultRegister(real, dest);
+  convertRealToImag34ResultRegister(imag, dest);
+  setComplexRegisterPolarMode(dest, polarTag);
+}
+
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   real34_t real34, value34;
   real34Copy(REGISTER_REAL34_DATA(source), &real34);
@@ -421,14 +430,14 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
   isNegative = real34IsNegative(REGISTER_REAL34_DATA(source));
   real34CopyAbs(REGISTER_REAL34_DATA(source), &part2);
-  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);            //Y D or M
   real34Subtract(&part2, &part1, &part2);
   int32ToReal34(100, &val), real34Multiply(&part2, &val, &part2);
 
   real34Copy(&part2, &part3);
-  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);
+  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);            //M M or D
   real34Subtract(&part3, &part2, &part3);
-  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);
+  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);  // dd yyyy or yyyy
   real34ToIntegralValue(&part3, &part3, DEC_ROUND_DOWN);
 
   if(isNegative) {
@@ -629,13 +638,60 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
   complexMatrixFree(&matrix);
 }
 
+
+void sci_fmt(char *buf, int n, double x) {
+/*
+ * Usage:
+ *   char buf[32];
+ *   sci_fmt(buf, sizeof(buf), x);  // replaces snprintf(buf, sizeof(buf), "%.16e", x);
+ *
+ * Output format (if buffer allows):
+ *   [-]d.dddddddddddddddde±dd\0 (up to 25–30 bytes depending on exponent digits)
+ */
+    int exp = 0, i = 0;
+    if (x < 0) {
+        buf[i++] = '-';
+        x = -x;
+    }
+
+    while (x && x < 1.0) x *= 10.0, exp--;
+    while (x >= 10.0) x /= 10.0, exp++;
+
+    unsigned long long m = (unsigned long long)(x * 1e15 + 0.5);
+    if (m >= 10000000000000000ULL) {
+        m /= 10;
+        exp++;
+    }
+
+    buf[i++] = '0' + (m / 1000000000000000ULL);
+    buf[i++] = '.';
+
+    static const unsigned long long divs[] = {
+        1000000000000000ULL, 100000000000000ULL, 10000000000000ULL,
+        1000000000000ULL,   100000000000ULL,    10000000000ULL,
+        1000000000ULL,      100000000ULL,       10000000ULL,
+        1000000ULL,         100000ULL,          10000ULL,
+        1000ULL,            100ULL,             10ULL
+    };
+
+    for (int j = 1; j < 15 && i < n - 6; j++) {
+        buf[i++] = '0' + (m / divs[j]) % 10;
+    }
+
+    i += snprintf(buf + i, n - i, "e%+03d", exp);
+    buf[i] = 0;
+}
+
+
+
 #if !defined(TESTSUITE_BUILD)
   void convertDoubleToString(double x, int16_t n, char *buff) { //Reformatting real strings that are formatted according to different locale settings
     uint16_t i = 2;
     uint16_t j = 2;
     bool_t error = false;
 
-    snprintf(buff, n, "%.16e", x);
+//    snprintf(buff, n, "%.16e", x);
+    sci_fmt(buff, n, x);
 
     if(buff[0] != '-') {
       i = 0;
@@ -723,29 +779,9 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
 
 
 double convertRegisterToDouble(calcRegister_t regist) {
-  double y;
-  real_t tmpy;
+  real_t regReal, regImag;
 
-  switch(getRegisterDataType(regist)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
-      break;
-    }
-    case dtReal34:
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(regist), &tmpy);
-      break;
-    }
-    default: {
-      #if defined(PC_BUILD)
-        printf("ERROR IN convertRegisterToDouble\n");
-      #endif
-      return DOUBLE_NOT_INIT;
-      break;
-    }
-  }
-  realToDouble(&tmpy, &y);
-  return y;
+  return getRegisterAsComplex(regist, &regReal, &regImag) ? fnRealToFloat(&regReal) : DOUBLE_NOT_INIT;
 }
 
 

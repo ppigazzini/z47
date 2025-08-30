@@ -397,3 +397,24 @@ Added QRNZ to NUM font
            In tiny font:
               - removed U+2072 ^-1
 
+
+2025-03-09 In both Number and Standard Fonts, add:
+    U+0380 STD_u_BAR                   
+    U+0381 STD_v_BAR                   
+    U+0382 STD_w_BAR                   
+    U+0383 STD_z_BAR                   
+    U+038B STD_v_CIRC                  
+    U+038D STD_z_CIRC                  
+    U+03A2 STD_u_CIRC2                 
+
+
+2025-03-19 In both Number and Standard Fonts, add:
+    U+0135 STD_j_CIRC 
+    U+0137 STD_k_CIRC 
+    U+03b8 STD_theta_m
+    Change existing STD_theta from U+03b8 to U+03d1 (theta-script) and populate the proper U+03b8 (theta) as STD_theta_m
+    U+03D5 STD_phi_m
+
+2025-04-01 Add in Std font
+    U+24EA STD_BASE_0
+    

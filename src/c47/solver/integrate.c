@@ -296,9 +296,9 @@ static void _integratorIteration(void) {
   if(lastErrorCode == ERROR_SOLVER_ABORT) {
     return;
   }
-  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
+                            if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
+                              copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+                            }
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
@@ -306,11 +306,10 @@ static void _integratorIteration(void) {
     dynamicMenuItem = -1;
     execProgram(currentSolverProgram + FIRST_LABEL);
   }
-  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-    copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
-    fnP_All_Regs(6);
-  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
-
+                            if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
+                              copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
+                              fnP_All_Regs(PRN_XYr);
+                            }
 }
 
 
@@ -438,11 +437,11 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
     realMultiply(&res, h, &res, realContext); // load the integral result,
     realMultiply(&res, fact, &res, realContext);
     realToReal34(&res,&rtmp34);
-    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
     realSubtract(a,b,&tmpr,realContext);
     realToReal34(&tmpr,&rtmp34);
-    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
     displayFormatDigits = savedDisplayFormatDigits;
     #if defined DMCP_BUILD

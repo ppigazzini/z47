@@ -30,6 +30,44 @@
 #endif //TESTSUITE_BUILD
 
 
+void convertDigits(char * refstr, char * outstr) {
+  uint16_t ii = 0;
+  uint16_t oo = 0;
+  outstr[0] = 0;
+
+  while(refstr[ii] != 0) {
+    switch(refstr[ii]) {
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9': outstr[oo++] = STD_SUB_0[0]; outstr[oo++] = STD_SUB_0[1] + refstr[ii] - '0'; break; //.
+      case 't':
+      case 'i':
+      case 'c':
+      case 'k':
+      case 'x': 
+      case 'y': 
+      case 'a': 
+      case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break;
+      case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //:
+      case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+
+      case '-': outstr[oo++] = STD_SUB_MINUS[0]       ; outstr[oo++] = STD_SUB_MINUS[1]       ; break; //-
+      case ',': outstr[oo++] = STD_SINGLE_LOW_QUOTE[0]; outstr[oo++] = STD_SINGLE_LOW_QUOTE[1]; break; //.
+      case '/': outstr[oo++] = STD_OBLIQUE3[0]        ; outstr[oo++] = STD_OBLIQUE3[1]        ; break; ///
+      case '.':
+      default:  outstr[oo++] = refstr[ii];
+    }
+    ii++;
+  }
+  outstr[oo] = 0;
+}
+
 
 typedef struct {
   uint16_t Nr;              ///<
@@ -650,6 +688,9 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUP_pi,                    "pi"},
               {STD_sigma,                     "sigma"},
               {STD_phi,                       "phi"},
+              {STD_phi_m,                     "phi"},
+              {STD_theta,                     "theta"},
+              {STD_theta_m,                   "theta"},
               {STD_chi,                       "chi"},
               {STD_psi,                       "psi"},
               {STD_omega,                     "omega"},
@@ -688,6 +729,7 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUB_10,                    "10^"},
               {STD_EulerE,                    "e"},
               {STD_RIGHT_OVER_LEFT_ARROW,     "<>"},
+              {STD_SQUARE_ROOT,               "root"},
 //diverse
               {STD_RIGHT_SINGLE_QUOTE,        "\'"},
               {STD_RIGHT_DOUBLE_QUOTE,        "\""},
@@ -713,7 +755,38 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SPACE_HAIR,                " "},
 //Types used in commands
               {STD_TIME_T,                    "T"},
-              {STD_DATE_D,                    "D"}
+              {STD_DATE_D,                    "D"},
+              {STD_COMPLEX_C,                 "C"},
+              {STD_INTEGER_Z,                 "Z"},
+              {STD_INTEGER_Z_SMALL,           "Z"},
+              {STD_NATURAL_N,                 "N"},
+              {STD_RATIONAL_Q,                "Q"},
+              {STD_IRRATIONAL_I,              "I"},
+              {STD_REAL_R,                    "R"},
+              {STD_u_BAR,                     "u_vec"},
+              {STD_v_BAR,                     "v_vec"},
+              {STD_w_BAR,                     "w_vec"},
+
+              {STD_RIGHT_DOUBLE_ARROW ,       ">>"},
+
+              {STD_RIGHT_DASHARROW    ,       "->"},
+              {STD_RIGHT_ARROW        ,       "->"},
+              {STD_RIGHT_SHORT_ARROW  ,       "->"},
+
+              {STD_LEFT_DASHARROW     ,       "<-"},
+              {STD_LEFT_ARROW         ,       "<-"},
+
+              {STD_UP_DASHARROW       ,       "^" },
+              {STD_UP_ARROW           ,       "^" },
+              {STD_HOLLOW_UP_ARROW    ,       "^" },
+
+              {STD_DOWN_DASHARROW     ,       "v" },
+              {STD_DOWN_ARROW         ,       "v" },
+              {STD_HOLLOW_DOWN_ARROW  ,       "v" },
+
+              {STD_LEFT_RIGHT_ARROWS  ,       "><"},
+              {STD_SUP_pir            ,       "pi"},
+
 };
 
 
@@ -731,7 +804,7 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
@@ -885,43 +958,7 @@ void stringToASCII(const char *str, char *ascii) {
         }
         ascii--;
       }
-      else if(a1==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[1])) { //arrows
-        *ascii = '>'; ascii++;
-        *ascii = '>'; //to change to >>
-      }
-      else if((a1==(uint8_t)(STD_RIGHT_DASHARROW[0]) && a2==(uint8_t)(STD_RIGHT_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_RIGHT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_ARROW[1])) ||
-         (a1==(uint8_t)(STD_RIGHT_SHORT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_SHORT_ARROW[1]))
-        ) {
-        *ascii = '-'; ascii++;
-        *ascii = '>'; //to change to ->
-      }
-      else if((a1==(uint8_t)(STD_LEFT_DASHARROW[0]) && a2==(uint8_t)(STD_LEFT_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_LEFT_ARROW[0]) && a2==(uint8_t)(STD_LEFT_ARROW[1]))
-        ) {
-        *ascii = '<'; ascii++;
-        *ascii = '-'; //to change to ->
-      }
-      else if((a1==(uint8_t)(STD_UP_DASHARROW[0]) && a2==(uint8_t)(STD_UP_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_UP_ARROW[0]) && a2==(uint8_t)(STD_UP_ARROW[1])) ||
-         (a1==(uint8_t)(STD_HOLLOW_UP_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_UP_ARROW[1])) ) {
-        *ascii = '^';
-      }
-      else if((a1==(uint8_t)(STD_DOWN_DASHARROW[0]) && a2==(uint8_t)(STD_DOWN_DASHARROW[1])) ||
-         (a1==(uint8_t)(STD_DOWN_ARROW[0]) && a2==(uint8_t)(STD_DOWN_ARROW[1])) ||
-         (a1==(uint8_t)(STD_HOLLOW_DOWN_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_DOWN_ARROW[1])) ) {
-        *ascii = 'v';
-      }
-      else if(a1==(uint8_t)(STD_LEFT_RIGHT_ARROWS[0]) && a2==(uint8_t)(STD_LEFT_RIGHT_ARROWS[1])) {
-        *ascii = '>'; //to change to ><
-        ascii++;
-        *ascii = '<'; //to change to ><
-      }
-      else if(a1==(uint8_t)(STD_SUP_pir[0]) && a2==(uint8_t)(STD_SUP_pir[1])) {
-        *ascii = 'p'; //to change to ><
-        ascii++;
-        *ascii = 'i'; //to change to ><
-      }
+
       else
       //RANGE SUP/SUB/BASE
       if((a1==(uint8_t)(STD_SUP_0            [0]) && (a2>=(uint8_t)(STD_SUP_0            [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
@@ -970,8 +1007,18 @@ void stringToFileNameChars(const char *str, char *ascii) {
       str++;
       ascii++;
     }
-    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\' || *str == '<' || *str == '>' || *str == ' ') {
+    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') {
       *ascii = '_';
+      str++;
+      ascii++;
+    }
+    else if(*str == '|' || *str == '?' || *str == '*' || *str == ':' || *str == '<' || *str == '>') {
+      *ascii = '-';
+      str++;
+      ascii++;
+    }
+    else if(*str == '\"') {
+      *ascii = '\'';
       str++;
       ascii++;
     }
@@ -1002,6 +1049,23 @@ void *xcopy(void *dest, const void *source, int n) {
   }
 
   return dest;
+}
+
+
+void addChrBothSides(uint8_t t, char * str) {
+  char tt[4];
+  tt[0] = t;
+  tt[1] = 0;
+  xcopy(str + 1, str, stringByteLength(str) + 1);
+  str[0] = t;
+  strcat(str, tt);
+}
+
+
+void addStrBothSides(char * str, char * str_b, char * str_e) {
+  xcopy(str + stringByteLength(str_b), str, stringByteLength(str) + 1);
+  xcopy(str, str_b, stringByteLength(str_b));
+  xcopy(str + stringByteLength(str), str_e, stringByteLength(str_e) + 1);
 }
 
 
