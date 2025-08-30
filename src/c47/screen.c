@@ -1324,6 +1324,9 @@ return res;
      //noShow = false; //no need to redo
   }
 
+  void drawSinglePixelLine(int y) {
+    lcd_fill_rect(0, y, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+  }
 
 
   void showBottomLine(void) {
@@ -1878,7 +1881,7 @@ return res;
       #define typWidth 120 //stringWidth(" WWWWWW     ", &standardFont, true, true);
       stringCopy(padding + stringByteLength(padding), functionName);
       stringCopy(padding + stringByteLength(padding), "       ");
-      if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
+      if(calcMode == CM_ASSIGN || ((PROBMENU || XXFNMODEACTIVE || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
         clearRegisterLine(REGISTER_T, true, false);
       }
       // Clear SHIFT f and SHIFT g in case they were present (otherwise they will be obscured by the function name)
@@ -2616,6 +2619,32 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
+  bool_t registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c) {
+    if(getRegisterDataType(regist) == dtShortInteger || getRegisterDataType(regist+1) == dtShortInteger || getRegisterDataType(regist+2) == dtShortInteger) {  //check for SI, because getRegisterAsRealQuiet will accept SI as leagl number.
+      return false;
+    }
+    if(!getRegisterAsRealQuiet(regist, tmp1)) {
+      return false;
+    }
+    if(getRegisterDataType(regist) == dtReal34) {
+      *angle = getRegisterAngularMode(regist);
+    } else {
+      *angle = amNone;
+    }
+    if(!getRegisterAsRealQuiet(regist+1, tmp2)) {
+      return false;
+    }
+    realMultiply(tmp1, tmp2, tmp1, c);
+
+    if(!getRegisterAsRealQuiet(regist+2, tmp2)) {
+      return false;
+    }
+    realAdd(tmp1, tmp2, tmp1, c);
+    realToReal34(tmp1, tmp3);
+    return true;
+  }
+
+
 
   #define RESTORE_T true
 
@@ -3167,6 +3196,32 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 //                refreshScreen(81);                                //recurse into refreshScreen
               }
             }
+          }
+        }
+
+        // XXFN DISPLAY
+        if(regist == REGISTER_X && XXFNMODEACTIVE) {
+          int tmpY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X);
+
+          angularMode_t angle;
+          real_t tmp1, tmp2;
+          real34_t tmp3;
+          #define FMA_X 19-3
+          #define FMA_T -1-3
+          if(registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+            sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
+            showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+            real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+            showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_X, vmNormal, false, true);
+
+            if(getSystemFlag(FLAG_SSIZE8) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+              sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
+              showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+              real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
+            }
+            drawSinglePixelLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
+            fnDisplayStack(3);
           }
         }
 
@@ -4400,7 +4455,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 /*Main type dtLongInteger*/
         else if(getRegisterDataType(regist) == dtLongInteger) {
-displayBaseMode(regist);
+
+          if(DBASEMODE) displayBaseMode(regist);
+
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
@@ -4695,7 +4752,7 @@ displayBaseMode(regist);
       }
     }
 
-    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix || calcMode == CM_MIM || distModeActive || BASEMODEACTIVE) {
+    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix || calcMode == CM_MIM || distModeActive || BASEMODEACTIVE || XXFNMODEACTIVE) {
       displayStack = origDisplayStack;
     }
   }
