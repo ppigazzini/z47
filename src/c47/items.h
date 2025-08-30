@@ -2640,7 +2640,7 @@
 #define ITM_cos_XFN                 2559
 #define ITM_tan_XFN                 2560
 #define ITM_pi_XFN                  2561
-#define ITM_2562                    2562
+#define ITM_1ONX_XFN                2562
 #define ITM_atan2_XFN               2563
 #define ITM_arcsin_XFN              2564
 #define ITM_arccos_XFN              2565

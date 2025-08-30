@@ -779,6 +779,7 @@ typedef struct {
       {"",    ITM_10X_XFN     ,FT_MONADIC },
       {"",    ITM_SQRT_XFN    ,FT_MONADIC },
       {"",    ITM_MODANG_XFN  ,FT_MONADIC },
+      {"",    ITM_1ONX_XFN    ,FT_MONADIC },
       {"",    ITM_atan2_XFN   ,FT_DYADIC  },
       {"",    ITM_ADD_XFN     ,FT_DYADIC  },
       {"",    ITM_SUB_XFN     ,FT_DYADIC  },
@@ -799,81 +800,107 @@ typedef struct {
       return XFN_NOTFOUND;
   }
 
-  static bool getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
+  static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
         longInteger_t lint;
-        convertLongIntegerRegisterToLongInteger(registerNo, lint);
-        longIntegerToString(lint, 10, tmpString);
-        longIntegerFree(lint);
-        decNumberFromString((real_t *)result, tmpString, c);
-        return true;
-    } else {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Invalid longinteger register");
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
-    }
-  }
-
-  static angularMode_t getAngleModeForRegister(int registerNo) {
-    if(getRegisterDataType(registerNo) == dtReal34) {
-        if(getRegisterAngularMode(registerNo) == amNone) {
-          return currentAngularMode;
-        } else {
-          return getRegisterAngularMode(registerNo);
+        bool_t frac = false;
+        if(getRegisterAsLongInt(registerNo, lint, &frac)) {
+          if(!frac) {   //cannot be false due to longint type check
+            longIntegerToString(lint, 10, tmpString);
+            longIntegerFree(lint);
+            decNumberFromString((real_t *)result, tmpString, c);
+          }
+          return true;
         }
-    } else {
-        return currentAngularMode;
+    } else
+    if(getRegisterDataType(registerNo) == dtReal34) {
+//must still deal with the angle if applicable in Y
+        if(getRegisterAsReal(registerNo, (real_t *)result)) {
+          return true;
+        }
     }
+    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Invalid input register");
+        moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
   }
 
-  static bool calculateExpression(real1071_t* x, const real_t* y, const real_t* z, realContext_t* c) {
-    realMultiply((real_t *)x, y, (real_t *)x, c);
-    realAdd((real_t *)x, z, (real_t *)x, c);
-    return true;
-  }
 
-  static bool validateExponent(const real1071_t* x) {
+  #define inputAngleMode(r)           (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
+
+  #define deemedInputAngleMode(r)     (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
+
+  #define registerIsNoAngle(r)        ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+
+  #define inputIsNoAngle(r)           (registerIsNoAngle(r) || (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2)))
+
+  #define inputAngleError(r)          (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2))
+
+
+  static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
+    if(!inputAngleError(registerNo)) {
+      *angleMode = deemedInputAngleMode(registerNo);
+      return true;
+    }
+    return false;
+   }
+
+
+
+  static bool_t validateExponent(const real1071_t* x) {
     if(realGetExponent(x) > maxAllowedDigits) {
         return false;
     }
     return true;
   }
 
-  static bool readThreeRegisters(int registerNo, real1071_t* x, real_t* y, real_t* z, realContext_t* c) {
-    if(!getLongintegerRegisterAsReal1071(registerNo+1, x, c)) {    // check for long integer first, to first have that error message if invalid number
+
+  static bool_t readThreeRegisters(int registerNo, real1071_t* result, real1071_t* temporary, realContext_t* c) {
+    if(!getLongintegerRegisterAsReal1071(registerNo+0, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
         return false;
     }
-    if(!getRegisterAsReal(registerNo, y)) { //ignore anglemode
+    if(!getLongintegerRegisterAsReal1071(registerNo+1, result, c)) {    // check for long integer first, to first have that error message if invalid number
         return false;
     }
-    if(!getRegisterAsReal(registerNo+2, z)) { //ignore anglemode
+    realMultiply((real_t *)result, (real_t *)temporary, (real_t *)result, c);
+
+    if(!getLongintegerRegisterAsReal1071(registerNo+2, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
+//Must still deal with getRegisterAsReal should TI or error if dataloss will occur
         return false;
     }
+    realAdd((real_t *)result, (real_t*)temporary, (real_t *)result, c);
+    realCopy(const_0, (real_t*)temporary);
     return true;
   }
 
-  static bool getCombinedParameter(int param, int registerNo, real1071_t* x, angularMode_t* angleMode, realContext_t* c) {
-    real_t y, z;
-    *angleMode = getAngleModeForRegister(registerNo);
-    if(!readThreeRegisters(registerNo, x, &y, &z, c)) {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Invalid input registers");
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+
+  static bool getCombinedParameter (int param, int registerNo, real1071_t* combined, real1071_t* temporary, angularMode_t* angleMode, realContext_t* c) {
+
+    if(!getAngleModeForRegister(registerNo, angleMode)) {
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister ");
+          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
     }
-    calculateExpression(x, &y, &z, c);
+    if(!readThreeRegisters(registerNo, combined, temporary, c)) {
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input registers: readThreeRegisters");
+          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
     #if defined(DEBUG_XFN)
-        realToString((real_t *)x, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
+        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
     #endif //DEBUG_XFN
-    if(!validateExponent(x)) {
+    if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(x), maxAllowedDigits);
+            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
@@ -908,7 +935,7 @@ typedef struct {
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Specified register numbers out of range");
+      sprintf(errorMessage, "Specified register numbers out of range: %d",registerNo);
       moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -964,6 +991,9 @@ typedef struct {
   void fnXXfn_SQRT                (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_SQRT_XFN);
   }
+  void fnXXfn_1ONX                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_1ONX_XFN);
+  }
   void fnXXfn_ADD                 (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_ADD_XFN);
   }
@@ -1002,7 +1032,7 @@ typedef struct {
       return;
     }
 
-    real1071_t paramX, paramY, x2;
+    real1071_t paramX, paramY, paramTemp;
     realCopy(const_0,(real_t*)&paramX);
     real_t tmpR;
 
@@ -1016,11 +1046,11 @@ typedef struct {
       ; //no input needed, continue
     } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
-      if(!getCombinedParameter(1, registerNo, &paramX, &angleMode, &c)) {   //use the angle of the 1st param only, if set
+      if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
         return;
       }
       if(functionType == FT_DYADIC) {
-        if(!getCombinedParameter(2, registerNo + 3, &paramY, &tmpAngle, &c)) { // ignore angle
+        if(!getCombinedParameter(2, registerNo + 3, &paramY, &paramTemp, &tmpAngle, &c)) { // ignore angle
           return;
         }
       }
@@ -1049,21 +1079,38 @@ typedef struct {
 
   //--------//NILADIC FUNCTIONS
         case ITM_pi_XFN: {
-          realCopy(const1071_pi, (real_t*)&paramX);
+          realCopy(const1071_pi, (real_t *)&paramX);
+//          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
           break;
         }
 
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
-          realDivide((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
-          realMultiply((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);        
+          if(inputIsNoAngle(registerNo)) {
+            angleMode = amRadian;
+            break;
+          } else
+          if(!inputAngleError(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+            realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
+          }
+          angleMode = amRadian;
           break;
         }
+
         case ITM_DEG2_XFN: {
-          realDivide((real_t*)&paramX, const1071_pi, (real_t*)&paramX, &c);
-          realMultiply((real_t*)&paramX, const_180, (real_t*)&paramX, &c);
+          if(inputIsNoAngle(registerNo)) {
+            angleMode = amDegree;
+            break;
+          } else
+          if(!inputAngleError(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+            realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
+          }
+          angleMode = amDegree;
           break;
         }
+
 
         case ITM_sin_XFN:
         case ITM_cos_XFN:
@@ -1111,8 +1158,8 @@ typedef struct {
         }
         case ITM_LOG_XFN: {
           decNumberLn((real_t *)&paramX, (real_t *)&paramX, &c);
-          decNumberLn((real_t *)&x2, const_10, &c);
-          realDivide((real_t *)&paramX, (real_t *)&x2, (real_t *)&paramX, &c);
+          decNumberLn((real_t *)&paramTemp, const_10, &c);
+          realDivide((real_t *)&paramX, (real_t *)&paramTemp, (real_t *)&paramX, &c);
           break;
         }
         case ITM_EXP_XFN: {
@@ -1125,6 +1172,10 @@ typedef struct {
         }
         case ITM_SQRT_XFN: {
           realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
+          break;
+        }
+        case ITM_1ONX_XFN: {
+          realDivide(const_1, (real_t *)&paramX, (real_t *)&paramX, &c);
           break;
         }
         case ITM_MODANG_XFN: {
@@ -1185,6 +1236,7 @@ typedef struct {
 //--------//--------//-- Processing stack output with paramX as the output --//--------//--------//--------
 
 
+    //Step 0: Prep the stack
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       //If the input registers are XYZ then drop the stack input
       if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
@@ -1202,11 +1254,29 @@ typedef struct {
     }
 
 
-    //Step 1: Send a 0 addition term to the stack output
+    switch(function) {
+      case ITM_arcsin_XFN:
+      case ITM_arccos_XFN:
+      case ITM_arctan_XFN:
+      case ITM_atan2_XFN:
+      case ITM_RAD2_XFN:
+      case ITM_DEG2_XFN: {
+        //leave angleMode
+        break;
+      }
+      default: {
+        angleMode = amNone;
+        break;
+      }
+    }
+
+
+    //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realCopy(const_0, &tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
 
     //Step 2: Send integer part to stack output
     setSystemFlag(FLAG_ASLIFT);
@@ -1217,70 +1287,25 @@ typedef struct {
     convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
     longIntegerFree(integerOutput);
 
+
     //Step 3: Send real multiplier to the stack output
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    switch(function) {
-      case ITM_arcsin_XFN:
-      case ITM_arccos_XFN:
-      case ITM_arctan_XFN:
-      case ITM_atan2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
-        break;
-      }
-      case ITM_RAD2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amRadian);
-        break;
-      }
-      case ITM_DEG2_XFN: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amDegree);
-        break;
-      }
-      default: {
-        convertRealToResultRegister(&tmpR, REGISTER_X, amNone);
-        break;
-      }
-    }
+    convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
 
-
-
-
     //Step 4: update difference term;         re-using paramY
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
-      if(!getCombinedParameter(1, REGISTER_X, &paramY, &tmpAngle, &c)) {   //ignore angle
-  printf("ERROR\n");
+    if(functionType == FT_NILADIC || functionType == FT_MONADIC || functionType == FT_DYADIC) {
+      if(!getCombinedParameter(1, REGISTER_X, &paramY, &paramTemp, &tmpAngle, &c)) {   //ignore angle
+        ; //should be errored already in getCombinedParameter
         return;
       }
       realSubtract((real_t *)&paramX, (real_t *)&paramY, (real_t *)&paramY, &c);
       realPlus((real_t *)&paramY, &tmpR, &ctxtReal75);
-      switch(function) {
-        case ITM_arcsin_XFN:
-        case ITM_arccos_XFN:
-        case ITM_arctan_XFN:
-        case ITM_atan2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, angleMode);
-          break;
-        }
-        case ITM_RAD2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amRadian);
-          break;
-        }
-        case ITM_DEG2_XFN: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amDegree);
-          break;
-        }
-         default: {
-          convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
-          break;
-        }
-      }
+      convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
     }
-
-
 
 
     //Step 5: debug stack output
