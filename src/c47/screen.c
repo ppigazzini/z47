@@ -2687,7 +2687,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       else {
         fnDisplayStack(3);
       }
+    } else {
+      if(XXFNMODEACTIVE) {
+        fnDisplayStack(3);        
+      }
     }
+
 
     #if (DEBUG_PANEL == 1)
       if(programRunStop != PGM_RUNNING) {
