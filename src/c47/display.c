@@ -3118,15 +3118,18 @@ void fnC47Show(uint16_t fnShow_param) {
                showSoftmenu(-MNU_SHOW); //continue, don't use 'break'
                source = 0;
                showRegis = REGISTER_X;
+               if(menu(1) == -MNU_XXFCNS && getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterDataType(REGISTER_Y) == dtLongInteger && getRegisterDataType(REGISTER_Z) == dtReal34) {
+                 showRegis = REGISTER_Y;
+               }
                startingLine = 0;
                IntShowMode = SHOWAUTO;
                break;
-      case 0:
-               source = 0;
-               showRegis = REGISTER_X;
-               startingLine = 0;
-               IntShowMode = SHOWAUTO;
-               break;
+//      case 0:
+//               source = 0;
+//               showRegis = REGISTER_X;
+//               startingLine = 0;
+//               IntShowMode = SHOWAUTO;
+//               break;
 
       case ITM_RS: //change page on SHOW LI, if in StandardFont
                if(getRegisterDataType(showRegis) == dtLongInteger) {
