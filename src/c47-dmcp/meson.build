@@ -3,21 +3,24 @@ dmcp_cargs = [
   '-D__packed="__attribute__((__packed__))"',
   '-DOLD_HW',
   '-Wno-unused-parameter',
-#  '--specs=nano.specs',              # Add this line, try to reduce target size, more options to try later
-#  '-fno-exceptions',                # Add this line, try to reduce target size, more options to try later
-#  '-fno-unwind-tables',             # Add this line, try to reduce target size, more options to try later
-#  '-fno-asynchronous-unwind-tables', # Add this line, try to reduce target size, more options to try later
-#  '-fshort-enums'                   # Add this line, try to reduce target size, more options to try later
+  '-fno-exceptions',                 # Added this line
+  '-fno-unwind-tables',              # Added this line
+  '-fno-asynchronous-unwind-tables', # Added this line
 ]
 
 dmcp_linkargs = [
   '--specs=nano.specs',              # Reduces target size
   '--specs=nosys.specs',
+  '-u', '_printf_float',             # Enable float printf
+#  '-u', '_scanf_float',              # Enable float scanf
+  '-lc',                             # Link C standard library
+  '-lm',                             # Link math library (needed for float ops)
+  '-lnosys',                         # Stub system calls for bare-metal
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
   '-T' + meson.current_source_dir() + '/stm32_program.ld',
-#  '-Wl,--strip-all',                # Add this line, try to reduce target size, more options to try later
+#  '-Wl,--strip-all',                 # Add this line, try to reduce target size, more options to try later
 ]
 
 

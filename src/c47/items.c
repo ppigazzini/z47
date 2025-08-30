@@ -138,8 +138,14 @@ bool_t itemNotAvail(int16_t itemNr) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
-    lastFunc = func;
-    lastParam = param;
+
+    //do not store parameters for the commands ending or stopping a program as that is killing the prior RCL TI
+    bool_t funcIsProgramStopControl = (func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1);
+    if(!funcIsProgramStopControl) {
+      lastFunc = func;
+      lastParam = param;
+    }
+
     if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
         (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MVAR) &&
         (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
@@ -258,7 +264,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       LastOpTimerLap(func);
     }
     
-    if(func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1) {
+    if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
         #if !defined(TESTSUITE_BUILD)
@@ -268,10 +274,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
     }
 
-
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
-
       case ITM_DRAW_LU:    //Xup Xdn
       case VAR_LX:
       case VAR_UX:

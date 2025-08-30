@@ -125,7 +125,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showRealComplexResult(void) {
+  static void showRealComplexResult(void) {
     if(!(SBARUPD_ComplexResult)) return;
     int32_t x = X_REAL_COMPLEX;
     if (didSystemFlagChange(FLAG_CPXRES)) {
@@ -135,7 +135,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showComplexMode(void) {
+  static void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
     int32_t x =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
     if (didSystemFlagChange(FLAG_POLAR)) {
@@ -145,7 +145,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showAngularMode(void) {
+  static void showAngularMode(void) {
     if(!((SBARUPD_AngularModeBasic) | (SBARUPD_AngularMode))) return;
 
     uint32_t x = X_ANGULAR_MODE;
@@ -221,6 +221,10 @@ void drawBattery(uint16_t voltage);
 
   void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
+
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
 
     if(lastIntegerBase >= 2) {
       showBaseMode();
@@ -301,7 +305,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  int32_t showStringAndClear(const char *str, const font_t *font, uint32_t x, int32_t y,  uint32_t dx, uint32_t dy, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
+  static int32_t showStringAndClear(const char *str, const font_t *font, uint32_t x, int32_t y,  uint32_t dx, uint32_t dy, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
      //raiseString = raise;
 
      if(str[0] == 0) {
@@ -339,7 +343,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showIntegerMode(void) {
+  static void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
     if(didSystemFlagChange(SETTING_SINT_WS) || didSystemFlagChange(SETTING_SINT_MODE) || reInstateIntegerModeDisplay) {
       reInstateIntegerModeDisplay = false;
@@ -352,7 +356,7 @@ void drawBattery(uint16_t voltage);
 
 
 //sharing space with Integermode
-  void showMatrixMode(void) {
+  static void showMatrixMode(void) {
     if(!(SBARUPD_MatrixMode)) return;
     reInstateIntegerModeDisplay = true;
     reInstateOCModeDisplay      = true;
@@ -365,7 +369,7 @@ void drawBattery(uint16_t voltage);
 
 
 //sharing space with Integermode
-  void showTvmMode(void) {
+  static void showTvmMode(void) {
     if(!(SBARUPD_TVMMode)) return;
     reInstateIntegerModeDisplay = true;
     reInstateOCModeDisplay      = true;
@@ -376,7 +380,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showOverflowCarry(void) {
+  static void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
     if (didSystemFlagChange(FLAG_OVERFLOW) || didSystemFlagChange(FLAG_CARRY) || reInstateOCModeDisplay) {
       reInstateOCModeDisplay = false;
@@ -401,6 +405,10 @@ void drawBattery(uint16_t voltage);
                                   + (shiftG       << 14))
  
   void showHideAlphaMode(void) {
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
+
     bool_t textModeIconDisplay = ((plainTextMode || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha)));
     bool_t toSwitchOff         = !textModeIconDisplay && alphaOutput[0] != 0;
 
@@ -496,6 +504,10 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
+
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
@@ -554,7 +566,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showStackSize(void) {
+  static void showStackSize(void) {
     if(!(SBARUPD_StackSize)) return;
     if(didSystemFlagChange(FLAG_SSIZE8)) {
       showStringAndClear(getSystemFlag(FLAG_SSIZE8) ? STD_SPACE_6_PER_EM STD_8 : STD_SPACE_6_PER_EM STD_4, &standardFont, X_SSIZE_BEGIN, 0, X_ASM - X_SSIZE_BEGIN, 20, getSystemFlag(FLAG_ERPN) ? vmNormal : vmReverse, false, true);
@@ -564,6 +576,9 @@ void drawBattery(uint16_t voltage);
 //sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void light_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     //compressString = 1; //do not use compress, as the far edges of the letter get cut off
     if(!watchIconEnabled) {
@@ -578,6 +593,9 @@ void drawBattery(uint16_t voltage);
 //sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void kill_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     if(!watchIconEnabled) {
       lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
@@ -588,7 +606,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-  void showHideWatch(void) {
+  static void showHideWatch(void) {
     if(!(SBARUPD_StopWatch)) return;
 
     #if !defined(TESTSUITE_BUILD)
@@ -605,7 +623,7 @@ void drawBattery(uint16_t voltage);
 
 
 //NOTE for FUTURE: WHEN printerIconEnabled changed, do setSystemFlagChanged(SETTING_SIOICON) otherwise it will not display the icon. Search for the example of SETTING_WATCHICON & watchIconEnabled
-  void showHideSerialIO(void) {
+  static void showHideSerialIO(void) {
     if(!(SBARUPD_SerialIO)) return;
     if(didSystemFlagChange(SETTING_SIOICON)) {
         showStringAndClear(serialIOIconEnabled ? STD_SERIAL_IO : "", &standardFont, X_SERIAL_IO, 0, X_PRINTER - X_SERIAL_IO, 20, vmNormal, true, false );
@@ -614,14 +632,14 @@ void drawBattery(uint16_t voltage);
 
 
 //NOTE for FUTURE: WHEN printerIconEnabled changed, do setSystemFlagChanged(SETTING_PRINTERICON) otherwise it will not display the icon. Search for the example of SETTING_WATCHICON & watchIconEnabled
-  void showHidePrinter(void) {
+  static void showHidePrinter(void) {
     if(didSystemFlagChange(SETTING_PRINTERICON)) {
         showStringAndClear(printerIconEnabled ? STD_PRINTER : "", &standardFont, X_PRINTER, 0, X_USER_MODE - X_PRINTER, 20, vmNormal, true, false );
       }
   }
 
 
-  void showHideUserMode(void) {
+  static void showHideUserMode(void) {
     if(!(SBARUPD_UserMode)) return;
     if(didSystemFlagChange(FLAG_USER)) {
         showStringAndClear(getSystemFlag(FLAG_USER) ? STD_USER_MODE : "", &standardFont, X_USER_MODE, 0, X_BATTERY - X_USER_MODE, 20, vmNormal, false, false );
@@ -632,6 +650,9 @@ void drawBattery(uint16_t voltage);
 
 //todo make it check the last voltage plotted, and bypass if nothing has changed
 void drawBattery(uint16_t voltage) {
+  #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+    return;
+  #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
   lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
   uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
   for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
@@ -709,7 +730,20 @@ void drawBattery(uint16_t voltage) {
 
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
-      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d ti:%u er:%u", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem, temporaryInformation, lastErrorCode);
+      char catalogstr[10];
+      sprintf(catalogstr,"%d",catalog);
+      sprintf(statusMessage, "%s%s %s %s m:%s i:%d ti:%u er:%u lp:%u %u ", 
+        /*    */ catalog ? "asm:" : "", 
+        /*    */ catalog ? catalogstr : "", 
+        /*    */ tam.mode ? "tam" : "", 
+        /*    */ getCalcModeName(calcMode),
+        /* m  */ indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, 
+        /* i  */ softmenuStack[0].firstItem, 
+        /* ti  */ temporaryInformation, 
+        /* er */ lastErrorCode, 
+        /* lp */ lastParam,
+        /*    */ programRunStop
+        );
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
 
@@ -935,14 +969,16 @@ void drawBattery(uint16_t voltage) {
     x = showString(divStr, &standardFont, ++x, L1+lowerUnderLine, vmNormal, true, true) + (0);
     strcpy(divStr,STD_IRRATIONAL_I);
     raiseString = 1;
-    x = showString(divStr, &standardFont, --x, L1, vmNormal, false, false) + 2;
+    x = max(0,((int32_t)x)-1);
+    x = showString(divStr, &standardFont, x, L1, vmNormal, false, false) + 2;
 
     strcpy(divStr,STD_DOT);
     raiseString = 2;
     x = showString(divStr, &standardFont, ++xx,   L2+lowerUnderLine, vmNormal, true, true) + (2);
     strcpy(divStr,STD_IRRATIONAL_I);
     raiseString = 1;
-    x = showString(divStr, &standardFont, --x  , L2, vmNormal, false, false) + 2;
+    x = max(0,((int32_t)x)-1);
+    x = showString(divStr, &standardFont, x  , L2, vmNormal, false, false) + 2;
 
     compressString = 1;
     x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);

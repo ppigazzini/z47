@@ -143,7 +143,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if(HOME3 || MYM3) {
+    if((HOME3 || MYM3) && !GRAPHMODE) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
@@ -182,7 +182,7 @@ void resetKeytimers(void) {
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
-      if(HOME3 || MYM3) {
+      if((HOME3 || MYM3) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
@@ -759,7 +759,7 @@ void resetKeytimers(void) {
       else if(!shiftF && shiftG) {
         offset = 12;
       }
-      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE);
+      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE); // if it times out, it goes to execFnTimeout
 
       #if defined(VERBOSEKEYS)
         printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n",(char*)data,((char*)data)[0], FN_key_pressed, offset);

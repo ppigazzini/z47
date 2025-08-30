@@ -8,11 +8,13 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07c6"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b7"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
 // Version 7c6 fixes a gitlab compile issue, no other changes.
+// Version 7a7 internal alpha test
+// Version 7b7 bugfix version, supplementing nano with float libraries
 
 
 #if !defined(CALCMODEL)
@@ -160,7 +162,7 @@
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
-  #define    ANALYSE_REFRESH
+  #define    ANALYSE_REFRESH              //various refresh backtraces
   #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
@@ -190,9 +192,12 @@
     #undef DEBUGUNDO
     #define DEBUG_EXECUTE
     #undef DEBUG_EXECUTE
+    #define DEBUG_PGM       // backtrace from insert step
+    #undef DEBUG_PGM        //
   #else // !PC_BUILD
     #undef DEBUGUNDO
     #undef DEBUG_EXECUTE
+    #undef DEBUG_PGM
   #endif // PC_BUILD
 
 
@@ -312,37 +317,25 @@
 //*********************************
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
-#define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
-#define DEBUG_REGISTER_L                 0 //1 JM Showing register L content on the PC GUI
-#define SHOW_MEMORY_STATUS               0 //1 JM Showing the memory status on the PC GUI
-#define MMHG_PA_133_3224                 0 //1 JM mmHg to Pa conversion coefficient is 133.3224 an not 133.322387415
-#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 //JMMAX 9965   // 43S:3328 //JMMAX // 1001 decimal digits: 3328 ≃ log2(10^1001)
-#define MAX_FACTORIAL                    450  //JMMAX 1142   // 43S: 450 //JMMAX
-
-                               // bits  digits  43S     x digits   x! digits
-                               //                         69!            98
-                               //                        210!           398
-                               // 3328  1001    450!     449!           998
-                               //                        807!          1997
-                               //                        977!          2499
-                               // 9965  3000            1142!          2998
-                               //15000  4515            1388!
-                               //                       2122!          6140
-
+#define DEBUG_PANEL                      0 // Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
+#define DEBUG_REGISTER_L                 0 // Showing register L content on the PC GUI
+#define SHOW_MEMORY_STATUS               0 // Showing the memory status on the PC GUI
+#define MMHG_PA_133_3224                 1 // mmHg to Pa conversion coefficient is 133.3224 and not 133.322387415
+#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 // 1001 decimal digits: 3328 ≃ log2(10^1001)
+#define MAX_FACTORIAL                    450  // Auto conversion to Real for > 450
 #define SHORT_INTEGER_SIZE_IN_BLOCKS     2 // 2 blocks = 8 bytes = 64 bits
 #define SHORT_INTEGER_SIZE_IN_BYTES      8 // 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
-#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
+#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // 1 for PRINTXY to be done after every evaluation of the formula; Or the complex solver for every iteration;
+#define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
-
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
-
-#define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
-#define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
-#define NARROW_SCREEN                1 // 400x1280 portrait screen
+#define BIG_SCREEN_COEF                  1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
+#define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
+#define NARROW_SCREEN                    1 // 400x1280 portrait screen
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD

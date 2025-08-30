@@ -4872,8 +4872,8 @@ displayBaseMode(regist);
 
       #endif//!DMCP_BUILD PC_BUILD
     doRefreshSoftMenu = false;
-    //gets a separate hard forced refresh, to restore the part of the PEM screen spoiled by showFunctionName() 
-    force_Registerrefresh(REGISTER_T, false, false);
+
+    force_refresh(force);
   }
 
 
@@ -5228,6 +5228,7 @@ displayBaseMode(regist);
           fnStatList();
           hourGlassIconEnabled = false;
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       case CM_GRAPH:
@@ -5240,6 +5241,7 @@ displayBaseMode(regist);
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       case CM_PLOT_STAT:
@@ -5260,6 +5262,7 @@ displayBaseMode(regist);
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
+          force_refresh(force);
         break;
 
       default: ;

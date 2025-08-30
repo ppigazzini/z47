@@ -76,33 +76,42 @@ static void execute_rpn_function(void){
   calcRegister_t regStats = graphVariabl1;
   if(regStats != INVALID_VARIABLE) {
     fnStore(regStats);                  //place X register into x
-
-    #if defined(PC_BUILD) //PC_BUILD
-      printf("Graph variable x=%u: ",graphVariabl1);
-      printRegisterToConsole(graphVariabl1, " = ","\n");
-    #endif //PC_BUILD
+                                  #if defined(PC_BUILD) //PC_BUILD
+                                    printf("Graph variable x=%u: ",graphVariabl1);
+                                    printRegisterToConsole(graphVariabl1, " = ","\n");
+                                  #endif //PC_BUILD
 
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-    #if defined(PC_BUILD) //PC_BUILD
-      printf("Graph variable y ");
-      printRegisterToConsole(REGISTER_X, " = ","\n");
-    #endif //PC_BUILD
+                                  #if defined(PC_BUILD) //PC_BUILD
+                                    printf("Graph variable y ");
+                                    printRegisterToConsole(REGISTER_X, " = ","\n");
+                                  #endif //PC_BUILD
 
-    #if defined(PC_BUILD)
-      if(lastErrorCode != 0) {
-        #if defined(VERBOSE_SOLVER00)
-        printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
-        #endif // VERBOSE_SOLVER00
-        lastErrorCode = 0;
-      }
-    #endif // PC_BUILD
+                                  #if defined(PC_BUILD)
+                                    if(lastErrorCode != 0) {
+                                      #if defined(VERBOSE_SOLVER00)
+                                      printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
+                                      #endif // VERBOSE_SOLVER00
+                                      lastErrorCode = 0;
+                                    }
+                                  #endif // PC_BUILD
     fnRCL(regStats);
-    #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
-      printRegisterToConsole(REGISTER_X,">>> Calc x=","");
-      printRegisterToConsole(REGISTER_Y," y=","");
-    #endif // VERBOSE_SOLVER0 && PC_BUILD
+
+                                  #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
+                                    printRegisterToConsole(REGISTER_X,">>> Calc x=","");
+                                    printRegisterToConsole(REGISTER_Y," y=","");
+                                  #endif // VERBOSE_SOLVER0 && PC_BUILD
+
+                                  if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
+                                    copySourceRegisterToDestRegister(REGISTER_X,REGISTER_J);
+                                    copySourceRegisterToDestRegister(REGISTER_Y,REGISTER_K);
+                                    fnP_All_Regs(PRN_XYr);
+                                    copySourceRegisterToDestRegister(REGISTER_J,REGISTER_X);
+                                    copySourceRegisterToDestRegister(REGISTER_K,REGISTER_Y);
+                                  }
+
   }
   else {
     #if defined(PC_BUILD)
@@ -1209,6 +1218,15 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
                                     printRegisterToConsole(SREG_X1,"X = "," ");
                                     printRegisterToConsole(REGISTER_Y,"Y = ","\n");
                                   #endif // PC_BUILD
+
+                                  if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
+                                    copySourceRegisterToDestRegister(REGISTER_X,REGISTER_K);
+                                    copySourceRegisterToDestRegister(SREG_X1,REGISTER_X);
+                                    fnP_All_Regs(PRN_XYr);
+                                    copySourceRegisterToDestRegister(REGISTER_K,REGISTER_X);
+                                  }
+
+
 
     }  //Iteration end
 
