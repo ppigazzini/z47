@@ -8,53 +8,21 @@
 #if !defined(REALTYPE_H)
   #define REALTYPE_H
 
-  typedef struct {
-    int32_t digits;      // Count of digits in the coefficient; >0
-    int32_t exponent;    // Unadjusted exponent, unbiased, in
-                         // range: -1999999997 through 999999999
-    uint8_t bits;        // Indicator bits (see above)
-                         // Coefficient, from least significant unit
-    decNumberUnit lsu[(39+DECDPUN-1)/DECDPUN]; // 39 = 27 + 1*12
-  } real39_t; // used for trigonometric functions borrowed from WP34S
+#define DEFN_REAL(n)                            \
+  typedef struct {                              \
+    int32_t digits;                             \
+    int32_t exponent;                           \
+    uint8_t bits;                               \
+    decNumberUnit lsu[(n+DECDPUN-1)/DECDPUN];   \
+  } real ## n ## _t
 
-
-  typedef struct {
-    int32_t digits;      // Count of digits in the coefficient; >0
-    int32_t exponent;    // Unadjusted exponent, unbiased, in
-                         // range: -1999999997 through 999999999
-    uint8_t bits;        // Indicator bits (see above)
-                         // Coefficient, from least significant unit
-    decNumberUnit lsu[(51+DECDPUN-1)/DECDPUN]; // 51 = 39 + 1*12
-  } real51_t; // used for trigonometric functions borrowed from WP34S
-
-
-  //typedef struct {
-  //  int32_t digits;      // Count of digits in the coefficient; >0
-  //  int32_t exponent;    // Unadjusted exponent, unbiased, in
-  //                       // range: -1999999997 through 999999999
-  //  uint8_t bits;        // Indicator bits (see above)
-  //                       // Coefficient, from least significant unit
-  //  decNumberUnit lsu[(75+DECDPUN-1)/DECDPUN]; // 75 = 39 + 3*12
-  //} real75_t; // used in SLVQ
-
-  typedef struct {
-    int32_t digits;      // Count of digits in the coefficient; >0
-    int32_t exponent;    // Unadjusted exponent, unbiased, in
-                         // range: -1999999997 through 999999999
-    uint8_t bits;        // Indicator bits (see above)
-                         // Coefficient, from least significant unit
-    decNumberUnit lsu[(1071+DECDPUN-1)/DECDPUN]; // 1071 = 39 + 86*12
-  } real1071_t; // used for radian angle reduction
-
-
-  typedef struct {
-    int32_t digits;      // Count of digits in the coefficient; >0
-    int32_t exponent;    // Unadjusted exponent, unbiased, in
-                         // range: -1999999997 through 999999999
-    uint8_t bits;        // Indicator bits (see above)
-                         // Coefficient, from least significant unit
-    decNumberUnit lsu[(2139+DECDPUN-1)/DECDPUN]; // 2139 = 39 + 175*12
-  } real2139_t;
+  DEFN_REAL(39);
+  DEFN_REAL(51);
+  DEFN_REAL(1071);
+  DEFN_REAL(2139);
+  DEFN_REAL(6147);
+  DEFN_REAL(12321);
+#undef DEFN_REAL
 
   typedef decContext realContext_t;
   typedef decQuad    real34_t; // 34 digits and 128 bits = 16 bytes
@@ -71,6 +39,7 @@
   #define REAL51_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real51_t))
   #define REAL1071_SIZE_IN_BLOCKS  TO_BLOCKS(sizeof(real1071_t))
   #define REAL2139_SIZE_IN_BLOCKS  TO_BLOCKS(sizeof(real2139_t))
+  #define REAL6147_SIZE_IN_BLOCKS  TO_BLOCKS(sizeof(real6147_t))
   #define COMPLEX34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(complex34_t))
 
   #define REAL_SIZE_IN_BYTES       TO_BYTES(REAL_SIZE_IN_BLOCKS)
@@ -79,6 +48,7 @@
   #define REAL51_SIZE_IN_BYTES     TO_BYTES(REAL51_SIZE_IN_BLOCKS)
   #define REAL1071_SIZE_IN_BYTES   TO_BYTES(REAL1071_SIZE_IN_BLOCKS)
   #define REAL2139_SIZE_IN_BYTES   TO_BYTES(REAL2139_SIZE_IN_BLOCKS)
+  #define REAL6147_SIZE_IN_BYTES   TO_BYTES(REAL6147_SIZE_IN_BLOCKS)
   #define COMPLEX34_SIZE_IN_BYTES  TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
 
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
