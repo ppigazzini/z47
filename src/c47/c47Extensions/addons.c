@@ -105,7 +105,7 @@ void shortIntegerToString(calcRegister_t regist, char *displayString) {
   while(number) {
     unit = number % base;
     number /= base;
-    displayString[i++] = hexadecimalDigits[unit];
+    displayString[i++] = baseDigits[unit];
   }
 
   if(sign) {
