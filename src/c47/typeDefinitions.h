@@ -282,7 +282,7 @@ typedef struct {
   uint8_t        IrFractionsCurrentStatus;                                 //  Internal control flag for IRFRAC
   bool_t         compatibility_byte18;              //Spare Byte           //  
   uint8_t        displayStackSHOIDISP;                                     //  dSI
-  bool_t         bcdDisplay;                                               //  BCD
+  bool_t         compatibility_byte25;                                     //  BCD
   bool_t         compatibility_byte24;              //Spare Byte           //  
   uint8_t        bcdDisplaySign;                                           //  BCDUNS
   uint8_t        DRG_Cycling;                                              //  Internal control flag for DRG

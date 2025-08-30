@@ -238,7 +238,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_artanh      },
     {ITM_CEIL        },
     {ITM_FLOOR       },
-    {ITM_DEC         },
+    {ITM_DECR        },
     {ITM_INC         },
     {ITM_IP          },
     {ITM_FP          },
@@ -742,8 +742,14 @@ typedef struct {
             if(item != ITM_EQUAL) {       //block the entry of "="
               stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
               if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                stringCopy(addChar + stringByteLength(addChar), "()");
-                jj = 1;
+                if(isDyadicFunction(item)) {
+                  stringCopy(addChar + stringByteLength(addChar), "(:)");
+                  jj = 2;
+                }
+                else {
+                  stringCopy(addChar + stringByteLength(addChar), "()");
+                  jj = 1;
+                }
               }
             }
           }
@@ -989,6 +995,40 @@ typedef struct {
     }
   }
 
+
+  bool_t validShortIntegerInX(void) {
+    uint16_t lg = strlen(aimBuffer);
+    uint16_t posHash = lg;
+    uint16_t i;
+    if(nimNumberPart == NP_INT_BASE) {
+      return true;
+    } else {
+      for(i=1; i<lg-1; i++) {      //do not check the # on the very begin or very end as that is not valid
+        if(aimBuffer[i] == '#') {
+          posHash = i;
+        }
+      }
+    }
+    for(i=0; i<posHash; i++) {
+      if(aimBuffer[i] == 'e' || aimBuffer[i] == 'i' || aimBuffer[i] == ',' || aimBuffer[i] == '.') {
+        return false;
+      }
+    }
+    uint8_t base = 0;
+    if((aimBuffer[lg-2]) == '#' && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-1];
+    if((aimBuffer[lg-3]) == '#' && (aimBuffer[lg-2] >= '0' && aimBuffer[lg-2] <= '1') && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-2]*10 + aimBuffer[lg-1];
+    if(base < 2 || base > 16) {
+      return false;
+    }
+    int start = 0;
+    if(aimBuffer[0] == '-' || aimBuffer[0] == '+' || aimBuffer[0] == ' ') start++;
+    for(i=start; i<posHash; i++) {
+      if(!(aimBuffer[i] >= '0' && aimBuffer[i] <= '9') && !(aimBuffer[i] >= 'A' && aimBuffer[i] <= 'F')) {
+        return false;
+      }
+    }
+    return posHash > 0;
+  }
 
   void addItemToNimBuffer(int16_t item) {
     //printf("addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);
@@ -2077,7 +2117,8 @@ typedef struct {
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
-          case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open
+          case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open, and the BASE, INTS and BITS A-F and HEX/DEC commands are active on NIM
+          case -MNU_BASE:
           case -MNU_INTS:
           case -MNU_BITS: {
             break;
@@ -2480,6 +2521,16 @@ typedef struct {
       setLastintegerBasetoZero();
     }
 
+    bool_t delayedShortIntegerCHS = false;
+    //#if defined(PC_BUILD)
+    //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);
+    //  fflush(stdout);
+    //#endif //PC_BUILD
+    if((aimBuffer[0] == '-' && validShortIntegerInX() != 0)) {
+      aimBuffer[0] = ' ';
+      delayedShortIntegerCHS = true;
+    }
+
     int16_t lastChar = strlen(aimBuffer) - 1;
 
     if(calcMode == CM_PEM) {
@@ -2690,6 +2741,17 @@ typedef struct {
           }
         }
       }
+    }
+    if(delayedShortIntegerCHS) {
+      //#if defined(PC_BUILD)
+      //  printf("Launching delayed CHS\n");
+      //  fflush(stdout);
+      //#endif //PC_BUILD
+      chsShoI();
+  //    if(getSystemFlag(FLAG_OVERFLOW)) {
+  //      temporaryInformation = TI_DATA_NEG_OVRFL;   //removeod, as CHS is overridden by ENTER, clearing the TI before it is shown/or directly after
+  //      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK);
+  //    }
     }
   }
 

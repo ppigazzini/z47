@@ -14,7 +14,7 @@ enum {
 
 void     configCommon          (uint16_t idx);
 void     showSoftmenu          (int16_t id);  //JM repeat here to make DMCP compile
-void     fnShowVersion         (uint8_t option);
+void     fnShowVersion         (uint16_t option);
 extern const enum rounding roundingModeTable[7];
 
 /********************************************//**
@@ -241,6 +241,7 @@ void     fnRange               (uint16_t R);
 void     fnGetRange            (uint16_t unusedButMandatoryParameter);
 void     fnHide                (uint16_t H);
 void     fnGetHide             (uint16_t unusedButMandatoryParameter);
+void     fnGetLastErr          (uint16_t unusedButMandatoryParameter);
 void     fnKeysManagement      (uint16_t choice);
 void     initSimEqMatABX       (void);
 void     fnResetTVM            (uint16_t unusedButMandatoryParameter);

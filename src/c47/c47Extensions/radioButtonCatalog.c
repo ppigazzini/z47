@@ -94,12 +94,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_USER_C47,         USER_C47,               RB_KY},  //SetSetting
   {ITM_USER_DM42,        USER_DM42,              RB_KY},  //SetSetting
   {ITM_USER_R47,         USER_R47,               RB_KY},  //SetSetting
-  {ITM_USER_EXPR,        USER_EXPR,              RB_KY},  //SetSetting
 
-  {ITM_USER_V47,         USER_V47,               CB_JC},  //SetSetting
-  {ITM_USER_D47,         USER_D47,               CB_JC},  //SetSetting
-  {ITM_USER_N47,         USER_N47,               CB_JC},  //SetSetting
-  {ITM_USER_E47,         USER_E47,               CB_JC},  //SetSetting
   {ITM_USER_R47f_g,      USER_R47f_g,            CB_JC},  //SetSetting
   {ITM_USER_R47bk_fg,    USER_R47bk_fg,          CB_JC},  //SetSetting
   {ITM_USER_R47fg_bk,    USER_R47fg_bk,          CB_JC},  //SetSetting
@@ -127,6 +122,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_FRACT,            FLAG_FRACT  ,           CB_JC},
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
+  {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
+  {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
   {ITM_FRCYC,            FLAG_FRCYC  ,           CB_JC},
   {ITM_LARGELI,          FLAG_LARGELI,           CB_JC},  //SetSetting
   {ITM_IRFRAC,           FLAG_IRFRAC ,           CB_JC},  //SetSetting
@@ -134,6 +131,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SHOWX,            FLAG_SHOWX  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_SHOWY,            FLAG_SHOWY  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PBOX,             FLAG_PBOX   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PCURVE,           FLAG_PCURVE   ,         CB_JC},  // graph EQN & PLSTAT options
   {ITM_PCROS,            FLAG_PCROS  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PPLUS,            FLAG_PPLUS  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PLINE,            FLAG_PLINE  ,           CB_JC},  // graph EQN & PLSTAT options
@@ -149,7 +147,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 
   {CHR_case,             JC_UC,                  CB_JC},  //
   {ITM_SCR,              JC_SS,                  CB_JC},  //
-  {ITM_BCD,              JC_BCD,                 CB_JC},  //
+  {ITM_BCD,              FLAG_BCD,               CB_JC},  //
   {ITM_TOPHEX,           FLAG_TOPHEX,            CB_JC},  //
 
   {ITM_2BIN,             2,                      RB_HX},  //fnChangeBaseJM
@@ -298,15 +296,6 @@ int8_t fnCbIsSet(int16_t item) {
                      break;
 
         case RB_KY:  rb_param = calcModel;
-                     if(itemNr == ITM_USER_EXPR) {
-                       switch(calcModel) {
-                         case USER_D47 :
-                         case USER_E47 :
-                         case USER_N47 :
-                         case USER_V47 : rb_param = USER_EXPR; break;
-                         default:;
-                       }
-                     }
                      if(itemNr == ITM_USER_R47) {
                        switch(calcModel) {
                          case USER_R47f_g   :
@@ -321,10 +310,6 @@ int8_t fnCbIsSet(int16_t item) {
         case CB_JC:  is_cb = true;
           switch(indexOfRadioCbEepromItems[i].param) {
 
-            case USER_D47:
-            case USER_E47:
-            case USER_N47:
-            case USER_V47:
             case USER_R47f_g:
             case USER_R47bk_fg:
             case USER_R47fg_bk:
@@ -361,6 +346,8 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_FRACT  :
             case FLAG_PRTACT :
             case FLAG_ERPN   :
+            case FLAG_CARRY  :
+            case FLAG_OVERFLOW:
             case FLAG_FRCYC  :
             case FLAG_LARGELI:
             case FLAG_IRFRAC :
@@ -368,6 +355,7 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SHOWX  :
             case FLAG_SHOWY  :
             case FLAG_PBOX   :
+            case FLAG_PCURVE :
             case FLAG_PCROS  :
             case FLAG_PPLUS  :
             case FLAG_PLINE  :
@@ -380,11 +368,11 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_DREAL       :
             case FLAG_CPXMULT     :
             case FLAG_TOPHEX      :
+            case FLAG_BCD         :
                        cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
 
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
-            case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;
                                          break;

@@ -3,25 +3,55 @@
 
 #include "c47.h"
 
-bool_t regInRange(uint16_t regist) {
-  bool_t inRange = (
-    (regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
+
+bool_t isRegInRange(uint16_t regist) {
+  return (regist <= LAST_LETTERED_REGISTER) ||                              //this includes r00-r99
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
+    (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
-    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE));
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||
+    (FIRST_TEMP_REGISTER  <= regist && regist <= LAST_TEMP_REGISTER);
+}
+
+bool_t regInRange(uint16_t regist) {
+  bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
-      if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
+      if(!(regist <= LAST_LETTERED_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Lettered register %04d", regist - FIRST_LETTERED_REGISTER);
+      }
+      else if(!(FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Stat register %04d", regist - FIRST_STAT_REGISTER);
+      }
+      else if(!(FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Spare register %04d", regist - FIRST_SPARE_REGISTER);
+      }
+      else if(!(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters)) {
+        printf("Local Not in range.\n");
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       }
-      else if(regist >= FIRST_NAMED_VARIABLE && regist <= LAST_NAMED_VARIABLE) {
+      else if(!(FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         // This error message is not massively useful because it doesn't have the original name
         // But it shouldn't have even got this far if the name doesn't exist
         sprintf(errorMessage, "named register .%02d", regist - FIRST_NAMED_VARIABLE);
       }
+      else if(!(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "reserved variable %04d", regist - FIRST_RESERVED_VARIABLE);
+      }
+      else if(!(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "temporary register %04d", regist - LAST_TEMP_REGISTER);
+      }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "generic");
       }
       moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
     }
@@ -138,6 +168,9 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 static void _storeValue(uint16_t regist) {
+  if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
+    PLOT_ZMY = zoomOverride;  //PLOT EQN
+  }
   if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnLint(NOPARAM);
@@ -174,8 +207,12 @@ void fnStore(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     _storeValue(regist);
     uint16_t rows = 1;
-    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
-      calcSigma(0);
+    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+      if(isStatsMatrixN(&rows, regist)) {
+        calcSigma(0);
+      } else {
+        clearStatisticalSums();
+      }
     }
   }
 }
@@ -371,6 +408,7 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte22 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte25 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -436,7 +474,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(IrFractionsCurrentStatus);
   storeToDtConfigDescriptor(    compatibility_byte18);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
-  storeToDtConfigDescriptor(bcdDisplay);
+  storeToDtConfigDescriptor(    compatibility_byte25);
   storeToDtConfigDescriptor(    compatibility_byte24);
   storeToDtConfigDescriptor(bcdDisplaySign);
   storeToDtConfigDescriptor(DRG_Cycling);

@@ -60,9 +60,7 @@ void fnPause(uint16_t dur) {
 
   #if !defined(TESTSUITE_BUILD)
     uint8_t previousProgramRunStop = programRunStop;
-    if(tam.mode) {
-      tamLeaveMode();
-    }
+    leaveTamModeIfEnabled();
     if(duration != 0 || previousProgramRunStop != PGM_RUNNING) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;

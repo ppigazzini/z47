@@ -138,6 +138,13 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
       break;
     }
 
+    case dtDate: {
+      // convertDateRegisterToReal34Register is not appropriate here
+      internalDateToJulianDay(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_Y));
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
+      break;
+    }
+
     case dtComplex34: {
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
       real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &bImag);
@@ -178,6 +185,13 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
       break;
     }
 
+    case dtDate: {
+      // convertDateRegisterToReal34Register is not appropriate here
+      internalDateToJulianDay(REGISTER_REAL34_DATA(REGISTER_Z), REGISTER_REAL34_DATA(REGISTER_Z));
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
+      break;
+    }
+
     case dtComplex34: {
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
       real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Z), &aImag);
@@ -206,23 +220,29 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
   linpol(&aReal, &bReal, &p, &rReal);
   if(realCoefs) {
     if(dataTypeY == dtTime) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);      // use standard Real type for time, to change to Time below
-        convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-        convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
-      }
-      else {
-        if(isYangle && isZangle) {                                          // arrives here if both are angles
-          if(dataTagY != dataTagZ) {
-            dataTagY = currentAngularMode;
-          } else {
-            //   dataTagY will be used                                      //   arrives here if both are angles but the angle tags are not the same
-          }
-        } else {                                                            // arrives here if both are not angles
-          dataTagY = amNone;
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);      // use standard Real type for time, to change to Time below
+      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+      convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
+    }
+    else if(dataTypeY == dtDate) {
+      reallocateRegister(REGISTER_X, dtDate, 0, amNone);
+      realToReal34(&rReal, REGISTER_REAL34_DATA(REGISTER_X));
+      real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X), DEC_ROUND_CEILING);
+      julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+    }
+    else {
+      if(isYangle && isZangle) {                                          // arrives here if both are angles
+        if(dataTagY != dataTagZ) {
+          dataTagY = currentAngularMode;
+        } else {
+          //   dataTagY will be used                                      //   arrives here if both are angles but the angle tags are not the same
         }
-        reallocateRegister(REGISTER_X, dtReal34, 0, dataTagY);   // use the type and tag of b (Y)
-        convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+      } else {                                                            // arrives here if both are not angles
+        dataTagY = amNone;
       }
+      reallocateRegister(REGISTER_X, dtReal34, 0, dataTagY);   // use the type and tag of b (Y)
+      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+    }
   }
   else {
     linpol(&aImag, &bImag, &p, &rImag);

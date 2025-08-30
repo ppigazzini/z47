@@ -5,18 +5,21 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1009     // Change matrix headers, add tag
+#define BACKUP_VERSION                     1011     // Added reserve variables at the end of the list
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
 1006     // 2024-11-07 Remove Aspect and add PLOT_PLUS
 1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
 1008     // 2024-11018 Add lastCenturyHighUsed
+1009     // Change matrix headers, add tag
+1010     // Change constant format in equation, adding a # prefix
+1011     // Added reserve variables UY, LY, UEST, LEST.
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000019 // Change tophex
+#define configFileVersion                  10000021 // Change constant format in equation, adding a # prefix
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -32,6 +35,8 @@
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
 10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
+...
+10000020 // Change bcd
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -156,6 +161,25 @@ static char *skip_to_space_newline(const char *str) {
 static char *toInt16_next_word(const char *str, int16_t *val) {
     *val = toInt16(str);
     return next_word(str);
+}
+
+static void _updateConstantsInEquations(void) {
+  for(uint16_t i = 0; i < numberOfFormulae; i++) {
+    if(allFormulae[i].pointerToFormulaData != C47_NULL) {
+      parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+      if(lastErrorCode == 0) {   // if equation is valid, check and update constants
+        const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[i].pointerToFormulaData);
+        strcpy(tmpString, strPtr);
+        updateOldConstants = true;
+        parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        updateOldConstants = false;
+        setEquation(i, tmpString);
+      }
+      else {
+        lastErrorCode = 0;
+      }
+    }
+  }
 }
 #endif
 
@@ -481,6 +505,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     saveStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
     saveStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    saveStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     saveStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
     saveStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     saveStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
@@ -523,6 +548,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     saveStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     saveStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
+    saveStateValue(&iterations,                     sizeof(iterations),                                          "iterations",                     "bool");
     saveStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     saveStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     saveStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -600,7 +626,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     saveStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C47 JM
     saveStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C47 JM
-    saveStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C47 JM
     saveStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C47 JM
     saveStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
     saveStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
@@ -882,9 +907,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
     }
-    else if(backupVersion == 0) {
+    else if(backupVersion == 0 || backupVersion < 1011) {
       refreshScreen(92);
-      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
+      printf("\n");
+      userAbort("Cannot restore calc's memory from file backup.cfg! File backup.cfg has a too low version number.");
+      userAbort("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
       return;
     }
 
@@ -1036,6 +1063,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     restoreStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
     restoreStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    restoreStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     restoreStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
     restoreStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     restoreStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
@@ -1084,6 +1112,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     restoreStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     restoreStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
+    restoreStateValue(&iterations,                     sizeof(iterations),                                          "iterations",                     "bool");
     restoreStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     restoreStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     restoreStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -1173,7 +1202,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     restoreStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C47 JM
     restoreStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C47 JM
+    bool_t bcdDisplay = false;
     restoreStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C47 JM
+    if(bcdDisplay) setSystemFlag(FLAG_BCD); else clearSystemFlag(FLAG_BCD);
     restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C47 JM
     bcdDisplaySign = convert001090400T001090500(bcdDisplaySign,BCDu);
     restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
@@ -1302,6 +1333,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         qq++;
       }
     }
+
+    if(backupVersion < 1010) {                           //old constant format in equations
+      printf("Version number of configfile < 1010: adding # prefix to constants in equations.\n");
+      _updateConstantsInEquations();
+    }
+
 
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
@@ -1816,7 +1853,6 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "bcdDisplay\n%"                 PRIu8  "\n",     (uint8_t)bcdDisplay);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DM_Cycling\n%"                 PRIu8  "\n",     DM_Cycling);                   save(tmpString, strlen(tmpString));
@@ -2070,13 +2106,14 @@ int64_t stringToInt64(const char *str) {
       if(loadedVersion < 10000008) {
         // For earlier version config files of 896 desxcriptor length, the above Write into the register must only be up to the old descriptor content.
         // We add the defaults for the new portion of the new descriptor in the following string.
-        char tmpvalue[65];
-        strcpy(tmpvalue, "0000000000000000F777DC2C2B842A1C33203033460C2A330118000000000000");
-        for(tag=0; tag<strlen(tmpvalue); tag+=2, cfg++) {
-          *cfg = ((tmpvalue[tag] >= 'A' ? tmpvalue[tag] - 'A' + 10 : tmpvalue[tag] - '0') << 4) | (tmpvalue[tag + 1] >= 'A' ? tmpvalue[tag + 1] - 'A' + 10 : tmpvalue[tag + 1] - '0');
-        }
+        static const unsigned char tmpvalue[] = {
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
+          0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
+          0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        };
+        memcpy(cfg, tmpvalue, sizeof(tmpvalue));
       }
-
     }
 
     else {
@@ -2289,7 +2326,7 @@ int64_t stringToInt64(const char *str) {
         readLine(errorMessage); // Variable name
         read2Lines(aimBuffer,tmpString); // Variable data type & Variable value
 
-        if(( loadMode == LM_ALL || 
+        if(( loadMode == LM_ALL ||
              loadMode == LM_NAMED_VARIABLES ||
             (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0))) ) &&
 
@@ -2327,6 +2364,7 @@ int64_t stringToInt64(const char *str) {
         #endif //LOADDEBUG
 
         initStatisticalSums();
+        reLoadStatisticalSums();
 
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString); // statistical sum
@@ -2666,7 +2704,7 @@ int64_t stringToInt64(const char *str) {
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
- 
+
       #if defined(LOADDEBUG)
         if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
           printf("\n");
@@ -2721,6 +2759,9 @@ int64_t stringToInt64(const char *str) {
           utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
           setEquation(i, tmpString + TMP_STR_LENGTH / 2);
         }
+      }
+      if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
+        _updateConstantsInEquations();
       }
     }
 
@@ -2830,7 +2871,11 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) {
+            if(loadedVersion < 10000020) {
+              forceSystemFlag(FLAG_BCD, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
           else if(strcmp(aimBuffer, "topHex"                      ) == 0) {
             if(loadedVersion < 10000019) {
               forceSystemFlag(FLAG_TOPHEX, toUint8(tmpString) != 0);
@@ -3018,6 +3063,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   }
 
   lastErrorCode = ERROR_NONE;
+  previousErrorCode = lastErrorCode;
 
   ioFileClose();
 
@@ -3067,7 +3113,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if defined(DMCP_BUILD)
     sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
     sys_timer_start(TIMER_IDX_REFRESH_SLEEP,1000);
-    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
+    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
   #endif // DMCP_BUILD
 
 

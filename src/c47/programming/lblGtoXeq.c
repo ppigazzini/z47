@@ -193,7 +193,7 @@ void fnExecute(uint16_t label) {
     if(lastErrorCode == ERROR_NONE) {
       #if !defined(TESTSUITE_BUILD)
         if(tam.mode) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           refreshScreen(2);
         }
       #endif // TESTSUITE_BUILD*
@@ -610,6 +610,30 @@ static void _putLiteral(uint8_t *literalAddress) {
       break;
       }
 
+
+
+      case STRING_ANGLE_RADIAN: 
+      case STRING_ANGLE_GRAD:   
+      case STRING_ANGLE_DEGREE: 
+      case STRING_ANGLE_MULTPI: {
+        _getStringLabelOrVariableName(literalAddress);
+        liftStack();
+        setSystemFlag(FLAG_ASLIFT);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
+        int tmpAngle;
+        switch(*(literalAddress - 1)) {
+          case STRING_ANGLE_RADIAN: tmpAngle = amRadian; break;
+          case STRING_ANGLE_GRAD:   tmpAngle = amGrad; break;
+          case STRING_ANGLE_DEGREE: tmpAngle = amDegree; break;
+          case STRING_ANGLE_MULTPI: tmpAngle = amMultPi; break;
+          default: tmpAngle = amNone; break;
+        }
+        setRegisterAngularMode(REGISTER_X, tmpAngle);
+        break;
+      }
+
+
       case STRING_COMPLEX34: {
         char *imag = tmpStringLabelOrVariableName;
         _getStringLabelOrVariableName(literalAddress);
@@ -707,7 +731,9 @@ int16_t executeOneStep(uint8_t *step) {
     case ITM_BACK:        //  1412
     case ITM_CASE:        //  1418
     case ITM_SKIP: {      //  1603
+      uint8_t previousErrorCodeMeM = previousErrorCode;
       _executeOp(step, op, (indexOfItems[op].status & PTP_STATUS) >> 9);
+      previousErrorCode = previousErrorCodeMeM;
       return -1;
       }
 

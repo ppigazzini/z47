@@ -776,12 +776,17 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
+          leaveTamModeIfEnabled();
           showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
+          leaveTamModeIfEnabled();
+          BASE_OVERRIDEONCE = true;
           showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
+          BASE_OVERRIDEONCE = true;
           showSoftmenuCurrentPart();
+          BASE_OVERRIDEONCE = true;            //for upcoming refresh
         }
         shiftF = 0;
         shiftG = 0;
@@ -814,13 +819,48 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
+//longpress DOT function during AIM EIM and PEM alpha:
+
+//2.  2025-08-02
+//All currentKeyCode checking below should be replaced with last item checking.
+//  Although it does not really matter because this section is for non-assignable, i.e. hardware keys
+
+//3. 2025-08-02
+// The 'exclude ENTER and BACKSPACE' section below has UP and DN longpress added. This must be checked anyway in PEM.
+//   ... || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA) && !tam.mode) to be added to 'if((calcMode == CM_AIM || calcMode == CM_EIM) &&'
+
+
+
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
         char *funcParam;
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
-        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
+
+        //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+                                                                 // Exclude  BACKSP                   ENTER
+          if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
+            // stub for code to process on up1/down longpress
+            return;
+          }
+
+          fnKeyBackspace(NOPARAM);
+          addItemToBuffer(JM_auto_longpress_enabled);
+          FN_timeouts_in_progress = false;
+          fnTimerStop(TO_FN_LONG);
+          if(calcMode == CM_AIM) {
+            refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
+          } else
+          if(calcMode == CM_EIM) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+            refreshScreen(131);
+          }
+          return;
+
+        }
+        else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         }
         else if(funcParam[0] == 0 && (JM_auto_longpress_enabled == ITM_XEQ || JM_auto_longpress_enabled == ITM_GTO)) {  //from KEYA-F longpress
@@ -1632,6 +1672,9 @@ return res;
     if((mode != timed && !blockForcedRefreshes) || ((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick3) { //1.024 second refresh interval
       halfSecTick3 = !halfSecTick3;
       ret_value = true;
+      #if defined(DMCP_BUILD)
+        dmcpResetAutoOff();
+      #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
       if(clearT) {
@@ -1642,7 +1685,7 @@ return res;
       }
 
       //lcd_refresh();
-      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
+      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
       if(disp) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
@@ -1668,6 +1711,9 @@ return res;
     }
     if(((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick2) { //1.024 second refresh interval
       halfSecTick2 = !halfSecTick2;
+      #if defined(DMCP_BUILD)
+        dmcpResetAutoOff();
+      #endif //DMCP_BUILD
       return true;
     }
     return false;
@@ -1712,7 +1758,7 @@ return res;
 
   static void stats_param_display(const char *name, calcRegister_t reg, char *prefix, char *tmpString, calcRegister_t rowReg) {
     int16_t prefixWidth;
-    char regS[5], *p;
+    char regS[16], *p;
     real_t t;
     real34_t u;
     uint32_t angleMode;
@@ -1722,10 +1768,18 @@ return res;
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_");
-    regS[3] = letteredRegisterName(reg);
+    if(reg == RESERVED_VARIABLE_UEST) {
+      sprintf(prefix, "Upper estimate =");
+      strcpy(regS,name);
+    } else if (reg == RESERVED_VARIABLE_LEST) {
+      sprintf(prefix, "Lower estimate =");
+      strcpy(regS,name);
+    } else {
+        strcpy(regS, "Reg_");
+        regS[3] = letteredRegisterName(reg);
+        sprintf(prefix, "= %s =", name);
+    }
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
-    sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
     if(getRegisterAsRealQuiet(reg, &t)) {
@@ -1921,8 +1975,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
@@ -1930,8 +1985,9 @@ return res;
         prefix[1] = 32;
         prefix[2] = 0;
       }
-      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -1973,13 +2029,12 @@ return res;
     int16_t prefixWidth;
     currentViewRegister = regist;
     viewRegName(prefix, &prefixWidth);
-    uint16_t nn = stringByteLength(prefix)-1;
-    while(prefix[nn] != 0) {
+    int32_t nn = stringByteLength(prefix);
+    while(--nn >= 0 && prefix[nn] != 0) {
       if(prefix[nn] == '=') {
         prefix[nn] = 0;
         //prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
-      nn--;
     }
     currentViewRegister = currentViewRegisterStored;
   }
@@ -2178,7 +2233,7 @@ void createSubstrings(uint8_t number) {
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
 
       bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
-      for(int j = 0; j < cols; j++) {
+      for(int j = 0; j < min(cols,MATRIX_MAX_COLUMNS); j++) {
         allElementsInColAreIntegers[j]=true;
         for(int i = 0; i < rows; i++) {
           if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
@@ -2353,11 +2408,21 @@ void createSubstrings(uint8_t number) {
   }
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
-      char noo[12];
+      char noo[32];
+      real_t t;
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
       switch(no) {
-        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
-        default: strcpy(noo," =" ); break;
+        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " =");
+                   break;
+        case  1: strcpy(noo," =" );
+                   if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
+                     if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t) == 200) {
+                      strcat(noo," (conjugates)");
+                     }
+                   }
+                   break;
+        default: strcpy(noo," =" );
+                   break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
@@ -2396,7 +2461,8 @@ void createSubstrings(uint8_t number) {
     }
   }
 
-  void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+  #define noLine false
+  static void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth, bool_t doLine) {
     int32_t w = realToInt32C47(SIGMA_N);
     if(regist == REGISTER_X) {
       sprintf(prefix, "%03" PRId32 " data point", w);
@@ -2404,9 +2470,52 @@ void createSubstrings(uint8_t number) {
         stringCopy(prefix + stringByteLength(prefix), "s");
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      if(doLine) {
+        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      }
     }
   }
+
+
+  void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X) {
+      real_t t;
+      getRegisterAsRealQuiet(REGISTER_X, &t);
+      int32_t ii = realToInt32C47(&t);
+      realMultiply(&t, const_100, &t, &ctxtReal39);
+      int32_t jj = realToInt32C47(&t) - 100*ii;
+      char sss[30];
+      sss[0]=0;
+      switch (ii) {
+        case 0 : strcpy(sss,"LongInteger"); break;
+        case 1 : strcpy(sss,"Real"); break;
+        case 2 : strcpy(sss,"Complex"); break;
+        case 3 : strcpy(sss,"Time"); break;
+        case 4 : strcpy(sss,"Date"); break;
+        case 5 : strcpy(sss,"String"); break;
+        case 6 : strcpy(sss,"RealMatrix"); break;
+        case 7 : strcpy(sss,"ComplexMatrix");  break;
+        case 8 : strcpy(sss,"ShortInteger"); break;
+        case 9 : strcpy(sss,"Config"); break;
+        default: break;
+      }
+      if(ii == 8) {
+        strcat(sss,", base");
+      } else {
+        switch (jj) {
+          case 10 : strcat(sss,", MUL" STD_pi); break;
+          case 20 : strcat(sss,", DMS"); break;
+          case 30 : strcat(sss,", Degree"); break;
+          case 40 : strcat(sss,", Grad"); break;
+          case 50 : strcat(sss,", Radian"); break;
+          default:break;
+        }
+      }
+      sprintf(prefix, "%s", sss);
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    }
+  }
+
 
 
 static bool_t displayTrueFalse(calcRegister_t regist) {
@@ -2472,7 +2581,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
          //handle reg pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
+           shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase); // base 1 is BCD, #10
            if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
              showString("  X: ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
@@ -2483,7 +2592,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
        else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
+           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase); // base 1 is BCD, #10
            bool_t   printFirstCol = fontForShortInteger == &tinyFont;
            bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH;
            uint32_t xoff = printWillFit ? SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : 0;
@@ -2772,7 +2881,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
-        sprintf(tmpString, "Data, programs, and definitions cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_data_prgms_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
@@ -2782,36 +2891,53 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         displayTemporaryInformationOnX(prefix);
       }
 
+      else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_FLAGS && regist == REGISTER_X) {
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_flags_cleared]);
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables cleared");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_cleared]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
-        sprintf(tmpString, "All user menus deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_menus_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
-        sprintf(tmpString, "All user variables deleted");
+        sprintf(tmpString, "%s", errorMessages[TI_All_user_vars_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)
       else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
-        sprintf(prefix, "Not available on the simulator");
+        sprintf(prefix, "%s", errorMessages[TI_Not_on_simulator]);
         displayTemporaryInformationOnX(prefix);
       }
-      #endif // PC_BUILD
+      #elif defined(DMCP_BUILD)
+      else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
+        sprintf(prefix, "%s", errorMessages[TI_Only_on_simulator]);
+        displayTemporaryInformationOnX(prefix);
+      }
+      #endif // PC_BUILD/DMCP_BUILD
 
       else if(temporaryInformation == TI_BACKUP_RESTORED && regist == REGISTER_X) {
         clearRegisterLine(REGISTER_X, true, true);
@@ -2867,7 +2993,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
 
       else if(temporaryInformation == TI_UNDO_DISABLED && regist == REGISTER_X) {
-        showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        showString(errorMessages[ERROR_TI_UNDO_FAILED], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
 
@@ -2917,7 +3043,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             showBottomLine();
           }
       }
-      else if((restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+      else if((!checkHP && restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
         prefixWidth = 0;
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
                                         #if defined(PC_BUILD)
@@ -2947,13 +3073,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           inputRegName(prefix, &prefixWidth);
         }
 
-        // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
+
+        // STATISTICAL DISTR & SOLVER
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
 
           switch(currentMenu()) {
+            case -MNU_Solver_TOOL:
+              r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
+              r_j = indexOfItems[VAR_UEST].itemCatalogName; register_j = RESERVED_VARIABLE_UEST;
+              break;
             case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -3042,7 +3173,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
+            else {
+              showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            }
           }
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3786,7 +3924,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
 
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
 
           else if(temporaryInformation == TI_STATISTIC_LR) {
@@ -3818,14 +3956,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_ULIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_UP_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_UP_ARROW " Upper limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_LLIM) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, STD_DOWN_ARROW "Lim" STD_SPACE_FIGURE ":");
+              sprintf(prefix, STD_DOWN_ARROW " Lower limit" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3959,6 +4097,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_REGTYPE) {
+            _displayRegType(regist, prefix, &prefixWidth);
           }
 
 
@@ -4212,7 +4353,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-
           prefixWidth = 0;
           tmpString[0]=0;
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
@@ -4241,14 +4381,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
+              showString(prefix, &standardFont, 1, 
+                baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
               shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride);
@@ -4273,11 +4414,14 @@ displayBaseMode(regist);
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_REGTYPE) {
+            _displayRegType(regist, prefix, &prefixWidth);
+          }
           else if(temporaryInformation == TI_ABC || temporaryInformation == TI_ABBCCA || temporaryInformation == TI_012) {                             //JM EE \/
             elecTI(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            _displaySigmaPlus(regist, prefix, &prefixWidth);
+            _displaySigmaPlus(regist, prefix, &prefixWidth, !noLine);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
@@ -4285,12 +4429,28 @@ displayBaseMode(regist);
           else if(temporaryInformation == TI_VIEW_REGISTER) {          //X, Y, & Z, not T
             userTI(currentViewRegister, regist, prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_DAY_OF_WEEK) {
+            if(regist == REGISTER_X) {
+              int day;
+              if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
+                day = (int)tmpString[4] - '0';
+              } else {
+                day = (int)tmpString[0] - '0';
+              }
+              if(day < 1 || day > 7) {
+                day = 0;
+              }
+              strcpy(prefix,"[ISO day] ");
+              strcat(prefix, nameOfWday_en[day].itemName);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
 
 
         //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
-            w = stringWidth(tmpString, &standardFont, false, true);
+            w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
             tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
@@ -4307,22 +4467,12 @@ displayBaseMode(regist);
 
         //normal longinteger handling
           else {
-            longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, toRemoveTrailingRadix);
+            longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, getSystemFlag(FLAG_LARGELI));
             tmpString[TMP_STR_LENGTH-1] = tmpString[0];
           }
 
 
-          if(temporaryInformation == TI_DAY_OF_WEEK) {
-            if(regist == REGISTER_X) {
-              int day = (int)tmpString[0] - '0';
-              if(day < 1 || day > 7) {
-                day = 0;
-              }
-              strcpy(prefix,"[ISO day] ");
-              strcat(prefix, nameOfWday_en[day].itemName);
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
-            }
-          }
+
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -4434,6 +4584,9 @@ displayBaseMode(regist);
             }
             else if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_X) {          //X, not T
               userTI(currentViewRegister, regist, prefix, &prefixWidth);
+            }
+            else if(temporaryInformation == TI_STATISTIC_SUMS) {
+              _displaySigmaPlus(regist, prefix, &prefixWidth, noLine);
             }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
@@ -4668,6 +4821,7 @@ displayBaseMode(regist);
     showRegis = 9999;
     calcMode = CM_NORMAL;
     screenUpdatingMode = SCRUPD_AUTO;
+    temporaryInformation = TI_NO_INFO;
     refreshScreen(137);
   }
 
@@ -4928,6 +5082,9 @@ displayBaseMode(regist);
         //else if(temporaryInformation == TI_SHOWNOTHING) {
         //  screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
         //}
+        else if((calcMode == CM_NORMAL) && ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ) {
+          screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+        }
 
         _selectiveClearScreen();
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
@@ -5066,24 +5223,39 @@ displayBaseMode(regist);
         #endif // PC_BUILD &&MONITOR_CLRSCR
   }
 
+  #if defined(PC_BUILD)
+    char* get_binary_bits(uint64_t n, int bits) {
+      static char buffer[80]; // 64 bits + 15 spaces + null terminator
+      if (bits <= 0 || bits > 64) {
+          return NULL;
+      }
+      int pos = 0;
+      for (int i = bits - 1; i >= 0; i--) {
+          buffer[pos++] = (n & (1ULL << i)) ? '1' : '0';
+          if (i % 4 == 0 && i != 0) {
+              buffer[pos++] = ' ';
+          }
+      }
+      buffer[pos] = '\0';
+      return buffer;
+    }
+  #endif //PC_BUILD
+
 
   int16_t refreshScreenCounter = 0;        //JM
 
-  void refreshScreen(uint8_t source) {
+  void refreshScreen(uint16_t source) {
                               #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 void *callstack[128];
                                 int frames = backtrace(callstack, 128);
                                 char **strs = backtrace_symbols(callstack, frames);
-                                printf("%30s%42s%s\n", "", "refreshScreen called from: ", strs[1]);
+                                printf("%30s%42s%s (%d)\n", "", "refreshScreen called from: ", strs[1], source);
                                 free(strs);
                               #endif // PC_BUILD
 
-    //Special test function to click every time refresh screen is called
-    #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
-      start_buzzer_freq(100000);
-      sys_delay(5);
-      stop_buzzer();
-    #endif // DMCP_BUILD && CLICK_REFRESHSCR
+                              #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
+                                powerMarkerMsF(3,10000);
+                              #endif // DMCP_BUILD && CLICK_REFRESHSCR
 
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
@@ -5100,6 +5272,7 @@ displayBaseMode(regist);
                              #if defined(PC_BUILD)
                                char ttt[500] = "";
                                char sss[500] = "";
+                               strcpy(sss,get_binary_bits(screenUpdatingMode,8));
                                convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
                                shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false, noBaseOverride);
                                stringToASCII(ttt,sss);
@@ -5117,7 +5290,7 @@ displayBaseMode(regist);
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
+                               printf("   refrsh(%5u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
                                   calcMode,
@@ -5154,6 +5327,7 @@ displayBaseMode(regist);
         clearScreen(9);
         flagBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_FONT_BROWSER:
@@ -5161,6 +5335,7 @@ displayBaseMode(regist);
         clearScreen(10);
         fontBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_REGISTER_BROWSER:
@@ -5168,6 +5343,7 @@ displayBaseMode(regist);
         clearScreen(11);
         registerBrowser(NOPARAM);
         refreshStatusBar();
+        force_refresh(force);
         break;
 
       case CM_PEM:
@@ -5196,7 +5372,7 @@ displayBaseMode(regist);
       case CM_ERROR_MESSAGE:
       case CM_TIMER:
 //printf("screenUpdatingMode1=%u\n",screenUpdatingMode);
-        if(doRefreshSoftMenu && !SHOWMODE) {
+        if((doRefreshSoftMenu && !SHOWMODE) || calcMode == CM_ASSIGN) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
 
@@ -5303,7 +5479,6 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
 
 
   screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
-
 }
 
 
