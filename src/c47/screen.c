@@ -1324,6 +1324,9 @@ return res;
      //noShow = false; //no need to redo
   }
 
+  void drawSinglePixelLine(int y) {
+    lcd_fill_rect(0, y, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+  }
 
 
   void showBottomLine(void) {
@@ -1342,8 +1345,7 @@ return res;
 
       int offs = (temporaryInformation == TI_SHOW_REGISTER_BIG ? - 2 : temporaryInformation == TI_SHOW_REGISTER_SMALL ? 0 : temporaryInformation == TI_SHOW_REGISTER_TINY ? 0 : 0);
 
-
-      lcd_fill_rect(0, yoff + offs, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE); //HERE SHOW LINE SMALL & TINY
+      drawSinglePixelLine(yoff + offs); //HERE SHOW LINE SMALL & TINY
 
       overrideShowBottomLine = 0;
     }
@@ -2471,7 +2473,7 @@ void createSubstrings(uint8_t number) {
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       if(doLine) {
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        drawSinglePixelLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
       }
     }
   }
@@ -2594,13 +2596,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_T);
        }
        if(displayStack == 3) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Z_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
        }
        else if(displayStack == 2) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
        }
        else if(displayStack == 1) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_X_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelLine(Y_POSITION_OF_REGISTER_X_LINE - 2);
        }
      }                                                                 //JM ^^
   }
@@ -2654,7 +2656,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     #endif // (DEBUG_PANEL == 1)
 
     if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window  //HERE SHOW LINE
-      lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      drawSinglePixelLine(Y_POSITION_OF_REGISTER_T_LINE-4);
     }
 
     if((calcMode != CM_BUG_ON_SCREEN) && !GRAPHMODE && (calcMode != CM_LISTXY)) {               //JM
@@ -3146,7 +3148,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               distModeActive = true;
             }
             if(distModeActive) {
-              lcd_fill_rect(0, ii - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+              drawSinglePixelLine(ii - 2);
               if(displayStack != origDisplayStack) {
 //                refreshScreen(81);                                //recurse into refreshScreen
               }
@@ -3920,7 +3922,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                  sprintf(prefix, "L.R. selected to %03" PRIu16, (uint16_t)((lrSelection) & 0x01FF));
                }
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-               //lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+               //drawSinglePixelLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
              }
            }
 
