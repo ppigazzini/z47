@@ -446,6 +446,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_PZOOMY:    result = calcMode == CM_PLOT_STAT ? PLOT_ZOOM : PLOT_ZMY;   break;
     case ITM_WSIZE:     result = shortIntegerWordSize;                              break; //  664
     case ITM_RNG:       result = exponentLimit;                                     break;
+    case ITM_BASENR:    result = dispBase;                                          break;
     case ITM_SETSIG2:   result = (significantDigits == 0 ? 34 : significantDigits); break;
     case ITM_SETFDIGS:  result = (fractionDigits == 0 ? 34 : fractionDigits);       break;
     case ITM_DSPCYCLE:  result = 32700 + displayFormat;                             break;
