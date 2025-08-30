@@ -194,7 +194,7 @@
 
           if(   (regist <  REGISTER_X && regist % 5 == 4)
             || (regist >= REGISTER_X && regist % 4 == 3)) {
-            lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+            drawSinglePixelLine(218 - 22 * row);
           }
 
           _showRegisterInRbr(regist, registerNameWidth);
@@ -215,7 +215,7 @@
             registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, true, true);
 
             if(regist % 5 == 1) {
-              lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+              drawSinglePixelLine(218 - 22 * row);
             }
 
             _showRegisterInRbr(regist, registerNameWidth);
@@ -242,7 +242,7 @@
           registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, true, true);
 
           if((regist % 5 == 1) || (regist == FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1)) {
-            lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+            drawSinglePixelLine(218 - 22 * row);
           }
 
           _showRegisterInRbr(regist, registerNameWidth);
@@ -262,7 +262,7 @@
             registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, true, true);
 
             if(regist % 5 == 1) {
-              lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+              drawSinglePixelLine(218 - 22 * row);
             }
 
             _showRegisterInRbr(regist, registerNameWidth);
