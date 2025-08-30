@@ -742,6 +742,14 @@ void fnSetSignificantDigits(uint16_t S) {
  }
 
 
+
+void fnSetBaseNr(uint16_t S) {
+   dispBase = S;
+   if(dispBase == 1) {
+     dispBase = 0;
+   }
+ }
+
 void fnGetFractionDigits(uint16_t unusedButMandatoryParameter) {
   longInteger_t sigDigits;
 
@@ -1293,6 +1301,7 @@ void resetOtherConfigurationStuff(void) {
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;
+  dispBase = 0;
 
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
     lastFunc    = 0;

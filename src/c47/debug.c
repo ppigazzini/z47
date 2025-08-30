@@ -1110,7 +1110,7 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtShortInteger) {
-      shortIntegerToDisplayString(regist, string + n, false);
+      shortIntegerToDisplayString(regist, string + n, false, noBaseOverride);
       strcat(string + n, STD_SPACE_3_PER_EM);
       strcat(string + n, getShortIntegerModeName(shortIntegerMode));
     }
