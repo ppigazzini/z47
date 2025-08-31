@@ -1127,6 +1127,8 @@ static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 }
 
 
+// Original e900193 fixes 2025-08 Pauli
+// When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 6147;
@@ -1146,6 +1148,8 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
 }
 
 
+// Original e900193 fixes 2025-08 Pauli
+// When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 12321;
@@ -1163,6 +1167,29 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
   doMod(x, y, res, realContext, 12321, (real_t *)&temp);
 #endif
 }
+
+
+void WP34S_Mod_JM(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  real2139_t small; // Fallback size
+  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+#else
+  real6147_t temp;
+  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+#endif
+}
+
+
+void WP34S_BigMod_JM(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  real2139_t small; // Fallback size
+  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+#else
+  real12321_t temp;
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+#endif
+}
+
 
 void mod2Pi(const real_t *x, real_t *res, realContext_t *realContext) {
   WP34S_BigMod(x, const6147_2pi, res, realContext);
