@@ -1218,10 +1218,10 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       break;
     }
     case amRadian: {
-      //incoming longInteger, converted via tempString to real1071, modulus 2pi into real1071, convert to real75
-      real1071_t reducedAngleTmp, reducedAngleTmp2;
+      //incoming longInteger, converted via tempString to real6147, modulus 2pi into real6147, convert to real75
+      real6147_t reducedAngleTmp, reducedAngleTmp2;
       realContext_t c = ctxtReal75;
-      c.digits = 1071;
+      c.digits = 6147;
       convertLongIntegerRegisterToLongInteger(regist, angle);
 
       if(longIntegerBase10Digits(angle) > 1000) {
@@ -1235,7 +1235,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 
       longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
       decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
-      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
+      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const6147_2pi, (real_t *)&reducedAngleTmp2, &c);
       realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
       longIntegerFree(angle);
       return;

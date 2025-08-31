@@ -76,7 +76,6 @@ void   fnStrInputLongint        (char inp1[]);              // CONVERT STRING to
 void   fnRCL                    (int16_t inp);              //DONE
 
 
-void   fnConstantR              (uint16_t constantAddr, uint16_t *constNr, real_t *rVal);
 bool_t checkForAndChange        (char *displayString, const real_t *valueReal, const real_t *valueRealAbs, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers);
 
 void fnDisplayFormatCycle       (uint16_t unusedButMandatoryParameter);

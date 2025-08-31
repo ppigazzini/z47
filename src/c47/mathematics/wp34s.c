@@ -56,7 +56,7 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
       angle45 = const_piOn4_75;
       angle90 = const_piOn2_75;
       angle180 = const_pi_75;
-      WP34S_Mod(&angle, const1071_2pi, &angle, realContext); // mod(angle, 2pi) --> angle
+      mod2Pi(&angle, &angle, realContext); // mod(angle, 2pi) --> angle
       break;
     }
 
@@ -1117,31 +1117,56 @@ void WP34S_ComplexLnGamma(const real_t *zinReal, const real_t *zinImag, real_t *
 }
 
 
-void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-  /* Declare a structure large enough to hold a really long number.
-   * This structure is likely to be larger than is required.
-   */
-  real1071_t out;
+static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext,
+                  unsigned int digits, real_t *out) {
   realContext_t c = *realContext;
 
-  c.digits = 1071;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+  c.digits = digits;
+  realDivideRemainder(x, y, out, &c);
+  realPlus(out, res, realContext);
+}
+
+
+void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  unsigned int digits = 6147;
+  const size_t blocks = TO_BLOCKS(sizeof(real6147_t));
+  void *tofree = allocC47Blocks(blocks);
+  real2139_t small; // Fallback size
+  real_t *out;
+
+  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  doMod(x, y, res, realContext, digits, out);
+  freeC47Blocks(out, blocks);
+#else
+  real6147_t temp;
+
+  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+#endif
 }
 
 
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-  /* Declare a structure large enough to hold a really long number.
-   * This structure is likely to be larger than is required.
-   */
-  real2139_t out;
-  realContext_t c = *realContext;
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  unsigned int digits = 12321;
+  const size_t blocks = TO_BLOCKS(sizeof(real12321_t));
+  void *tofree = allocC47Blocks(blocks);
+  real2139_t small; // Fallback size
+  real_t *out;
 
-  c.digits = 2139;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  doMod(x, y, res, realContext, digits, out);
+  freeC47Blocks(out, blocks);
+#else
+  real12321_t temp;
+
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+#endif
 }
 
+void mod2Pi(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_BigMod(x, const6147_2pi, res, realContext);
+}
 
 static void gser(const real_t *a, const real_t *x, const real_t *gln, real_t *res, realContext_t *realContext) {
   real_t ap, del, sum, t, u;
