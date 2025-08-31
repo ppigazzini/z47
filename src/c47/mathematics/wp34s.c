@@ -1129,7 +1129,7 @@ static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 
 // Original e900193 fixes 2025-08 Pauli
 // When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
-void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 6147;
   const size_t blocks = TO_BLOCKS(sizeof(real6147_t));
@@ -1150,7 +1150,7 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
 
 // Original e900193 fixes 2025-08 Pauli
 // When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
-void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 12321;
   const size_t blocks = TO_BLOCKS(sizeof(real12321_t));
@@ -1169,7 +1169,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 }
 
 
-void WP34S_Mod_JM(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   real2139_t small; // Fallback size
   doMod(x, y, res, realContext, 2139, (real_t *)&small);
@@ -1180,7 +1180,7 @@ void WP34S_Mod_JM(const real_t *x, const real_t *y, real_t *res, realContext_t *
 }
 
 
-void WP34S_BigMod_JM(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   real2139_t small; // Fallback size
   doMod(x, y, res, realContext, 2139, (real_t *)&small);
