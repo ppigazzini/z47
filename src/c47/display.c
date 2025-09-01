@@ -3660,7 +3660,7 @@ goBreak1:
       case dtComplex34Matrix:
         clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
         dispM(showRegis, tmpString + 2100);                   //then display the matrix
-        drawSinglePixelLine(Y_POSITION_OF_REGISTER_T_LINE-4);
+        drawSinglePixelFUllWidthLine(Y_POSITION_OF_REGISTER_T_LINE-4);
         temporaryInformation = TI_SHOWNOTHING;                //then tell the system it is in show nothing mode,
         if(programRunStop == PGM_RUNNING) {   //this needs to be checked - maybe needed for all show items not only here
           refreshScreen(150);
