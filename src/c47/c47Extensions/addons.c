@@ -580,17 +580,6 @@ typedef struct {
   }
 
 
-  #define inputAngleMode(r)           (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
-
-  #define deemedInputAngleMode(r)     (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
-
-  #define registerIsNoAngle(r)        ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
-
-  #define inputIsNoAngle(r)           (registerIsNoAngle(r) || (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2)))
-
-  #define inputAngleError(r)          (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2))
-
-
   static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
     if(!inputAngleError(registerNo)) {
       *angleMode = deemedInputAngleMode(registerNo);
@@ -658,6 +647,22 @@ typedef struct {
         return false;
     }
     return true;
+  }
+
+
+  bool_t registerFMAOutputString(calcRegister_t regist, char* prefix, char *displayString) {    // USING erro
+    angularMode_t angle;
+    real1071_t tmp1, tmp2;
+    realContext_t c = ctxtReal75;
+    c.digits = 1000;
+    c.round = DEC_ROUND_HALF_UP;
+    if(getCombinedParameter(1, regist, &tmp1, &tmp2, &angle, &c)) {   //use the angle of the 1st param only, if set
+      // realPlus((real_t *)&tmp1, (real_t *)&tmp1, &c);
+      strcpy(displayString, prefix);
+      realToSci((real_t *)&tmp1, displayString + stringByteLength(displayString));
+      return true;
+    }
+    return false;
   }
 
 

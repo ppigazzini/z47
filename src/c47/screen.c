@@ -2608,6 +2608,33 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
+  // Calculates a shortened real, using only reaal34
+  bool_t registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c) {
+    if(getRegisterDataType(regist) == dtShortInteger || getRegisterDataType(regist+1) == dtShortInteger || getRegisterDataType(regist+2) == dtShortInteger) {  //check for SI, because getRegisterAsRealQuiet will accept SI as leagl number.
+      return false;
+    }
+    if(!getRegisterAsRealQuiet(regist, tmp1)) {
+      return false;
+    }
+    if(getRegisterDataType(regist) == dtReal34) {
+      *angle = getRegisterAngularMode(regist);
+    } else {
+      *angle = amNone;
+    }
+    if(!getRegisterAsRealQuiet(regist+1, tmp2)) {
+      return false;
+    }
+    realMultiply(tmp1, tmp2, tmp1, c);
+
+    if(!getRegisterAsRealQuiet(regist+2, tmp2)) {
+      return false;
+    }
+    realAdd(tmp1, tmp2, tmp1, c);
+    realToReal34(tmp1, tmp3);
+    return true;
+  }
+
+
 
   #define RESTORE_T true
 
@@ -3044,7 +3071,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                             free(strs);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
-                                        #endif //PC_BUILD
+                                        #endif //PC_BUILD          
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -3065,6 +3092,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
+
 
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
@@ -4374,7 +4402,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1,
+              showString(prefix, &standardFont, 1, 
                 baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
@@ -4604,7 +4632,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             lineWidth = w;
             if(w > SCREEN_WIDTH - 1) {
               w = stringWidth(tmpString, &standardFont, false, true);
-              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
               showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
             } else {
               showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
@@ -4690,7 +4718,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   static void refreshRegisterLineRestoreT(void) {
-    _refreshRegisterLine(REGISTER_T, RESTORE_T);
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
   }
 
 
@@ -4839,7 +4867,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         refreshStatusBar();
       }
 
-
+      
       //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)

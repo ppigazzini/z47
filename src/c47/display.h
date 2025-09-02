@@ -36,6 +36,10 @@ void angle34ToDisplayString2           (const real34_t *angle34, uint8_t mode, c
 void _numerator                        (uint64_t numer, char *displayString, int16_t *endingZero);
 void _denominator                      (uint64_t denom, char *displayString, int16_t *endingZero);
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
+
+void realToSci(real_t* num, char* dispString);
+
+#define noBaseOverride 0
 void shortIntegerToDisplayString       (calcRegister_t regist, char *displayString, bool_t determineFont);
 #define toRemoveTrailingRadix true
 void longIntegerRegisterToRealDisplayString     (calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int32_t minimum, bool_t removeTrailingRadix);
