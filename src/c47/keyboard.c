@@ -2792,7 +2792,14 @@ RELEASE_END:
               }
             }
             else {
+              #if defined(DMCP_BUILD)
+                  wait_for_key_release(0);
+                  key_pop();
+              #endif //DMCP_BUILD
               addItemToBuffer(item);
+              #if defined(DMCP_BUILD)
+                  key_push(0);
+              #endif //DMCP_BUILD
               keyActionProcessed = true;
             }
             break;
