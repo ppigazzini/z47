@@ -4,6 +4,8 @@
 #if !defined(SCREEN_H)
 #define SCREEN_H
 
+  bool_t   registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c);
+
   void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
   void     FN_handler();                                                                                          //JM LONGPRESS

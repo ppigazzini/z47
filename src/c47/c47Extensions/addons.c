@@ -828,17 +828,6 @@ typedef struct {
   }
 
 
-  #define inputAngleMode(r)           (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
-
-  #define deemedInputAngleMode(r)     (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
-
-  #define registerIsNoAngle(r)        ((getRegisterDataType(r) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
-
-  #define inputIsNoAngle(r)           (registerIsNoAngle(r) || (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2)))
-
-  #define inputAngleError(r)          (!registerIsNoAngle(r+1) || !registerIsNoAngle(r+2))
-
-
   static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
     if(!inputAngleError(registerNo)) {
       *angleMode = deemedInputAngleMode(registerNo);
@@ -906,6 +895,22 @@ typedef struct {
         return false;
     }
     return true;
+  }
+
+
+  bool_t registerFMAOutputString(calcRegister_t regist, char* prefix, char *displayString) {    // USING erro
+    angularMode_t angle;
+    real1071_t tmp1, tmp2;
+    realContext_t c = ctxtReal75;
+    c.digits = 1000;
+    c.round = DEC_ROUND_HALF_UP;
+    if(getCombinedParameter(1, regist, &tmp1, &tmp2, &angle, &c)) {   //use the angle of the 1st param only, if set
+      // realPlus((real_t *)&tmp1, (real_t *)&tmp1, &c);
+      strcpy(displayString, prefix);
+      realToSci((real_t *)&tmp1, displayString + stringByteLength(displayString));
+      return true;
+    }
+    return false;
   }
 
 
@@ -1237,20 +1242,10 @@ typedef struct {
 
 
     //Step 0: Prep the stack
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
-      //If the input registers are XYZ then drop the stack input
-      if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
-        if(registerNo == REGISTER_Y) {
-          fnDropY(NOPARAM); //y
-        }
-        fnDropY(NOPARAM); //z
-        fnDropY(NOPARAM); //t
-      }
-    } else
-
-    if(functionType == FT_NILADIC && registerNo == REGISTER_X) {
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
+    if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
     }
 
 
@@ -1272,6 +1267,8 @@ typedef struct {
 
 
     //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realCopy(const_0, &tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
