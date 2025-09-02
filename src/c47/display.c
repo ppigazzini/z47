@@ -3129,8 +3129,8 @@ void realToSci(real_t* num, char* dispString) {
    }
     
     realToString(num, dispString + 1500);
-    if((dispString + 1500)[0] == '0' || ((dispString + 1500)[0] == '-' && (dispString + 1500)[1] == '0')) {
-      sprintf(dispString, "+0.0");
+    if(realIsZero(num)) {
+      sprintf(dispString, "0.0");
       return;
     }
     
