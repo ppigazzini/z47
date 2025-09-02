@@ -3120,11 +3120,11 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
 
 void realToSci(real_t* num, char* dispString) {
-    char *p, *e, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT, *prod = PRODUCT_SIGN;
-    int neg, exp, mi = 0, i = 1, d = 0;
-    int sepGroup = GROUPWIDTH_RIGHT;
+   char *p, *e, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT, *prod = PRODUCT_SIGN;
+   int neg, exp, mi = 0, i = 1, d = 0;
+   int sepGroup = GROUPWIDTH_RIGHT;
 
-   if(realGetExponent(num) > 672) { //tighten up the spacing if it get long
+   if(realGetExponent(num) > 672 || num->digits > 672 ) { //tighten up the spacing if it gets to a longer string
      sep = STD_SPACE_FIGURE;
    }
     
@@ -3137,7 +3137,8 @@ void realToSci(real_t* num, char* dispString) {
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
     e = strchr(dispString + 1500, 'E');
-    exp = e ? atoi(e + 1) : (strchr(p, '.') ? (int)(strchr(p, '.') - p) : (int)strlen(p) - 1);
+    
+    exp = e ? atoi(e + 1) : (strchr(p, '.') ? (int)(strchr(p, '.') - p) - 1 : (int)strlen(p) - 1);
     
     while(*p && (*p < '1' || *p > '9')) p++;
     
@@ -3165,11 +3166,8 @@ void realToSci(real_t* num, char* dispString) {
     if(mi > 0 && (dispString[mi-1] == radix[0] || (radix[1] != '\1' && dispString[mi-1] == radix[1]))) mi--;
     
     dispString[mi] = '\0';
-    sprintf(dispString + mi, "%s%s%s10^%d", sep, prod, sep, exp); //    sprintf(dispString + mi, " E%d", exp);
+    sprintf(dispString + mi, "%s%s%s10^%d", sep, prod, sep, exp);
 }
-
-
-//problem with E recognition
 
 
 
