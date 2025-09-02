@@ -994,20 +994,10 @@ typedef struct {
 
 
     //Step 0: Prep the stack
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
-      //If the input registers are XYZ then drop the stack input
-      if((registerNo == REGISTER_Y || registerNo == REGISTER_X) && lastErrorCode == 0) {
-        if(registerNo == REGISTER_Y) {
-          fnDropY(NOPARAM); //y
-        }
-        fnDropY(NOPARAM); //z
-        fnDropY(NOPARAM); //t
-      }
-    } else
-
-    if(functionType == FT_NILADIC && registerNo == REGISTER_X) {
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
+    if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
     }
 
 
@@ -1029,6 +1019,8 @@ typedef struct {
 
 
     //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realCopy(const_0, &tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
