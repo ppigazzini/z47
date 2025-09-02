@@ -3224,7 +3224,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
               showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
             }
-            drawSinglePixelLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
+            drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
             fnDisplayStack(3);
           }
         }
