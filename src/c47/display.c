@@ -3092,7 +3092,18 @@ void realToSci(real_t* num, char* dispString) {
     p = (dispString + 1500) + neg;
     e = strchr(dispString + 1500, 'E');
     
-    exp = e ? atoi(e + 1) : (strchr(p, '.') ? (int)(strchr(p, '.') - p) - 1 : (int)strlen(p) - 1);
+    if(e) {
+        exp = atoi(e + 1);
+    } else if(p[0] == '0' && p[1] == '.') {
+        // Special case for 0.xxxx numbers
+        char *firstSig = p + 2;
+        while(*firstSig == '0') firstSig++;  // Skip leading zeros after decimal
+        exp = -(int)(firstSig - p - 1);      // Negative exponent
+    } else {
+        // Original logic for other cases
+        char *dot = strchr(p, '.');
+        exp = dot ? (int)(dot - p) - 1 : (int)strlen(p) - 1;
+    }
     
     while(*p && (*p < '1' || *p > '9')) p++;
     
