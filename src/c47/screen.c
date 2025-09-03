@@ -985,7 +985,7 @@ return res;
     data = (int8_t *)glyph->data;
     uint32_t y0 = y;                                                   //JMmini 0-reference
     xGlyph      = showLeadingCols ? glyph->colsBeforeGlyph : 0;
-    endingCols  = showEndingCols ? (charCode > 0xFF ? min(1, glyph->colsAfterGlyph) : glyph->colsAfterGlyph) : 0;
+    endingCols  = showEndingCols ? glyph->colsAfterGlyph : 0;
 
     bool_t numDouble = font == &numericFont && checkHP && temporaryInformation == TI_NO_INFO; //&& charCodeFromString(STD_MODE_G, 0)!=charCode && charCodeFromString(STD_MODE_G, 0)!=charCode; //this also triggers the vertical doubling
     uint16_t doubling = numDouble ? DOUBLING : DOUBLINGBASEX;      //this is the horizontal factor, 8 is normal, so 16 is double
