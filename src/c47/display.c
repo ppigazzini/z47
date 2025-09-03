@@ -2957,16 +2957,24 @@ static void dispM(uint16_t regist, char * prefix) {
 
 #undef MONITOR_SHOW
 
-static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t Width_0, int16_t numberOfLines, int16_t *startingLine) {
+static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t numberOfLines, int16_t *startingLine) {
 #define checktmpStringSep(SEP, a) (!((SEP[1] != 1 && tmpString[a-2] == SEP[0] && tmpString[a-1] == SEP[1]) || (SEP[1] == 1 && tmpString[a-1] == SEP[0])))
-  #if defined(MONITOR_SHOW)
-    printf("000: source=%d %d %d [%d] %d %d\n", *source, errorMessage[*source-2], errorMessage[*source-1], errorMessage[*source], errorMessage[*source+1], errorMessage[*source+2]);
-  #endif //MONITOR_SHOW
-  char SEP[3];
-  SEP[0] = SEPARATOR_LEFT[0];
-  SEP[1] = SEPARATOR_LEFT[1];
+  char *SEP = SEPARATOR_LEFT;
   int8_t GRPWID = GROUPWIDTH_LEFT;
   bool_t GRP_DISABLED = GROUPLEFT_DISABLED;
+
+  if(strchr(errorMessage, '.') || strstr(errorMessage,RADIX34_MARK_STRING)) {
+    //in XFN decimal mode, a decimal point changes the seps to the right hand style
+    SEP = SEPARATOR_RIGHT;
+    GRPWID = GROUPWIDTH_RIGHT;
+    GRP_DISABLED = GROUPRIGHT_DISABLED;
+  }
+  int16_t Width_0 = stringWidth(SEP, fontToUse, true, true);
+  #if defined(MONITOR_SHOW)
+    printf("000: source=%d %d %d [%d] %d %d\n", *source, errorMessage[*source-2], errorMessage[*source-1], errorMessage[*source], errorMessage[*source+1], errorMessage[*source+2]);
+    printf("Width_0 = %d\n",Width_0);
+  #endif //MONITOR_SHOW
+
   int16_t d;
   *dest = 0;
   int16_t sourceReturn = 0;
@@ -2977,35 +2985,45 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     int16_t dCounter = d - (*startingLine)*SHOWLineSize;
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
-    while((*source < *last) &&
-          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
-          (*dest < TMP_STR_LENGTH - 6)
-         ) {
 
-      if(errorMessage[*source] == '.' || (errorMessage[*source] == RADIX34_MARK_STRING[0] && errorMessage[*source+1] == RADIX34_MARK_STRING[1]) ) { //in XFN decimal mode, a decimal point changes the seps to the right hand style
-        SEP[0] = SEPARATOR_RIGHT[0];
-        SEP[1] = SEPARATOR_RIGHT[1];
-        GRPWID = GROUPWIDTH_RIGHT;
-        GRP_DISABLED = GROUPRIGHT_DISABLED;
-      }
 
-      #if defined(MONITOR_SHOW)
-        printf("02--->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i??maxwid=%i <<:%u ",d,*startingLine,*last,*source,*dest,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)), (int16_t)(maxWidth),*dest < TMP_STR_LENGTH - 6);
-      #endif
+    while((*source < *last) && (*dest < TMP_STR_LENGTH - 6)) {
+      // Add the character(s)
       tmpString[*dest] = errorMessage[*source];
-      #if defined(MONITOR_SHOW)
-        printf("03    ==>%c (%u)",((tmpString + (*dest))[0]), (uint8_t)((tmpString + (*dest))[0]));
-        if(((uint8_t)((tmpString + (*dest))[0]) & 0x80) == 0) {printf("\n");}
-      #endif
+      int bytesToAdd = 1;
+      
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
+        bytesToAdd = 2;
         #if defined(MONITOR_SHOW)
           printf("(%u)\n",(uint8_t)((tmpString + (*dest))[0]));
         #endif
       }
       tmpString[++*dest] = 0;
       (*source)++;
+      
+      // Check width validity
+      int16_t currentWidth = stringWidth(tmpString + dCounter, fontToUse, true, true);
+      int16_t allowedWidth = maxWidth - (dCounter == 0 ? 0 : Width_0);
+      
+      if(currentWidth >= allowedWidth) {
+        // Width exceeded - remove added character(s) and break
+        *dest -= bytesToAdd;
+        *source -= bytesToAdd;
+        tmpString[*dest] = 0;
+        break;
+      }      
+      // Width is valid    
+
+      #if defined(MONITOR_SHOW)
+        printf("dCounter = %d, Width_0 =%d, %s : Width=%d <> %d\n", dCounter, Width_0, tmpString + dCounter, currentWidth, allowedWidth);
+        printf("02--->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i??maxwid=%i <<:%u ",d,*startingLine,*last,*source,*dest,currentWidth, allowedWidth, *dest < TMP_STR_LENGTH - 6);
+        printf("03    ==>%c (%u)",((tmpString + (*dest-1))[0]), (uint8_t)((tmpString + (*dest-1))[0]));
+        if(((uint8_t)((tmpString + (*dest-1))[0]) & 0x80) == 0) {printf("\n");}
+      #endif
     }
+
+
     #if defined(MONITOR_SHOW)
       printf("  --->d=%i wid=%i\n",d,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)));
     #endif
@@ -3078,7 +3096,7 @@ void realToSci(real_t* num, char* dispString) {
     
     while(*p && (*p < '1' || *p > '9')) p++;
     
-    dispString[mi++] = neg ? '-' : '+';
+    dispString[mi++] = neg ? '-' : ' ';
     dispString[mi++] = *p++;
     if(*p == '.') p++;
     dispString[mi++] = radix[0];
@@ -3136,15 +3154,12 @@ void fnC47Show(uint16_t fnShow_param) {
                showSoftmenu(-MNU_SHOW); //continue, don't use 'break'
                source = 0;
                showRegis = REGISTER_X;
-               if(isXFNShowing(REGISTER_X)) {
-                 showRegis = REGISTER_Y;
-               }
                startingLine = 0;
                IntShowMode = SHOWAUTO;
                break;
 
       case ITM_RS: //change page on SHOW LI, if in StandardFont
-               if(getRegisterDataType(showRegis) == dtLongInteger) {
+               if(getRegisterDataType(showRegis) == dtLongInteger || isXFNShowing(showRegis)) {
                  if(IntShowMode == SHOWTNY) {
                    startingLine = 0;
                    source = 0;
@@ -3238,7 +3253,40 @@ void fnC47Show(uint16_t fnShow_param) {
     #endif // !TESTSUITE_BUILD
 
     SHOW_reset();
-    switch(getRegisterDataType(showRegis)) {
+
+
+
+
+    #define dtXFN 100
+    int selection = getRegisterDataType(showRegis);
+
+    if(isXFNShowing(showRegis)) {
+      switch(showRegis) {
+        case 90:
+        case 93:
+        case 96:
+        case REGISTER_X:
+        case REGISTER_T: 
+          selection = dtXFN;
+          break;
+        default:;
+      }
+    }
+
+
+
+    switch(selection) {
+      case dtXFN : {
+          //XFN Format is real, constructed into a string, into the LI display function
+          strcpy(errorMessage,tmpString + 2100);
+          if(registerFMAOutputString(showRegis, showRegis == REGISTER_X ? "XY+Z = " :
+                                                showRegis == REGISTER_T ? "TA+B = " :
+                                                                          "FMA: ", errorMessage + stringByteLength(errorMessage))) { //purposely ignoring the +2100 text
+            goto XFNentryPoint;
+          }
+          break;
+        }
+
       case dtLongInteger:
 
         #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
@@ -3246,11 +3294,8 @@ void fnC47Show(uint16_t fnShow_param) {
         #endif // VERBOSE_SCREEN && PC_BUILD
 
         strcpy(errorMessage,tmpString + 2100);
-
-        if(showRegis > 0 && isXFNShowing(showRegis-1) && registerFMAOutputString(showRegis-1,"XY+Z = ", errorMessage + stringByteLength(errorMessage))) { //purposely ignoring the +2100 text
-        } else {
-          longIntegerRegisterToDisplayString(showRegis, errorMessage + stringByteLength(tmpString + 2100), WRITE_BUFFER_LEN, 25*SCREEN_WIDTH, /*10*50-3*/ 1010, false);  //JM added last parameter: AglyphNumberow LARGELI
-        }
+        longIntegerRegisterToDisplayString(showRegis, errorMessage + stringByteLength(tmpString + 2100), WRITE_BUFFER_LEN, 25*SCREEN_WIDTH, /*10*50-3*/ 1010, false);  //JM added last parameter: AglyphNumberow LARGELI
+XFNentryPoint:
 
         last = stringByteLength(errorMessage);
         int16_t glyphNumber = stringGlyphLength(errorMessage);
@@ -3265,7 +3310,7 @@ void fnC47Show(uint16_t fnShow_param) {
             startingLine = 0;
             int16_t sourcemem = source;
             int16_t destmem = dest;
-            prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &numericFont, true, true), numberOfLines, &startingLine);
+            prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH, numberOfLines, &startingLine);
             //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
             if(tmpString[numberOfLines*SHOWLineSize] == 0) {
               break;
@@ -3285,7 +3330,7 @@ void fnC47Show(uint16_t fnShow_param) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &standardFont, true, true), numberOfLines, &startingLine);
+          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH, numberOfLines, &startingLine);
           if(tmpString[0] != 0) {
             goto goBreak1; //break if first line first character is non-terminator and display
           }
@@ -3304,7 +3349,7 @@ void fnC47Show(uint16_t fnShow_param) {
           temporaryInformation = TI_SHOW_REGISTER_TINY;
           numberOfLines = min(21,SHOWLineMax);
           startingLine = 0;
-          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &tinyFont, true, true), numberOfLines, &startingLine);
+          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH, numberOfLines, &startingLine);
 
 goBreak1:
 
