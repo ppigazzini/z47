@@ -21,6 +21,8 @@ void fnXXfn_sin     (uint16_t registerNo);
 void fnXXfn_cos     (uint16_t registerNo);
 void fnXXfn_tan     (uint16_t registerNo);
 void fnXXfn_pi      (uint16_t registerNo);
+void fnXXfn_swap    (uint16_t registerNo);
+void fnXXfn_drop    (uint16_t registerNo);
 void fnXXfn_atan2   (uint16_t registerNo);
 void fnXXfn_arcsin  (uint16_t registerNo);
 void fnXXfn_arccos  (uint16_t registerNo);

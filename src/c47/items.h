@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468
+#define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2619,6 +2619,7 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
+
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
@@ -2629,12 +2630,11 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-
-#define ITM_2553                    2553
+#define ITM_SWAP_XFN                2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
 
-#define ITM_2556                    2556
+#define ITM_DROP_XFN                2556
 #define MNU_XXFCNS                  2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
