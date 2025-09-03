@@ -1031,7 +1031,7 @@ typedef struct {
   }
 
   void addItemToNimBuffer(int16_t item) {
-    //printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
+    printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;

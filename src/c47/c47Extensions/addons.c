@@ -276,6 +276,13 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
     }
   }
 }
+
+//angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, nimBufferDisplay + kk, 39, true, false, FULLIRFRAC);
+static void _angle34ToNim(const real34_t *angle34, uint8_t mode, char *nimInput, char *nimDisplay) {
+// nimInput   : used to fill aimBuffer
+// nimDisplay : used to fill nimBufferDisplay
+
+}
 #endif // !TESTSUITE_BUILD
 
 
@@ -420,6 +427,102 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               break;
             }
 
+            case dtComplex34: {
+              uint16_t i, j;
+              uint16_t tagAngle;
+              bool_t tagPolar;
+              uint16_t imaginaryDisplayStart;
+              int16_t realExponentSignLocation;
+              real34_t real34, imag34;
+              real_t real, imagIc;
+
+              memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
+              memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
+
+              tagPolar = getComplexRegisterPolarMode(REGISTER_X) == amPolar;
+              tagAngle = getComplexRegisterAngularMode(REGISTER_X);
+              if(tagPolar) {  // polar mode
+                temporaryFlagPolar = true;
+                real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &real);
+                real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &imagIc);
+
+                decContext c = ctxtReal39;
+                int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
+                c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
+                realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+                c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
+                convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
+
+                realToReal34(&real, &real34);
+                realToReal34(&imagIc, &imag34);
+              }
+              else { // rectangular mode
+                real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &real34);
+                real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), &imag34);
+              }
+
+              _real34ToNim(&real34, aimBuffer, nimBufferDisplay);
+              realExponentSignLocation = exponentSignLocation;
+              imaginaryMantissaSignLocation = strlen(aimBuffer);
+
+              if(strncmp(nimBufferDisplay + stringByteLength(nimBufferDisplay) - 2, STD_SPACE_HAIR, 2) != 0) {
+                strcat(nimBufferDisplay, STD_SPACE_HAIR);
+              }
+              if(real34IsPositive(&imag34)) {
+                strcat(aimBuffer, "+");
+                strcat(nimBufferDisplay, "+");
+              }
+              else {
+                strcat(aimBuffer, "-");
+                strcat(nimBufferDisplay, "-");
+              }
+              
+              if(tagPolar) { // polar mode
+                strcat(nimBufferDisplay, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
+                uint16_t kk = stringByteLength(nimBufferDisplay);
+                angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, nimBufferDisplay + kk, 39, true, false, FULLIRFRAC);
+                if(strncmp(nimBufferDisplay + kk, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
+                  nimBufferDisplay[kk] = STD_NOCHAR;    //0x01 is the new 'no char' character
+                  nimBufferDisplay[kk+1] = STD_NOCHAR;  //0x01 is the new 'no char' character
+                }
+              }
+              else { // rectangular mode
+                strcat(nimBufferDisplay, COMPLEX_UNIT);
+                strcat(nimBufferDisplay, PRODUCT_SIGN);
+                imaginaryDisplayStart = strlen(nimBufferDisplay);
+                _real34ToNim(&imag34, aimBuffer + strlen(aimBuffer), nimBufferDisplay + strlen(nimBufferDisplay));
+                aimBuffer[imaginaryMantissaSignLocation + 1] = 'i';
+
+                // Remove SPACE HAIR and - sign in front of the imaginary part
+                j = (nimBufferDisplay[imaginaryDisplayStart + 2] == '-' ? 3 : 2);
+                for(i = imaginaryDisplayStart; i < strlen(nimBufferDisplay); i++) {
+                  nimBufferDisplay[i] = nimBufferDisplay[i+j];
+                }
+
+                nimNumberPart = NP_COMPLEX_FLOAT_PART;
+                for(i = imaginaryMantissaSignLocation; i < strlen(aimBuffer); i++) {
+                  if(aimBuffer[i] == 'e') {
+                    imaginaryExponentSignLocation = i + 1;
+                    nimNumberPart = NP_COMPLEX_EXPONENT;
+                  }
+                }
+              }
+              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+
+              exponentSignLocation = realExponentSignLocation;
+              calcMode = CM_NIM;
+              clearSystemFlag(FLAG_ALPHA);
+              freeRegisterData(REGISTER_X);
+              setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+              //real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+              hexDigits = 0;
+              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              xCursor = 1;
+              cursorEnabled = true;
+              cursorFont = &numericFont;
+              break;
+            }
+
             case dtTime: {
               _hmsTimeToReal();
               setRegisterDataType(REGISTER_X, dtTime, amNone);  // Force time data type to preserve it when closing NIM
@@ -490,8 +593,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-
-              printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              //printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
