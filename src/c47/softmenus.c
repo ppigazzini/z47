@@ -358,7 +358,7 @@ TO_QSPI const int16_t menu_XXFCNS[]=       { ITM_DEG2_XFN,                  ITM_
 
                                              ITM_LN_XFN,                    ITM_LOG_XFN,                ITM_EXP_XFN,              ITM_10X_XFN,           ITM_POWER_XFN,               ITM_SQRT_XFN,
                                              ITM_EE_STO_Z,                  ITM_EE_RCL_Z,               ITM_EE_STO_V,             ITM_EE_RCL_V,          ITM_EE_STO_I,                ITM_EE_RCL_I,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_MOD_XFN,              ITM_MODANG_XFN,        ITM_NULL,                    ITM_atan2_XFN                 };
+                                             ITM_SWAP_XFN,                  ITM_DROP_XFN,               ITM_MOD_XFN,              ITM_MODANG_XFN,        ITM_NULL,                    ITM_atan2_XFN                 };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */

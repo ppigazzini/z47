@@ -517,6 +517,8 @@ typedef struct {
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
       {"",    ITM_pi_XFN      ,FT_NILADIC },
+      {"",    ITM_DROP_XFN    ,FT_NILADIC },
+      {"",    ITM_SWAP_XFN    ,FT_NILADIC },
       {"",    ITM_DEG2_XFN    ,FT_MONADIC },
       {"",    ITM_RAD2_XFN    ,FT_MONADIC },
       {"",    ITM_sin_XFN     ,FT_MONADIC },
@@ -665,6 +667,18 @@ typedef struct {
     return false;
   }
 
+  void fnDrop3(void) {
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
+    reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_T));
+    reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_A));
+    reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_B));
+  }
+
 
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
   static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
@@ -717,6 +731,12 @@ typedef struct {
   }
   void fnXXfn_pi                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_pi_XFN);
+  }
+  void fnXXfn_swap                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_SWAP_XFN);
+  }
+  void fnXXfn_drop                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_DROP_XFN);
   }
   void fnXXfn_atan2               (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_atan2_XFN);
@@ -839,6 +859,16 @@ typedef struct {
           realCopy(const1071_pi, (real_t *)&paramX);
 //          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
           break;
+        }
+        case ITM_SWAP_XFN: {
+          fnSwapX(REGISTER_T);
+          fnSwapY(REGISTER_A);
+          fnSwapZ(REGISTER_B);
+          return;
+        }
+        case ITM_DROP_XFN: {
+          fnDrop3();
+          return;
         }
 
   //--------//MONADIC FUNCTIONS
@@ -995,9 +1025,7 @@ typedef struct {
 
     //Step 0: Prep the stack
     if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
-        fnDrop(NOPARAM);
-        fnDrop(NOPARAM);
-        fnDrop(NOPARAM);
+        fnDrop3();
     }
 
 
