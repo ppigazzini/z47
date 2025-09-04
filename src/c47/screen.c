@@ -1771,10 +1771,10 @@ return res;
     clearRegisterLine(rowReg, true, true);
 
     if(reg == RESERVED_VARIABLE_UEST) {
-      sprintf(prefix, "Upper estimate =");
+      sprintf(prefix, "Upper =");
       strcpy(regS,name);
     } else if (reg == RESERVED_VARIABLE_LEST) {
-      sprintf(prefix, "Lower estimate =");
+      sprintf(prefix, "Lower =");
       strcpy(regS,name);
     } else {
         strcpy(regS, "Reg_");
@@ -3060,15 +3060,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
         // STATISTICAL DISTR & SOLVER
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && 
+            ( (PROBMENU) || 
+              (currentMenu() == -MNU_Solver_TOOL && solverEstimatesUsed && temporaryInformation != TI_SOLVER_VARIABLE_RESULT)
+            )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
 
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
-              r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
-              r_j = indexOfItems[VAR_UEST].itemCatalogName; register_j = RESERVED_VARIABLE_UEST;
+              r_i = indexOfItems[VAR_UEST].itemCatalogName; register_i = RESERVED_VARIABLE_UEST;
+              r_j = indexOfItems[VAR_LEST].itemCatalogName; register_j = RESERVED_VARIABLE_LEST;
               break;
             case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;

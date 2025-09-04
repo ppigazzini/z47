@@ -543,6 +543,7 @@
 // stroke programs code and in C programs
 // unlike registers
 #define NUMBER_OF_GLOBAL_FLAGS                   112
+#define LAST_GLOBAL_FLAG                         111
 #define FIRST_LOCAL_FLAG                         112 // There are 112 global flag from 0 to 111
 #define NUMBER_OF_LOCAL_FLAGS                     32
 #define LAST_LOCAL_FLAG                          143
@@ -817,6 +818,12 @@ typedef enum {
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
 
+// Local labels
+#define FIRST_LOCAL_LABEL        0                             //   0 - 99 and A to L
+#define FIRST_UC_LOCAL_LABEL   100                             //   A (first upper case local label
+#define LAST_UC_LOCAL_LABEL    111                             //   L (last  upper case local label
+#define FIRST_LC_LOCAL_LABEL   112                             //   a (first lower case local label
+#define LAST_LOCAL_LABEL       123                             //   0 - 99, A to L and a to l
 
 //Variable names
 #define VAR_NO_X        0
