@@ -77,11 +77,14 @@ TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BAS
     for(int i=0; i<numberOfLabels; i++) {
       printf("%3d%8d%6d ", i, labelList[i].program, labelList[i].step);
       if(labelList[i].step < 0) { // Local label
-        if(*(labelList[i].labelPointer) < 100) {
+        if(*(labelList[i].labelPointer) <= 99) { // Local label from 00 to 99
           printf("%02d\n", *(labelList[i].labelPointer));
         }
-        else if(*(labelList[i].labelPointer) < 105) {
+        else if(*(labelList[i].labelPointer) <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
           printf("%c\n", *(labelList[i].labelPointer) - 100 + 'A');
+        }
+        else if(*(labelList[i].labelPointer) <= LAST_LOCAL_LABEL) { // Local label from a to l
+          printf("%c\n", *(labelList[i].labelPointer) - FIRST_LC_LOCAL_LABEL + 'a');
         }
       }
       else { // Global label
@@ -148,8 +151,11 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam <= 99) { // Local label from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= 104) { // Local label from A to E
+      else if(opParam <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
+      }
+      else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));;
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -169,8 +175,11 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam <= 99) { // Local label from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= 104) { // Local label from A to E
+      else if(opParam <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
+      }
+      else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -591,7 +600,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
           case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
           case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
           default: break;
-        }      
+        }
       break;
     }
 
