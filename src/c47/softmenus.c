@@ -661,7 +661,9 @@ TO_QSPI const int16_t menu_TamRcl[]      = { ITM_INDIRECTION,               -MNU
 
 TO_QSPI const int16_t menu_TamShuffle[]  = { ITM_NULL,                      ITM_NULL,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
 
-TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU_PROG,                  ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
+TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU_PROG,                  ITM_REG_C,                ITM_REG_D,             ITM_REG_E,                   ITM_REG_F,
+                                             ITM_a,                         ITM_b,                      ITM_c,                    ITM_d,                 ITM_e,                       ITM_f,
+                                             ITM_g,                         ITM_h,                      ITM_i,                    ITM_j,                 ITM_k,                       ITM_l                         };
 
 TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU_MENU,                  ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 
@@ -2452,6 +2454,21 @@ void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
 }
 
 
+void setScreenUpdateFromMenu(int16_t id) {
+  switch(id) {
+    case -MNU_EQN :
+    case -MNU_DISTR :
+    case -MNU_EQ_EDIT :
+    case -MNU_Solver_TOOL : {
+      screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+      break;
+    }
+    default:;
+  }
+}
+
+
 bool_t BASE_OVERRIDEONCE = false;
 
 void showSoftmenuCurrentPart(void) {
@@ -2476,10 +2493,7 @@ void showSoftmenuCurrentPart(void) {
   #endif // PC_BUILD
 
   screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-  if(softmenu[m].menuItem == -MNU_DISTR) {
-    screenUpdatingMode = SCRUPD_AUTO;
-    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
-  }
+  setScreenUpdateFromMenu(softmenu[m].menuItem);
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
     clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
@@ -3212,6 +3226,7 @@ void showSoftmenuCurrentPart(void) {
     #endif // !INLINE_TEST
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+    setScreenUpdateFromMenu(id);
 
 
     //* *** List of exceptions, fixed menu call finds and opens the equivalent underlying dynamic menu (P.fN and HOME are now user populated, in the user menu space)

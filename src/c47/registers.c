@@ -1576,7 +1576,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       break;
     }
     case INDPM_LABEL: {
-      maxValue = 104;
+      maxValue = LAST_LOCAL_LABEL;
       break;
     }
   }

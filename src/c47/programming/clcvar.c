@@ -108,7 +108,7 @@
       }
 
       case PARAM_LABEL: {
-        if(opParam <= 104) { // Local label from 00 to 99 or from A to E
+        if(opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
           // nothing to do
         }
         else if(opParam == STRING_LABEL_VARIABLE) {
