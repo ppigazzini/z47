@@ -2445,6 +2445,21 @@ void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
 }
 
 
+void setScreenUpdateFromMenu(int16_t id) {
+  switch(id) {
+    case -MNU_EQN :
+    case -MNU_DISTR :
+    case -MNU_EQ_EDIT :
+    case -MNU_Solver_TOOL : {
+      screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+      break;
+    }
+    default:;
+  }
+}
+
+
 bool_t BASE_OVERRIDEONCE = false;
 
 void showSoftmenuCurrentPart(void) {
@@ -2469,10 +2484,7 @@ void showSoftmenuCurrentPart(void) {
   #endif // PC_BUILD
 
   screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-  if(softmenu[m].menuItem == -MNU_DISTR) {
-    screenUpdatingMode = SCRUPD_AUTO;
-    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
-  }
+  setScreenUpdateFromMenu(softmenu[m].menuItem);
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
     clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
@@ -3205,6 +3217,7 @@ void showSoftmenuCurrentPart(void) {
     #endif // !INLINE_TEST
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+    setScreenUpdateFromMenu(id);
 
 
     //* *** List of exceptions, fixed menu call finds and opens the equivalent underlying dynamic menu (P.fN and HOME are now user populated, in the user menu space)
