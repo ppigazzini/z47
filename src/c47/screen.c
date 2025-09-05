@@ -2562,7 +2562,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          }
 
        }
-       else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+       else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !solverEstimatesUsed) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
            longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase); // base 1 is BCD, #10
