@@ -38,6 +38,7 @@ void _denominator                      (uint64_t denom, char *displayString, int
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
 
 void realToSci(real_t* num, char* dispString);
+
 #define noBaseOverride 0
 void shortIntegerToDisplayString       (calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride);
 #define toRemoveTrailingRadix true
