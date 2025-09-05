@@ -1634,7 +1634,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     if(sign == 1 || val > 180) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if defined(PC_BUILD)
-        shortIntegerToDisplayString(regist, errorMessage, false);
+        shortIntegerToDisplayString(regist, errorMessage, false, noBaseOverride);
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD

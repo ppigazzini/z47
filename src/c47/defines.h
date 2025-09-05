@@ -1876,8 +1876,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define dispBase 0 //temporary, until dBASE is merged
-
 #define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= PROBMENUSTART && -softmenu[softmenuStack[0].softmenuId].menuItem <= PROBMENUEND)
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
@@ -1893,7 +1891,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               displayStackSHOIDISP != 0 && \
                                               ( \
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtShortInteger) || \
-                                                (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger) ) \
+                                                (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
+                                                (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
 #define inputAngleMode(r)                    (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 #define deemedInputAngleMode(r)              (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
