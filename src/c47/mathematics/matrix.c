@@ -4226,27 +4226,37 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     real_t tol, maxM, minM, tmpM;
     if(reducedSignificantDigits) {
       if(significantDigits == 0 || significantDigits >= 34) {
-        realCopy(const_1e_37, &tol);
+        //realCopy(const_1e_37, &tol);
+        stringToReal("1E-14", &tol, realContext);
+
       }
       else {
-        realCopy(const_1, &tol);
-        tol.exponent -= (significantDigits + 3);
+        //realCopy(const_1, &tol);
+        //tol.exponent -= (significantDigits + 3);
+        char tmp[30];
+        printf(tmp, "1E-%s", significantDigits + 3);
+        stringToReal(tmp, &tol, realContext);
       }
     }
     else {
-      realCopy(const_1e_37, &tol);
+      //realCopy(const_1e_37, &tol);
+        stringToReal("1E-24", &tol, realContext);  //tested on -16
     }
+
+    real_t diff_max;
+    realZero(&diff_max);
 
     while(iteration++ < maxEigenIter) {
 
-      #if defined(EIGENDEBUG)
-        printRealToConsole(&tol,"\nTol:",": ");
-        printf("\n---iteration %d ",iteration++);
-      #endif //EIGENDEBUG
-
       if(checkHalfSec()) {
-        char ss[30];
-        sprintf(ss,"Tol: 1E%d Iter: ", realGetExponent(&tol));
+        char ss[30], tt[30];
+        real_t rr;
+        realContext_t c;
+        c = ctxtReal4;
+        c.digits = 3;
+        realPlus(&diff_max,&rr,&c);
+        realToString(&rr,tt);
+        sprintf(ss,"Tol: %s/1E%d Iter: ", tt, realGetExponent(&tol));
         if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         }
       }
@@ -4279,6 +4289,12 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           char realStr[32], imagStr[32];
           const int colWidth = 24;
           int i, j;
+
+          #if defined(EIGENDEBUG)
+            printf("\n---iteration %5d ",iteration++);
+            printRealToConsole(&tol,"\nTol:",": ");
+          #endif //EIGENDEBUG
+
 
           // Print Q matrix
           printf("\nQ matrix:\n");
@@ -4320,46 +4336,24 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
 
       converged = true;
+      realCopy(const_10000,&diff_max);
       for(i = 0; i < size; i++) {
-        #if defined(EIGENDEBUG)
-          printf("\nC%1d",i);
-        #endif //EIGENDEBUG
-        if(realIsNaN(eig + i * 2) || realIsNaN(eig + i * 2 + 1)) {
-          for(j = 0; j < size * size * 2; j++) {
-            realCopy(a + j, eig + j);
-          }
-          converged = true;
-          break;
-        }
-        else if(!WP34S_RelativeError(a + (i * size + i) * 2, eig + (i * size + i) * 2, &tol, realContext) || !WP34S_RelativeError(a + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1, &tol, realContext)) {
+        real_t old_diag_re, old_diag_im;
+        // Store previous diagonal values before updating
+        realCopy(a + (i * size + i) * 2, &old_diag_re);
+        realCopy(a + (i * size + i) * 2 + 1, &old_diag_im);
+        
+        real_t diff_real, diff_imag, diff_mag;
+        realSubtract(&old_diag_re, eig + (i * size + i) * 2, &diff_real, realContext);
+        realSubtract(&old_diag_im, eig + (i * size + i) * 2 + 1, &diff_imag, realContext);
+        complexMagnitude(&diff_real, &diff_imag, &diff_mag, realContext);
+        
+        if(!realCompareLessThan(&diff_mag, &tol)) {
           converged = false;
-          #if defined(EIGENDEBUG)
-              printf(" not converged ");
-              real_t tmp;
-              for(int k = 0; k < 1; k++) { // just to scope tmp, optional
-                  // real part of a
-                  realPlus(a + (i * size + i) * 2, &tmp, &ctxtReal4);
-                  realToString(&tmp, tmpString);
-                  printf("%*s ", 15, tmpString);  // 15-char field
-
-                  // imaginary part of a
-                  realPlus(a + (i * size + i) * 2 + 1, &tmp, &ctxtReal4);
-                  realToString(&tmp, tmpString);
-                  printf("%*s ", 15, tmpString);
-
-                  // real part of eig
-                  realPlus(eig + (i * size + i) * 2, &tmp, &ctxtReal4);
-                  realToString(&tmp, tmpString);
-                  printf("%*s ", 15, tmpString);
-
-                  // imaginary part of eig
-                  realPlus(eig + (i * size + i) * 2 + 1, &tmp, &ctxtReal4);
-                  realToString(&tmp, tmpString);
-                  printf("%*s ", 15, tmpString);
-              }
-          #endif //EIGENDEBUG
+          if(realCompareLessThan(&diff_mag, &diff_max)) realCopy(&diff_mag, &diff_max);
         }
       }
+
       if(converged) {
         break;
       }
@@ -4368,7 +4362,23 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           realCopy(eig + i, a + i);
         }
       }
+
+    } // End of while loop
+
+    #if defined(EIGENDEBUG)
+    printf("EIGENVAL finished after %d iterations\n", iteration-1);
+    printf("Final eigenvalues:\n");
+    for(i = 0; i < size; i++) {
+      real_t tmpRe, tmpIm;
+      char tmpReStr[32], tmpImStr[32];
+      realPlus(a + (i * size + i) * 2, &tmpRe, &ctxtReal4);
+      realPlus(a + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
+      realToString(&tmpRe, tmpReStr);
+      realToString(&tmpIm, tmpImStr);
+      printf("eigenvalue[%d] = %s + %si\n", i, tmpReStr, tmpImStr);
     }
+    #endif
+
     shifted = false;
 
     // check for condition number of the diagonal elements
