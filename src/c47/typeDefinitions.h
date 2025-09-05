@@ -254,7 +254,7 @@ typedef struct {
   bool_t         compatibility_byte00;               //Spare Byte          //  
   int16_t        compatibility_int1;               //Spare Word            //  
   uint8_t        Input_Default;                                            //  iLi/R, iR, iC, iLI
-  bool_t         compatibility_byte0; // dispBase;                                                 //  dBASE
+  bool_t         dispBase;                                                 //  dBASE
   bool_t         BASE_MYM;                                                 //  MyMb
   bool_t         jm_G_DOUBLETAP;                                           //  g.2Tp
   float          compatibility_float1;              //Spare float          //  
@@ -505,7 +505,7 @@ typedef struct {
   uint16_t tamMinMax;         ///< Minimal value (2 bits) and maximal value (14 bits) for TAM argument
   //uint16_t tamMin;            ///< Minimal value for TAM argument
   //uint16_t tamMax;            ///< Maximal value for TAM argument
-  uint16_t status;            ///< Catalog, stack lift status, undo status and hourglass status
+  uint16_t status;            ///< Catalog, stack lift status and undo status
   //char     catalog;           ///< Catalog in which the item is located: see #define CAT_* in defines.h
   //uint8_t  stackLiftStatus;   ///< Stack lift status after item execution.
   //uint8_t  undoStatus;        ///< Undo status after item execution.

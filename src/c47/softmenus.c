@@ -2445,18 +2445,33 @@ void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
 }
 
 
-void setScreenUpdateFromMenu(int16_t id) {
+typedef enum {
+  openMenu  = 0,
+  closeMenu = 1
+} menuOps_t;
+
+
+static void setScreenUpdateFromMenu(int16_t id, menuOps_t op) {
   switch(id) {
     case -MNU_EQN :
     case -MNU_DISTR :
     case -MNU_EQ_EDIT :
     case -MNU_Solver_TOOL : {
+      if(op == closeMenu) {
+        solverEstimatesUsed = false;
+      }
+      screenUpdatingMode = SCRUPD_AUTO;
+      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+      break;
+    }
+    case -MNU_MVAR : {
       screenUpdatingMode = SCRUPD_AUTO;
       screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       break;
     }
     default:;
   }
+//printf("setScreenUpdateFromMenu: solverEstimatesUsed = %d: id=%d %s\n",solverEstimatesUsed, id, indexOfItems[-id].itemCatalogName);
 }
 
 
@@ -2484,7 +2499,7 @@ void showSoftmenuCurrentPart(void) {
   #endif // PC_BUILD
 
   screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-  setScreenUpdateFromMenu(softmenu[m].menuItem);
+  setScreenUpdateFromMenu(softmenu[m].menuItem, openMenu);
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
     clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
@@ -2976,6 +2991,7 @@ void showSoftmenuCurrentPart(void) {
 
   void popSoftmenu(void) {
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+    setScreenUpdateFromMenu(currentMenu(), closeMenu);
 
     xcopy(softmenuStack, softmenuStack + 1, (SOFTMENU_STACK_SIZE - 1) * sizeof(softmenuStack_t)); // shifting the entire stack
     memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
@@ -3217,7 +3233,7 @@ void showSoftmenuCurrentPart(void) {
     #endif // !INLINE_TEST
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-    setScreenUpdateFromMenu(id);
+    setScreenUpdateFromMenu(id, openMenu);
 
 
     //* *** List of exceptions, fixed menu call finds and opens the equivalent underlying dynamic menu (P.fN and HOME are now user populated, in the user menu space)
@@ -3236,8 +3252,6 @@ void showSoftmenuCurrentPart(void) {
         }
       }
       id = -MNU_DYNAMIC;
-    } else if(id == -MNU_Solver_TOOL) {
-        solverEstimatesUsed = false;
     }
 
 
