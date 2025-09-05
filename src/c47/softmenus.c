@@ -2456,6 +2456,7 @@ void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
 
 void setScreenUpdateFromMenu(int16_t id) {
   switch(id) {
+    case -MNU_XXFCNS :
     case -MNU_EQN :
     case -MNU_DISTR :
     case -MNU_EQ_EDIT :

@@ -1881,7 +1881,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
 
 #define XXFNMODEACTIVE                       (!SHOWMODE && !GRAPHMODE && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_XXFCNS &&\
-                                              (getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger))
+                                             ( (getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) ||\
+                                               (getRegisterDataType(REGISTER_T) == dtReal34 || getRegisterDataType(REGISTER_T) == dtLongInteger)) )
                                                //PROBMENU not needed, as a specific menu is required for XXFN
 
 #define DBASEMODE                            (!SHOWMODE && !GRAPHMODE && !PROBMENU && !XXFNMODEACTIVE && dispBase >= 2)
