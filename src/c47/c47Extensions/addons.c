@@ -652,7 +652,7 @@ typedef struct {
   }
 
 
-  bool_t registerFMAOutputString(calcRegister_t regist, char* prefix, char *displayString) {    // USING erro
+  bool_t registerFMAOutputString(calcRegister_t regist, char* prefix, char *displayString) {
     angularMode_t angle;
     real1071_t tmp1, tmp2;
     realContext_t c = ctxtReal75;

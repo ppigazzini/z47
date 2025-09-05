@@ -3074,7 +3074,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
 
 void realToSci(real_t* num, char* dispString) {
-   char *p, *e, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT, *prod = PRODUCT_SIGN;
+   char *p, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT, *prod = PRODUCT_SIGN;
    int neg, exp, mi = 0, i = 1, d = 0;
    int sepGroup = GROUPWIDTH_RIGHT;
 
@@ -3082,6 +3082,7 @@ void realToSci(real_t* num, char* dispString) {
      sep = STD_SPACE_FIGURE;
    }
     
+    exp = realGetExponent(num);
     realToString(num, dispString + 1500);
     if(realIsZero(num)) {
       sprintf(dispString, "0.0");
@@ -3090,20 +3091,6 @@ void realToSci(real_t* num, char* dispString) {
     
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
-    e = strchr(dispString + 1500, 'E');
-    
-    if(e) {
-        exp = atoi(e + 1);
-    } else if(p[0] == '0' && p[1] == '.') {
-        // Special case for 0.xxxx numbers
-        char *firstSig = p + 2;
-        while(*firstSig == '0') firstSig++;  // Skip leading zeros after decimal
-        exp = -(int)(firstSig - p - 1);      // Negative exponent
-    } else {
-        // Original logic for other cases
-        char *dot = strchr(p, '.');
-        exp = dot ? (int)(dot - p) - 1 : (int)strlen(p) - 1;
-    }
     
     while(*p && (*p < '1' || *p > '9')) p++;
     
@@ -3126,7 +3113,7 @@ void realToSci(real_t* num, char* dispString) {
       p++;
     }
     
-    // Remove trailing zeros and separators from right until first non-zero or decimal is reached
+    // Remove trailing zeros and separators from the right, until first non-zero or decimal is reached
     while(mi > 0 && (dispString[mi-1] == '0' || dispString[mi-1] == sep[0] || (sep[1] != '\1' && dispString[mi-1] == sep[1]))) mi--;
     if(mi > 0 && (dispString[mi-1] == radix[0] || (radix[1] != '\1' && dispString[mi-1] == radix[1]))) mi--;
     
@@ -3292,7 +3279,7 @@ void fnC47Show(uint16_t fnShow_param) {
           strcpy(errorMessage,tmpString + 2100);
           if(registerFMAOutputString(showRegis, showRegis == REGISTER_X ? "XY+Z = " :
                                                 showRegis == REGISTER_T ? "TA+B = " :
-                                                                          "FMA: ", errorMessage + stringByteLength(errorMessage))) { //purposely ignoring the +2100 text
+                                                                          "FMA: ",     errorMessage + stringByteLength(errorMessage))) {
             goto XFNentryPoint;
           }
           break;
