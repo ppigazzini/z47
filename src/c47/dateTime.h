@@ -80,12 +80,20 @@
   void decomposeJulianDay      (const real34_t *jd, real34_t *year, real34_t *month, real34_t *day);
 
   /********************************************//**
+   * \brief Get day of week from julian day
+   *
+   * \param[in] jd real34_t*
+   * \return uint32_t day of week (1 = Monday, 7 = Sunday)
+   ***********************************************/
+  uint32_t julianDayToDayOfWeek(real34_t *jd);
+
+  /********************************************//**
    * \brief Get day of week from date in given register
    *
    * \param[in] regist calcRegister_t register
    * \return uint32_t day of week (1 = Monday, 7 = Sunday), 0 if invalid
    ***********************************************/
-  uint32_t getDayOfWeek        (calcRegister_t regist);
+  uint32_t getJulianDayOfWeek (calcRegister_t regist);
 
   /********************************************//**
    * \brief Check date range
@@ -120,6 +128,14 @@
    ***********************************************/
   void checkTimeRange          (const real34_t *time34);
 
+  /********************************************//**
+   * \brief Get week of year from julian day
+   *
+   * \param[in] jd real34_t*
+   * \return uint32_t week of year (1 to 53)
+   ***********************************************/
+  uint32_t getWeekOfYear       (real34_t *jd);
+
   void fnDateToJulian          (uint16_t unusedButMandatoryParameter);
   void fnJulianToDateTime      (uint16_t unusedButMandatoryParameter);
   void fnDateTimeToJulian      (uint16_t unusedButMandatoryParameter);
@@ -143,6 +159,9 @@
   void fnTime                  (uint16_t unusedButMandatoryParameter);
   void fnSetDate               (uint16_t unusedButMandatoryParameter);
   void fnSetTime               (uint16_t unusedButMandatoryParameter);
+  void fnWeekOfYear            (uint16_t unusedButMandatoryParameter);
+  void fnSetWeekOfYearRule     (uint16_t param);
+  void fnGetWeekOfYearRule     (uint16_t unusedButMandatoryParameter);
 
   /********************************************//**
    * \brief Gets the system date
@@ -159,4 +178,12 @@
    * \return void
    ***********************************************/
   void getTimeString           (char *timeString);
+
+  /********************************************//**
+   * \brief Gets the system week of year
+   *
+   * \param[out] weekOfYearString char* String receiving the system week of year. Must be at least 6 bytes long (W15-2 plus terminating 0)
+   * \return void
+   ***********************************************/
+  void getWeekOfYearString     (char *weekOfYearString);
 #endif // !DATETIME_H

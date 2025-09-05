@@ -7,6 +7,7 @@
 #if !defined(STORE_H)
   #define STORE_H
 
+  bool_t       isRegInRange  (uint16_t regist);
   bool_t       regInRange    (uint16_t r);
   /**
    * Stores X in an other register.

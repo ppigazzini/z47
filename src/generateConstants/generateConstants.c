@@ -13,8 +13,8 @@ realContext_t ctxtReal34, ctxtReal39, ctxtReal51, ctxtReal75, ctxtReal1071;
 unsigned int cntReal34, cntReal39, cntReal51, cntReal75, cntReal1071;
 
 char whiteSpace[50], temp[10000];
-char defines[1000000], externalDeclarations[1000000]; // .h file
-char realArray[1000000], realPointerDeclarations[1000000], real34PointerDeclarations[1000000], real51PointerDeclarations[1000000], real75PointerDeclarations[1000000], real1071PointerDeclarations[1000000]; // .c file
+char externalDeclarations[1000000]; // .h file
+char realArray[1000000]; // .c file
 FILE *constantsC, *constantsH;
 int  idx, cc;
 
@@ -39,6 +39,28 @@ void *xcopy(void *dest, const void *source, int n) {
   return dest;
 }
 
+static void emitConstantHeader(const char *name, const char *type, const char *prefix) {
+  char *b = strchr(externalDeclarations, '\0');
+
+  sprintf(b, "  #define %s%s%s ((%s *)(constants + %d))\n", prefix, name, whiteSpace, type, idx);
+}
+
+static void emitRealArray(const char *name, const void *vptr, int len, const char *prefix) {
+  char *b = strchr(realArray, '\0');
+  const uint8_t *p = (const uint8_t *)vptr;
+  int n, i;
+
+  n = sprintf(b, "  ");
+  for (i=0; i<len; i++)
+    n += sprintf(b + n, "0x%02x,", p[i]);
+  sprintf(b + n, "  // %s%s\n", prefix, name);
+}
+
+static void emitConstant(const char *name, const char *type, const void *vptr, int len, const char *prefix) {
+  emitConstantHeader(name, type, prefix);
+  emitRealArray(name, vptr, len, prefix);
+  idx += len;
+}
 
 void generateConstantArray(char *name, char *value) {
   real39_t real39;
@@ -53,33 +75,7 @@ void generateConstantArray(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  if(cc <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
-    sprintf(temp, "  #define CONST_%02d %4d\n", cc, idx);
-    strcat(defines, temp);
-  }
-
-  strcat(realPointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(realPointerDeclarations, name);
-  strcat(realPointerDeclarations, whiteSpace);
-  strcat(realPointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL39_SIZE_IN_BYTES;
-  strcat(realPointerDeclarations, temp);
-  strcat(realPointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL39_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real39)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real39, REAL39_SIZE_IN_BYTES, "const_");
   cntReal39++;
 }
 
@@ -97,28 +93,7 @@ void generateConstantArray34(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real34_t * const const34_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real34PointerDeclarations, "TO_QSPI const real34_t * const const34_");
-  strcat(real34PointerDeclarations, name);
-  strcat(real34PointerDeclarations, whiteSpace);
-  strcat(real34PointerDeclarations, " = (real34_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL34_SIZE_IN_BYTES;
-  strcat(real34PointerDeclarations, temp);
-  strcat(real34PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL34_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real34)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real34_t", &real34, REAL34_SIZE_IN_BYTES, "const34_");
   cntReal34++;
 }
 
@@ -136,28 +111,7 @@ void generateConstantArray51(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real51PointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(real51PointerDeclarations, name);
-  strcat(real51PointerDeclarations, whiteSpace);
-  strcat(real51PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL51_SIZE_IN_BYTES;
-  strcat(real51PointerDeclarations, temp);
-  strcat(real51PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL51_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real51)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real51, REAL51_SIZE_IN_BYTES, "const_");
   cntReal51++;
 }
 
@@ -175,28 +129,7 @@ void generateConstantArray75(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real75PointerDeclarations, "TO_QSPI const real_t * const const_");
-  strcat(real75PointerDeclarations, name);
-  strcat(real75PointerDeclarations, whiteSpace);
-  strcat(real75PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL_SIZE_IN_BYTES;
-  strcat(real75PointerDeclarations, temp);
-  strcat(real75PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real75)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real75, REAL_SIZE_IN_BYTES, "const_");
   cntReal75++;
 }
 
@@ -214,28 +147,7 @@ void generateConstantArray1071(char *name, char *value) {
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
 
-  strcat(externalDeclarations, "  extern const real_t * const const1071_");
-  strcat(externalDeclarations, name);
-  strcat(externalDeclarations, ";\n");
-
-  strcat(real1071PointerDeclarations, "TO_QSPI const real_t * const const1071_");
-  strcat(real1071PointerDeclarations, name);
-  strcat(real1071PointerDeclarations, whiteSpace);
-  strcat(real1071PointerDeclarations, " = (real_t *)(constants + ");
-  sprintf(temp, "%5d)", idx);
-  idx += REAL1071_SIZE_IN_BYTES;
-  strcat(real1071PointerDeclarations, temp);
-  strcat(real1071PointerDeclarations, ";\n");
-
-  strcat(realArray, "  ");
-  for(uint32_t i=0; i<REAL1071_SIZE_IN_BYTES; i++) {
-    sprintf(temp, "0x%02x,", *(((uint8_t *)(&real1071)) + i));
-    strcat(realArray, temp);
-  }
-
-  strcat(realArray, "  // const_");
-  strcat(realArray, name);
-  strcat(realArray, "\n");
+  emitConstant(name, "real_t", &real1071, REAL1071_SIZE_IN_BYTES, "const1071_");
   cntReal1071++;
 }
 
@@ -250,13 +162,13 @@ void generateAllConstants(void) {
   // each constant has 55 significant digits
   cc = 0;
 /*000*/  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
-/*001*/  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); cc++;
+/*001*/  generateConstantArray("a0",            "+5.291772105440000000000000000000000000000000000000000000e-11"); cc++; // a_0 = 5.29177210544(82)E−11 m, CODATA 2022
 /*002*/  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); cc++;
 /*003*/  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); cc++;
-/*004*/  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); cc++; // per definition
+/*004*/  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); cc++; // c = 299792458 m/s, exact per definition, SI 2019 (NIST.SP.330-2019)
 /*005*/  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); cc++;
 /*006*/  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); cc++;
-/*007*/  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); cc++; // per definition
+/*007*/  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); cc++; // e = 1.602176634E−19 C, exact per definition, CODATA 2017, SI 2019 (NIST.SP.330-2019)
 /*008*/  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); cc++; // math constant e
 /*009*/  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); cc++;
 /*010*/  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); cc++; // math constant Falpha
@@ -264,34 +176,34 @@ void generateAllConstants(void) {
 /*012*/  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); cc++;
 /*013*/  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); cc++;
 /*014*/  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); cc++; // math constant Catalan
-/*015*/  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); cc++;
+/*015*/  generateConstantArray("ge",            "-2.002319304360920000000000000000000000000000000000000000e+00"); cc++; // g_e− = −2.00231930436092(36), CODATA 2022
 /*016*/  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); cc++;
 /*017*/  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); cc++; // per definition
-/*018*/  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); cc++;
+/*018*/  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); cc++; // h = 6.62607015E−34 J⋅s, exact per definition, CODATA 2017, SI 2019 (NIST.SP.330-2019)
 /*019*/  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); cc++;
-/*020*/  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); cc++; // per definition
+/*020*/  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); cc++; // k = 1.380649E−23 J/K, exact per definition, CODATA 2017, SI 2019 (NIST.SP.330-2019)
 /*021*/  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); cc++;
-/*022*/  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); cc++;
-/*023*/  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); cc++;
+/*022*/  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); cc++; // l_P = 1.616255(18)E−35 m, CODATA 2022
+/*023*/  generateConstantArray("me",            "+9.109383713900000000000000000000000000000000000000000000e-31"); cc++; // m_e = 9.1093837139(28)E−31 kg, CODATA 2022
 /*024*/  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); cc++;
-/*025*/  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); cc++;
-/*026*/  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); cc++;
-/*027*/  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); cc++;
-/*028*/  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); cc++;
-/*029*/  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); cc++;
-/*030*/  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); cc++;
-/*031*/  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); cc++;
-/*032*/  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); cc++;
+/*025*/  generateConstantArray("mn",            "+1.674927500560000000000000000000000000000000000000000000e-27"); cc++; // m_n = 1.67492750056(85)E−27 kg, CODATA 2022
+/*026*/  generateConstantArray("mnOnmp",        "+1.001378419460000000000000000000000000000000000000000000e+00"); cc++; // m_n/m_p = 1.00137841946(40), CODATA 2022
+/*027*/  generateConstantArray("mp",            "+1.672621925950000000000000000000000000000000000000000000e-27"); cc++; // m_p = 1.67262192595(52)E−27 kg, CODATA 2022
+/*028*/  generateConstantArray("mPL",           "+2.176434000000000000000000000000000000000000000000000000e-08"); cc++; // m_P = 2.176434(24)E−8 kg, CODATA 2022
+/*029*/  generateConstantArray("mpOnme",        "+1.836152673426000000000000000000000000000000000000000000e+03"); cc++; // m_p/⁠m_e = 1836.152673426(32), CODATA 2022
+/*030*/  generateConstantArray("mu",            "+1.660539068920000000000000000000000000000000000000000000e-27"); cc++; // mu = 1.66053906892(52)E−27 kg, CODATA 2022
+/*031*/  generateConstantArray("muc2",          "+1.492418087680000000000000000000000000000000000000000000e-10"); cc++; // muc2 = 1.49241808768(46)E−10 J, CODATA 2022
+/*032*/  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); cc++; // m_μ = 1.883531627(42)E−28 kg, CODATA 2022
 /*033*/  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); cc++;
 /*034*/  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); cc++;
-/*035*/  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); cc++; // per definition
+/*035*/  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); cc++; // N_A = 6.02214076E23 1/mol, exact per definition, CODATA 2017, SI 2019 (NIST.SP.330-2019)
 /*036*/  generateConstantArray("NaN",           "Not a number"                                                 ); cc++;
 /*037*/  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); cc++; // per definition
 /*038*/  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); cc++;
-/*039*/  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); cc++;
+/*039*/  generateConstantArray("re",            "+2.817940320500000000000000000000000000000000000000000000e-15"); cc++; // r_e = 2.8179403205(13)E−15 m, CODATA 2022
 /*040*/  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); cc++;
 /*041*/  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); cc++;
-/*042*/  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); cc++;
+/*042*/  generateConstantArray("RInfinity",     "+1.097373156815700000000000000000000000000000000000000000e+07"); cc++; // R_∞ = 10973731.568157(12) 1/m, CODATA 2022
 /*043*/  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); cc++;
 /*044*/  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); cc++;
 /*045*/  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); cc++; // per definition
@@ -300,27 +212,27 @@ void generateAllConstants(void) {
 /*048*/  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); cc++;
 /*049*/  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); cc++; // per definition
 /*050*/  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
-/*051*/  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); cc++;
-/*052*/  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); cc++;
+/*051*/  generateConstantArray("TP",            "+1.416784000000000000000000000000000000000000000000000000e+32"); cc++; // T_P = 1.416784(16)E32 K, CODATA 2022
+/*052*/  generateConstantArray("tPL",           "+5.391247000000000000000000000000000000000000000000000000e-44"); cc++; // t_P = 5.391247(60)×10−44 s, CODATA 2022
 /*053*/  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); cc++;
-/*054*/  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); cc++; // mu0 * c
-/*055*/  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); cc++;
+/*054*/  generateConstantArray("Z0",            "+3.767303134120000000000000000000000000000000000000000000e+02"); cc++; // Z0 = 376.730313412(59) Ω, CODATA 2022
+/*055*/  generateConstantArray("alpha",         "+7.297352564300000000000000000000000000000000000000000000e-03"); cc++; // α = 0.0072973525643(11), CODATA 2022
 /*056*/  generateConstantArray("K0",            "+2.685452001065306445309714835481795693820382293994462953e+00"); cc++; // math constant Khinchin
 /*057*/  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); cc++; // math constant Euler-Mascheroni
-/*058*/  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); cc++;
-/*059*/  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); cc++; // per definition
-/*060*/  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); cc++;
-/*061*/  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); cc++;
-/*062*/  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); cc++;
-/*063*/  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); cc++;
-/*064*/  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); cc++;
-/*065*/  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); cc++;
-/*066*/  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); cc++;
-/*067*/  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); cc++;
-/*068*/  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); cc++;
-/*069*/  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); cc++;
-/*070*/  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); cc++;
-/*071*/  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); cc++;
+/*058*/  generateConstantArray("gammap",        "+2.675221870800000000000000000000000000000000000000000000e+08"); cc++; // γ_p = 2.6752218708(11)E8 1/(s⋅T), CODATA 2022
+/*059*/  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); cc++; // Δν(133Cs)hfs = 9192631770 Hz, exact per definition, SI 2019 (NIST.SP.330-2019)
+/*060*/  generateConstantArray("epsilon0",      "+8.854187818800000000000000000000000000000000000000000000e-12"); cc++; // ε_0 = 8.8541878188(14)E−12 F/m, CODATA 2022
+/*061*/  generateConstantArray("lambdaC",       "+2.426310235380000000000000000000000000000000000000000000e-12"); cc++; // λ_C = 2.42631023538(76)E−12 m, CODATA 2022
+/*062*/  generateConstantArray("lambdaCn",      "+1.319590903820000000000000000000000000000000000000000000e-15"); cc++; // λ_C,n = 1.31959090382(67)E-15 m, CODATA 2022
+/*063*/  generateConstantArray("lambdaCp",      "+1.321409853600000000000000000000000000000000000000000000e-15"); cc++; // λ_C,p = 1.32140985360(41)E-15
+/*064*/  generateConstantArray("mu0",           "+1.256637061270000000000000000000000000000000000000000000e-06"); cc++; // μ_0 = 1.25663706127(20)E−6 N/A^2, CODATA 2022
+/*065*/  generateConstantArray("muB",           "+9.274010065700000000000000000000000000000000000000000000e-24"); cc++; // μ_B = 9.2740100657(29)E-24 J/T, CODATA 2022
+/*066*/  generateConstantArray("mue",           "-9.284764691700000000000000000000000000000000000000000000e-24"); cc++; // μ_e = -9.2847646917(29)E−24 J/T, CODATA 2022
+/*067*/  generateConstantArray("mueOnmuB",      "-1.001159652180460000000000000000000000000000000000000000e+00"); cc++; // μ_e/⁠μ_B = -1.00115965218046(18), CODATA 2022
+/*068*/  generateConstantArray("mun",           "-9.662365300000000000000000000000000000000000000000000000e-27"); cc++; // μ_n = -9.6623653(23)E−27 J/T, CODATA 2022
+/*069*/  generateConstantArray("mup",           "+1.410606795450000000000000000000000000000000000000000000e-26"); cc++; // μ_p = 1.41060679545(60)E−26 J/T, CODATA 2022
+/*070*/  generateConstantArray("muu",           "+5.050783739300000000000000000000000000000000000000000000e-27"); cc++; // μ_N = 5.0507837393(16)E−27 J/T, CODATA 2022
+/*071*/  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); cc++; // μ_μ = -4.49044830(18)E−26 J/T, CODATA 2022
 /*072*/  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); cc++;
 /*073*/  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); cc++; // math constant phi = (1 + sqrt(5)) / 2
 /*074*/  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); cc++;
@@ -328,10 +240,10 @@ void generateAllConstants(void) {
 /*076*/  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
 /*077*/  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
 /*078*/  generateConstantArray("0",             "0"); cc++;
-/*079*/  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); cc++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
-/*080*/  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); cc++;   //  1+√2
-/*081*/  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); cc++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
-/*082*/  generateConstantArray("tau",           "+6.283185307179586476925286766559005768394338798750211642e+00"); cc++;   //  circle constant
+/*079*/  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); cc++; //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
+/*080*/  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); cc++; //  1+√2
+/*081*/  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); cc++; //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
+/*082*/  generateConstantArray("tau",           "+6.283185307179586476925286766559005768394338798750211642e+00"); cc++; //  circle constant
 /*083*/  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00"); cc++;
 
 
@@ -402,11 +314,11 @@ void generateAllConstants(void) {
 
   generateConstantArray("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02"); // pascal = torr × 101325 / 760
   #if (MMHG_PA_133_3224 == 1)
-    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224
-    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4
+    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224                   // BS 350:2004 p51, 13.595 1 × 9.806 65       , approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
+    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4            // BS 350:2004 p51, 13.595 1 × 9.806 65 x 25.4, approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
   #else // (MMHG_PA_133_3224 == 0)
-    generateConstantArray("MmhgToPa",    "+1.333223874150000000000000000000000000000000000000000000e+02");// cnst              pascal = mm.Hg × 13.5951 × 9.80665
-    generateConstantArray("InhgToPa",    "+3.386388640341000000000000000000000000000000000000000000e+03");// cnst              pascal = in.Hg × 13.5951 × 9.80665 × 2.54
+    generateConstantArray("MmhgToPa",    "+1.333223874150000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 13.5951 × 9.80665          // non-abbreviated
+    generateConstantArray("InhgToPa",    "+3.386388640341000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 13.5951 × 9.80665 × 2.54   // non-abbreviated
   #endif // (MMHG_PA_133_3224 == 1)
   generateConstantArray("PsiToPa",       "+6.894757293168361336722673445346890693781387562775125550e+03"); // pascal = psi × 0.45359237 × 9.80665 / 0.0254²
   generateConstantArray("BarToPa",       "+1.000000000000000000000000000000000000000000000000000000e+05"); // pascal = bar  × 100000
@@ -458,13 +370,15 @@ void generateAllConstants(void) {
   generateConstantArray("GlukFzuk",      "+1.600000000000000000000000000000000000000000000000000000e+02"); // defined uk       : 1600 x
   generateConstantArray("GlusFzus",      "+1.280000000000000000000000000000000000000000000000000000e+02"); // defined uz       : 1200 x
 ////
-
+  generateConstantArray("bananamm",      "+178.0");
+  generateConstantArray("bananaInch",    "+7.007874015748031496062992125984251968503937007874015748");
+////
 
   generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
   generateConstantArray("_90",           "-9.000000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("_1",            "-1.000000000000000000000000000000000000000000000000000000e+00");
-  generateConstantArray("_1oneE",        "-3.678794411714423215955237701614608674458111310317678345e-01");
+  generateConstantArray("1oneE",         "+3.678794411714423215955237701614608674458111310317678345e-01");
   generateConstantArray("1e_49",         "+1.000000000000000000000000000000000000000000000000000000e-49");
   generateConstantArray("1e_37",         "+1.000000000000000000000000000000000000000000000000000000e-37");
   generateConstantArray("1e_24",         "+1.000000000000000000000000000000000000000000000000000000e-24");
@@ -556,6 +470,10 @@ void generateAllConstants(void) {
   generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143");
   generateConstantArray("rtpi",          "+1.772453850905516027298167483341145182797549456122387128e+00");
   generateConstantArray("1onpi",         "+3.183098861837906715377675267450287240689192914809128975e-01");
+  generateConstantArray("pisq",          "+9.869604401089358618834490999876151135313699407240790626e+00");
+  generateConstantArray("eEsq",          "+7.389056098930650227230427460575007813180315570551847324e+00");
+  generateConstantArray("1onpisq",       "+1.013211836423377714438794632097276389043587746722465488e-01");
+  generateConstantArray("1oneEsq",       "+1.353352832366126918939994949724844034076315459095758815e-01");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
@@ -909,13 +827,9 @@ int main(int argc, char* argv[]) {
   ctxtReal1071.digits  = 1071;
   ctxtReal1071.traps   = 0;
 
-  defines[0] = 0;
   externalDeclarations[0] = 0;
   strcat(externalDeclarations, "  extern const uint8_t constants[];\n");
   realArray[0] = 0;
-  realPointerDeclarations[0]     = 0;
-  real34PointerDeclarations[0]   = 0;
-  real1071PointerDeclarations[0] = 0;
   cntReal34 = cntReal39 = cntReal51 = cntReal75 = cntReal1071 = 0;
 
   generateAllConstants();
@@ -941,9 +855,7 @@ int main(int argc, char* argv[]) {
   fprintf(constantsH, "#if !defined(CONSTANTPOINTERS_H)\n");
   fprintf(constantsH, "  #define CONSTANTPOINTERS_H\n\n");
 
-  fprintf(constantsH, "%s", defines);
-  fprintf(constantsH, "\n");
-  fprintf(constantsH, "%s", externalDeclarations);
+  fprintf(constantsH, "%s\n", externalDeclarations);
 
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_39   %u\n", cntReal39);
   fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_51   %u\n", cntReal51);
@@ -971,18 +883,7 @@ int main(int argc, char* argv[]) {
 
   fprintf(constantsC, "#include \"c47.h\"\n\n");
 
-  fprintf(constantsC, "%s", realArray);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", realPointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real51PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real75PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real1071PointerDeclarations);
-  fprintf(constantsC, "\n");
-  fprintf(constantsC, "%s", real34PointerDeclarations);
-
+  fprintf(constantsC, "%s\n", realArray);
   fclose(constantsC);
 
   return 0;

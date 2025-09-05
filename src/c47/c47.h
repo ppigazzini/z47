@@ -14,12 +14,20 @@
   #include <math.h>
   #include <stdbool.h>
   #include <stddef.h>
+  #include <stdint.h>
   #include <stdlib.h>
   #include <stdio.h>
   #include <string.h>
   #include <sys/stat.h>
   #include <time.h>
   #include <unistd.h>
+
+  #if defined(DMCP_BUILD) // this is due to the libc_nano added in 999acb23 which does not have hh support; also added nano to the new hardware in 2fde900
+    #undef PRIu8
+    #define PRIu8 "u"
+    #undef PRIi8
+    #define PRIi8 "i"
+  #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
     #include <gmp.h>
@@ -277,6 +285,7 @@
   extern bool_t                 hourGlassIconEnabled;
   extern bool_t                 watchIconEnabled;
   extern bool_t                 printerIconEnabled;
+  extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
   extern bool_t                 showContent;
@@ -285,15 +294,18 @@
   extern bool_t                 thereIsSomethingToUndo;
   extern bool_t                 lastProgramListEnd;
   extern bool_t                 programListEnd;
-  extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
   extern bool_t                 secTick1;
   extern bool_t                 halfSecTick2;
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
+  extern bool_t                 iterations;
 
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
+  extern bool_t                 cleanupAfterShift;
+  extern bool_t                 solverEstimatesUsed;
+  extern bool_t                 updateOldConstants;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -301,8 +313,6 @@
   extern realContext_t          ctxtReal39;   //   39 digits: used for 34 digits intermediate calculations
   extern realContext_t          ctxtReal51;   //   51 digits: used for 34 digits intermediate calculations
   extern realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
-  extern realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
-  extern realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
@@ -404,13 +414,14 @@
   extern uint8_t                numLinesTinyFont;
   extern uint8_t                cursorEnabled;
   extern uint8_t                nimNumberPart;
+  extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
+  extern uint8_t                previousErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
-  extern uint8_t                lastProgramRunStop;
   extern uint8_t                currentKeyCode;
   extern uint8_t                lastKeyCode;
   extern uint8_t                keyStateCode;
@@ -429,12 +440,14 @@
   extern int16_t                rbrRegister;
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+  extern int16_t                lastKeyItemDetermined;
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
   extern int16_t                denominatorLocation;
   extern int16_t                imaginaryExponentSignLocation;
   extern int16_t                imaginaryMantissaSignLocation;
+  extern int16_t                imaginaryDenominatorLocation;
   extern int16_t                exponentLimit;
   extern int16_t                exponentHideLimit;
   extern int16_t                showFunctionNameCounter;
@@ -448,6 +461,7 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
   extern uint8_t                overrideShowBottomLine;
@@ -465,8 +479,6 @@
   extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
-  extern bool_t                 bcdDisplay;
-  extern bool_t                 topHex;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
@@ -580,6 +592,9 @@
   extern char         filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
   extern uint32_t     mem__32;                                          //JM_CSV
   extern bool_t       cancelFilename;
+
+  extern uint8_t                firstDayOfWeek;
+  extern uint8_t                firstWeekOfYearDay;
 
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;

@@ -64,6 +64,7 @@
 
   void convertRealToResultRegister                           (const real_t *x, calcRegister_t dest, angularMode_t angle);
   void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
+  void convertComplexToResultRegisterRPangle                 (const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag);
 
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
   void convertReal34RegisterToTimeRegister                   (calcRegister_t source, calcRegister_t destination);
@@ -98,14 +99,26 @@
   void badTypeError(calcRegister_t reg);
   void badDomainError(calcRegister_t reg);
 
+  void badTypeErrorX(void);
+  void badDomainErrorX(void);
+
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
+  bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);
-  bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsAnyReal(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsReal34Quiet(calcRegister_t reg, real34_t *val);
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
   bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
   bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
   bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
+
+  bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsAnyRealQuiet(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
+  bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx);
+  /* returns error code or ERROR_NONE if okay */
+  int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));

@@ -3,25 +3,55 @@
 
 #include "c47.h"
 
-bool_t regInRange(uint16_t regist) {
-  bool_t inRange = (
-    (regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
+
+bool_t isRegInRange(uint16_t regist) {
+  return (regist <= LAST_LETTERED_REGISTER) ||                              //this includes r00-r99
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
+    (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
-    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE));
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||
+    (FIRST_TEMP_REGISTER  <= regist && regist <= LAST_TEMP_REGISTER);
+}
+
+bool_t regInRange(uint16_t regist) {
+  bool_t inRange = isRegInRange(regist);
   #if defined(PC_BUILD)
     if(!inRange) {
-      if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
+      if(!(regist <= LAST_LETTERED_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Lettered register %04d", regist - FIRST_LETTERED_REGISTER);
+      }
+      else if(!(FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Stat register %04d", regist - FIRST_STAT_REGISTER);
+      }
+      else if(!(FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "Spare register %04d", regist - FIRST_SPARE_REGISTER);
+      }
+      else if(!(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters)) {
+        printf("Local Not in range.\n");
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       }
-      else if(regist >= FIRST_NAMED_VARIABLE && regist <= LAST_NAMED_VARIABLE) {
+      else if(!(FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         // This error message is not massively useful because it doesn't have the original name
         // But it shouldn't have even got this far if the name doesn't exist
         sprintf(errorMessage, "named register .%02d", regist - FIRST_NAMED_VARIABLE);
       }
+      else if(!(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "reserved variable %04d", regist - FIRST_RESERVED_VARIABLE);
+      }
+      else if(!(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER)){
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "temporary register %04d", regist - LAST_TEMP_REGISTER);
+      }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        sprintf(errorMessage, "generic");
       }
       moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
     }
@@ -138,6 +168,9 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 static void _storeValue(uint16_t regist) {
+  if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
+    PLOT_ZMY = zoomOverride;  //PLOT EQN
+  }
   if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnLint(NOPARAM);
@@ -174,8 +207,12 @@ void fnStore(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     _storeValue(regist);
     uint16_t rows = 1;
-    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
-      calcSigma(0);
+    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+      if(isStatsMatrixN(&rows, regist)) {
+        calcSigma(0);
+      } else {
+        clearStatisticalSums();
+      }
     }
   }
 }
@@ -347,30 +384,32 @@ void fnStoreMax(uint16_t regist) {
 void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
-  bool_t compatibility_bool00 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool0  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool2  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool3  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool4  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool5  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool6  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool7  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool8  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool9  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool10 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool11 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool12 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool13 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool14 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool15 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool16 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool17 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool18 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool19 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool20 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool21 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool22 = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool23 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte0  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte2  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte3  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte5  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte6  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte7  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte8  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte9  = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte10 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte11 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte12 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte13 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte14 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte15 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte16 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte17 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte18 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte19 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte20 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte21 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte22 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte25 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -398,15 +437,15 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
-  storeToDtConfigDescriptor(compatibility_bool19);
+  storeToDtConfigDescriptor(    compatibility_byte19);
   storeToDtConfigDescriptor(HOME3);
   storeToDtConfigDescriptor(ShiftTimoutMode);
-  storeToDtConfigDescriptor(compatibility_bool21);
+  storeToDtConfigDescriptor(    compatibility_byte21);
   storeToDtConfigDescriptor(BASE_HOME);
-  storeToDtConfigDescriptor(compatibility_bool00);   //added
-  storeToDtConfigDescriptor(compatibility_int1);    //added
+  storeToDtConfigDescriptor(    compatibility_byte00);   //added
+  storeToDtConfigDescriptor(    compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
-  storeToDtConfigDescriptor(compatibility_bool0);    //added
+  storeToDtConfigDescriptor(    compatibility_byte0);    //added
   storeToDtConfigDescriptor(BASE_MYM);
   storeToDtConfigDescriptor(jm_G_DOUBLETAP);
   storeToDtConfigDescriptor(compatibility_float1);
@@ -414,34 +453,34 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(Norm_Key_00.func);
   xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
   storeToDtConfigDescriptor(Norm_Key_00.used);
-  storeToDtConfigDescriptor(compatibility_bool2);
-  storeToDtConfigDescriptor(compatibility_bool3);
-  storeToDtConfigDescriptor(compatibility_bool4);
-  storeToDtConfigDescriptor(compatibility_bool5);
-  storeToDtConfigDescriptor(compatibility_bool6);
-  storeToDtConfigDescriptor(compatibility_bool7);
-  storeToDtConfigDescriptor(compatibility_bool8);
-  storeToDtConfigDescriptor(compatibility_bool9);
-  storeToDtConfigDescriptor(compatibility_bool10);
-  storeToDtConfigDescriptor(compatibility_bool11);
-  storeToDtConfigDescriptor(compatibility_bool12);
-  storeToDtConfigDescriptor(compatibility_bool13);
-  storeToDtConfigDescriptor(compatibility_bool14);
-  storeToDtConfigDescriptor(compatibility_bool15);
+  storeToDtConfigDescriptor(    compatibility_byte2);
+  storeToDtConfigDescriptor(    compatibility_byte3);
+  storeToDtConfigDescriptor(    compatibility_byte4);
+  storeToDtConfigDescriptor(    compatibility_byte5);
+  storeToDtConfigDescriptor(    compatibility_byte6);
+  storeToDtConfigDescriptor(    compatibility_byte7);
+  storeToDtConfigDescriptor(    compatibility_byte8);
+  storeToDtConfigDescriptor(    compatibility_byte9);
+  storeToDtConfigDescriptor(    compatibility_byte10);
+  storeToDtConfigDescriptor(    compatibility_byte11);
+  storeToDtConfigDescriptor(    compatibility_byte12);
+  storeToDtConfigDescriptor(    compatibility_byte13);
+  storeToDtConfigDescriptor(    compatibility_byte14);
+  storeToDtConfigDescriptor(    compatibility_byte15);
   storeToDtConfigDescriptor(fractionDigits);
-  storeToDtConfigDescriptor(compatibility_bool23);
-  storeToDtConfigDescriptor(compatibility_bool16);
-  storeToDtConfigDescriptor(compatibility_bool20);
-  storeToDtConfigDescriptor(compatibility_bool17);
+  storeToDtConfigDescriptor(    compatibility_byte23);
+  storeToDtConfigDescriptor(    compatibility_byte16);
+  storeToDtConfigDescriptor(    compatibility_byte20);
+  storeToDtConfigDescriptor(    compatibility_byte17);
   storeToDtConfigDescriptor(IrFractionsCurrentStatus);
-  storeToDtConfigDescriptor(compatibility_bool18);
+  storeToDtConfigDescriptor(    compatibility_byte18);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
-  storeToDtConfigDescriptor(bcdDisplay);
-  storeToDtConfigDescriptor(topHex);
+  storeToDtConfigDescriptor(    compatibility_byte25);
+  storeToDtConfigDescriptor(    compatibility_byte24);
   storeToDtConfigDescriptor(bcdDisplaySign);
   storeToDtConfigDescriptor(DRG_Cycling);
   storeToDtConfigDescriptor(DM_Cycling);
-  storeToDtConfigDescriptor(compatibility_bool22);
+  storeToDtConfigDescriptor(    compatibility_byte22);
   storeToDtConfigDescriptor(LongPressM);
   storeToDtConfigDescriptor(LongPressF);
   storeToDtConfigDescriptor(lastDenominator);
@@ -450,7 +489,8 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(exponentLimit);
   storeToDtConfigDescriptor(exponentHideLimit);
   storeToDtConfigDescriptor(lastIntegerBase);
-  storeToDtConfigDescriptor(HOME3);
+  storeToDtConfigDescriptor(MYM3);
+  storeToDtConfigDescriptor(timeDisplayFormatDigits);
 }
 
 

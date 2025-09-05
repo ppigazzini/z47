@@ -14,7 +14,7 @@ static void powCplx(void);
 void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
   real_t lny;
 
-  if(realIsNegative(y) && realIsAnInteger(x) && !realIsZero(x)) {
+  if(realIsNegative(y) && realIsAnInteger(x)){
     realDivideRemainder(x, const_2, &lny, realContext);
     bool_t isOdd = !realIsZero(&lny);
     realCopyAbs(y, &lny);
@@ -228,22 +228,66 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       real_t theta;
       real_t tmp;
 
+      // (Yr+iYi) ^ (Xr+iXi)
+      // EXP [  (Xr+iXi) LN (Yr+iYi)  ]
+      // EXP [  (Xr+iXi) LN (r angle theta)  ]
+      // EXP [  Xr.LN (r angle theta)   +   i.(Xi.LN (r angle theta)) ]
+      // EXP [ (Xr.LN r) * (-theta Xi)  +   i.(Xi.LN r + (theta . Xr)) ]  [5]
+
+
       realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
       WP34S_Ln(rReal, rReal, realContext);
 
-      realMultiply(rReal, xImag, rImag, realContext);
-      realFMA(&theta, xReal, rImag, rImag, realContext);
+      realMultiply(rReal, xImag, rImag, realContext);                 //rImag = Xi.LN r
+
+      real_t xR;
+      int8_t md;
+      bool_t doZeroingReal = false;
+      bool_t doZeroingImag = false;
+      if (realCompareAbsEqual(yReal, yImag)) {
+        realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
+        md = realToInt32C47(&xR);
+        if (realIsZero(xImag)) {
+          if (md % 4 == 0) {
+            doZeroingImag = true;
+          } else if ((md-2) % 4 == 0) {
+            doZeroingReal = true;
+          }
+        }
+      } else if (realIsZero(yReal)) {
+        realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
+        md = realToInt32C47(&xR);
+        if (realIsZero(xImag)) {
+          if (md % 2 == 0) {
+            doZeroingImag = true;
+          } else {
+            doZeroingReal = true;
+          }
+        }
+      } else {
+        realCopy(xReal, &xR);
+      }
+
+      realFMA(&theta, &xR, rImag, rImag, realContext);                //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by number of revolutions.
       realChangeSign(&theta);
 
-      realMultiply(rReal, xReal, rReal, realContext);
-      realFMA(&theta, xImag, rReal, rReal, realContext);
+      realMultiply(rReal, xReal, rReal, realContext);                 //rReal = Xr.LN r
+      realFMA(&theta, xImag, rReal, rReal, realContext);              //rReal = Xr.LN r  *  -theta . Xi
 
       realExp(rReal, &tmp, realContext);
       realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
-      realMultiply(&tmp, rImag, rImag, realContext);
-      realMultiply(&tmp, rReal, rReal, realContext);
+      if (doZeroingImag) {
+        realCopy(const_0, rImag);
+      } else {
+        realMultiply(&tmp, rImag, rImag, realContext);
+      }
+      if (doZeroingReal) {
+        realCopy(const_0, rReal);
+      } else {
+        realMultiply(&tmp, rReal, rReal, realContext);
+      }
   }
-
+  
   return errorCode;
 }
 

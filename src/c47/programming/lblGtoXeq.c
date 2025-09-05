@@ -15,8 +15,8 @@ void fnGoto(uint16_t label) {
       return;
     }
 
-    // Local Label 00 to 99 and A, B, C, D, and E
-    if(label <= 104) {
+    // Local Label 00 to 99 and A to l
+    if(label <= LAST_LOCAL_LABEL) {
       // Search for local label
       for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
         if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label
@@ -188,13 +188,12 @@ void fnExecute(uint16_t label) {
     }
   }
   else {
-    lastProgramRunStop = PGM_UNDEFINED;
     fnGoto(label);
     dynamicMenuItem = -1;
     if(lastErrorCode == ERROR_NONE) {
       #if !defined(TESTSUITE_BUILD)
         if(tam.mode) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           refreshScreen(2);
         }
       #endif // TESTSUITE_BUILD*
@@ -348,7 +347,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
 
       case PARAM_LABEL: {
-      if(opParam <= 104) { // Local label from 00 to 99 or from A to E
+      if(opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
         reallyRunFunction(op, opParam);
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
@@ -611,6 +610,30 @@ static void _putLiteral(uint8_t *literalAddress) {
       break;
       }
 
+
+
+      case STRING_ANGLE_RADIAN:
+      case STRING_ANGLE_GRAD:
+      case STRING_ANGLE_DEGREE:
+      case STRING_ANGLE_MULTPI: {
+        _getStringLabelOrVariableName(literalAddress);
+        liftStack();
+        setSystemFlag(FLAG_ASLIFT);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
+        int tmpAngle;
+        switch(*(literalAddress - 1)) {
+          case STRING_ANGLE_RADIAN: tmpAngle = amRadian; break;
+          case STRING_ANGLE_GRAD:   tmpAngle = amGrad; break;
+          case STRING_ANGLE_DEGREE: tmpAngle = amDegree; break;
+          case STRING_ANGLE_MULTPI: tmpAngle = amMultPi; break;
+          default: tmpAngle = amNone; break;
+        }
+        setRegisterAngularMode(REGISTER_X, tmpAngle);
+        break;
+      }
+
+
       case STRING_COMPLEX34: {
         char *imag = tmpStringLabelOrVariableName;
         _getStringLabelOrVariableName(literalAddress);
@@ -708,7 +731,9 @@ int16_t executeOneStep(uint8_t *step) {
     case ITM_BACK:        //  1412
     case ITM_CASE:        //  1418
     case ITM_SKIP: {      //  1603
+      uint8_t previousErrorCodeMeM = previousErrorCode;
       _executeOp(step, op, (indexOfItems[op].status & PTP_STATUS) >> 9);
+      previousErrorCode = previousErrorCodeMeM;
       return -1;
       }
 
@@ -720,6 +745,7 @@ int16_t executeOneStep(uint8_t *step) {
     }
 
     case 0x7fff: {        // 32767  .END.
+      screenUpdatingMode = SCRUPD_AUTO;
       fnReturn(0);
       return 0;
     }
@@ -790,6 +816,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
   }
 
   if(menuLabel != INVALID_VARIABLE) {
@@ -844,6 +871,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           }
@@ -866,6 +894,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
       break;
     }
     screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
   }
 
 stopProgram:
@@ -907,8 +936,8 @@ void fnCheckLabel(uint16_t label) {
     label = findNamedLabel(dynmenuGetLabel(dynamicMenuItem));
   }
 
-  // Local Label 00 to 99 and A, B, C, D, and E
-  if(label <= 104) {
+  // Local Label 00 to 99 and A to l
+  if(label <= LAST_LOCAL_LABEL) {
     // Search for local label
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
       if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label

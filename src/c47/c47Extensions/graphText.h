@@ -17,6 +17,7 @@
 #define      WRITE       4
 #define      NOACTION    5
 
+void         preventFilenameTimeout     (void);
 void         create_filename            (char *fn);
 
 int16_t      export_append_line         (const char *inputstring);
@@ -28,6 +29,9 @@ int16_t      save_text                  (const char *line1, uint8_t mode1, uint8
 void         printStatus                (uint8_t row, const char *line1, uint8_t forced);
 void         print_numberstr            (const char *line1, bool_t line_init);
 void         print_linestr              (const char *line1, bool_t line_init);
+void         print_inlinestr            (const char *line1, bool_t endline);
+void         print_Register_line        (calcRegister_t regist, char *before, char *after, bool_t line_init);
+
 int16_t      export_xy_to_file          (float x, float y);
 int16_t      import_string_from_filename(char *line1,  char *dirname,   char *filename_short,  char *filename,  char *fallback, bool_t scanning);
 

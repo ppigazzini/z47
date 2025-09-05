@@ -9,6 +9,52 @@
 
 typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
 
+uint64_t systemFlags0Changed = 0xFFFFFFFFFFFFFFFF;
+uint64_t systemFlags1Changed = 0xFFFFFFFFFFFFFFFF;
+uint64_t systemFlags2Changed = 0xFFFFFFFFFFFFFFFF;
+
+
+static void _setSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0Changed |= (~systemFlags0 & ((uint64_t)1 << flag));
+    systemFlags0 |= ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1Changed |= (~systemFlags1 & ((uint64_t)1 << (flag - 64)));
+    systemFlags1 |= ((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _clearSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0Changed |= (systemFlags0 & ((uint64_t)1 << flag));
+    systemFlags0 &= ~((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1Changed |= (systemFlags1 & ((uint64_t)1 << (flag - 64)));
+    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _flipSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0Changed |= ((uint64_t)1 << flag);
+    systemFlags0 ^=  ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1Changed |= ((uint64_t)1 << (flag - 64));
+    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
+  }
+}
+
+bool_t getSystemFlag(int32_t sf);
+
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
     case FLAG_YMD:       //these flags need to update the corresponding softkey status
@@ -27,47 +73,104 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENGOVR:
     case FLAG_ENDPMT:
     case FLAG_HPRP:
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
-    case FLAG_IRFRAC:
-    case FLAG_IRF_ON:
     case FLAG_alphaCAP:
     case FLAG_2TO10:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnRefreshState();
               break;
 
-    case FLAG_SBdate:
-    case FLAG_SBtime:
+    case FLAG_SBdate:       //these flags need to clear the statusbar and start SB again
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
-    case FLAG_SBfrac:
     case FLAG_SBint :
     case FLAG_SBmx  :
     case FLAG_SBtvm :
     case FLAG_SBoc  :
     case FLAG_SBss  :
-    case FLAG_SBclk :
+    case FLAG_SBstpw:
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
     case FLAG_SBshfR:
-              fnRefreshState();
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+    case FLAG_SBfrac:
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+    case FLAG_FRACT:
+    case FLAG_IRFRAC:
+    case FLAG_IRFRQ:
+            #if defined(DMCP_BUILD)
+              reallyClearStatusBar(201);
+            #endif
+            fnRefreshState();
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+            break;
+
+    case FLAG_BCD    :
+            if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
+              fnChangeBaseJM(10);
+            }
+            break;
+
+
+    default: break;
+  }
+
+
+  switch(systemFlag) {
+    case FLAG_SBfrac:
+              lastIntegerBase = 0; //needed to reset the annunciator
+              break;
+
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+              if(systemFlag == FLAG_SBtime && getSystemFlag(FLAG_SBtime)) {
+                _clearSystemFlag(FLAG_SBwoy);
+              }
+              else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
+                _clearSystemFlag(FLAG_SBtime);
+              }
+              break; 
+          
+    case FLAG_FRACT:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_IRFRAC);
+                _clearSystemFlag(FLAG_IRFRQ);
+              }
+              break;
+
+    case FLAG_IRFRAC:
+              if(getSystemFlag(FLAG_IRFRAC)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRFRQ);
+              }
+              break;
+
+     case FLAG_IRFRQ:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRFRAC);
+              }
               break;
 
     default: break;
@@ -75,42 +178,18 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
 }
 
 void setSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 |= ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_SET);
-  }
-  else {
-    systemFlags1 |= ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_SET);
-  }
+  _setSystemFlag(sf);
+  systemFlagAction(sf, FLAG_SET);
 }
 
 void clearSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 &= ~((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
-  else {
-    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
+  _clearSystemFlag(sf);
+  systemFlagAction(sf, FLAG_CLEAR);
 }
 
 void flipSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 ^=  ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_FLIP);
-  }
-  else {
-    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_FLIP);
-  }
+  _flipSystemFlag(sf);
+  systemFlagAction(sf, FLAG_FLIP);
 }
 
 bool_t getSystemFlag(int32_t sf) {
@@ -123,6 +202,46 @@ bool_t getSystemFlag(int32_t sf) {
     return (systemFlags1 & ((uint64_t)1 << (flag - 64))) != 0;
   }
 }
+
+bool_t didSystemFlagChange(int32_t sf) {
+  int32_t flag = sf & 0x3fff;
+  bool_t returnvalue;
+  if(flag < 64) {
+    returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
+    systemFlags0Changed &= ~((uint64_t)1 << flag);
+  }
+  else if (flag < 128) {
+    returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
+    systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
+  }
+  else {
+    returnvalue = (systemFlags2Changed & ((uint64_t)1 << (flag - 128))) != 0;
+    systemFlags2Changed &= ~((uint64_t)1 << (flag - 128));
+  }
+  return returnvalue;
+}
+
+void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_...
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0Changed |= ((uint64_t)1 << (flag-0));
+  }
+  else if (flag < 128) {
+    systemFlags1Changed |= ((uint64_t)1 << (flag-64));
+  }
+  else {
+    systemFlags2Changed |= ((uint64_t)1 << (flag-128));
+  }
+}
+
+void setAllSystemFlagChanged(void) {
+  systemFlags0Changed = 0xFFFFFFFFFFFFFFFF;
+  systemFlags1Changed = 0xFFFFFFFFFFFFFFFF;
+  systemFlags2Changed = 0xFFFFFFFFFFFFFFFF;
+}
+
+
 
 void forceSystemFlag(unsigned int sf, int set) {
   if(set) {
@@ -253,7 +372,7 @@ void fnSetFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _setAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -326,7 +445,7 @@ void fnClearFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _clearAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -400,7 +519,7 @@ void fnFlipFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         if(getSystemFlag(FLAG_ALPHA)) {
           _clearAlpha();
         }
@@ -472,6 +591,13 @@ void fnClFAll(uint16_t confirmation) {
     if(currentLocalFlags != NULL) {
       *currentLocalFlags = 0; // Clear local flags
     }
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_CLEAR_ALL_FLAGS;
+    }
+    else {
+      temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 
@@ -555,6 +681,7 @@ void SetSetting(uint16_t jmConfig) {
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
 
     case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_2TO10:
     case FLAG_PROPFR:
@@ -563,64 +690,37 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
-    case ITM_FRCYC:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
+    case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
+    case FLAG_BCD    :
+    case FLAG_LARGELI:
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
 
     case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
-      if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
-        clearSystemFlag(FLAG_IRFRAC);
-      }
-      break;
-
-//SUSPECT!! remove with XEQM
-    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break;
-    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break;
-    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break;
-    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break;
-    case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
-    case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
-
-
-    case ITM_DREAL:
-      fnFlipFlag(FLAG_DREAL);
-      if(getSystemFlag(FLAG_DREAL)) {
-        clearSystemFlag(FLAG_LARGELI);
-      }
-      break;
-    case FLAG_LARGELI:
-      fnFlipFlag(FLAG_LARGELI);
-      if(getSystemFlag(FLAG_LARGELI)) {
-        clearSystemFlag(FLAG_DREAL);
-      }
       break;
     case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
-      if(getSystemFlag(FLAG_IRFRAC)) {
-        setSystemFlag(FLAG_IRF_ON);
-        if(getSystemFlag(FLAG_FRACT)) {
-          clearSystemFlag(FLAG_FRACT);
-        }
-      }
-      else {
-        if(getSystemFlag(FLAG_IRF_ON)) {
-          clearSystemFlag(FLAG_IRF_ON);
-        }
-      }
       fnRefreshState();
+      break;
+    case ITM_DREAL:
+      fnFlipFlag(FLAG_DREAL);
       break;
 
 

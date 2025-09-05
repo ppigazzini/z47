@@ -32,8 +32,12 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_SCALE);
   setSystemFlag(FLAG_PLINE);
   setSystemFlag(FLAG_PBOX);
+  clearSystemFlag(FLAG_PCURVE);
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
+
+  real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+  real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
 
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
@@ -66,6 +70,9 @@ void fnPline(uint16_t unusedButMandatoryParameter) {
   flipSystemFlag(FLAG_PLINE);
   if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
     setSystemFlag(FLAG_PBOX);
+  }
+  if(!getSystemFlag(FLAG_PLINE)) {
+    clearSystemFlag(FLAG_PCURVE);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
@@ -112,6 +119,15 @@ void fnPbox (uint16_t unusedButMandatoryParameter) {
   fnPlotSQ(0);
 }
 
+void fnPcurve (uint16_t unusedButMandatoryParameter) {
+  flipSystemFlag(FLAG_PCURVE);
+  if(getSystemFlag(FLAG_PCURVE)) {
+    setSystemFlag(FLAG_PLINE);
+  }
+  fnRefreshState();                //jm
+  fnPlotSQ(0);
+}
+
 
 void fnPintg (uint16_t unusedButMandatoryParameter) {
   PLOT_INTG = !PLOT_INTG;
@@ -146,15 +162,13 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
   void fnPMzoom (uint16_t param) { //param = 2: positive; param = 1: negative
     switch(calcMode){
       case CM_PLOT_STAT: {
-        const int8_t RangeHi = 0;
-        const int8_t RangeLo = -3;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZOOM += increment;
-        if(PLOT_ZOOM > RangeHi) {
-          PLOT_ZOOM = RangeLo;
+        if(PLOT_ZOOM > statZoomRangeHi) {
+          PLOT_ZOOM = statZoomRangeLo;
         }
-        else if(PLOT_ZOOM < RangeLo) {
-          PLOT_ZOOM = RangeHi;
+        else if(PLOT_ZOOM < statZoomRangeLo) {
+          PLOT_ZOOM = statZoomRangeHi;
         }
         if(PLOT_ZOOM != 0) {
            PLOT_AXIS = true;
@@ -165,16 +179,19 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
         break;
       }
       case CM_GRAPH: {
-        const int8_t RangeHi = +16;
-        const int8_t RangeLo = -16;
+        //real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
+        //real34Zero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
         PLOT_AXIS = true;
         int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
         PLOT_ZMY += increment;
-        if(PLOT_ZMY > RangeHi) {
-          PLOT_ZMY = RangeLo;
+        if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
+          PLOT_ZMY = 0;
+        } else
+        if(PLOT_ZMY > zoomOverride+1) {
+          PLOT_ZMY = zoomRangeLo;
         }
-        else if(PLOT_ZMY < RangeLo) {
-          PLOT_ZMY = RangeHi;
+        else if(PLOT_ZMY < zoomRangeLo) {
+          PLOT_ZMY = zoomRangeHi;
         }
         fnRefreshState();
         fnPlotSQ(0);
@@ -338,7 +355,7 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if((plotStatMx[0]=='S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+  if((plotStatMx[0]=='D' ? (drawMxN() >= 1) : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
     }
@@ -359,7 +376,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 
 
 #if !defined(TESTSUITE_BUILD)
-  void plotarrow(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+  static void plotarrow(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     float dx, dy, ddx, dydx, zz, zzz;
     dydx = yn-yo;
     ddx = xn-xo;
@@ -371,8 +388,8 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       printf("%d %d  %d %d  ddx=%f, dydx=%f, zz=%f  zzz=%f, dx=%f, dy=%f \n", xo, yo, xn, yn, ddx, dydx, zz, zzz, dx, dy);
     #endif // STATDEBUG
     if(!(xo==xn && yo==yn)){
-      plotline(xn+(-3*dx +dy), yn+(-3*dy -dx), xn, yn);
-      plotline(xn+(-3*dx -dy), yn+(-3*dy +dx), xn, yn);
+      plotline1(xn+(-3*dx +dy), yn+(-3*dy -dx), xn, yn);
+      plotline1(xn+(-3*dx -dy), yn+(-3*dy +dx), xn, yn);
     }
     else {
       placePixel(xn,yn);
@@ -394,10 +411,10 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-5,+6,+0,-2},
       {0,0,0,0,0},
     };
-  void plotdeltabig(uint16_t xn, uint8_t yn) {              // Plots ldifferential sign; uses temporary x1,y1
+  static void plotdeltabig(int16_t xn, int16_t yn) {              // Plots ldifferential sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaBig[ii].valid == 1) {
-      plotline(xn+tabDeltaBig[ii].xd1, yn+tabDeltaBig[ii].yd1, xn+tabDeltaBig[ii].xd2, yn+tabDeltaBig[ii].yd2);
+      plotline1(xn+tabDeltaBig[ii].xd1, yn+tabDeltaBig[ii].yd1, xn+tabDeltaBig[ii].xd2, yn+tabDeltaBig[ii].yd2);
       ii++;
     }
   }
@@ -418,7 +435,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,+1,+2,0,0},
       {0,0,0,0,0},
     };
-  void plotdelta(uint16_t xn, uint8_t yn) {             // Plots ldifferential sign; uses temporary x1,y1
+  static void plotdelta(int16_t xn, int16_t yn) {             // Plots ldifferential sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDelta[ii].valid == 1) {
       placePixel(xn+tabDelta[ii].xd1, yn+tabDelta[ii].yd1);
@@ -436,10 +453,10 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,+1,-2+7,+1,-2+0},
       {0,0,0,0,0},
     };
-  void plotintbig(uint16_t xn, uint8_t yn) {            // Plots integral sign; uses temporary x1,y1
+  static void plotintbig(int16_t xn, int16_t yn) {            // Plots integral sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaIntBig[ii].valid == 1) {
-      plotline(xn+tabDeltaIntBig[ii].xd1, yn+tabDeltaIntBig[ii].yd1, xn+tabDeltaIntBig[ii].xd2, yn+tabDeltaIntBig[ii].yd2);
+      plotline1(xn+tabDeltaIntBig[ii].xd1, yn+tabDeltaIntBig[ii].yd1, xn+tabDeltaIntBig[ii].xd2, yn+tabDeltaIntBig[ii].yd2);
       ii++;
     }
   }
@@ -455,7 +472,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-1,+2,0,0},
       {0,0,0,0,0},
     };
-  void plotint(uint16_t xn, uint8_t yn) {               // Plots integral sign; uses temporary x1,y1
+  static void plotint(int16_t xn, int16_t yn) {               // Plots integral sign; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaInt[ii].valid == 1) {
       placePixel(xn+tabDeltaInt[ii].xd1, yn+tabDeltaInt[ii].yd1);
@@ -476,7 +493,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       {1,-0,+1,0,0},
       {0,0,0,0,0},
     };
-  void plotrms(uint16_t xn, uint8_t yn) {               // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+  static void plotrms(int16_t xn, int16_t yn) {               // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     int8_t ii=0;
     while(tabDeltaRms[ii].valid == 1) {
       placePixel(xn+tabDeltaRms[ii].xd1, yn+tabDeltaRms[ii].yd1);
@@ -488,84 +505,50 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 
 
 //###################################################################################
-void convertDigits(char * refstr, uint16_t ii, uint16_t * oo, char * outstr) {
-  switch(refstr[ii]) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = refstr[ii] + (0x80 - 48); break; //.
-    case 'x': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb3; break; //x ok
-    case 'y': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xb4; break; //y ok
-    case 'a': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9c; break; //a ok
-    case 's': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xae; break; //s ok
-    case ':': outstr[(*oo)++] = 0xa2; outstr[(*oo)++] = 0x36; break; //: ok
-    case '+': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8a; break; //+ ok
-    case '-': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x8b; break; //- ok
-    case '.': outstr[(*oo)++] = 0xa0; outstr[(*oo)++] = 0x1a; break; //. ok
-    case '/': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x25; break; /// ok
-    case 't': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xaf; break; //t \xa4\xaf
-    case 'i': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa4; break; //i ok
-    case 'c': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0x9e; break; //c ok
-    case 'k': outstr[(*oo)++] = 0xa4; outstr[(*oo)++] = 0xa6; break; //k ok
-    default:  outstr[(*oo)++] = refstr[ii];
+
+//PLSTAT; EQN Graph;
+
+#define bufLen 40
+
+
+#if !defined(TESTSUITE_BUILD)
+  static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
+    char buff[32];
+    char outstr[bufLen];
+    char tmpBuf[100];
+    snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(buff,formatCore(tick_int_y,acc,false,tmpBuf,50)));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff1, vmNormal, true, true);
+
+    snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(buff,formatCore(tick_int_x,acc,false,tmpBuf,50)));
+    convertDigits(smallE(buff,tmpString), outstr);
+    showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
-}
+#endif // !TESTSUITE_BUILD
 
 
 void graph_text(void) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
-    uint16_t ii;
-    #define bufLen 40
-    static uint16_t oo;
-    static char outstr[bufLen];
+    int16_t ii;
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
-    eformat_eng2(ss, "(", x_max, 2, "");
+    grphNumFormatter(ss, "(", x_max, 2, "");
     uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-    eformat_eng2(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+    grphNumFormatter(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
     uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     ypos += 38;
     n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
     showString(padEquals(tmpbuf, tt), &standardFont, n+3, ypos, vmNormal, false, false);
-    eformat_eng2(ss, "(", x_min, 2, "");
+    grphNumFormatter(ss, "(", x_min, 2, "");
     ypos += 19;
     n = showString(padEquals(tmpbuf, ss), &standardFont,1, ypos, vmNormal, false, false);
-    eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+    grphNumFormatter(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
     showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
-
-    snprintf(tmpString, bufLen, "  y %.3f/tick  ", tick_int_y);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
-    snprintf(tmpString, bufLen, "  x %.3f/tick  ", tick_int_x);
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii,&oo,outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
-    showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
-    ypos -= 12;
-
+    showGraphTickText1(tick_int_x, tick_int_y, 1, ypos, ypos-12, 3);
+    ypos -= 24;
 
     uint32_t minnx, minny;
     minny = 0;
@@ -577,26 +560,21 @@ void graph_text(void) {
       case 0: strcpy(tmpString,"            ");                    break;
       case 1: snprintf(tmpString, bufLen, "  y-axis x 0"); break;
       case 2: snprintf(tmpString, bufLen, "  x-axis y 0"); break;
-      case 3: snprintf(tmpString, bufLen, "  axis 0.0 ");  break;
+      case 3: snprintf(tmpString, bufLen, "  axis 0%s0 ", radixProcess(tmpbuf,"."));  break;
       default: ;
     }
 
     //Change to the small characters and fabricate a small = char
-    ii = 0;
-    oo = 0;
-    outstr[0] = 0;
-    while(tmpString[ii] != 0) {
-      convertDigits(tmpString, ii, &oo, outstr);
-      ii++;
-    }
-    outstr[oo] = 0;
+    static char outstr[bufLen];
+    convertDigits(tmpString, outstr);
+
     ii = showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
     if(tmpString[ stringByteLength(tmpString)-1 ] == '0') {
       #define sp 15
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos+2+sp), (uint16_t)(ii-11), (uint8_t)(ypos+2+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos+1+sp), (uint16_t)(ii-11), (uint8_t)(ypos+1+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos-1+sp), (uint16_t)(ii-11), (uint8_t)(ypos-1+sp));
-      plotline((uint16_t)(ii-17), (uint8_t)(ypos-2+sp), (uint16_t)(ii-11), (uint8_t)(ypos-2+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos+2+sp), (int16_t)(ii-11), (int16_t)(ypos+2+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos+1+sp), (int16_t)(ii-11), (int16_t)(ypos+1+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos-1+sp), (int16_t)(ii-11), (int16_t)(ypos-1+sp));
+      plotline1((int16_t)(ii-17), (int16_t)(ypos-2+sp), (int16_t)(ii-11), (int16_t)(ypos-2+sp));
     }
     ypos += 48 + 2*19;
 
@@ -718,6 +696,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
   #endif // STATDEBUG
 
   //Calc zoom scales
+  float plotzoomy = 1;
+  float plotzoomx = 1;
   if(mode == PLOTSTAT) {
     //the ZOOM command from outside the PLOT mode only works for PLSTAT
 //    const int8_t RangeHi = 0;
@@ -729,29 +709,45 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 //      PLOT_ZOOM = RangeLo;
 //    }
     float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
-    float plotzoomx = 1;
     calculateZoomFactor(PLOT_ZOOM * 0.75, &plotzoomx);
-    float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
+    plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
     multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
     if(drawHistogram == 1) {
       y_min = 0;
     }
   }
   else { //mode != PLOTSTAT
-    const int8_t RangeHi = +16;
-    const int8_t RangeLo = -16;
-    if(PLOT_ZMY > RangeHi) {
-      PLOT_ZMY = RangeHi;
+    if(PLOT_ZMY != zoomOverride) {
+      if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
+        PLOT_ZMY = 0;
+      } else if(PLOT_ZMY > zoomOverride+1) {
+        PLOT_ZMY = zoomRangeLo;
+      }
+      else if(PLOT_ZMY < zoomRangeLo) {
+        PLOT_ZMY = zoomRangeHi;
+      }
+      calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
+      //use this line if the x-display-range is to be the same as the y-display-range
+      //plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
+      multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+      //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
     }
-    else if(PLOT_ZMY < RangeLo) {
-      PLOT_ZMY = RangeLo;
+    else {
+
+      //PLOT_ZMY = 18, special case to allow Ylo Yhi
+      //_LY _UY override only if ZOOM is not set, AND Yup and Ylo are not zero
+      if(fabs(plotzoomx-1) < 0.00001 && fabs(plotzoomy-1) < 0.00001 && !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) && real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))) {
+        y_min = convertRegisterToDouble(RESERVED_VARIABLE_LY);
+        y_max = convertRegisterToDouble(RESERVED_VARIABLE_UY);
+      } else {
+        y_min = -10;
+        y_max = 10;
+      }
+
     }
-    float plotzoomy = 1;
-    calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
-    float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
-    multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
-    //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
   }
+
+
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f \n", x_min,y_min,x_max,y_max, dx, dy);
@@ -851,6 +847,7 @@ void graph_plotmem(void) {
       float y;
       float sx, sy;
       float ddx = FLoatingMax;
+      float dxx = FLoatingMax;
       float dydx = FLoatingMax;
       float inty = 0;
       float inty_off = 0;
@@ -1175,6 +1172,12 @@ void graph_plotmem(void) {
         }
 
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
+        bool_t plotInCurves = getSystemFlag(FLAG_PCURVE);
+
+        static int16_t prev_y_unclipped = 0;
+        if(plotInCurves) {
+          plotline3(0,0,0,0,true,false); //reset
+        }
         for(ix = 0; (ix < statnum); ++ix) {
           if(plotmode != _VECT) {
             x = 0;
@@ -1183,35 +1186,30 @@ void graph_plotmem(void) {
             if(ix !=0 && ( (PLOT_DIFF && !invalid_diff) || (PLOT_INTG && !invalid_intg) || (PLOT_RMS && !invalid_rms) )) {
               ddx = grf_x(ix) - grf_x(ix-1);
               if(PLOT_DIFF && ddx != 0) {
-                if(ix == 1) {                               // only two samples available
+                if(ix == 1 || ( fabs( ((grf_x(ix) - grf_x(ix-1)) / (grf_x(ix-1) - grf_x(ix-2))) - 1) > 0.0001 )) {                               // only two samples available
                   dydx = (grf_y(ix) - grf_y(ix-1)) / ddx;   // Differential
+                  dxx = (grf_x(ix) + grf_x(ix-1) )/2;
                 }
                 else { //if(ix >= 2)                        // ix >= 2 three samples available 0 1 2
                   dydx = ( grf_y(ix-2) - 4.0 * grf_y(ix-1) + 3.0 * grf_y(ix) ) / 2.0 / ddx; //ChE 205 — Formulas for Numerical Differentiation, formule 32
+                  dxx = (grf_x(ix));
                 }
               }
               else {
                 dydx = FLoatingMax;
               }
 
-              x = (grf_x(ix) + grf_x(ix-1))/2;
-              if(PLOT_DIFF) {
-                y = dydx;                 //y is the default graph
-              }
               if(PLOT_RMS)  {
                 rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
-                y = rmsy;                 //y is the default graph
               }
               if(PLOT_INTG) {
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
-                y = inty;                 //y is the default graph
               }
             }
 
-            if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS)) {
-              x = grf_x(ix);
-              y = grf_y(ix);
-            }
+            x = grf_x(ix);
+            y = grf_y(ix);
+ 
           }
           else { //_VECT
             sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
@@ -1221,17 +1219,25 @@ void graph_plotmem(void) {
           }
           xo = xN1;
           yo = yN1;
-          yN0 = yN1;
+          yN0 = prev_y_unclipped;
 
           xN1 = screen_window_x(x_min,x,x_max);
           yN1 = screen_window_y_nolimit(y_min,y,y_max);
+          int16_t current_y_unclipped = yN1;
 
+          if(ix == 0) {
+            xo = xN1;
+            yo = yN1;
+            yN0 = yN1;
+            prev_y_unclipped = yN1;  // Initialize for next iteration
+            continue;  // Skip clipping for first point
+          }
 
           #if defined(STATDEBUG)
-            printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
+            printf("\n         xN1 = %d : (x_min=%f,x=%f,x_max=%f) ", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
-            printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
+            printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
+            printf("   ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
           int16_t minN_y, minN_x;
@@ -1243,63 +1249,75 @@ void graph_plotmem(void) {
           bool_t outOfScreen0  = (yN0 >= SCREEN_HEIGHT_GRAPH || yN0 < minN_y);
 
           #if defined(STATDEBUG)
-            printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
-            printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            printf("Before edge checking: 001 yN1 =%4i yN0=%4i minN_y=%4i : ", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%4i  xo=%4i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            if (!bothOutOfScreen01 && outOfScreen0 && !outOfScreen1) {
+              printf("POTENTIAL ENTRY DEBUG: yN0=%d yN1=%d slope=%s from=%s\n", yN0, yN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE", yN0 >= SCREEN_HEIGHT_GRAPH ? "BOTTOM" : (yN0 < minN_y ? "TOP" : "MIDDLE"));
+            }
           #endif // STATDEBUG
+
+
+            if (!bothOutOfScreen01) {
+              // Coming in from bottom - BOTH positive and negative slopes
+              if (outOfScreen0 && !outOfScreen1 && yN0 >= SCREEN_HEIGHT_GRAPH) {
+                //printf("ENTRY CLIP BOTTOM: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
+                int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
+                if (yN1 != yN0) {
+                  float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
+                  //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
+                  xo = xo + dxN;
+                  yN0 = SCREEN_HEIGHT_GRAPH - 1;
+                  yo = yN0;
+                }
+              }
+              // Coming in from top - BOTH positive and negative slopes  
+              else if (outOfScreen0 && !outOfScreen1 && yN0 < minN_y) {
+                //printf("ENTRY CLIP TOP: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
+                int16_t dY = abs(yN0 - minN_y);
+                if (yN1 != yN0) {
+                  float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
+                  //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
+                  xo = xo + dxN;
+                  yN0 = minN_y;
+                  yo = yN0;
+                }
+              }
+            }
 
           //exceeding the negative y-axis part or the bottom of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
           if((yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
              (yN1 < yN0 && xN1 > xo && yN0 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
+            //printf("EXIT CLIP BOTTOM: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
+            if (yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
-            xN1 = xo + dxN;
+            xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
           }
 
           //exceeding the positive y-axis part or the top of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
           else if((yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
                   (yN1 > yN0 && xN1 > xo && yN0 < minN_y && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
+            //printf("EXIT CLIP TOP: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(yN0 - minN_y);
+            if (yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
-            xN1 = xo + dxN;
+            xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = minN_y;
           }
 
           #if defined(STATDEBUG)
-            printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
-            printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+            printf("After  edge checking: 002 yN1 =%4i yN0=%4i minN_y=%4i : ", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%4i xo=%4i minN_x=%4i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
           #endif // STATDEBUG
-
-
- //         // Changed to clean up plotting on the edge of the screen
- //         if(yN1 >= SCREEN_HEIGHT_GRAPH) {
- //           yN1 = SCREEN_HEIGHT_GRAPH - 1;
- //         }
- //         else if(yN < minN_y) {
- //           yN = minN_y;
- //         }
- //         if(xN1 > SCREEN_WIDTH_GRAPH  - 1) {
- //           xN1 = SCREEN_WIDTH_GRAPH - 1;
- //         }
- //         if(xN1 < minN_x) {
- //           xN1 = minN_x;
- //         }
-
 
           if((xN1 < SCREEN_WIDTH_GRAPH && xN1 >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
             yn = yN1;
             xn = xN1;
 
-
-          //ensure initial line is not present and also not coming into the graph area from outside
-          if(ix == 0 || outOfScreen0) {
-            yo = yn;
-            xo = xn;
-          }
-
-
             #if defined(STATDEBUG)
-              printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
+              if(invalid_diff || invalid_intg || invalid_rms)
+                printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
             #endif // STATDEBUG
 
             if(plotmode != _VECT) {
@@ -1317,9 +1335,9 @@ void graph_plotmem(void) {
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
-                  printf("Plotting Delta x=%f dy=%f \n", x - ddx/2, dydx);
+                  printf("Plotting Delta x=%f dy=%f \n", dxx, dydx);
                 #endif // STATDEBUG
-                plotdelta(screen_window_x( x_min, x - ddx/2, x_max), screen_window_y(y_min, dydx, y_max));
+                plotdelta(screen_window_x( x_min, dxx, x_max), screen_window_y(y_min, dydx, y_max));
               }
 
 
@@ -1335,10 +1353,10 @@ void graph_plotmem(void) {
                 #if defined(STATDEBUG)
                   printf("Plotting Integral x=%f intg(x)=%f\n", x-ddx/2, inty);
                 #endif // STATDEBUG
-                uint16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
+                int16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
                 //uint16_t xN1   = screen_window_x(x_min, grf_x(ix), x_max);
-                uint16_t yNintg= screen_window_y(y_min, inty, y_max);
-                uint16_t xAvg  = ((xN0+xN1) >> 1);
+                int16_t yNintg= screen_window_y(y_min, inty, y_max);
+                int16_t xAvg  = ((xN0+xN1) >> 1);
 
                 if(abs((int16_t)(xN1-xN0)>=6)) {
                   plotint( xAvg, yNintg );
@@ -1349,20 +1367,20 @@ void graph_plotmem(void) {
                 }
 
                 if(abs((int16_t)(xN1-xN0) >= 6)) {
-                  plotline(xN1,    yNintg, xAvg+2, yNintg);
-                  plotline(xAvg-2, yNintg, xN0,    yNintg);
+                  plotline1(xN1,    yNintg, xAvg+2, yNintg);
+                  plotline1(xAvg-2, yNintg, xN0,    yNintg);
                 }
                 else if(abs((int16_t)(xN1-xN0) >= 4)) {
-                  plotline(xN1,    yNintg, xAvg+2, yNintg);
-                  plotline(xAvg-2, yNintg, xN0,    yNintg);
+                  plotline1(xN1,    yNintg, xAvg+2, yNintg);
+                  plotline1(xAvg-2, yNintg, xN0,    yNintg);
                 }
 
                 if(PLOT_SHADE) {
-                  uint16_t yNoff = screen_window_y(y_min, 0, y_max);
+                  int16_t yNoff = screen_window_y(y_min, 0, y_max);
                   plotrect(xN0, yN0,   xN1, yN1);
                   plotrect(xN0, yNoff, xN1, yN0);
                   if(abs((int16_t)(xN1-xN0) >= 6)) {
-                    plotline(xN0, yN0,   xN1, yN1);
+                    plotline1(xN0, yN0,   xN1, yN1);
                   }
                 }
               }
@@ -1377,15 +1395,19 @@ void graph_plotmem(void) {
 
             if(getSystemFlag(FLAG_PLINE)) {
               #if defined(STATDEBUG)
-                printf("Plotting line from xo=%d yo=%d to x=%d y=%d\n", xo, yo, xn, yn);
+                printf("######       Plotting line from xo=%d yo=%d to x=%d y=%d\n\n", xo, yo, xn, yn);
               #endif // STATDEBUG
-              plotline2(xo, yo, xn, yn);
+              if(plotInCurves) {
+                plotline3(xo, yo, xn, yn, false, false);
+              } else {
+                plotline2(xo, yo, xn, yn);
+              }
             }
 
           }
           else {
             #if defined(PC_BUILD)
-              printf("Not plotted: ");
+              printf("             Not plotted: ");
               if(!(xN1 < SCREEN_WIDTH_GRAPH)) {
                 printf("NOT xN1 < SCREEN_WIDTH_GRAPH; ");
               }
@@ -1398,7 +1420,7 @@ void graph_plotmem(void) {
               if(!(yN1 >= minN_y)) {
                 printf("NOT yN1>=minN_y; ");
               }
-              printf("Not plotted: xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
+              printf(" : xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
             #endif // PC_BUILD
           }
           if(exitKeyWaiting()) {
@@ -1407,8 +1429,17 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG) && defined(PC_BUILD)
             fflush(stdout);
           #endif // STATDEBUG
+
+          prev_y_unclipped = current_y_unclipped;
         }
         //#################################################### ^^^ MAIN GRAPH LOOP ^^^ #########################
+        if(getSystemFlag(FLAG_PLINE) && plotInCurves) {
+          #if defined(STATDEBUG)
+            printf("######       Plotting last line segment from xo=%d yo=%d to x=%d y=%d\n\n", xo, yo, xn, yn);
+          #endif // STATDEBUG
+          plotline3(0,0,0,0,false,true); //last line segment
+        }
+
       }
       else {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
@@ -1436,30 +1467,13 @@ void fnStatList() {
     char tmpstr1[100], tmpstr2[100];
     int16_t ix, ixx, statnum;
 
-    clearScreen();
+    clearScreen(1);
     refreshStatusBar();
 
-    if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
-      plotmode = _VECT;
-    }
-    else {
-      plotmode = _SCAT;
-    }
-
-    if(regStatsXY != INVALID_VARIABLE &&
-      ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
-
-      if(plotStatMx[0] == 'S') {
-        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time
-      }
-      else {
-        statnum = drawMxN();
-      }
-
+    if(regStatsXY != INVALID_VARIABLE && (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+      statnum = drawMxN();
       fnStatSum(0);
-      //      runFunction(ITM_NSIGMA);
-      sprintf(tmpString, "Stat data: N = %d", statnum);
-      //      runFunction(ITM_DROP);
+      sprintf(tmpString, "Graph data: N = %d", statnum);
       print_linestr(tmpString, true);
 
                                   #if defined(STATDEBUG)
@@ -1475,21 +1489,10 @@ void fnStatList() {
 
       for(ix = 0; (ix < min(10,statnum)); ++ix) {
         ixx = statnum - ix - 1 + ListXYposition;
+        char tmpBuf[100];
 
-        if(((fabs(grf_x(ixx)) > 0.000999 || grf_x(ixx) == 0) && fabs(grf_x(ixx)) < 1000000)) {
-          sprintf(tmpstr1,"[%3d] x%19.7f, ",ixx+1, grf_x(ixx));
-        }
-        else {
-          sprintf(tmpstr1,"[%3d] x%19.7e, ",ixx+1, grf_x(ixx)); //round(grf_x(ixx)*1e10)/1e10);
-        }
-
-        if(((fabs(grf_y(ixx)) > 0.000999 || grf_y(ixx) == 0) && fabs(grf_y(ixx)) < 1000000)) {
-          sprintf(tmpstr2,"y%19.7f", grf_y(ixx));
-        }
-        else {
-          sprintf(tmpstr2,"y%19.7e", grf_y(ixx)); //round(grf_y(ixx)*1e10)/1e10);
-        }
-
+          sprintf(tmpstr1,"[%3d] x%4s%14s, ",ixx+1, "", formatCore(grf_x(ixx),10,false,tmpBuf, 150));
+          sprintf(tmpstr2,"y%4s%14s, ", "", formatCore(grf_y(ixx),10, false,tmpBuf, 150));
         strcat(tmpstr1,tmpstr2);
 
         print_numberstr(tmpstr1,false);

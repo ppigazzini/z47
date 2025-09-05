@@ -5,18 +5,21 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
+#define BACKUP_VERSION                     1011     // Added reserve variables at the end of the list
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
 1006     // 2024-11-07 Remove Aspect and add PLOT_PLUS
 1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
 1008     // 2024-11018 Add lastCenturyHighUsed
+1009     // Change matrix headers, add tag
+1010     // Change constant format in equation, adding a # prefix
+1011     // Added reserve variables UY, LY, UEST, LEST.
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000016 // Add lastCenturyHighUsed
+#define configFileVersion                  10000021 // Change constant format in equation, adding a # prefix
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -32,9 +35,16 @@
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
 10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
+...
+10000020 // Change bcd
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
+
+
+#define LOADDEBUG
+#undef LOADDEBUG
+
 
 uint16_t flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
@@ -53,17 +63,154 @@ uint16_t flushBufferCnt = 0;
 
 
 uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Example: read from file: RB_F14 (which was 0) and and report RBX_F14 (which is 221) to the program.
-uint8_t output = parameter;
+  uint8_t output = parameter;
   if(parameter < 20) {
     output = parameter + offset;
   }
   return output;
 }
 
+#if !defined(TESTSUITE_BUILD)
+// Forced base-10 conversion functions
+static int16_t toInt16(const char *str) {
+  return (int16_t)strtol(str, NULL, 10);
+}
 
+int32_t toInt32(const char *str) {
+  return strtol(str, NULL, 10);
+}
+
+static uint8_t toUint8(const char *str) {
+  return (uint8_t)strtoul(str, NULL, 10);
+}
+
+static uint16_t toUint16(const char *str) {
+  return (uint16_t)strtoul(str, NULL, 10);
+}
+
+static uint32_t toUint32(const char *str) {
+  return strtoul(str, NULL, 10);
+}
+
+// Floating point conversion functions
+float stringToFloat(const char *str) {
+  return strtof(str, NULL);
+}
+
+//Utility to add angle and polar markers
+static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
+  if(angle != amNone) {
+    switch(getTagAngularMode(angle)) {
+      case amDegree: {
+        strcat(str, ":DEG");
+        break;
+      }
+      case amDMS: {
+        strcat(str, ":DMS");
+        break;
+      }
+      case amRadian: {
+        strcat(str, ":RAD");
+        break;
+      }
+      case amMultPi: {
+        strcat(str, ":MULTPI");
+        break;
+      }
+      case amGrad: {
+        strcat(str, ":GRAD");
+        break;
+      }
+      case amNone: {
+        break;
+      }
+      default: {
+        strcpy(str, ":???");
+        break;
+      }
+    }
+  }
+  if((polmode & amPolar) == amPolar) {
+    strcat(str, "p");
+  }
+}
+
+// Utility routines to skip stuff
+static char *skip_word(const char *str) {
+  while(*str != ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *skip_space(const char *str) {
+  while(*str == ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *next_word(const char *str) {
+  return skip_word(skip_space(str));
+}
+
+static char *skip_to_space_newline(const char *str) {
+  while(*str != ' ' && *str != '\n' && *str != 0)
+    str++;
+  return (char *)str;
+}
+
+static char *toInt16_next_word(const char *str, int16_t *val) {
+    *val = toInt16(str);
+    return next_word(str);
+}
+
+static void _updateConstantsInEquations(void) {
+  for(uint16_t i = 0; i < numberOfFormulae; i++) {
+    if(allFormulae[i].pointerToFormulaData != C47_NULL) {
+      parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+      if(lastErrorCode == 0) {   // if equation is valid, check and update constants
+        const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[i].pointerToFormulaData);
+        strcpy(tmpString, strPtr);
+        updateOldConstants = true;
+        parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        updateOldConstants = false;
+        setEquation(i, tmpString);
+      }
+      else {
+        lastErrorCode = 0;
+      }
+    }
+  }
+}
+#endif
 
 
 #if defined(PC_BUILD)
+static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+  //converting old matrix register headers in the form 0xrrrrcccc to 0xttrrrccc including the tag.
+  //input expects the old matrix dimensions read into the new header as follows:
+  //  memory block contains 0xrrrrcccc and is read into cols=0x0ccc and rows=0x0rrr
+  //  this is rewritten to  0x00rrrccc and a amNone tag is applied with Polar off.
+  //  resulting in          0x05rrrccc
+  //this MUST only be called for version numbers indicating an old backup file, and an old state file.
+  //it CANNOT be run on a new matrix header, as the cols read in form 0x0FFF will be shifted by 4 bits to align and will break if already shifted meaning if it already is new format.
+  //Old matrixes with rows or cols > 12 bits 0x0FFF will fail. It is however unreasonable to expect such large matrix dimensions of 2^12-1 = 4095.
+  if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
+    #if defined PC_BUILD
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
+    #endif //PC_BUILD
+    uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
+    uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
+    #if defined PC_BUILD
+      printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+    #endif //PC_BUILD
+    REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
+    REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
+    //printf("R%2u: getRegisterTag=%u REGISTER_MATRIX_HEADER(regist)->mtag=%u\n", regist, getRegisterTag(regist), REGISTER_MATRIX_HEADER(regist)->mtag);
+    REGISTER_MATRIX_HEADER(regist)->mtag = amNone; //clear spare bits and clear Polar flag, setting only amNone.
+  }
+}
+
+
   cfgFileParam_t *paramHead=NULL, *paramCurrent;
 
   static void changeCommaToPeriod(char *str) {
@@ -359,6 +506,7 @@ uint8_t output = parameter;
     saveStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     saveStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
     saveStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    saveStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     saveStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
     saveStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     saveStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
@@ -401,6 +549,7 @@ uint8_t output = parameter;
     saveStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     saveStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     saveStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
+    saveStateValue(&iterations,                     sizeof(iterations),                                          "iterations",                     "bool");
     saveStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     saveStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     saveStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -478,8 +627,6 @@ uint8_t output = parameter;
     saveStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     saveStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C47 JM
     saveStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C47 JM
-    saveStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C47 JM
-    saveStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C47 JM
     saveStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C47 JM
     saveStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
     saveStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
@@ -493,6 +640,8 @@ uint8_t output = parameter;
     saveStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     saveStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
     saveStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
+    saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
@@ -758,9 +907,11 @@ uint8_t output = parameter;
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
     }
-    else if(backupVersion == 0) {
+    else if(backupVersion == 0 || backupVersion < 1011) {
       refreshScreen(92);
-      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
+      printf("\n");
+      userAbort("Cannot restore calc's memory from file backup.cfg! File backup.cfg has a too low version number.");
+      userAbort("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
       return;
     }
 
@@ -912,6 +1063,7 @@ uint8_t output = parameter;
     restoreStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     restoreStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
     restoreStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    restoreStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     restoreStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
     restoreStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     restoreStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
@@ -960,6 +1112,7 @@ uint8_t output = parameter;
     restoreStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     restoreStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     restoreStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
+    restoreStateValue(&iterations,                     sizeof(iterations),                                          "iterations",                     "bool");
     restoreStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     restoreStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     restoreStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -1049,8 +1202,9 @@ uint8_t output = parameter;
     restoreStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     restoreStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C47 JM
     restoreStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C47 JM
+    bool_t bcdDisplay = false;
     restoreStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C47 JM
-    restoreStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C47 JM
+    if(bcdDisplay) setSystemFlag(FLAG_BCD); else clearSystemFlag(FLAG_BCD);
     restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C47 JM
     bcdDisplaySign = convert001090400T001090500(bcdDisplaySign,BCDu);
     restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
@@ -1067,8 +1221,17 @@ uint8_t output = parameter;
     restoreStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     restoreStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
     restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    restoreStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
+    restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
 
+    // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
+    if (getSystemFlag(FLAG_FRACT)) {
+      setSystemFlag(FLAG_FRACT);
+    }
+    else if (getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_IRFRAC);
+    }
 
 
     // If you create a new parameter, proceed as following:
@@ -1078,22 +1241,22 @@ uint8_t output = parameter;
     bool_t tmp1 = false;
     if(backupVersion < 1003) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
-      printf("Version number of configfile < 1003, transferring IRFRAC.");
+      printf("Version number of configfile < 1003, transferring FLAG_IRFRQ.");
+      if(tmp1) {
+        setSystemFlag(FLAG_IRFRQ);
+      }
+      else {
+        clearSystemFlag(FLAG_IRFRQ);
+      }
+    }
+    if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
+      printf("Version number of configfile < 1003, transferring FLAG_IRFRAC.");
       if(tmp1) {
         setSystemFlag(FLAG_IRFRAC);
       }
       else {
         clearSystemFlag(FLAG_IRFRAC);
-      }
-    }
-    if(backupVersion < 1003) {
-      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
-      printf("Version number of configfile < 1003, transferring IRF_ON.");
-      if(tmp1) {
-        setSystemFlag(FLAG_IRF_ON);
-      }
-      else {
-        clearSystemFlag(FLAG_IRF_ON);
       }
     }
     if(backupVersion < 1003) {
@@ -1146,7 +1309,33 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_PFX_ALL);
       }
     }
+    clearScreen(210); // implicit forceSBupdate();
 
+
+
+    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits
+      printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
+      int qq = FIRST_GLOBAL_REGISTER;
+      while (qq <= LAST_GLOBAL_REGISTER) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+      qq = FIRST_NAMED_VARIABLE;
+      while (qq <= LAST_NAMED_VARIABLE) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+      qq = FIRST_LOCAL_REGISTER;
+      while (qq <= LAST_LOCAL_REGISTER) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+    }
+
+    if(backupVersion < 1010) {                           //old constant format in equations
+      printf("Version number of configfile < 1010: adding # prefix to constants in equations.\n");
+      _updateConstantsInEquations();
+    }
 
 
     // Freeing the space occupied by all the configuration parameters
@@ -1284,42 +1473,8 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
       case dtReal34: {
         real34ToString(REGISTER_REAL34_DATA(regist), tmpRegisterString);
-        switch(getRegisterAngularMode(regist)) {
-          case amDegree: {
-            strcpy(aimBuffer1, "Real:DEG");
-            break;
-          }
-
-          case amDMS: {
-            strcpy(aimBuffer1, "Real:DMS");
-            break;
-          }
-
-          case amRadian: {
-            strcpy(aimBuffer1, "Real:RAD");
-            break;
-          }
-
-          case amMultPi: {
-            strcpy(aimBuffer1, "Real:MULTPI");
-            break;
-          }
-
-          case amGrad: {
-            strcpy(aimBuffer1, "Real:GRAD");
-            break;
-          }
-
-          case amNone: {
-            strcpy(aimBuffer1, "Real");
-            break;
-          }
-
-          default: {
-            strcpy(aimBuffer1, "Real:???");
-            break;
-          }
-        }
+        strcpy(aimBuffer1, "Real");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), 0);
         break;
       }
 
@@ -1328,6 +1483,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
         strcat(tmpRegisterString, " ");
         real34ToString(REGISTER_IMAG34_DATA(regist), tmpRegisterString + strlen(tmpRegisterString));
         strcpy(aimBuffer1, "Cplx");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         break;
       }
 
@@ -1346,12 +1502,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       case dtReal34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
+        textTag(aimBuffer1, isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
         break;
       }
 
       case dtComplex34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
+        textTag(aimBuffer1, (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
         break;
       }
 
@@ -1685,14 +1843,13 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     Norm_Key_00.funcParam);        save(tmpString, strlen(tmpString));
+        //prevent empty string from being written to config file.
+        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     (Norm_Key_00.funcParam[0]==0) ? "NoNormKeyParamDef" : Norm_Key_00.funcParam); save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "bcdDisplay\n%"                 PRIu8  "\n",     (uint8_t)bcdDisplay);          save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "topHex\n%"                     PRIu8  "\n",     (uint8_t)topHex);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DM_Cycling\n%"                 PRIu8  "\n",     DM_Cycling);                   save(tmpString, strlen(tmpString));
@@ -1709,6 +1866,8 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "PLOT_SHADE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SHADE);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "firstDayOfWeek\n%"             PRIu8  "\n",     firstDayOfWeek);               save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "firstWeekOfYearDay\n%"         PRIu8  "\n",     firstWeekOfYearDay);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "END_OTHER_PARAM\n");                                                           save(tmpString, strlen(tmpString));
 
   ioFileClose();
@@ -1791,97 +1950,38 @@ static void UI64toString(uint64_t value, char * tmpRegisterString) {
 }
 #endif // !TESTSUITE_BUILD
 
-static unsigned int getBase(const char **str) {
-  unsigned int base = 10;
-  //fprintf(stderr,"\nget base\n");fflush(stderr);
-  if(**str == '0' && (((*str)[1] >= '0' && (*str)[1] <= '7') || (*str)[1] == 'x')) {
-    base = 8;
-    ++*str;
-    if(**str == 'x') {
-      base = 16;
-      ++*str;
-    }
+#define stringToIntFunc(name, type)               \
+  type name(const char *str) {                    \
+    return (type)strtol(str, NULL, 0);            \
   }
-  return base;
-}
-
-static unsigned int getDigit(const char *str) {
-  if('0' <= *str && *str <= '9') {
-    return *str - '0';
-  }
-  else if('a' <= *str && *str <= 'f') {
-    return *str - 'a' + 10;
-  }
-  else if('A' <= *str && *str <= 'F') {
-    return *str - 'A' + 10;
-  }
-  return 1000000;
-}
 
 #define stringToUintFunc(name, type)              \
   type name(const char *str) {                    \
-    type value = 0;                               \
-    unsigned int digit, base = getBase(&str);     \
-                                                  \
-    for(;;) {                                     \
-      digit = getDigit(str++);                    \
-      if(digit > base)                            \
-        break;                                    \
-      value = value*base + digit;                 \
-    }                                             \
-    return value;                                 \
+    return (type)strtoul(str, NULL, 0);           \
   }
 
 stringToUintFunc(stringToUint8,  uint8_t)
 stringToUintFunc(stringToUint16, uint16_t)
 stringToUintFunc(stringToUint32, uint32_t)
-stringToUintFunc(stringToUint64, uint64_t)
 
-#define stringToIntFunc(name, type)               \
-  type name(const char *str) {                    \
-    type value = 0;                               \
-    bool_t sign = false;                          \
-    unsigned int digit, base = getBase(&str);     \
-                                                  \
-    if(*str == '-') {                             \
-      str++;                                      \
-      sign = true;                                \
-    }                                             \
-    else if(*str == '+') {                        \
-      str++;                                      \
-    }                                             \
-                                                  \
-    for(;;) {                                     \
-      digit = getDigit(str++);                    \
-      if(digit > base)                            \
-        break;                                    \
-      value = value*base + digit;                 \
-    }                                             \
-                                                  \
-    if(sign) {                                    \
-      value = -value;                             \
-    }                                             \
-    return value;                                 \
-  }
+uint64_t stringToUint64(const char *str) {
+  return strtoull(str, NULL, 0);
+}
 
 stringToIntFunc(stringToInt8,  int8_t)
 stringToIntFunc(stringToInt16, int16_t)
 stringToIntFunc(stringToInt32, int32_t)
-stringToIntFunc(stringToInt64, int64_t)
 
-
-float stringToFloat(const char *str) {
-  return strtof(str, NULL);
-}
-
-double stringToDouble(const char *str) {
-  return strtod(str, NULL);
+int64_t stringToInt64(const char *str) {
+  return strtoll(str, NULL, 0);
 }
 
 
 #if !defined(TESTSUITE_BUILD)
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
+
+    //printf("restoreRegister:%i %s %s\n",regist, type, value);
 
     if(type[4] == ':') {
       if(type[5] == 'R') {
@@ -1903,11 +2003,15 @@ double stringToDouble(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, 0, tag);
-      stringToReal34(value, REGISTER_REAL34_DATA(regist));
+      if(type[stringByteLength(type)-1] == 'p') {
+        tag |= amPolar;
+      }
+      type[4] = 0;
+      //printf("               :%i %s %s\n",regist, type, value);
     }
 
-    else if(strcmp(type, "Real") == 0) {
+
+    if(strcmp(type, "Real") == 0) {
       reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
@@ -1944,13 +2048,8 @@ double stringToDouble(const char *str) {
       uint16_t sign = (value[0] == '-' ? 1 : 0);
       uint64_t val  = stringToUint64(value + 1);
 
-      while(*value != ' ') {
-        value++;
-      }
-      while(*value == ' ') {
-        value++;
-      }
-      uint32_t base = stringToUint32(value);
+      value = next_word(value);
+      uint32_t base = toUint32(value);
 
       convertUInt64ToShortIntegerRegister(sign, val, base, regist);
     }
@@ -1958,11 +2057,8 @@ double stringToDouble(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, 0, amNone);
-      imaginaryPart = value;
-      while(*imaginaryPart != ' ') {
-        imaginaryPart++;
-      }
+      reallocateRegister(regist, dtComplex34, 0, tag);
+      imaginaryPart = skip_word(value);
       *(imaginaryPart++) = 0;
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
       stringToReal34(imaginaryPart, REGISTER_IMAG34_DATA(regist));
@@ -1973,30 +2069,25 @@ double stringToDouble(const char *str) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
-      rows = stringToUint16(value);
-      cols = stringToUint16(numOfCols);
-      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      rows = toUint16(value);
+      cols = toUint16(numOfCols);
+      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+      //printf("     %i %i %i\n",rows, cols, tag);
     }
 
     else if(strcmp(type, "Cxma") == 0) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
-      rows = stringToUint16(value);
-      cols = stringToUint16(numOfCols);
-      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      rows = toUint16(value);
+      cols = toUint16(numOfCols);
+      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
@@ -2012,13 +2103,14 @@ double stringToDouble(const char *str) {
       if(loadedVersion < 10000008) {
         // For earlier version config files of 896 desxcriptor length, the above Write into the register must only be up to the old descriptor content.
         // We add the defaults for the new portion of the new descriptor in the following string.
-        char tmpvalue[65];
-        strcpy(tmpvalue, "0000000000000000F777DC2C2B842A1C33203033460C2A330118000000000000");
-        for(tag=0; tag<strlen(tmpvalue); tag+=2, cfg++) {
-          *cfg = ((tmpvalue[tag] >= 'A' ? tmpvalue[tag] - 'A' + 10 : tmpvalue[tag] - '0') << 4) | (tmpvalue[tag + 1] >= 'A' ? tmpvalue[tag + 1] - 'A' + 10 : tmpvalue[tag + 1] - '0');
-        }
+        static const unsigned char tmpvalue[] = {
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
+          0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
+          0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        };
+        memcpy(cfg, tmpvalue, sizeof(tmpvalue));
       }
-
     }
 
     else {
@@ -2051,10 +2143,7 @@ double stringToDouble(const char *str) {
         char *imaginaryPart;
 
         readLine(tmpString);
-        imaginaryPart = tmpString;
-          while(*imaginaryPart != ' ') {
-            imaginaryPart++;
-          }
+        imaginaryPart = skip_word(tmpString);
         *(imaginaryPart++) = 0;
         stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
         stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
@@ -2071,13 +2160,10 @@ double stringToDouble(const char *str) {
     char *numOfCols;
 
     if(strcmp(type, "Rema") == 0 || strcmp(type, "Cxma") == 0) {
-      numOfCols = value;
-        while(*numOfCols != ' ') {
-          numOfCols++;
-        }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
-      rows = stringToUint16(value);
-      cols = stringToUint16(numOfCols);
+      rows = toUint16(value);
+      cols = toUint16(numOfCols);
 
       for(i = 0; i < rows * cols; ++i) {
         readLine(tmpString);
@@ -2087,8 +2173,6 @@ double stringToDouble(const char *str) {
   }
 
 
-#define LOADDEBUG
-#undef LOADDEBUG
 #if defined(LOADDEBUG)
   static void debugPrintf(int s1, const char * s2, const char * s3) {
     #if defined(PC_BUILD)
@@ -2136,21 +2220,21 @@ double stringToDouble(const char *str) {
     readLine(tmpString);
     #if defined(LOADDEBUG)
       sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-      debugPrintf(0, "-", tmpString);
+      debugPrintf(0, "-", line);
     #endif //LOADDEBUG
 
     if(strcmp(tmpString, "GLOBAL_REGISTERS") == 0) {
       readLine(tmpString); // Number of global registers
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // Register number
-        regist = stringToInt16(tmpString + 1);
+        regist = toInt16(tmpString + 1);
         read2Lines(aimBuffer,tmpString); // Register data type & Register value
 
         if(loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n))) {
           #if defined(LOADDEBUG)
-            sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-            debugPrintf(1, "-", tmpString);
+            sprintf(line,", register=%i loadMode:%d, ['%s'] = %s", regist - s + d, loadMode, aimBuffer, tmpString);
+            debugPrintf(1, "-", line);
           #endif //LOADDEBUG
           restoreRegister(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist, aimBuffer, tmpString);
           restoreMatrixData(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist);
@@ -2169,69 +2253,17 @@ double stringToDouble(const char *str) {
           debugPrintf(2, "-", tmpString);
         #endif //LOADDEBUG
         str = tmpString;
-        globalFlags[0] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
+        for (i = 0; i < 7; i++) {
+          globalFlags[i] = toUint16(str);
+          str = next_word(str);
         }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[1] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[2] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[3] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[4] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[5] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[6] = stringToInt16(str);
-
-        while(*str != ' ') {
-          str++;
-        }
-        while(*str == ' ') {
-          str++;
-        }
-        globalFlags[7] = stringToInt16(str);
+        globalFlags[i] = toUint16(str);
       }
     }
 
     else if(strcmp(tmpString, "LOCAL_REGISTERS") == 0) {
       readLine(tmpString); // Number of local registers
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2247,7 +2279,7 @@ double stringToDouble(const char *str) {
         #endif //LOADDEBUG
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString); // Register number
-          regist = stringToInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
+          regist = toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
           read2Lines(aimBuffer,tmpString); // Register data type & Register value
 
           if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
@@ -2276,7 +2308,7 @@ double stringToDouble(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(4, "B", tmpString);
         #endif //LOADDEBUG
-        *currentLocalFlags = stringToUint32(tmpString);
+        *currentLocalFlags = toUint32(tmpString);
       }
     }
 
@@ -2286,13 +2318,17 @@ double stringToDouble(const char *str) {
         debugPrintf(20, "A", tmpString);
       #endif //LOADDEBUG
       readLine(tmpString); // Number of named variables
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(errorMessage); // Variable name
         read2Lines(aimBuffer,tmpString); // Variable data type & Variable value
 
-        if(loadMode == LM_ALL || loadMode == LM_NAMED_VARIABLES ||
-          (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))) {
+        if(( loadMode == LM_ALL ||
+             loadMode == LM_NAMED_VARIABLES ||
+            (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0))) ) &&
+
+           !(loadMode == LM_NAMED_VARIABLES && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))
+          ) {
 
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2317,7 +2353,7 @@ double stringToDouble(const char *str) {
 
     else if(strcmp(tmpString, "STATISTICAL_SUMS") == 0) {
       readLine(tmpString); // Number of statistical sums
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       if(numberOfRegs > 0 && (loadMode == LM_ALL || loadMode == LM_SUMS)) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2325,6 +2361,7 @@ double stringToDouble(const char *str) {
         #endif //LOADDEBUG
 
         initStatisticalSums();
+        reLoadStatisticalSums();
 
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString); // statistical sum
@@ -2375,14 +2412,22 @@ double stringToDouble(const char *str) {
         }
         if(loadedVersion < 10000012) {
           clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
-          clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
+          clearSystemFlag(FLAG_IRFRQ);  //restore previously used manually stored flags in OTHER STUFF below
+        }
+
+        // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
+        if (getSystemFlag(FLAG_FRACT)) {
+          setSystemFlag(FLAG_FRACT);
+        }
+        else if (getSystemFlag(FLAG_IRFRAC)) {
+          setSystemFlag(FLAG_IRFRAC);
         }
       }
     }
 
     else if(strcmp(tmpString, "KEYBOARD_ASSIGNMENTS") == 0) {
       readLine(tmpString); // Number of keys
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // key
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
@@ -2390,79 +2435,22 @@ double stringToDouble(const char *str) {
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(8, "-", tmpString);
           #endif //LOADDEBUG
-          str = tmpString;
-          kbd_usr[i].keyId = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primary = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShifted = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShifted = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].keyLblAim = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryAim = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShiftedAim = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShiftedAim = stringToInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryTam = stringToInt16(str);
+          str = toInt16_next_word(tmpString, &kbd_usr[i].keyId);
+          str = toInt16_next_word(str, &kbd_usr[i].primary);
+          str = toInt16_next_word(str, &kbd_usr[i].fShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].gShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].keyLblAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryAim);
+          str = toInt16_next_word(str, &kbd_usr[i].fShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].gShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryTam);
         }
       }
     }
 
     else if(strcmp(tmpString, "KEYBOARD_ARGUMENTS") == 0) {
       readLine(tmpString); // Number of keys
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2481,16 +2469,12 @@ double stringToDouble(const char *str) {
             debugPrintf(9, "B", tmpString);
           #endif //LOADDEBUG
           str = tmpString;
-          uint16_t key = stringToUint16(str);
+          uint16_t key = toUint16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2);
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
@@ -2502,7 +2486,7 @@ double stringToDouble(const char *str) {
 
     else if(strcmp(tmpString, "MYMENU") == 0) {
       readLine(tmpString); // Number of keys
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // key
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
@@ -2511,16 +2495,12 @@ double stringToDouble(const char *str) {
             debugPrintf(10, "-", tmpString);
           #endif //LOADDEBUG
           str = tmpString;
-          userMenuItems[i].item            = stringToInt16(str);
+          userMenuItems[i].item            = toInt16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userMenuItems[i].argumentName);
             }
@@ -2531,7 +2511,7 @@ double stringToDouble(const char *str) {
 
     else if(strcmp(tmpString, "MYALPHA") == 0) {
       readLine(tmpString); // Number of keys
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // key
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
@@ -2540,16 +2520,12 @@ double stringToDouble(const char *str) {
             debugPrintf(11, "-", tmpString);
           #endif //LOADDEBUG
           str = tmpString;
-          userAlphaItems[i].item            = stringToInt16(str);
+          userAlphaItems[i].item            = toInt16(str);
           userAlphaItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userAlphaItems[i].argumentName);
             }
@@ -2560,7 +2536,7 @@ double stringToDouble(const char *str) {
 
     else if(strcmp(tmpString, "USER_MENUS") == 0) {
       readLine(tmpString); // Number of keys
-      int16_t numberOfMenus = stringToInt16(tmpString);
+      int16_t numberOfMenus = toInt16(tmpString);
       for(int32_t j=0; j<numberOfMenus; j++) {
         readLine(tmpString);
         int16_t target = -1;
@@ -2582,7 +2558,7 @@ double stringToDouble(const char *str) {
         }
 
         readLine(tmpString);
-        numberOfRegs = stringToInt16(tmpString);
+        numberOfRegs = toInt16(tmpString);
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString); // key
           if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
@@ -2591,16 +2567,12 @@ double stringToDouble(const char *str) {
               debugPrintf(13, "-", tmpString);
             #endif //LOADDEBUG
             str = tmpString;
-            userMenus[target].menuItem[i].item            = stringToInt16(str);
+            userMenus[target].menuItem[i].item            = toInt16(str);
             userMenus[target].menuItem[i].argumentName[0] = 0;
 
-            while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-              str++;
-            }
+            str = skip_to_space_newline(str);
             if(*str == ' ') {
-              while(*str == ' ') {
-                str++;
-              }
+              str = skip_space(str);
               if((*str != '\n') && (*str != 0)) {
                 utf8ToString((uint8_t *)str, userMenus[target].menuItem[i].argumentName);
               }
@@ -2623,7 +2595,7 @@ double stringToDouble(const char *str) {
       uint16_t oldFreeProgramBytes = freeProgramBytes;
 
       readLine(tmpString); // Number of blocks
-      numberOfBlocks = stringToUint16(tmpString);
+      numberOfBlocks = toUint16(tmpString);
       if(loadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
       }
@@ -2634,11 +2606,11 @@ double stringToDouble(const char *str) {
 
       readLine(tmpString); // currentStep (pointer to block)
       if(loadMode == LM_ALL) {
-        currentStep = TO_PCMEMPTR(stringToUint32(tmpString));
+        currentStep = TO_PCMEMPTR(toUint32(tmpString));
       }
       readLine(tmpString); // currentStep (offset in bytes within block)
       if(loadMode == LM_ALL) {
-        currentStep += stringToUint32(tmpString);
+        currentStep += toUint32(tmpString);
       }
       else if(loadMode == LM_PROGRAMS) {
         if(programList[currentProgramNumber - 1].step > 0) {
@@ -2651,16 +2623,32 @@ double stringToDouble(const char *str) {
 
       readLine(tmpString); // firstFreeProgramByte (pointer to block)
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
-        firstFreeProgramByte = TO_PCMEMPTR(stringToUint32(tmpString));
+        firstFreeProgramByte = TO_PCMEMPTR(toUint32(tmpString));
       }
       readLine(tmpString); // firstFreeProgramByte (offset in bytes within block)
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
-        firstFreeProgramByte += stringToUint32(tmpString);
+        firstFreeProgramByte += toUint32(tmpString);
       }
 
       readLine(tmpString); // freeProgramBytes
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
-        freeProgramBytes = stringToUint16(tmpString);
+        freeProgramBytes = toUint16(tmpString);
+      }
+
+
+      if (firstFreeProgramByte + freeProgramBytes != beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2) {
+        uint32_t diff = TO_BYTES(RAM_SIZE_IN_BLOCKS_NEW_HW - RAM_SIZE_IN_BLOCKS_OLD_HW);
+        #if defined(DMCP_BUILD) && defined(OLD_HW)
+          if ((firstFreeProgramByte + freeProgramBytes - diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+            currentStep -= diff;
+            firstFreeProgramByte -= diff;
+          }
+        #else
+          if ((firstFreeProgramByte + freeProgramBytes + diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+            currentStep += diff;
+            firstFreeProgramByte += diff;
+          }
+        #endif
       }
 
       if(loadMode == LM_PROGRAMS) { // .END. to END
@@ -2687,18 +2675,46 @@ double stringToDouble(const char *str) {
         }
       }
 
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("Before loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+          printf("\n  freeProgramBytes        = 16b %u\n", freeProgramBytes);
+          printf("  numberOfBlocks          = 16b %u, on dot per block: ", numberOfBlocks);
+        }
+      #endif // LOADDEBUG
+
       for(i=0; i<numberOfBlocks; i++) {
+
+        #if defined(LOADDEBUG)
+          printf(".");
+        #endif // LOADDEBUG
+
         readLine(tmpString); // One block
         if(loadMode == LM_ALL) {
-          *(((uint32_t *)(beginOfProgramMemory)) + i) = stringToUint32(tmpString);
+          *(((uint32_t *)(beginOfProgramMemory)) + i) = toUint32(tmpString);
         }
         else if(loadMode == LM_PROGRAMS) {
-          uint32_t tmpBlock = stringToUint32(tmpString);
+          uint32_t tmpBlock = toUint32(tmpString);
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
 
-      scanLabelsAndPrograms();
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("\n");
+          printf("After loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+        }
+      #endif // LOADDEBUG
+
+      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+        scanLabelsAndPrograms();
+      }
     }
 
     else if(strcmp(tmpString, "EQUATIONS") == 0) {
@@ -2715,7 +2731,7 @@ double stringToDouble(const char *str) {
       }
 
       readLine(tmpString); // Number of formulae
-      formulae = stringToUint16(tmpString);
+      formulae = toUint16(tmpString);
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2741,6 +2757,9 @@ double stringToDouble(const char *str) {
           setEquation(i, tmpString + TMP_STR_LENGTH / 2);
         }
       }
+      if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
+        _updateConstantsInEquations();
+      }
     }
 
     else if(strcmp(tmpString, "OTHER_CONFIGURATION_STUFF") == 0) {
@@ -2753,7 +2772,7 @@ double stringToDouble(const char *str) {
                                         //That ensures if missing settings, that the proper defaults are set.
       }
       readLine(tmpString); // Number params not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
-      numberOfRegs = stringToInt16(tmpString);
+      numberOfRegs = toInt16(tmpString);
       i = 0;
       while(i < 255) {                                                           //adjust for absolute maximum number of OTHER CONFIGUARTION SETTINGS
         readLine(aimBuffer); // param
@@ -2768,158 +2787,142 @@ double stringToDouble(const char *str) {
           #endif //LOADDEBUG
 
           if(strcmp(aimBuffer, "firstGregorianDay") == 0) {
-            firstGregorianDay = stringToUint32(tmpString);
+            firstGregorianDay = toUint32(tmpString);
           }
           else if(strcmp(aimBuffer, "denMax") == 0) {
-            denMax = stringToUint32(tmpString);
+            denMax = toUint32(tmpString);
             if(denMax == 1 || denMax > MAX_DENMAX) {
               denMax = MAX_DENMAX;
             }
           }
           else if(strcmp(aimBuffer, "lastDenominator") == 0) {
-            lastDenominator = stringToUint32(tmpString);
+            lastDenominator = toUint32(tmpString);
             if(lastDenominator < 1 || lastDenominator > MAX_DENMAX) {
               lastDenominator = 4;
             }
           }
-          else if(strcmp(aimBuffer, "displayFormat"               ) == 0) { displayFormat       = stringToUint8(tmpString);   }
-          else if(strcmp(aimBuffer, "displayFormatDigits"         ) == 0) { displayFormatDigits = stringToUint8(tmpString);   }
-          else if(strcmp(aimBuffer, "timeDisplayFormatDigits"     ) == 0) { timeDisplayFormatDigits = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize = stringToUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode     = stringToUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits    = stringToUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits       = stringToUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "currentAngularMode"          ) == 0) { currentAngularMode   = stringToUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "displayFormat"               ) == 0) { displayFormat       = toUint8(tmpString);   }
+          else if(strcmp(aimBuffer, "displayFormatDigits"         ) == 0) { displayFormatDigits = toUint8(tmpString);   }
+          else if(strcmp(aimBuffer, "timeDisplayFormatDigits"     ) == 0) { timeDisplayFormatDigits = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode     = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits    = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits       = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "currentAngularMode"          ) == 0) { currentAngularMode   = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "groupingGap"                 ) == 0) { //backwards compatible loading old config files
             configCommon(CFG_DFLT);
-            grpGroupingLeft = stringToUint8(tmpString);                     //Changed from groupingGap to remain compatible
+            grpGroupingLeft = toUint8(tmpString);                     //Changed from groupingGap to remain compatible
             grpGroupingRight = grpGroupingLeft;
           }
-          else if(strcmp2(aimBuffer, "gapItemLeft"                ) == 0) { gapItemLeft          = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "gapItemRight"               ) == 0) { gapItemRight         = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "gapItemRadix"               ) == 0) { gapItemRadix         = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "lastCenturyHighUsed"        ) == 0) { lastCenturyHighUsed  = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingLeft"            ) == 0) { grpGroupingLeft      = stringToUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = stringToUint8(tmpString);  }      //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left   = stringToUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingRight"           ) == 0) { grpGroupingRight     = stringToUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode         = stringToUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack         = stringToUint8(tmpString);  }
+          else if(strcmp2(aimBuffer, "gapItemLeft"                ) == 0) { gapItemLeft          = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "gapItemRight"               ) == 0) { gapItemRight         = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "gapItemRadix"               ) == 0) { gapItemRadix         = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "lastCenturyHighUsed"        ) == 0) { lastCenturyHighUsed  = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingLeft"            ) == 0) { grpGroupingLeft      = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = toUint8(tmpString);  }      //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left   = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingRight"           ) == 0) { grpGroupingRight     = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode         = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack         = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
             pcg32_global.state = stringToUint64(tmpString);
-            str = tmpString;
-            while(*str != ' ') {
-              str++;
-            }
-            while(*str == ' ') {
-              str++;
-            }
+            str = next_word(tmpString);
             pcg32_global.inc = stringToUint64(str);
           }
-          else if(strcmp(aimBuffer, "exponentLimit"               ) == 0) { exponentLimit         = stringToInt16(tmpString); }
-          else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = stringToInt16(tmpString); }
-          else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = stringToUint16(tmpString);}
-          else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = stringToUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }
-          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
-          else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }  //Keep compatible with old name by repeating it
-          else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "exponentLimit"               ) == 0) { exponentLimit         = toInt16(tmpString); }
+          else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = toInt16(tmpString); }
+          else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = toUint16(tmpString);}
+          else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
+          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }
+          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
+          else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) { BASE_HOME             = toUint8(tmpString) != 0; }  //Keep compatible with old name by repeating it
+          else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
             // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
             if(Norm_Key_00_key != -1) {
-              Norm_Key_00.func  = stringToUint16(tmpString);   // only the function is restored, assuming no param
+              Norm_Key_00.func  = toUint16(tmpString);   // only the function is restored, assuming no param
               Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
             } else {
               Norm_Key_00.used = false;
             }
           }
-          else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = stringToUint16(tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
-          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex                = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(stringToUint8(tmpString),BCDu); }
-          else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(stringToUint8(tmpString),RBX_M14); }                  //10000003
-          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(stringToUint8(tmpString),RBX_F14); }                  //10000003
-          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = stringToUint16(tmpString);}
+          else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = toUint16(tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {      //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
+              if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                     //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - old file compatibility: If next setting name is found as data, clear it.
+                  Norm_Key_00.used = 0;                                            //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+                  readLine(tmpString);                                             //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
+              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - if the code word for a blank string, blank the string.
+              } else {                                                             //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
+                  strcpy(Norm_Key_00.funcParam,tmpString);                         //Otherwise proceed and use the data as normal
+              }
+          }
+          else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }        //Keep compatible by repeating
+          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) {
+            if(loadedVersion < 10000020) {
+              forceSystemFlag(FLAG_BCD, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "topHex"                      ) == 0) {
+            if(loadedVersion < 10000019) {
+              forceSystemFlag(FLAG_TOPHEX, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(toUint8(tmpString),BCDu); }
+          else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(toUint8(tmpString),RBX_M14); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(toUint8(tmpString),RBX_F14); }                  //10000003
+          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = toUint8(tmpString); }                  //10000004
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS              = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS              = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE            = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "firstDayOfWeek"              ) == 0) { firstDayOfWeek        = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "firstWeekOfYearDay"          ) == 0) { firstWeekOfYearDay    = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_LARGELI);
-                }
-              else {
-                clearSystemFlag(FLAG_LARGELI);
-              }
+              forceSystemFlag(FLAG_LARGELI, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "constantFractions"           ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_IRFRAC);
-                }
-              else {
-                clearSystemFlag(FLAG_IRFRAC);
-              }
+              forceSystemFlag(FLAG_IRFRQ, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_IRF_ON);
-              }
-              else {
-                clearSystemFlag(FLAG_IRF_ON);
-              }
+              forceSystemFlag(FLAG_IRFRAC, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "eRPN"                        ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_ERPN);
-                }
-              else {
-                clearSystemFlag(FLAG_ERPN);
-              }
+              forceSystemFlag(FLAG_ERPN, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "CPXMult"                     ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_CPXMULT);
-                }
-              else {
-                clearSystemFlag(FLAG_CPXMULT);
-              }
+              forceSystemFlag(FLAG_CPXMULT, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "SI_All"                      ) == 0) {
             if(loadedVersion < 10000012) {
-              if((bool_t)stringToUint8(tmpString) != 0) {
-                setSystemFlag(FLAG_PFX_ALL);
-                }
-              else {
-                clearSystemFlag(FLAG_PFX_ALL);
-              }
+              forceSystemFlag(FLAG_PFX_ALL, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
 
@@ -2941,6 +2944,7 @@ double stringToDouble(const char *str) {
     #if defined(LOADDEBUG)
       debugPrintf(18, "END2", "");
     #endif // LOADDEBUG
+    clearScreen(211); // implicit forceSBupdate();
   }
 #endif // !TESTSUITE_BUILD
 
@@ -2951,11 +2955,11 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
-    #if defined(LOADDEBUG)
-      char yy[10];
-      sprintf(yy, "%d",loadMode);
-      debugPrintf(-1, "LoadMode", yy);
-    #endif // LOADDEBUG
+  #if defined(LOADDEBUG)
+    char yy[1000];
+    sprintf(yy, "%d",loadMode);
+    debugPrintf(-1, "LoadMode", yy);
+  #endif // LOADDEBUG
 
   if(loadType == autoLoad) {
     path = ioPathAutoSave;
@@ -2966,6 +2970,12 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   else {
     path = ioPathLoadStateFile;
   }
+
+  #if defined(LOADDEBUG)
+    sprintf(yy, "%u",path);
+    debugPrintf(-1, "Path:", yy);
+  #endif // LOADDEBUG
+
 
   ret = ioFileOpen(path, ioModeRead);
 
@@ -3000,8 +3010,8 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       readLine(aimBuffer); // internal rev number (ignore now)
       readLine(aimBuffer); // param
       readLine(tmpString); // value
-      if(strcmp(aimBuffer, "C47_save_file_00") == 0) {
-        loadedVersion = stringToUint32(tmpString);
+      if(strcmp(aimBuffer, "C47_save_file_00") == 0 || strcmp(aimBuffer, "C43_save_file_00") == 0) {
+        loadedVersion = toUint32(tmpString);
         if(loadedVersion < 10000000 || loadedVersion > 20000000) {
           loadedVersion = 0;
         }
@@ -3009,14 +3019,47 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     }
   }
 
-  if((((loadType == manualLoad) || (loadType == stateLoad)) && loadMode == LM_ALL) ||
-    ((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL) )) {
+  bool_t enableLoad = false;
+  switch(loadType) {
+    case manualLoad: {
+      switch(loadMode) {
+        case LM_ALL: {
+          enableLoad = true;
+        }
+        break;
+        case LM_PROGRAMS:
+        case LM_REGISTERS:
+        case LM_SYSTEM_STATE:
+        case LM_SUMS:
+        case LM_NAMED_VARIABLES: {
+          enableLoad = true;
+        }
+        break;
+        default:break;
+      }
+    }
+    break;
+    case stateLoad: {
+      if (loadMode == LM_ALL) {
+        enableLoad = true;
+      }
+    }
+    break;
+    case autoLoad: {
+      if (((loadMode == LM_ALL) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion)) ){
+        enableLoad = true;
+      }
+    }
+    break;
+    default:break;
+  }
+  if(enableLoad) {
     while(restoreOneSection(loadMode, s, n, d)) {
     }
   }
 
-
   lastErrorCode = ERROR_NONE;
+  previousErrorCode = lastErrorCode;
 
   ioFileClose();
 
@@ -3066,7 +3109,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if defined(DMCP_BUILD)
     sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
     sys_timer_start(TIMER_IDX_REFRESH_SLEEP,1000);
-    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
+    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
   #endif // DMCP_BUILD
 
 

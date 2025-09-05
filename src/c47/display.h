@@ -6,8 +6,6 @@
 
 // The maximum argument to FIX, SCI, ...
 #define DSP_MAX     19
-#define DSP_MAX_SIG 17 //max 17 bearing in minf dREAL, overridden if DSP_MAX < DSP_MAX_SIG
-#define DSP_MAX_UNT 20 //max 20, overridden if DSP_MAX < DSP_MAX_UNT
 
 void fnDisplayFormatFix                (uint16_t displayFormatN);
 void fnDisplayFormatSci                (uint16_t displayFormatN);
@@ -22,10 +20,19 @@ void mimShowElement                    (void);
 void fnView                            (uint16_t regist);
 void fnAview                           (uint16_t regist);
 void fnPrompt                          (uint16_t regist);
-void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
+
+typedef enum {
+  NOIRFRAC    = 0,
+  LIMITIRFRAC = 1,
+  LIGHTIRFRAC = 2,
+  FULLIRFRAC  = 3
+} irfracOption_t;
+#define LIMITEXP    true
+#define FRONTSPACE  true
+void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
-void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
-void angle34ToDisplayString2           (const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
+void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, const uint16_t tagAngle, const bool_t tagPolar);
+void angle34ToDisplayString2           (const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
 void _numerator                        (uint64_t numer, char *displayString, int16_t *endingZero);
 void _denominator                      (uint64_t denom, char *displayString, int16_t *endingZero);
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
@@ -37,6 +44,7 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void timeToDisplayString               (calcRegister_t regist, char *displayString, bool_t ignoreTDisp);
 void real34MatrixToDisplayString       (calcRegister_t regist, char *displayString);
+bool_t vectorToDisplayString           (calcRegister_t regist, char *displayString);
 void complex34MatrixToDisplayString    (calcRegister_t regist, char *displayString);
 void exponentToDisplayString           (int32_t exponent, char *displayString, char *displayValueString, bool_t nimMode);
 void supNumberToDisplayString          (int32_t supNumber, char *displayString, char *displayValueString, bool_t insertGap);

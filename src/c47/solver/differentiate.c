@@ -6,18 +6,54 @@
  ***********************************************/
 
 #include "c47.h"
+#include "finite_differences.h"
 
-void fn1stDeriv(uint16_t label) {
+
+#if 0
+// All of the above finite differences combined into a single array */
+TO_QSPI static const FINITE_DIFF_COEFF *const all_first_derivatives[] = {
+    &der_1_central_10,      &der_1_central_8,       &der_1_central_6,
+    &der_1_central_4,       &der_1_central_2,
+    &der_1_upper_5,         &der_1_upper_4,         &der_1_strict_upper_5,
+    &der_1_upper_3,         &der_1_strict_upper_4,  &der_1_upper_2,
+    &der_1_strict_upper_3,  &der_1_upper_1,         &der_1_strict_upper_2,
+    &der_1_lower_5,         &der_1_lower_4,         &der_1_strict_lower_5,
+    &der_1_lower_3,         &der_1_strict_lower_4,  &der_1_lower_2,
+    &der_1_strict_lower_3,  &der_1_lower_1,         &der_1_strict_lower_2,
+    NULL
+};
+TO_QSPI static const FINITE_DIFF_COEFF *const all_second_derivatives[] = {
+    // &der_2_central_10
+    &der_2_central_8,       &der_2_central_6,       &der_2_central_4,
+    &der_2_central_2,
+    &der_2_upper_5,         &der_2_upper_4,         &der_2_strict_upper_5,
+    &der_2_upper_3,         &der_2_strict_upper_4,  &der_2_upper_2,
+    &der_2_strict_upper_3,
+    &der_2_lower_5,         &der_2_lower_4,         &der_2_strict_lower_5,
+    &der_2_lower_3,         &der_2_strict_lower_4,  &der_2_lower_2,
+    &der_2_strict_lower_3,
+    NULL
+};
+#endif
+
+static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff);
+
+static void calcDerivOfOrder(uint16_t label, int order) {
+  calcDeriv(label, finite_difference_table[order]);
+}
+
+static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
   currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   bool_t solving = getSystemFlag(FLAG_SOLVING);
+  char buf[2];
+
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
-    firstDerivative(label);
-    temporaryInformation = TI_1ST_DERIVATIVE;
+    calcDerivOfOrder(label, order);
+    temporaryInformation = ti;
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[2];
     buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
@@ -29,8 +65,8 @@ void fn1stDeriv(uint16_t label) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      firstDerivative(label);
-      temporaryInformation = TI_1ST_DERIVATIVE;
+      calcDerivOfOrder(label, order);
+      temporaryInformation = ti;
     }
   }
   else {
@@ -45,78 +81,37 @@ void fn1stDeriv(uint16_t label) {
   }
 }
 
+void fn1stDeriv(uint16_t label) {
+  derivativeCommon(label, DERIVATIVE_FIRST_CENTRAL, TI_1ST_DERIVATIVE);
+}
+
 void fn2ndDeriv(uint16_t label) {
-  currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-  bool_t solving = getSystemFlag(FLAG_SOLVING);
-  setSystemFlag(FLAG_SOLVING);
-  if(label >= FIRST_LABEL && label <= LAST_LABEL) {
-    secondDerivative(label);
-    temporaryInformation = TI_2ND_DERIVATIVE;
-  }
-  else if(REGISTER_X <= label && label <= REGISTER_T) {
-    // Interactive mode
-    char buf[2];
-    buf[0] = letteredRegisterName((calcRegister_t)label);
-    buf[1] = 0;
-    label = findNamedLabel(buf);
-    if(label == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named label", buf);
-        moreInfoOnError("In function fn2ndDeriv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      secondDerivative(label);
-      temporaryInformation = TI_2ND_DERIVATIVE;
-    }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "unexpected parameter %u", label);
-      moreInfoOnError("In function fn2ndDeriv:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  }
-  if(!solving) {
-    clearSystemFlag(FLAG_SOLVING);
-  }
+  derivativeCommon(label, DERIVATIVE_SECOND_CENTRAL, TI_2ND_DERIVATIVE);
 }
 
-void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
-  //new method to maintain solver variable
-  #if !defined(TESTSUITE_BUILD)
-    reallyRunFunction(ITM_RCL, currentSolverVariable);
-    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-  #endif // TESTSUITE_BUILD
-  currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
-  firstDerivative(INVALID_VARIABLE);
-    #if !defined(TESTSUITE_BUILD)
-      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
-      reallyRunFunction(ITM_STO, currentSolverVariable);
-      fnDrop(NOPARAM);
-    #endif // TESTSUITE_BUILD
-  temporaryInformation = TI_1ST_DERIVATIVE;
-}
-
-
-void fn2ndDerivEq(uint16_t unusedButMandatoryParameter) {
+static void derivativeEquation(uint16_t order, uint8_t ti) {
     #if !defined(TESTSUITE_BUILD)
     //new method to maintain solver variable
       reallyRunFunction(ITM_RCL, currentSolverVariable);
       copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
-  secondDerivative(INVALID_VARIABLE);
+  calcDerivOfOrder(INVALID_VARIABLE, order);
     #if !defined(TESTSUITE_BUILD)
       reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
       reallyRunFunction(ITM_STO, currentSolverVariable);
       fnDrop(NOPARAM);
     #endif // TESTSUITE_BUILD
-  temporaryInformation = TI_2ND_DERIVATIVE;
+  temporaryInformation = ti;
 }
 
+void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
+  derivativeEquation(DERIVATIVE_FIRST_CENTRAL, TI_1ST_DERIVATIVE);
+}
 
+void fn2ndDerivEq(uint16_t unusedButMandatoryParameter) {
+  derivativeEquation(DERIVATIVE_SECOND_CENTRAL, TI_2ND_DERIVATIVE);
+}
 
 /* The following routines are ported from WP34s. */
 
@@ -134,27 +129,26 @@ static void deriv_found_lbl(calcRegister_t deltaX, real_t *h) {
 
 static void deriv_default_h(real_t *h) {
   calcRegister_t deltaX;
+  unsigned int i;
+  TO_QSPI static const char *const lbls[] = {
+    STD_delta "x",  STD_delta "X",
+    STD_DELTA "x",  STD_DELTA "X",
+  };
 
+  saveForUndo();
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   realToReal34(h, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(NOPARAM);
 
   dynamicMenuItem = -1;
-  if((deltaX = findNamedLabel(STD_delta "x")) != INVALID_VARIABLE) {
-    deriv_found_lbl(deltaX, h);
+  for (i=0; i<nbrOfElements(lbls); i++)
+    if ((deltaX = findNamedLabel(lbls[i])) != INVALID_VARIABLE) {
+      deriv_found_lbl(deltaX, h);
+      undo();
+      return;
   }
-  else if((deltaX = findNamedLabel(STD_delta "X")) != INVALID_VARIABLE) {
-    deriv_found_lbl(deltaX, h);
-  }
-  else if((deltaX = findNamedLabel(STD_DELTA "x")) != INVALID_VARIABLE) {
-    deriv_found_lbl(deltaX, h);
-  }
-  else if((deltaX = findNamedLabel(STD_DELTA "X")) != INVALID_VARIABLE) {
-    deriv_found_lbl(deltaX, h);
-  }
-  else {
-    realCopy(const_1on10, h); /* default h = 0.1 */
-  }
+  undo();
+  realMultiply(h, const_1e_16, h, &ctxtReal39);
 }
 
 
@@ -165,14 +159,12 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
 
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     #if !defined(TESTSUITE_BUILD)
-      //printf("parseEquation\n");
       reallyRunFunction(ITM_STO, currentSolverVariable);
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     #endif // TESTSUITE_BUILD
   }
   else {
     dynamicMenuItem = -1;
-    //printf("Running RPN execProgram\n");
     execProgram(label);
     fnToReal(NOPARAM);
   }
@@ -186,206 +178,99 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
   }
 }
 
+// Try to compute a single derivative estimate from a stencil
+static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[],
+                           const real_t *h, real_t *r, realContext_t *realContext) {
+  uint16_t i, maxi = 2*stencil->n+1;
+  real_t t, s;
+  const real_t *const fx = fxIn + MAX_ORDER - stencil->n;
 
-/* Eval f(X + k h) k on stack */
-static bool_t deriv_eval_func(calcRegister_t label, real_t *r0, const real_t *r3, const real_t *r4, bool_t secondDeriv, realContext_t *realContext) {
-  real_t tmpX, tmpY;
-  realMultiply(r0, r4, &tmpX, realContext);
-  realAdd(&tmpX, r3, &tmpX, realContext);
-  _differentiatorIteration(label, &tmpX); /* f(x + k h)*/
-  if(realIsSpecial(&tmpX)) {
-    return true;
-  }
-  if(!realIsZero(r0)) {
-    realCopy(&tmpX, &tmpY);
-    realMinus(r0, &tmpX, realContext);
-    realMultiply(&tmpX, r4, &tmpX, realContext);
-    realAdd(&tmpX, r3, &tmpX, realContext);
-    _differentiatorIteration(label, &tmpX); /* f(x - k h)*/
-    if(realIsSpecial(&tmpX)) {
-      return true;
+  // Check if all f(x) are defined or not
+  for (i=0; i<maxi; i++)
+    if (stencil->coeff[i] != 0 && realIsSpecial(fx + i))
+      return false;
+
+  // All values are defined where required so calculate the weighted sum
+  realZero(&s);
+  for (i=0; i<maxi; i++)
+    if (stencil->coeff[i] != 0) {
+      int32ToReal(fdValues[stencil->coeff[i]], &t);
+      realFMA(fx+i, &t, &s, &s, realContext);
     }
-    if(secondDeriv) {
-      realChangeSign(&tmpX);
+  // Inefficiently factor in the derivative order
+  // It's not a problem since the order can only be 1 or 2 currently
+  // For larger orders we need to divide the result by h^order
+  uInt32ToReal(fdValues[stencil->denom], &t);
+  for (i=0; i<stencil->order; i++)
+    realMultiply(&t, h, &t, realContext);
+  realDivide(&s, &t, r, realContext);
+  return true;
+}
+
+// Compute the function values f(x + k h), k = -MAX_ORDER .. MAX_ORDER
+static void calcFuncValues(calcRegister_t label, const real_t *x, real_t fx[MAX_F_EVAL],
+                           real_t *h, realContext_t *realContext) {
+    int i;
+    real_t t;
+
+    for (i=0; i < MAX_F_EVAL; i++) {
+        int32ToReal(i - MAX_ORDER, &t);
+        realFMA(&t, h, x, fx + i, realContext);
+        _differentiatorIteration(label, fx + i);
     }
-    realSubtract(&tmpY, &tmpX, &tmpX, realContext);
-  } // deriv_skip_midpoint
-  realCopy(&tmpX, r0);
-  return false;
 }
 
 
-static void deriv2_4point(real_t *r1, const real_t *r4, realContext_t *realContext) {
-  real_t tmpX;
-  realMultiply(const_12, r4, &tmpX, realContext);
-  realMultiply(&tmpX, r4, &tmpX, realContext);
-  realDivide(const_1, &tmpX, &tmpX, realContext);
-  realMultiply(r1, &tmpX, r1, realContext);
-}
-
-
-static void _1stDerivative(calcRegister_t label, const real_t *x, real_t *res, realContext_t *realContext) {
-  real_t r0, r1, r2, r3, r4;  /* Registers .00 to .04 */
-  real_t tmpX, tmpY, tmpZ;
-
-  if(realIsSpecial(x)) {
-    realCopy(const_NaN, res);
-    return;
-  }
-  realCopy(x, &r3);
-  realCopy(x, &r4);
-  deriv_default_h(&r4);
-  realCopy(const_1, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, false, realContext)) { /* f(x+h) - f(x-h)*/
-    realCopy(const_NaN, res);
-    return;
-  }
-  realCopy(&r0, &r1);
-
-  realCopy(const_2, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, false, realContext)) { /* f(x+2h) - f(x-2h)*/
-    realCopy(const_NaN, res);
-    return;
-  }
-  realCopy(&r0, &r2);
-
-  /* At this point we can do a four point estimate if something goes awry */
-  realCopy(const_3, &r0);
-  if(!deriv_eval_func(label, &r0, &r3, &r4, false, realContext)) { /* f(x+3h)-f(x-3h)*/
-    /* At this point we can do the six point estimate - calculate it now */
-    realMultiply(const_45, &r1, &tmpY, realContext);
-    realMultiply(const_9, &r2, &tmpX, realContext);
-    realSubtract(&tmpY, &tmpX, &tmpX, realContext);
-    realAdd(&r0, &tmpX, &tmpY, realContext);
-    realMultiply(const_60, &r4, &tmpX, realContext);
-    realDivide(&tmpY, &tmpX, &tmpZ, realContext);
-    realCopy(&r1, &tmpX); realCopy(&tmpZ, &r1); /* Six point stimate in E2 & start ten point estimate*/
-    realMultiply(&tmpX, const_2100, &tmpY, realContext);
-    realMultiply(const_600, &r2, &tmpX, realContext);
-    realSubtract(&tmpY, &tmpX, &tmpY, realContext);
-    realMultiply(const_150, &r0, &tmpX, realContext);
-    realAdd(&tmpY, &tmpX, &tmpX, realContext); /* Ten point estimate to end up in E1*/
-
-    realCopy(&tmpX, &r2);
-    realCopy(const_4, &r0);
-    if(deriv_eval_func(label, &r0, &r3, &r4, false, realContext)) { /* f(x+4h) - f(x-4h)*/
-      realCopy(&r1, res); // deriv_6point
-    }
-    else {
-      realMultiply(&r0, const_25, &tmpX, realContext);
-      realSubtract(&r2, &tmpX, &r2, realContext);
-
-      realCopy(const_5, &r0);
-      if(deriv_eval_func(label, &r0, &r3, &r4, false, realContext)) { /* f(x+5h) - f(x-5h)*/
-        realCopy(&r1, res); // deriv_6point
-      }
-      else {
-        realAdd(&r0, &r0, &tmpX, realContext);
-        realAdd(&tmpX, &r2, &tmpY, realContext);
-        realMultiply(const_2520, &r4, &tmpX, realContext);
-        realDivide(&tmpY, &tmpX, res, realContext);
-      }
-    }
-  }
-  else { //deriv_4point::
-    realMultiply(const_8, &r1, &tmpX, realContext);
-    realSubtract(&tmpX, &r2, &tmpY, realContext);
-    realMultiply(const_12, &r4, &tmpX, realContext);
-    realDivide(&tmpY, &tmpX, res, realContext);
-  }
-}
-
-
-
-static void _2ndDerivative(calcRegister_t label, const real_t *x, real_t *res, realContext_t *realContext) {
-  real_t r0, r1, r2, r3, r4;  /* Registers .00 to .04 */
-  real_t tmpX, tmpY;
-  if(realIsSpecial(x)) {
-    realCopy(const_NaN, res);
-    return;
-  }
-  realCopy(x, &r3);
-  realCopy(x, &r4);
-  deriv_default_h(&r4);
-  realCopy(const_1, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x+h) - f(x-h)*/
-    realCopy(const_NaN, res);
-    return;
-  }
-  realMultiply(const_16, &r0, &r1, realContext); /* order four estimate*/
-  realMultiply(const_42000, &r0, &r2, realContext); /* order ten estimate*/
-  realCopy(const_0, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x)*/
-    realCopy(const_NaN, res);
-    return;
-  }
-  realMultiply(const_30, &r0, &tmpX, realContext);
-  realSubtract(&r1, &tmpX, &r1, realContext);
-  realMultiply(const_73766, &r0, &tmpX, realContext);
-  realSubtract(&r2, &tmpX, &r2, realContext);
-
-  realCopy(const_2, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x+2h) + f(x-2h)*/
-    realCopy(const_NaN, res);
-    return;
-  }
-  realSubtract(&r1, &r0, &r1, realContext);
-  realMultiply(const_6000, &r0, &tmpX, realContext);
-  realSubtract(&r2, &tmpX, &r2, realContext);
-
-  realCopy(const_3, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x+3h) + f(x-3h)*/
-    deriv2_4point(&r1, &r4, realContext);
-    realCopy(&r1, res);
-    return;
-  }
-  realMultiply(&r0, const_1000, &tmpX, realContext);
-  realAdd(&r2, &tmpX, &r2, realContext);
-
-  realCopy(const_4, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x+4h) + f(x-4h)*/
-    deriv2_4point(&r1, &r4, realContext);
-    realCopy(&r1, res);
-    return;
-  }
-  realMultiply(&r0, const_125, &tmpX, realContext);
-  realSubtract(&r2, &tmpX, &r2, realContext);
-
-  realCopy(const_5, &r0);
-  if(deriv_eval_func(label, &r0, &r3, &r4, true, realContext)) { /* f(x+5h) + f(x-5h)*/
-    deriv2_4point(&r1, &r4, realContext);
-    realCopy(&r1, res);
-    return;
-  }
-  realMultiply(&r0, const_8, &tmpX, realContext);
-  realAdd(&tmpX, &r2, &tmpY, realContext);
-  realMultiply(const_25200, &r4, &tmpX, realContext);
-  realMultiply(&tmpX, &r4, &tmpX, realContext);
-  realDivide(&tmpY, &tmpX, res, realContext);
-}
-
-
-
-void firstDerivative(calcRegister_t label) {
-  real_t x;
+// Evaluate the function at stencil points and compute "best" estimate
+static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff) {
+  real_t x, h, fx[MAX_F_EVAL];
+  int i;
 
   if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
-  saveForUndo();
-  _1stDerivative(label, &x, &x, &ctxtReal39);
-  undo();
+  if (!realIsSpecial(&x)) {
+    realCopy(&x, &h);   // Pass X into the h determination code to allow relative steps
+    deriv_default_h(&h);
+
+    // Compute the function at the finite difference points
+    saveForUndo();
+    calcFuncValues(label, &x, fx, &h, &ctxtReal39);
+    undo();
+
+#if 0
+    // This block of code prints out all the function evaluations and
+    // all the various derivative estimates.
+    {
+        char buf[1000];
+
+        for (i=0; i<MAX_F_EVAL; i++)
+          printf("f[x+%dh] = %s\n", i - MAX_ORDER, decNumberToString(fx+i, buf));
+        for (i=0; finDiff[i] != NULL; i++)
+          if (calcOneDeriv(finDiff[i], fx, &h, &x, &ctxtReal39))
+            printf("df/dx = %s\t(%s)\n", decNumberToString(&x, buf), finDiff[i]->desc);
+    }
+#endif
+    // Try finite differences until we get a result
+    for (i=0; finDiff[i] != NULL; i++)
+      if (calcOneDeriv(finDiff[i], fx, &h, &x, &ctxtReal39)) {
+        //Add string, for display at TI
+        decContext c = ctxtReal4;
+        c.digits = 2;
+        real_t hh;
+        realPlus(&h, &hh, &c);
+        strcpy(errorMessage, STD_delta "=");
+        decNumberToString(&hh, errorMessage + stringByteLength(errorMessage));
+        strcat(errorMessage, "; ");
+        goto finish;
+      }
+  }
+  // No estimate possible
+  realCopy(const_NaN, &x);
+  //Add string, for display at TI
+  errorMessage[0] = 0;
+
+finish:
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
-void secondDerivative(calcRegister_t label) {
-  real_t x;
-
-  if(!getRegisterAsReal(REGISTER_X, &x))
-    return;
-
-  saveForUndo();
-  _2ndDerivative(label, &x, &x, &ctxtReal39);
-  undo();
-  convertRealToResultRegister(&x, REGISTER_X, amNone);
-}

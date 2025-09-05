@@ -9,11 +9,21 @@
 
 #define maximumPrime 308   //10^308
 
-// primes less than 212
+
+//debugging method to disable the prime factor parts
+#define MONITOR_FACTORS
+#undef MONITOR_FACTORS
+const bool_t Factors_1_SmallPrimes   = true;
+const bool_t Factors_2_PerfectSquare = true;
+const bool_t Factors_3_Pollard       = true;
+
+
+// primes less than 212 for the sieve, the rest of the array to fill one byte primes for the factors trial tests
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
                                          97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
-                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211      };
+                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,      
+                                        223, 227, 229, 233, 239, 241, 251 };
 
 // pre-calced sieve of Eratosthenes for n = 2, 3, 5, 7
 TO_QSPI const uint8_t indices[] = {   1,  11,  13,  17,  19,  23,  29,  31,  37,  41,  43,  47,
@@ -26,6 +36,82 @@ TO_QSPI const uint8_t offsets[] = {  10,   2,   4,   2,   4,   6,   2,   6,   4,
                                       6,   2,   6,   4,   2,   6,   4,   6,   8,   4,   2,   4,
                                       2,   4,   8,   6,   4,   6,   2,   4,   6,   2,   6,   6,
                                       4,   2,   4,   6,   2,   6,   4,   2,   4,   2,  10,   2 };
+
+
+// distances between primes, to add to the 1-byte small prime list; starting at 251+6 ==> 257 .... 1009
+TO_QSPI const uint8_t smallPrimes2[] = { 6, 6, 6, 2, 6, 4, 2, 10, 14, 4, 2, 4, 14, 6, 10, 2, 4, 6, 8, 
+                                         6, 6, 4, 6, 8, 4, 8, 10, 2, 10, 2, 6, 4, 6, 8, 4, 2, 4, 12, 
+                                         8, 4, 8, 4, 6, 12, 2, 18, 6, 10, 6, 6, 2, 6, 10, 6, 6, 2, 6, 
+                                         6, 4, 2, 12, 10, 2, 4, 6, 6, 2, 12, 4, 6, 8, 10, 8, 10, 8, 6, 
+                                         6, 4, 8, 6, 4, 8, 4, 14, 10, 12, 2, 10, 2, 4, 2, 10, 14, 4, 2, 
+                                         4, 14, 4, 2, 4, 20, 4, 8, 10, 8, 4, 6, 6, 14, 4, 6, 6, 8, 6, 12 };
+
+
+#define smallPrimeListNumber (nbrOfElements(smallPrimes) + nbrOfElements(smallPrimes2))
+uint16_t smallPrimeList(uint16_t index) {
+  uint16_t tt = 251;
+  if(index < nbrOfElements(smallPrimes)) {
+    return smallPrimes[index];
+  } else
+  if(index < smallPrimeListNumber) {
+    uint16_t subIndex = index - nbrOfElements(smallPrimes);
+    for(uint16_t ii = 0; ii <= subIndex && ii < nbrOfElements(smallPrimes2); ii++) {
+      tt += smallPrimes2[ii];
+    }
+    return tt;
+  } else {
+    return 0;
+  }
+}
+
+//To check if the list of small primes being split into two methods, are contimuous
+//void listAllPrimesInList(void) {
+//  for (uint i = 0; i < smallPrimeListNumber; i++) {
+//    printf("prime: %u : %u\n",i,smallPrimeList(i));
+//  }
+//}
+
+
+
+//------------- Pollard for Factors -------------
+// Common status codes returned by factoring algorithms.
+typedef enum {
+  FACTORS_SETUP,     // Start or restart the factoring algorithm
+  FACTORS_ITERATE,   // Perform one or more factoring iterations
+  FACTORS_RESET,     // Indicates the input n has changed (reinitialize)
+  FACTORS_DONE,      // A nontrivial factor has been found
+  FACTORS_FAIL       // Too many attempts or failure to progress
+} factors_status_t;
+
+// Result structure returned after a step or setup, for monitoring and diagnostic data.
+typedef struct {
+  factors_status_t status;
+  int iterations_this_call;
+  int total_iterations;
+  int attempts;
+} factors_result_t;
+
+// Internal structure for Pollard's Rho algorithm.
+typedef struct {
+  longInteger_t n;        // Number to factor
+  longInteger_t x, y;     // Floyd's cycle detection: tortoise and hare
+  longInteger_t c;        // Constant for the polynomial: f(x) = x^2 + c
+  longInteger_t d;        // Current GCD candidate
+  longInteger_t tmp;      // Temporary variable for calculations
+  int iteration;          // Total iterations performed
+  int attempt;            // Number of reinitializations attempted
+  pcg32_random_t rng;     // Use PCG32 instead of GMP RNG
+} pollard_t;
+
+
+void pollard_init(pollard_t *self);
+void pollard_clear(pollard_t *self);
+void pollard_update_n(pollard_t *self, const longInteger_t new_n);
+char* pollard_status(factors_status_t st);
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps);
+//------------- Pollard for Factors -------------
+
+
 
 
 void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime);
@@ -137,6 +223,10 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
+void SQUFOF(longInteger_t result, const longInteger_t N, const real34_t lastAdded);
+void complete_factorization1(const longInteger_t N);
+void complete_factorization2(const longInteger_t N);
+
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
@@ -174,6 +264,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     if(!longIntegerIsPositive(currentNumber)) {
       uInt32ToLongInteger(1u, currentNumber);
     }
+
 
     //longIntegerNextPrime(currentNumber, nextPrime);
     calculateNextPrime(currentNumber, nextPrime);
@@ -345,9 +436,9 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
   longInteger_t primeCandidateMinus1, primeCandidateMinus1on2, a, s, temp;
   uint32_t i, j, pc;
 
-  if(longIntegerCompareUInt(primeCandidate, 212) <= 0) {
+  if(longIntegerCompareUInt(primeCandidate, smallPrimes[46]+1) <= 0) {  //smallPrimes[46]+1 = 212
     longIntegerToUInt32(primeCandidate, pc);
-    for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
+    for(i=0; i<nbrOfElements(smallPrimes); i++) {
       if(smallPrimes[i] == pc) {
         return true;
       }
@@ -355,7 +446,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
     return false;
   }
 
-  for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
+  for(i=0; i<nbrOfElements(smallPrimes); i++) {
     if(longIntegerModuloUInt(primeCandidate, smallPrimes[i]) == 0) {
       return false;
     }
@@ -363,10 +454,10 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 
   // if primeCandidate is a 32-bit integer, perform full trial division
   if(longIntegerCompareUInt(primeCandidate, 0xffffffff) <= 0) {
-    i = 211;
+    i = smallPrimes[46]; //smallPrimes[46] = 211
     longIntegerToUInt32(primeCandidate, pc);
     while(i*i < pc) {
-      for(j=0; j<sizeof(offsets)/sizeof(offsets[0]); j++) {
+      for(j=0; j<nbrOfElements(offsets); j++) {
         i += offsets[j];
         if(pc % i == 0) {
           return false;
@@ -416,20 +507,38 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
     longIntegerAddUInt(currentNumber, 1, currentNumber);
   }
 
-  if(longIntegerCompareUInt(currentNumber, 212) < 0) {
-    while(true) {
+
+  //replaced the above with a faster integer only sequential prime elimination
+  //check if the next odd number is a small prime
+  if (longIntegerCompareUInt(currentNumber, smallPrimeList(smallPrimeListNumber - 1) + 1) < 0) {
+    if (mpz_fits_ulong_p(currentNumber)) {
       longIntegerToUInt32(currentNumber, cn);
-      for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
-        if(smallPrimes[i] == cn) {
-          uInt32ToLongInteger(cn, nextPrime);
-          return;
+      while (true) {
+        for (i = 0; i < smallPrimeListNumber; i++) {
+          if (smallPrimeList(i) == cn) {
+            uInt32ToLongInteger(cn, nextPrime);
+            return;
+          }
         }
+        cn += 2;
       }
-      longIntegerAddUInt(currentNumber, 2, currentNumber);
     }
+    //note: not coming out of here except by returning out of the loop
   }
 
+
   // find our position in the sieve rotation via binary search
+  // The sieve algorithm uses a wheel of size 210 (the product of the first four primes:
+  // 2×3×5×7 = 210). The rotation pattern (or reduced residue system) under mod 210 
+  // consists of numbers < 210 that are coprime to 210, and these are indexed in indices[]. 
+  // There are 48 such numbers, 47 when starting from 2 as we do.
+
+  // below:
+  // startpoint inclusive
+  // endpoint exclusive
+  // midpoint: will be incremented until endpoint is reached
+
+  // uses the first 47 entries of the smallPrimes list, not needing the actual list, using the indices
   x = longIntegerModuloUInt(currentNumber, 210);
   s = 0;
   e = 47;
@@ -475,13 +584,13 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       clearRegisterLine(REGISTER_X, true, true);
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
-      strcpy(tmpString,"Last =  ");
-      real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, false, true);
+      strcpy(tmpString,"Last:   ");
+      real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
-      strcpy(tmpString,"p =  ");
-      real34ToDisplayString(&rr, amNone, tmpString+3, &standardFont, 400, 34, false, true);
+      strcpy(tmpString,"Test:   ");
+      real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
       refreshRegisterLine(REGISTER_X);
@@ -492,321 +601,6 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 #endif //TESTSUITE_BUILD
 
 
-
-#define WGR              //verbose
-#undef WGR
-#define MAX_FACTORS 100//87
-
-typedef struct FactorAdder
-{
-  uint16_t nExpons;
-  uint16_t expons[MAX_FACTORS];
-  longInteger_t lastFactor;
-} FactorAdder_t;
-
-
-#if !defined(SAVE_SPACE_DM42_12PRIME)
-  static void initFactorAdder(FactorAdder_t *faddr) {
-    faddr->nExpons = 0;
-    longIntegerInit(faddr->lastFactor);
-  };
-
-  void clearFactorAdder(FactorAdder_t *faddr) {
-    longIntegerFree(faddr->lastFactor);
-  }
-
-  void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
-    uint16_t n2 = faddr->nExpons;
-    #ifdef WGR
-      printf("wgr:  fill expons:  *nExpons==%u, n2==%u dump=%u\n", faddr->nExpons, n2, dumpForFewerThan);
-      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
-      printf("wgr:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
-    #endif
-    linkToRealMatrixRegister(REGISTER_X,  matrix);
-    for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
-      #ifdef WGR
-        printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %u, ind %u\n", n2, i, faddr->expons[i], faddr->expons[i], n2+i);
-      #endif //WGR
-      uInt32ToReal34(faddr->expons[i], &matrix->matrixElements[n2+i]);
-    }
-  }
-
-
-  static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
-    //printLongIntegerToConsole(factor,"-->","\n");
-    #ifdef WGR
-      printf("wgr:  addFactor()\n");
-    #endif //WGR
-    if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-      //Initialize Memory for Matrix
-      if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
-        setSystemFlag(FLAG_ASLIFT);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
-      }
-      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-    }
-
-    uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
-    uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-    if( faddr->nExpons == 0 ) {
-      faddr->nExpons = 1;  // has to be 1 now, as we have this factor
-      faddr->expons[(faddr->nExpons)-1] = 1;
-    }
-    uint16_t wkgCols = faddr->nExpons;
-    #ifdef WGR
-      gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
-    #endif //WGR
-
-    if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
-      #if !defined(TESTSUITE_BUILD)
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-          moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      #endif // !TESTSUITE_BUILD
-      return false;
-      }
-
-    if( cols == 0 ) {
-      #ifdef WGR
-        printf("wgr:  zeroing lastFactor\n");
-      #endif //WGR
-      uInt32ToLongInteger(0u, lastFactor);
-    }
-    linkToRealMatrixRegister(REGISTER_X,  matrix);
-    #ifdef WGR
-      gmp_printf("wgr:  lastFactor==%Zd\n", lastFactor);
-    #endif //WGR
-    uint16_t n = rows*(faddr->nExpons);
-    uint16_t c = n/2;
-    if( longIntegerSign(lastFactor) != 0 && longIntegerCompare(lastFactor, factor) == 0 ) {
-      ++faddr->expons[(faddr->nExpons)-1];
-      #ifdef WGR
-        printf("wgr:  lastFactor use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
-      #endif
-    }
-    else {
-      bool_t incNExpons = longIntegerSign(lastFactor) ==0 ? false : true;
-      if( !incNExpons ) {
-        c = 0;
-      }
-      #ifdef WGR
-        printf("wgr:  lastFactor restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
-      #endif
-      convertLongIntegerToReal34(factor, &matrix->matrixElements[c]);
-      #ifdef WGR
-        printReal34ToConsole(&matrix->matrixElements[c],"wgr:  from lastAdded:  ","\n");
-      #endif
-      real34Copy(&matrix->matrixElements[c], lastAdded);
-      if( incNExpons ) {
-        if( faddr->nExpons < MAX_FACTORS ) {
-            ++faddr->nExpons;
-        }
-        else {
-          #if !defined(TESTSUITE_BUILD)
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
-            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-          #endif // !TESTSUITE_BUILD
-          return false;
-        }
-        ++wkgCols;
-        faddr->expons[faddr->nExpons-1] = 1;
-        if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
-          #if !defined(TESTSUITE_BUILD)
-            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-              moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
-            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-            #endif // !TESTSUITE_BUILD
-          return false;
-        }
-      }
-      n = rows*(faddr->nExpons);
-      c = n/2;
-      longIntegerCopy(factor, lastFactor);
-    }
-    return true;
-  }
-#endif //SAVE_SPACE_DM42_12PRIME
-
-
-/*
- * This function takes a long integer in the X register, and determines its
- * prime factorisation.  The result is a matrix with two rows.  The first
- * row contains all the distinct prime factors.
- * The second row contains the exponents for each prime factor, that is in
- * the same column in the first row.
- * Example:
- *   Input X register:  1500
- *   Output X register:  2.  3.  5.
- *                       2.  1.  3.
- *
- *   Input X register:  -1500
- *   Output X register:  -1. 2.  3.  5.
- *                        1. 2.  1.  3.
- */
-void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
-  #if !defined(SAVE_SPACE_DM42_12PRIME)
-    #define NOFACTOR 127
-    #define INITIALISPRIME  126
-    int8_t initialFactorAdded = NOFACTOR;
-    currentKeyCode = 255;
-    #if !defined(TESTSUITE_BUILD)
-      int32_t loop = 0;
-    #endif //TESTSUITE_BUILD
-    real34_t lastAdded;
-
-    longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp, tmp;
-
-    longIntegerInit(currentNumber);
-    longIntegerInit(nextPrime);
-    longIntegerInit(remainder);
-    longIntegerInit(quotient);
-    longIntegerInit(eval);
-    longIntegerInit(temp);
-    longIntegerInit(lastFactor);
-    longIntegerInit(tmp);
-    real34Matrix_t matrix;
-
-    if(!getIntArg(currentNumber)) {
-      goto abort;
-    }
-
-    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
-    longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
-    if(longIntegerIsPositive(tmp)) {
-      badDomainError(REGISTER_X);
-      goto abort;
-    }
-
-    if(longIntegerIsPrime(currentNumber)) {
-      initialFactorAdded = INITIALISPRIME;
-    }
-    if(longIntegerIsZero(currentNumber)) {                       // currentNumber = 0 --> end
-      initialFactorAdded = 0;
-    }
-    else if(!longIntegerIsPositive(currentNumber)) {             // currentNumber <=0 --> end
-      initialFactorAdded = -1;
-    }
-    else {
-      longIntegerSubtractUInt(currentNumber,1,temp);             // currentNumber = 1 --> end
-      if(longIntegerIsZero(temp)) {
-        initialFactorAdded = 1;
-      }
-    }
-
-    if(!saveLastX()) {
-      goto abort;
-    }
-
-    longIntegerSetPositiveSign(currentNumber);
-    uInt32ToLongInteger(2u, nextPrime);
-    uInt32ToLongInteger(1u, remainder);
-    uInt32ToLongInteger(1u, eval);
-    int32ToReal34(0,&lastAdded);
-
-    FactorAdder_t faddr;
-    initFactorAdder(&faddr);
-
-     if(initialFactorAdded != NOFACTOR) {
-       if(initialFactorAdded == INITIALISPRIME) {
-         longIntegerCopy(currentNumber, nextPrime);
-       }
-       else {
-         int32ToLongInteger(initialFactorAdded, nextPrime);
-       }
-       if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
-         goto abort;
-       }
-       if(initialFactorAdded == 0 || initialFactorAdded == 1 || initialFactorAdded == INITIALISPRIME) {
-        goto endandclose;
-       }
-       uInt32ToLongInteger(2u, nextPrime);
-     }
-
-
-    while(longIntegerIsPositive(eval)) {
-
-      #if !defined(TESTSUITE_BUILD)
-        loop++;
-        if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Tested n =",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-            _showProgress(&lastAdded, nextPrime);
-            dumpExponents(&matrix, &faddr, 13);
-            force_refresh(force);
-          }
-        }
-        if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          programRunStop = PGM_WAITING;
-          break;
-        }
-      #endif //!TESTSUITE_BUILD
-
-
-      longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);
-      longIntegerSubtract(quotient, nextPrime, eval);
-
-      //printLongIntegerToConsole(currentNumber,"doing currentNumber: ","\n");
-      //printLongIntegerToConsole(nextPrime,"   nextPrime: ","\n");
-      //printLongIntegerToConsole(quotient,"   quotient: ","\n");
-      //printLongIntegerToConsole(remainder,"   remainder: ","\n");
-
-
-      if(longIntegerIsZero(remainder)) {
-        if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
-        //printf("    -- remainder zero, added factor");
-          goto endandclose;
-        }
-        longIntegerCopy(quotient,currentNumber);
-        if(longIntegerIsPrime(quotient)) {
-          //printf("    -- quotient prime, added factor");
-          if(!addFactor(lastFactor, quotient, &matrix, &lastAdded, &faddr)) {
-            goto endandclose;
-          }
-          goto endandclose;
-        }
-      }
-      else {
-        longIntegerNextPrime(nextPrime, nextPrime);
-      }
-      if(!longIntegerIsPositive(eval)) {
-        longIntegerSubtractUInt(currentNumber,1,temp);
-        if(!longIntegerIsZero(temp) ){
-          if(!addFactor(lastFactor, currentNumber, &matrix, &lastAdded, &faddr)) {
-            goto endandclose;
-          }
-        }
-      }
-    }
-
-  endandclose:
-    dumpExponents(&matrix, &faddr, 65535);
-    clearFactorAdder(&faddr);
-  abort:
-    longIntegerFree(tmp);
-    longIntegerFree(lastFactor);
-    longIntegerFree(temp);
-    longIntegerFree(eval);
-    longIntegerFree(quotient);
-    longIntegerFree(remainder);
-    longIntegerFree(nextPrime);
-    longIntegerFree(currentNumber);
-  #endif //SAVE_SPACE_DM42_12PRIME
-}
 
 
 
@@ -900,8 +694,6 @@ void _fnEvPFacts     (uint16_t param) {
         longInteger_t prod, factor, tmp_prod, p_li, k_li;
         longIntegerInit(prod);
         longIntegerInit(factor);
-        longIntegerInit(p_li);
-        longIntegerInit(k_li);
         longIntegerInit(tmp_prod);
         uInt32ToLongInteger(1u, prod);
         realCopy(const_1,&prodR);
@@ -922,6 +714,8 @@ void _fnEvPFacts     (uint16_t param) {
               case M_EULER_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
               default:;
             }
+            longIntegerFree(p_li);
+            longIntegerFree(k_li);
             //printLongIntegerToConsole(factor,"factor:","\n");
             longIntegerCopy(prod, tmp_prod);
             longIntegerMultiply(tmp_prod, factor, prod);
@@ -952,6 +746,9 @@ void _fnEvPFacts     (uint16_t param) {
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              longIntegerFree(prod);
+              longIntegerFree(factor);
+              longIntegerFree(tmp_prod);
               return;
             }
           }
@@ -975,8 +772,6 @@ void _fnEvPFacts     (uint16_t param) {
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         longIntegerFree(prod);
         longIntegerFree(factor);
-        longIntegerFree(p_li);
-        longIntegerFree(k_li);
         longIntegerFree(tmp_prod);
       }
       else {
@@ -1024,6 +819,7 @@ void fnEvPFacts (uint16_t param) {
   if(param == M_EULER_SIGMA_pk) {
     longIntegerInit(xx);
     if(!getIntArg(xx)) {
+      longIntegerFree(xx);
       return;
     }
     longIntegerToInt32(xx, k);
@@ -1105,8 +901,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
     longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
     longIntegerInit(phi_x);
-    longIntegerInit(p_li);
-    longIntegerInit(p_li_less_1);
     longIntegerInit(phi_x_tmp);
     longIntegerInit(phi_x_tmp_b);
     real34Matrix_t matrix;
@@ -1135,14 +929,19 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
           for (uint16_t j = 0;  j < cols; ++j) {
             real34_t p = matrix.matrixElements[j];
             convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
+            longIntegerInit(p_li_less_1);
             longIntegerSubtractUInt(p_li, 1, p_li_less_1);
             if(j == 0 && !longIntegerIsPositive(p_li_less_1)) {   //ensure 0 is returned is the first factor <= 1. This is achieved above, see (*), (**), (***)
               uInt32ToLongInteger(0u, phi_x);
+              longIntegerFree(p_li);
+              longIntegerFree(p_li_less_1);
               break;
             }
             longIntegerCopy(phi_x, phi_x_tmp);
             longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
             longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
+            longIntegerFree(p_li);
+            longIntegerFree(p_li_less_1);
           }
         }
         else {
@@ -1172,8 +971,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
     return2:
     longIntegerFree(phi_x);
-    longIntegerFree(p_li);
-    longIntegerFree(p_li_less_1);
     longIntegerFree(phi_x_tmp);
     longIntegerFree(phi_x_tmp_b);
 
@@ -1181,5 +978,1170 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     longIntegerFree(x);
 
   #endif //SAVE_SPACE_DM42_12PRIME
+}
+
+
+
+
+
+//** factorization **********************************************************************************************************
+// Shanks algorithm, based on the demo on the wikipedia page
+// https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
+// jaymos 2025
+
+    const int multipliers[] = {
+        1, 3, 5, 7, 11, 13,
+        3*5, 3*7, 3*11, 3*13,
+        5*7, 5*11, 5*13,
+        7*11, 7*13,
+        11*13,
+        3*5*7, 3*5*11, 3*5*13,
+        3*7*11, 3*7*13, 3*11*13,
+        5*7*11, 5*7*13,
+        3*5*7*11
+    };
+
+    bool_t addFactorsToTSV = false;
+
+    #if !defined(TESTSUITE_BUILD)
+      static void keepFileNameAlive(void) {
+        if(addFactorsToTSV) {
+          preventFilenameTimeout();
+        }
+      }
+    #endif //TESTSUITE_BUILD
+
+
+    // Fast perfect square check using 32-bit integer sqrt
+    static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
+        uint32_t r = (uint32_t)(sqrt((double)n));
+        if (r * r == n) {
+            if (sqrt_out) *sqrt_out = r;
+            return 1;
+        }
+        if ((r + 1) * (r + 1) == n) {
+            if (sqrt_out) *sqrt_out = r + 1;
+            return 1;
+        }
+        return 0;
+    }
+
+    // Check if a number is a perfect square using GMP
+    // Efficient and correct: fast path for small numbers, fallback for large
+    static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r) {
+        if (mpz_fits_uint_p(n)) {
+            uint32_t small = (uint32_t)mpz_get_ui(n);
+            uint32_t sqrt_small;
+            if (is_perfect_square_uint32(small, &sqrt_small)) {
+                uInt32ToLongInteger(sqrt_small, r);
+                return 1;
+            }
+            return 0;
+        }
+        // GMP fallback for larger integers
+        if (longIntegerPerfectSquare(n)) {
+            longIntegerSquareRoot(n, r);
+            return 1;
+        }
+        return 0;
+    }
+
+
+    int32_t loopp;
+
+    void SQUFOF(longInteger_t result, const longInteger_t N, const real34_t lastAdded) {
+      uint32_t k;
+      longInteger_t BB, LL, ii, D, Po, P, Pprev, Q, Qprev, q, b, r, s, temp1, temp2, temp3, gcd_result;
+      longIntegerInit(BB);
+      longIntegerInit(LL);
+      longIntegerInit(ii);
+      longIntegerInit(D);
+      longIntegerInit(Po);
+      longIntegerInit(P);
+      longIntegerInit(Pprev);
+      longIntegerInit(Q);
+      longIntegerInit(Qprev);
+      longIntegerInit(q);
+      longIntegerInit(b);
+      longIntegerInit(r);
+      longIntegerInit(s);
+      longIntegerInit(temp1);
+      longIntegerInit(temp2);
+      longIntegerInit(temp3);
+      longIntegerInit(gcd_result);
+
+      //Pollard simultaneous analysis setup
+      pollard_t pollardData;
+      factors_status_t instruction = FACTORS_SETUP;
+      factors_result_t PollardResult;
+      longInteger_t n, pollardFactor;
+      if(Factors_3_Pollard) {
+        longIntegerInit(n);
+        longIntegerInit(pollardFactor);
+        longIntegerCopy(N, n);
+        pollard_init(&pollardData);
+        pollard_update_n(&pollardData, n);
+      }
+
+      // Check if N is a perfect square
+      if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
+        longIntegerCopy(s, result);
+        goto cleanup;
+      }
+      
+      // Calculate s = sqrt(N)
+      longIntegerSquareRoot(N, s);
+      
+      for (k = 0; k < nbrOfElements(multipliers); k++) {
+          // D = multiplier[k] * N  (just N here)
+          longIntegerMultiplyUInt(N, multipliers[k], D);
+          
+          // Po = Pprev = P = sqrt(D)
+          longIntegerSquareRoot(D, Po);
+          longIntegerCopy(Po, Pprev);
+          longIntegerCopy(Po, P);
+          
+          // Qprev = 1
+          uInt32ToLongInteger(1, Qprev);
+          
+          // Q = D - Po*Po
+          longIntegerMultiply(Po, Po, temp1);
+          longIntegerSubtract(D, temp1, Q);
+          if (longIntegerSign(Q) == 0) {
+              continue; // Q is zero; no factor found
+          }
+          
+          // LL = 2 * sqrt(2*s)
+          longIntegerMultiplyUInt(s, 2, temp1);
+          longIntegerSquareRoot(temp1, temp2);
+          longIntegerMultiplyUInt(temp2, 2, LL);
+          
+          // BB = 3 * LL
+          longIntegerMultiplyUInt(LL, 3, BB);
+         
+          // Initialize i as longInteger_t for comparison with BB
+          uInt32ToLongInteger(2, ii);
+          
+          while (longIntegerCompare(ii, BB) < 0) {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  keepFileNameAlive();
+                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    _showProgress(&lastAdded, n);
+                    force_refresh(force);
+                  }
+                }
+                if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
+                }
+              #endif //!TESTSUITE_BUILD
+
+
+           //Pollard simultaneous analysis - interject a few steps
+              //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
+              if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
+                PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
+                #if defined(MONITOR_FACTORS)
+                  printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                  fflush(stdout);
+                #endif //MONITOR_FACTORS
+                if (PollardResult.status == FACTORS_DONE) {
+                  #if defined(MONITOR_FACTORS)
+                    gmp_printf("   Pollard found factor: %Zd                    \n", pollardFactor);
+                  #endif //MONITOR_FACTORS
+                  longIntegerCopy(pollardFactor, result);
+                  goto cleanup;
+                } else if (PollardResult.status == FACTORS_FAIL) {
+                  #if defined(MONITOR_FACTORS)
+                    printf("   Pollard failed after %d attempts.                \n", PollardResult.attempts);
+                  #endif //MONITOR_FACTORS
+                }
+                instruction = PollardResult.status;
+              }
+              //Pollard end
+
+              // b = (Po + P) / Q
+              longIntegerAdd(Po, P, temp1);
+              longIntegerDivide(temp1, Q, b);
+              
+              // P = b*Q - P
+              longIntegerMultiply(b, Q, temp1);
+              longIntegerSubtract(temp1, P, temp2);
+              longIntegerCopy(temp2, P);
+              // q = Q
+              longIntegerCopy(Q, q);
+              // Q = Qprev + b*(Pprev - P)
+              longIntegerSubtract(Pprev, P, temp1);
+              longIntegerMultiply(b, temp1, temp2);
+              longIntegerAdd(Qprev, temp2, Q);
+              // r = sqrt(Q)
+              longIntegerSquareRoot(Q, r);
+              // Check if i is even and r*r == Q
+              if (longIntegerIsEven(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+                  break;
+              }
+              
+              // Qprev = q; Pprev = P
+              longIntegerCopy(q, Qprev);
+              longIntegerCopy(P, Pprev);
+              
+              // Increment i
+              longIntegerAddUInt(ii, 1, ii);
+          }
+
+          #if defined(MONITOR_FACTORS)
+            printf("\n");
+            fflush(stdout);
+          #endif //MONITOR_FACTORS
+
+          if (longIntegerCompare(ii, BB) >= 0) {
+              continue;
+          }
+          
+          // b = (Po - P) / r
+          longIntegerSubtract(Po, P, temp1);
+          longIntegerDivide(temp1, r, b);
+          
+          // Pprev = P = b*r + P
+          longIntegerMultiply(b, r, temp1);
+          longIntegerAdd(temp1, P, temp2);
+          longIntegerCopy(temp2, Pprev);
+          longIntegerCopy(temp2, P);
+          
+          // Qprev = r
+          longIntegerCopy(r, Qprev);
+          
+          // Q = (D - Pprev*Pprev) / Qprev
+          longIntegerMultiply(Pprev, Pprev, temp1);
+          longIntegerSubtract(D, temp1, temp2);
+          longIntegerDivide(temp2, Qprev, Q);
+          
+          do {
+              #if !defined(TESTSUITE_BUILD)
+                loopp++;
+                if(checkHalfSec()) {
+                  keepFileNameAlive();
+                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                    _showProgress(&lastAdded, n);
+                    force_refresh(force);
+                  }
+                }
+                if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
+                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                  programRunStop = PGM_WAITING;
+                  break;
+                }
+              #endif //!TESTSUITE_BUILD
+              // b = (Po + P) / Q
+              longIntegerAdd(Po, P, temp1);
+              longIntegerDivide(temp1, Q, b);
+              
+              // Pprev = P
+              longIntegerCopy(P, Pprev);
+              
+              // P = b*Q - P
+              longIntegerMultiply(b, Q, temp1);
+              longIntegerSubtract(temp1, P, P);
+              
+              // q = Q
+              longIntegerCopy(Q, q);
+              
+              // Q = Qprev + b*(Pprev - P)
+              longIntegerSubtract(Pprev, P, temp1);
+              longIntegerMultiply(b, temp1, temp2);
+              longIntegerAdd(Qprev, temp2, Q);
+              
+              // Qprev = q
+              longIntegerCopy(q, Qprev);
+              
+          } while (longIntegerCompare(P, Pprev) != 0);
+
+          #if !defined(TESTSUITE_BUILD)
+            if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //TESTSUITE_BUILD
+
+          // r = gcd(N, Qprev)
+          longIntegerGcd(N, Qprev, r);
+          
+          // Check if r != 1 and r != N
+          if (longIntegerCompareUInt(r, 1) != 0 && longIntegerCompare(r, N) != 0) {
+              longIntegerCopy(r, result);
+              goto cleanup;
+          }
+      }
+
+      // No factor found
+      uInt32ToLongInteger(0, result);
+      
+cleanup:
+      //Pollard simultaneous analysis cleanup
+      if(Factors_3_Pollard) {
+        pollard_clear(&pollardData);
+        longIntegerFree(n);
+        longIntegerFree(pollardFactor);
+      }
+      longIntegerFree(BB);
+      longIntegerFree(LL);
+      longIntegerFree(ii);
+      longIntegerFree(D);
+      longIntegerFree(Po);
+      longIntegerFree(P);
+      longIntegerFree(Pprev);
+      longIntegerFree(Q);
+      longIntegerFree(Qprev);
+      longIntegerFree(q);
+      longIntegerFree(b);
+      longIntegerFree(r);
+      longIntegerFree(s);
+      longIntegerFree(temp1);
+      longIntegerFree(temp2);
+      longIntegerFree(temp3);
+      longIntegerFree(gcd_result);
+    }
+
+
+
+bool delCol1RealMatrixX(void) {
+    real34Matrix_t mat;
+    linkToRealMatrixRegister(REGISTER_X, &mat);
+    uint16_t rows = mat.header.matrixRows;
+    uint16_t cols = mat.header.matrixColumns;
+    if (!mat.matrixElements || cols <= 1) return false;
+
+    // every element in column 0 is exactly 1.0 or 0.0
+    bool removeFirstCol = true;
+    for (uint16_t i = 0; i < rows; ++i) {
+        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1) && !real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_0)) {
+            removeFirstCol = false;
+            break;
+        }
+    }
+    if (!removeFirstCol) {
+        // nothing to delete, first column is all 1.0 or 0.0
+        return true;
+    }
+
+
+    // Build a temp matrix with one fewer column:
+    real34Matrix_t tmp;
+    if (!realMatrixInit(&tmp, rows, cols - 1)) {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return false;
+    }
+    for (uint16_t i = 0; i < rows; i++) {
+        for (uint16_t j = 1; j < cols; j++) {
+            real34Copy(
+                &mat.matrixElements[i*cols + j],
+                &tmp.matrixElements[i*(cols-1) + (j-1)]
+            );
+        }
+    }
+    // Re-init the register and free old buffer
+    initMatrixRegister(REGISTER_X, rows, cols - 1, false);
+
+    // Copy the temp data back into the freshly-allocated register
+    real34_t *dest = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
+    size_t total = (size_t)rows * (cols - 1);
+    for (size_t k = 0; k < total; k++) {
+        real34Copy(&tmp.matrixElements[k], &dest[k]);
+    }
+    realMatrixFree(&tmp);
+    return true;
+}
+
+
+
+
+#define MAX_FACTORS 110
+#define MAXIMUM_QUEUE_SIZE 100 // must be even. Worst well on 1000, which costs > 8000 bytes just for the empty longints
+typedef struct FactorAdder
+{
+  uint16_t nExpons;
+  uint16_t expons[MAX_FACTORS];
+} FactorAdder_t;
+
+
+#if !defined(SAVE_SPACE_DM42_12PRIME)
+  static void initFactorAdder(FactorAdder_t *faddr) {
+    faddr->nExpons = 0;
+  };
+
+//  static void initFactorCreateFromMatrix(FactorAdder_t *faddr) {
+//    faddr->nExpons = 0;
+//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0,const34_1)) {
+//      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+//      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+//      for(int j = cols-1-1; j >= 0 ; j--) {
+//        for(int i = rows-1; i >= 0; i--) {
+//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j,REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
+//        }
+//      }
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0);
+//      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+cols+0);
+//      faddr->expons[faddr->nExpons] = 1;
+//      (faddr->nExpons)++;
+//    }
+//    while(faddr->nExpons < REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns ) {
+//      faddr->expons[faddr->nExpons] = real34ToUInt32(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns + faddr->nExpons);
+//      (faddr->nExpons)++;
+//    }
+//  };
+
+
+  // An integer matrix is maintained with the exponents only, and dumped to the visible matrix only when needed
+
+  void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
+      uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+      uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+      
+                                            #ifdef MONITOR_FACTORS
+                                              printf("\ndumpExponents:\n");
+                                              printRegisterToConsole(regist,"Matrix: ","\n");
+                                              printf("  Exponent Array: faddr->nExpons=%d\n", faddr->nExpons);
+                                              for(int ii = 0; ii < faddr->nExpons; ii++) {
+                                                printf("%d:%d ",ii, faddr->expons[ii]);
+                                              }
+                                              printf("\n");
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+
+    if(faddr->nExpons != cols || rows != 2 || getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+       #if !defined(TESTSUITE_BUILD)
+         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+           sprintf(errorMessage, "Incorrect matrix counters %" PRIu32 STD_CROSS "%" PRIu32 " matrix vs. array %d", rows, cols, faddr->nExpons);
+           moreInfoOnError("In function dumpExponents:", errorMessage, NULL, NULL);
+         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+         return;
+       #endif // !TESTSUITE_BUILD
+    }
+                                            #ifdef MONITOR_FACTORS
+                                              printf("dumpExponents:  fill exponents:  faddr->nExpons==%u dumpForFewerThan=%u\n", faddr->nExpons, dumpForFewerThan);
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+    for( uint16_t i = 0;  i < min(faddr->nExpons, dumpForFewerThan);  ++i ) {
+                                            #ifdef MONITOR_FACTORS
+                                              printf("--b:  adding expon at faddr->nExpons==%u, i==%u, val %u, ind %u\n", faddr->nExpons, i, faddr->expons[i], faddr->nExpons+i);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+      uInt32ToReal34(faddr->expons[i], REGISTER_REAL34_MATRIX_ELEMENTS(regist) + faddr->nExpons+i);
+    }
+  }
+
+
+  static void pushLongIntegerToJK(longInteger_t factor) {
+    copySourceRegisterToDestRegister(REGISTER_H, REGISTER_G);
+    copySourceRegisterToDestRegister(REGISTER_K, REGISTER_H);
+    convertLongIntegerToLongIntegerRegister(factor, REGISTER_K);
+  }
+
+
+  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
+    //printLongIntegerToConsole(factor,"-->","\n");
+
+    if(addFactorsToTSV) {
+      convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
+    }
+
+    pushLongIntegerToJK(factor);
+
+                                            #ifdef MONITOR_FACTORS
+                                              printf("--c:  addFactor()\n");
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+    if(getRegisterDataType(regist) != dtReal34Matrix) {
+                                            #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+                                              printf("addFactor 1:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+      //Initialize Memory for Matrix
+      if(initMatrixRegister(regist, 2, 1, false)) {
+                                             #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+                                              printf("addFactor 2:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+        setSystemFlag(FLAG_ASLIFT);
+      }
+      else {
+                                            #ifdef MONITOR_FACTORS
+                                              uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+                                              uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+                                              printf("addFactor 3:\n");
+                                              printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+
+        if(errorMessage != 0) goto returnFalse;
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          uint16_t cols_ = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+          uint16_t rows_ = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+          sprintf(errorMessage, "Not enough memory for a rows:%" PRIu32 STD_CROSS " cols:%" PRIu32 " matrix", rows_, cols_);
+          moreInfoOnError("In function addFactor 001:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        goto returnFalse;
+      }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    }
+
+
+
+    uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+    #endif //(EXTRA_INFO_ON_CALC_ERROR == 1)
+    if(rows > 2) {
+       #if !defined(TESTSUITE_BUILD)
+         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+           sprintf(errorMessage, "Incorrect matrix dimensions %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+           moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+       #endif // !TESTSUITE_BUILD
+       goto returnFalse;
+    }
+
+    if( faddr->nExpons == 0 ) {
+      faddr->nExpons = 1;  // has to be 1 now, as we have this factor
+      faddr->expons[(faddr->nExpons)-1] = 1;
+    }
+    uint16_t wkgCols = faddr->nExpons;
+                                            #ifdef MONITOR_FACTORS
+                                              gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+    if(!redimMatrixRegister(regist, rows, wkgCols)) {
+      if(errorMessage != 0) goto returnFalse;
+      #if !defined(TESTSUITE_BUILD)
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+          moreInfoOnError("In function addFactor 002:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #endif // !TESTSUITE_BUILD
+      goto returnFalse;
+    }
+
+    int counter = faddr->nExpons;
+    uint16_t n = rows*counter;
+    uint16_t c = n/2;
+                                            #ifdef MONITOR_FACTORS
+                                              printf("faddr->nExpons=%d n=%d c=%d\n",faddr->nExpons, n, c);
+                                              fflush(stdout);
+                                            #endif //MONITOR_FACTORS
+    real34_t factorR;
+    convertLongIntegerToReal34(factor, &factorR);
+    //search for existing factors
+    while(counter >= 0 && !real34CompareEqual(&factorR, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter)) {
+      counter--;
+    }
+
+    //increment exponent if found
+    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter,const34_1) ) {
+      ++(faddr->expons[counter]);
+                                              #ifdef MONITOR_FACTORS
+                                                printf("--e:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
+                                              #endif //MONITOR_FACTORS
+    }
+    else {
+      bool_t incNExpons = real34CompareAbsEqual(&factorR,const34_1) ? false : true;
+      if( !incNExpons ) {
+        c = 0;
+      }
+                                              #ifdef MONITOR_FACTORS
+                                                printf("--f:   restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
+                                              #endif //MONITOR_FACTORS
+      real34Copy(&factorR, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + c);
+      real34Copy(&factorR, lastAdded);
+      if( incNExpons ) {
+        if( faddr->nExpons < MAX_FACTORS ) {
+            (faddr->nExpons)++;
+        }
+        else {
+          #if !defined(TESTSUITE_BUILD)
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+              moreInfoOnError("In function addFactor 003:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #endif // !TESTSUITE_BUILD
+        goto returnFalse;
+        }
+
+        ++wkgCols;
+        faddr->expons[faddr->nExpons-1] = 1;
+        if(!redimMatrixRegister(regist, rows, wkgCols)) {
+          if(errorMessage != 0) goto returnFalse;
+          #if !defined(TESTSUITE_BUILD)
+            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+              moreInfoOnError("In function addFactor 004", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            #endif // !TESTSUITE_BUILD
+            goto returnFalse;
+        }
+      }
+      n = rows*(faddr->nExpons);
+      c = n/2;
+    }
+    dumpExponents(REGISTER_X, faddr, 13);
+    updateMatrixHeightCache();
+    refreshRegisterLine(REGISTER_X);
+    #if defined (PC_BUILD) //Note clear the correct number of lines to ensure no old register debris remains on screen. This is only required on SIM as the hardware clears the screen presumably
+      if(cachedDisplayStack <= 3) refreshRegisterLine(REGISTER_Y);
+      if(cachedDisplayStack <= 2) refreshRegisterLine(REGISTER_Z);
+      if(cachedDisplayStack <= 1) refreshRegisterLine(REGISTER_T);
+    #endif //PC_BUILD
+
+    return true;
+
+returnFalse:
+    updateMatrixHeightCache();
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+    refreshScreen(301);
+    return false;
+  }
+#endif //SAVE_SPACE_DM42_12PRIME
+
+
+static void printTitles(longInteger_t input) {
+  if(addFactorsToTSV) {
+    #if !defined(TESTSUITE_BUILD)
+      create_filename("");
+      fnStrtoReg(filename_csv, TEMP_REGISTER_1);
+      cancelFilename = true;
+      fnP_All_Regs(PRN_TMP);
+
+      convertLongIntegerToLongIntegerRegister(input, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
+
+      char filename[50];
+      strcpy(filename,"FACTORS:");
+      fnStrtoReg(filename, TEMP_REGISTER_1);
+      fnP_All_Regs(PRN_TMP);
+    #endif //TESTSUITE_BUILD
+  }
+}
+
+
+void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+    iterations = true;
+    addFactorsToTSV = false;
+    loopp = 0;
+    currentKeyCode = 255;
+    real34_t lastAdded;
+
+    longInteger_t currentNumber, tmp, temp1;
+
+    longIntegerInit(currentNumber);
+    longIntegerInit(tmp);
+    longIntegerInit(temp1);
+
+//    bool_t continueWithMatrix = false;
+//    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 2 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 0) {
+//      continueWithMatrix = true;
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns-1, temp1, RM_HALF_UP);
+//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns*2-1, tmp, RM_HALF_UP);
+//      longIntegerPower(temp1, tmp, currentNumber);
+//    } else
+    if(!getIntArg(currentNumber)) {
+      goto abort;
+    }
+
+    if(longIntegerIsZero(currentNumber)) {
+      badDomainError(REGISTER_X);
+      goto abort;
+    }
+
+    int32_t sign = longIntegerIsNegative(currentNumber);
+    if(sign) {
+      longIntegerSetPositiveSign(currentNumber);
+    }
+
+    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+    longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+    if(longIntegerIsPositive(tmp)) {
+      badDomainError(REGISTER_X);
+      goto abort;
+    }
+
+    if(!saveLastX()) {
+      goto abort;
+    }
+
+    int32ToReal34(0,&lastAdded);
+    FactorAdder_t faddr;
+    initFactorAdder(&faddr);
+
+//    if(continueWithMatrix) {
+//      initFactorCreateFromMatrix(&faddr);
+//    }
+
+    //determine if the TSV file is to be written
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    stringToLongInteger("9999999999999999999999999999999999", 10, lgInt);
+    addFactorsToTSV = (longIntegerCompare(currentNumber, lgInt) > 0);
+    longIntegerFree(lgInt);
+    printTitles(currentNumber);
+
+
+    //capture the sign in the output matrix
+    int32ToLongInteger(sign ? -1 : 1, tmp);    
+    if(!addFactor(tmp, REGISTER_X, &lastAdded, &faddr)) {
+      goto abort;
+    }
+
+
+    longInteger_t queue[MAXIMUM_QUEUE_SIZE];
+    int queue_start = 0, queue_end = 0;
+
+// initialize and prep second part
+    longInteger_t temp, factor, quotient, tempPrePrimeRun;
+    longIntegerInit(temp);
+    longIntegerInit(factor);
+    longIntegerInit(quotient);
+    longIntegerInit(tempPrePrimeRun);
+    // Initialize queue with the input number
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+        longIntegerInit(queue[i]);
+    }
+
+    #if !defined(TESTSUITE_BUILD)
+      clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+      force_refresh(force);
+    #endif //TESTSUITE_BUILD
+
+    // original command, prior to pre-run of primes. Retain here to test without the pre-run block
+    //   longIntegerCopy(currentNumber, queue[queue_end++]);
+
+    if(Factors_1_SmallPrimes) {
+      // first do a pre-run, to do small prime checking
+      for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+        uint16_t smallP = smallPrimeList(i);
+        while (mpz_divisible_ui_p(currentNumber, smallP)) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(REGISTER_X, &faddr, 13);
+                force_refresh(force);
+              }
+            }
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
+                              #if defined(MONITOR_FACTORS)
+                                printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
+                              #endif //MONITOR_FACTORS
+          mpz_divexact_ui(currentNumber, currentNumber, smallP);
+                              #if defined(MONITOR_FACTORS)
+                                mpz_out_str(stdout, 10, currentNumber);
+                              #endif //MONITOR_FACTORS
+          uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
+          if(!addFactor(tempPrePrimeRun, REGISTER_X, &lastAdded, &faddr)) {
+            goto cleanup;
+          }
+                              #if defined(MONITOR_FACTORS)
+                                printf("\n");
+                              #endif //MONITOR_FACTORS
+        }
+      } // end of small prime loop
+    }
+
+
+
+
+    // Early multiplier check using 32-bit perfect square test
+    static const uint32_t multipliers[] = {
+    1,   // Always include 1
+    3, 5, 7, 11,
+    15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
+    105 }; // 3-way composite: 3*5*7
+
+    if(Factors_2_PerfectSquare) {
+      for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, currentNumber);
+                dumpExponents(REGISTER_X, &faddr, 13);
+                force_refresh(force);
+              }
+            }
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
+          if (mpz_fits_uint_p(currentNumber)) {
+              uint32_t k = multipliers[i];
+              uint32_t n32;
+              longIntegerToUInt32(currentNumber, n32);
+              uint64_t kn = (uint64_t)k * (uint64_t)n32;
+              #if defined(MONITOR_FACTORS)
+                printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+                fflush(stdout);
+              #endif
+              uint32_t root;
+              if (is_perfect_square_uint32(kn, &root)) {
+                  // Skip trivial perfect square 1 * 1 = 1
+                  if (!(k == 1 && root == 1)) {
+                      #if defined(MONITOR_FACTORS)
+                        printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+                        fflush(stdout);
+                      #endif
+                      // Use gcd to extract non-trivial factor safely
+                      longInteger_t gcd;
+                      longIntegerInit(gcd);
+                      mpz_gcd_ui(gcd, currentNumber, root);
+                      if (longIntegerCompareUInt(gcd, 1) > 0) {
+                          // Inject a trivial factor
+                          if (!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
+                              longIntegerFree(gcd);
+                              goto cleanup;
+                          }
+                          mpz_divexact(currentNumber, currentNumber, gcd);
+                          longIntegerFree(gcd);
+                          break;
+                      }
+                      longIntegerFree(gcd);
+                  }
+              }
+          }
+      }
+    }
+
+    //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
+    longIntegerCopy(currentNumber, queue[queue_end]);
+    queue_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+                            #if defined(MONITOR_FACTORS)
+                              printf("Factorizing: ");
+                              mpz_out_str(stdout, 10, currentNumber);
+                              printf("\nFactors found: ");
+                            #endif //MONITOR_FACTORS
+
+    longInteger_t current;
+    longIntegerInit(current);
+    while (queue_start != queue_end) {
+        longIntegerCopy(queue[queue_start], current);
+        queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
+                            #if defined(MONITOR_FACTORS)
+                              printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+                            #endif //MONITOR_FACTORS
+           #if defined(MONITOR_FACTORS)
+             mpz_out_str(stdout, 10, current);
+             printf(" ");
+            #endif //MONITOR_FACTORS
+
+        #if !defined(TESTSUITE_BUILD)
+          loopp++;
+          if(checkHalfSec()) {
+            keepFileNameAlive();
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              _showProgress(&lastAdded, current);
+              dumpExponents(REGISTER_X, &faddr, 13);
+              force_refresh(force);
+            }
+          }
+          if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
+          }
+        #endif //!TESTSUITE_BUILD
+
+
+        // Skip if current is 1
+        if (longIntegerCompareUInt(current, 1) == 0) {
+                            #if defined(MONITOR_FACTORS)
+                              printf("Skip, current is 1\n");
+                            #endif //MONITOR_FACTORS
+            continue;
+        }
+
+        // Check if current is prime
+        if (longIntegerProbabPrime(current)) {
+           #if defined(MONITOR_FACTORS)
+             mpz_out_str(stdout, 10, current);
+             printf(" ");
+            #endif //MONITOR_FACTORS
+            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
+              goto doneWhile;
+            }
+                            #if defined(MONITOR_FACTORS)
+                              printf("Skip, current is prime\n");
+                            #endif //MONITOR_FACTORS
+            continue;
+        }
+
+        // Attempt to find a factor using SQUFOF
+        SQUFOF(factor, current, lastAdded);
+        if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
+            // SQUFOF failed; treat current as prime
+                            #if defined(MONITOR_FACTORS)
+                              printf("SQUFOF failed; treat current as prime: ");
+                              mpz_out_str(stdout, 10, current);
+                              printf(" ");
+                            #endif //MONITOR_FACTORS
+            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
+              goto doneWhile;
+            }
+                            #if defined(MONITOR_FACTORS)
+                              printf("current considered prime, next\n");
+                            #endif //MONITOR_FACTORS
+            continue;
+        }
+
+        // Divide current by the found factor
+        mpz_divexact(quotient, current, factor);
+
+        // Enqueue the factor and quotient for further factorization
+        int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+        int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
+        if (next_next_end != queue_start) {
+                            #if defined(MONITOR_FACTORS)
+                              printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
+                              mpz_out_str(stdout, 10, factor);
+                              printf(" quotient: ");
+                              mpz_out_str(stdout, 10, quotient);
+                              printf("\n");
+                            #endif //MONITOR_FACTORS
+            longIntegerCopy(factor, queue[queue_end]);
+            queue_end = next_end;
+            longIntegerCopy(quotient, queue[queue_end]);
+            queue_end = next_next_end;
+        } else {
+            if(errorMessage != 0) break;
+            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+              moreInfoOnError("In function fnPrimeFactors 001:  Queue overflow:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            break;
+        }
+
+    }
+doneWhile:
+    longIntegerFree(current);
+
+cleanup:
+    longIntegerFree(temp);
+    longIntegerFree(factor);
+    longIntegerFree(quotient);
+    longIntegerFree(tempPrePrimeRun);
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
+        longIntegerFree(queue[i]);
+    }
+
+    dumpExponents(REGISTER_X, &faddr, 65535);
+    delCol1RealMatrixX();
+
+abort:
+    uInt32ToLongInteger(1u, tmp);
+    convertLongIntegerToLongIntegerRegister(tmp, TEMP_REGISTER_1);
+    longIntegerFree(tmp);
+    longIntegerFree(temp1);
+    longIntegerFree(currentNumber);
+    cancelFilename = true;
+    iterations = false;
+}
+
+
+
+//-------------------------------------------------------------------
+/*
+ * Pollard's Rho Integer Factorization with perfect power detection
+ *
+ * Based on: https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+ * jaymos 2025
+ * The point of this approach of coding is to let Pollard's algo operate step wise,
+ *   interjected while doing the Shanks algo. Shanks was done first, and found to get
+ *   stuck with relatively simple factor not being found. Pollard will in PARALLEL 
+ *   scan the current number and whichever Shanks or Pollard finding a factor,
+ *   will run the addFactor function, and continue to look in the same way sharing the 
+ *   processor.
+ * The idea comes from 'linear programming' in the 80's afaik, where a simplistic
+ * single threaded industrial controller or PLC does 'multi-tasking' without formal time
+ * slicing and mult-threadedness.
+ *
+ * In summary, Shanks was written, then Pollard was written to fill in and find factors
+ * in parallel without breaking the Shanks factor finding loop.
+ */
+
+/*
+ * Print pollard status to screen
+ */
+char* pollard_status(factors_status_t st) {
+  switch(st){
+    case FACTORS_SETUP:   return("SETUP  "); break;
+    case FACTORS_ITERATE: return("ITERATE"); break;
+    case FACTORS_RESET:   return("RESET  "); break;
+    case FACTORS_DONE:    return("DONE   "); break;
+    case FACTORS_FAIL:    return("FAIL   "); break;
+    default:return("");break;
+  }
+}
+/*
+ * Polynomial function used in Pollard's Rho:
+ * f(x) = x^2 + c mod n
+ */
+static void f(longInteger_t result, longInteger_t x, longInteger_t c, const longInteger_t n) {
+  longIntegerSquare(x, result);                     // x^2
+  longIntegerAdd(result, c, result);                // + c
+  longIntegerModulo(result, n, result);             // mod n
+}
+
+/*
+ * Initializes the Pollard state structure. Must be called before using the step or update functions.
+ */
+void pollard_init(pollard_t *self) {
+  longIntegerInit(self->n);
+  longIntegerInit(self->x);
+  longIntegerInit(self->y);
+  longIntegerInit(self->c);
+  longIntegerInit(self->d);
+  longIntegerInit(self->tmp);
+  self->iteration = 0;
+  self->attempt = 0;
+  #define max_iterations 1000000      // Reset current attempt after this many iterations
+  #define max_attempts   1000         // Max allowed retried attempts before FAIL. 1000 meaning literally infinity for the hardware speed ...
+  #define maxIter (self->attempt <= 25 ? max_iterations / 10 : (self->attempt <= 50 ? max_iterations : max_iterations * 4))
+
+  // Deterministically seed the RNG for repeatability.
+  // These values are the defaults specified by the algorithm, so pretty uninteresting.
+  // It doesn't matter much what values are used so long as the inc is odd.
+  self->rng.state = 0x853c49e6748fea9bull;
+  self->rng.inc = 0xda3e39cb94b95bdbull;
+}
+
+void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) { // Get bit size of n to determine how many random bits we need. Generate enough random bits (use multiple PCG32 calls if needed)
+  size_t n_bits = mpz_sizeinbase(n, 2);
+  mpz_t temp;
+  mpz_init(temp);
+  size_t bits_generated = 0;
+  while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
+      uint32_t random_val = pcg32_random_r(rng);
+      mpz_mul_2exp(temp, temp, 32);
+      mpz_add_ui(temp, temp, random_val);
+      bits_generated += 32;
+  }
+  mpz_mod(rop, temp, n);
+  mpz_clear(temp);
+}
+/*
+ * Frees all GMP variables and RNG state.
+ */
+void pollard_clear(pollard_t *self) {
+  longIntegerFree(self->n);
+  longIntegerFree(self->x);
+  longIntegerFree(self->y);
+  longIntegerFree(self->c);
+  longIntegerFree(self->d);
+  longIntegerFree(self->tmp);
+}
+/*
+ * Updates the target number to factor (n), and resets the internal state automatically.
+ */
+void pollard_update_n(pollard_t *self, const longInteger_t new_n) {
+  longIntegerCopy(new_n, self->n);
+  self->attempt = 0;
+  self->iteration = 0;
+
+  uInt32ToLongInteger(1, self->c);        // Start with f(x) = x² + 1
+  mpz_urandomm_pcg32(self->x, &self->rng, self->n);
+  longIntegerCopy(self->x, self->y);
+  uInt32ToLongInteger(1, self->d);
+}
+/*
+ * Performs a number 'steps' of Pollard's Rho iterations within one main iteration.
+ *   Currently 10 steps of pollard to one step of Shanks; Shanks being on the back burner.
+ * Returns a result struct with status and diagnostic info.
+ * - If a factor is found, status will be FACTORS_DONE.
+ * - If more work is needed, returns FACTORS_ITERATE or FACTORS_SETUP.
+ */
+factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_status_t instruction, int steps) {
+  factors_result_t result;
+  result.status = FACTORS_ITERATE;
+  result.iterations_this_call = 0;
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+  // First-time or forced re-setup
+if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iteration >= maxIter)) {
+    if (self->attempt++ >= max_attempts) {
+      result.status = FACTORS_FAIL;
+      return result;
+    }
+
+  // Try different polynomial function based on attempt number
+  if (self->attempt % 3 == 0) {
+    uInt32ToLongInteger(1, self->c);      // f(x) = x² + 1
+  } else if (self->attempt % 3 == 1) {
+    uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2  
+  } else {
+    mpz_urandomm_pcg32(self->c, &self->rng, self->n); // Random c
+  }
+    mpz_urandomm_pcg32(self->x, &self->rng, self->n);
+    longIntegerCopy(self->x, self->y);
+    uInt32ToLongInteger(1, self->d);
+    self->iteration = 0;
+    result.status = FACTORS_ITERATE;
+    return result;
+  }
+  // Perform up to `steps` iterations
+  if (instruction == FACTORS_ITERATE) {
+    for (int i = 0; i < steps; ++i) {
+      if (++self->iteration >= maxIter) {
+        result.status = FACTORS_SETUP; // Too long without result — reseed
+        break;
+      }
+      // Floyd's cycle detection: tortoise and hare
+      f(self->x, self->x, self->c, self->n);         // tortoise: 1 step  
+      f(self->y, self->y, self->c, self->n);         // hare: 2 steps
+      f(self->y, self->y, self->c, self->n);
+      longIntegerSubtract(self->x, self->y, self->tmp);
+      mpz_abs(self->tmp, self->tmp);
+      longIntegerGcd(self->tmp, self->n, self->d);
+      // Factor found!
+      if (longIntegerCompareUInt(self->d, 1) > 0 && longIntegerCompare(self->d, self->n) < 0) {
+        longIntegerCopy(self->d, factor);
+        result.status = FACTORS_DONE;
+        break;
+      }
+      // Fail — retry from new seed
+      if (longIntegerCompare(self->d, self->n) == 0) {
+        result.status = FACTORS_SETUP;
+        break;
+      }
+      result.iterations_this_call++;
+    }
+  }
+  result.total_iterations = self->iteration;
+  result.attempts = self->attempt;
+  return result;
 }
 

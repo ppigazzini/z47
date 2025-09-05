@@ -19,6 +19,9 @@
 
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i))
         goto err;
@@ -43,57 +46,38 @@
   void fnT_P(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamT(&val, &dof)) {
       WP34S_Pdf_T(&val, &dof, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnT_L(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamT(&val, &dof)) {
       WP34S_Cdf_T(&val, &dof, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnT_R(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamT(&val, &dof)) {
       WP34S_Cdfu_T(&val, &dof, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnT_I(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamT(&val, &dof)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -116,9 +100,8 @@
       else {
         convertRealToResultRegister(&ans, REGISTER_X, amNone);
       }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

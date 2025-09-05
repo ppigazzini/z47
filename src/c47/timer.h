@@ -7,28 +7,29 @@
 #if !defined(TIMER_H)
 #define TIMER_H
 
-uint32_t getUptimeMs          (void);
-void     fnTicks              (uint16_t unusedButMandatoryParameter);
-void     fnLastT              (uint16_t unusedButMandatoryParameter);
-void     LastOpTimerReStart   (uint16_t func);
-void     LastOpTimerLap       (uint16_t func);
+uint32_t getUptimeMs           (void);
+void     fnTicks               (uint16_t unusedButMandatoryParameter);
+void     fnLastT               (uint16_t unusedButMandatoryParameter);
+void     LastOpTimerReStart    (uint16_t func);
+void     LastOpTimerLap        (uint16_t func);
+void     fnItemTimerApp        (uint16_t unusedButMandatoryParameter); // STOPW
+void     fnStopTimerApp        (void);                                 // from Off
+void     fnShowTimerApp        (void);                                
+void     fnUpdateTimerApp      (void);                                
+void     fnUpTimerApp          (void);                                
+void     fnDownTimerApp        (void);                                
+void     fnDigitKeyTimerApp    (uint16_t digit);                      
 
-void     fnItemTimerApp       (uint16_t unusedButMandatoryParameter);
-void     fnDecisecondTimerApp (uint16_t unusedButMandatoryParameter);
-void     fnResetTimerApp      (uint16_t unusedButMandatoryParameter);
-void     fnRecallTimerApp     (uint16_t regist);
-void     fnStartStopTimerApp  (uint16_t unusedButMandatoryParameter);
-void     fnStopTimerApp       (void);
-void     fnShowTimerApp       (void);
-void     fnUpdateTimerApp     (void);
-void     fnUpTimerApp         (void);
-void     fnDownTimerApp       (void);
-void     fnDigitKeyTimerApp   (uint16_t digit);
+void     fnAddTimerApp         (uint16_t unusedButMandatoryParameter); // F1 TIM → Σ
+void     fnAddLapTimerApp      (uint16_t unusedButMandatoryParameter); // F2 LAP → Σ
+void     fnRegAddTimerApp      (uint16_t unusedButMandatoryParameter); // F3 TIM → R
+void     fnRegAddLapTimerApp   (uint16_t unusedButMandatoryParameter); // F4 LAP → R
+void     fnStartStopTimerApp   (uint16_t unusedButMandatoryParameter); // F5 R/S
+void     fnResetTimerApp       (uint16_t unusedButMandatoryParameter); // F6 RESET
 
-void     fnAddTimerApp        (uint16_t unusedButMandatoryParameter);
-void     fnAddLapTimerApp     (uint16_t unusedButMandatoryParameter);
-void     fnRegAddTimerApp     (uint16_t unusedButMandatoryParameter);
-void     fnRegAddLapTimerApp  (uint16_t unusedButMandatoryParameter);
+void     fnRecallTimerApp      (uint16_t regist);                      // fF3 RCL⏱
+void     fnSetCountDownTimerApp(uint16_t unusedButMandatoryParameter); // fF4 RCL⧖
+void     fnDecisecondTimerApp  (uint16_t unusedButMandatoryParameter); // fF5 0.1s
 
 void     fnBackspaceTimerApp  (void);
 void     fnLeaveTimerApp      (void);

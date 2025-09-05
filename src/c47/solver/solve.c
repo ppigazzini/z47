@@ -38,15 +38,6 @@ void fnPgmSlv(uint16_t label) {
   }
 }
 
-static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  if(getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34) {
-    fnToReal(0); // ensure the result is a plain real34
-    real34Copy(REGISTER_REAL34_DATA(regist), val);
-    return true;
-  }
-  return false;
-}
-
 void fnSolve(uint16_t labelOrVariable) {
   if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
@@ -70,7 +61,7 @@ void fnSolve(uint16_t labelOrVariable) {
     real_t tmp;
     int resultCode = 0;
 
-    if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
+    if(getRegisterAsReal34Quiet(REGISTER_Y, &y) && getRegisterAsReal34Quiet(REGISTER_X, &x)) {
       fnDrop(NOPARAM);
       fnDrop(NOPARAM);
       saveForUndo(); //repeat after dropping the input parameters
@@ -88,8 +79,14 @@ void fnSolve(uint16_t labelOrVariable) {
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       int32ToReal34(resultCode, REGISTER_REAL34_DATA(REGISTER_T));
+      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        printf("Close ");
+        printRegisterToConsole(REGISTER_X, "X=", " ");
+        printRegisterToConsole(REGISTER_Y, "Xold=", "\n");
+      #endif
       switch(resultCode) {
         case SOLVER_RESULT_NORMAL: {
+          copySourceRegisterToDestRegister(REGISTER_X, labelOrVariable);
           temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
           lastErrorCode = ERROR_NONE;
           break;
@@ -150,43 +147,43 @@ void fnSolve(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  printStatus(1, errorMessages[REAL_SOLVER],force);
-  const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
-  const uint16_t regist = findOrAllocateNamedVariable(var);
-  const uint16_t nameLength = stringByteLength(var) + 1;
-  if(currentMvarLabel != INVALID_VARIABLE) {
-    if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
-      reallyRunFunction(ITM_STO, regist);
-    }
-    else {  // MNU_MVAR was displayed by VARMNU
-      if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
-        entryStatus &= 0xfe;
-        currentSolverVariable = regist;
+    printStatus(1, errorMessages[REAL_SOLVER],force);
+    const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
+    const uint16_t regist = findOrAllocateNamedVariable(var);
+    const uint16_t nameLength = stringByteLength(var) + 1;
+    if(currentMvarLabel != INVALID_VARIABLE) {
+      if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
         reallyRunFunction(ITM_STO, regist);
-        temporaryInformation = TI_SOLVER_VARIABLE;
       }
-      else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-        reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength) , amNone);
-        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength);
-        dynamicMenuItem = -1;
-        runProgram(false, INVALID_VARIABLE);
+      else {  // MNU_MVAR was displayed by VARMNU
+        if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+          entryStatus &= 0xfe;
+          currentSolverVariable = regist;
+          reallyRunFunction(ITM_STO, regist);
+          temporaryInformation = TI_SOLVER_VARIABLE;
+        }
+        else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
+          reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength) , amNone);
+          xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength);
+          dynamicMenuItem = -1;
+          runProgram(false, INVALID_VARIABLE);
+        }
       }
     }
-  }
-  else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
-    currentSolverVariable = regist;
-    reallyRunFunction(ITM_STO, regist);
-    temporaryInformation = TI_SOLVER_VARIABLE;
-  }
-  else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-    reallyRunFunction(ITM_SOLVE, regist);
-  }
-  else {
-    currentSolverVariable = regist;
-    reallyRunFunction(ITM_STO, regist);
-    currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
-    temporaryInformation = TI_SOLVER_VARIABLE;
-  }
+    else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
+      currentSolverVariable = regist;
+      reallyRunFunction(ITM_STO, regist);
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
+    else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      reallyRunFunction(ITM_SOLVE, regist);
+    }
+    else {
+      currentSolverVariable = regist;
+      reallyRunFunction(ITM_STO, regist);
+      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
   #endif // !TESTSUITE_BUILD
 }
 
@@ -219,10 +216,9 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtReal34) {
-      fnToReal(0); // ensure the result is a plain real34
-      real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
-    }
+    else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
+      ;
+    } 
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
       real34ChangeSign(res);
@@ -304,10 +300,10 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
           clearRegisterLine(REGISTER_X, true, true);
 
           displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           showString(real34IsSpecial(fa) ? "?" : real34IsZero(fa) ? "" : real34IsPositive(fa) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           displayFormatDigits = savedDisplayFormatDigits;
@@ -321,11 +317,13 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 #endif //TESTSUITE_BUILD
 
 
+#undef SOLVERDEBUG
+#define SOLVERDEBUG2 //only progress indicators
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
-    real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34;
+    real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34, tol34AlmostZero;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
     bool_t extendRange = false;
     bool_t originallyLevel = false;
@@ -334,8 +332,11 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
     int16_t getOutOfLevel = 17;
+    bool_t fbIsAlmostZero = false;
 
     convergenceTolerence(&tol);
+    stringToReal34("1e-34", &tol34AlmostZero);
+    //printReal34ToConsole(&tol34AlmostZero,"tol=","\n");
 
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
@@ -363,16 +364,25 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(real34CompareEqual(x, y)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
 retryLevel:
       if(--getOutOfLevel >= 0) {
-        #ifdef PC_BUILD
-          printf("Retry Level:%i ",getOutOfLevel);
+        #if (defined PC_BUILD) && (defined SOLVERDEBUG) 
+          printf("Solver retry Level:%2i ",getOutOfLevel);
           printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
         #endif //PC_BUILD
         real34Multiply(&antiLevel34,const34_153,&antiLevel34);   //increase it for the next round so long
         real34Minus(&antiLevel34,&antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
-        real34Add(&a, &antiLevel34, &a);                         //Add this value to the starting value
-        real34Add(&b1, &antiLevel34, &b1);                       //Add this value to the starting value
+        if(real34IsPositive(&antiLevel34)) {
+          real34Add(&b, &antiLevel34, &b);                       //Add this value to the right hand starting value
+        } else {
+          real34Add(&a, &antiLevel34, &a);                       //Add this value to the left hand starting value
+          real34Add(&b1, &antiLevel34, &b1);                     //Add this value to the left hand starting value
+        }
       }
     }
+    #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      printf("Start %d  ", loop);
+      printReal34ToConsole(&a, "a=", " ");
+      printReal34ToConsole(&b, "b=", "\n");
+    #endif
 
     real34Subtract(&b, &a, &s);
     if(real34CompareAbsLessThan(&s, const34_1e_32)) {
@@ -443,8 +453,11 @@ retryLevel:
       real34ToReal(&fa, &faa);
       real34ToReal(&fb, &fbb);
       real34ToReal(&fb1, &fbb1);
-
-
+      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        printf("Iter %d  ", loop);
+        printReal34ToConsole(&a, "a=", " ");
+        printReal34ToConsole(&b, "b=", "\n");
+      #endif
 
       loop++;
       if(checkHalfSec()) {
@@ -623,26 +636,35 @@ retryLevel:
       bool_t bb_bb1_converged   = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39);
       bool_t b1_b2_Equal = real34CompareEqual(&b1, &b2);
       bool_t b_b1_Equal  = real34CompareEqual(&b,  &b1);
+      fbIsAlmostZero = real34CompareAbsLessThan(&fb,&tol34AlmostZero);
 
       //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-      //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel);
+      //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
       //   } while(result == SOLVER_RESULT_NORMAL &&
       //           (real34IsSpecial(&b2) || !real34CompareEqual(&b1, &b2) || !(extendRange || extremum || WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39))) &&
       //           (originallyLevel || !((!extendRange && WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39)) || real34CompareEqual(&b, &b1) || real34CompareEqual(&fb, const34_0)))
       //          );
       //Rewrote the above while condition as more understandable discrete logic:
 
+      if(result != SOLVER_RESULT_NORMAL) {
+        break;
+      }
       if( (!real34IsSpecial(&b2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
         break;
       }
       if( !originallyLevel &&
-        ((!extendRange && bb_bb1_converged) || b_b1_Equal || real34IsZero(&fb) )  ) {
+        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         break;
       }
-    } while(result == SOLVER_RESULT_NORMAL);
+    } while(true);
 
-    real34Copy(&fb, resZ);
+    #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      printf("End iter %d  ", loop);
+      printReal34ToConsole(&a, "a=", " ");
+      printReal34ToConsole(&b, "b=", "\n");
+    #endif
+
     _executeSolver(variable, &b, resZ);
     real34Copy(&b1, resY);
     real34Copy(&b, resX);
@@ -659,11 +681,12 @@ retryLevel:
       setSystemFlag(FLAG_INTING);
     }
 
-    if(real34IsZero(&fb)) {
+    if(fbIsAlmostZero) {  //    if(real34IsZero(&fb)) {
       result = SOLVER_RESULT_NORMAL;
     }
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
+      bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
       setSystemFlag(FLAG_SOLVING);
       real34Copy(const34_1e_32, &tmp);
       while(true) {
@@ -692,8 +715,10 @@ retryLevel:
           break;
         }
       }
+      if(!retainSolvingFlag) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
     }
-    clearSystemFlag(FLAG_SOLVING);
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;

@@ -70,7 +70,7 @@
     clearSystemFlag(FLAG_NUMLOCK);
     scrLock = NC_NORMAL;
 
-    if(!tam.mode && calcMode != CM_ASSIGN && calcMode != CM_PEM) {
+    if(!tam.mode && calcMode != CM_ASSIGN && calcMode != CM_PEM && calcMode != CM_ASN_BROWSER) {
       calcMode = CM_AIM;
       liftStack();
 
@@ -162,6 +162,18 @@
       }
       case MNU_CPXS: {
         catalog = CATALOG_CPXS;
+        break;
+      }
+      case MNU_CONFIGS: {
+        catalog = CATALOG_CONFIGS;
+        break;
+      }
+      case MNU_ALLVARS: {
+        catalog = CATALOG_ALLVARS;
+        break;
+      }
+      case MNU_NUMBRS: {
+        catalog = CATALOG_NUMBRS;
         break;
       }
       case MNU_Solver  :

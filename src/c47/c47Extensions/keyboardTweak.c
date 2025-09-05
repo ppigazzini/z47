@@ -26,18 +26,31 @@ void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-void keyClick(uint8_t length) {  //Debugging on scope, a pulse after every key edge. !!!!! Destroys the prior volume setting
+//Length in ms, frequency in Hz
+void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
   #if defined(DMCP_BUILD)
-    #if defined(DM42_KEYCLICK)
+    #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
       while(get_beep_volume() < 11) {
         beep_volume_up();
       }
-      start_buzzer_freq(1000000); //Click 1kHz for 1 ms
-      sys_delay((uint32_t)length);
+      start_buzzer_freq(f*1000); //Click 1kHz for 1 ms
+      sys_delay((uint32_t)lengthMs);
       stop_buzzer();
     #endif // DM42_KEYCLICK
   #endif // DMCP_BUILD
+}
+
+void keyClick(uint8_t lengthMs) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+   _keyClick(lengthMs, 1000);
+  #endif
+}
+
+
+void powerMarkerMsF(uint8_t lengthMs, uint32_t f) {
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+    _keyClick(lengthMs, f);
+  #endif
 }
 
 
@@ -80,6 +93,7 @@ void showShiftState(void) {
         clearShiftState();
         clear_fg_jm();
         showHideAlphaMode();
+        cleanupAfterShift = true;
       }
     }
   #endif // !TESTSUITE_BUILD
@@ -142,7 +156,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if(HOME3 || MYM3) {
+    if((HOME3 || MYM3) && !GRAPHMODE) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
@@ -151,8 +165,8 @@ void resetKeytimers(void) {
       }
       #endif // PC_BUILD
 
-      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME); 
-      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu); 
+      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
+      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
 
       if(HOME3 && currentMenu() == target_HOME) {
         if(situation == keypress_fff) {
@@ -161,13 +175,16 @@ void resetKeytimers(void) {
       }
       else {
         if(getSystemFlag(FLAG_ALPHA)) {
+          leaveTamModeIfEnabled();
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
           if(HOME3) {
+            leaveTamModeIfEnabled();
             showSoftmenu(target_HOME);
           }
           else if(MYM3) {
+            leaveTamModeIfEnabled();
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
@@ -181,7 +198,7 @@ void resetKeytimers(void) {
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
-      if(HOME3 || MYM3) {
+      if((HOME3 || MYM3) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
@@ -189,6 +206,7 @@ void resetKeytimers(void) {
             fnTimerStop(TO_3S_CTFF);
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
+            leaveTamModeIfEnabled();
             openHOMEorMyM(keypress_fff);
           }
         }
@@ -218,11 +236,12 @@ void resetKeytimers(void) {
   }
 
 
-  int16_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
-    //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
+  int16_t Check_Norm_Key_00_Assigned(int16_t * result, int16_t tempkey) {
     if(!getSystemFlag(FLAG_USER) && (Norm_Key_00_key != -1) &&
        (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER || calcMode == CM_ASSIGN) &&
+       !tam.alpha && tam.mode != TM_STORCL && tam.mode != TM_LABEL &&
        (!catalog || (catalog && (Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != KEY_fg))) &&
+       (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX))) &&
        (  ( ((!shiftF && !shiftG) || isR47FAM) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||   //f & g allowed in R47, not allowed in C47 Σ+
           ((Norm_Key_00.func == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result))  )
        ) {
@@ -254,8 +273,8 @@ void resetKeytimers(void) {
 #define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
 //Note:
 // ITM_BASEMENU is used by the LongpressEXIT1 macro, which does some logic to determine what EXIT must do.
-// LongpressEXIT1 has an item number as output, which is fed into the longpress/command preview/runFunction systems, to open a menu. The menu is opened by fnBaseMenu(), 
-// and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose. 
+// LongpressEXIT1 has an item number as output, which is fed into the longpress/command preview/runFunction systems, to open a menu. The menu is opened by fnBaseMenu(),
+// and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose.
 // fnBaseMenu() opens MNU_MyMenu, and due to the reasons given, MNU_MyMenu cannot be used directly, as it needs to first set some flags, hence in a way it is like an invisible pseudo-menu, opened by an item.
 
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
@@ -272,7 +291,7 @@ void resetKeytimers(void) {
          || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
-        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
+        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX) && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
           if(LongPressM == RBX_M1234) {
@@ -283,26 +302,18 @@ void resetKeytimers(void) {
       }
     }                                                                   //yellow and blue function keys ^^
 
-    #undef ALL_AIM_LP_CYCLE
 
-    #if defined(ALL_AIM_LP_CYCLE)
-      else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-15
-        tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
-        tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
-        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
-        if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
-          ) {
-          if(!shiftF && !shiftG) {
-            longpressDelayedkey1 = tmpf_;
-            tmpf = tmpf_;
-            if(LongPressM == RBX_M1234) {
-              longpressDelayedkey3 = tmpg_;
-              tmpg = tmpg_;
-            }
-          }
+    else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {
+      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+      tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+        ) {
+        if(!shiftF && !shiftG) {
+            longpressDelayedkey1 = tmpg_;
+            tmpg = tmpg_;
         }
-      }                                                                   //yellow and blue function keys ^^
-    #endif //ALL_AIM_LP_CYCLE
+      }
+    }                                                                   //yellow and blue function keys ^^
 
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
@@ -313,7 +324,7 @@ void resetKeytimers(void) {
       longpressDelayedkey3 = -MNU_PFN;
     }
 
-    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && topHex) {
+    else if(calcMode == CM_NORMAL && *result >= ITM_A && *result <= ITM_F && lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)) {
        longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].primary  : kbd_std[*result - ITM_A].primary;
        longpressDelayedkey2 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].fShifted : kbd_std[*result - ITM_A].fShifted;
        longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].gShifted : kbd_std[*result - ITM_A].gShifted;
@@ -350,6 +361,7 @@ void resetKeytimers(void) {
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey2 = longpressDelayedkey1;
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
+      longpressDelayedkey3 = ITM_EDIT;
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
@@ -394,6 +406,7 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                   longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                  longpressDelayedkey3 = ITM_EDIT;
                 }
               break;
             case ITM_EXIT1:
@@ -401,14 +414,12 @@ void resetKeytimers(void) {
               longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               break;
 
-              #if !defined(ALL_AIM_LP_CYCLE)
-                case ITM_ENTER:
-                  if(tam.mode == 0) {
-                    longpressDelayedkey1 = ITM_XEDIT;
-                    longpressDelayedkey3 = ITM_CR;
-                  }
-                  break;
-               #endif //ALL_AIM_LP_CYCLE
+            case ITM_ENTER:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_XEDIT;
+                longpressDelayedkey3 = ITM_CR;
+              }
+              break;
             default:;
           }
           break;
@@ -419,19 +430,18 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
+                longpressDelayedkey3 = ITM_EDIT;
               }
               break;
             case ITM_EXIT1:
               longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               break;
-              #if !defined(ALL_AIM_LP_CYCLE)
-                case ITM_ENTER:
-                  if(tam.mode == 0) {
-                    longpressDelayedkey1 = ITM_XEDIT;
-                    longpressDelayedkey3 = ITM_CR;
-                  }
-                  break;
-              #endif //ALL_AIM_LP_CYCLE
+            case ITM_ENTER:
+              if(tam.mode == 0) {
+                longpressDelayedkey1 = ITM_XEDIT;
+                longpressDelayedkey3 = ITM_CR;
+              }
+              break;
             default:;
           }
           break;
@@ -439,15 +449,13 @@ void resetKeytimers(void) {
 
         case CM_PEM : {
           switch(*result) {
+            case ITM_BACKSPACE:
+                longpressDelayedkey1 = ITM_EDIT;
+              break;
             case ITM_EXIT1:
               longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               longpressDelayedkey1 = -MNU_PFN;
-              break;
-            case ITM_ENTER:
-              if(tam.mode == 0) {
-                longpressDelayedkey1 = ITM_CR;   //XEDIT removed, as it makes no sense and does not work in PEM
-              }
               break;
             default:;
           }
@@ -457,7 +465,12 @@ void resetKeytimers(void) {
         default : {
           switch(*result) {
             case ITM_EXIT1    :
-              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              if(calcModel == USER_C47) {
+                longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+              } else {
+                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
+                longpressDelayedkey1 = ITM_SNAP;
+              }
               break;
             default:;
           }
@@ -504,6 +517,7 @@ void resetKeytimers(void) {
     str[1] = 0;
 
     func = determineFunctionKeyItem_C47(str, shiftF, shiftG);
+    lastKeyItemDetermined = func;
 
     #if defined(PC_BUILD)
       //printf(">>> nameFunction fn=%i shifts=%u %u: %s %s\n", fn, shiftF, shiftG, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -757,7 +771,7 @@ void resetKeytimers(void) {
       else if(!shiftF && shiftG) {
         offset = 12;
       }
-      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE);
+      fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE); // if it times out, it goes to execFnTimeout
 
       #if defined(VERBOSEKEYS)
         printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n",(char*)data,((char*)data)[0], FN_key_pressed, offset);
@@ -1250,6 +1264,10 @@ bool_t fullKeyBuffer(void) {
 bool_t emptyKeyBuffer(void) {
   return buffer.read == buffer.write;
 }
+
+void clearKeyBuffer(void) {
+  buffer.read = buffer.write;
+}
 #endif // DMCP_BUILD                                                    //^^
 
 
@@ -1381,6 +1399,7 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
    fnKeyBackspace(0);
    setSystemFlag(FLAG_ASLIFT);
    screenUpdatingMode = SCRUPD_AUTO;
+   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 //   refreshScreen();
   #endif // !TESTSUITE_BUILD
 }

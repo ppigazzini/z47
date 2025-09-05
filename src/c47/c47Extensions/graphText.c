@@ -5,6 +5,13 @@
 
 //#define DISPLOADING
 
+void preventFilenameTimeout(void){
+  uint32_t tmp__32;
+  tmp__32 = getUptimeMs();
+  mem__32 = tmp__32;
+  cancelFilename = false;
+}
+
 #if defined(DMCP_BUILD)
   /*-DMCP-*/     typedef struct {              //JM VALUES DEMO
   /*-DMCP-*/       uint8_t  count;
@@ -529,7 +536,7 @@
   /*-DMCP-*/    uint32_t tmp__32;                                                 //JM_CSV
   /*-DMCP-*/
   /*-DMCP-*/    tmp__32 = getUptimeMs();                                      //KEEP PERSISTENT FILE NAME FOR A PERIOD
-  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && !strcompare(filename_csv + (stringByteLength(filename_csv) - 9),fn  ))) {
+  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
   /*-DMCP-*/      //Create file name
   /*-DMCP-*/      check_create_dir("DATA");
   /*-DMCP-*/      make_date_filename(filename_csv, "DATA\\", fn);
@@ -654,7 +661,7 @@
   int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
     FILE *outfile;
     char dirfile[40];
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
 
     strcpy(dirfile, dirname);
@@ -670,20 +677,23 @@
 
     if(outfile == NULL) {
       printf("Cannot open ID008: %s %s\n", dirfile, line1);
+      fflush(stdout);
       return 1;
     }
 
     sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
-    fr = fputs(tmpString, outfile);
-    if(fr == 0) {
-      sprintf(line, "Write error ID009 --> %d    \n", fr);
+    frr = fputs(tmpString, outfile);
+    if(frr == EOF) {
+      sprintf(line, "Write error ID009 --> %i    \n", frr);
       //print_linestr(line,false);
       printf("%s", line1);
-      fclose(outfile);
-      return (int)fr;
+      fflush(stdout);
+      if(outfile != NULL) fclose(outfile);
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", dirfile, line1);
+      printf("Exported %i chars to %s: %s\n", frr, dirfile, line1);
+      fflush(stdout);
       fclose(outfile);
     }
     return 0;
@@ -718,6 +728,7 @@
       #if (VERBOSE_LEVEL >= 1)
         #if defined(PC_BUILD)
           printf("Cannot load ID010 %s\n", dirfile);
+          fflush(stdout);
         #endif // PC_BUILD
         print_inlinestr("Not open. ", true);
       #endif // VERBOSE_LEVEL >= 1
@@ -738,6 +749,7 @@
           #if (VERBOSE_LEVEL >= 1)
             #if defined(PC_BUILD)
               printf("Cannot load %s\n", dirfile);
+              fflush(stdout);
             #endif // PC_BUILD
             print_inlinestr("Fallback.", true);
           #endif // VERBOSE_LEVEL >= 1
@@ -749,6 +761,7 @@
         #if (VERBOSE_LEVEL >= 1)
           #if defined(PC_BUILD)
             printf("Cannot load %s\n", dirfile);
+            fflush(stdout);
           #endif // PC_BUILD
           print_inlinestr("Fallback.", true);
         #endif // VERBOSE_LEVEL >= 1
@@ -772,6 +785,7 @@
     #if (VERBOSE_LEVEL >= 1)
       #if defined(PC_BUILD)
         printf("Loaded >>> %s\n", dirfile);
+        fflush(stdout);
       #endif // PC_BUILD
       print_inlinestr("read:", true);
       print_inlinestr(line1, true);
@@ -780,6 +794,7 @@
     #if (VERBOSE_LEVEL >= 2)
       #if defined(PC_BUILD)
         printf("Loaded %s |%s|\n", dirfile, line1);
+        fflush(stdout);
       #endif // PC_BUILD
     #endif // VERBOSE_LEVEL >= 2
 
@@ -790,6 +805,7 @@
         print_inlinestr("ERROR too long file using fallback", true);
       #endif // VERBOSE_LEVEL >= 1
       printf("ERROR too long file using fallback\n");
+      fflush(stdout);
       return 1;
     }
 
@@ -804,21 +820,24 @@
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
       printf("Cannot open to append ID011: %s %s\n", filename_csv, inputstring);
+      fflush(stdout);
       return 1;
     }
-
-    uint16_t fr = 0;
+    int frr = 0;
     char line[200]; // Line buffer
-    fr = fputs(inputstring, outfile);
-    if(fr == 0) {
-      sprintf(line,"Write error ID012 --> %d %s\n", fr, inputstring);
+    frr = fputs(inputstring, outfile);
+    if(frr == EOF) {
+      sprintf(line,"Write error ID012 --> %i %s\n", frr, inputstring);
+      fflush(stdout);
       //print_linestr(line, false);
       printf("%s", line);
-      fclose(outfile);
-      return (int)fr;
+      fflush(stdout);
+      if(outfile != NULL) fclose(outfile);
+      return frr;
     }
     else {
-      printf("Exported to %s: %s\n", filename_csv, inputstring);
+      printf("Exported %i chars to %s: %s\n", frr, filename_csv, inputstring);
+      fflush(stdout);
       fclose(outfile);
     }
     return 0;
@@ -831,7 +850,7 @@
       struct tm *timeInfo;
 
       tmp__32 = getUptimeMs();                                          //KEEP PERSISTENT FILE NAME FOR A PERIOD
-      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && !strcompare(filename_csv + (stringByteLength(filename_csv) - 9),fn  ) ) ) {
+      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
         //Create file name
         time(&rawTime);
         timeInfo = localtime(&rawTime);
@@ -860,6 +879,7 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
   #if defined (PC_BUILD)
     if(ttt==0) ttt = (uint32_t)(g_get_monotonic_time());
     printf("Status: %10u, %s\n", (uint32_t)(g_get_monotonic_time())-ttt, line1);
+    fflush(stdout);
   #endif //PC_BUILD
   #if !defined(TESTSUITE_BUILD)
     int16_t g_line_x, g_line_y;
@@ -888,7 +908,7 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 
 int16_t g_line_x, g_line_y;
 
-void print_linestr(const char *line1, bool_t line_init) {
+void print_linestr(const char *line1, bool_t line_init) {        //prints one line at a time, filled with dots on remaining line
   #if !defined(TESTSUITE_BUILD)
     char l1[200];
     l1[0] = 0;
@@ -913,12 +933,17 @@ void print_linestr(const char *line1, bool_t line_init) {
     if(g_line_y < SCREEN_HEIGHT) {
       ixx = showString(l1, &standardFont, (uint32_t) g_line_x, (uint32_t) g_line_y, vmNormal, true, true);
     }
-    g_line_y += 20;
+    if(!line_init) {
+      g_line_y += 20;
+    }
     if(g_line_y > SCREEN_HEIGHT - 20) {
       g_line_y = 40;
       g_line_x += 4;
     }
     force_refresh(timed);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
   #endif // !TESTSUITE_BUILD
 }
 
@@ -940,5 +965,52 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
     }
     g_line_x = 0;
     force_refresh(timed);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
+
+  #endif // !TESTSUITE_BUILD
+}
+
+
+
+uint32_t t_line_x, t_line_y;
+
+void print_inlinestr(const char *line1, bool_t endline) {  //prints with or without newline at the end of the line
+    #if !defined(TESTSUITE_BUILD)
+
+    char l1[100];    //Clip the string at 40
+    l1[0] = 0;
+    int16_t ix = 0;
+    int16_t ixx;
+    ixx = stringByteLength(line1);
+    while(ix < ixx && ix < 98 && t_line_x + stringWidth(l1, &standardFont, true, true) < SCREEN_WIDTH-12) {
+      xcopy(l1, line1, ix+1);
+      l1[ix+1] = 0;
+      ix = stringNextGlyph(line1, ix);
+    }
+    if(t_line_y < SCREEN_HEIGHT) {
+      t_line_x = showString(l1, &standardFont, t_line_x, t_line_y, vmNormal, true, true);
+    }
+    if(endline) {
+      t_line_y += 20;
+      t_line_x = 0;
+    }
+    force_refresh(force);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void print_Register_line(calcRegister_t regist, char *before, char *after, bool_t line_init) {
+  #if !defined(TESTSUITE_BUILD)
+    char str[TMP_STR_LENGTH];
+
+    copyRegisterToClipboardString2(regist, str);
+    addStrBothSides(str, before, after);
+
+    print_numberstr(str, line_init);
   #endif // !TESTSUITE_BUILD
 }

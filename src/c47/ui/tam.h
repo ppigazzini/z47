@@ -12,7 +12,7 @@
    * This initialises TAM entry for the given command and sets the `tamBuffer`
    * to the appropriate text. In GUI mode the keyboard is set-up. Once this
    * function has been called TAM mode can be left by input processed by
-   * ::tamProcessInput or by calling ::tamLeaveMode. If TAM is left the command
+   * ::tamProcessInput or by calling ::leaveTamModeIfEnabled. If TAM is left the command
    * that triggered TAM is implicitly cancelled (no further action is needed).
    * For the command to be executed the input must be processed by
    * ::tamProcessInput.
@@ -28,7 +28,7 @@
   /**
    * Leaves TAM mode. TAM mode is closed and the pending operation is cancelled.
    */
-  void tamLeaveMode    (void);
+  void leaveTamModeIfEnabled(void);
 
   /**
    * Processes input for the TAM buffer.
@@ -37,7 +37,7 @@
    *   characters must be put into the AIM buffer before calling this function with
    *   the input item
    * - `EXIT` and other external functions where TAM should be closed externally
-   *   using ::tamLeaveMode
+   *   using ::leaveTamModeIfEnabled
    *
    * After calling this function the ::tamBuffer will be updated and it should be
    * redrawn to the relevant part of the display.

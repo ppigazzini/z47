@@ -32,31 +32,13 @@ bool_t isStatsMatrixN(uint16_t *rows, calcRegister_t regStats) {
 }
 
 
-
 bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   #if !defined(TESTSUITE_BUILD)
-    *rows = 0;
     calcRegister_t regStats = findNamedVariable(mx);
-    if(regStats == INVALID_VARIABLE) {
-      return false;
-    }
-    else {
-      if(getRegisterDataType(regStats) != dtReal34Matrix) {
-        return false;
-      }
-      else {
-        real34Matrix_t stats;
-        linkToRealMatrixRegister(regStats, &stats);
-        *rows = stats.header.matrixRows;
-        if(stats.header.matrixColumns != 2) {
-          return false;
-        }
-      }
-    }
+    return isStatsMatrixN(rows, regStats);
   #endif // !TESTSUITE_BUILD
   return true;
 }
-
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -72,12 +54,10 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
 
     // xmax & ymax
-    if ((*accum->maximum)(x, SIGMA_XMAX))
-      accum->maximum(y, SIGMA_YMAX);
+    (*accum->maximum)(x, y);
 
     // xmin & ymin
-    if ((*accum->minimum)(x, SIGMA_XMIN))
-      accum->minimum(y, SIGMA_YMIN);
+    (*accum->minimum)(x, y);
 
     // n
     if(!(*acc)(SIGMA_N, const_1))
@@ -218,16 +198,22 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     return true;
   }
 
-  static bool_t subMax(const real_t *r1, const real_t *r2){
-    if(realIsSpecial(r1) || realIsSpecial(r2) || realCompareEqual(r1, r2)) {
+  static bool_t subMax(const real_t *x, const real_t *y) {
+    if(realIsSpecial(x) || realIsSpecial(SIGMA_XMAX)
+      || realIsSpecial(y) || realIsSpecial(SIGMA_YMAX)
+      || realCompareEqual(x, SIGMA_XMAX)
+      || realCompareEqual(y, SIGMA_YMAX)) {
       calcMax(1);
       return false;
     }
     return true;
   }
 
-  static bool_t subMin(const real_t *r1, const real_t *r2){
-    if(realIsSpecial(r1) || realIsSpecial(r2) || realCompareEqual(r1, r2)) {
+  static bool_t subMin(const real_t *x, const real_t *y) {
+    if(realIsSpecial(x) || realIsSpecial(SIGMA_XMIN)
+      || realIsSpecial(y) || realIsSpecial(SIGMA_YMIN)
+      || realCompareEqual(x, SIGMA_XMIN)
+      || realCompareEqual(y, SIGMA_YMIN)) {
       calcMin(1);
       return false;
     }
@@ -288,8 +274,17 @@ bool_t checkMinimumDataPoints(const real_t *n) {
 }
 
 
-static void clearStatisticalSums(void) {
-  if(statisticalSumsPointer) {
+void reLoadStatisticalSums(void) {
+  uint16_t rows;
+  strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+  calcRegister_t regStats = findNamedVariable(statMx);
+  if(isStatsMatrixN(&rows, regStats) && rows > 0) {
+    calcSigma(0);
+  }
+}
+
+void clearStatisticalSums(void) {
+  if(statisticalSumsPointer != NULL) {
     for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS - 4; sum++) {
       realZero(statisticalSumsPointer + sum);
     }
@@ -306,19 +301,13 @@ void initStatisticalSums(void) {
     if(statisticalSumsPointer == NULL) {
       statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
       clearStatisticalSums();
+      strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     }
-  else {
+    else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    }
-    uint16_t rows;
-    strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
-    calcRegister_t regStats = findNamedVariable(statMx);
-    if(isStatsMatrixN(&rows, regStats) && rows > 0) {
-      calcSigma(0);
     }
   }
 }
-
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -379,7 +368,7 @@ void calcSigma(uint16_t maxOffset) {
       char aa[100];
       for(uint16_t i = 0; i < rows - maxOffset; i++) {
         sprintf(aa,"%s%s (%u of %u)",errorMessages[RECALC_SUMS], statMx,i,rows - maxOffset);
-        printStatus(0, aa,force);
+        printStatus(0, aa, timed);
         real34ToReal(&stats.matrixElements[i * cols    ], &x);
         real34ToReal(&stats.matrixElements[i * cols + 1], &y);
         addSigma(&x, &y);
@@ -532,6 +521,7 @@ void setStatisticalSumsUpdate(bool_t para) {
     if(lastErrorCode != ERROR_NONE) {
       return;
     }
+    reLoadStatisticalSums();
   }
   //it it is off auto and switched off, it must remain so. Not further actions
   //if it is on  auto and switched on, it must remain so. Not further actions
@@ -570,17 +560,18 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
 
 void fnSigmaAddRem(uint16_t plusMinusSelection) {
   #if !defined(TESTSUITE_BUILD)
-  real_t x, y;
+    real_t x, y;
 
-  lrChosen = 0;
+    lrChosen = 0;
 
-  if(plusMinusSelection == SIGMA_PLUS) { // SIGMA+
-    if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
+    if(plusMinusSelection == SIGMA_PLUS) { // SIGMA+
+      if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
         if(statisticalSumsUpdate && statisticalSumsPointer == NULL) {
           initStatisticalSums();
           if(lastErrorCode != ERROR_NONE) {
             return;
           }
+          reLoadStatisticalSums();
         }
 
         if(statisticalSumsUpdate) {
@@ -610,6 +601,7 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
             if(lastErrorCode != ERROR_NONE) {
               return;
             }
+            reLoadStatisticalSums();
           }
           else {
             setStatisticalSumsUpdate(statisticalSumsUpdate);    //ensure it deletes the sums anyway if clear
@@ -673,9 +665,9 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
         #if defined(DEBUGUNDO)
           if(statisticalSumsPointer != NULL) {
             calcRegister_t regStats = findNamedVariable(statMx);
-            //printRealToConsole(SIGMA_N,"   >>> After\n   >>>   SIGMA_N:","\n");
-            //printRealToConsole(SIGMA_XMAX,"   >>>   SIGMA_MaxX:","\n");
-            //printRegisterToConsole(regStats,"From Sigma-: STATS\n","\n");
+            printRealToConsole(SIGMA_N,"   >>> After\n   >>>   SIGMA_N:","\n");
+            printRealToConsole(SIGMA_XMAX,"   >>>   SIGMA_MaxX:","\n");
+            printRegisterToConsole(regStats,"From Sigma-: STATS\n","\n");
           }
         #endif //DEBUGUNDO
       }
@@ -806,7 +798,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
       rows = histo.header.matrixRows;
       cols = histo.header.matrixColumns;
       realToReal34(s,       &histo.matrixElements[(rows-1) * cols    ]);
-      realToReal34(const_0, &histo.matrixElements[(rows-1) * cols + 1]);
+      real34Zero(&histo.matrixElements[(rows-1) * cols + 1]);
       //printf(">>>>>HISTO rows=%d  cols=%d  ",rows, cols);
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols    ],"X:","  ");
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols +1 ],"Y:","  \n");
