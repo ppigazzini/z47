@@ -244,12 +244,15 @@ static int _clearProgram(void) {
 
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
+    goToPgmStep(currentProgramNumber, 1);  // [DL] work around for crash when label deleted is not at the beginning of the program
+    firstDisplayedLocalStepNumber = 0;     // ditto
+
     deleteStepsFromTo(beginOfCurrentProgram, endOfCurrentProgram - ((currentProgramNumber == numberOfPrograms) ? 2 : 0));
     scanLabelsAndPrograms();
     // unlikely fails
 
     if(savedCurrentProgramNumber >= numberOfPrograms) { // The last program
-      goToPgmStep(numberOfPrograms  - 1, 1);
+      goToPgmStep(numberOfPrograms, 1);
     }
     else { // Not the last program
       goToPgmStep(savedCurrentProgramNumber, 1);
