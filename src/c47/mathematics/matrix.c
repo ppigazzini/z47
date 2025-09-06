@@ -2384,6 +2384,8 @@ void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, c
 }
 
 
+/*
+//replaced due to suspicion that the real-only optimization is not working properly. I did not check in detail and removed fance stuff until the crash disappeared.
 static void mulCpxMat(const real_t *y, const real_t *x, uint16_t sizeY, uint16_t sizeYX, uint16_t sizeX, real_t *res, realContext_t *realContext) {
   int32_t i, j, k;
   real_t *sumr, prodr;
@@ -2406,6 +2408,29 @@ static void mulCpxMat(const real_t *y, const real_t *x, uint16_t sizeY, uint16_t
           realAdd(sumr, &prodr, sumr, realContext);
           realAdd(sumi, &prodi, sumi, realContext);
         }
+      }
+    }
+  }
+}
+*/
+
+static void mulCpxMat(const real_t *y, const real_t *x, uint16_t sizeY, uint16_t sizeYX, uint16_t sizeX, real_t *res, realContext_t *realContext) {
+  int32_t i, j, k;
+  real_t *sumr, prodr;
+  real_t *sumi, prodi;
+
+  for(i = 0; i < sizeY; ++i) {
+    for(j = 0; j < sizeX; ++j) {
+      sumr = res + (i * sizeX + j) * 2;
+      sumi = sumr + 1;
+      realCopy(const_0, sumr);   realCopy(const_0, sumi);
+      for(k = 0; k < sizeYX; ++k) {
+        // Always use full complex multiplication for consistency
+        mulComplexComplex(y + (i * sizeYX + k) * 2, y + (i * sizeYX + k) * 2 + 1,
+                          x + (k * sizeX  + j) * 2, x + (k * sizeX  + j) * 2 + 1,
+                          &prodr, &prodi, realContext);
+        realAdd(sumr, &prodr, sumr, realContext);
+        realAdd(sumi, &prodi, sumi, realContext);
       }
     }
   }
