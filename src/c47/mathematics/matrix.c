@@ -2443,7 +2443,9 @@ static void _euclideanNormRealMatrix(const real34Matrix_t *matrix, real_t *res, 
   realZero(res);
   for(int i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns; ++i) {
     real34ToReal(&matrix->matrixElements[i], &elem);
-    realFMA(&elem, &elem, res, res, realContext);
+    real_t temp_result1;
+    realFMA(&elem, &elem, res, &temp_result1, realContext);
+    realCopy(&temp_result1, res);
   }
   realSquareRoot(res, res, realContext);
 }
@@ -2463,9 +2465,13 @@ void euclideanNormComplexMatrix(const complex34Matrix_t *matrix, real34_t *res) 
   realZero(&sum);
   for(int i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns; ++i) {
     real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[i]), &elem);
-    realFMA(&elem, &elem, &sum, &sum, &ctxtReal39);
+    real_t temp_result2;
+    realFMA(&elem, &elem, &sum, &temp_result2, &ctxtReal39);
+    realCopy(&temp_result2, &sum);
     real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i]), &elem);
-    realFMA(&elem, &elem, &sum, &sum, &ctxtReal39);
+    real_t temp_result3;
+    realFMA(&elem, &elem, &sum, &temp_result3, &ctxtReal39);
+    realCopy(&temp_result3, &sum);
   }
   realSquareRoot(&sum, &sum, &ctxtReal39);
   realToReal34(&sum, res);
@@ -2492,7 +2498,9 @@ static void _dotRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, re
   for(i = 0; i < elements; ++i) {
     real34ToReal(&y->matrixElements[i], &p);
     real34ToReal(&x->matrixElements[i], &q);
-    realFMA(&p, &q, &sum, &sum, realContext);
+    real_t temp_pq;
+    realFMA(&p, &q, &sum, &temp_pq, realContext);
+    realCopy(&temp_pq, &sum);
   }
   realCopy(&sum, res);
 }
@@ -3801,8 +3809,11 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       for(i = 0; i < (size - j); i++) {
         realCopy(matr + ((i + j) * size + j) * 2,     v + i * 2    );
         realCopy(matr + ((i + j) * size + j) * 2 + 1, v + i * 2 + 1);
-        realFMA(v + i * 2,     v + i * 2,     &sum, &sum, realContext);
-        realFMA(v + i * 2 + 1, v + i * 2 + 1, &sum, &sum, realContext);
+        real_t temp_v1, temp_v2;
+        realFMA(v + i * 2,     v + i * 2,     &sum, &temp_v1, realContext);
+        realCopy(&temp_v1, &sum);
+        realFMA(v + i * 2 + 1, v + i * 2 + 1, &sum, &temp_v2, realContext);
+        realCopy(&temp_v2, &sum);
       }
       realSquareRoot(&sum, &sum, realContext);
 
@@ -3823,8 +3834,11 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       // Euclidean norm
       realCopy(const_0, &sum);
       for(i = 0; i < (size - j); i++) {
-        realFMA(v + i * 2,     v + i * 2,     &sum, &sum, realContext);
-        realFMA(v + i * 2 + 1, v + i * 2 + 1, &sum, &sum, realContext);
+        real_t temp_v1, temp_v2;
+        realFMA(v + i * 2,     v + i * 2,     &sum, &temp_v1, realContext);
+        realCopy(&temp_v1, &sum);
+        realFMA(v + i * 2 + 1, v + i * 2 + 1, &sum, &temp_v2, realContext);
+        realCopy(&temp_v2, &sum);
       }
       realSquareRoot(&sum, &sum, realContext);
 
@@ -4483,11 +4497,11 @@ if(activeSize == 3 && i == 1) {
     } // End of while loop
 
     #if defined(EIGENDEBUG)
-    printf("EIGENVAL finished after %d iterations\n", iteration-1);
+    printf("EIGENVAL finished after %d iterations, converged = %d\n", iteration-1, converged);
     printf("Final eigenvalues:\n");
     for(i = 0; i < size; i++) {
       real_t tmpRe, tmpIm;
-      char tmpReStr[32], tmpImStr[32];
+      char tmpReStr[80], tmpImStr[80];
       realPlus(a + (i * size + i) * 2, &tmpRe, &ctxtReal4);
       realPlus(a + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
       realToString(&tmpRe, tmpReStr);
@@ -4809,8 +4823,11 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
         real_t sum;
         realZero(&sum);
         for(i = 0; i < size; i++) {
-          realFMA(r + (i * size + j) * 2,     r + (i * size + j) * 2,     &sum, &sum, &ctxtReal75);
-          realFMA(r + (i * size + j) * 2 + 1, r + (i * size + j) * 2 + 1, &sum, &sum, &ctxtReal75);
+          real_t temp_r1, temp_r2;
+          realFMA(r + (i * size + j) * 2,     r + (i * size + j) * 2,     &sum, &temp_r1, &ctxtReal75);
+          realCopy(&temp_r1, &sum);
+          realFMA(r + (i * size + j) * 2 + 1, r + (i * size + j) * 2 + 1, &sum, &temp_r2, &ctxtReal75);
+          realCopy(&temp_r2, &sum);
         }
         realSquareRoot(&sum, &sum, &ctxtReal75);
         if(!realIsZero(&sum) && !realIsSpecial(&sum)) {
