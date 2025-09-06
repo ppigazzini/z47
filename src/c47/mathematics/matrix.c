@@ -5,6 +5,14 @@
  * \file matrix.c
  ***********************************************/
 
+#if defined PC_BUILD
+  #define maxEigenIter 10000
+  #define EIGENDEBUG
+  //#undef EIGENDEBUG
+#else
+  #define maxEigenIter 1000
+  #undef EIGENDEBUG
+#endif //PC_BUILD
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
@@ -4044,6 +4052,14 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
   const real_t *ar, *ai, *br, *bi, *cr, *ci, *dr, *di;
   real_t trR, trI, detR, detI, discrR, discrI;
 
+  realZero(t1r);
+  realZero(t1i);
+  realZero(t2r);
+  realZero(t2i);
+  realZero(&discrR);
+  realZero(&discrI);
+
+
   ar = mat + ((size - 2) * size + (size - 2)) * 2; ai = ar + 1;
   br = mat + ((size - 2) * size + (size - 1)) * 2; bi = br + 1;
   cr = mat + ((size - 1) * size + (size - 2)) * 2; ci = cr + 1;
@@ -4212,15 +4228,6 @@ static void sortEigenvalues(real_t *eig, uint16_t size, uint16_t begin_a, uint16
 
 
 
-#if defined PC_BUILD
-  #define maxEigenIter 10000
-  #define EIGENDEBUG
-  //#undef EIGENDEBUG
-#else
-  #define maxEigenIter 1000
-  #undef EIGENDEBUG
-#endif //PC_BUILD
-
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t shiftRe, shiftIm;
@@ -4228,6 +4235,23 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   bool_t converged;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
+
+  #if defined(EIGENDEBUG)
+  printf("Input matrix verification:\n");
+  for(int row = 0; row < size; row++) {
+    for(int col = 0; col < size; col++) {
+      real_t val_re, val_im;
+      char reStr[80], imStr[80];
+      realPlus(a + (row * size + col) * 2, &val_re, &ctxtReal4);
+      realPlus(a + (row * size + col) * 2 + 1, &val_im, &ctxtReal4);
+      realToString(&val_re, reStr);
+      realToString(&val_im, imStr);
+      printf("[%s+%si] ", reStr, imStr);
+    }
+    printf("\n");
+  }
+  #endif
+
 
   if(size == 2) {
     calculateEigenvalues22(a, size, eig, eig + 1, eig + 6, eig + 7, realContext);
@@ -4299,9 +4323,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       QR_decomposition_householder(a, size, q, r, realContext);
 
       #if defined(EIGENDEBUG)
-      if ((iteration % 100) == 0) {
+      if ((iteration % 100 || iteration < 2) == 0) {
           real_t tmp;
-          char realStr[32], imagStr[32];
+          char realStr[80], imagStr[80];
           const int colWidth = 24;
           int i, j;
 
