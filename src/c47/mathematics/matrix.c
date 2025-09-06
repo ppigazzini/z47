@@ -13,6 +13,12 @@
   #define maxEigenIter 1000
   #undef EIGENDEBUG
 #endif //PC_BUILD
+
+#define eigenContext         &ctxtReal39
+#define eigenInternalContext &ctxtReal75
+#define eigenTolerance  37   //valid for SDIGS=0, 34; for SDIGS = 1->33 it is SDIGS+3
+
+
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
@@ -4724,7 +4730,7 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, &ctxtReal75);
+      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenInternalContext);
       shifted = false;
 
       // Check imaginary part (mutually conjugate complex roots are possible in real quadratic equations)
@@ -4785,7 +4791,7 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, &ctxtReal75);
+      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenInternalContext);
       shifted = false;
 
       // Write back
@@ -4829,9 +4835,9 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
       }
 
       // Calculate eigenvalues
-      calculateEigenvalues(a, q, r, eig, size, shifted, false, &ctxtReal75);
+      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenContext);
       shifted = false;
-      calculateEigenvectors((any34Matrix_t *)matrix, false, a, q, r, eig, &ctxtReal75);
+      calculateEigenvectors((any34Matrix_t *)matrix, false, a, q, r, eig, eigenContext);
 
       // Check imaginary part (mutually conjugate complex roots are possible in real quadratic equations)
       isComplex = false;
@@ -4848,16 +4854,16 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
         realZero(&sum);
         for(i = 0; i < size; i++) {
           real_t temp_r1, temp_r2;
-          realFMA(r + (i * size + j) * 2,     r + (i * size + j) * 2,     &sum, &temp_r1, &ctxtReal75);
+          realFMA(r + (i * size + j) * 2,     r + (i * size + j) * 2,     &sum, &temp_r1, eigenInternalContext);
           realCopy(&temp_r1, &sum);
-          realFMA(r + (i * size + j) * 2 + 1, r + (i * size + j) * 2 + 1, &sum, &temp_r2, &ctxtReal75);
+          realFMA(r + (i * size + j) * 2 + 1, r + (i * size + j) * 2 + 1, &sum, &temp_r2, eigenInternalContext);
           realCopy(&temp_r2, &sum);
         }
-        realSquareRoot(&sum, &sum, &ctxtReal75);
+        realSquareRoot(&sum, &sum, eigenInternalContext);
         if(!realIsZero(&sum) && !realIsSpecial(&sum)) {
           for(i = 0; i < size; i++) {
-            realDivide(r + (i * size + j) * 2,     &sum, r + (i * size + j) * 2,     &ctxtReal75);
-            realDivide(r + (i * size + j) * 2 + 1, &sum, r + (i * size + j) * 2 + 1, &ctxtReal75);
+            realDivide(r + (i * size + j) * 2,     &sum, r + (i * size + j) * 2,     eigenInternalContext);
+            realDivide(r + (i * size + j) * 2 + 1, &sum, r + (i * size + j) * 2 + 1, eigenInternalContext);
           }
         }
       }
@@ -4911,9 +4917,9 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
       }
 
       // Calculate eigenvalues
-      calculateEigenvalues(a, q, r, eig, size, shifted, false, &ctxtReal75);
+      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenInternalContext);
       shifted = false;
-      calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, &ctxtReal75);
+      calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, eigenInternalContext);
 
       // Write back
       if(matrix == res || complexMatrixInit(res, size, size)) {
