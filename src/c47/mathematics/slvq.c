@@ -146,8 +146,16 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
 
       // r = b² - 4ac
       realMultiply(const__4, aReal, rReal, realContext);
-      realMultiply(cReal, rReal, rReal, realContext);
-      realFMA(bReal, bReal, rReal, rReal, realContext);
+      
+      // Fix potential aliasing in realMultiply, not sure if it 100% helps but I keep it
+      real_t temp_multiply;
+      realMultiply(cReal, rReal, &temp_multiply, realContext);
+      realCopy(&temp_multiply, rReal);
+      
+      // Fix potential aliasing in realFMA, not sure if it 100% helps but I keep it
+      real_t temp_result;
+      realFMA(bReal, bReal, rReal, &temp_result, realContext);
+      realCopy(&temp_result, rReal);
       realZero(rImag);
 
       if(realIsPositive(rReal)) { // real roots
