@@ -4213,6 +4213,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   uint16_t i, j;
   bool_t converged;
   uint16_t iteration = 0;
+  uint16_t activeSize = size;
 
   if(size == 2) {
     calculateEigenvalues22(a, size, eig, eig + 1, eig + 6, eig + 7, realContext);
@@ -4246,7 +4247,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     real_t diff_max;
     realZero(&diff_max);
 
-    while(iteration++ < maxEigenIter) {
+    while(iteration++ < maxEigenIter  && activeSize > 1) {
 
       if(checkHalfSec()) {
         char ss[30], tt[30];
@@ -4325,6 +4326,122 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       #endif
 
       mulCpxMat(r, q, size, size, size, eig, realContext);
+
+
+// Check for converged eigenvalues and remove them from active computation
+bool_t found_converged = true;
+while(found_converged && activeSize > 2) {
+  found_converged = false;
+  
+  for(i = 0; i < activeSize; i++) {
+    real_t old_diag_re, old_diag_im, curr_diag_re, curr_diag_im;
+    real_t diff_re, diff_im, diff_mag;
+    
+    // Get current and previous diagonal values
+    realCopy(eig + (i * size + i) * 2, &curr_diag_re);
+    realCopy(eig + (i * size + i) * 2 + 1, &curr_diag_im);
+    realCopy(a + (i * size + i) * 2, &old_diag_re);
+    realCopy(a + (i * size + i) * 2 + 1, &old_diag_im);
+    
+    // Calculate difference magnitude
+    realSubtract(&curr_diag_re, &old_diag_re, &diff_re, realContext);
+    realSubtract(&curr_diag_im, &old_diag_im, &diff_im, realContext);
+    complexMagnitude(&diff_re, &diff_im, &diff_mag, realContext);
+    
+    // If this eigenvalue has converged, remove it from active computation
+    if(realCompareLessThan(&diff_mag, &tol)) {
+      #if defined(EIGENDEBUG)
+      printf("Removing converged eigenvalue[%d] from active computation, activeSize %d->%d\n", i, activeSize, activeSize-1);
+      #endif
+      
+      // Shift all rows and columns above position i down/left to fill the gap
+      for(int row = i; row < activeSize - 1; row++) {
+        for(int col = 0; col < size; col++) {
+          realCopy(eig + ((row+1) * size + col) * 2, eig + (row * size + col) * 2);
+          realCopy(eig + ((row+1) * size + col) * 2 + 1, eig + (row * size + col) * 2 + 1);
+        }
+      }
+      for(int row = 0; row < activeSize - 1; row++) {
+        for(int col = i; col < activeSize - 1; col++) {
+          realCopy(eig + (row * size + (col+1)) * 2, eig + (row * size + col) * 2);
+          realCopy(eig + (row * size + (col+1)) * 2 + 1, eig + (row * size + col) * 2 + 1);
+        }
+      }
+      
+      activeSize--;
+      found_converged = true;
+      break; // Restart the search after matrix reduction
+    }
+  }
+}
+
+
+// Deflation and 2x2 block detection
+bool_t deflated = true;
+while(deflated && activeSize > 2) {
+  deflated = false;
+  
+  for(i = activeSize - 1; i >= 1; i--) {
+    real_t subdiag_mag, diag1_mag, diag2_mag, threshold;
+    
+    // Get magnitude of subdiagonal element eig[i][i-1]
+    complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);
+    
+    // Get magnitudes of neighboring diagonal elements
+    complexMagnitude(eig + ((i-1) * size + (i-1)) * 2, eig + ((i-1) * size + (i-1)) * 2 + 1, &diag1_mag, realContext);
+    complexMagnitude(eig + (i * size + i) * 2, eig + (i * size + i) * 2 + 1, &diag2_mag, realContext);
+    
+    // Calculate threshold - looser for 2x2 blocks, stricter for others
+    realAdd(&diag1_mag, &diag2_mag, &threshold, realContext);
+    real_t factor;
+
+if(activeSize == 3 && i == 1) {
+  // Extract the 2x2 block and solve it directly
+  #if defined(EIGENDEBUG)
+  printf("Solving 2x2 block directly at iteration %d\n", iteration);
+  #endif
+  
+  // Copy the 2x2 block to a temporary matrix
+  real_t temp_2x2[8]; // 2x2 complex matrix = 8 reals
+  for(int row = 0; row < 2; row++) {
+    for(int col = 0; col < 2; col++) {
+      realCopy(eig + ((row+1) * size + (col+1)) * 2, temp_2x2 + (row * 2 + col) * 2);
+      realCopy(eig + ((row+1) * size + (col+1)) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
+    }
+  }
+  
+  // Solve the 2x2 block and store results back in the correct positions
+  calculateEigenvalues22(temp_2x2, 2, 
+                        eig + (1 * size + 1) * 2, eig + (1 * size + 1) * 2 + 1,
+                        eig + (2 * size + 2) * 2, eig + (2 * size + 2) * 2 + 1, realContext);
+  activeSize = 1;
+  deflated = true;
+  break;
+}
+       
+    else {
+      stringToReal("10000", &factor, realContext); // Stricter for others
+    }
+    
+    realMultiply(&tol, &factor, &factor, realContext);
+    realMultiply(&threshold, &factor, &threshold, realContext);
+    
+    if(realCompareLessThan(&subdiag_mag, &threshold)) {
+      realZero(eig + (i * size + (i-1)) * 2);
+      realZero(eig + (i * size + (i-1)) * 2 + 1);
+      
+      #if defined(EIGENDEBUG)
+      printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
+      #endif
+      
+      activeSize = i;
+      deflated = true;
+      break;
+    }
+  }
+}
+
+
 
       if(shifted) {
         for(i = 0; i < size; i++) {
