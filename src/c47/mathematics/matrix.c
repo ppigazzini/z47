@@ -14,9 +14,10 @@
   #undef EIGENDEBUG
 #endif //PC_BUILD
 
-#define eigenContext         &ctxtReal39
-#define eigenInternalContext &ctxtReal75
-#define eigenTolerance  37   //valid for SDIGS=0, 34; for SDIGS = 1->33 it is SDIGS+3
+#define eigenTolerance  70   // SDIGS = 0 or 34 it is eigenTolerance 
+                             // SDIGS = 1 - 33 it is SDIGS+3
+#define eigenContext         &ctxtReal75  // &ctxtReal75 / &ctxtReal51 / &ctxtReal39)
+#define eigenInternalContext &ctxtReal75  // mostly used in eigenvector calculations
 
 
 #include "c47.h"
@@ -4271,21 +4272,17 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     real_t tol, maxM, minM, tmpM;
     if(reducedSignificantDigits) {
       if(significantDigits == 0 || significantDigits >= 34) {
-        //realCopy(const_1e_37, &tol);
-        stringToReal("1E-14", &tol, realContext);
-
+        realCopy(const_1, &tol);
+        tol.exponent -= eigenTolerance;
       }
       else {
-        //realCopy(const_1, &tol);
-        //tol.exponent -= (significantDigits + 3);
-        char tmp[30];
-        printf(tmp, "1E-%s", significantDigits + 3);
-        stringToReal(tmp, &tol, realContext);
+        realCopy(const_1, &tol);
+        tol.exponent -= (significantDigits + 3);
       }
     }
     else {
-      //realCopy(const_1e_37, &tol);
-        stringToReal("1E-24", &tol, realContext);  //tested on -16
+      realCopy(const_1, &tol);
+      tol.exponent -= eigenTolerance;
     }
 
     real_t diff_max;
@@ -4730,7 +4727,7 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenInternalContext);
+      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenContext);
       shifted = false;
 
       // Check imaginary part (mutually conjugate complex roots are possible in real quadratic equations)
@@ -4791,7 +4788,7 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenInternalContext);
+      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenContext);
       shifted = false;
 
       // Write back
@@ -4917,9 +4914,9 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
       }
 
       // Calculate eigenvalues
-      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenInternalContext);
+      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenContext);
       shifted = false;
-      calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, eigenInternalContext);
+      calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, eigenContext);
 
       // Write back
       if(matrix == res || complexMatrixInit(res, size, size)) {
