@@ -4639,38 +4639,38 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   //  #endif
 
   #if defined(EIGENDEBUG)
-  printf("\n=== EIGENVALUE VERIFICATION ===\n");
-  // Calculate trace of original matrix
-  real_t original_trace_re, original_trace_im;
-  realCopy(const_0, &original_trace_re);
-  realCopy(const_0, &original_trace_im);
-  for(int i = 0; i < size; i++) {
-    realAdd(&original_trace_re, original_matrix + (i * size + i) * 2, &original_trace_re, realContext);
-    realAdd(&original_trace_im, original_matrix + (i * size + i) * 2 + 1, &original_trace_im, realContext);
-  }
-  // Calculate sum of computed eigenvalues
-  real_t eigenval_sum_re, eigenval_sum_im;
-  realCopy(const_0, &eigenval_sum_re);
-  realCopy(const_0, &eigenval_sum_im);
-  for(int i = 0; i < size; i++) {
-    realAdd(&eigenval_sum_re, a + (i * size + i) * 2, &eigenval_sum_re, realContext);
-    realAdd(&eigenval_sum_im, a + (i * size + i) * 2 + 1, &eigenval_sum_im, realContext);
-  }
-  // Calculate trace difference
-  real_t trace_diff_re, trace_diff_im, trace_error;
-  realSubtract(&original_trace_re, &eigenval_sum_re, &trace_diff_re, realContext);
-  realSubtract(&original_trace_im, &eigenval_sum_im, &trace_diff_im, realContext);
-  complexMagnitude(&trace_diff_re, &trace_diff_im, &trace_error, realContext);
-  //
-  printf("Original trace: ");
-  printRealToConsole(&original_trace_re, "", "");
-  printRealToConsole(&original_trace_im, "+", "i\n");
-  printf("Eigenvalue sum: ");
-  printRealToConsole(&eigenval_sum_re, "", "");
-  printRealToConsole(&eigenval_sum_im, "+", "i\n");
-  printf("Trace error: ");
-  printRealToConsole(&trace_error, "", "\n");
-  printf("=== END VERIFICATION ===\n");
+    printf("\n=== EIGENVALUE VERIFICATION ===\n");
+    // Calculate trace of original matrix
+    real_t original_trace_re, original_trace_im;
+    realCopy(const_0, &original_trace_re);
+    realCopy(const_0, &original_trace_im);
+    for(int i = 0; i < size; i++) {
+      realAdd(&original_trace_re, original_matrix + (i * size + i) * 2, &original_trace_re, realContext);
+      realAdd(&original_trace_im, original_matrix + (i * size + i) * 2 + 1, &original_trace_im, realContext);
+    }
+    // Calculate sum of computed eigenvalues
+    real_t eigenval_sum_re, eigenval_sum_im;
+    realCopy(const_0, &eigenval_sum_re);
+    realCopy(const_0, &eigenval_sum_im);
+    for(int i = 0; i < size; i++) {
+      realAdd(&eigenval_sum_re, a + (i * size + i) * 2, &eigenval_sum_re, realContext);
+      realAdd(&eigenval_sum_im, a + (i * size + i) * 2 + 1, &eigenval_sum_im, realContext);
+    }
+    // Calculate trace difference
+    real_t trace_diff_re, trace_diff_im, trace_error;
+    realSubtract(&original_trace_re, &eigenval_sum_re, &trace_diff_re, realContext);
+    realSubtract(&original_trace_im, &eigenval_sum_im, &trace_diff_im, realContext);
+    complexMagnitude(&trace_diff_re, &trace_diff_im, &trace_error, realContext);
+    //
+    printf("Original trace: ");
+    printRealToConsole(&original_trace_re, "", "");
+    printRealToConsole(&original_trace_im, "+", "i\n");
+    printf("Eigenvalue sum: ");
+    printRealToConsole(&eigenval_sum_re, "", "");
+    printRealToConsole(&eigenval_sum_im, "+", "i\n");
+    printf("Trace error: ");
+    printRealToConsole(&trace_error, "", "\n");
+    printf("=== END VERIFICATION ===\n");
   #endif
 }
 
