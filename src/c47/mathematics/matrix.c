@@ -4175,7 +4175,10 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
     realChangeSign(&dr); realChangeSign(&di);
   }
 
+  blockMonitoring = true;
   solveCubicEquation(&br, &bi, &cr, &ci, &dr, &di, &discrR, &discrI, t1r, t1i, t2r, t2i, t3r, t3i, realContext);
+  blockMonitoring = false;
+
 }
 
 
