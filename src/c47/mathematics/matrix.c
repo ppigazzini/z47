@@ -4509,7 +4509,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
 
       converged = true;
-      realCopy(const_10000,&diff_max);
+      realCopy(const_0,&diff_max);
       for(i = 0; i < size; i++) {
         real_t old_diag_re, old_diag_im;
         // Store previous diagonal values before updating
@@ -4523,7 +4523,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
         if(!realCompareLessThan(&diff_mag, &tol)) {
           converged = false;
-          if(realCompareLessThan(&diff_mag, &diff_max)) realCopy(&diff_mag, &diff_max);
+          if(!realCompareLessThan(&diff_mag, &diff_max)) realCopy(&diff_mag, &diff_max);
         }
       }
 
