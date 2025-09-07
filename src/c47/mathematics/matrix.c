@@ -4118,7 +4118,9 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
   realChangeSign(&trR);
   realChangeSign(&trI);
 
+  blockMonitoring = true;
   solveQuadraticEquation(const_1, const_0, &trR, &trI, &detR, &detI, &discrR, &discrI, t1r, t1i, t2r, t2i, realContext);
+  blockMonitoring = false;
 }
 
 
