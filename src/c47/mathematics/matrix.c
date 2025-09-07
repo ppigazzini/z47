@@ -4268,6 +4268,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   bool_t converged;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
+  bool_t monitoringMeM = getSystemFlag(FLAG_MONIT);
+  clearSystemFlag(FLAG_MONIT);
 
   #if defined(EIGENDEBUG)
   printf("Input matrix verification:\n");
@@ -4332,6 +4334,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
     while(iteration++ < maxEigenIter  && activeSize > 1) {
 
+      setSystemFlag(FLAG_MONIT);
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
           char ss[50], tt[20];
@@ -4353,6 +4356,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         #endif //!PC_BUILD
       #endif //TESTSUITE_BUILD
+      clearSystemFlag(FLAG_MONIT);
 
       if(shifted) {
         calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
@@ -4666,6 +4670,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   printRealToConsole(&trace_error, "", "\n");
   printf("=== END VERIFICATION ===\n");
   #endif
+
+  if(monitoringMeM) setSystemFlag(FLAG_MONIT);
+  else clearSystemFlag(FLAG_MONIT);
 }
 
 
