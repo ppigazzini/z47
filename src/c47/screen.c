@@ -1664,6 +1664,7 @@ return res;
     }
   }
 
+  bool_t blockMonitoring = false;
 
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
@@ -1677,16 +1678,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1703,6 +1704,7 @@ return res;
     }
     return _printHalfSecUpdate_Integer(mode, txt, loop, clearZ, clearT, disp);
   }
+
 
 
   bool_t checkHalfSec(void) {
