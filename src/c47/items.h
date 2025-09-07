@@ -2031,7 +2031,7 @@
 #define ITM_1977                    1977
 #define ITM_1978                    1978
 #define ITM_1979                    1979
-#define ITM_1980                    1980
+#define ITM_PCURVE                  1980
 #define ITM_toPOL_HP                1981
 #define ITM_toREC_HP                1982
 #define ITM_toPOL_CX                1983
@@ -2330,7 +2330,7 @@
 #define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
 #define SFL_BCD                     2276 // The SFL item names are not used
-#define SFL_2277                    2277 // The SFL item names are not used
+#define SFL_PCURVE                  2277 // The SFL item names are not used
 #define SFL_2278                    2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
@@ -2619,14 +2619,14 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
-
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
 #define VAR_LY                      2548
 
+#define MNU_AIMCATALOG              2549
 
-#define LAST_ITEM                   2549
+#define LAST_ITEM                   2550
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

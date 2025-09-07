@@ -819,6 +819,18 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
+//longpress DOT function during AIM EIM and PEM alpha:
+
+//2.  2025-08-02
+//All currentKeyCode checking below should be replaced with last item checking.
+//  Although it does not really matter because this section is for non-assignable, i.e. hardware keys
+
+//3. 2025-08-02
+// The 'exclude ENTER and BACKSPACE' section below has UP and DN longpress added. This must be checked anyway in PEM.
+//   ... || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA) && !tam.mode) to be added to 'if((calcMode == CM_AIM || calcMode == CM_EIM) &&'
+
+
+
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
@@ -827,15 +839,13 @@ void execTimerApp(uint16_t timerType) {
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && 
-          !( (currentKeyCode == 16 || currentKeyCode == 12) ||                  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
-                          //  ENTER                   BACKSP
-             ( isR47FAM && (currentKeyCode == 22 || currentKeyCode == 27)) || 
-                          //                  UP                      DN
-             (!isR47FAM && (currentKeyCode == 17 || currentKeyCode == 22)) )
-                          //                  UP                      DN
-          ){ //exclude ENTER and BACKSPACE
-          
+        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+                                                                 // Exclude  BACKSP                   ENTER
+          if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
+            // stub for code to process on up1/down longpress
+            return;
+          }
+
           fnKeyBackspace(NOPARAM);
           addItemToBuffer(JM_auto_longpress_enabled);
           FN_timeouts_in_progress = false;
@@ -848,6 +858,7 @@ void execTimerApp(uint16_t timerType) {
             refreshScreen(131);
           }
           return;
+
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
