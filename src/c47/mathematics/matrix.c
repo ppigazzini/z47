@@ -3810,6 +3810,8 @@ static void adjCpxMat(const real_t *x, uint16_t size, real_t *res) {
 
 
 static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext) {
+  bool_t monitoringMeM = getSystemFlag(FLAG_MONIT);
+  clearSystemFlag(FLAG_MONIT);
   uint32_t i, j, k;
 
   real_t *bulk;
@@ -3865,8 +3867,10 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
         realSubtract(v, &sum, v, realContext);
       }
       else {
+        clearSystemFlag(FLAG_MONIT);
         realRectangularToPolar(v, v + 1, &m, &t, realContext);
         realPolarToRectangular(&sum, &t, &m, &t, realContext);
+        setSystemFlag(FLAG_MONIT);
         realAdd(v, &m, v, realContext);
         realAdd(v + 1, &t, v + 1, realContext);
       }
@@ -3965,6 +3969,8 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
+  if(monitoringMeM) setSystemFlag(FLAG_MONIT);
+  else clearSystemFlag(FLAG_MONIT);
 }
 
 
@@ -4268,8 +4274,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   bool_t converged;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
-  bool_t monitoringMeM = getSystemFlag(FLAG_MONIT);
-  clearSystemFlag(FLAG_MONIT);
 
   #if defined(EIGENDEBUG)
   printf("Input matrix verification:\n");
@@ -4334,7 +4338,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
     while(iteration++ < maxEigenIter  && activeSize > 1) {
 
-      setSystemFlag(FLAG_MONIT);
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
           char ss[50], tt[20];
@@ -4356,7 +4359,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         #endif //!PC_BUILD
       #endif //TESTSUITE_BUILD
-      clearSystemFlag(FLAG_MONIT);
 
       if(shifted) {
         calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
@@ -4670,9 +4672,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   printRealToConsole(&trace_error, "", "\n");
   printf("=== END VERIFICATION ===\n");
   #endif
-
-  if(monitoringMeM) setSystemFlag(FLAG_MONIT);
-  else clearSystemFlag(FLAG_MONIT);
 }
 
 
