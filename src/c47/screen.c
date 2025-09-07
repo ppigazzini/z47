@@ -1705,6 +1705,8 @@ return res;
   }
 
 
+  bool_t blockMonitoring = true;
+
   bool_t checkHalfSec(void) {
     if(!getSystemFlag(FLAG_MONIT)) {
       return false;
@@ -1714,6 +1716,7 @@ return res;
       #if defined(DMCP_BUILD)
         dmcpResetAutoOff();
       #endif //DMCP_BUILD
+      if(blockMonitoring) return false;
       return true;
     }
     return false;

@@ -3810,8 +3810,6 @@ static void adjCpxMat(const real_t *x, uint16_t size, real_t *res) {
 
 
 static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext) {
-  bool_t monitoringMeM = getSystemFlag(FLAG_MONIT);
-  clearSystemFlag(FLAG_MONIT);
   uint32_t i, j, k;
 
   real_t *bulk;
@@ -3867,10 +3865,11 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
         realSubtract(v, &sum, v, realContext);
       }
       else {
-        clearSystemFlag(FLAG_MONIT);
+        blockMonitoring = true;
         realRectangularToPolar(v, v + 1, &m, &t, realContext);
+        blockMonitoring = true;
         realPolarToRectangular(&sum, &t, &m, &t, realContext);
-        setSystemFlag(FLAG_MONIT);
+        blockMonitoring = false;
         realAdd(v, &m, v, realContext);
         realAdd(v + 1, &t, v + 1, realContext);
       }
@@ -3969,8 +3968,6 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
-  if(monitoringMeM) setSystemFlag(FLAG_MONIT);
-  else clearSystemFlag(FLAG_MONIT);
 }
 
 
