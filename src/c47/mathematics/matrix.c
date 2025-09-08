@@ -3885,9 +3885,15 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       }
       realSquareRoot(&sum, &sum, realContext);
 
-      // Calculate v = u / ||u||
+      // Calculate v = u / ||u|| with bounds checking: Create minimum threshold based on realContext precision: Currently for 75 digits precision, use 1E-75 as effective zero
+      real_t min_norm;
+      char threshold_str[20];
+      sprintf(threshold_str, "1E-%d", realContext->digits);
+      stringToReal(threshold_str, &min_norm, realContext);
+      
       for(i = 0; i < (size - j); i++) {
-        if(realIsZero(&sum)) {
+        if(realCompareLessThan(&sum, &min_norm)) {
+          // Norm too small relative to precision - use original vecto, no normalization,; this effectively skips this Householder step
           realCopy(v + i * 2,     &m);
           realCopy(v + i * 2 + 1, &t);
         }
@@ -4333,9 +4339,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     realZero(&diff_max);
 
     #if defined(EIGENDEBUG)
-      char tolStr[100];
-      realToString(&tol, tolStr);
-      printf("\nTol: %s\n", tolStr);
+      printRealToConsole(&tol, "\nTol: ", " ");
+      printf("realContext.digits=%d\n", (int)(realContext->digits));
     #endif //EIGENDEBUG
 
     while(iteration++ < maxEigenIter  && activeSize > 1) {
@@ -4377,8 +4382,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
       QR_decomposition_householder(a, size, q, r, realContext);
 
+
       #if defined(EIGENDEBUG)
-      if ((iteration % 100 || iteration < 2) == 0) {
+    if (iteration % 100 == 0 || iteration < 2) {
           real_t tmp;
           char realStr[80], imagStr[80];
           const int colWidth = 24;
@@ -4391,7 +4397,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
 
           // Print Q matrix
-          printf("\nQ matrix:\n");
+        printf("\nQ matrix aa:\n");
           for (i = 0; i < size; i++) {
               for (j = 0; j < size; j++) {
                   realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
@@ -4404,7 +4410,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
 
           // Print R matrix
-          printf("\nR matrix:\n");
+        printf("\nR matrix aa:\n");
           for (i = 0; i < size; i++) {
               for (j = 0; j < size; j++) {
                   realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
@@ -4420,11 +4426,26 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
       mulCpxMat(r, q, size, size, size, eig, realContext);
 
+    #if defined(EIGENDEBUG)
+    printf("=== MATRIX STATE AFTER MULCPXMAT, BEFORE DEFLATION ===\n");
+    for(int i = 0; i < size; i++) {
+      for(int j = 0; j < size; j++) {
+        real_t val_re, val_im;
+        char reStr[32], imStr[32];
+        realPlus(eig + (i * size + j) * 2, &val_re, &ctxtReal4);
+        realPlus(eig + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
+        realToString(&val_re, reStr);
+        realToString(&val_im, imStr);
+        printf("eig[%d][%d] = %s + %si\n", i, j, reStr, imStr);
+      }
+    }
+    #endif
 
 
 
 
       // Deflation and 2x2 block detection
+    if(iteration > 2 && (iteration % 5) == 0) {
       bool_t deflated = true;
       while(deflated && activeSize > 2) {
         deflated = false;
@@ -4440,7 +4461,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           complexMagnitude(eig + (i * size + i) * 2, eig + (i * size + i) * 2 + 1, &diag2_mag, realContext);
 
           // Calculate threshold - looser for 2x2 blocks, stricter for others
-          realAdd(&diag1_mag, &diag2_mag, &threshold, realContext);
           real_t factor;
 
           if(activeSize == 3 && i == 1) {
@@ -4473,8 +4493,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
             stringToReal("10000", &factor, realContext); // Stricter for others
           }
 
-          realMultiply(&tol, &factor, &factor, realContext);
-          realMultiply(&threshold, &factor, &threshold, realContext);
+          realMultiply(&tol, &factor, &threshold, realContext);
 
           if(realCompareLessThan(&subdiag_mag, &threshold)) {
             realZero(eig + (i * size + (i-1)) * 2);
