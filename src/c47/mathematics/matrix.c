@@ -4282,6 +4282,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   bool_t converged;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
+  shifted = false; // Disable shifts - they cause instability
 
   #if defined(EIGENDEBUG)
   printf("Input matrix verification:\n");
