@@ -3888,7 +3888,7 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       // Calculate v = u / ||u|| with bounds checking: Create minimum threshold based on realContext precision: Currently for 75 digits precision, use 1E-75 as effective zero
       real_t min_norm;
       char threshold_str[20];
-      sprintf(threshold_str, "1E-%d", realContext->digits);
+      sprintf(threshold_str, "1E-%d", (int)(realContext->digits));
       stringToReal(threshold_str, &min_norm, realContext);
       
       for(i = 0; i < (size - j); i++) {
@@ -4523,6 +4523,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         }
       } // end of while deflation
+    } // end of deflation check
 
 
 
