@@ -2232,7 +2232,7 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
-    real34ToDisplayString(&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+    real34ToDisplayString(&tmpReal34, amNone, displayString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
 
     if(removeTrailingRadix) {
@@ -2969,7 +2969,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
     while((*source < *last) &&
-          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
+          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
           (*dest < TMP_STR_LENGTH - 6)
          ) {
       #if defined(MONITOR_SHOW)
@@ -2989,6 +2989,9 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       tmpString[++*dest] = 0;
       (*source)++;
     }
+    #if defined(MONITOR_SHOW)
+      printf("  --->d=%i wid=%i\n",d,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)));
+    #endif
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
       if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[*dest-2] == SEPARATOR_LEFT[0] && tmpString[*dest-1] == SEPARATOR_LEFT[1]) ||
@@ -3657,7 +3660,7 @@ goBreak1:
       case dtComplex34Matrix:
         clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
         dispM(showRegis, tmpString + 2100);                   //then display the matrix
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE-4);
         temporaryInformation = TI_SHOWNOTHING;                //then tell the system it is in show nothing mode,
         if(programRunStop == PGM_RUNNING) {   //this needs to be checked - maybe needed for all show items not only here
           refreshScreen(150);

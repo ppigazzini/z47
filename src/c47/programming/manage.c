@@ -131,7 +131,7 @@ void scanLabelsAndPrograms(void) {
     nextStep = findNextStep(step);
     if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
       labelList[numberOfLabels].program = numberOfPrograms;
-      if(*(step + 1) <= 109) { // Local label
+      if(*(step + 1) <= LAST_LOCAL_LABEL) { // Local label
         labelList[numberOfLabels].step = -stepNumber;
         labelList[numberOfLabels].labelPointer = step + 1;
       }
@@ -1718,7 +1718,7 @@ void insertStepInProgram(const int16_t func) {
         _insertInProgram((uint8_t *)tmpString, opBytes + 2);
       }
       else {
-        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
+        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : (tam.mode == TM_LABEL) ? tam.value : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
   }

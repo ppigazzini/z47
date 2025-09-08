@@ -31,6 +31,8 @@ void       fnPixel                            (uint16_t unusedButMandatoryParame
 void       fnPoint                            (uint16_t unusedButMandatoryParameter);
 void       fnAGraph                           (uint16_t regist);
 
+void       drawSinglePixelFullWidthLine       (int y);
+
 char       letteredRegisterName(calcRegister_t regist);
 
   #if defined(PC_BUILD)
