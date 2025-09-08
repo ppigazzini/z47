@@ -48,7 +48,10 @@ Current version defaults all non-loaded settings from previous version files cor
 
 uint16_t flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
-  #define START_REGISTER_VALUE 1000  // was 1522, why?
+  #define START_REGISTER_VALUE 860  // 2025/09/06 [DL] reduced fromm 1000 to provide enougth room in tmpRegisterString for config data (840 bytes):
+                                    //                 tmpRegisterString is a part of the global tmpString which is 2560 bytes (aux_buf_ptr buffer provided by DMCP)
+                                    //                 config string length is 1680 bytes (840 x 2) so tmpRegisterString should start at max at 880 (2560 - 1680)
+                                    //                 THIS VALUE NEEDS TO BE RE-EVALUATED IF THE CONFIG DATA LENGTH IS INCREASED
   static uint32_t loadedVersion = 0;
   static char *tmpRegisterString = NULL;
 
