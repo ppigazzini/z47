@@ -30,16 +30,19 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
+#if !defined(SAVE_SPACE_DM42_23_EDIT2)
 #if !defined(TESTSUITE_BUILD)
-  static void getStringLabelOrVariableName(uint8_t *stringAddress) {
+  static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
     uint8_t stringLength = *(uint8_t *)(stringAddress++);
     xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
   }
 #endif // !TESTSUITE_BUILD
+#endif // !SAVE_SPACE_DM42_23_EDIT2
 
 
-void fractionToString(calcRegister_t regist, char *displayString, int16_t *lessEqualGreater) {
+#if !defined(SAVE_SPACE_DM42_22_EDIT1)
+void _fractionToString(calcRegister_t regist, char *displayString, int16_t *lessEqualGreater) {
   int16_t  sign;
   uint64_t intPart, numer, denom;
 
@@ -55,7 +58,7 @@ void fractionToString(calcRegister_t regist, char *displayString, int16_t *lessE
   }
 }
 
-void shortIntegerToString(calcRegister_t regist, char *displayString) {
+void _shortIntegerToString(calcRegister_t regist, char *displayString) {
   int16_t i, j, k, unit, base;
   uint64_t number, sign;
 
@@ -131,6 +134,7 @@ void shortIntegerToString(calcRegister_t regist, char *displayString) {
 
 
 #if !defined(TESTSUITE_BUILD)
+
 static void _hmsTimeToReal() {
   int16_t i = 0;
   int16_t j = 0;
@@ -277,13 +281,13 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   }
 }
 
-//angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, nimBufferDisplay + kk, 39, true, false, FULLIRFRAC);
-static void _angle34ToNim(const real34_t *angle34, uint8_t mode, char *nimInput, char *nimDisplay) {
+//static void _angle34ToNim(const real34_t *angle34, uint8_t mode, char *nimInput, char *nimDisplay) {
 // nimInput   : used to fill aimBuffer
 // nimDisplay : used to fill nimBufferDisplay
 
-}
+//}
 #endif // !TESTSUITE_BUILD
+#endif // !SAVE_SPACE_DM42_22_EDIT1
 
 
 void fnEdit (uint16_t unusedParamButMandatory) {
@@ -291,9 +295,13 @@ void fnEdit (uint16_t unusedParamButMandatory) {
   //All might have to be changed have a propoer generic EDIT function.
   #if !defined(TESTSUITE_BUILD)
     int16_t index;
-    uint8_t grpGroupingLeftOld;
-    uint8_t grpGroupingRightOld;
-    char    varOrLblName[8];
+    #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+      uint8_t grpGroupingLeftOld;
+      uint8_t grpGroupingRightOld;
+    #endif
+    #if !defined(SAVE_SPACE_DM42_23_EDIT2)
+      char    varOrLblName[8];
+    #endif
 
     if(tam.mode != 0) goto err;
     switch(calcMode) {
@@ -305,6 +313,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         }
         else {
           switch(getRegisterDataType(REGISTER_X)) {
+#if !defined(SAVE_SPACE_DM42_22_EDIT1)
             case dtLongInteger: {
               #define NIM_BUFFER_EXTENDED_LENGTH    1400      // provision for very long integers (up to 1000 digits + separators)
               memset(nimBufferDisplay, 0, NIM_BUFFER_EXTENDED_LENGTH);
@@ -376,7 +385,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               if (getSystemFlag(FLAG_FRACT)) {
                 grpGroupingLeft  = 0;
                 grpGroupingRight = 0;
-                fractionToString(REGISTER_X, aimBuffer, (int16_t *)&lessEqualGreater);
+                _fractionToString(REGISTER_X, aimBuffer, (int16_t *)&lessEqualGreater);
                 grpGroupingRight = grpGroupingRightOld;
                 grpGroupingLeft  = grpGroupingLeftOld;
 
@@ -427,6 +436,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               break;
             }
 
+/* Temporary commented out until complex editing is fully supported
             case dtComplex34: {
               uint16_t i, j;
               uint16_t tagAngle;
@@ -476,7 +486,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 strcat(aimBuffer, "-");
                 strcat(nimBufferDisplay, "-");
               }
-              
+
               if(tagPolar) { // polar mode
                 strcat(nimBufferDisplay, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
                 uint16_t kk = stringByteLength(nimBufferDisplay);
@@ -522,6 +532,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               cursorFont = &numericFont;
               break;
             }
+*/
 
             case dtTime: {
               _hmsTimeToReal();
@@ -536,6 +547,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               goto edit_dtReal34;
               break;
             }
+#endif // !SAVE_SPACE_DM42_22_EDIT1
 
             case dtString: {
               setSystemFlag(FLAG_ASLIFT);
@@ -559,6 +571,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               break;
             }
 
+#if !defined(SAVE_SPACE_DM42_22_EDIT1)
             case dtShortInteger: {
               uint16_t i;
               grpGroupingLeftOld  = grpGroupingLeft;
@@ -572,7 +585,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
               grpGroupingLeft  = 0;
               grpGroupingRight = 0;
-              shortIntegerToString(REGISTER_X, aimBuffer);
+              _shortIntegerToString(REGISTER_X, aimBuffer);
               grpGroupingRight = grpGroupingRightOld;
               grpGroupingLeft  = grpGroupingLeftOld;
 
@@ -606,6 +619,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               cursorFont = &numericFont;
               break;
             }
+#endif // !SAVE_SPACE_DM42_22_EDIT1
 
             // case dtConfig: Not relevant for EDIT
             default: {
@@ -630,15 +644,20 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           func |= currentStep[i++];
         }
         uint8_t opParam  = currentStep[i++];
+        #if !defined(SAVE_SPACE_DM42_23_EDIT2)
         uint8_t opParam2 = currentStep[i++];
-        uint8_t opParam3 = currentStep[i];
+          uint8_t opParam3 = currentStep[i];
+        #endif
 
+
+#if !defined(SAVE_SPACE_DM42_23_EDIT2)
         if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
           for(index = 0;  index < opParam2; index++) {
             varOrLblName[index] = currentStep[i++];
           }
           varOrLblName[index] = 0;
         }
+#endif // !SAVE_SPACE_DM42_23_EDIT2
         //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
@@ -647,6 +666,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           if(opParam == STRING_LABEL_VARIABLE) {
             pemAlphaEdit(NOPARAM);
           }
+#if !defined(SAVE_SPACE_DM42_23_EDIT2)
           else if((opParam == BINARY_SHORT_INTEGER) || (opParam == STRING_SHORT_INTEGER) || (opParam == STRING_LONG_INTEGER) ||
                   (opParam == BINARY_REAL34)        || (opParam == STRING_REAL34)        ||
                   (opParam == BINARY_COMPLEX34)     || (opParam == STRING_COMPLEX34)     ||
@@ -658,7 +678,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             bool isDate = (opParam == STRING_DATE ? true : false);
 
             if((opParam == STRING_REAL34)|| (opParam == STRING_COMPLEX34))  {
-              getStringLabelOrVariableName(&currentStep[2]);
+              _getStringLabelOrVariableName(&currentStep[2]);
               strcpy(tempBuffer, tmpStringLabelOrVariableName);
             }
             else {
@@ -828,10 +848,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             pemAddNumber(ITM_NOP, true);    // to insert the resulting number in program
             //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n",editingLiteralType,aimBuffer);fflush(stdout);
           }
+#endif // !SAVE_SPACE_DM42_23_EDIT2
           else {
             ;
           }
         }
+#if !defined(SAVE_SPACE_DM42_23_EDIT2)
         else {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
@@ -963,6 +985,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
           }
         }
+#endif // !SAVE_SPACE_DM42_23_EDIT2
         break;
       }
 
