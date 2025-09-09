@@ -1309,7 +1309,7 @@ void resetOtherConfigurationStuff(void) {
     lastTemp[0] = 0;
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
 
-
+  blockMonitoring = false;
 }
 
 
