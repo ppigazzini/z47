@@ -15,8 +15,8 @@ void fnGoto(uint16_t label) {
       return;
     }
 
-    // Local Label 00 to 99 and A, B, C, D, and E
-    if(label <= 104) {
+    // Local Label 00 to 99 and A to l
+    if(label <= LAST_LOCAL_LABEL) {
       // Search for local label
       for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
         if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label
@@ -347,7 +347,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
 
       case PARAM_LABEL: {
-      if(opParam <= 104) { // Local label from 00 to 99 or from A to E
+      if(opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
         reallyRunFunction(op, opParam);
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
@@ -612,9 +612,9 @@ static void _putLiteral(uint8_t *literalAddress) {
 
 
 
-      case STRING_ANGLE_RADIAN: 
-      case STRING_ANGLE_GRAD:   
-      case STRING_ANGLE_DEGREE: 
+      case STRING_ANGLE_RADIAN:
+      case STRING_ANGLE_GRAD:
+      case STRING_ANGLE_DEGREE:
       case STRING_ANGLE_MULTPI: {
         _getStringLabelOrVariableName(literalAddress);
         liftStack();
@@ -936,8 +936,8 @@ void fnCheckLabel(uint16_t label) {
     label = findNamedLabel(dynmenuGetLabel(dynamicMenuItem));
   }
 
-  // Local Label 00 to 99 and A, B, C, D, and E
-  if(label <= 104) {
+  // Local Label 00 to 99 and A to l
+  if(label <= LAST_LOCAL_LABEL) {
     // Search for local label
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
       if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label

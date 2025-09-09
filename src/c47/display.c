@@ -2232,7 +2232,7 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
-    real34ToDisplayString(&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+    real34ToDisplayString(&tmpReal34, amNone, displayString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
 
     if(removeTrailingRadix) {
@@ -3660,7 +3660,7 @@ goBreak1:
       case dtComplex34Matrix:
         clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
         dispM(showRegis, tmpString + 2100);                   //then display the matrix
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE-4);
         temporaryInformation = TI_SHOWNOTHING;                //then tell the system it is in show nothing mode,
         if(programRunStop == PGM_RUNNING) {   //this needs to be checked - maybe needed for all show items not only here
           refreshScreen(150);

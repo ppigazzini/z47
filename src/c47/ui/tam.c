@@ -523,7 +523,7 @@
 
           else if(item == ITM_dddVEL || item == ITM_dddIX) {
             tam.currentOperation = item;
-            if(calcMode != CM_MIM 
+            if(calcMode != CM_MIM
 //                && !tam.alpha && !tam.dot
 //                && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL
               ) {
@@ -606,39 +606,40 @@
     }
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
+    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
+      tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a; 
+      forceTry = true; 
+      tryOoR = true; 
+    }
 
-//Removing these as I cannot see the situation where this is needed. Not sure though, so not deleting completely.
-//    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
-//      tam.value = 100 - 'A' + 'E';
-//      forceTry = true;
-//      tryOoR = true;
-//    }
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
-            case REGISTER_A: tam.value = 100 - 'A' + 'A'; forceTry = true; tryOoR = true; break;
-            case REGISTER_B: tam.value = 100 - 'A' + 'B'; forceTry = true; tryOoR = true; break;
-            case REGISTER_C: tam.value = 100 - 'A' + 'C'; forceTry = true; tryOoR = true; break;
-            case REGISTER_D: tam.value = 100 - 'A' + 'D'; forceTry = true; tryOoR = true; break;
+            // Local label from A to J
+            case REGISTER_A: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'A'; forceTry = true; tryOoR = true; break;
+            case REGISTER_B: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'B'; forceTry = true; tryOoR = true; break;
+            case REGISTER_C: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'C'; forceTry = true; tryOoR = true; break;
+            case REGISTER_D: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'D'; forceTry = true; tryOoR = true; break;
+            case REGISTER_E: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'E'; forceTry = true; tryOoR = true; break;
+            case REGISTER_F: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'F'; forceTry = true; tryOoR = true; break;
+            case REGISTER_G: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'G'; forceTry = true; tryOoR = true; break;
+            case REGISTER_H: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'H'; forceTry = true; tryOoR = true; break;
+            case REGISTER_I: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'I'; forceTry = true; tryOoR = true; break;
+            case REGISTER_J: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'J'; forceTry = true; tryOoR = true; break;
+            case REGISTER_K: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'K'; forceTry = true; tryOoR = true; break;
+            case REGISTER_L: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'L'; forceTry = true; tryOoR = true; break;
+            // Global single letters alpha labels
             case REGISTER_X: tam.alpha = true; aimBuffer[0] = 'X'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_Y: tam.alpha = true; aimBuffer[0] = 'Y'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_Z: tam.alpha = true; aimBuffer[0] = 'Z'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_T: tam.alpha = true; aimBuffer[0] = 'T'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_L: tam.alpha = true; aimBuffer[0] = 'L'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_I: tam.alpha = true; aimBuffer[0] = 'I'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_J: tam.alpha = true; aimBuffer[0] = 'J'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_K: tam.alpha = true; aimBuffer[0] = 'K'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_M: tam.alpha = true; aimBuffer[0] = 'M'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_N: tam.alpha = true; aimBuffer[0] = 'N'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_P: tam.alpha = true; aimBuffer[0] = 'P'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_Q: tam.alpha = true; aimBuffer[0] = 'Q'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_R: tam.alpha = true; aimBuffer[0] = 'R'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_S: tam.alpha = true; aimBuffer[0] = 'S'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_E: tam.alpha = true; aimBuffer[0] = 'E'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_F: tam.alpha = true; aimBuffer[0] = 'F'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_G: tam.alpha = true; aimBuffer[0] = 'G'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_H: tam.alpha = true; aimBuffer[0] = 'H'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_O: tam.alpha = true; aimBuffer[0] = 'O'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_U: tam.alpha = true; aimBuffer[0] = 'U'; aimBuffer[1] = 0; forceTry = true; break;
             case REGISTER_V: tam.alpha = true; aimBuffer[0] = 'V'; aimBuffer[1] = 0; forceTry = true; break;

@@ -1325,6 +1325,9 @@ return res;
      //noShow = false; //no need to redo
   }
 
+  void drawSinglePixelFullWidthLine(int y) {
+    lcd_fill_rect(0, y, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+  }
 
 
   void showBottomLine(void) {
@@ -1343,8 +1346,7 @@ return res;
 
       int offs = (temporaryInformation == TI_SHOW_REGISTER_BIG ? - 2 : temporaryInformation == TI_SHOW_REGISTER_SMALL ? 0 : temporaryInformation == TI_SHOW_REGISTER_TINY ? 0 : 0);
 
-
-      lcd_fill_rect(0, yoff + offs, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE); //HERE SHOW LINE SMALL & TINY
+      drawSinglePixelFullWidthLine(yoff + offs); //HERE SHOW LINE SMALL & TINY
 
       overrideShowBottomLine = 0;
     }
@@ -1771,10 +1773,10 @@ return res;
     clearRegisterLine(rowReg, true, true);
 
     if(reg == RESERVED_VARIABLE_UEST) {
-      sprintf(prefix, "Upper estimate =");
+      sprintf(prefix, "Upper =");
       strcpy(regS,name);
     } else if (reg == RESERVED_VARIABLE_LEST) {
-      sprintf(prefix, "Lower estimate =");
+      sprintf(prefix, "Lower =");
       strcpy(regS,name);
     } else {
         strcpy(regS, "Reg_");
@@ -1947,13 +1949,11 @@ return res;
   }
 
 
-  static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
-    //printf("========================== %i %s currentViewRegister=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), currentViewRegister, prefix, *prefixWidth);
+  static void do_viewRegName(calcRegister_t regist,  char *prefix, int16_t *prefixWidth, char* endChar) { //using "=" for VIEW
+    //printf("========================== %i %s regist=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), regist, prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
       if(SBARUPD_Time) {
-        prefix[0] = 32;
-        prefix[1] = 32;
-        prefix[2] = 0;
+        strcpy(prefix, "  ");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else {
@@ -1962,83 +1962,56 @@ return res;
       }
       return;
     }
-    if(currentViewRegister < REGISTER_X) {
-      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), currentViewRegister);
+    if(regist < REGISTER_X) {
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), regist, endChar);
     }
-    else if(currentViewRegister <= LAST_SPARE_REGISTER) {
-      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(currentViewRegister));
+    else if(regist <= LAST_SPARE_REGISTER) {
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(regist), endChar);
     }
-    else if(currentViewRegister >= FIRST_LOCAL_REGISTER && currentViewRegister <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
+    else if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
     }
-    else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
+    else if(FIRST_NAMED_VARIABLE <= regist && regist <= LAST_NAMED_VARIABLE) {
       if(SBARUPD_Time) {
-        prefix[0] = 32;
-        prefix[1] = 32;
-        prefix[2] = 0;
+        strcpy(prefix, "  ");
       }
       strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
+      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
-    else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
+    else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
       if(SBARUPD_Time) {
-        prefix[0] = 32;
-        prefix[1] = 32;
-        prefix[2] = 0;
+        strcpy(prefix, "  ");
       }
       strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else {
-      sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      sprintf(prefix, "?" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
 
-
-  void viewRegName2(char *prefix, int16_t *prefixWidth) { //using ":" for SHOW
-    uint16_t currentViewRegisterStored = currentViewRegister;
-    currentViewRegister = showRegis;
-    viewRegName(prefix, prefixWidth);
-    uint16_t nn = 0;
-    while(prefix[nn] != 0) {
-      if(prefix[nn] == '=') {
-        prefix[nn] = ':';
-        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      }
-      nn++;
-    }
-    currentViewRegister = currentViewRegisterStored;
+  static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
+    do_viewRegName(currentViewRegister, prefix, prefixWidth, "=");
   }
 
+  void viewRegName2(char *prefix, int16_t *prefixWidth) { //using ":" for SHOW
+    do_viewRegName(showRegis, prefix, prefixWidth, ":" );
+  }
+
+  static void nameRegis(calcRegister_t regist, char *prefix) {
+    int16_t prefixWidth;
+    do_viewRegName(regist, prefix, &prefixWidth, "");
+  }
 
   static void viewStoRcl(char *prefix, int16_t *prefixWidth) {
-    int16_t showRegisN = showRegis;
-    showRegis = lastSTORCL();
-    viewRegName2(prefix, prefixWidth);
+    do_viewRegName(lastSTORCL(), prefix, prefixWidth, ":");
     if(prefix[0]=='?') {
       prefix[0] = 0;
       prefixWidth = 0;
     }
-    showRegis = showRegisN;
-  }
-
-
-  static void nameRegis(calcRegister_t regist, char *prefix) {
-    uint16_t currentViewRegisterStored = currentViewRegister;
-    int16_t prefixWidth;
-    currentViewRegister = regist;
-    viewRegName(prefix, &prefixWidth);
-    int32_t nn = stringByteLength(prefix);
-    while(--nn >= 0 && prefix[nn] != 0) {
-      if(prefix[nn] == '=') {
-        prefix[nn] = 0;
-        //prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      }
-    }
-    currentViewRegister = currentViewRegisterStored;
   }
 
 
@@ -2473,7 +2446,7 @@ void createSubstrings(uint8_t number) {
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       if(doLine) {
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
       }
     }
   }
@@ -2596,13 +2569,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_T);
        }
        if(displayStack == 3) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Z_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
        }
        else if(displayStack == 2) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
        }
        else if(displayStack == 1) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_X_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+         drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_X_LINE - 2);
        }
      }                                                                 //JM ^^
   }
@@ -2656,7 +2629,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     #endif // (DEBUG_PANEL == 1)
 
     if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window  //HERE SHOW LINE
-      lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+      drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE-4);
     }
 
     if((calcMode != CM_BUG_ON_SCREEN) && !GRAPHMODE && (calcMode != CM_LISTXY)) {               //JM
@@ -3062,14 +3035,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
         // STATISTICAL DISTR & SOLVER
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && (PROBMENU || currentMenu() == -MNU_Solver_TOOL) && temporaryInformation != TI_SOLVER_VARIABLE_RESULT && solverEstimatesUsed) {
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && 
+            ( (PROBMENU) || 
+              (currentMenu() == -MNU_Solver_TOOL && solverEstimatesUsed && temporaryInformation != TI_SOLVER_VARIABLE_RESULT)
+            )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
-              r_i = indexOfItems[VAR_LEST].itemCatalogName; register_i = RESERVED_VARIABLE_LEST;
-              r_j = indexOfItems[VAR_UEST].itemCatalogName; register_j = RESERVED_VARIABLE_UEST;
+              r_i = indexOfItems[VAR_UEST].itemCatalogName; register_i = RESERVED_VARIABLE_UEST;
+              r_j = indexOfItems[VAR_LEST].itemCatalogName; register_j = RESERVED_VARIABLE_LEST;
               break;
             case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;
@@ -3148,7 +3124,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               distModeActive = true;
             }
             if(distModeActive) {
-              lcd_fill_rect(0, ii - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+              drawSinglePixelFullWidthLine(ii - 2);
               if(displayStack != origDisplayStack) {
 //                refreshScreen(81);                                //recurse into refreshScreen
               }
@@ -3922,7 +3898,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                  sprintf(prefix, "L.R. selected to %03" PRIu16, (uint16_t)((lrSelection) & 0x01FF));
                }
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-               //lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+               //drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
              }
            }
 
@@ -4435,7 +4411,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
-            w = stringWidth(tmpString, &standardFont, false, true);
+            w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
             tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
