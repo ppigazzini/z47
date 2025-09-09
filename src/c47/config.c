@@ -451,6 +451,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     fnKeyExit(0);           //Second time to ensure not only keys exited, but also modes
     popSoftmenu();
     lastIntegerBase = 0;
+    decodedIntegerBase = 0;
+    editingLiteralType = 0;
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
@@ -1287,6 +1289,7 @@ void resetOtherConfigurationStuff(void) {
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;
   lastIntegerBase = 0;
+  decodedIntegerBase = 0;
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;

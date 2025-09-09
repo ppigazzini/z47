@@ -9624,8 +9624,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = (ITM_BESTF >> 8) | 0x80;
     *(currentStep++) =  ITM_BESTF       & 0xff;
-    *(currentStep++) = 20;
     *(currentStep++) = 01;
+    *(currentStep++) = 20;
 
     *(currentStep++) = (ITM_T_EXPF >> 8) | 0x80;
     *(currentStep++) =  ITM_T_EXPF       & 0xff;
