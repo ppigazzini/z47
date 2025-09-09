@@ -148,6 +148,8 @@ TVMIChanges,                         xxx,        0,                             
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 RESERVED_VARIABLE_LX,                xxx,        -10,                            xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_UX,                xxx,        10,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_LY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_UY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
@@ -268,6 +270,8 @@ void Sett(int16_t grp) {
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
+        case RESERVED_VARIABLE_LY     :
+        case RESERVED_VARIABLE_UY     :
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
         case RESERVED_VARIABLE_NPPER  :
@@ -350,12 +354,16 @@ void Sett(int16_t grp) {
     Sett(_JM);
 
     roundingMode = RM_HALF_UP;
-    fnKeysManagement(USER_MC47);
+    fnKeysManagement(ITM_RIBBON_C47);
 
     itemToBeAssigned = -MNU_EE;
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
+    itemToBeAssigned = -MNU_RIBBONS;
+    assignToMyMenu(10);
+    itemToBeAssigned = ITM_DREAL;
+    assignToMyMenu(9);
 
 
     cachedDynamicMenu = 0;
@@ -443,6 +451,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     fnKeyExit(0);           //Second time to ensure not only keys exited, but also modes
     popSoftmenu();
     lastIntegerBase = 0;
+    decodedIntegerBase = 0;
+    editingLiteralType = 0;
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
@@ -937,6 +947,18 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnGetLastErr(uint16_t unusedButMandatoryParameter) {
+  longInteger_t err;
+
+  liftStack();
+
+  longIntegerInit(err);
+  uInt32ToLongInteger(previousErrorCode, err);
+  convertLongIntegerToLongIntegerRegister(err, REGISTER_X);
+  longIntegerFree(err);
+}
+
+
 void initSimEqMatABX(void) {
   matrixHeader_t *matrixHeader;
 
@@ -990,10 +1012,10 @@ void fnClAll(uint16_t confirmation) {
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
 
     if(isR47FAM) {
-      fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
+      fnRESET_MyM(ITM_RIBBON_R47);            // Reset Menu MyMenu
     }
     else {
-      fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
+      fnRESET_MyM(ITM_RIBBON_C47);            // Reset Menu MyMenu
     }
 
     fnRESET_Mya();                            // Reset Menu MyAlpha
@@ -1018,7 +1040,7 @@ void fnClAll(uint16_t confirmation) {
     // Clear global flags
     fnClFAll(CONFIRMED);
 
-    temporaryInformation = TI_NO_INFO;
+    temporaryInformation = TI_RESET;
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
     }
@@ -1110,7 +1132,7 @@ void restoreStats(void){
 
     typedef struct {              //JM VALUES DEMO
       uint8_t  itemType;
-      uint8_t  count;
+      uint16_t  count;
       char     *itemName;
     } numberstr;
 
@@ -1157,6 +1179,21 @@ void restoreStats(void){
 
       {0,38, "Heart:16" STD_CROSS "(sin(t)^3)+i" STD_CROSS "(13" STD_CROSS "cos(t)-5" STD_CROSS "cos(2" STD_CROSS "t)-2" STD_CROSS "cos(3" STD_CROSS "t)-cos(4" STD_CROSS "t))"},
 
+//temporary test values
+
+//      {0,39, "Carmichael number 1"},
+//      {1,40, "2090544338452850336677669058614524913253916538940295276440923713893889746693477362455627182089820344446945934218698530379666521"},
+//             // m = 117278425593238765610521319698123670218170
+//
+//      {0,41, "Carmichael number 2"},
+//      {1,42, "1114914577280124301342981138310574878929503042734089"},
+//             // m = 9510693751439811
+//
+//      {0,43, "Carmichael number 3"},
+//      {1,44, "3215031751"},
+//            // 151 × 21291601
+//            // 151 × 751 × 28351
+
     };
 
 
@@ -1169,21 +1206,20 @@ void restoreStats(void){
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
       {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
       {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
-      {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
-      {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
-      {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
       {0,USER_PRESET,  "P.FN menu reset to default"                      },
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
-      {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
-      {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
-      {0,USER_MC47,    "MyMenu primary C47 F-key ribbon"                 },
-      {0,USER_MR47,    "MyMenu primary R47 F-key ribbon"                 },
+      {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
+      {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
+      {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
+      {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
+      {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
+      {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
+      {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
+      {0,ITM_RIBBON_R47PL, "MyMenu primary R47 Plus F-key ribbon"        },
       {0,100,"Error List"}
     };
 
@@ -1201,7 +1237,7 @@ uint16_t searchMsg(uint16_t idStr) {
 }
 
 
-void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
+void fnShowVersion(uint16_t option) {  //KEYS VERSION LOADED
   strcpy(errorMessage, indexOfMsgs[searchMsg(option)].itemName);
   temporaryInformation = TI_KEYS;
 }
@@ -1246,7 +1282,6 @@ void resetOtherConfigurationStuff(void) {
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
-  bcdDisplay = false;
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
@@ -1254,6 +1289,7 @@ void resetOtherConfigurationStuff(void) {
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;
   lastIntegerBase = 0;
+  decodedIntegerBase = 0;
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;
@@ -1496,6 +1532,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
+    iterations = false;
+    updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
@@ -1511,6 +1549,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     aimBuffer[0] = 0;
     lastErrorCode = 0;
+    previousErrorCode = 0;
 
     #if !defined(TESTSUITE_BUILD)
       resetAlphaSelectionBuffer();
@@ -1575,6 +1614,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;
+    lastT_cursorPos = 0;
 
 
                                     #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
@@ -1603,13 +1643,13 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_MR47\n");
                                    #endif
-      fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
+      fnKeysManagement(ITM_RIBBON_R47);                  // Reset Menu MyMenu Ribbon
     }
     else {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_MC47\n");
                                    #endif
-      fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
+      fnKeysManagement(ITM_RIBBON_C47);                  // Reset Menu MyMenu Ribbon
     }
 
     #if !defined(TESTSUITE_BUILD)
@@ -1907,12 +1947,6 @@ void fnKeysManagement(uint16_t choice) {
       case USER_R47fg_g:
       case USER_C47:
       case USER_DM42:
-      #if defined(PC_BUILD)
-        case USER_D47:
-        case USER_E47:
-        case USER_N47:
-        case USER_V47:
-      #endif //PC_BUILD
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
@@ -1956,11 +1990,14 @@ void fnKeysManagement(uint16_t choice) {
       fnShowVersion(choice);
       break;
 
-    case USER_MFIN:
-    case USER_MCPX:
-    case USER_MSAV:
-    case USER_MC47:
-    case USER_MR47:
+    case ITM_RIBBON_CPX  :
+    case ITM_RIBBON_FIN  :
+    case ITM_RIBBON_ENG  :
+    case ITM_RIBBON_SAV  :
+    case ITM_RIBBON_C47  :
+    case ITM_RIBBON_C47PL:
+    case ITM_RIBBON_R47  :
+    case ITM_RIBBON_R47PL:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
       #if !defined(TESTSUITE_BUILD)

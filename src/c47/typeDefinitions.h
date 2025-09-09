@@ -282,7 +282,7 @@ typedef struct {
   uint8_t        IrFractionsCurrentStatus;                                 //  Internal control flag for IRFRAC
   bool_t         compatibility_byte18;              //Spare Byte           //  
   uint8_t        displayStackSHOIDISP;                                     //  dSI
-  bool_t         bcdDisplay;                                               //  BCD
+  bool_t         compatibility_byte25;                                     //  BCD
   bool_t         compatibility_byte24;              //Spare Byte           //  
   uint8_t        bcdDisplaySign;                                           //  BCDUNS
   uint8_t        DRG_Cycling;                                              //  Internal control flag for DRG
@@ -302,6 +302,7 @@ typedef struct {
   //2025-04-21 Verified all variables above, and in recall.c and store.c
   //Note: Do not change entries going forward to maintain compatibility
   //Should any be added, ensure that the defaults are appropriately added when reading the state file
+  //!!! IF THE CONFIG DATA LENGTH IS INCREASED, START_REGISTER_VALUE IN SaveRestoreCalcState NEEDS TO BE RE-EVALUATED !!!
 } dtConfigDescriptor_t;
 
 

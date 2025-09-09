@@ -7,31 +7,40 @@ Go to SETUP using keys f C
 2. Enter System Menu
 5. Format FAT Disk
 2. Format FAT disk
-EXIT
+
+Press C on DM32 (EXIT on R47)
+
 4. Reset to DMCP menu
 6. Activate USB Disk
 Observe the disk name is now DM32
 
-On DM32 drive:
-Copy all files in r47-dmcp5 to (empty) DM32 root risk
-Rename the file R47-keymap.bin to keymap.bin
-Release the drive from Mac/PC
+On the DM32 drive:
+  Copy all files in r47-dmcp5 to (empty) DM32 root risk ('replace' the empty folders if your MacOS asks)
+  Rename the file R47-keymap.bin to keymap.bin
+  Release the drive from Mac/PC and keep the cable in, to power the device for firmware loading.
 
-Observe Keymap is installed: "New KEYMAP installed"
+Observe that the Keymap that you renamed is automatically installed: 
+  "New KEYMAP installed"
   "R47"
   Press any key to continue
+
+Press EXIT on the R47 (Used to be C on DM32)
 
 Press Option 4: Load QSPI ** may start automatically
   Observe DM42_qspi_3.x.bin be installed
   Press key to restart / Exit
+  Press Exit once or twice as may be needed
 
 Press 3. DMCP Menu
-Press Option 3: Load Program
-  Choose R47.pg5 (DM32 blue shift is Down, yellow shift is Up)
+  Press Option 3: Load Program
+  Choose R47.pg5 (using R47 arrows, on DM32 blue shift is Down, yellow shift is Up)
   Press key to restart / Exit
 
-
 R47 is loaded
+
+Press EXIT key as required, as indicated on screen.
+
+
 
 
 --------------------------

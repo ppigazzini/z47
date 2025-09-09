@@ -20,9 +20,9 @@
   void pemAlpha                                (int16_t item);
   void pemCloseAlphaInput                      (void);
   void pemAlphaEdit                            (uint16_t unusedButMandatoryParameter);
-  void pemAddNumber                            (int16_t item);
+  void pemAddNumber                            (int16_t item, bool doInsertInProgram);
   void pemCloseNumberInput                     (void);
-  void insertStepInProgram                     (int16_t func);
+  void insertStepInProgram                     (const int16_t func);
   void insertUserItemInProgram                 (int16_t func, char *funcParam);
   void addStepInProgram                        (int16_t func);
 

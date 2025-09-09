@@ -13,6 +13,7 @@
    * \param[in] regist
    */
   void         fnRecall       (uint16_t r);
+  void         fnRecallPlusSkip(uint16_t regist);
 
   /**
    * Recalls register L in X.

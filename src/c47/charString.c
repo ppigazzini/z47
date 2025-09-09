@@ -30,6 +30,44 @@
 #endif //TESTSUITE_BUILD
 
 
+void convertDigits(char * refstr, char * outstr) {
+  uint16_t ii = 0;
+  uint16_t oo = 0;
+  outstr[0] = 0;
+
+  while(refstr[ii] != 0) {
+    switch(refstr[ii]) {
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9': outstr[oo++] = STD_SUB_0[0]; outstr[oo++] = STD_SUB_0[1] + refstr[ii] - '0'; break; //.
+      case 't':
+      case 'i':
+      case 'c':
+      case 'k':
+      case 'x': 
+      case 'y': 
+      case 'a': 
+      case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break;
+      case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //:
+      case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+
+      case '-': outstr[oo++] = STD_SUB_MINUS[0]       ; outstr[oo++] = STD_SUB_MINUS[1]       ; break; //-
+      case ',': outstr[oo++] = STD_SINGLE_LOW_QUOTE[0]; outstr[oo++] = STD_SINGLE_LOW_QUOTE[1]; break; //.
+      case '/': outstr[oo++] = STD_OBLIQUE3[0]        ; outstr[oo++] = STD_OBLIQUE3[1]        ; break; ///
+      case '.':
+      default:  outstr[oo++] = refstr[ii];
+    }
+    ii++;
+  }
+  outstr[oo] = 0;
+}
+
 
 typedef struct {
   uint16_t Nr;              ///<
@@ -548,6 +586,32 @@ uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // C47 supp
 }
 
 
+void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
+    printf("%s:", label);
+    printf("  Hex:   ");
+    for (size_t i = 0; i < max_len; i++) {
+        printf("%02X ", str[i]);
+    }
+    printf("; ");
+    
+    printf("  Dec:   ");
+    for (size_t i = 0; i < max_len; i++) {
+        printf("%3d ", str[i]);
+    }
+    printf("; ");
+    
+    printf("  Char:  ");
+    for (size_t i = 0; i < max_len; i++) {
+        if (str[i] >= 32 && str[i] < 127) {
+            printf(" %c  ", str[i]);
+        } else {
+            printf("    ");
+        }
+    }
+    printf("\n");
+}
+
+
 void stringToUtf8(const char *str, uint8_t *utf8) {
   int16_t len;
 
@@ -574,6 +638,52 @@ void stringToUtf8(const char *str, uint8_t *utf8) {
     }
   }
 }
+
+//Alternative stringToUtf8
+//void stringToUtf8(const char *str, uint8_t *utf8) {
+//    //uint8_t *original_utf8 = utf8;
+//    //const char *original_str = str;
+//
+//    while (*str) {
+//        if ((uint8_t)*str & 0x80) {
+//            uint16_t high = ((uint16_t)(uint8_t)(*str) & 0x7F);
+//            uint16_t low  = (uint8_t)str[1];
+//            uint16_t codepoint = (high << 8) | low;
+//            if (codepoint <= 0x7F) {
+//                *utf8++ = (uint8_t)codepoint;
+//            } else if (codepoint <= 0x7FF) {
+//                // FIX: use (cp >> 6) & 0x1F to avoid stray upper bits
+//                *utf8++ = 0xC0 | ((codepoint >> 6) & 0x1F);
+//                *utf8++ = 0x80 | (codepoint & 0x3F);
+//            } else {
+//                *utf8++ = 0xE0 | ((codepoint >> 12) & 0x0F);
+//                *utf8++ = 0x80 | ((codepoint >> 6) & 0x3F);
+//                *utf8++ = 0x80 | (codepoint & 0x3F);
+//            }
+//
+//            str += 2;
+//        } else {
+//            *utf8++ = (uint8_t)*str++;
+//        }
+//    }
+//
+//    *utf8 = 0;
+//
+//    //printf("Original input: ");
+//    //size_t input_len = str - original_str + 1;
+//    //for (size_t i = 0; i < input_len; i++) {
+//    //    printf("%02X ", (unsigned char)original_str[i]);
+//    //}
+//    //printf("\n");
+//    //printf("UTF-8 output:   ");
+//    //size_t output_len = utf8 - original_utf8 + 1;
+//    //for (size_t i = 0; i < output_len; i++) {
+//    //    printf("%02X ", original_utf8[i]);
+//    //}
+//    //printf("\n");
+//}
+
+
 
 
 void utf8ToString(const uint8_t *utf8, char *str) {

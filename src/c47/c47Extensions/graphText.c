@@ -5,6 +5,13 @@
 
 //#define DISPLOADING
 
+void preventFilenameTimeout(void){
+  uint32_t tmp__32;
+  tmp__32 = getUptimeMs();
+  mem__32 = tmp__32;
+  cancelFilename = false;
+}
+
 #if defined(DMCP_BUILD)
   /*-DMCP-*/     typedef struct {              //JM VALUES DEMO
   /*-DMCP-*/       uint8_t  count;

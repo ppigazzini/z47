@@ -67,14 +67,14 @@ for i in range(len(sizes)):
     elif sects[i] == ".qspi":
         used["qspi"] += sizes[i]
     else:
-        print("Unknown section:", sects[i])
-        sys.exit(1)
+        print("Warning: Unknown section:", sects[i], "- ignoring.")
+        continue
 
 # Display totals and free space
 def output(sect):
     print("%-5s  %8d  %8d  %8d" % (sect, used[sect], mem[sect], mem[sect] - used[sect]))
 
-print("%-7s%8s  %8s  %8s" % ("section", "used", "total", "left"))
+print("\n%-7s%8s  %8s  %8s" % ("section", "used", "total", "left"))
 output("flash")
 output("ram")
 output("qspi")

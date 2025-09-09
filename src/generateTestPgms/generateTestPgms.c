@@ -2043,7 +2043,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE; // .00
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
     *(currentStep++) = ITM_XEQ;
@@ -2130,7 +2130,7 @@ int main(int argc, char* argv[]) {
 
         *(currentStep++) = ITM_RCL;
         *(currentStep++) = 2;
-        *(currentStep++) = ITM_DEC;
+        *(currentStep++) = ITM_DECR;
         *(currentStep++) = 100; //X
 
         *(currentStep++) = ITM_LITERAL;
@@ -2605,10 +2605,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_STO;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2625,10 +2626,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCL;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2680,10 +2682,11 @@ int main(int argc, char* argv[]) {
     // 30
     *(currentStep++) = ITM_STOADD;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2701,10 +2704,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCLMULT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2729,10 +2733,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_VIEW;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2854,10 +2859,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_STO;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2896,10 +2902,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCL;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2964,10 +2971,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_STOADD;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -2985,10 +2993,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCLMULT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3014,10 +3023,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_VIEW;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'f';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3065,19 +3075,21 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_INPUT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'x';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
     *(currentStep++) = ITM_INPUT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'y';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3218,10 +3230,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_STOSUB;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'x';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3236,10 +3249,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_STOSUB;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'y';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3257,10 +3271,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCLMULT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'x';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3286,10 +3301,11 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RCLMULT;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 5; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'd';
     *(currentStep++) = 'y';
-    *(currentStep++) = '/';
+    *(currentStep++) = '\x80';
+    *(currentStep++) = '\xf7';
     *(currentStep++) = 'd';
     *(currentStep++) = 't';
 
@@ -3961,7 +3977,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_AGRAPH       & 0xff;
     *(currentStep++) = 7;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
     // 20
@@ -3980,7 +3996,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_AGRAPH       & 0xff;
     *(currentStep++) = 8;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
     *(currentStep++) = ITM_LITERAL;
@@ -3998,7 +4014,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_AGRAPH       & 0xff;
     *(currentStep++) = 9;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
     // 30
@@ -4017,7 +4033,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_AGRAPH       & 0xff;
     *(currentStep++) = 10;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
     *(currentStep++) = ITM_LITERAL;
@@ -4387,7 +4403,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 45;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = 45;
 
     *(currentStep++) = (ITM_MASKR >> 8) | 0x80;
@@ -4457,7 +4473,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 45;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = 45;
 
     *(currentStep++) = (ITM_MASKR >> 8) | 0x80;
@@ -6069,7 +6085,7 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_FPQ;
 
-    *(currentStep++) = ITM_IPQ;
+    *(currentStep++) = ITM_INTQ;
 
     *(currentStep++) = ITM_CPXQ;
 
@@ -6884,56 +6900,56 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_LCM;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = 0;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = 99;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = REGISTER_K_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = STRING_LABEL_VARIABLE;
     *(currentStep++) = 3;
     *(currentStep++) = 'V';
     *(currentStep++) = 'a';
     *(currentStep++) = 'r';
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 0;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 99;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = REGISTER_K_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
 
-    *(currentStep++) = ITM_DEC;
+    *(currentStep++) = ITM_DECR;
     *(currentStep++) = INDIRECT_VARIABLE;
     *(currentStep++) = 3;
     *(currentStep++) = 'V';
@@ -7413,6 +7429,50 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_LITERAL;
     *(currentStep++) = STRING_ANGLE_DMS;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_RADIAN;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_GRAD;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_DEGREE;
+    *(currentStep++) =  7;  // String length
+    *(currentStep++) =  '-';
+    *(currentStep++) =  '1';
+    *(currentStep++) =  '.';
+    *(currentStep++) =  '2';
+    *(currentStep++) =  '3';
+    *(currentStep++) =  '4';
+    *(currentStep++) =  '5';
+
+    *(currentStep++) = ITM_LITERAL;
+    *(currentStep++) = STRING_ANGLE_MULTPI;
     *(currentStep++) =  7;  // String length
     *(currentStep++) =  '-';
     *(currentStep++) =  '1';
@@ -9564,8 +9624,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = (ITM_BESTF >> 8) | 0x80;
     *(currentStep++) =  ITM_BESTF       & 0xff;
-    *(currentStep++) = 20;
     *(currentStep++) = 01;
+    *(currentStep++) = 20;
 
     *(currentStep++) = (ITM_T_EXPF >> 8) | 0x80;
     *(currentStep++) =  ITM_T_EXPF       & 0xff;
@@ -12527,37 +12587,83 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_MONTH >> 8) | 0x80;
     *(currentStep++) =  ITM_MONTH       & 0xff;
 
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = 0;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = 99;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = STRING_LABEL_VARIABLE;
+    *(currentStep++) = 3;
+    *(currentStep++) = 'V';
+    *(currentStep++) = 'a';
+    *(currentStep++) = 'r';
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = 0;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = 99;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_REGISTER;
+    *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+    *(currentStep++) = (ITM_MSG_OLD >> 8) | 0x80;
+    *(currentStep++) =  ITM_MSG_OLD       & 0xff;
+    *(currentStep++) = INDIRECT_VARIABLE;
+    *(currentStep++) = 3;
+    *(currentStep++) = 'V';
+    *(currentStep++) = 'a';
+    *(currentStep++) = 'r';
+
     *(currentStep++) = (ITM_MSG >> 8) | 0x80;
     *(currentStep++) =  ITM_MSG       & 0xff;
     *(currentStep++) = 0;
 
     *(currentStep++) = (ITM_MSG >> 8) | 0x80;
     *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = 99;
-
-    *(currentStep++) = (ITM_MSG >> 8) | 0x80;
-    *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = REGISTER_X_IN_KS_CODE;
-
-    *(currentStep++) = (ITM_MSG >> 8) | 0x80;
-    *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = REGISTER_K_IN_KS_CODE;
-
-    *(currentStep++) = (ITM_MSG >> 8) | 0x80;
-    *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
-
-    *(currentStep++) = (ITM_MSG >> 8) | 0x80;
-    *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
-
-    *(currentStep++) = (ITM_MSG >> 8) | 0x80;
-    *(currentStep++) =  ITM_MSG       & 0xff;
-    *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 3;
-    *(currentStep++) = 'V';
-    *(currentStep++) = 'a';
-    *(currentStep++) = 'r';
+    *(currentStep++) = NUMBER_OF_ERROR_CODES - 1;
 
     *(currentStep++) = (ITM_MSG >> 8) | 0x80;
     *(currentStep++) =  ITM_MSG       & 0xff;

@@ -57,6 +57,12 @@ void curtReal(void) {
 
 
 
+static  void curtLonI(void) {
+  rootLonI(3);
+}
+
+
+
 void curtCplx(void) {
   real_t a, b;
 
@@ -101,5 +107,5 @@ void curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
  * \return void
  ***********************************************/
 void fnCubeRoot(uint16_t unusedButMandatoryParameter) {
-  processIntRealComplexMonadicFunction(&curtReal, &curtCplx, &curtShoI, NULL);
+  processIntRealComplexMonadicFunction(&curtReal, &curtCplx, &curtShoI, &curtLonI);
 }
