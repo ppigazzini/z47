@@ -3809,6 +3809,42 @@ static void adjCpxMat(const real_t *x, uint16_t size, real_t *res) {
 }
 
 
+
+static bool_t isProblematicMatrix(const real_t *matrix, uint16_t size) {
+  // Check if it's a companion matrix first
+  bool_t isCompanion = true;
+  for(int i = 0; i < size-1; i++) {
+    if(!realCompareEqual(matrix + (i * size + (i+1)) * 2, const_1) || 
+       !realIsZero(matrix + (i * size + (i+1)) * 2 + 1)) {
+      isCompanion = false;
+      break;
+    }
+  }  
+  if(!isCompanion) return false;
+  
+  // Specific check for x^n - c = 0 (circulant companion matrices)
+  // These have: bottom row = [c, 0, 0, ..., 0] where c ≠ 0
+  bool_t isCirculant = true;
+  
+  // Check if first element is non-zero
+  if(realIsZero(matrix + ((size-1) * size + 0) * 2)) {
+    isCirculant = false;
+  }
+  
+  // Check if all other elements in bottom row are zero
+  for(int j = 1; j < size; j++) {
+    if(!realIsZero(matrix + ((size-1) * size + j) * 2)) {
+      isCirculant = false;
+      break;
+    }
+  }
+  
+  return isCirculant;
+}
+
+
+
+
 static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext) {
   uint32_t i, j, k;
 
@@ -4282,7 +4318,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   bool_t converged;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
-  shifted = false; // Disable shifts - they cause instability
+  //shifted = false; // Can disable shifts here - they cause instability in minimal cases. 
 
   #if defined(EIGENDEBUG)
   printf("Input matrix verification:\n");
@@ -4299,6 +4335,18 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     printf("\n");
   }
   #endif
+
+
+
+  if(isProblematicMatrix(a, size)) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Cannot execute, destination matrix is out of range, or the wrong type for the Householder QR: %d", matrixIndex);
+      moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+
+
 
 
   #if defined(EIGENDEBUG)
@@ -4344,88 +4392,88 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       printf("realContext.digits=%d\n", (int)(realContext->digits));
     #endif //EIGENDEBUG
 
-    while(iteration++ < maxEigenIter  && activeSize > 1) {
+  while(iteration++ < maxEigenIter && activeSize > 1) {
 
-      #if !defined(TESTSUITE_BUILD)
-        if(checkHalfSec()) {
-          char ss[50], tt[20];
-          real_t rr;
-          realContext_t c;
-          c = ctxtReal4;
-          c.digits = 3;
-          realPlus(&diff_max,&rr,&c);
-          realToString(&rr,tt);
-          sprintf(ss,"Tol: %s/1E%d Iter: ", tt, (int)realGetExponent(&tol));
-          if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-          }
-        }
-        #if !defined(PC_BUILD)
-          if(exitKeyWaiting()) {
-              progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-            break;
-          }
-        #endif //!PC_BUILD
-      #endif //TESTSUITE_BUILD
-
-      if(shifted) {
-        calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
-        if((realIsZero(&shiftRe) && realIsZero(&shiftIm)) || realIsSpecial(&shiftRe) || realIsSpecial(&shiftIm)) {
-          shifted = false;
-        }
-        else {
-          for(i = 0; i < size; i++) {
-            realSubtract(a + (i * size + i) * 2,     &shiftRe, a + (i * size + i) * 2,     realContext);
-            realSubtract(a + (i * size + i) * 2 + 1, &shiftIm, a + (i * size + i) * 2 + 1, realContext);
-          }
+    #if !defined(TESTSUITE_BUILD)
+      if(checkHalfSec()) {
+        char ss[50], tt[20];
+        real_t rr;
+        realContext_t c;
+        c = ctxtReal4;
+        c.digits = 3;
+        realPlus(&diff_max,&rr,&c);
+        realToString(&rr,tt);
+        sprintf(ss,"Tol: %s/1E%d Iter: ", tt, (int)realGetExponent(&tol));
+        if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         }
       }
+      #if !defined(PC_BUILD)
+        if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          break;
+        }
+      #endif //!PC_BUILD
+    #endif //TESTSUITE_BUILD
 
-      QR_decomposition_householder(a, size, q, r, realContext);
+    if(shifted) {
+      calculateQrShift(a, size, &shiftRe, &shiftIm, realContext);
+      if((realIsZero(&shiftRe) && realIsZero(&shiftIm)) || realIsSpecial(&shiftRe) || realIsSpecial(&shiftIm)) {
+        shifted = false;
+      }
+      else {
+        for(i = 0; i < size; i++) {
+          realSubtract(a + (i * size + i) * 2,     &shiftRe, a + (i * size + i) * 2,     realContext);
+          realSubtract(a + (i * size + i) * 2 + 1, &shiftIm, a + (i * size + i) * 2 + 1, realContext);
+        }
+      }
+    }
+
+    QR_decomposition_householder(a, size, q, r, realContext);
 
 
-      #if defined(EIGENDEBUG)
+    #if defined(EIGENDEBUG)
     if (iteration % 100 == 0 || iteration < 2) {
-          real_t tmp;
-          char realStr[80], imagStr[80];
-          const int colWidth = 24;
-          int i, j;
+        real_t tmp;
+        char realStr[80], imagStr[80];
+        const int colWidth = 24;
+        int i, j;
 
-          #if defined(EIGENDEBUG)
-            printf("\n---iteration %5d ",iteration++);
-            printRealToConsole(&tol,"\nTol:",": ");
-          #endif //EIGENDEBUG
+        #if defined(EIGENDEBUG)
+          printf("\n---iteration %5d ",iteration++);
+          printRealToConsole(&tol,"\nTol:",": ");
+        #endif //EIGENDEBUG
 
 
-          // Print Q matrix
+        // Print Q matrix
         printf("\nQ matrix aa:\n");
-          for (i = 0; i < size; i++) {
-              for (j = 0; j < size; j++) {
-                  realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
-                  realToString(&tmp, realStr);
-                  realPlus(q + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
-                  realToString(&tmp, imagStr);
-                  printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
-              }
-              printf("\n");
-          }
+        for (i = 0; i < size; i++) {
+            for (j = 0; j < size; j++) {
+                realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
+                realToString(&tmp, realStr);
+                realPlus(q + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                realToString(&tmp, imagStr);
+                printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+            }
+            printf("\n");
+        }
 
-          // Print R matrix
+        // Print R matrix
         printf("\nR matrix aa:\n");
-          for (i = 0; i < size; i++) {
-              for (j = 0; j < size; j++) {
-                  realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
-                  realToString(&tmp, realStr);
-                  realPlus(r + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
-                  realToString(&tmp, imagStr);
-                  printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
-              }
-              printf("\n");
-          }
-      }
-      #endif
+        for (i = 0; i < size; i++) {
+            for (j = 0; j < size; j++) {
+                realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
+                realToString(&tmp, realStr);
+                realPlus(r + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                realToString(&tmp, imagStr);
+                printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+            }
+            printf("\n");
+        }
+    }
+    #endif
 
-      mulCpxMat(r, q, size, size, size, eig, realContext);
+    mulCpxMat(r, q, size, size, size, eig, realContext);
 
     #if defined(EIGENDEBUG)
     printf("=== MATRIX STATE AFTER MULCPXMAT, BEFORE DEFLATION ===\n");
@@ -4503,20 +4551,20 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
             #if defined(EIGENDEBUG)
             printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
             #endif
-            //  #if defined(EIGENDEBUG)
-            //  printf("=== MATRIX STATE AFTER DEFLATION ===\n");
-            //  for(int i = 0; i < size; i++) {
-            //    for(int j = 0; j < size; j++) {
-            //      real_t val_re, val_im;
-            //      char reStr[32], imStr[32];
-            //      realPlus(a + (i * size + j) * 2, &val_re, &ctxtReal4);
-            //      realPlus(a + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
-            //      realToString(&val_re, reStr);
-            //      realToString(&val_im, imStr);
-            //      printf("DEFL[%d][%d] = %s + %si\n", i, j, reStr, imStr);
-            //    }
-            //  }
-            //  #endif
+            #if defined(EIGENDEBUG)
+            printf("=== MATRIX STATE AFTER DEFLATION ===\n");
+            for(int i = 0; i < size; i++) {
+              for(int j = 0; j < size; j++) {
+                real_t val_re, val_im;
+                char reStr[32], imStr[32];
+                realPlus(a + (i * size + j) * 2, &val_re, &ctxtReal4);
+                realPlus(a + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
+                realToString(&val_re, reStr);
+                realToString(&val_im, imStr);
+                printf("DEFL[%d][%d] = %s + %si\n", i, j, reStr, imStr);
+              }
+            }
+            #endif
 
             activeSize = i;
             deflated = true;
@@ -4528,14 +4576,14 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
 
 
-      if(shifted) {
-        for(i = 0; i < size; i++) {
-          realAdd(a   + (i * size + i) * 2,     &shiftRe, a   + (i * size + i) * 2,     realContext);
-          realAdd(a   + (i * size + i) * 2 + 1, &shiftIm, a   + (i * size + i) * 2 + 1, realContext);
-          realAdd(eig + (i * size + i) * 2,     &shiftRe, eig + (i * size + i) * 2,     realContext);
-          realAdd(eig + (i * size + i) * 2 + 1, &shiftIm, eig + (i * size + i) * 2 + 1, realContext);
-        }
+    if(shifted) {
+      for(i = 0; i < size; i++) {
+        realAdd(a   + (i * size + i) * 2,     &shiftRe, a   + (i * size + i) * 2,     realContext);
+        realAdd(a   + (i * size + i) * 2 + 1, &shiftIm, a   + (i * size + i) * 2 + 1, realContext);
+        realAdd(eig + (i * size + i) * 2,     &shiftRe, eig + (i * size + i) * 2,     realContext);
+        realAdd(eig + (i * size + i) * 2 + 1, &shiftIm, eig + (i * size + i) * 2 + 1, realContext);
       }
+    }
 
       converged = true;
       realCopy(const_0,&diff_max);
@@ -4554,18 +4602,18 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           converged = false;
           if(!realCompareLessThan(&diff_mag, &diff_max)) realCopy(&diff_mag, &diff_max);
         }
-      }
+    }
 
-      if(converged) {
-        break;
-      }
-      else {
+    if(converged) {
+      break;
+    }
+    else {
         for(i = 0; i < size * size * 2; i++) {
           realCopy(eig + i, a + i);
-        }
       }
+    }
 
-    } // End of while loop
+  } // End of while loop
 
     #if defined(EIGENDEBUG)
     printf("\nEIGENVAL finished after %d iterations, converged = %d\n", iteration-1, converged);
