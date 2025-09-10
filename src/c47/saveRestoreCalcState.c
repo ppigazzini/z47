@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1011     // Added reserve variables at the end of the list
+#define BACKUP_VERSION                     1012     // Added FNCS_EIM catalog
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -15,6 +15,7 @@
 1009     // Change matrix headers, add tag
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
+1012     // Added FNCS_EIM catalog
 */
 
 
@@ -1090,7 +1091,13 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&c47MemInBlocks,                 sizeof(c47MemInBlocks),                                      "c47MemInBlocks",                 "uint64");
     restoreStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
     restoreStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
-    restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    if(backupVersion < 1012) { // add FNCS_EIM catalog
+      restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition) - 4,                             "lastCatalogPosition",            "int16");
+      lastCatalogPosition[22 /* MNU_FNCS_EIM */]  = 0;
+    }
+    else {
+      restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    }
     restoreStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
     restoreStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     restoreStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
@@ -1350,7 +1357,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       paramCurrent = paramHead;
     }
 
-    printf("End of calc's restoration\n");
+    printf("End of calc's restoration\n");fflush(stdout);
 
     setFGLSettings(fgLN);
 

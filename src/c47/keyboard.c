@@ -1607,6 +1607,9 @@ int16_t lastItem = 0;
           default:;
         }
       }
+      if ((calcMode == CM_EIM) && (result == -MNU_AIMCATALOG)) {
+        result = -MNU_EIMCATALOG;
+      }
     }
     else if(tam.mode) {
       result = key->primaryTam; // No shifted function in TAM

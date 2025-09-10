@@ -104,6 +104,8 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
     { STD_SQUARE_ROOT,                       ITM_SQUAREROOTX, 0}, // Square root (available through f SQRT in EIM)
     { STD_zeta,                              ITM_zetaX,       0}, // Riemann zeta function
 //    { "conj",                                ITM_CONJ,        0}, // Complex Conjugate
+    { STD_CUBE_ROOT,                         ITM_CUBEROOT,    0}, // Cube root (available through f CATALOG>FNCS in EIM)
+    { STD_xTH_ROOT,                          ITM_XTHROOT,     0}, // Xth root (available through f CATALOG>FNCS in EIM)
 
     { "",                                    0,               0}  // Sentinel
   };
