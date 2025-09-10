@@ -672,8 +672,9 @@
 #define FLAG_TOPHEX                           0x8058
 #define FLAG_BCD                              0x8059 //26
 #define FLAG_PCURVE                           0x805A //27
+#define FLAG_CLX_DROP                         0x805B //28
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+27 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode

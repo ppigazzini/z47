@@ -2331,7 +2331,7 @@
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
 #define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_PCURVE                  2277 // The SFL item names are not used
-#define SFL_2278                    2278 // The SFL item names are not used
+#define SFL_CLX_DROP                2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
 #define SFL_2281                    2281 // The SFL item names are not used
