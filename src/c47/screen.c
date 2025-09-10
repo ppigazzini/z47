@@ -2003,6 +2003,7 @@ return res;
     do_viewRegName(regist, prefix, &prefixWidth, "");
   }
 
+
   static void viewStoRcl(char *prefix, int16_t *prefixWidth) {
     do_viewRegName(lastSTORCL(), prefix, prefixWidth, ":");
     if(prefix[0]=='?') {
@@ -2378,6 +2379,39 @@ void createSubstrings(uint8_t number) {
       }
     }
   }
+
+
+  void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    #define e0  "i"            // "x"
+    #define e1  "j"            // "y"
+    #define e2  "k"            // "z"
+    #define er  "r"            // "r"
+    #define _e0 STD_SUB_i      // STD_SUB_x
+    #define _e1 STD_SUB_j      // STD_SUB_y
+    #define _e2 STD_SUB_k      // STD_SUB_z
+
+    prefix[0] = 0;
+    *prefixWidth = 0;
+    if(isRegisterMatrix3dVector(regist)) {
+      if(getVectorRegisterPolarMode(regist) == amPolarSPH) {
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_theta_m _e0 _e1 STD_SPACE_4_PER_EM STD_phi_m _e2 "]");   //[r th_xy z]
+      } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_theta_m _e0 _e1 STD_SPACE_4_PER_EM e2 "]");      //[r th_xy phi_z]
+      } else {
+        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 STD_SPACE_4_PER_EM e2 "]");                           //[x y z]
+      }
+    } 
+    else if(isRegisterMatrix2dVector(regist)) {
+      if(getVectorRegisterPolarMode(regist) != amPolar) {
+        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 "]");
+      } else {
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_theta_m _e0 _e1  "]");
+      }
+    }
+    *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+  }
+
+
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
       char noo[32];
@@ -3014,7 +3048,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                             free(strs);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
-                                        #endif //PC_BUILD
+                                        #endif //PC_BUILD          
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -3038,6 +3072,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
+
 
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
@@ -3895,7 +3930,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                  sprintf(prefix, "L.R. selected to %03" PRIu16, (uint16_t)((lrSelection) & 0x01FF));
                }
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-               //drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
+               //lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
              }
            }
 
@@ -4301,7 +4336,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getRegisterDataType(regist) == dtShortInteger) {
           {
             shortIntegerToDisplayString(regist, tmpString, true);
-            showString(tmpString, fontForShortInteger,
+            showString(tmpString, fontForShortInteger, 
               SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
             if(regist == REGISTER_X) {
               displayBaseMode(regist);
@@ -4347,7 +4382,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1,
+              showString(prefix, &standardFont, 1, 
                 baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
@@ -4523,16 +4558,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 /*Main type dtReal34Matrix*/
         else if(getRegisterDataType(regist) == dtReal34Matrix) {
-          if((origRegist == REGISTER_X && calcMode != CM_MIM) || (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T)) {
+          bool_t displayVector = (origRegist == REGISTER_X && calcMode != CM_MIM) && temporaryInformation != TI_VIEW_REGISTER && lastErrorCode == 0 && temporaryInformation != TI_MIJ && temporaryInformation != TI_IJ && temporaryInformation != TI_I && temporaryInformation != TI_J && temporaryInformation != TI_STORCL && temporaryInformation != TI_TRUE && temporaryInformation != TI_FALSE;
+          if((origRegist == REGISTER_X && calcMode != CM_MIM) || (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) || displayVector){
             real34Matrix_t matrix;
             prefixWidth = 0; prefix[0] = 0;
             linkToRealMatrixRegister(regist, &matrix);
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
-            }
-            showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix);
-            if(lastErrorCode != 0) {
-              refreshRegisterLine(errorMessageRegisterLine);
             }
             else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
               _displayIJ(regist, prefix, &prefixWidth);
@@ -4545,6 +4577,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             else if(temporaryInformation == TI_STATISTIC_SUMS) {
               _displaySigmaPlus(regist, prefix, &prefixWidth, noLine);
+            }
+            else if(displayVector && isRegisterMatrixVector(regist)) {
+              tiVector(regist, prefix,  &prefixWidth);
+            }
+
+            showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T));
+            if(lastErrorCode != 0) {
+              refreshRegisterLine(errorMessageRegisterLine);
             }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
@@ -4577,7 +4617,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             lineWidth = w;
             if(w > SCREEN_WIDTH - 1) {
               w = stringWidth(tmpString, &standardFont, false, true);
-              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
               showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
             } else {
               showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
@@ -4598,10 +4638,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
             }
-            showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
-            if(lastErrorCode != 0) {
-              refreshRegisterLine(errorMessageRegisterLine);
-            }
             else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
               _displayIJ(regist, prefix, &prefixWidth);
             }
@@ -4612,6 +4648,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               userTI(currentViewRegister, regist, prefix, &prefixWidth);
             }
 
+            showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar, !(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T));
+            if(lastErrorCode != 0) {
+              refreshRegisterLine(errorMessageRegisterLine);
+            }
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
             }
@@ -4663,7 +4703,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   static void refreshRegisterLineRestoreT(void) {
-    _refreshRegisterLine(REGISTER_T, RESTORE_T);
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
   }
 
   static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
@@ -4849,7 +4889,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         refreshStatusBar();
       }
 
-
+      
       //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
