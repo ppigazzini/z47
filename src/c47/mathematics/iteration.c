@@ -41,7 +41,6 @@ static void getIterParam(uint16_t regist, real34_t *fp, real34_t *target, real34
 }
 
 
-
 static void incDecAndCompare(uint16_t regist, uint16_t mode) {
   real34_t fp, step;
   int8_t compared;
@@ -51,12 +50,12 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
   switch(getRegisterDataType(regist)) {
     case dtLongInteger: {
       incDecLonI(regist, mode >> 2);
-      registerCmpLonIReal(regist, TEMP_REGISTER_1, &compared);
+      registerCmp(regist, TEMP_REGISTER_1, &compared);
       break;
     }
     case dtShortInteger: {
       incDecShoI(regist, mode >> 2);
-      registerCmpShoIReal(regist, TEMP_REGISTER_1, &compared);
+      registerCmp(regist, TEMP_REGISTER_1, &compared);
       break;
     }
     case dtReal34: {
@@ -72,7 +71,7 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
           real34SetNegativeSign(&step);
         }
         real34Add(REGISTER_REAL34_DATA(regist), &step, REGISTER_REAL34_DATA(regist));
-        registerCmpRealReal(regist, TEMP_REGISTER_1, &compared);
+        registerCmp(regist, TEMP_REGISTER_1, &compared);
         if(real34IsNegative(REGISTER_REAL34_DATA(regist))) {
           real34SetNegativeSign(&fp);
         }

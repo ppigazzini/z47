@@ -31,6 +31,8 @@ void       fnPixel                            (uint16_t unusedButMandatoryParame
 void       fnPoint                            (uint16_t unusedButMandatoryParameter);
 void       fnAGraph                           (uint16_t regist);
 
+void       drawSinglePixelFullWidthLine       (int y);
+
 char       letteredRegisterName(calcRegister_t regist);
 
   #if defined(PC_BUILD)
@@ -155,7 +157,7 @@ char       letteredRegisterName(calcRegister_t regist);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
-  void     refreshScreen                      (uint8_t source);
+  void     refreshScreen                      (uint16_t source);
 
   /**
    * Displays a 0 terminated string.

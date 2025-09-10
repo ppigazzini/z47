@@ -41,6 +41,7 @@ SECTIONS {
   .qspi : {
     . = ALIGN(8);
     _qspi_start = .;   /* create a global symbol at qspi start */
+    *(.qspi_dm42)      /* Added by Didier: dm42 qspi section at the beginning of the qspi memory */
     *(.qspi)           /* .qspi  sections */
     *(.rodata)         /* Added by Martin .rodata  sections (constants, strings, etc.) */
     *(.rodata*str1.1)  /* Added by Martin .rodata  sections (constants, strings, etc.) */

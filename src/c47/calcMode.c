@@ -70,7 +70,7 @@
     clearSystemFlag(FLAG_NUMLOCK);
     scrLock = NC_NORMAL;
 
-    if(!tam.mode && calcMode != CM_ASSIGN && calcMode != CM_PEM) {
+    if(!tam.mode && calcMode != CM_ASSIGN && calcMode != CM_PEM && calcMode != CM_ASN_BROWSER) {
       calcMode = CM_AIM;
       liftStack();
 
@@ -255,6 +255,7 @@
 
     liftStack();
     real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+    setRegisterAngularMode(REGISTER_X, amNone);
 
     aimBuffer[0] = 0;
     hexDigits = 0;

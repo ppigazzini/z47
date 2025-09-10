@@ -7,130 +7,57 @@
 
 #include "c47.h"
 
-void fnNeighb(uint16_t unusedButMandatoryParameter) {
-  uint32_t dataTypeX, dataTypeY;
+static void neighbShoI(void) {
+  bool_t subtract, negx, negy;
+  uint64_t x, y;
+
+  if (getRegisterAsShortInt(REGISTER_X, &negx, &x, NULL, NULL) && getRegisterAsShortInt(REGISTER_Y, &negy, &y, NULL, NULL)) {
+    if (negx != negy)
+      subtract = negy;
+    else if (x == y)
+      return;
+    else if (negx)
+      subtract = y > x;
+    else
+      subtract = y < x;
+
+    if (subtract)
+      *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intSubtract(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), 1);
+    else
+      *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intAdd(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), 1);
+  }
+}
+
+static void neighbLonI(void) {
+  longInteger_t x, y;
+
+  longIntegerInit(x);
+  longIntegerInit(y);
+  if (getRegisterAsLongInt(REGISTER_X, x, NULL) && getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    const int32_t cmp = longIntegerCompare(y, x);
+
+    if (cmp != 0) {
+      int32ToLongInteger(cmp > 0 ? 1 : -1, y);
+      longIntegerAdd(x, y, x);
+    }
+    convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+  }
+  longIntegerFree(x);
+  longIntegerFree(y);
+}
+
+static void neighbReal(void) {
   real_t x, y;
-  longInteger_t lgIntX, lgIntY;
+  angularMode_t xAngularMode = amNone;
 
-  dataTypeX = getRegisterDataType(REGISTER_X);
-  dataTypeY = getRegisterDataType(REGISTER_Y);
-  if(   dataTypeX == dtTime            || dataTypeY == dtTime
-     || dataTypeX == dtDate            || dataTypeY == dtDate
-     || dataTypeX == dtString          || dataTypeY == dtString
-     || dataTypeX == dtReal34Matrix    || dataTypeY == dtReal34Matrix
-     || dataTypeX == dtComplex34Matrix || dataTypeY == dtComplex34Matrix
-     || dataTypeX == dtComplex34       || dataTypeY == dtComplex34) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot get the NEIGHB from %s", getRegisterDataTypeName(REGISTER_X, true, false));
-      sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "towards %s", getRegisterDataTypeName(REGISTER_Y, true, false));
-      moreInfoOnError("In function fnNeighb:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
     return;
-  }
+  if (getRegisterDataType(REGISTER_X) == dtReal34)
+    xAngularMode = getRegisterAngularMode(REGISTER_X);
+  realNextToward(&x, &y, &x, &ctxtReal34);
+  convertRealToResultRegister(&x, REGISTER_X, xAngularMode);
+}
 
-  if(!saveLastX()) {
-    return;
-  }
-
-  switch(dataTypeX) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToLongInteger(REGISTER_X, lgIntX);
-      switch(dataTypeY) {
-        case dtLongInteger: {
-          convertLongIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
-          break;
-        }
-
-        case dtShortInteger: {
-          convertShortIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
-          break;
-        }
-
-        case dtReal34: {
-          convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal75);
-          real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-          longIntegerInit(lgIntY);
-          int32ToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
-          break;
-        }
-
-        default: {
-        }
-      }
-
-      longIntegerAdd(lgIntX, lgIntY, lgIntX);
-      convertLongIntegerToLongIntegerRegister(lgIntX, REGISTER_X);
-
-      longIntegerFree(lgIntX);
-      longIntegerFree(lgIntY);
-      break;
-    }
-
-    case dtShortInteger: {
-      convertShortIntegerRegisterToLongInteger(REGISTER_X, lgIntX);
-      switch(dataTypeY) {
-        case dtLongInteger: {
-          convertLongIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
-          break;
-        }
-
-        case dtShortInteger: {
-          convertShortIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
-          break;
-        }
-
-        case dtReal34: {
-          convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-          real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-          longIntegerInit(lgIntY);
-          int32ToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
-          break;
-        }
-
-        default: {
-        }
-      }
-
-      longIntegerAdd(lgIntX, lgIntY, lgIntX);
-      convertLongIntegerToShortIntegerRegister(lgIntX, getRegisterShortIntegerBase(REGISTER_X), REGISTER_X);
-
-      longIntegerFree(lgIntX);
-      longIntegerFree(lgIntY);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-      switch(dataTypeY) {
-        case dtLongInteger: {
-          convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal75);
-          break;
-        }
-        case dtShortInteger: {
-          convertShortIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal34);
-          break;
-        }
-        case dtReal34: {
-          real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-          break;
-        }
-        default: {
-        }
-      }
-
-      realNextToward(&x, &y, &x, &ctxtReal34);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      break;
-    }
-
-    default: {
-    }
-  }
-
-  adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
+void fnNeighb(uint16_t unusedButMandatoryParameter) {
+    processIntRealComplexDyadicFunction(&neighbReal, NULL, &neighbShoI, &neighbLonI);
 }

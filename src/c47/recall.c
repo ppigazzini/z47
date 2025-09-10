@@ -54,6 +54,13 @@ void fnLastX(uint16_t unusedButMandatoryParameter) {
 
 
 
+void fnRecallPlusSkip(uint16_t regist) {
+  fnRecall(regist);
+  fnSkip(0);
+}
+
+
+
 void fnRecallAdd(uint16_t regist) {
   if(regInRange(regist)) {
     if(programRunStop == PGM_RUNNING && regist == REGISTER_L) {
@@ -254,6 +261,7 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_byte22;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte23;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte24;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte25;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
@@ -319,7 +327,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
     recallFromDtConfigDescriptor(    compatibility_byte18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
-    recallFromDtConfigDescriptor(bcdDisplay);
+    recallFromDtConfigDescriptor(    compatibility_byte25);
     recallFromDtConfigDescriptor(    compatibility_byte24);
     recallFromDtConfigDescriptor(bcdDisplaySign);
     recallFromDtConfigDescriptor(DRG_Cycling);

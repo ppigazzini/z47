@@ -15,8 +15,8 @@ void fnGoto(uint16_t label) {
       return;
     }
 
-    // Local Label 00 to 99 and A, B, C, D, and E
-    if(label <= 104) {
+    // Local Label 00 to 99 and A to l
+    if(label <= LAST_LOCAL_LABEL) {
       // Search for local label
       for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
         if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label
@@ -193,7 +193,7 @@ void fnExecute(uint16_t label) {
     if(lastErrorCode == ERROR_NONE) {
       #if !defined(TESTSUITE_BUILD)
         if(tam.mode) {
-          tamLeaveMode();
+          leaveTamModeIfEnabled();
           refreshScreen(2);
         }
       #endif // TESTSUITE_BUILD*
@@ -347,7 +347,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
 
       case PARAM_LABEL: {
-      if(opParam <= 104) { // Local label from 00 to 99 or from A to E
+      if(opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
         reallyRunFunction(op, opParam);
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
@@ -439,8 +439,21 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
 
     case PARAM_NUMBER_16: {
-      reallyRunFunction(op, opParam + 256 * *(paramAddress));
-      break;
+        if(isFunctionOldParam16(op)) {  // original Param16 functions without indirection support (little endian parameter)
+          reallyRunFunction(op, opParam + 256 * *(paramAddress));
+        }
+        else {                        // new Param16 functions with indirection support (big endian parameter)
+          if(opParam == INDIRECT_REGISTER) {
+            _executeWithIndirectRegister(paramAddress, op);
+          }
+          else if(opParam == INDIRECT_VARIABLE) {
+            _executeWithIndirectVariable(paramAddress, op);
+          }
+          else {
+            reallyRunFunction(op, (opParam * 256) + *(paramAddress));
+          }
+        }
+        break;
       }
 
     case PARAM_REGISTER:
@@ -610,6 +623,30 @@ static void _putLiteral(uint8_t *literalAddress) {
       break;
       }
 
+
+
+      case STRING_ANGLE_RADIAN:
+      case STRING_ANGLE_GRAD:
+      case STRING_ANGLE_DEGREE:
+      case STRING_ANGLE_MULTPI: {
+        _getStringLabelOrVariableName(literalAddress);
+        liftStack();
+        setSystemFlag(FLAG_ASLIFT);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
+        int tmpAngle;
+        switch(*(literalAddress - 1)) {
+          case STRING_ANGLE_RADIAN: tmpAngle = amRadian; break;
+          case STRING_ANGLE_GRAD:   tmpAngle = amGrad; break;
+          case STRING_ANGLE_DEGREE: tmpAngle = amDegree; break;
+          case STRING_ANGLE_MULTPI: tmpAngle = amMultPi; break;
+          default: tmpAngle = amNone; break;
+        }
+        setRegisterAngularMode(REGISTER_X, tmpAngle);
+        break;
+      }
+
+
       case STRING_COMPLEX34: {
         char *imag = tmpStringLabelOrVariableName;
         _getStringLabelOrVariableName(literalAddress);
@@ -707,7 +744,9 @@ int16_t executeOneStep(uint8_t *step) {
     case ITM_BACK:        //  1412
     case ITM_CASE:        //  1418
     case ITM_SKIP: {      //  1603
+      uint8_t previousErrorCodeMeM = previousErrorCode;
       _executeOp(step, op, (indexOfItems[op].status & PTP_STATUS) >> 9);
+      previousErrorCode = previousErrorCodeMeM;
       return -1;
       }
 
@@ -910,8 +949,8 @@ void fnCheckLabel(uint16_t label) {
     label = findNamedLabel(dynmenuGetLabel(dynamicMenuItem));
   }
 
-  // Local Label 00 to 99 and A, B, C, D, and E
-  if(label <= 104) {
+  // Local Label 00 to 99 and A to l
+  if(label <= LAST_LOCAL_LABEL) {
     // Search for local label
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
       if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label) { // Is in the current program and is a local label and is the searched label

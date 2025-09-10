@@ -36,6 +36,7 @@
   static inline void              int32ToLongInteger(int32_t source, mpz_ptr destination)                                                 {mpz_set_si(destination, source);}
   static inline void              longIntegerCopy(mpz_srcptr source, mpz_ptr destination)                                                 {mpz_set(destination, source);}                       // Previous implementation: mpz_add_ui(destination, source, 0);
   static inline int32_t           stringToLongInteger(const char *source, int32_t radix, mpz_ptr destination)                             {return mpz_set_str(destination, source, radix);}
+  static inline void              longIntegerToString(mpz_ptr source, int32_t radix, char *destination)                                   {mpz_get_str(destination, radix, source);}
   static inline void              longIntegerChangeSign(mpz_ptr op)                                                                       {(op)->_mp_size = -((op)->_mp_size);}
   static inline void              longIntegerSetPositiveSign(mpz_ptr op)                                                                  {(op)->_mp_size = abs((op)->_mp_size);}
   static inline void              longIntegerSetNegativeSign(mpz_ptr op)                                                                  {(op)->_mp_size = -abs((op)->_mp_size);}
@@ -59,10 +60,27 @@
    *   - 0 = composite
    *   - 1 = probably prime
    *   - 2 = prime
-   * A composite number will be identified as a prime with a probability of
-   * less than 4^(-15).
+   * A composite number will be identified as a prime with a probability of less than 4^(-15) (when Miller-Rabin repetitions is set to 15).
+   *
+   * More reps → better accuracy.
+   * | Bit Size of `n` | Scenario           | Suggested `reps` |
+   * | --------------- | ------------------ | ---------------- |
+   * | < 64 bits       | Casual check       | 5                |
+   * | < 512 bits      | General usage      | 10–15            |
+   * | 512–2048 bits   | Moderate assurance | 20–30            |<---------
+   * | > 2048 bits     | Cryptographic      | 30–40+           |
+
+   *   For C47 10^308, or 2^1024, minimum: 25
+   *   Typical cryptographic standard: 32 to 40
+   *
+   *   25: p < 1/4^-25 < 8.89E-16
+   *   34: p < 1/4^-34 < 3.39E-21
+   *   40: p < 1/4^-40 < 8.28E-25
+   * 
    */
-  static inline int32_t           longIntegerProbabPrime(mpz_srcptr op)                                                                   {return mpz_probab_prime_p(op, 15);}
+  #define MillerRabinReps 25
+
+  static inline int32_t           longIntegerProbabPrime(mpz_srcptr op)                                                                   {return mpz_probab_prime_p(op, MillerRabinReps);}
   static inline void              longIntegerFree(mpz_ptr op)                                                                             {mpz_clear(op);}
   static inline int32_t           longIntegerCompare(mpz_srcptr op1, mpz_srcptr op2)                                                      {return mpz_cmp(op1, op2);}
   static inline void              longIntegerDivide(mpz_srcptr op1, mpz_srcptr op2, mpz_ptr result)                                       {mpz_tdiv_q(result, op1, op2);}                       // op1/op2 => result*op2 + remainder == op1

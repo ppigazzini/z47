@@ -17,6 +17,7 @@
 #define      WRITE       4
 #define      NOACTION    5
 
+void         preventFilenameTimeout     (void);
 void         create_filename            (char *fn);
 
 int16_t      export_append_line         (const char *inputstring);

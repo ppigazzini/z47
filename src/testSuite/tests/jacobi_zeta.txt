@@ -49,7 +49,7 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; Ζ(Short Integer) --> Error24
+; Ζ(Short Integer) --> Real
 ;=======================================
 
 
