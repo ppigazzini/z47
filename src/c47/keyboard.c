@@ -4259,7 +4259,11 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
               lastErrorCode = 0;
             }
           }
-          showFunctionName(ITM_CLX, 1000, ""); //JM 1000ms = 1s
+          if(getSystemFlag(FLAG_CLX_DROP)) {
+            showFunctionName(ITM_DROP, 1000, ""); //JM 1000ms = 1s
+          } else {
+            showFunctionName(ITM_CLX, 1000, ""); //JM 1000ms = 1s
+          }
         }
         break;
       }
