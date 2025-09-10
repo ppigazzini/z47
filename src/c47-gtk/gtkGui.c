@@ -107,6 +107,21 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   }
 
 
+  // The screen-changed event does not seem to be generated reliably.
+  //static void onScreenChanged(GtkWidget *w, GdkScreen *oldScreen, gpointer data) {
+  //  debugf("Screen changed: force a redraw");
+  //  gtk_widget_queue_draw(w);
+  //}
+
+
+
+  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
+    //debugf("Configure event: force a redraw");
+    gtk_widget_queue_draw(w);
+    return FALSE;
+  }
+
+
 //  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
 //    GtkWidget *w;
 //    w = NULL;
@@ -536,7 +551,7 @@ Jacos Mac, Control works
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     //#if defined(VERBOSEKEYS)
-      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,
+      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State,shiftF,shiftG,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
     //#endif //VERBOSEKEYS
 
@@ -1025,6 +1040,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
 //        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+        ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )
   ) {
@@ -2583,6 +2599,361 @@ returnKeyPressedFalse:
     }
 
 
+// Function to get button name from widget pointer
+const char* get_button_name(GtkWidget* widget) {
+    if(!widget) return "NULL";
+    
+    // Row 1 buttons
+    if(widget == btn11) return "btn11";
+    if(widget == btn12) return "btn12";
+    if(widget == btn13) return "btn13";
+    if(widget == btn14) return "btn14";
+    if(widget == btn15) return "btn15";
+    if(widget == btn16) return "btn16";
+    
+    // Row 2 buttons and labels
+    if(widget == btn21) return "btn21";
+    if(widget == btn22) return "btn22";
+    if(widget == btn23) return "btn23";
+    if(widget == btn24) return "btn24";
+    if(widget == btn25) return "btn25";
+    if(widget == btn26) return "btn26";
+    if(widget == btn21A) return "btn21A";
+    if(widget == btn22A) return "btn22A";
+    if(widget == btn23A) return "btn23A";
+    if(widget == btn24A) return "btn24A";
+    if(widget == btn25A) return "btn25A";
+    if(widget == btn26A) return "btn26A";
+    if(widget == lbl21F) return "lbl21F";
+    if(widget == lbl22F) return "lbl22F";
+    if(widget == lbl23F) return "lbl23F";
+    if(widget == lbl24F) return "lbl24F";
+    if(widget == lbl25F) return "lbl25F";
+    if(widget == lbl26F) return "lbl26F";
+    if(widget == lbl21G) return "lbl21G";
+    if(widget == lbl22G) return "lbl22G";
+    if(widget == lbl23G) return "lbl23G";
+    if(widget == lbl24G) return "lbl24G";
+    if(widget == lbl25G) return "lbl25G";
+    if(widget == lbl26G) return "lbl26G";
+    if(widget == lbl21L) return "lbl21L";
+    if(widget == lbl22L) return "lbl22L";
+    if(widget == lbl23L) return "lbl23L";
+    if(widget == lbl24L) return "lbl24L";
+    if(widget == lbl25L) return "lbl25L";
+    if(widget == lbl26L) return "lbl26L";
+    if(widget == lbl21Gr) return "lbl21Gr";
+    if(widget == lbl22Gr) return "lbl22Gr";
+    if(widget == lbl23Gr) return "lbl23Gr";
+    if(widget == lbl24Gr) return "lbl24Gr";
+    if(widget == lbl25Gr) return "lbl25Gr";
+    if(widget == lbl26Gr) return "lbl26Gr";
+    if(widget == lbl21Fa) return "lbl21Fa";
+    if(widget == lbl22Fa) return "lbl22Fa";
+    if(widget == lbl23Fa) return "lbl23Fa";
+    if(widget == lbl24Fa) return "lbl24Fa";
+    if(widget == lbl25Fa) return "lbl25Fa";
+    if(widget == lbl26Fa) return "lbl26Fa";
+    
+    // Row 3 buttons and labels
+    if(widget == btn31) return "btn31";
+    if(widget == btn32) return "btn32";
+    if(widget == btn33) return "btn33";
+    if(widget == btn34) return "btn34";
+    if(widget == btn35) return "btn35";
+    if(widget == btn36) return "btn36";
+    if(widget == btn31A) return "btn31A";
+    if(widget == btn32A) return "btn32A";
+    if(widget == btn33A) return "btn33A";
+    if(widget == btn34A) return "btn34A";
+    if(widget == btn35A) return "btn35A";
+    if(widget == btn36A) return "btn36A";
+    if(widget == lbl31F) return "lbl31F";
+    if(widget == lbl32F) return "lbl32F";
+    if(widget == lbl33F) return "lbl33F";
+    if(widget == lbl34F) return "lbl34F";
+    if(widget == lbl35F) return "lbl35F";
+    if(widget == lbl36F) return "lbl36F";
+    if(widget == lbl31G) return "lbl31G";
+    if(widget == lbl32G) return "lbl32G";
+    if(widget == lbl33G) return "lbl33G";
+    if(widget == lbl34G) return "lbl34G";
+    if(widget == lbl35G) return "lbl35G";
+    if(widget == lbl36G) return "lbl36G";
+    if(widget == lbl31L) return "lbl31L";
+    if(widget == lbl32L) return "lbl32L";
+    if(widget == lbl33L) return "lbl33L";
+    if(widget == lbl34L) return "lbl34L";
+    if(widget == lbl35L) return "lbl35L";
+    if(widget == lbl36L) return "lbl36L";
+    if(widget == lbl31Gr) return "lbl31Gr";
+    if(widget == lbl32Gr) return "lbl32Gr";
+    if(widget == lbl33Gr) return "lbl33Gr";
+    if(widget == lbl34Gr) return "lbl34Gr";
+    if(widget == lbl35Gr) return "lbl35Gr";
+    if(widget == lbl36Gr) return "lbl36Gr";
+    if(widget == lbl31Fa) return "lbl31Fa";
+    if(widget == lbl32Fa) return "lbl32Fa";
+    if(widget == lbl33Fa) return "lbl33Fa";
+    if(widget == lbl34Fa) return "lbl34Fa";
+    if(widget == lbl35Fa) return "lbl35Fa";
+    if(widget == lbl36Fa) return "lbl36Fa";
+    
+    // Row 4 buttons and labels
+    if(widget == btn41) return "btn41";
+    if(widget == btn42) return "btn42";
+    if(widget == btn43) return "btn43";
+    if(widget == btn44) return "btn44";
+    if(widget == btn45) return "btn45";
+    if(widget == btn42A) return "btn42A";
+    if(widget == btn43A) return "btn43A";
+    if(widget == btn44A) return "btn44A";
+    if(widget == lbl41F) return "lbl41F";
+    if(widget == lbl42F) return "lbl42F";
+    if(widget == lbl43F) return "lbl43F";
+    if(widget == lbl44F) return "lbl44F";
+    if(widget == lbl45F) return "lbl45F";
+    if(widget == lbl41G) return "lbl41G";
+    if(widget == lbl42G) return "lbl42G";
+    if(widget == lbl43G) return "lbl43G";
+    if(widget == lbl44G) return "lbl44G";
+    if(widget == lbl45G) return "lbl45G";
+    if(widget == lbl41L) return "lbl41L";
+    if(widget == lbl42L) return "lbl42L";
+    if(widget == lbl43L) return "lbl43L";
+    if(widget == lbl44L) return "lbl44L";
+    if(widget == lbl45L) return "lbl45L";
+    if(widget == lbl41Gr) return "lbl41Gr";
+    if(widget == lbl42Gr) return "lbl42Gr";
+    if(widget == lbl43Gr) return "lbl43Gr";
+    if(widget == lbl44Gr) return "lbl44Gr";
+    if(widget == lbl45Gr) return "lbl45Gr";
+    if(widget == lbl41Fa) return "lbl41Fa";
+    if(widget == lbl42Fa) return "lbl42Fa";
+    if(widget == lbl43Fa) return "lbl43Fa";
+    if(widget == lbl44Fa) return "lbl44Fa";
+    if(widget == lbl45Fa) return "lbl45Fa";
+    
+    // Row 5 buttons and labels
+    if(widget == btn51) return "btn51";
+    if(widget == btn52) return "btn52";
+    if(widget == btn53) return "btn53";
+    if(widget == btn54) return "btn54";
+    if(widget == btn55) return "btn55";
+    if(widget == btn52A) return "btn52A";
+    if(widget == btn53A) return "btn53A";
+    if(widget == btn54A) return "btn54A";
+    if(widget == btn55A) return "btn55A";
+    if(widget == lbl51F) return "lbl51F";
+    if(widget == lbl52F) return "lbl52F";
+    if(widget == lbl53F) return "lbl53F";
+    if(widget == lbl54F) return "lbl54F";
+    if(widget == lbl55F) return "lbl55F";
+    if(widget == lbl51G) return "lbl51G";
+    if(widget == lbl52G) return "lbl52G";
+    if(widget == lbl53G) return "lbl53G";
+    if(widget == lbl54G) return "lbl54G";
+    if(widget == lbl55G) return "lbl55G";
+    if(widget == lbl51L) return "lbl51L";
+    if(widget == lbl52L) return "lbl52L";
+    if(widget == lbl53L) return "lbl53L";
+    if(widget == lbl54L) return "lbl54L";
+    if(widget == lbl55L) return "lbl55L";
+    if(widget == lbl51Gr) return "lbl51Gr";
+    if(widget == lbl52Gr) return "lbl52Gr";
+    if(widget == lbl53Gr) return "lbl53Gr";
+    if(widget == lbl54Gr) return "lbl54Gr";
+    if(widget == lbl55Gr) return "lbl55Gr";
+    if(widget == lbl51Fa) return "lbl51Fa";
+    if(widget == lbl52Fa) return "lbl52Fa";
+    if(widget == lbl53Fa) return "lbl53Fa";
+    if(widget == lbl54Fa) return "lbl54Fa";
+    if(widget == lbl55Fa) return "lbl55Fa";
+    
+    // Row 6 buttons and labels
+    if(widget == btn61) return "btn61";
+    if(widget == btn62) return "btn62";
+    if(widget == btn63) return "btn63";
+    if(widget == btn64) return "btn64";
+    if(widget == btn65) return "btn65";
+    if(widget == btn62A) return "btn62A";
+    if(widget == btn63A) return "btn63A";
+    if(widget == btn64A) return "btn64A";
+    if(widget == btn65A) return "btn65A";
+    if(widget == lbl61F) return "lbl61F";
+    if(widget == lbl62F) return "lbl62F";
+    if(widget == lbl63F) return "lbl63F";
+    if(widget == lbl64F) return "lbl64F";
+    if(widget == lbl65F) return "lbl65F";
+    if(widget == lbl61G) return "lbl61G";
+    if(widget == lbl62G) return "lbl62G";
+    if(widget == lbl63G) return "lbl63G";
+    if(widget == lbl64G) return "lbl64G";
+    if(widget == lbl65G) return "lbl65G";
+    if(widget == lbl61L) return "lbl61L";
+    if(widget == lbl62L) return "lbl62L";
+    if(widget == lbl63L) return "lbl63L";
+    if(widget == lbl64L) return "lbl64L";
+    if(widget == lbl65L) return "lbl65L";
+    if(widget == lbl61Gr) return "lbl61Gr";
+    if(widget == lbl62Gr) return "lbl62Gr";
+    if(widget == lbl63Gr) return "lbl63Gr";
+    if(widget == lbl64Gr) return "lbl64Gr";
+    if(widget == lbl65Gr) return "lbl65Gr";
+    if(widget == lbl61Fa) return "lbl61Fa";
+    if(widget == lbl62Fa) return "lbl62Fa";
+    if(widget == lbl63Fa) return "lbl63Fa";
+    if(widget == lbl64Fa) return "lbl64Fa";
+    if(widget == lbl65Fa) return "lbl65Fa";
+    
+    // Row 7 buttons and labels
+    if(widget == btn71) return "btn71";
+    if(widget == btn72) return "btn72";
+    if(widget == btn73) return "btn73";
+    if(widget == btn74) return "btn74";
+    if(widget == btn75) return "btn75";
+    if(widget == btn71A) return "btn71A";
+    if(widget == btn72A) return "btn72A";
+    if(widget == btn73A) return "btn73A";
+    if(widget == btn74A) return "btn74A";
+    if(widget == btn75A) return "btn75A";
+    if(widget == lbl71F) return "lbl71F";
+    if(widget == lbl72F) return "lbl72F";
+    if(widget == lbl73F) return "lbl73F";
+    if(widget == lbl74F) return "lbl74F";
+    if(widget == lbl75F) return "lbl75F";
+    if(widget == lbl71G) return "lbl71G";
+    if(widget == lbl72G) return "lbl72G";
+    if(widget == lbl73G) return "lbl73G";
+    if(widget == lbl74G) return "lbl74G";
+    if(widget == lbl75G) return "lbl75G";
+    if(widget == lbl71L) return "lbl71L";
+    if(widget == lbl72L) return "lbl72L";
+    if(widget == lbl73L) return "lbl73L";
+    if(widget == lbl74L) return "lbl74L";
+    if(widget == lbl75L) return "lbl75L";
+    if(widget == lbl71Gr) return "lbl71Gr";
+    if(widget == lbl72Gr) return "lbl72Gr";
+    if(widget == lbl73Gr) return "lbl73Gr";
+    if(widget == lbl74Gr) return "lbl74Gr";
+    if(widget == lbl75Gr) return "lbl75Gr";
+    if(widget == lbl71Fa) return "lbl71Fa";
+    if(widget == lbl72Fa) return "lbl72Fa";
+    if(widget == lbl73Fa) return "lbl73Fa";
+    if(widget == lbl74Fa) return "lbl74Fa";
+    if(widget == lbl75Fa) return "lbl75Fa";
+    
+    // Row 8 buttons and labels
+    if(widget == btn81) return "btn81";
+    if(widget == btn82) return "btn82";
+    if(widget == btn83) return "btn83";
+    if(widget == btn84) return "btn84";
+    if(widget == btn85) return "btn85";
+    if(widget == btn82A) return "btn82A";
+    if(widget == btn83A) return "btn83A";
+    if(widget == btn84A) return "btn84A";
+    if(widget == btn85A) return "btn85A";
+    if(widget == lbl81F) return "lbl81F";
+    if(widget == lbl82F) return "lbl82F";
+    if(widget == lbl83F) return "lbl83F";
+    if(widget == lbl84F) return "lbl84F";
+    if(widget == lbl85F) return "lbl85F";
+    if(widget == lbl81G) return "lbl81G";
+    if(widget == lbl82G) return "lbl82G";
+    if(widget == lbl83G) return "lbl83G";
+    if(widget == lbl84G) return "lbl84G";
+    if(widget == lbl85G) return "lbl85G";
+    if(widget == lbl81L) return "lbl81L";
+    if(widget == lbl82L) return "lbl82L";
+    if(widget == lbl83L) return "lbl83L";
+    if(widget == lbl84L) return "lbl84L";
+    if(widget == lbl85L) return "lbl85L";
+    if(widget == lbl81Gr) return "lbl81Gr";
+    if(widget == lbl82Gr) return "lbl82Gr";
+    if(widget == lbl83Gr) return "lbl83Gr";
+    if(widget == lbl84Gr) return "lbl84Gr";
+    if(widget == lbl85Gr) return "lbl85Gr";
+    if(widget == lbl82Fa) return "lbl82Fa";
+    if(widget == lbl83Fa) return "lbl83Fa";
+    if(widget == lbl84Fa) return "lbl84Fa";
+    if(widget == lbl85Fa) return "lbl85Fa";
+    
+    return "UNKNOWN_WIDGET";
+}
+
+
+
+//----------------------------------------------------------------------------------
+static void print_label_bytes(const uint8_t* data, int length) {
+  for(int i = 0; i < length; i++) {
+    printf("0x%02x ", data[i]);
+  }
+  printf("(");
+  for(int i = 0; i < length; i++) {
+    printf("%c", (data[i] >= 32 && data[i] < 127) ? data[i] : '.');
+  }
+  printf("  dec: ");
+  for(int i = 0; i < length; i++) {
+    printf("%03d ", data[i]);
+  }
+  printf(")\n");
+}
+
+static bool is_valid_utf8(const char *s, size_t *error_offset);
+
+
+bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
+    if (!lbl) {
+        printf("GTK3 Setup utf issue: NULL label in %s\n", context);
+        return 1;
+    }
+
+    // Calculate length safely (stop at 22 or null terminator)
+    int len = 0;
+    while (lbl[len] != 0 && len < 22) {
+        len++;
+    }
+
+    if (len == 0) {
+        return 0; // Empty string is OK
+    }
+
+    size_t bad_pos = 0;
+    if (!is_valid_utf8((const char*)lbl, &bad_pos)) {
+        printf("GTK3 Setup utf issue: Invalid UTF-8 at position %zu in %s: ",
+               bad_pos, context);
+        print_label_bytes(lbl, len);
+        return 1;
+    }
+
+    return 0; // All good
+}
+
+
+//----------------------------------------------------------------------------------
+
+
+bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t *key, GtkWidget *btn, bool showBtn) {
+  if(!check_label_consistency(lbl,ctx)) {
+    return false;
+  }
+  if(key) {
+    print_label_bytes(lbl,16);
+    if(showBtn&&btn)printf("     : key details - btn:=%s\n",get_button_name(btn));
+    printf("       key->primaryAim = %d ",key->primaryAim);
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName,"primaryAim AA:","\n");
+    printf("       key->fShiftedAim = %d ",key->fShiftedAim);
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName,"fShiftedAim AA:","\n");
+    printf("       key->gShiftedAim = %d ",key->gShiftedAim);
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName,"gShiftedAim AA:","\n\n");
+  }
+  return true;
+}
+
+
 
 void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL) {
   uint8_t lbl[22];
@@ -2775,6 +3146,7 @@ char sstmp[16];
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
+      if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
       gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
       gtk_widget_set_name(lblL, "letter");
     }
@@ -2812,7 +3184,7 @@ char sstmp[16];
         lbl[5] = 0;
       }
 
-
+      if(debugLabelConsistency(lbl, "labelCaptionAimFa", key, NULL, false)) return;
       gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
       if(R47LongpressColour) {
         gtk_widget_set_name(lblF, "letter");
@@ -2927,17 +3299,15 @@ char sstmp[16];
       if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
-        lbl[1]=0xB7;          //JM SPACE
         lbl[2]=' ';           //JM SPACE
         lbl[3]=0xc2;          //JM SPACE
         lbl[4]=0xb7;          //JM SPACE
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
-
+      if(debugLabelConsistency(lbl, "labelCaptionAim", key, button, true)) return;
       //LOAD letter in AIM, NOT SURE WHERE THIS IS. SUSPECT C47 DOES NOT USE IT
       gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-      //printf("----ZZ %s\n",lbl);
       gtk_widget_set_name(lblL, "letter");
     }
 
@@ -2965,7 +3335,7 @@ char sstmp[16];
         gtk_widget_set_name(button, "calcKeyFG");                        //JM
       }
 
-      else if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {      //JM increase the font size of the operators to the numeric key size
+      else if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {      //JM increase the font size of the operators
         gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
       }                                                                 //JM increase the font size of the operators
       else if(strcmp((char *)lbl, "×") == 0 && key->keyId == 65) {      //JM increase the font size of the operators
@@ -4445,9 +4815,207 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       }
     }
 
+static bool is_valid_utf8(const char *s, size_t *error_offset) {
+    const unsigned char *p = (const unsigned char *)s;
+    size_t i = 0;
+    while (*p) {
+        if (*p < 0x80) {
+            p++; i++;
+        } else if ((*p & 0xE0) == 0xC0) {
+            if ((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            p += 2; i += 2;
+        } else if ((*p & 0xF0) == 0xE0) {
+            if ((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            uint32_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
+            if (cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            if (cp == 0xFFFE || cp == 0xFFFF) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            p += 3; i += 3;
+        } else if ((*p & 0xF8) == 0xF0) {
+            if ((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            uint32_t cp = ((p[0] & 0x07) << 18) | ((p[1] & 0x3F) << 12) |
+                          ((p[2] & 0x3F) << 6) | (p[3] & 0x3F);
+            if (cp < 0x10000 || cp > 0x10FFFF) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            if ((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
+                if (error_offset) *error_offset = i;
+                return false;
+            }
+            p += 4; i += 4;
+        } else {
+            if (error_offset) *error_offset = i;
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool check_utf_string(const char *widget_name, const char *what, const char *s) {
+    if (!s) return false;
+    size_t bad_pos = 0;
+    if (!is_valid_utf8(s, &bad_pos)) {
+        printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n",
+               widget_name, what, bad_pos);
+        printf("Corrupted string: ");
+        for (const char *p = s; *p; p++) {
+            printf("\\x%02x", (unsigned char)*p);
+        }
+        printf("\n");
+        return true;
+    }
+    return false;
+}
+
+#define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do { \
+    GtkWidget *widget = widget_var; \
+    if (!widget) { \
+        printf("Widget %s is NULL - skipping\n", widget_name); \
+    } else if (!GTK_IS_WIDGET(widget)) { \
+        printf("Widget %s (%p) is not a valid GTK widget - skipping\n", \
+               widget_name, (void*)widget); \
+    } else { \
+        bool consistency_found = false; \
+        \
+        consistency_found |= check_utf_string(widget_name, "tooltip", \
+            gtk_widget_get_tooltip_text(widget)); \
+        consistency_found |= check_utf_string(widget_name, "tooltip markup", \
+            gtk_widget_get_tooltip_markup(widget)); \
+        \
+        if (GTK_IS_BUTTON(widget)) { \
+            consistency_found |= check_utf_string(widget_name, "button label", \
+                gtk_button_get_label(GTK_BUTTON(widget))); \
+        } \
+        if (GTK_IS_LABEL(widget)) { \
+            const char *text = gtk_label_get_text(GTK_LABEL(widget)); \
+            consistency_found |= check_utf_string(widget_name, "label text", text); \
+            const char *markup = gtk_label_get_label(GTK_LABEL(widget)); \
+            if (markup && markup != text) { \
+                consistency_found |= check_utf_string(widget_name, "label markup", markup); \
+            } \
+        } \
+        \
+        if (!consistency_found) { \
+            if(false) printf("Checking %s: %p - OK\n", widget_name, (void*)widget); \
+        } else { \
+            abort(); \
+        } \
+    } \
+} while(0)
 
 
 
+void check_all_btn_widgets_for_consistency(void) {
+    printf("Checking all btn widgets for consistency...\n");
+    
+    // Row 1 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn11, "btn11");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn12, "btn12");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn13, "btn13");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn14, "btn14");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn15, "btn15");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn16, "btn16");
+    
+    // Row 2 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn21, "btn21");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn22, "btn22");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn23, "btn23");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn24, "btn24");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn25, "btn25");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn26, "btn26");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn21A, "btn21A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn22A, "btn22A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn23A, "btn23A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn24A, "btn24A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn25A, "btn25A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn26A, "btn26A");
+    
+    // Row 3 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn31, "btn31");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn32, "btn32");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn33, "btn33");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn34, "btn34");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn35, "btn35");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn36, "btn36");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn31A, "btn31A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn32A, "btn32A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn33A, "btn33A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn34A, "btn34A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn35A, "btn35A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn36A, "btn36A");
+    
+    // Row 4 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn41, "btn41");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn42, "btn42");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn43, "btn43");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn44, "btn44");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn45, "btn45");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn42A, "btn42A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn43A, "btn43A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn44A, "btn44A");
+    
+    // Row 5 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn51, "btn51");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn52, "btn52");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn53, "btn53");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn54, "btn54");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn55, "btn55");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn52A, "btn52A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn53A, "btn53A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn54A, "btn54A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn55A, "btn55A");
+    
+    // Row 6 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn61, "btn61");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn62, "btn62");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn63, "btn63");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn64, "btn64");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn65, "btn65");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn62A, "btn62A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn63A, "btn63A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn64A, "btn64A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn65A, "btn65A");
+    
+    // Row 7 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn71, "btn71");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn72, "btn72");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn73, "btn73");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn74, "btn74");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn75, "btn75");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn71A, "btn71A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn72A, "btn72A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn73A, "btn73A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn74A, "btn74A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn75A, "btn75A");
+    
+    // Row 8 buttons
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn81, "btn81");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn82, "btn82");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn83, "btn83");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn84, "btn84");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn85, "btn85");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn82A, "btn82A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn83A, "btn83A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn84A, "btn84A");
+    CHECK_WIDGET_CONSISTENCY_CHECK(btn85A, "btn85A");
+    
+    printf("Consistency check complete - none found.\n");
+}
 
 
 
@@ -4517,11 +5085,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       }
 
       gtk_widget_set_name(frmCalc, "mainWindow");
-      gtk_window_set_resizable (GTK_WINDOW(frmCalc), FALSE);
+      gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
       gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
+
+      //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
         gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
@@ -4624,7 +5196,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
@@ -4756,12 +5328,12 @@ int keyCntA = 0;
       btn24A  = gtk_button_new();
       btn25A  = gtk_button_new();
       btn26A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "A");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "B");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "C");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "D");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "E");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //   "F"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "A");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "B");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "C");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "D");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "E");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "F"); //^^
       lbl21F  = gtk_label_new("");
       lbl22F  = gtk_label_new("");
       lbl23F  = gtk_label_new("");
@@ -4918,12 +5490,12 @@ int keyCntA = 0;
       btn34A  = gtk_button_new();
       btn35A  = gtk_button_new();
       btn36A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "G");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "H");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "I");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "J");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "K");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;    //    "L"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "G");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "H");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "I");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "J");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "K");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "L"); //^^
       lbl31F  = gtk_label_new("");
       lbl32F  = gtk_label_new("");
       lbl33F  = gtk_label_new("");
@@ -5077,9 +5649,9 @@ int keyCntA = 0;
       btn43A  = gtk_button_new();
       btn44A  = gtk_button_new();
                                                                               keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //    "M");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //    "N");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;keyCntA++;    //    "O"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "M");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "N");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;keyCntA++;    //    "O"); //^^
       lbl41F  = gtk_label_new("");
       lbl42F  = gtk_label_new("");
       lbl43F  = gtk_label_new("");
@@ -5197,10 +5769,10 @@ int keyCntA = 0;
       btn53A   = gtk_button_new();
       btn54A   = gtk_button_new();
       btn55A   = gtk_button_new();                                            keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //     "P");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //     "Q");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //     "R");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //     "S"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "P");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "Q");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "R");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "S"); //^^
       lbl51F  = gtk_label_new("");
       lbl52F  = gtk_label_new("");
       lbl53F  = gtk_label_new("");
@@ -5320,10 +5892,10 @@ int keyCntA = 0;
       btn63A  = gtk_button_new();
       btn64A  = gtk_button_new();
       btn65A  = gtk_button_new();                                             keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "T");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "U");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "V");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "W"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "T");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "U");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "V");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "W"); //^^
       lbl61F  = gtk_label_new("");
       lbl62F  = gtk_label_new("");
       lbl63F  = gtk_label_new("");
@@ -5445,11 +6017,11 @@ int keyCntA = 0;
       btn73A   = gtk_button_new();
       btn74A   = gtk_button_new();
       btn75A   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "f/g");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "X");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "Y");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //      "Z");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       "_"); //dr ^^^^ - new AIM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "f/g");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "X");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Y");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Z");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "_"); //dr ^^^^ - new AIM
       lbl71F  = gtk_label_new("");
       lbl72F  = gtk_label_new("");
       lbl73F  = gtk_label_new("");
@@ -5575,10 +6147,10 @@ int keyCntA = 0;
       btn83A  = gtk_button_new();
       btn84A  = gtk_button_new();
       btn85A  = gtk_button_new();                                             keyCntA++;              //
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       ":");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       ".");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       "?");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       "Space"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ":");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ".");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "?");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "Space"); //^^
       lbl81F  = gtk_label_new("");
       lbl82F  = gtk_label_new("");
       lbl83F  = gtk_label_new("");
@@ -5785,5 +6357,7 @@ int keyCntA = 0;
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+
+  check_all_btn_widgets_for_consistency();
   }
 #endif // PC_BUILD

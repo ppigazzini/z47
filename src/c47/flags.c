@@ -78,6 +78,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
     case FLAG_alphaCAP:
@@ -86,12 +88,14 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
+    case FLAG_TOPHEX :
               fnRefreshState();
               break;
 
@@ -121,6 +125,13 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
             fnRefreshState();
             screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
             break;
+
+    case FLAG_BCD    :
+            if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
+              fnChangeBaseJM(10);
+            }
+            break;
+
 
     default: break;
   }
@@ -361,7 +372,7 @@ void fnSetFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _setAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -434,7 +445,7 @@ void fnClearFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         _clearAlpha();
       }
     #endif // !TESTSUITE_BUILD
@@ -508,7 +519,7 @@ void fnFlipFlag(uint16_t flag) {
     }
     #if !defined(TESTSUITE_BUILD)
       else if(flag == FLAG_ALPHA) {
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         if(getSystemFlag(FLAG_ALPHA)) {
           _clearAlpha();
         }
@@ -580,6 +591,13 @@ void fnClFAll(uint16_t confirmation) {
     if(currentLocalFlags != NULL) {
       *currentLocalFlags = 0; // Clear local flags
     }
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_CLEAR_ALL_FLAGS;
+    }
+    else {
+      temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 }
 
@@ -672,12 +690,15 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
+    case FLAG_CARRY:
+    case FLAG_OVERFLOW:
     case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
     case FLAG_PBOX   :
+    case FLAG_PCURVE :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
     case FLAG_PLINE  :
@@ -685,6 +706,8 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_VECT   :
     case FLAG_NVECT  :
     case FLAG_TOPHEX :
+    case FLAG_BCD    :
+    case FLAG_LARGELI:
               fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
@@ -692,22 +715,12 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
       break;
-
-    case ITM_DREAL:
-      fnFlipFlag(FLAG_DREAL);
-      if(getSystemFlag(FLAG_DREAL)) {
-        clearSystemFlag(FLAG_LARGELI);
-      }
-      break;
-    case FLAG_LARGELI:
-      fnFlipFlag(FLAG_LARGELI);
-      if(getSystemFlag(FLAG_LARGELI)) {
-        clearSystemFlag(FLAG_DREAL);
-      }
-      break;
     case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
       fnRefreshState();
+      break;
+    case ITM_DREAL:
+      fnFlipFlag(FLAG_DREAL);
       break;
 
 

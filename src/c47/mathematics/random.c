@@ -92,6 +92,9 @@ static void doIntRandomI(void) {
   int32_t cmp;
   bool_t frac, init_minmax = false;
 
+  saveForUndo();
+  thereIsSomethingToUndo = true;
+
   if (!getRegisterAsLongInt(REGISTER_X, regX, &frac) || frac)
     return;
   if (!getRegisterAsLongInt(REGISTER_Y, regY, &frac) || frac)
@@ -119,6 +122,7 @@ static void doIntRandomI(void) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    fnUndo(0);
     goto err2;
   }
 

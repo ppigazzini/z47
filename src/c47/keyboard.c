@@ -171,7 +171,7 @@ static void executeFunction(const char *data, int16_t item_);
       case MNU_REALS:
       case MNU_ANGLES:
       case MNU_LINTS:
-      case MNU_ALLVARS: 
+      case MNU_ALLVARS:
       {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
@@ -289,7 +289,7 @@ static void executeFunction(const char *data, int16_t item_);
         case MNU_REALS:
         case MNU_ANGLES:
         case MNU_LINTS:
-        case MNU_ALLVARS: 
+        case MNU_ALLVARS:
 
 
          {
@@ -422,7 +422,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_REALS:
           case MNU_ANGLES:
           case MNU_LINTS:
-          case MNU_ALLVARS: 
+          case MNU_ALLVARS:
           {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
@@ -602,6 +602,9 @@ bool_t lastshiftG = false;
                     #if defined(VERBOSEKEYS)
                       printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
 
       releaseOverride = false;
       temporaryInformation = TI_NO_INFO;
@@ -938,11 +941,15 @@ int16_t lastItem = 0;
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
+        lastKeyItemDetermined = item;
       }
 
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
+        screenUpdatingMode = SCRUPD_AUTO;
+        clearScreen(234);
+        refreshScreen(127);
         showSoftmenu(-MNU_GRAPHS);
         item = 0;
       }
@@ -1052,6 +1059,7 @@ int16_t lastItem = 0;
               }
 
               if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
+                popSoftmenu();
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               }
@@ -1061,17 +1069,30 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
+          if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
             // disabled
           }
           else if(tam.function == ITM_GTOP && catalog == CATALOG_PROG) {
             runFunction(item);
-            tamLeaveMode();
+            leaveTamModeIfEnabled();
             hourGlassIconEnabled = false;
             _closeCatalog();
             refreshScreen(112);
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
+          }
+
+          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+                   && calcMode == CM_PEM && !catalog &&        //allow only in case of PEM, and a CAT
+                   (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
+                   !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
+            //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
+            if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && (item != ITM_INDIRECTION) && !tam.indirect) {
+              tam.value = (indexOfItems[item].param & 0xff);
+              tam.alpha = true;
+              addStepInProgram(tamOperation());
+              leaveTamModeIfEnabled();
+            }
           }
 
           else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
@@ -1083,12 +1104,12 @@ int16_t lastItem = 0;
               tam.value = (indexOfItems[item].param & 0xff);
               tam.alpha = true;
               addStepInProgram(tamOperation());
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(tam.mode) {
                   //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
                   popSoftmenu();
@@ -1105,7 +1126,7 @@ int16_t lastItem = 0;
               xcopy(aimBuffer, itmLabel, nameLength + 1);
               tam.alpha = true;
               addStepInProgram(tamOperation());
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
             else {
                     #if defined(VERBOSEKEYS)
@@ -1122,7 +1143,7 @@ int16_t lastItem = 0;
           }
           else if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) && (item == ITM_toINT || item == ITM_HASH_JM)) {
             if(aimBuffer[0]!=0) {
-              pemAddNumber(ITM_toINT);
+              pemAddNumber(ITM_toINT, true);
               screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
               refreshScreen(115);
               return;
@@ -1140,7 +1161,7 @@ int16_t lastItem = 0;
           // an item from the catalog, but a function key press should put the item in the AIM (or TAM) buffer
           // Use this variable to distinguish between the two
           fnKeyInCatalog = 1;
-          if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
+          if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
             // disabled
           }
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK || item == ITM_YY_OFF))) {
@@ -1171,6 +1192,9 @@ int16_t lastItem = 0;
                     (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED
                     )
                   ))  {
+            if(currentMenu() == -MNU_CONST) {  // Add # prefix for constants in equations
+              addItemToBuffer(ITM_NUMBER_SIGN);
+            }
             addItemToBuffer(item);
             while(currentMenu() != -MNU_EQ_EDIT) {
               popSoftmenu();
@@ -1206,7 +1230,10 @@ int16_t lastItem = 0;
                 }
               }
             }
-            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu())) {
+            if(item == ITM_KEYMAP) {
+              cursorEnabled = false;               // cursor is re-activated automatically elsewhere, after button release
+            }
+            if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu() || item == ITM_KEYMAP)) {
               closeAim();
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
@@ -1214,11 +1241,11 @@ int16_t lastItem = 0;
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
-                tamLeaveMode();
+                leaveTamModeIfEnabled();
               }
             }
             else if(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK || item == ITM_YY_OFF)) {
-              tamLeaveMode();
+              leaveTamModeIfEnabled();
             }
 
                     #if defined(VERBOSEKEYS)
@@ -1245,7 +1272,7 @@ int16_t lastItem = 0;
                   SetSetting(JC_NL);
                 }
                 else if(tam.alpha) {
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
                     assignGetName1();
@@ -1297,7 +1324,7 @@ int16_t lastItem = 0;
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 if(stringGlyphLength(aimBuffer) > 6) {
                   assignLeaveAlpha();
                   assignGetName2();
@@ -1362,7 +1389,7 @@ int16_t lastItem = 0;
   }
 
 
-  bool_t allowShiftsToClearError = false;
+  bool_t shiftKeyClearsError = false;
   #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
@@ -1418,7 +1445,7 @@ int16_t lastItem = 0;
 
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
         fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
@@ -1431,7 +1458,7 @@ int16_t lastItem = 0;
         //reconsider
         temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
       }
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1441,6 +1468,9 @@ int16_t lastItem = 0;
       shiftG = false;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
 
@@ -1449,7 +1479,7 @@ int16_t lastItem = 0;
     }
     // Shift g pressed and JM REMOVED shift f not active
     else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
         fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
@@ -1462,7 +1492,7 @@ int16_t lastItem = 0;
         //reconsider
         temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
       }
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1472,9 +1502,11 @@ int16_t lastItem = 0;
       shiftG = !shiftG;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
-
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       return ITM_NOP;
@@ -1488,7 +1520,7 @@ int16_t lastItem = 0;
       if(ShiftTimoutMode) {
         fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
       }
-      if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
+      if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
       if(temporaryInformation != TI_NO_INFO) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
         if(temporaryInformation == TI_VIEW_REGISTER) {
@@ -1501,7 +1533,7 @@ int16_t lastItem = 0;
         }
       }
 
-      if(lastErrorCode != 0) allowShiftsToClearError = true;
+      if(lastErrorCode != 0) shiftKeyClearsError = true;
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1511,6 +1543,9 @@ int16_t lastItem = 0;
 
       lastshiftF = shiftF;
       lastshiftG = shiftG;
+      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+        closeShowMenu();
+      }
       showShiftState();
       refreshModeGui();
 
@@ -1521,7 +1556,7 @@ int16_t lastItem = 0;
     else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) {   //JM shifts
       temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
 
-      if(lastErrorCode != 0) allowShiftsToClearError = true;                                                                                         //JM shifts
+      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
@@ -1678,8 +1713,8 @@ int16_t lastItem = 0;
                   {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
                   {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
                   {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
-                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0      
-                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2      
+                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0
+                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2
                   {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
                   {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
                   {0 , 0 , 0 , 0 , 0 , 0 },   //9
@@ -1852,16 +1887,16 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-      cleanupAfterShift = false;
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
+      lastT_cursorPos = T_cursorPos;
 
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
-        return;
+        item = ITM_CLRMOD;
       }
 
       asnKey[0] = ((uint8_t *)data)[0];
@@ -1909,6 +1944,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       #endif //DMCP_BUILD
 
       item = determineItem((char *)data);
+      lastKeyItemDetermined = item;
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -1970,7 +2006,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
         }
       }
-      else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
+      else if(calcMode == CM_REGISTER_BROWSER){
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         refreshScreen(126);
@@ -2073,7 +2109,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 
 
-  bool_t checkShifts(const char *data) {
+  bool_t checkKeyShifts(const char *data) {
     const calcKey_t *key;
 
     int8_t key_no = stringToKeyNumber(data);
@@ -2101,6 +2137,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
+      int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
 
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
@@ -2114,6 +2151,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
+
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;
         lastItem = 0;
@@ -2158,7 +2196,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);
         hideFunctionName();
 
-        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
@@ -2194,8 +2231,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                 tam.alpha = false;
               }
             }
-            else {
-              tamLeaveMode();
+            else if(item != ITM_BACKSPACE) {          // [DL] to ensure backspace will be processed in tamProcessInput
+              leaveTamModeIfEnabled();
             }
           }
           if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
@@ -2270,7 +2307,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               goto RELEASE_END;
             }
 
-            runFunction(item);
+            if(item == ITM_BASEMENU) {
+              leaveTamModeIfEnabled();
+            }
+
+              runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> btnReleased ran(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
@@ -2295,31 +2336,38 @@ RELEASE_END:
 
       //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
 
-      if(PROBMENU) {
-        screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+      switch(last_CM) {
+        case CM_REGISTER_BROWSER:
+        case CM_FLAG_BROWSER:
+        case CM_ASN_BROWSER:
+        case CM_FONT_BROWSER: {
+          screenUpdatingMode = SCRUPD_AUTO;
+          break;
+        }
+        default: {
+          if(PROBMENU) {
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+          }
+          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+          break;
+        }
       }
-      screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
 
+    bool_t preventRefreshAtTheEndOfReleasedKey =
+      ( !shiftKeyClearsError && checkKeyShifts((char *)data) ) ||
+      ( (lastKeyItemDetermined == ITM_UP1 || lastKeyItemDetermined == ITM_DOWN1) && calcMode == CM_GRAPH );
 
-      if(allowShiftsToClearError || !checkShifts((char *)data)) {
-                    #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,">>> btnReleased (%s):   refreshScreen from keyboard.c  which is the main normal place for it.", (char *)data); jm_show_comment(tmp);
-                      jm_show_calc_state("      ##### keyboard.c: btnReleased end");
-                    #endif //PC_BUILD
-
-        refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
-                               //2023-06-26 improved by organizing the SCRUPD flags better
-                               //2024-08-12 further improved by managing SCRUPD flags better
-
-      }
-      screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
-      allowShiftsToClearError = false;
-
-      fnTimerStop(TO_CL_LONG);    //dr
-
+    if(!preventRefreshAtTheEndOfReleasedKey) {
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> END of btnReleased after (117) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                     #endif // PC_BUILD &&MONITOR_CLRSCR
+      refreshScreen(117);
+    }
+
+    screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
+    shiftKeyClearsError = false;
+
+    fnTimerStop(TO_CL_LONG);
 
     }
 
@@ -2441,6 +2489,10 @@ RELEASE_END:
           else if(tam.mode) {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
           }
+          else if(calcMode == CM_PEM) {
+            //convert to Release action: let backspace run through to Release and bypass the next fnKeyBackspace()
+            break;
+          }
           else {
             //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
             keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
@@ -2524,6 +2576,7 @@ RELEASE_END:
           else if(lastErrorCode != 0) {
             lastErrorCode = 0;
             screenUpdatingMode = SCRUPD_AUTO;
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             refreshScreen(139);
             keyActionProcessed = true;
           }
@@ -2732,14 +2785,21 @@ RELEASE_END:
           else if(tam.mode) {
             if(tam.alpha) {
               if(indexOfItems[item].func == addItemToBuffer || item < 0) {
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
               }
               else {
                 keyActionProcessed = true;
               }
             }
             else {
+              #if defined(DMCP_BUILD)
+                  wait_for_key_release(0);
+                  key_pop();
+              #endif //DMCP_BUILD
               addItemToBuffer(item);
+              #if defined(DMCP_BUILD)
+                  key_push(0);
+              #endif //DMCP_BUILD
               keyActionProcessed = true;
             }
             break;
@@ -2802,6 +2862,7 @@ RELEASE_END:
                 break;
               }
 
+              //also AIM Longpress cycle
               case CM_AIM: {
                 //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
                 if(item == ITM_BST || item == ITM_SST) {
@@ -2809,11 +2870,10 @@ RELEASE_END:
                   runFunction(item);
                   keyActionProcessed = true;
                 }
-
-//See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-                  processAimInput(item);
+                  processAimInput(item); // sets keyActionProcessed
+                  refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
                 }
                 break;
               }
@@ -2824,9 +2884,9 @@ RELEASE_END:
                          printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
                        #endif
                     #endif
-                processAimInput(item);
+                processAimInput(item); // sets keyActionProcessed
                 screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-                refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+                refreshScreen(130);
                 break;
               }
 
@@ -2851,6 +2911,7 @@ RELEASE_END:
                   if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
                     //printf("1. Change NIM to LI\n");
                     lastIntegerBase = 0;
+                    nimNumberPart = (hexDigits == 0 ? NP_INT_10 : NP_INT_16);
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
@@ -2943,6 +3004,8 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     fnRecall(currentRegisterBrowserScreen);
+                    screenUpdatingMode = SCRUPD_AUTO;
+                    refreshScreen(128);
                   }
                   else if(rbrMode == RBR_NAMED) {
                     if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
@@ -3105,7 +3168,7 @@ RELEASE_END:
                   if(item == ITM_HASH_JM ) {
                     item = ITM_toINT;
                   }
-                  pemAddNumber(item);
+                  pemAddNumber(item, true);
                   keyActionProcessed = true;
                   if(item == ITM_RCL) {
                     currentStep = findPreviousStep(currentStep);
@@ -3119,7 +3182,7 @@ RELEASE_END:
                   addStepInProgram(ITM_STOP);
                   keyActionProcessed = true;
                 }
-                else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
+                else if(item == ITM_dotD && aimBuffer[0] == 0) {
                   addStepInProgram(ITM_toREAL);
                   keyActionProcessed = true;
                 }
@@ -3129,7 +3192,7 @@ RELEASE_END:
               case CM_ASSIGN: {
                 if(item > 0 && itemToBeAssigned == 0) {
                   if(tam.alpha) {
-                    processAimInput(item);
+                    processAimInput(item); // sets keyActionProcessed
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
                       assignGetName1();
@@ -3182,7 +3245,7 @@ RELEASE_END:
                 else if(item != 0 && itemToBeAssigned != 0) {
                   if(tam.alpha && tam.mode != TM_NEWMENU) {
                     if(item > 0) {
-                      processAimInput(item);
+                      processAimInput(item); // sets keyActionProcessed
                       if(stringGlyphLength(aimBuffer) > 6) {
                         assignLeaveAlpha();
                         assignGetName2();
@@ -3491,6 +3554,18 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       case CM_EIM: {
         if(aimBuffer[0] != 0) {
           setEquation(currentFormula, aimBuffer);
+          parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);;
+          if(lastErrorCode != 0) {  // Stay in Edit mode for the current equation
+            const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+            if(equationString) {
+              xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
+            }
+            else {
+              aimBuffer[0] = 0;
+            }
+            refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
+            break;
+          }
         }
         if(currentMenu() == -MNU_EQ_EDIT) {
           calcModeNormal();
@@ -3611,7 +3686,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                 else {
                     if(currentMenu() == -MNU_SYSFL) {                                                       //JM auto recover out of SYSFL
                       numberOfTamMenusToPop = 2;                                                   //JM
-                      tamLeaveMode();                                                              //JM
+                      leaveTamModeIfEnabled();                                                     //JM
                       return;                                                                      //JM
                     }                                                                              //JM
                     leaveAsmMode();
@@ -3653,7 +3728,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(calcMode == CM_PEM) {
           aimBuffer[0] = 0;
         }
-        tamLeaveMode();
+        leaveTamModeIfEnabled();
         if(calcMode == CM_PEM) {
           scrollPemBackwards();
         }
@@ -3848,10 +3923,17 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else {
           if(currentMenu() == -MNU_EQ_EDIT) {
-            calcModeNormal();
-            if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+            if(allFormulae[currentFormula].pointerToFormulaData != C47_NULL) {
+              parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+              if(lastErrorCode != 0) {
+                deleteEquation(currentFormula);
+                lastErrorCode = 0;
+              }
+            }
+            else {
               deleteEquation(currentFormula);
             }
+            calcModeNormal();
           }
           popSoftmenu();
         }
@@ -3860,12 +3942,22 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
         if(calcMode == CM_TIMER) {
           previousCalcMode = CM_NORMAL;
+        }
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
         }
         break;
       }
@@ -4096,7 +4188,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
 
       case CM_PEM: {
         if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
-          pemAddNumber(ITM_CC);
+          pemAddNumber(ITM_CC, true);
         }
         break;
       }
@@ -4243,16 +4335,22 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-      //case CM_ASM_OVER_NORMAL:
-      //  addItemToBuffer(ITM_BACKSPACE);
-      //  break;
-      //}
-
       case CM_REGISTER_BROWSER:
       case CM_FLAG_BROWSER:
-      case CM_ASN_BROWSER:
       case CM_FONT_BROWSER: {
         calcMode = previousCalcMode;
+        break;
+      }
+
+      case CM_ASN_BROWSER: {
+        calcMode = previousCalcMode;
+        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
+          if(currentMenu() == -MNU_AIMCATALOG) {
+            popSoftmenu();
+          }
+          showSoftmenu(-MNU_ALPHA);
+        }
+        screenUpdatingMode = SCRUPD_AUTO;
         break;
       }
 
@@ -4261,7 +4359,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
        case CM_LISTXY:
        case CM_GRAPH:
        case CM_PLOT_STAT:
-      case CM_CONFIRMATION: {
+       case CM_CONFIRMATION: {
         temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
@@ -4315,7 +4413,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
-          pemAddNumber(ITM_BACKSPACE);
+          pemAddNumber(ITM_BACKSPACE, true);
           if(aimBuffer[0] == 0 && currentLocalStepNumber > 1) {
             currentStep = findPreviousStep(currentStep);
             --currentLocalStepNumber;
@@ -4510,7 +4608,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_ASN_BROWSER: {
         currentAsnScr++;                          //JM removed the 3-x part
         if(currentAsnScr == 0 ||currentAsnScr >= 7) {
-          currentAsnScr = 1;
+          currentAsnScr = (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) ? 4 : 1;
         }
         break;
       }
@@ -4734,7 +4832,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_ASN_BROWSER: {
         currentAsnScr--;
-        if(currentAsnScr == 0 || currentAsnScr >= 7) {
+        if(currentAsnScr == 0 || currentAsnScr >= 7 || ((previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) && currentAsnScr < 4)) {
           currentAsnScr = 6;
         }
         break;

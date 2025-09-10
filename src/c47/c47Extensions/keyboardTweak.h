@@ -14,7 +14,8 @@
 //extern uint32_t nextTimerRefresh;
 //#endif // DMCP_BUILD
 
-void     keyClick(uint8_t length);
+void     keyClick(uint8_t lengthMs);
+void     powerMarkerMsF(uint8_t lengthMs, uint32_t f);
 
 void     showAlphaModeonGui   (void);
 void     resetShiftState      (void);
