@@ -256,7 +256,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
 
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {  
   if(errorCode >= NUMBER_OF_ERROR_CODES || errorCode == 0) {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errorCode, "errorCode");
     displayBugScreen(errorMessage);
@@ -277,6 +277,7 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
   else {
     lastErrorCode            = errorCode;
     errorMessageRegisterLine = errMessageRegisterLine;
+    screenUpdatingMode = SCRUPD_AUTO;;
   }
 }
 
