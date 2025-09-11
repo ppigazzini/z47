@@ -98,6 +98,10 @@
         catalog = CATALOG_FCNS;
         break;
       }
+      case MNU_FCNS_EIM: {
+        catalog = CATALOG_FCNS_EIM;
+        break;
+      }
       case MNU_CONST: {
         catalog = CATALOG_CNST;
         break;

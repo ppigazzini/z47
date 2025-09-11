@@ -716,10 +716,16 @@ typedef struct {
           const char *addChar0 = item == ITM_EEXCHR               ? "E":                      //PRODUCT_SIGN "10^" :
                                  item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
+                                 item == ITM_MAGNITUDE            ? "||" :
                                  item == ITM_ROOT_SIGN            ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_SQUAREROOTX          ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_CUBEROOT             ? STD_CUBE_ROOT "()" :
+                                 item == ITM_XTHROOT              ? STD_xTH_ROOT "(:)" :
+                                 item == ITM_EXP                  ? STD_EulerE "^()" :
                                  item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :
                                  item == ITM_LG_SIGN              ? "LOG()" :
                                  item == ITM_LN_SIGN              ? "LN()"  :
+                                 item == ITM_LOG2                 ? "LB()" :
                                  item == ITM_SIN_SIGN             ? "SIN()" :
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
@@ -728,6 +734,11 @@ typedef struct {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
+                                 item == ITM_XFACT                ? "!" :
+                                 item == ITM_M1X                  ? "(-1)^()" :
+                                 item == ITM_COMB                 ? "COMB(:)" :
+                                 item == ITM_PERM                 ? "PERM(:)" :
+
                                  item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
                                  item >= ITM_SUP_0 &&
@@ -781,6 +792,15 @@ typedef struct {
                 xCursor += 0;
                 break;
               }
+              case ITM_M1X: {
+                xCursor += 6;
+                break;
+              }
+              case ITM_COMB:
+              case ITM_PERM: {
+                xCursor += 5;
+                break;
+              }
               case ITM_LG_SIGN:
               case ITM_SIN_SIGN:
               case ITM_COS_SIGN:
@@ -789,21 +809,31 @@ typedef struct {
                 break;
               }
               case ITM_ALOG_SIGN:
+              case ITM_LOG2:
+              case ITM_EXP:
               case ITM_LN_SIGN: {
                 xCursor += 3;
                 break;
               }
               case ITM_ROOT_SIGN:
+              case ITM_SQUAREROOTX:
+              case ITM_CUBEROOT:
+              case ITM_XTHROOT:
               case ITM_GAMMAX:
               case ITM_zetaX: {
                 xCursor += 2;
                 break;
               }
               case ITM_PAIR_OF_PARENTHESES:
-              case ITM_VERTICAL_BAR: {
+              case ITM_VERTICAL_BAR:
+              case ITM_MAGNITUDE: {
                 xCursor += 1;
                 break;
               }
+              case ITM_XFACT: {
+                break;
+              }
+
               default: {
                 xCursor += stringGlyphLength(addChar);
               }
