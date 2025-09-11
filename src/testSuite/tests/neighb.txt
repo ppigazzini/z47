@@ -89,27 +89,27 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=ShoI:"3#7"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
 
 ;=================================================
-; neighb(Short Integer, Long Integer) --> Short Integer
+; neighb(Short Integer, Long Integer) --> Long Integer
 ;=================================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#10" RY=LonI:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#10" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#10" RX=LonI:"3"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"4#8" RY=LonI:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"4#8" RX=ShoI:"3#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"4#8" RX=LonI:"3"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#7" RY=LonI:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#7" RX=ShoI:"3#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#7" RX=LonI:"3"
 
 
 
 ;=================================================
-; neighb(Long Integer, Real) --> Long Integer
+; neighb(Long Integer, Real) --> Real
 ;=================================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"2.000000000000000000000000000000001"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Real:"3":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"2.000000000000000000000000000000001"
 
 ;=================================================
 ; neighb(Real, Long Integer) --> Real
@@ -448,13 +448,13 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#7" RX=ShoI:"3#7"
 
 
 ;=================================================
-; neighb(Short Integer, Real) --> Short Integer
+; neighb(Short Integer, Real) --> Real
 ;=================================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#7" RY=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#7" RX=ShoI:"3#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#7" RX=Real:"2.000000000000000000000000000000001"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#11" RY=Real:"3":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#11" RX=ShoI:"3#11"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#11" RX=Real:"2.000000000000000000000000000000001"
 
 ;=================================================
 ; neighb(Real, Short Integer) --> Real

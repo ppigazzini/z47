@@ -8,14 +8,4 @@
   #define INTEGERPARTSHORT_H
 
   void fnSint   (uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void sintError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define sintError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void sintLonI (void);
-  void sintShoI (void);
-  void sintReal (void);
 #endif // !INTEGERPARTLONG_H

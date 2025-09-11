@@ -22,7 +22,7 @@
   #include <time.h>
   #include <unistd.h>
 
-  #if defined(DMCP_BUILD) && defined(OLD_HW) // this is due to the libc_nano added in 999acb23 which does not have hh support.
+  #if defined(DMCP_BUILD) // this is due to the libc_nano added in 999acb23 which does not have hh support; also added nano to the new hardware in 2fde900
     #undef PRIu8
     #define PRIu8 "u"
     #undef PRIi8
@@ -299,10 +299,13 @@
   extern bool_t                 halfSecTick2;
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
+  extern bool_t                 iterations;
 
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
   extern bool_t                 cleanupAfterShift;
+  extern bool_t                 solverEstimatesUsed;
+  extern bool_t                 updateOldConstants;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -414,6 +417,7 @@
   extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
+  extern uint8_t                previousErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
@@ -436,6 +440,7 @@
   extern int16_t                rbrRegister;
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+  extern int16_t                lastKeyItemDetermined;
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
@@ -457,6 +462,7 @@
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
   extern int16_t                alphaCursor;                  //DL
+  extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
   extern uint8_t                overrideShowBottomLine;
@@ -474,13 +480,13 @@
   extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
-  extern bool_t                 bcdDisplay;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
   extern uint8_t                fgLN;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
+  extern uint8_t                editingLiteralType;
 
   // Variables from jm.h
   extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.
@@ -539,6 +545,7 @@
   extern uint32_t               denMax;
   extern uint32_t               lastDenominator;
   extern uint32_t               lastIntegerBase;
+  extern uint32_t               decodedIntegerBase;
   extern uint32_t               xCursor;
   extern uint32_t               yCursor;
   extern uint32_t               tamOverPemYPos;
@@ -591,7 +598,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)

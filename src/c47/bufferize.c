@@ -134,7 +134,6 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
 
   void resetAlphaSelectionBuffer(void) {
-    lgCatalogSelection = 0;
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
     fnTimerStop(TO_ASM_ACTIVE);
@@ -238,7 +237,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_artanh      },
     {ITM_CEIL        },
     {ITM_FLOOR       },
-    {ITM_DEC         },
+    {ITM_DECR        },
     {ITM_INC         },
     {ITM_IP          },
     {ITM_FP          },
@@ -749,8 +748,14 @@ typedef struct {
             if(item != ITM_EQUAL) {       //block the entry of "="
               stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
               if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                stringCopy(addChar + stringByteLength(addChar), "()");
-                jj = 1;
+                if(isDyadicFunction(item)) {
+                  stringCopy(addChar + stringByteLength(addChar), "(:)");
+                  jj = 2;
+                }
+                else {
+                  stringCopy(addChar + stringByteLength(addChar), "()");
+                  jj = 1;
+                }
               }
             }
           }
@@ -869,6 +874,13 @@ typedef struct {
         }
       }
 
+      #undef SCROLL_ASM          // define this to have the ASM letters scroll if you type more than two. Alternative is it takes two, then you wait 3 and type again another word
+      #ifdef SCROLL_ASM
+        #define Scroll_Asm 2
+      #else
+        #define Scroll_Asm 1
+      #endif
+
       if(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) {
         if(item == ITM_BACKSPACE) {
           calcModeNormal();
@@ -878,18 +890,16 @@ typedef struct {
         // NOP if not a single character input for search
         // or if we already have two characters in the search buffer
         else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 &&
-                (lgCatalogSelection < ((asmBuffer[0] & 0x80) ? 3 :2)) &&
+                stringGlyphLength(asmBuffer) <= Scroll_Asm &&
+                item != ITM_CR && item != ITM_ROOT_SIGN &&
                 currentSoftmenuScrolls()) {
-          int32_t pos = lgCatalogSelection++;
-          if(asmBuffer[pos] != 0) {
-            pos++;
-          }
-
-          asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[0];
-          if(indexOfItems[item].itemSoftmenuName[0] & 0x80) { // 2 bytes
-            asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[1];
-          }
-          asmBuffer[pos] = 0;
+          #ifdef SCROLL_ASM
+            if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
+              xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
+            }
+          #endif //SCROLL_ASM
+ 
+          stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
           setCatalogLastPos();
@@ -997,8 +1007,44 @@ typedef struct {
   }
 
 
+  bool_t validShortIntegerInX(void) {
+    uint16_t lg = strlen(aimBuffer);
+    uint16_t posHash = lg;
+    uint16_t i;
+    if(nimNumberPart == NP_INT_BASE) {
+      return true;
+    } else {
+      for(i=1; i<lg-1; i++) {      //do not check the # on the very begin or very end as that is not valid
+        if(aimBuffer[i] == '#') {
+          posHash = i;
+        }
+      }
+    }
+    for(i=0; i<posHash; i++) {
+      if(aimBuffer[i] == 'e' || aimBuffer[i] == 'i' || aimBuffer[i] == ',' || aimBuffer[i] == '.') {
+        return false;
+      }
+    }
+    uint8_t base = 0;
+    if((aimBuffer[lg-2]) == '#' && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-1];
+    if((aimBuffer[lg-3]) == '#' && (aimBuffer[lg-2] >= '0' && aimBuffer[lg-2] <= '1') && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-2]*10 + aimBuffer[lg-1];
+    if(base < 2 || base > 16) {
+      return false;
+    }
+    int start = 0;
+    if(aimBuffer[0] == '-' || aimBuffer[0] == '+' || aimBuffer[0] == ' ') start++;
+    for(i=start; i<posHash; i++) {
+      if(!(aimBuffer[i] >= '0' && aimBuffer[i] <= '9') && !(aimBuffer[i] >= 'A' && aimBuffer[i] <= 'F')) {
+        return false;
+      }
+    }
+    return posHash > 0;
+  }
+
   void addItemToNimBuffer(int16_t item) {
-    //printf("addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);
+    #if defined(PC_BUILD)
+      printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
+    #endif //PC_BUILD
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -1006,7 +1052,7 @@ typedef struct {
 
     if((calcMode == CM_NIM || calcMode == CM_NORMAL) && Input_Default == ID_LI && item == ITM_PERIOD) {
       return;
-    }  
+    }
 
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
@@ -1140,7 +1186,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1205,7 +1251,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_COMPLEX_HP32SII_DENOMINATOR:
           case NP_COMPLEX_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1268,6 +1314,7 @@ typedef struct {
           hexDigits++;
 
           nimNumberPart = NP_INT_16;
+          if(lastIntegerBase <= 10) lastIntegerBase = 16;       // [DL] auto set base to hex when entering A-F digit
           //debugNIM();
         }
         break;
@@ -1842,10 +1889,16 @@ typedef struct {
           }
         }
         break;
-    }
+      }
 
       case ITM_dotD: {
-        if(nimNumberPart == NP_REAL_FLOAT_PART) {
+        angularMode_t xangularMode;
+        xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
+
+        if(xangularMode < amNone) {  // If editing with angular mode, then cancel angular mode
+          xangularMode = amNone;
+        }
+        else if(nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
@@ -1864,7 +1917,7 @@ typedef struct {
           }
 
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtDate) {
             convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
             temporaryInformation = TI_DAY_OF_WEEK;
@@ -1886,7 +1939,7 @@ typedef struct {
           closeNim();               //JM
         }
         break;
-    }
+      }
 
       case ITM_ms : {                      //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
@@ -1895,7 +1948,7 @@ typedef struct {
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtTime) {
             if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
               convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
             }
@@ -1956,6 +2009,10 @@ typedef struct {
         break;
       }
 
+      case ITM_NOP: {   // NOP: do nothing in NIM
+        break;
+      }
+
       default: {
         keyActionProcessed = false;
       }
@@ -1963,7 +2020,6 @@ typedef struct {
 
     if(done) {
       //Convert nimBuffer to display string
-
       strcpy(nimBufferDisplay, STD_SPACE_HAIR);
 
       switch(nimNumberPart) {
@@ -2078,13 +2134,14 @@ typedef struct {
       }
     }
 
-    else {
+    else if(item != ITM_NOP) {
       #if defined (PC_BUILD)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
-          case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open
+          case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open, and the BASE, INTS and BITS A-F and HEX/DEC commands are active on NIM
+          case -MNU_BASE:
           case -MNU_INTS:
           case -MNU_BITS: {
             break;
@@ -2256,7 +2313,7 @@ typedef struct {
     if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
       nimBufferToDisplayBuffer(buffer, displayBuffer);
       strcat(displayBuffer, STD_SPACE_4_PER_EM);
-      
+
       for(index=2; buffer[index]!=' '; index++) {
       }
     }
@@ -2487,6 +2544,16 @@ typedef struct {
       setLastintegerBasetoZero();
     }
 
+    bool_t delayedShortIntegerCHS = false;
+    //#if defined(PC_BUILD)
+    //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);
+    //  fflush(stdout);
+    //#endif //PC_BUILD
+    if((aimBuffer[0] == '-' && validShortIntegerInX() != 0)) {
+      aimBuffer[0] = ' ';
+      delayedShortIntegerCHS = true;
+    }
+
     int16_t lastChar = strlen(aimBuffer) - 1;
 
     if(calcMode == CM_PEM) {
@@ -2519,11 +2586,22 @@ typedef struct {
 
           if(nimNumberPart == NP_INT_10) {
             longInteger_t lgInt;
+            angularMode_t xangularMode;
+            xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
 
-            longIntegerInit(lgInt);
-            stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 :0), 10, lgInt);
-            convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-            longIntegerFree(lgInt);
+            if(xangularMode < amNone) {  // If editing with angular mode, then convert to real and preserve angular mode
+              reallocateRegister(REGISTER_X, dtReal34, 0, getRegisterAngularMode(REGISTER_X));
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+              if(xangularMode == amDMS) {
+                real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+              }
+            }
+            else {
+              longIntegerInit(lgInt);
+              stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 : 0), 10, lgInt);
+              convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+              longIntegerFree(lgInt);
+            }
           }
           else if(nimNumberPart == NP_INT_BASE) {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2672,19 +2750,73 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
+            uint16_t dataType = getRegisterDataType(REGISTER_X);
+            if(dataType == dtTime) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+                  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                }
+
+                hmmssInRegisterToSeconds(REGISTER_X);
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferC\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+              }
+            }
+            else if(dataType == dtDate) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
+                checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
+                temporaryInformation = TI_DAY_OF_WEEK;
+
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferB\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+                //return;
+              }
+            }
+            else {
+
               if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, 0, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
               }                                                                       //JM Input default type
               else {                                                                  //JM Input default type
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                angularMode_t xangularMode;
+                xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
+
+                reallocateRegister(REGISTER_X, dtReal34, 0, xangularMode);
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
-              }                                                                       //JM Input default type
+                if(xangularMode == amDMS) {
+                  real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+                }
+              }              //JM Input default type
+            }
 
           }
           else if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, 0, getRegisterAngularMode(REGISTER_X));
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
           else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
@@ -2697,6 +2829,17 @@ typedef struct {
           }
         }
       }
+    }
+    if(delayedShortIntegerCHS) {
+      //#if defined(PC_BUILD)
+      //  printf("Launching delayed CHS\n");
+      //  fflush(stdout);
+      //#endif //PC_BUILD
+      chsShoI();
+  //    if(getSystemFlag(FLAG_OVERFLOW)) {
+  //      temporaryInformation = TI_DATA_NEG_OVRFL;   //removeod, as CHS is overridden by ENTER, clearing the TI before it is shown/or directly after
+  //      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK);
+  //    }
     }
   }
 

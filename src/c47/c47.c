@@ -60,10 +60,13 @@ bool_t                 secTick1;
 bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
+bool_t                 iterations = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
+bool_t                 solverEstimatesUsed = false;
+bool_t                 updateOldConstants;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -167,6 +170,7 @@ uint8_t                nimNumberPart;
 uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
+uint8_t                previousErrorCode;
 uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
@@ -186,6 +190,7 @@ int16_t                lineTWidth;
 int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+int16_t                lastKeyItemDetermined = 0;
 int16_t                showFunctionNameItem;
 char *                 showFunctionNameArg;
 
@@ -214,6 +219,7 @@ int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
 int16_t                alphaCursor;                  //DL
+int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
 uint8_t                overrideShowBottomLine;
@@ -229,7 +235,6 @@ bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f a
 bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
-bool_t                 bcdDisplay = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;
@@ -238,6 +243,7 @@ uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
+uint8_t                editingLiteralType;
 
 int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
@@ -297,6 +303,7 @@ uint32_t               firstGregorianDay;
 uint32_t               denMax;
 uint32_t               lastDenominator = 4;
 uint32_t               lastIntegerBase;
+uint32_t               decodedIntegerBase;
 uint32_t               xCursor;
 uint32_t               yCursor;
 uint32_t               tamOverPemYPos;
@@ -349,6 +356,11 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 
 #if defined(DMCP_BUILD)
+
+#if (CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
+  IMPORT_BIN(".qspi_dm42", "../c47-dmcp/DM42_qspi_3.x.bin", DM42_qspi);
+#endif  // include DM42 QSPI
+
   #if defined(JMSHOWCODES)                                        //JM Test
     int8_t            telltale_pos;                         //JM Test
     int8_t            telltale_lastkey;                     //JM Test
@@ -742,22 +754,35 @@ int convertKeyCode(int key) {
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
     fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);
 //--fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
-    nextTimerRefresh = 0;
+    nextTimerRefresh = SCREEN_REFRESH_PERIOD;
 
     // Status flags:
     //   ST(STAT_PGM_END)   - Indicates that program should go to off state (set by auto off timer)
     //   ST(STAT_SUSPENDED) - Program signals it is ready for off and doesn't need to be woken-up again
     //   ST(STAT_OFF)       - Program in off state (OS goes to sleep and only [EXIT] key can wake it up again)
     //   ST(STAT_RUNNING)   - OS doesn't sleep in this mode
-  //SET_ST(STAT_CLK_WKUP_SECONDS);
+    //   SET_ST(STAT_CLK_WKUP_SECONDS);
     SET_ST(STAT_CLK_WKUP_ENABLE); // Enable wakeup each minute (for clock update)
 
+
+    //** ** ** MAIN LOOP START ** ** **
     while(!backToDMCP) {
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(1,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
+                                               //    char rrr[100];
+                                               //    int ii = sys_auto_off_cnt();
+                                               //    sprintf(rrr, "time left: %d",(uint16_t)ii);
+                                               //    print_linestr(rrr,true);
+
       if(ST(STAT_PGM_END) && ST(STAT_SUSPENDED)) { // Already in off mode and suspended
         CLR_ST(STAT_RUNNING);
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(15,1000);
+                            #endif //DM42_POWERMARKS
         sys_sleep();
       }
-      else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {         // Just wait if no keys available.
+      else if(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer()) {          // Just wait if no keys available.
         CLR_ST(STAT_RUNNING);
 
         if(nextTimerRefresh == 0) {                                            // no timeout available
@@ -786,12 +811,22 @@ int convertKeyCode(int key) {
                                                   #endif // TMR_OBSERVE
             timeoutTime = 1;
           }
+                                                  // char rrr[100];
+                                                  // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
+                                                  // print_linestr(rrr,true);
+                                                  // rrr[0]=0;
+                                                  // print_linestr(rrr,false);
+                                                  // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
+                                                  // print_linestr(rrr,false);
 
           if(fnTimerGetStatus(TO_KB_ACTV) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 40);
           }
           if(fnTimerGetStatus(TO_FN_EXEC) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 15);
+          }
+          if(fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING || fnTimerGetStatus(TO_FN_LONG) == TMR_RUNNING || fnTimerGetStatus(TO_CL_LONG) == TMR_RUNNING) {
+            timeoutTime = min(timeoutTime, 10);
           }
 
           uint32_t sleepTime = SCREEN_REFRESH_PERIOD;
@@ -812,7 +847,16 @@ int convertKeyCode(int key) {
                                                     }
                                                   #endif // TMR_OBSERVE
 
+                              #if defined(DM42_POWERMARKS)
+                                powerMarkerMsF(10,1000);
+                              #endif //DM42_POWERMARKS
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(max(sleepTime, 1),8000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           sys_sleep();
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(1,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         }
 
@@ -834,6 +878,9 @@ int convertKeyCode(int key) {
       // =======================
       // Externally forced LCD repaint
       if(ST(STAT_CLK_WKUP_FLAG)) {
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(5,10000);
+                            #endif //DM42_POWERMARKS
         if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
 
                                                   #if defined(TMR_OBSERVE)
@@ -849,6 +896,9 @@ int convertKeyCode(int key) {
         continue;
       }
       if(ST(STAT_POWER_CHANGE)) {
+                            #if defined(DM42_POWERMARKS)
+                              powerMarkerMsF(7,10000);
+                            #endif //DM42_POWERMARKS
         showHideUsbLowBattery();
         refreshLcd();
         lcd_refresh_wait();
@@ -1049,15 +1099,25 @@ int convertKeyCode(int key) {
                                                   #endif // JMSHOWCODES
 
       if(38 <= key && key <=43) { // Function key
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%c", key+11);
         btnFnPressed(charKey);
-        keyClick(3);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(3);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
       else if(1 <= key && key <= 37) { // Not a function key
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%02u", key - 1);
         btnPressed(charKey);
-        keyClick(1);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(1);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
 
@@ -1080,33 +1140,49 @@ int convertKeyCode(int key) {
                                                   #endif // FN_RELEASE_CODE_WP43S
 
       else if(key == 0 && charKey[1] == 0) {            //JM, key=0 is release, therefore there must have been a press before that. If the press was a FN key, FN_key_pressed > 0 when it comes back here for release.
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         btnFnReleased(charKey);                                //    in short, it can only execute FN release after there was a FN press.
-        keyClick(4);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(4);
+                            #endif //DM42_KEYCLICK
       //lcd_refresh_dma();
       }
       else if(key == 0) {
+                            #if defined(DM42_POWERMARK_KEYPRESS)
+                              powerMarkerMsF(1,4000);
+                            #endif //DM42_POWERMARK_BEGIN_WHILE
         btnReleased(charKey);
-        keyClick(2);
-          if(calcMode == CM_PEM && shiftF && ( (calcModel == USER_C47 && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2')))
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(2);
+                            #endif //DM42_KEYCLICK
+        if(calcMode == CM_PEM && shiftF && ( (calcModel == USER_C47 && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2')))
                                             || (calcModel == USER_R47 && ((charKey[0] == '2' && charKey[1] == '2') || (charKey[0] == '2' && charKey[1] == '7')))
                                                  )) {
-            shiftF = false;
-            refreshScreen(74);
-          }
+          shiftF = false;
+          refreshScreen(74);
+        }
         //lcd_refresh_dma();
       }
 
       if(key >= 0) {                                        //dr
         lcd_refresh_dma();
         if(key > 0) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV);  //dr
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM);     // Key pressed
         }
         else if(cursorEnabled == true) {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 480);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(6);
+                            #endif //DM42_KEYCLICK
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_CURSOR);
         }
         else
         {
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
+                            #if defined(DM42_KEYCLICK)
+                              keyClick(7);
+                            #endif //DM42_KEYCLICK
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT); // Key released
         }
       }
 
@@ -1123,6 +1199,9 @@ int convertKeyCode(int key) {
 
       if(nextTimerRefresh != 0 && nextTimerRefresh <= now) {
         refreshTimer();                                     // Executes pending timer jobs
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(5,4000);
+                          #endif //DM42_POWERMARK_KEYPRESS
       }
       now = sys_current_ms();
       if(nextScreenRefresh <= now) {
@@ -1131,6 +1210,9 @@ int convertKeyCode(int key) {
           nextScreenRefresh = now + SCREEN_REFRESH_PERIOD;  // we were out longer than expected; just skip ahead.
         }
         if((calcMode != CM_TIMER) || (fnTimerGetStatus(TO_TIMER_APP) != TMR_RUNNING)) {
+                          #if defined(DM42_POWERMARK_KEYPRESS)
+                            powerMarkerMsF(10,1000);
+                          #endif //DM42_POWERMARK_KEYPRESS
           refreshLcd();
           if(key >= 0) {
             lcd_refresh();

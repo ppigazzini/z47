@@ -16,6 +16,9 @@ Func: fnInvert
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"0.2"
 
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=LonI:"-1"
+
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=LonI:"1"
 
@@ -79,10 +82,16 @@ Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
 
 
 ;=======================================
-; 1 / Short Integer --> Error24
+; 1 / Short Integer --> Real
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"0.2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#7" RX=ShoI:"1#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-1#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"-1#7" RX=ShoI:"-1#7"
 
 
 
@@ -116,31 +125,34 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":MULTPI RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":GRAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":GRAD RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":GRAD RX=Real:"-0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":RAD
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"0"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-inf"
 
 
 

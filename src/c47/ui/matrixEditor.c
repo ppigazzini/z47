@@ -1149,10 +1149,12 @@ int16_t colX = 0;
 
   }
 
-  if(!toDisplay) {
-    //printf("sss:%s\n", errorMessage);
-    showString(errorMessage, font, X_POS, Y_POS - (maxRows -1) * fontHeight, vm, true, false);
-  }
+// I suspect strongly this is test code previously not removed. Keeping in here until we are sure. JM 2025-05-16
+// It interferes by printing vectors in X while the vector is locaed in say T
+// why do we have this ????  if(!toDisplay) {
+// why do we have this ????    //printf("sss:%s\n", errorMessage);
+// why do we have this ????    showString(errorMessage, font, X_POS, Y_POS - (maxRows -1) * fontHeight, vm, true, false);
+// why do we have this ????  }
 
   displayFormat = tmpDisplayFormat;
   displayFormatDigits = tmpDisplayFormatDigits;
@@ -1163,7 +1165,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   char tmpString[200];
   const bool_t colVector = matrix->header.matrixColumns == 1 && matrix->header.matrixRows > 1;
   const int rows = colVector ? 1 : matrix->header.matrixRows;
-  const int cols = colVector ? matrix->header.matrixRows : matrix->header.matrixColumns;
+  const int actualCols = colVector ? matrix->header.matrixRows : matrix->header.matrixColumns;
+  const int cols = (actualCols > maxCols) ? maxCols : actualCols;   // clamp for safety
   const int maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
   const bool_t forEditor = matrix == &openMatrixMIMPointer.realMatrix;
   const uint16_t sRow = forEditor ? scrollRow : 0;
@@ -1191,8 +1194,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         real34_t r34Val;
-        bool_t r34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
-        real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
+        bool_t r34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol]);
+        real34Copy(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol], &r34Val);
         real34SetPositiveSign(&r34Val);
 
         if(allElementsInColAreIntegers[j]) {
@@ -1207,9 +1210,9 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;
-            for(int p = 0; p < MATRIX_MAX_COLUMNS; ++p) {
+          for(int p = 0; p < MATRIX_MAX_COLUMNS; ++p) {
             maxRightWidth[p] = maxLeftWidth[p] = 0;
-            }
+          }
           goto begin; // redo
         }
 
@@ -1220,15 +1223,15 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
                ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
-                if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
-                  maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
-                }
+              if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
+                maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
+              }
               break;
             }
           }
-            if(maxLeftWidth[j] < (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j])) {
-              maxLeftWidth[j] = (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j]);
-            }
+          if(maxLeftWidth[j] < (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j])) {
+            maxLeftWidth[j] = (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j]);
+          }
         }
         else {
           if(r34sign && strstr(tmpString, "/")) {
@@ -1505,7 +1508,8 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   char tmpString[200];
   const bool_t colVector = matrix->header.matrixColumns == 1 && matrix->header.matrixRows > 1;
   const int rows = colVector ? 1 : matrix->header.matrixRows;
-  const int cols = colVector ? matrix->header.matrixRows : matrix->header.matrixColumns;
+  const int actualCols = colVector ? matrix->header.matrixRows : matrix->header.matrixColumns;
+  const int cols = (actualCols > maxCols) ? maxCols : actualCols;   // clamp for safety
   const int maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
   const bool_t forEditor = matrix == &openMatrixMIMPointer.complexMatrix;
   const uint16_t sRow = forEditor ? scrollRow : 0;
@@ -1536,7 +1540,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         complex34_t c34Val;
-        complex34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &c34Val);
+        complex34Copy(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol], &c34Val);
         if(polarMode) {
           real_t x, y;
           real34ToReal(VARIABLE_REAL34_DATA(&c34Val), &x);
@@ -1549,7 +1553,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
 
         rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = 0;
         real34SetPositiveSign(VARIABLE_REAL34_DATA(&c34Val));
-        bool_t c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
+        bool_t c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol]);
         real34ToDisplayString(VARIABLE_REAL34_DATA(&c34Val), amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
         int16_t width = stringWidth(tmpString, font, true, true) + 1;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
@@ -1577,7 +1581,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = 0;
         c34sign = false;
         if(!polarMode) {
-          c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
+          c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol]);
           real34SetPositiveSign(VARIABLE_IMAG34_DATA(&c34Val));
         }
         real34ToDisplayString(VARIABLE_IMAG34_DATA(&c34Val), polarMode ? angleMode : amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, LIMITEXP, !FRONTSPACE, LIMITIRFRAC);

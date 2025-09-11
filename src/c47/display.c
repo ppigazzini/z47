@@ -227,6 +227,13 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  uint8_t savedDisplayFormat       = displayFormat;
+  bool_t  ovrENG = getSystemFlag(FLAG_ENGOVR);
+
+  if(calcMode == CM_PEM) {
+    displayFormat = DF_ALL;         // Display all digits for reals in PEM
+    clearSystemFlag(FLAG_ENGOVR);   // Default to SCI display in PEM for large reals
+  }
 
   #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
@@ -262,7 +269,9 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
   }
   while(stringWidth(displayString, font, true, true) > maxWidth);
 
+  displayFormat       = savedDisplayFormat;
   displayFormatDigits = savedDisplayFormatDigits;
+  if(ovrENG) setSystemFlag(FLAG_ENGOVR);
 }
 
 
@@ -315,8 +324,11 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get log base 1024 of real34
       decContext c = ctxtReal39;
-      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      int maxExponent = x.exponent + x.digits;
+      c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
+      maxExponent = x.exponent + x.digits;
+      c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
@@ -343,12 +355,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       real_t tmp3, fact;
       int32ToReal(1000, &tmp3);
       int32ToReal(1024, &tmp4);
-      realDivide(&tmp3, &tmp4, &fact, &c);
+      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
       //printRealToConsole(&fact, "factor = ", "\n");
-      realPower(&fact, &tmpIp, &tmp3, &c);
+      realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
       //printRealToConsole(&tmp3, "factor^IP = ", "\n");
       //printRealToConsole(&xx, "xx = ", "\n");
-      realMultiply(&xx, &tmp3, &x, &c);
+      realMultiply(&xx, &tmp3, &x, &ctxtReal39);
       //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
@@ -441,7 +453,7 @@ overRange:
       // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
       real34ToReal(real34, &tmp1);
       decContext c = ctxtReal39;
-      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      c.digits = (SHOWMODE ? 39 : NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS);
       roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &c); //  &ctxtReal75);
       realToReal34(&tmp1, &reduced);
       // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
@@ -577,7 +589,7 @@ overRange:
       exponent   = 0;
     }
   }*/
-  
+
   // printf("value34 (INT)=%i exponent=%i limitExponent=%i (exponentLimit=%i) (exponentHideLimit=%i) \n", real34ToUInt32(&value34),  exponent,limitExponent, exponentLimit, exponentHideLimit);
 
   if(limitExponent) {
@@ -676,7 +688,7 @@ overRange:
 
     if(noFix || exponent >= displayHasNDigits ||
         exponent <= -displayHasNDigits ||
-        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || 
+        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) ||
         (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
       digitsToDisplay = min(displayHasNDigits, numDigits - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
@@ -702,6 +714,12 @@ overRange:
         lastDigit = firstDigit;
         numDigits = 1;
         exponent++;
+      }
+
+      // Remove trailling zeros
+      while(numDigits > 1 && bcd[lastDigit] == 0) {
+        lastDigit--;
+        numDigits--;
       }
 
       // The sign
@@ -813,9 +831,16 @@ overRange:
   //////////////
   // FIX mode //
   //////////////
+#undef SIG_VARIABLE_JUMP
+
   if((displayFormat == DF_FIX || displayFormat == DF_SF || flag2To10_baseunit_integer)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
     if(noFix || exponent >= displayHasNDigits ||
-         exponent < -(int32_t)displayFormatDigits ||
+         #if defined(SIG_VARIABLE_JUMP)
+           exponent < -(int32_t)displayFormatDigits ||                                           //allow zero digits .00...1 to track n
+         #else
+           ((displayFormat == DF_SF) && (exponent < (getSystemFlag(FLAG_ENGOVR) ? -2 : -3))) ||  //in SIG & ENGOVR,  allow 2 zero digits .001 then jump, in SIG & !ENGOVR, allow 3 zero digits .0001 then jump
+           ((displayFormat != DF_SF) && (exponent < -(int32_t)displayFormatDigits)) ||
+         #endif //SIG_VARIABLE_JUMP
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
       ) { // Display in SCI or ENG format
@@ -1014,7 +1039,6 @@ overRange:
       digitsToDisplay = displayFormatDigits;
       digitToRound    = min(firstDigit + (int16_t)displayFormatDigits, lastDigit);
     }
-
     if(bcd[digitToRound + 1] >= 5) {
       bcd[digitToRound]++;
     }
@@ -1380,8 +1404,10 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
 
     decContext c = ctxtReal39;
-    c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+    int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
+    c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
 
     realToReal34(&real, &real34);
@@ -1393,8 +1419,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   }
 
   real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isComplex, limitIrfrac);
-
-  if(updateDisplayValueX) {                //This is used by ROUND only and it does not seem to work.
+  if(updateDisplayValueX) {
     if(tagPolar) {
       strcat(displayValueX, "j");
     }
@@ -1452,6 +1477,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     else {                                // JM normal full display of the full imag part, + and - shown
       int ii = imagOffset;
       bool_t imagNegative = false;
+      //determine if second term is negative
       while(ii < imagOffset + min(4,stringByteLength(displayString + imagOffset))) {    //scan first 4 chars, covering two glyphs
 
         #if defined(PC_BUILD_TELLTALE)
@@ -1462,7 +1488,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
           printf("AA1: %i/%i Real is non-zero: §%s§%s§ %c § %i §\n", ii, imagOffset + stringByteLength(displayString + imagOffset) - 1, tmp_b, tmp_a, (uint8_t)(displayString[ii]), (uint8_t)(displayString[ii]));
         #endif //PC_BUILD_TELLTALE
 
-        if((displayString[ii] & 0x80)) { // if any two-byte character is reached, it means negative is not in play
+        if((displayString[ii] >= '0' && displayString[ii] <= '9')) { // if digit is reached, it is not negative
           break;
         }
         if(displayString[ii]=='-') {
@@ -2206,7 +2232,7 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
-    real34ToDisplayString(&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
+    real34ToDisplayString(&tmpReal34, amNone, displayString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, maxWidth,  34, LIMITEXP, !FRONTSPACE, NOIRFRAC);
 
 
     if(removeTrailingRadix) {
@@ -2942,8 +2968,8 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     int16_t dCounter = d - (*startingLine)*SHOWLineSize;
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
-    while((*source < *last) && 
-          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) && 
+    while((*source < *last) &&
+          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <  maxWidth - (dCounter == 0 ? 0 : Width_0) ) &&
           (*dest < TMP_STR_LENGTH - 6)
          ) {
       #if defined(MONITOR_SHOW)
@@ -2953,7 +2979,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       #if defined(MONITOR_SHOW)
         printf("03    ==>%c (%u)",((tmpString + (*dest))[0]), (uint8_t)((tmpString + (*dest))[0]));
         if(((uint8_t)((tmpString + (*dest))[0]) & 0x80) == 0) {printf("\n");}
-      #endif 
+      #endif
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
         #if defined(MONITOR_SHOW)
@@ -2963,6 +2989,9 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       tmpString[++*dest] = 0;
       (*source)++;
     }
+    #if defined(MONITOR_SHOW)
+      printf("  --->d=%i wid=%i\n",d,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)));
+    #endif
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
       if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[*dest-2] == SEPARATOR_LEFT[0] && tmpString[*dest-1] == SEPARATOR_LEFT[1]) ||
@@ -3631,7 +3660,7 @@ goBreak1:
       case dtComplex34Matrix:
         clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
         dispM(showRegis, tmpString + 2100);                   //then display the matrix
-        lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE-4);
         temporaryInformation = TI_SHOWNOTHING;                //then tell the system it is in show nothing mode,
         if(programRunStop == PGM_RUNNING) {   //this needs to be checked - maybe needed for all show items not only here
           refreshScreen(150);

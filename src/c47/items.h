@@ -34,7 +34,7 @@
 #define ITM_EVEN                      22
 #define ITM_ODD                       23
 #define ITM_FPQ                       24
-#define ITM_IPQ                       25
+#define ITM_INTQ                      25
 #define ITM_CPXQ                      26
 #define ITM_MATRIXQ                   27
 #define ITM_NANQ                      28
@@ -100,7 +100,7 @@
 #define ITM_FLOOR                     88
 #define ITM_GCD                       89
 #define ITM_LCM                       90
-#define ITM_DEC                       91
+#define ITM_DECR                      91
 #define ITM_INC                       92
 #define ITM_IP                        93
 #define ITM_FP                        94
@@ -226,13 +226,13 @@
 #define CST_82                       210
 #define CST_83                       211
 #define CST_84                       212
-#define ITM_0212                     213
-#define ITM_0213                     214
-#define ITM_0214                     215
-#define ITM_0215                     216
-#define ITM_0216                     217
-#define ITM_0217                     218
-#define ITM_0218                     219
+#define ITM_0213                     213
+#define ITM_0214                     214
+#define ITM_0215                     215
+#define ITM_0216                     216
+#define ITM_0217                     217
+#define ITM_0218                     218
+#define ITM_0219                     219
 
 
 // Conversions
@@ -1337,7 +1337,7 @@
 
 
 // Curve fitting
-#define ITM_BESTF                   1297
+#define ITM_BESTF_OLD               1297
 #define ITM_T_EXPF                  1298
 #define ITM_T_LINF                  1299
 #define ITM_T_LOGF                  1300
@@ -1350,7 +1350,7 @@
 #define ITM_T_ROOTF                 1307
 #define ITM_SETALLF                 1308
 #define ITM_RSTF                    1309
-#define ITM_1310                    1310
+#define ITM_BESTF                   1310
 #define ITM_1311                    1311
 #define ITM_1312                    1312
 
@@ -1541,7 +1541,7 @@
 #define ITM_JPLUS                   1493
 #define ITM_JMINUS                  1494
 #define ITM_JUL_GREG                1495
-#define ITM_1496                    1496
+#define ITM_MSG                     1496
 #define ITM_KEY                     1497
 #define ITM_KEYG                    1498
 #define ITM_KEYX                    1499
@@ -1567,7 +1567,7 @@
 #define ITM_MEM                     1519
 #define ITM_MENU                    1520
 #define ITM_MONTH                   1521
-#define ITM_MSG                     1522
+#define ITM_MSG_OLD                 1522
 #define ITM_MULPI                   1523
 #define ITM_MVAR                    1524
 #define ITM_M_DELR                  1525
@@ -1730,7 +1730,7 @@
 #define ITM_sn                      1682
 #define ITM_cn                      1683
 #define ITM_dn                      1684
-#define ITM_toHR                    1685 //reserved, not used anymore, removed from testPgms
+#define ITM_toHR_OLD                1685 //reserved, not used anymore, removed from testPgms
 #define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
 #define ITM_HMStoTM                 1688
@@ -1806,7 +1806,7 @@
 #define ITM_PLOT_CENTRL             1756
 #define ITM_HIDE_OLD                1757
 #define ITM_SMI                     1758
-#define ITM_PLOT_ASSESS                 1759
+#define ITM_PLOT_ASSESS             1759
 #define ITM_PLOT_NXT                1760
 #define ITM_PLOT_REV                1761
 #define ITM_PLOTZOOM                1762
@@ -1902,8 +1902,8 @@
 #define KEY_COMPLEX                 1848
 #define ITM_toPOL2                  1849
 #define ITM_toREC2                  1850
-#define ITM_1851                    1851  //blank
-#define ITM_1852                    1852  //blank
+#define ITM_CARRY                   1851
+#define ITM_OVERFLOW                1852
 #define ITM_ERPN                    1853
 #define ITM_HOMEx3                  1854
 #define ITM_SHTIM                   1855
@@ -1932,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define ITM_1881                    1881
+#define MNU_BITSET                  1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884
@@ -1956,7 +1956,7 @@
 #define ITM_GLUStoFZUS              1902
 #define ITM_FZUStoGLUS              1903
 #define ITM_N_KEY_USER              1904
-#define ITM_1905                    1905
+#define ITM_LASTERR                 1905
 #define ITM_N_KEY_SIGMA             1906
 #define MNU_PLOT_STAT               1907
 #define ITM_N_KEY_FSH               1908
@@ -1985,7 +1985,7 @@
 #define ITM_STKTO3x1                1931
 #define ITM_XPARSE                  1932
 #define ITM_WRXPALL                 1933
-#define ITM_RNG                     1934
+#define ITM_RNG_OLD                 1934
 #define ITM_FLGSV                   1935
 #define ITM_CPXI                    1936
 #define ITM_CPXJ                    1937
@@ -2031,7 +2031,7 @@
 #define ITM_1977                    1977
 #define ITM_1978                    1978
 #define ITM_1979                    1979
-#define ITM_1980                    1980
+#define ITM_PCURVE                  1980
 #define ITM_toPOL_HP                1981
 #define ITM_toREC_HP                1982
 #define ITM_toPOL_CX                1983
@@ -2067,7 +2067,7 @@
 #define ITM_NVECT                   2013
 #define ITM_SHOWX                   2014
 #define ITM_SHOWY                   2015
-#define ITM_DENMAX2_OLD             2016
+#define ITM_DENMAX2_OLDER           2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
 #define ITM_RMODEQ                  2019
@@ -2155,9 +2155,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_RIBBON_C47              2104
-#define ITM_RIBBON_R47              2105
-#define ITM_RIBBON_SAV              2106
+#define ITM_2104                    2104
+#define ITM_2105                    2105
+#define ITM_2106                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
@@ -2214,8 +2214,8 @@
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
 #define ITM_PPLUS                   2162
-#define ITM_RIBBON_FIN              2163
-#define ITM_RIBBON_CPX              2164
+#define ITM_2163                    2163
+#define ITM_2164                    2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2247,7 +2247,7 @@
 #define ITM_SCRSUP                  2193
 #define ITM_SCRSUB                  2194
 #define ITM_HIDE                    2195
-#define ITM_DENMAX2                 2196
+#define ITM_DENMAX2_OLD             2196
 #define ITM_SETSIG2                 2197
 #define ITM_VOL                     2198
 #define ITM_VOLQ                    2199
@@ -2275,11 +2275,11 @@
 #define ITM_MIKtoK100M              2221
 #define MNU_CONVYMMV                2222
 #define ITM_XEQP1                   2223
-#define ITM_SI_Ki                   2224
-#define ITM_SI_Mi                   2225
-#define ITM_SI_Gi                   2226
-#define ITM_SI_Ti                   2227
-#define ITM_SI_Pi                   2228
+#define ITM_RCLP1                   2224
+#define ITM_2225                    2225
+#define ITM_2226                    2226
+#define ITM_2227                    2227
+#define ITM_2228                    2228
 #define MNU_PREFIX                  2229
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
@@ -2287,7 +2287,7 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_YY_DFLT                 2236
+#define ITM_YY_DFLT_OLD             2236
 #define ITM_YY_TRACK                2237
 #define MNU_TAMNONREGTRK            2238
 #define ITM_CLMALL                  2239
@@ -2329,9 +2329,9 @@
 #define SFL_MNUp1                   2273 // The SFL item names are not used
 #define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
-#define SFL_2276                    2276 // The SFL item names are not used
-#define SFL_2277                    2277 // The SFL item names are not used
-#define SFL_2278                    2278 // The SFL item names are not used
+#define SFL_BCD                     2276 // The SFL item names are not used
+#define SFL_PCURVE                  2277 // The SFL item names are not used
+#define SFL_CLX_DROP                2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
 #define SFL_2281                    2281 // The SFL item names are not used
@@ -2455,7 +2455,7 @@
 #define ITM_USER_R47bk_fg           2392
 #define ITM_USER_R47fg_bk           2393
 #define ITM_USER_R47fg_g            2394
-#define ITM_USER_EXPR               2395
+#define ITM_2395                    2395
 
 #define ITM_ANGLEQ                  2396
 #define ITM_DATEQ                   2397
@@ -2466,7 +2466,7 @@
 #define ITM_TYPEQ                   2402
 
 #define MNU_PFN_3                   2403
-#define ITM_ALPHA_EDIT              2404
+#define ITM_EDIT                    2404
 #define ITM_OPEN_MENU               2405
 #define MNU_TAMMENU                 2406
 #define MNU_MENU                    2407
@@ -2578,7 +2578,59 @@
 #define ITM_GET_WOY                 2504
 #define ITM_WOY                     2505
 
-#define LAST_ITEM                   2506
+
+#define ITM_RIBBON_CPX              2506
+#define ITM_RIBBON_FIN              2507
+#define ITM_RIBBON_SAV              2508
+#define ITM_RIBBON_C47              2509
+#define ITM_RIBBON_C47PL            2510
+#define ITM_RIBBON_R47              2511
+#define ITM_RIBBON_R47PL            2512
+#define ITM_RIBBON_ENG              2513
+#define ITM_2514                    2514
+#define ITM_2515                    2515
+#define ITM_2516                    2516
+#define ITM_2517                    2517
+#define ITM_2518                    2518
+#define ITM_2519                    2519
+#define ITM_2520                    2520
+#define ITM_2521                    2521
+#define ITM_2522                    2522
+#define ITM_2523                    2523
+
+#define ITM_REALMATQ                2524
+#define ITM_COMPLEXMATQ             2525
+#define ITM_CONFIGQ                 2526
+#define ITM_ISREZQ                  2527
+#define ITM_ISIMZQ                  2528
+#define ITM_ISREQ                   2529
+#define ITM_ISIMQ                   2530
+#define ITM_ISVECT2DQ               2531
+#define ITM_ISVECT3DQ               2532
+#define ITM_SI_Ki                   2533
+#define ITM_SI_Mi                   2534
+#define ITM_SI_Gi                   2535
+#define ITM_SI_Ti                   2536
+#define ITM_SI_Pi                   2537
+#define ITM_ALPHALTRIM              2538
+#define ITM_ALPHARTRIM              2539
+#define ITM_ALPHAMID                2540
+#define ITM_ALPHALEFT               2541
+#define ITM_ALPHARIGHT              2542
+#define ITM_ALPHALOWER              2543
+#define ITM_ALPHAUPPER              2544
+
+#define VAR_UEST                    2545
+#define VAR_LEST                    2546
+#define VAR_UY                      2547
+#define VAR_LY                      2548
+
+#define ITM_RNG                     2549
+#define ITM_YY_DFLT                 2550
+#define ITM_DENMAX2                 2551
+#define MNU_AIMCATALOG              2552
+
+#define LAST_ITEM                   2553
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
@@ -2593,6 +2645,7 @@ char     *lastFuncSoftmenuName  (void);
 int16_t  lastSTORCL             (void);
 int16_t  lastFuncNo             (void);
 uint16_t indirectionType        (uint16_t func);
+bool_t   isFunctionOldParam16   (uint16_t func);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

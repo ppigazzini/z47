@@ -35,11 +35,19 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07c6"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
 // Version 7c6 fixes a gitlab compile issue, no other changes.
+// Version 7a7 internal alpha test
+// Version 7b7 bugfix version, supplementing nano with float libraries
+// Version 7b8 bugfix version, supplementing nano with float libraries
+// Version 7a9 internal alphs
+// Version 7b9 test for FACTORS
+// Version 7b10 bugfixes for FACTORS
+// Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
+// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
 
 
 #if !defined(CALCMODEL)
@@ -115,7 +123,7 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
-           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -138,8 +146,10 @@
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
-           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+    #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -161,8 +171,14 @@
 //Testing and debugging
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
+  #define    DM42_POWERMARKS
+  #undef     DM42_POWERMARKS
+  #define    DM42_POWERMARK_KEYPRESS
+  #undef     DM42_POWERMARK_KEYPRESS
+
   #define    CLICK_REFRESHSCR           //Add a 5 ms click before refresh screen
   #undef     CLICK_REFRESHSCR
+
   #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
   #undef     BATTERYTEST
   #define    MONITOR_VOLTAGE_INTEGRATOR
@@ -187,7 +203,7 @@
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
-  #define    ANALYSE_REFRESH
+  #define    ANALYSE_REFRESH              //various refresh backtraces
   #undef     ANALYSE_REFRESH
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
@@ -195,6 +211,9 @@
   #undef     VERBOSE_DETERMINEITEM
   #define    VERBOSE_REGISTERS
   #undef     VERBOSE_REGISTERS
+  #define    GRAPHDEBUG
+  #undef     GRAPHDEBUG
+
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
@@ -217,9 +236,12 @@
     #undef DEBUGUNDO
     #define DEBUG_EXECUTE
     #undef DEBUG_EXECUTE
+    #define DEBUG_PGM       // backtrace from insert step
+    #undef DEBUG_PGM        //
   #else // !PC_BUILD
     #undef DEBUGUNDO
     #undef DEBUG_EXECUTE
+    #undef DEBUG_PGM
   #endif // PC_BUILD
 
 
@@ -306,10 +328,10 @@
   #define JM_TO_3S_CTFF    600   //ms TO_3S_CTFF
 #endif // DMCP_BUILD
 
-#define JM_TO_KB_ACTV      6000  //ms TO_KB_ACTV
-#define PROGRAM_KB_ACTV   60000  //ms TO_KB_ACTV
-#define PROGRAM_STOP      FAST_SCREEN_REFRESH_PERIOD+50 //ms TO_KB_ACTV
-
+#define TO_KB_ACTV_MEDIUM 6000
+#define TO_KB_ACTV_CURSOR  480
+#define TO_KB_ACTV_SHORT    40
+#define PROGRAM_KB_ACTV  60000
 
 
 #define JMSHOWCODES_KB3   // top line right   Single Double Triple
@@ -339,37 +361,26 @@
 //*********************************
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
-#define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
-#define DEBUG_REGISTER_L                 0 //1 JM Showing register L content on the PC GUI
-#define SHOW_MEMORY_STATUS               0 //1 JM Showing the memory status on the PC GUI
-#define MMHG_PA_133_3224                 0 //1 JM mmHg to Pa conversion coefficient is 133.3224 an not 133.322387415
-#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 //JMMAX 9965   // 43S:3328 //JMMAX // 1001 decimal digits: 3328 ≃ log2(10^1001)
-#define MAX_FACTORIAL                    450  //JMMAX 1142   // 43S: 450 //JMMAX
-
-                               // bits  digits  43S     x digits   x! digits
-                               //                         69!            98
-                               //                        210!           398
-                               // 3328  1001    450!     449!           998
-                               //                        807!          1997
-                               //                        977!          2499
-                               // 9965  3000            1142!          2998
-                               //15000  4515            1388!
-                               //                       2122!          6140
-
+#define DEBUG_PANEL                      0 // Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
+#define DEBUG_REGISTER_L                 0 // Showing register L content on the PC GUI
+#define SHOW_MEMORY_STATUS               0 // Showing the memory status on the PC GUI
+#define MMHG_PA_133_3224                 1 // mmHg to Pa conversion coefficient is 133.3224 and not 133.322387415
+#define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 // 1001 decimal digits: 3328 ≃ log2(10^1001)
+#define MAX_FACTORIAL                    450  // Auto conversion to Real for > 450
 #define SHORT_INTEGER_SIZE_IN_BLOCKS     2 // 2 blocks = 8 bytes = 64 bits
 #define SHORT_INTEGER_SIZE_IN_BYTES      8 // 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
-#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
+#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // 1 for PRINTXY to be done after every evaluation of the formula; Or the complex solver for every iteration;
+#define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
-
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
-
-#define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
-#define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
-#define NARROW_SCREEN                1 // 400x1280 portrait screen
+#define BIG_SCREEN_COEF                  1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
+#define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
+#define NARROW_SCREEN                    1 // 400x1280 portrait screen
+#undef  USECURVES                          // activate spline curve option in the plot menu
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
@@ -405,6 +416,8 @@
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 #define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
+#define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
+#define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -422,11 +435,6 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MSAV        53
-#define USER_MFIN        54
-#define USER_MCPX        55
-#define USER_MC47        56
-#define USER_MR47        57
 #define USER_HRESET      58
 #define USER_PRESET      59
 
@@ -480,7 +488,7 @@
 #define ERROR_SINGULAR_MATRIX                     22
 #define ERROR_FLASH_MEMORY_FULL                   23
 #define ERROR_INVALID_DATA_TYPE_FOR_OP            24
-#define ERROR_WP34S_COMPAT                        25
+#define ERROR_NO_MVAR_FOUND                       25
 #define ERROR_ENTER_NEW_NAME                      26
 #define ERROR_CANNOT_DELETE_PREDEF_ITEM           27
 #define ERROR_NO_SUMMATION_DATA                   28
@@ -516,33 +524,44 @@
 #define ERROR_IPX_INVALID_FOR_SI                  58
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
-
+#define ERROR_RESERVED_VARIABLE_NAME              61
+#define LAST_ERROR_MESSAGE                        61
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        61
-#define SAVING_STATE_FILE                         62
-#define RESTORING_STATS                           63
-#define COMPLEX_SOLVER                            64
-#define GRAPHING                                  65
-#define RECALC_SUMS                               66
-#define REAL_SOLVER                               67
+#define LOADING_STATE_FILE                       100
+#define SAVING_STATE_FILE                        101
+#define RESTORING_STATS                          102
+#define COMPLEX_SOLVER                           103
+#define GRAPHING                                 104
+#define RECALC_SUMS                              105
+#define REAL_SOLVER                              106
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        68
-#define TI_State_file_restored                    69
-#define TI_Saved_programs_and_equations           70
-#define TI_appended                               71
-#define TI_Saved_global_and_local_registers       72
-#define TI_w_local_flags_restored                 73
-#define TI_Saved_system_settings_restored         74
-#define TI_Saved_statistic_data_restored          75
-#define TI_Saved_user_variables_restored          76
-#define TI_Program_file_loaded                    77
-#define TI_Not_enough_memory_for_undo             78
+#define TI_Backup_restored                       107
+#define TI_State_file_restored                   108
+#define TI_Saved_programs_and_equations          109
+#define TI_appended                              110
+#define TI_Saved_global_and_local_registers      111
+#define TI_w_local_flags_restored                112
+#define TI_Saved_system_settings_restored        113
+#define TI_Saved_statistic_data_restored         114
+#define TI_Saved_user_variables_restored         115
+#define TI_Program_file_loaded                   116
+#define TI_All_user_flags_cleared                117
+#define TI_All_data_prgms_cleared                118
+#define TI_All_user_menus_cleared                119
+#define TI_All_user_vars_cleared                 120
+#define TI_All_user_prgms_deleted                121
+#define TI_All_user_menus_deleted                122
+#define TI_All_user_vars_deleted                 123
+
+//TI & ERROR Messages
+#define TI_Not_on_simulator                      124
+#define TI_Only_on_simulator                     125
+#define ERROR_TI_UNDO_FAILED                     126
 
 
-
-#define NUMBER_OF_ERROR_CODES                     79
+#define NUMBER_OF_ERROR_CODES                    127
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -553,6 +572,7 @@
 // stroke programs code and in C programs
 // unlike registers
 #define NUMBER_OF_GLOBAL_FLAGS                   112
+#define LAST_GLOBAL_FLAG                         111
 #define FIRST_LOCAL_FLAG                         112 // There are 112 global flag from 0 to 111
 #define NUMBER_OF_LOCAL_FLAGS                     32
 #define LAST_LOCAL_FLAG                          143
@@ -667,24 +687,27 @@
 #define FLAG_SHOWX                            0x804C
 #define FLAG_SHOWY                            0x804D
 #define FLAG_PBOX                             0x804E
-#define FLAG_PCROS                            0x804F
+#define FLAG_PCROS                            0x804F //16
 #define FLAG_PPLUS                            0x8050
 #define FLAG_PLINE                            0x8051
 #define FLAG_SCALE                            0x8052
-#define FLAG_VECT                             0x8053
+#define FLAG_VECT                             0x8053 //20
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
 #define FLAG_TOPHEX                           0x8058
+#define FLAG_BCD                              0x8059 //26
+#define FLAG_PCURVE                           0x805A //27
+#define FLAG_CLX_DROP                         0x805B //28
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+25 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
 #define SETTING_DMX                           0x0081 // denMax
 #define SETTING_SINT_WS                       0x0082 // shortIntegerWordSize
-#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode 
+#define SETTING_SINT_MODE                     0x0083 // shortIntegerMode
 #define SETTING_WATCHICON                     0x0084 // the bit controlling the watch face icon
 #define SETTING_SIOICON                       0x0085 // the bit controlling the serial i/o activity icon
 #define SETTING_PRINTERICON                   0x0086 // the bit controlling the IR printer icon
@@ -809,7 +832,7 @@ typedef enum {
 #define HG_STATUS                            0x6000  // 0110 0000 0000 0000
 #define HG_ENABLED                         ( 0 << 13 ) // Hourglass enabled
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
-#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked 
+#define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
 
 #define INC_FLAG                                   0
@@ -825,6 +848,12 @@ typedef enum {
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
 
+// Local labels
+#define FIRST_LOCAL_LABEL        0                             //   0 - 99 and A to L
+#define FIRST_UC_LOCAL_LABEL   100                             //   A (first upper case local label
+#define LAST_UC_LOCAL_LABEL    111                             //   L (last  upper case local label
+#define FIRST_LC_LOCAL_LABEL   112                             //   a (first lower case local label
+#define LAST_LOCAL_LABEL       123                             //   0 - 99, A to L and a to l
 
 //Variable names
 #define VAR_NO_X        0
@@ -871,6 +900,11 @@ typedef enum {
 #define VAR_NO_UX      41
 #define VAR_NO_LX      42
 #define VAR_NO_CPERONA 43
+#define VAR_NO_UEST    44
+#define VAR_NO_LEST    45
+#define VAR_NO_UY      46
+#define VAR_NO_LY      47
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Register numbering for                                                                           Register numbering in key
@@ -1008,8 +1042,12 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
   RESERVED_VARIABLE_CPERONA,                             //2043
+  RESERVED_VARIABLE_UEST,                                //2044
+  RESERVED_VARIABLE_LEST,                                //2045
+  RESERVED_VARIABLE_UY,                                  //2046
+  RESERVED_VARIABLE_LY,                                  //2047
   //  RESERVED_SPARES_HERE
-  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_CPERONA,
+  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LY,
 
   INVALID_VARIABLE_OLD = 2043,                           //2043   // Used to fix the backup.cfg loading
   INVALID_VARIABLE = 2199,                               //2199   // Old backup.cfg files will contain currentInputVariable to be 2043, which is fixed
@@ -1134,7 +1172,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define ON_PIXEL                            0x303030 // blue red green
 #define OFF_PIXEL                           0xe0e0e0 // blue red green
 #define SOFTMENU_STACK_SIZE                        8
-#define TEMPORARY_INFO_OFFSET                     10 // Vertical offset for temporary informations. I find 4 looks better
+#define TEMPORARY_INFO_OFFSET                      6 // Vertical offset for temporary informations. I find 4 looks better
 #define REGISTER_LINE_HEIGHT                      36
 
 #define Y_POSITION_OF_REGISTER_T_LINE             24 // 135 - REGISTER_LINE_HEIGHT*(registerNumber - REGISTER_X)
@@ -1180,17 +1218,15 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
 #define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
 #define X_COMPLEX_MODE_ADJ               -8           // note: auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)// 
-#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)// 
+#define X_ANGULAR_MODE        (X_COMPLEX_MODE     +14)//
+#define X_FRAC_MODE           (X_ANGULAR_MODE     +27)//
 #define X_BASE_MODE           (X_FRAC_MODE        + 0)//
-#define X_INTEGER_MODE        (X_BASE_MODE        +77)//
-#define X_MATRIX_MODE         (X_INTEGER_MODE     + 0)//
-#define X_TVM_MODE            (X_MATRIX_MODE      + 0)//
-#define X_OVERFLOW_CARRY      (X_TVM_MODE         +30)// 
-#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)// 
-#define X_HOURGLASS           (X_ALPHA_MODE       +11)// 
-#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)// 
-#define X_ASM                 (X_SSIZE_BEGIN      +11)// 
+#define X_INT_MX_TVM_MODE     (X_BASE_MODE        +77)//
+#define X_OVERFLOW_CARRY      (X_INT_MX_TVM_MODE  +30)//
+#define X_ALPHA_MODE          (X_OVERFLOW_CARRY   +10)//
+#define X_HOURGLASS           (X_ALPHA_MODE       +11)//
+#define X_SSIZE_BEGIN         (X_HOURGLASS        +14)//
+#define X_ASM                 (X_SSIZE_BEGIN      +11)//
 #define X_STOPWATCH           (X_ASM              + 4)//
 #define X_SERIAL_IO           (X_STOPWATCH        +18)// note: I/O and Printing (soft or hard) cannot happen at the same time
 #define X_PRINTER             (X_SERIAL_IO        + 0)//
@@ -1241,7 +1277,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 2)   //used for time consuming functions, divides, etc.
+#define NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS     ((displayFormat == DF_ALL || getSystemFlag(FLAG_2TO10)) ? NUMBER_OF_DISPLAY_DIGITS + 1 : displayFormatDigits + 2) //used for time consuming functions, divides, etc.
 #define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
@@ -1490,31 +1526,34 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         93
 #define TI_DATA_LOSS                              94
-#define TI_CLEAR_ALL_MENUS                        95    //DL
-#define TI_CLEAR_ALL_VARIABLES                    96    //DL
-#define TI_DEL_ALL_MENUS                          97    //DL
-#define TI_DEL_ALL_VARIABLES                      98    //DL
-#define TI_ROOTS2                                 99
-#define TI_ROOTS3                                100
-#define TI_IJ                                    101
-#define TI_I                                     102
-#define TI_J                                     103
-#define TI_MIJ                                   104
-#define TI_BYTES                                 105
-#define TI_BITS                                  106
-#define TI_SOLVER_VARIABLE_RESULT                107
-#define TI_DATA_NEG_OVRFL                        108
-#define TI_LASTSTATEFILE                         109
-#define TI_FUNCTION                              110
-#define TI_STORCL                                111
-#define TI_TVM_EFF                               112
-#define TI_TVM_IA                                113
-#define TI_NOT_AVAILABLE                         114
-#define TI_DISP_WOY                              115
-#define TI_DISP_JULIAN_WOY                       116
-#define TI_WOY                                   117
-#define TI_WOY_RULE                              118
-#define TI_MIJEQ                                 119
+#define TI_CLEAR_ALL_FLAGS                        95
+#define TI_CLEAR_ALL_MENUS                        96    //DL
+#define TI_CLEAR_ALL_VARIABLES                    97    //DL
+#define TI_DEL_ALL_PRGMS                          98
+#define TI_DEL_ALL_MENUS                          99    //DL
+#define TI_DEL_ALL_VARIABLES                     100    //DL
+#define TI_ROOTS2                                101
+#define TI_ROOTS3                                102
+#define TI_IJ                                    103
+#define TI_I                                     104
+#define TI_J                                     105
+#define TI_MIJ                                   106
+#define TI_BYTES                                 107
+#define TI_BITS                                  108
+#define TI_SOLVER_VARIABLE_RESULT                109
+#define TI_DATA_NEG_OVRFL                        110
+#define TI_LASTSTATEFILE                         111
+#define TI_FUNCTION                              112
+#define TI_STORCL                                113
+#define TI_TVM_EFF                               114
+#define TI_TVM_IA                                115
+#define TI_NOT_AVAILABLE                         116
+#define TI_DISP_WOY                              117
+#define TI_DISP_JULIAN_WOY                       118
+#define TI_WOY                                   119
+#define TI_WOY_RULE                              120
+#define TI_MIJEQ                                 121
+#define TI_REGTYPE                               122
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1644,9 +1683,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SUM_YMAX                                  27
 
 #define NUMBER_OF_STATISTICAL_SUMS                28
-#define SIGMA_N      (statisticalSumsPointer             ) // could be a 32 bit unsigned integer
-#define SIGMA_X      (statisticalSumsPointer + SUM_X     ) // could be a real34
-#define SIGMA_Y      (statisticalSumsPointer + SUM_Y     ) // could be a real34
+#define SIGMA_N      (statisticalSumsPointer             ) // could be a 32 bit unsigned integer. No, this must be old. SIGMA_N is a Real.
+#define SIGMA_X      (statisticalSumsPointer + SUM_X     ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_Y      (statisticalSumsPointer + SUM_Y     ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 #define SIGMA_X2     (statisticalSumsPointer + SUM_X2    )
 #define SIGMA_X2Y    (statisticalSumsPointer + SUM_X2Y   )
 #define SIGMA_Y2     (statisticalSumsPointer + SUM_Y2    )
@@ -1668,10 +1707,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_1onY2  (statisticalSumsPointer + SUM_1onY2 )
 #define SIGMA_X3     (statisticalSumsPointer + SUM_X3    )
 #define SIGMA_X4     (statisticalSumsPointer + SUM_X4    )
-#define SIGMA_XMIN   (statisticalSumsPointer + SUM_XMIN  ) // could be a real34
-#define SIGMA_XMAX   (statisticalSumsPointer + SUM_XMAX  ) // could be a real34
-#define SIGMA_YMIN   (statisticalSumsPointer + SUM_YMIN  ) // could be a real34
-#define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
+#define SIGMA_XMIN   (statisticalSumsPointer + SUM_XMIN  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_XMAX   (statisticalSumsPointer + SUM_XMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_YMIN   (statisticalSumsPointer + SUM_YMIN  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
+#define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
@@ -1727,11 +1766,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //#define BINARY_ANGLE_DEGREE                       15
 //#define BINARY_ANGLE_DMS                          16
 //#define BINARY_ANGLE_MULTPI                       17
-//#define STRING_ANGLE_RADIAN                       18
-//#define STRING_ANGLE_GRAD                         19
-//#define STRING_ANGLE_DEGREE                       20
+#define STRING_ANGLE_RADIAN                       18
+#define STRING_ANGLE_GRAD                         19
+#define STRING_ANGLE_DEGREE                       20
 #define STRING_ANGLE_DMS                          21
-//#define STRING_ANGLE_MULTPI                       22
+#define STRING_ANGLE_MULTPI                       22
 
 // OP parameter type
 #define PARAM_DECLARE_LABEL                        1
@@ -1751,22 +1790,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CHECK_INTEGER_EVEN                         1
 #define CHECK_INTEGER_ODD                          2
 #define CHECK_INTEGER_FP                           3
-
-#define CHECK_VALUE_COMPLEX                        0
-#define CHECK_VALUE_REAL                           1
-#define CHECK_VALUE_POSITIVE_ZERO                  2
-#define CHECK_VALUE_NEGATIVE_ZERO                  3
-#define CHECK_VALUE_SPECIAL                        4
-#define CHECK_VALUE_NAN                            5
-#define CHECK_VALUE_INFINITY                       6
-#define CHECK_VALUE_MATRIX                         7
-#define CHECK_VALUE_MATRIX_SQUARE                  8
-#define CHECK_VALUE_DATE                           9
-#define CHECK_VALUE_TIME                          10
-#define CHECK_VALUE_SINT                          11
-#define CHECK_VALUE_LINT                          12
-#define CHECK_VALUE_ANGLE                         13
-#define CHECK_VALUE_NUMBER                        14
 
 #define OPMOD_MULTIPLY                             0
 #define OPMOD_POWER                                1
@@ -1823,6 +1846,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_RESULT_CONSTANT                     4
 #define SOLVER_RESULT_OTHER_FAILURE                5
 #define SOLVER_RESULT_ABORTED                      6
+#define SOLVER_RESULT_CONJUGATES                 200
 
 #define ASSIGN_NAMED_VARIABLES                 10000
 #define ASSIGN_LABELS                          12000
@@ -2115,6 +2139,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)
+#define userAbort(a) do { fprintf(stderr, "%serror:%s %s \n", COLOR_YELLOW, a, COLOR_DEFAULT);fflush(stderr); } while(0)
 
 // To time a piece of code (not on DM42 hardware), you can use the following code snippet:
 // struct timespec stopwatch_start, stopwatch_stop;
@@ -2173,4 +2198,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
     printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
     printf("\n");                                                                                    \
   } while(0)
+
+#if defined(DMCP_BUILD)
+  /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */
+  #define IMPORT_BIN(sect, file, sym) asm (\
+      ".section " #sect "\n"                  /* Change section */\
+      ".balign 4\n"                           /* Word alignment */\
+      ".global " #sym "\n"                    /* Export the object address */\
+      #sym ":\n"                              /* Define the object label */\
+      ".incbin \"" file "\"\n"                /* Import the file */\
+      ".global _sizeof_" #sym "\n"            /* Export the object size */\
+      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */\
+      ".balign 4\n"                           /* Word alignment */\
+      ".section \".text\"\n")                 /* Restore section */
+#endif // DMCP_BUILD
+
 #endif // !DEFINES_H

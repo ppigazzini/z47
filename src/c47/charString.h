@@ -7,6 +7,8 @@
 #if !defined(CHARSTRING_H)
 #define CHARSTRING_H
 
+void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len);
+
 /********************************************//**
  * \brief Returns a pointer to the last glyph of a string
  *
@@ -113,6 +115,7 @@ uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
 void     expandConversionName  (char *msg1);
 void     compressConversionName(char *msg1);
 
+void     convertDigits         (char * refstr, char * outstr);
 void     stringToUtf8          (const char *str, uint8_t *utf8);
 void     utf8ToString          (const uint8_t *utf8, char *str);
 void     stringToASCII         (const char *str, char *ascii);

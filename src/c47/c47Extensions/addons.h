@@ -11,7 +11,7 @@ int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 void standardScreenDump(void);
 
-void fneRPN         (uint16_t unusedButMandatoryParameter);
+void fnEdit         (uint16_t unusedParamButMandatory);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
 void fnShoiXRepeats (uint16_t numberOfRepeats);
 void fnTo_ms        (uint16_t unusedButMandatoryParameter);
@@ -36,6 +36,7 @@ void fnInDefault    (uint16_t inputDefault);
 #define PRN_NAMEDr  4
 #define PRN_Xr      5
 #define PRN_XYr     6
+#define PRN_TMP     7
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (void);
@@ -52,7 +53,7 @@ void fnConvertStkToMx(uint16_t unusedButMandatoryParameter);
 void fnConvertMxToStk(uint16_t unusedButMandatoryParameter);
 
 
-void fnRESET_MyM(uint8_t param);
+void fnRESET_MyM(uint16_t param);
 void fnRESET_Mya(void);
 
 void fnByteShortcutsS   (uint16_t size);                    //JM POC BASE2 vv
@@ -68,7 +69,8 @@ void   doubleToXRegisterReal34  (double x);                 //Convert from doubl
 double convert_to_double        (calcRegister_t regist);    //Convert from X register to double
 
 
-void   fnStrtoX                 (const char aimBuffer[]);         //DONE
+void   fnStrtoX                 (const char buffer[]);      //DONE
+void   fnStrtoReg               (const char buffer[], calcRegister_t regist);                            //DONE
 void   fnStrInputReal34         (char inp1[]);              // CONVERT STRING to REAL IN X      //DONE
 void   fnStrInputLongint        (char inp1[]);              // CONVERT STRING to Longint X      //DONE
 void   fnRCL                    (int16_t inp);              //DONE
