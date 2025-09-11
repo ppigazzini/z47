@@ -15,7 +15,6 @@
 1009     // Change matrix headers, add tag
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
-1012     // Added FNCS_EIM catalog
 */
 
 
@@ -531,7 +530,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
     saveStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
     saveStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
-    saveStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
     saveStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     saveStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     saveStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
@@ -1098,7 +1096,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     else {
       restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
     }
-    restoreStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
     restoreStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     restoreStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     restoreStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");

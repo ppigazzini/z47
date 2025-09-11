@@ -134,7 +134,6 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
 
   void resetAlphaSelectionBuffer(void) {
-    lgCatalogSelection = 0;
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
     fnTimerStop(TO_ASM_ACTIVE);
@@ -898,6 +897,13 @@ typedef struct {
         }
       }
 
+      #undef SCROLL_ASM          // define this to have the ASM letters scroll if you type more than two. Alternative is it takes two, then you wait 3 and type again another word
+      #ifdef SCROLL_ASM
+        #define Scroll_Asm 2
+      #else
+        #define Scroll_Asm 1
+      #endif
+
       if(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) {
         if(item == ITM_BACKSPACE) {
           calcModeNormal();
@@ -907,18 +913,16 @@ typedef struct {
         // NOP if not a single character input for search
         // or if we already have two characters in the search buffer
         else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 &&
-                (lgCatalogSelection < ((asmBuffer[0] & 0x80) ? 3 :2)) &&
+                stringGlyphLength(asmBuffer) <= Scroll_Asm &&
+                item != ITM_CR && item != ITM_ROOT_SIGN &&
                 currentSoftmenuScrolls()) {
-          int32_t pos = lgCatalogSelection++;
-          if(asmBuffer[pos] != 0) {
-            pos++;
-          }
-
-          asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[0];
-          if(indexOfItems[item].itemSoftmenuName[0] & 0x80) { // 2 bytes
-            asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[1];
-          }
-          asmBuffer[pos] = 0;
+          #ifdef SCROLL_ASM
+            if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
+              xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
+            }
+          #endif //SCROLL_ASM
+ 
+          stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
           setCatalogLastPos();
