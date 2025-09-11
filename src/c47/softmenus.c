@@ -1544,7 +1544,7 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
         memset(tmpString, 0, TMP_STR_LENGTH);
         if(softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
           for(i=0; i<LAST_ITEM; i++) {
-            if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU) {
+            if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 /* && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU */) {
               int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
               xcopy(tmpString + 15 * numberOfGlobalLabels, indexOfItems[i].itemCatalogName, len);
               numberOfGlobalLabels++;
