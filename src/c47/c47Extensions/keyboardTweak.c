@@ -255,7 +255,7 @@ void resetKeytimers(void) {
   void Setup_MultiPresses(int16_t result) {                            //Setup and start double press for DROP timer, and check for second press
     JM_auto_doublepress_autodrop_enabled = 0;                          //JM TIMER CLRDROP. Autodrop means double click normal key.
     int16_t tmp = 0;
-    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0) {             //Set up backspace double click to DROP
+    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0 && !getSystemFlag(FLAG_CLX_DROP)) {             //Set up backspace double click to DROP
       tmp = ITM_DROP;
     }
 
