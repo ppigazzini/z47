@@ -2278,8 +2278,8 @@
 #define ITM_RCLP1                   2224
 #define ITM_2225                    2225
 #define ITM_2226                    2226
-#define ITM_2227                    2227
-#define ITM_2228                    2228
+#define MNU_EIMCATALOG              2227
+#define MNU_FCNS_EIM                2228
 #define MNU_PREFIX                  2229
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
@@ -2629,10 +2629,8 @@
 #define ITM_YY_DFLT                 2550
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
-#define MNU_EIMCATALOG              2553
-#define MNU_FCNS_EIM                2554
 
-#define LAST_ITEM                   2555
+#define LAST_ITEM                   2553
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
