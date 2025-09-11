@@ -3955,14 +3955,18 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_ASN_BROWSER: {
-        calcMode = previousCalcMode;
-        if(calcMode == CM_AIM || tam.alpha) {
+        if(previousCalcMode == CM_AIM || tam.alpha) {
+          calcMode = CM_AIM;
           if(currentMenu() == -MNU_AIMCATALOG) {
             popSoftmenu();
           }
           showSoftmenu(-MNU_ALPHA);
         }
-        if(calcMode == CM_EIM) {
+        if(previousCalcMode == CM_EIM) {
+          screenUpdatingMode = SCRUPD_AUTO;
+          calcMode = CM_NORMAL; //without changing the refresh scheme: change to normal mode to get the stack back, then switch back to CM_EIM
+          refreshScreen(0);
+          calcMode = CM_EIM;
           if(currentMenu() == -MNU_EIMCATALOG) {
             popSoftmenu();
           }
