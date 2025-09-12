@@ -247,14 +247,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
         }
         fnReturn(0); // 1 more time to clean local registers
       }
-              /* Full refresh included in showHideHourGlass above, so removinf it here to save time
-                    #if defined(DMCP_BUILD)
-                      lcd_refresh();
-                    #else // !DMCP_BUILD
-                      refreshLcd(NULL);
-                    #endif // DMCP_BUILD
-              */
-      screenUpdatingMode = SCRUPD_AUTO;
+
+/* Full refresh included in showHideHourGlass above, so removinf it here to save time
+      #if defined(DMCP_BUILD)
+        lcd_refresh();
+      #else // !DMCP_BUILD
+        refreshLcd(NULL);
+      #endif // DMCP_BUILD
+*/
+
+    screenUpdatingMode = SCRUPD_AUTO;
     }
 
     else { //PGM_RUNNING MODE
@@ -276,6 +278,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
       printf("   >>    reallyRunFunction: %5i%8s§%8s  %5i  SBI:%s\n",func, ss1, ss2, param, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
     #endif // PC_BUILD
 
+
+
     if((programRunStop != PGM_RUNNING && func != ITM_LASTT) || func == ITM_XEQ || timeLastOp0 == 0) {    //The first manual command and XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);                                                                          //    You don't want the timer to always be read before every command when in a program. It would be wasteful. During program execution, LASTT? laps the counter.
     }
@@ -290,7 +294,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {
           temporaryInformation = TI_NOT_AVAILABLE;
-        }
+        } 
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -319,7 +323,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
     }
-
+    
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
@@ -426,7 +430,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_STOELPLUS   :
         case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
         case ITM_INDEX:
-        case ITM_IPLUS       :
+        case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
         case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
@@ -599,7 +603,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         } else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
-          }
+          } 
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -791,7 +795,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -1339,7 +1343,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
   void fnPplus                    (uint16_t unusedButMandatoryParameter) {}
   void fnPbox                     (uint16_t unusedButMandatoryParameter) {}
-  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {}
+  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {} 
   void fnPintg                    (uint16_t unusedButMandatoryParameter) {}
   void fnPdiff                    (uint16_t unusedButMandatoryParameter) {}
   void fnPrms                     (uint16_t unusedButMandatoryParameter) {}
@@ -4104,33 +4108,33 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2551 */  { fnDenMax,                     TM_VALUE_MAX,                "DMX",                                         "DMX",                                         (0 << TAM_MAX_BITS) |MAX_DENMAX,CAT_FNCT|SLS_ENABLED  | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 2552 */  { itemToBeCoded,                NOPARAM,                     "CAT" STD_alpha,                               "CAT",                                         (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },// JM
 
-/* 2553 */  { fnXXfn,                       ITM_SWAP_XFN,                "XSWAP",                                        "XSWAP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
+/* 2553 */  { fnXXfn,                       ITM_SWAP_XFN,                "XSWAP",                                        "XSWAP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
-/* 2554 */  { fnXXfn_ToDEG,                 TM_REGISTER,                 "X" STD_RIGHT_DOUBLE_ARROW "DEG",              "X" STD_RIGHT_DOUBLE_ARROW "DEG",              (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2555 */  { fnXXfn_ToRAD,                 TM_REGISTER,                 "X" STD_RIGHT_DOUBLE_ARROW "RAD",              "X" STD_RIGHT_DOUBLE_ARROW "RAD",              (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2556 */  { fnXXfn,                       ITM_DROP_XFN,                "XDROP",                                       "XDROP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
+/* 2554 */  { fnXXfn_ToDEG,                 TM_REGISTER,                 "X" STD_RIGHT_DOUBLE_ARROW "DEG",              "X" STD_RIGHT_DOUBLE_ARROW "DEG",              (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2555 */  { fnXXfn_ToRAD,                 TM_REGISTER,                 "X" STD_RIGHT_DOUBLE_ARROW "RAD",              "X" STD_RIGHT_DOUBLE_ARROW "RAD",              (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2556 */  { fnXXfn,                       ITM_DROP_XFN,                "XDROP",                                       "XDROP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2557 */  { itemToBeCoded,                NOPARAM,                     "XFCNS",                                       "XFCNS",                                       (0 << TAM_MAX_BITS) |    97, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2558 */  { fnXXfn_sin,                   TM_REGISTER,                 "XSIN",                                        "XSIN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2559 */  { fnXXfn_cos,                   TM_REGISTER,                 "XCOS",                                        "XCOS",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2560 */  { fnXXfn_tan,                   TM_REGISTER,                 "XTAN",                                        "XTAN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2561 */  { fnXXfn,                       ITM_pi_XFN,                  "X" STD_pi,                                    "X" STD_pi,                                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
-/* 2562 */  { fnXXfn_1ONX,                  TM_REGISTER,                 "X1/X",                                        "X1/X",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2563 */  { fnXXfn_atan2,                 TM_REGISTER,                 "XATAN2",                                      "XATAN2",                                      (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2564 */  { fnXXfn_arcsin,                TM_REGISTER,                 "XASIN",                                       "XASIN",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2565 */  { fnXXfn_arccos,                TM_REGISTER,                 "XACOS",                                       "XACOS",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2566 */  { fnXXfn_arctan,                TM_REGISTER,                 "XATAN",                                       "XATAN",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2567 */  { fnXXfn_LN,                    TM_REGISTER,                 "XLN",                                         "XLN",                                         (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2568 */  { fnXXfn_LOG,                   TM_REGISTER,                 "XLOG",                                        "XLOG",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2569 */  { fnXXfn_EXP,                   TM_REGISTER,                 "X" STD_EulerE "^X",                           "X" STD_EulerE "^X",                           (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2570 */  { fnXXfn_10X,                   TM_REGISTER,                 "X10^X",                                       "X10^X",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2571 */  { fnXXfn_POWER,                 TM_REGISTER,                 "XPOWER",                                      "XPOWER",                                      (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2572 */  { fnXXfn_SQRT,                  TM_REGISTER,                 "XSQRT",                                       "XSQRT",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2573 */  { fnXXfn_ADD,                   TM_REGISTER,                 "XADD",                                        "XADD",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2574 */  { fnXXfn_SUB,                   TM_REGISTER,                 "XSUB",                                        "XSUB",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2575 */  { fnXXfn_MULT,                  TM_REGISTER,                 "XMULT",                                       "XMULT",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2576 */  { fnXXfn_DIV,                   TM_REGISTER,                 "XDIV",                                        "XDIV",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2577 */  { fnXXfn_MOD,                   TM_REGISTER,                 "XMOD",                                        "XMOD",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER     | HG_ENABLED         },
-/* 2578 */  { fnXXfn_MODANG,                TM_REGISTER,                 "XMOD" STD_MEASURED_ANGLE,                     "XMOD" STD_MEASURED_ANGLE,                     (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_REGISTER      | HG_ENABLED         },
+/* 2558 */  { fnXXfn_sin,                   TM_REGISTER,                 "XSIN",                                        "XSIN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2559 */  { fnXXfn_cos,                   TM_REGISTER,                 "XCOS",                                        "XCOS",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2560 */  { fnXXfn_tan,                   TM_REGISTER,                 "XTAN",                                        "XTAN",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2561 */  { fnXXfn,                       ITM_pi_XFN,                  "X" STD_pi,                                    "X" STD_pi,                                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2562 */  { fnXXfn_1ONX,                  TM_REGISTER,                 "X1/X",                                        "X1/X",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2563 */  { fnXXfn_atan2,                 TM_REGISTER,                 "XATAN2",                                      "XATAN2",                                      (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2564 */  { fnXXfn_arcsin,                TM_REGISTER,                 "XASIN",                                       "XASIN",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2565 */  { fnXXfn_arccos,                TM_REGISTER,                 "XACOS",                                       "XACOS",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2566 */  { fnXXfn_arctan,                TM_REGISTER,                 "XATAN",                                       "XATAN",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2567 */  { fnXXfn_LN,                    TM_REGISTER,                 "XLN",                                         "XLN",                                         (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2568 */  { fnXXfn_LOG,                   TM_REGISTER,                 "XLOG",                                        "XLOG",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2569 */  { fnXXfn_EXP,                   TM_REGISTER,                 "X" STD_EulerE "^X",                           "X" STD_EulerE "^X",                           (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2570 */  { fnXXfn_10X,                   TM_REGISTER,                 "X10^X",                                       "X10^X",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2571 */  { fnXXfn_POWER,                 TM_REGISTER,                 "XPOWER",                                      "XPOWER",                                      (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2572 */  { fnXXfn_SQRT,                  TM_REGISTER,                 "XSQRT",                                       "XSQRT",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2573 */  { fnXXfn_ADD,                   TM_REGISTER,                 "XADD",                                        "XADD",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2574 */  { fnXXfn_SUB,                   TM_REGISTER,                 "XSUB",                                        "XSUB",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2575 */  { fnXXfn_MULT,                  TM_REGISTER,                 "XMULT",                                       "XMULT",                                       (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2576 */  { fnXXfn_DIV,                   TM_REGISTER,                 "XDIV",                                        "XDIV",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2577 */  { fnXXfn_MOD,                   TM_REGISTER,                 "XMOD",                                        "XMOD",                                        (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2578 */  { fnXXfn_MODANG,                TM_REGISTER,                 "XMOD" STD_MEASURED_ANGLE,                     "XMOD" STD_MEASURED_ANGLE,                     (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER      | HG_ENABLED         },
 
 
 /* 2579 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
