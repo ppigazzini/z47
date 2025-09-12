@@ -841,7 +841,7 @@ bool isDyadicFunction(uint16_t item) {
   if(item == PARSER_OPERATOR_ITM_YX) {
     return true;  // dyadic  functions
   }
-  else if(item < LAST_ITEM && indexOfItems[item].param == DYADIC) {
+  else if(item < LAST_ITEM && (indexOfItems[item].status & EIM_INPUT) == EIM_DY) {
     return true;  // dyadic  functions
   }
   else {

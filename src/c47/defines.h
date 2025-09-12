@@ -807,6 +807,10 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+#define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
+#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC 
+#define EIM_DY                             ( 1 << 15 ) // DYADIC
 
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1

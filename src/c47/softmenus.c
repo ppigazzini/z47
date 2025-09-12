@@ -668,11 +668,11 @@ TO_QSPI const int16_t menu_Eim[]         = {
                                              ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_sin,                       ITM_cos,                   ITM_tan,                   ITM_pi,                ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
-                                             ITM_arcsin,                    ITM_arccos,                ITM_arctan,                ITM_op_j_SIGN,         ITM_poly_SIGN,               ITM_XSWAP,
+                                             ITM_arcsin,                    ITM_arccos,                ITM_arctan,                ITM_op_j_SIGN,         ITM_VERTICAL_BAR,            ITM_ARG,
                                              ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_VERTICAL_BAR,              ITM_ARG,                   ITM_RE,                    ITM_IM,                ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
-                                             ITM_EXCLAMATION_MARK,          ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL
+                                             ITM_EXCLAMATION_MARK,          ITM_poly_SIGN,             ITM_XEDIT,                 ITM_XSWAP,             ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
+                                             ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL
 
                                             };
 
