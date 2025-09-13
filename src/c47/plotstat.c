@@ -957,6 +957,7 @@ char * smallE(char *output, const char * ss) {
 #endif //TESTSUITE_BUILD
 
 
+//success flag set if convertion was done and maxwidth is NOT overreached. Additionally ?? is output when no conversion is done.
 char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int digitswidthLimit) {
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormatDigits = displayFormatDigits;

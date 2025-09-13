@@ -2194,12 +2194,13 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
                         }
                         else {
-                          bool_t success;
+                          bool_t convertedRealPerfectly;
                           char tmpBuf[100];
-                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, 60));
-                          //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", success");
-                          //printf(") => %s and success = %d\n", tmpS, success);
-                          if(tmpS[0] == '?' ||  strchr(tmpS, 'E') != NULL) {
+                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
+                          //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", convertedRealPerfectly");
+                          //printf(") => %s and convertedRealPerfectly = %d\n", tmpS, convertedRealPerfectly);
+
+                          if(tmpS[0] == '?' ||  strchr(tmpS, 'E') != NULL) {    // ?? if no cenversion too place, cut string length and try again; If E on the first try, try again with wider
                             switch(itemNr%10000) {
                               case VAR_ULIM    :
                               case VAR_LLIM    :
@@ -2224,9 +2225,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                                    break;
                               default:;
                             }
-                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &success, 400 / 6 - 2 - 4, tmpBuf, 60));
-                            //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", success");
-                            //printf(") => %s and success = %d\n", tmpS, success);
+                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
+
+                            //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", convertedRealPerfectly");
+                            //printf(") => %s and success = %d\n", tmpS, convertedRealPerfectly);
                           }
                         }
                       }
