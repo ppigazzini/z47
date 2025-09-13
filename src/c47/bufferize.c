@@ -591,7 +591,6 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_SIGMA1ony2  },
     {ITM_SIGMAx3     },
     {ITM_SIGMAx4     },
-    {ITM_ABS         },
     {ITM_BATT        },
     {ITM_BN          },
     {ITM_BNS         },
