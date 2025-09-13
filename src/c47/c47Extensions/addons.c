@@ -295,6 +295,7 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
 
 
 void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
+  explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
 }
 
