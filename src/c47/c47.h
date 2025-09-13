@@ -301,6 +301,7 @@
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
   extern bool_t                 iterations;
+  extern bool_t                 explicitTaylorIterVisibilitySelection;
 
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;

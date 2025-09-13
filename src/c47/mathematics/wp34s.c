@@ -248,7 +248,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     }
 
    #if !defined(TESTSUITE_BUILD)
-     if(checkHalfSec()) {
+     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
        char ss[100];
        sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
        ss[40] = 0; //Hard limit to screen display
@@ -282,6 +282,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     realSetPositiveSign((real_t*)sin);
   }
   realMultiply((real_t*)sin, (real_t*)angle, (real_t*)sin, realContext);
+  explicitTaylorIterVisibilitySelection = false;
 }
 
 

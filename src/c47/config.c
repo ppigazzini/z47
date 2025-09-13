@@ -1539,6 +1539,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     iterations = false;
+    explicitTaylorIterVisibilitySelection = false;
     updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
