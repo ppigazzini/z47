@@ -838,40 +838,34 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
 
 
 bool isDyadicFunction(uint16_t item) {
-  if(item == PARSER_OPERATOR_ITM_YX) {
-    return true;  // dyadic  functions
+  switch(item) {
+    case PARSER_OPERATOR_ITM_YX: // dyadic functions
+    case ITM_COMB:
+    case ITM_PERM:
+    case ITM_YX:
+    case ITM_LOGXY:
+    case ITM_ADD:
+    case ITM_SUB:
+    case ITM_MULT:
+    case ITM_DIV:
+    case ITM_IDIV:
+    case ITM_MOD:
+    case ITM_MAX:
+    case ITM_MIN:
+    case ITM_RMD:
+    case ITM_HN:
+    case ITM_HNP:
+    case ITM_Lm:
+    case ITM_LmALPHA:
+    case ITM_Pn:
+    case ITM_Tn:
+    case ITM_Un:
+    case ITM_atan2:
+    case ITM_XTHROOT:
+      return true;
+    default:                     // monadic functions
+      return false;
   }
-  else if(item < LAST_ITEM && (indexOfItems[item].status & EIM_INPUT) == EIM_DY) {
-    return true;  // dyadic  functions
-  }
-  else {
-    return false; // monadic functions
-  }
-/*  dyadic functions:
-    PARSER_OPERATOR_ITM_YX
-    ITM_COMB
-    ITM_PERM
-    ITM_YX
-    ITM_LOGXY
-    ITM_ADD
-    ITM_SUB
-    ITM_MULT
-    ITM_DIV
-    ITM_IDIV
-    ITM_MOD
-    ITM_MAX
-    ITM_MIN
-    ITM_RMD
-    ITM_HN
-    ITM_HNP
-    ITM_Lm
-    ITM_LmALPHA
-    ITM_Pn
-    ITM_Tn
-    ITM_Un
-    ITM_atan2
-    ITM_XTHROOT:
- */
 }
 
 
