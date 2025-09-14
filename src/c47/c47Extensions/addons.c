@@ -297,7 +297,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
     #if !defined(SAVE_SPACE_DM42_22_EDIT1)
       int16_t index;
     #endif //!SAVE_SPACE_DM42_22_EDIT1
-    
+
     #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
       uint8_t grpGroupingLeftOld;
       uint8_t grpGroupingRightOld;
