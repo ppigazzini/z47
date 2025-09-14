@@ -147,10 +147,15 @@ TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?
 
-TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_DOWN_ARROW,             ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                  //JM
+#if defined(ALTERNATE_ALPHA_MENU)
+TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_M_ADDR,                    ITM_M_ADDC,                 ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                  //DL
+                                             ITM_M_INSR,                    ITM_M_INSC,                 ITM_op_j_pol,             ITM_M_OLD,             ITM_UP_ARROW,                ITM_DOWN_ARROW,
+                                             ITM_M_DELR,                    ITM_M_DELC,                 ITM_NULL,                 ITM_NULL,              ITM_M_WRAP,                  ITM_M_GROW                    };
+#else
+TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_DOWN_ARROW,             ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                 //JM
                                              ITM_M_INSR,                    ITM_M_INSC,                 ITM_M_ADDR,               ITM_M_OLD,             ITM_M_WRAP,                  ITM_M_GROW,
                                              ITM_M_DELR,                    ITM_M_DELC,                 ITM_M_ADDC,               ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
-
+#endif //ALTERNATE_ALPHA
 
 #if defined(INLINE_TEST) && defined(DMCP_BUILD)
   #define ITM_TST -MNU_INL_TST
@@ -619,9 +624,16 @@ TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG                      };
 
-TO_QSPI const int16_t menu_TamAlpha[]    = { -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,            -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_NULL,                        //JM
+#if defined(ALTERNATE_TAM_MENU)
+TO_QSPI const int16_t menu_TamAlpha[]    = { -MNU_ALPHA_OMEGA,             -MNU_ALPHAMATH,             -MNU_ALPHAMISC,           -MNU_ALPHAINTL,         ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,            //DL
+                                             -MNU_MyAlpha,                  ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             CHR_case,                      CHR_num,                    ITM_SCR,                  ITM_USERMODE,          ITM_NULL,                    ITM_NULL,                     };   //DL
+#else
+TO_QSPI const int16_t menu_TamAlpha[]    = { -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,            -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_NULL,                     //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                             ITM_NULL,                      ITM_NULL,                   CHR_case,                 CHR_num,               ITM_SCR,                     ITM_NULL                      };   //JM
+                                             ITM_NULL,                      ITM_NULL,                   CHR_case,                 CHR_num,               ITM_SCR,                     ITM_NULL,                     };   //JM
+#endif //ALTERNATE_TAM_MENU
+
 TO_QSPI const int16_t menu_TamCmp[]      = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_0P,                        ITM_1P,                     ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU_SYSFL,                 ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
@@ -671,9 +683,15 @@ TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU
 
 
 TO_QSPI const int16_t menu_Eim[]         = {
+#if defined(ALTERNATE_ALPHA_MENU)
+                                             ITM_ALOG_SIGN,                 ITM_x_SIGN,                ITM_CIRCUMFLEX,            ITM_ROOT_SIGN,         ITM_EQ_LEFT,                 ITM_EQ_RIGHT,                     //DL
+                                             CHR_case,                      CHR_num,                   ITM_SCR,                   ITM_COLON,             ITM_LEFT_PARENTHESIS,        ITM_RIGHT_PARENTHESIS,
+                                             ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
+#else
                                              ITM_ALOG_SIGN,                 ITM_x_SIGN,                ITM_CIRCUMFLEX,            CHR_num,               ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
                                              ITM_LEFT_PARENTHESIS,          ITM_RIGHT_PARENTHESIS,     ITM_ROOT_SIGN,             CHR_case,              ITM_SCR,                     ITM_COLON,
                                              ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
+#endif //!ALTERNATE_ALPHA_MENU
 
                                              ITM_sin,                       ITM_cos,                   ITM_tan,                   ITM_pi,                ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
                                              ITM_arcsin,                    ITM_arccos,                ITM_arctan,                ITM_op_j_SIGN,         ITM_VERTICAL_BAR,            ITM_ARG,
@@ -818,11 +836,16 @@ TO_QSPI const int16_t menu_PLOT_STAT[]    = {
                                              ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
 
 
-
-
+#if defined(ALTERNATE_ALPHA_MENU)
+TO_QSPI const int16_t menu_ALPHA[]       = { -MNU_ALPHA_OMEGA,             -MNU_ALPHAMATH,             -MNU_ALPHAMISC,           -MNU_ALPHAINTL,         ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,
+                                             -MNU_MyAlpha,                  ITM_XEDIT,                  ITM_XSWAP,                ITM_ASSIGN,            ITM_T_LLEFT_ARROW,           ITM_T_RRIGHT_ARROW,
+                                             CHR_case,                      CHR_num,                    ITM_SCR,                  ITM_USERMODE,          ITM_T_UP_ARROW,              ITM_T_DOWN_ARROW                 };   //DL
+#else
 TO_QSPI const int16_t menu_ALPHA[]       = { ITM_T_UP_ARROW,                ITM_T_DOWN_ARROW,           ITM_T_LLEFT_ARROW,        ITM_T_RRIGHT_ARROW,    ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,
                                              -MNU_MyAlpha,                 -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,            -MNU_ALPHAMISC,        -MNU_ALPHAINTL,              ITM_ASSIGN,                           //JM
                                              ITM_XEDIT,                     ITM_XSWAP,                  CHR_case,                 CHR_num,               ITM_SCR,                     ITM_USERMODE                     };   //JM
+#endif //ALTERNATE_ALPHA_MENU
+
 
 TO_QSPI const int16_t menu_GAP_L[]       = { ITM_GAPPER_L,                  ITM_GAPCOM_L,               ITM_GAPDOT_L,             ITM_GAPNARAPO_L,       ITM_GAPSPC_L,                ITM_GAPNIL_L,
                                              ITM_GAPWIDPER_L,               ITM_GAPWIDCOM_L,            ITM_GAPWIDDOT_L,          ITM_GAPAPO_L,          ITM_GAPDBLSPC_L,             ITM_GAPUND_L,
@@ -2022,7 +2045,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 }
 
 
-bool_t isFunctionItemAMenu(int16_t item) { //masquarading
+bool_t isFunctionItemAMenu(int16_t item) { //masquarading pseudo menus
   return item == ITM_PLOT_SCATR||
          item == ITM_PLOT_ASSESS||
          item == ITM_HPLOT     ||
@@ -2045,6 +2068,7 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading
 
 static  char FF[16];
 static char *changeItoJ(int16_t item) {
+
   //printf(">>>> changeItoJ: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
   if(getSystemFlag(FLAG_CPXj)) {
     if((item == ITM_op_j || item == ITM_op_j_pol || item == ITM_op_j_SIGN) && FF[1] == STD_op_i[1]) {
@@ -2077,7 +2101,7 @@ static char *changeDotInDreal(int16_t item) {
 
 //using static char FF
 static char *changeDynamicName(int16_t item) {
-  stringCopy(FF,indexOfItems[item%10000].itemSoftmenuName);
+  stringCopy(FF, indexOfItems[item%10000].itemSoftmenuName);
   changeItoJ(item);
   changeDotInDreal(item);
   return FF;
@@ -2817,7 +2841,7 @@ void showSoftmenuCurrentPart(void) {
 
             //softkey modifications
 
-            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(m, x, y))) ||           // Indicate disabled double tap
+            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
