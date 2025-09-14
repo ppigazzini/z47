@@ -843,11 +843,7 @@ TO_QSPI const int16_t menu_PLOT_STAT[]    = {
                                              ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
 
 
-#if defined(ALTERNATE_ALPHA_MENU1)
-TO_QSPI const int16_t menu_ALPHA[]       = { ITM_T_LEFT_ARROW,             -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,           -MNU_ALPHAMISC,        -MNU_ALPHAINTL,               ITM_T_RIGHT_ARROW,
-                                             ITM_T_LLEFT_ARROW,            -MNU_MyAlpha,                ITM_XEDIT,                ITM_XSWAP,             ITM_ASSIGN,                  ITM_T_RRIGHT_ARROW,
-                                             ITM_T_UP_ARROW,                CHR_case,                   CHR_num,                  ITM_SCR,               ITM_USERMODE,                ITM_T_DOWN_ARROW                 };   //DL
-#elif defined(ALTERNATE_ALPHA_MENU2)
+#if defined(ALTERNATE_ALPHA_MENU)
 TO_QSPI const int16_t menu_ALPHA[]       = { -MNU_ALPHA_OMEGA,             -MNU_ALPHAMATH,             -MNU_ALPHAMISC,           -MNU_ALPHAINTL,         ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,
                                              -MNU_MyAlpha,                  ITM_XEDIT,                  ITM_XSWAP,                ITM_ASSIGN,            ITM_T_LLEFT_ARROW,           ITM_T_RRIGHT_ARROW,
                                              CHR_case,                      CHR_num,                    ITM_SCR,                  ITM_USERMODE,          ITM_T_UP_ARROW,              ITM_T_DOWN_ARROW                 };   //DL
