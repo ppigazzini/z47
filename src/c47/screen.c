@@ -467,7 +467,6 @@ char letteredRegisterName(calcRegister_t regist) {
     if(showFunctionNameCounter > 0) {
       showFunctionNameCounter -= SCREEN_REFRESH_PERIOD;
       if(showFunctionNameCounter <= 0) {
-        printf("**[DL]** hideFunctionName¨1\n");fflush(stdout);
         hideFunctionName();
         tmpString[0] = 0;
         showFunctionName(ITM_NOP, 0, "SF:R");
@@ -517,7 +516,6 @@ char letteredRegisterName(calcRegister_t regist) {
     if(showFunctionNameCounter>0) {
       showFunctionNameCounter -= FAST_SCREEN_REFRESH_PERIOD;
       if(showFunctionNameCounter <= 0) {
-        printf("**[DL]** hideFunctionName¨2\n");fflush(stdout);
         hideFunctionName();
         tmpString[0] = 0;
         showFunctionName(ITM_NOP, 0, "SF:R");
@@ -1827,8 +1825,6 @@ return res;
     functionName[0] = 0;
     showFunctionNameArg = NULL;
 
-    printf("**[DL]** showFunctionName item %d\n",item);fflush(stdout);
-    
     #if defined(DEBUG_SHOWNAME)
       if(item < LAST_ITEM && (item == ITM_XEQ || item != ITM_RCL)) {
         stringCopy(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemCatalogName));
@@ -1875,11 +1871,11 @@ return res;
 
 
     #if defined(ALTERNATE_TAM_MENU)
-      if(tam.alpha && ((item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {
+      if(tam.alpha && ((item == ITM_BACKSPACE) || (item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {               // For smooth display in tam.alpha
         return;
       }
     #endif //ALTERNATE_TAM_MENU
-    
+
     if(functionName[0] != 0)
     {
       bool_t overLapPossible = (calcMode == CM_PEM);
@@ -1912,8 +1908,18 @@ return res;
   void hideFunctionName(void) {
     if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
-        refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
-        force_Registerrefresh(REGISTER_T, true, true);
+        #if defined(ALTERNATE_TAM_MENU)
+          if(!tam.alpha || (showFunctionNameItem != ITM_BACKSPACE &&               // For smooth display in tam.alpha
+                            showFunctionNameItem != ITM_T_LEFT_ARROW &&
+                            showFunctionNameItem != ITM_T_RIGHT_ARROW &&
+                            showFunctionNameItem != ITM_NULL)) {
+            refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+            force_Registerrefresh(REGISTER_T, true, true);
+          }
+        #else
+          refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+          force_Registerrefresh(REGISTER_T, true, true);
+        #endif //ALTERNATE_TAM_MENU
       } else {
         _refreshPemScreen();
         //force reset is done at _refreshPemScreen
@@ -3043,8 +3049,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
         // STATISTICAL DISTR & SOLVER
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && 
-            ( (PROBMENU) || 
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM &&
+            ( (PROBMENU) ||
               (currentMenu() == -MNU_Solver_TOOL && solverEstimatesUsed && temporaryInformation != TI_SOLVER_VARIABLE_RESULT)
             )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
@@ -3145,7 +3151,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
               sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
-              
+
               showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
             }
             else {
@@ -5098,7 +5104,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
         if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
-            if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
+            if(calcMode != CM_TIMER && !tam.alpha && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);
             }
             //printf("##> BBBB 4lines Normal Mode\n");
@@ -5196,7 +5202,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
             clearShiftState();
           }
-          printf("**[DL]** displayShiftAndTamBuffer\n");fflush(stdout);
           displayShiftAndTamBuffer();
         }
         if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
@@ -5753,8 +5758,6 @@ void insertAlphaCursor(uint16_t startAt) {
     uint16_t    strLength = 0;
 //    int16_t     strWidth = 0;
 //    int16_t     glyphWidth = 0;
-
-    printf("**[DL]** insertAlphaCursor startAt %d alphaCursor %d\n",startAt,alphaCursor);fflush(stdout);
 
     *bufPtr       = 0;
 

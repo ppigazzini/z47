@@ -147,11 +147,7 @@ TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?
 
-#if defined(ALTERNATE_ALPHA_F1)
-TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_LEFT_ARROW,                ITM_M_ADDR,                 ITM_M_ADDC,               ITM_op_j,              ITM_M_GOTO,                  ITM_RIGHT_ARROW,                  //DL
-                                             ITM_UP_ARROW,                  ITM_M_INSR,                 ITM_M_INSC,               ITM_op_j_pol,          ITM_M_OLD,                   ITM_DOWN_ARROW,
-                                             ITM_M_WRAP,                    ITM_M_DELR,                 ITM_M_DELC,               ITM_NULL,              ITM_NULL,                    ITM_M_GROW,                   };
-#elif defined(ALTERNATE_ALPHA_F5)
+#if defined(ALTERNATE_ALPHA_MENU)
 TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_M_ADDR,                    ITM_M_ADDC,                 ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                  //DL
                                              ITM_M_INSR,                    ITM_M_INSC,                 ITM_op_j_pol,             ITM_M_OLD,             ITM_UP_ARROW,                ITM_DOWN_ARROW,
                                              ITM_M_DELR,                    ITM_M_DELC,                 ITM_NULL,                 ITM_NULL,              ITM_M_WRAP,                  ITM_M_GROW                    };
@@ -618,11 +614,7 @@ TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG                      };
 
-#if defined(ALTERNATE_TAM_MENU1)
-TO_QSPI const int16_t menu_TamAlpha[]    = { ITM_T_LEFT_ARROW,             -MNU_ALPHA_OMEGA,           -MNU_ALPHAMATH,           -MNU_ALPHAMISC,        -MNU_ALPHAINTL,               ITM_T_RIGHT_ARROW,            //DL
-                                             ITM_NULL,                     -MNU_MyAlpha,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                             ITM_NULL,                      CHR_case,                   CHR_num,                  ITM_SCR,               ITM_USERMODE,                ITM_NULL,                     };   //DL
-#elif defined(ALTERNATE_TAM_MENU2)
+#if defined(ALTERNATE_TAM_MENU)
 TO_QSPI const int16_t menu_TamAlpha[]    = { -MNU_ALPHA_OMEGA,             -MNU_ALPHAMATH,             -MNU_ALPHAMISC,           -MNU_ALPHAINTL,         ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,            //DL
                                              -MNU_MyAlpha,                  ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              CHR_case,                      CHR_num,                    ITM_SCR,                  ITM_USERMODE,          ITM_NULL,                    ITM_NULL,                     };   //DL
@@ -681,11 +673,7 @@ TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU
 
 
 TO_QSPI const int16_t menu_Eim[]         = {
-#if defined(ALTERNATE_ALPHA_F1)
-                                             ITM_EQ_LEFT,                   ITM_ALOG_SIGN,             ITM_x_SIGN,                ITM_CIRCUMFLEX,        ITM_ROOT_SIGN,               ITM_EQ_RIGHT,                     //DL
-                                             ITM_LEFT_PARENTHESIS,          CHR_case,                  CHR_num,                   ITM_SCR,               ITM_COLON,                   ITM_RIGHT_PARENTHESIS,
-                                             ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
-#elif defined(ALTERNATE_ALPHA_F5)
+#if defined(ALTERNATE_ALPHA_MENU)
                                              ITM_ALOG_SIGN,                 ITM_x_SIGN,                ITM_CIRCUMFLEX,            ITM_ROOT_SIGN,         ITM_EQ_LEFT,                 ITM_EQ_RIGHT,                     //DL
                                              CHR_case,                      CHR_num,                   ITM_SCR,                   ITM_COLON,             ITM_LEFT_PARENTHESIS,        ITM_RIGHT_PARENTHESIS,
                                              ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,

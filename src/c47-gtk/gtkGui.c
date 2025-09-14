@@ -748,7 +748,7 @@ returnKeyReleasedFalse:
 
     if(CTRL_State == 65536 && !C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
 
-    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
+    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha))) {
       switch(event_key_strip_capslock) {
         case GDK_KEY_f: //f
 
@@ -1176,8 +1176,8 @@ continueWithOldDetections:
 
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
-      //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha) {
+      printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);fflush(stdout);
       switch(event_keyval) {
 
         //ROW 0

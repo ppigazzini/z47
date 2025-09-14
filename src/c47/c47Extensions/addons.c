@@ -294,8 +294,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
   #if !defined(TESTSUITE_BUILD)
-    int16_t index;
     #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+      int16_t index;
       uint8_t grpGroupingLeftOld;
       uint8_t grpGroupingRightOld;
     #endif

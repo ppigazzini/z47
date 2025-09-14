@@ -497,7 +497,6 @@ void resetKeytimers(void) {
 
       //JM TIMER CLRDROP. Autodrop means double click normal key.
       if(JM_auto_doublepress_autodrop_enabled != 0) {
-        printf("**[DL]** hideFunctionName¨4\n");fflush(stdout);
         hideFunctionName();
 //        undo(); Removed undo. I cannot figure why I had it in here not detected in many years - it only started to give issue now with the undo stack worked on! 2024-04-20 jm
         showFunctionName(JM_auto_doublepress_autodrop_enabled, FUNCTION_NOPTIME, "SF:M");            //JM CLRDROP
@@ -630,7 +629,6 @@ void resetKeytimers(void) {
       //----------------Copied here
       underline_softkey(FN_key_pressed-38, 3, false);   //Purposely in row 3 which does not exist, just to activate the clear previous line
 
-      printf("**[DL]** hideFunctionName¨5\n");fflush(stdout);
       hideFunctionName();
 
       //IF 2-->3 is longer than double click time, then move back to state 1
@@ -794,7 +792,6 @@ void resetKeytimers(void) {
       charKey[1]=0;
       charKey[0]=FN_key_pressed + (-37+48);
 
-      printf("**[DL]** hideFunctionName¨6\n");fflush(stdout);
       hideFunctionName();
 
       if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
@@ -1287,7 +1284,6 @@ void fnT_ARROW(uint16_t command) {
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
       
-      printf("**[DL]** fnT_ARROW command %d\n",command);fflush(stdout);
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);

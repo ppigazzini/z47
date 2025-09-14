@@ -124,7 +124,6 @@
 
 
   static void _tamUpdateBuffer(void) {
-    printf("**[DL]** _tamUpdateBuffer\n");fflush(stdout);
     char regists[5];
     char *tbPtr = tamBuffer;
     if(tam.mode == 0) {
@@ -190,7 +189,6 @@
         tbPtr = stringCopy(tbPtr, ".");
       }
       if(tam.alpha) {
-        printf("**[DL]** aimBuffer %s\n",aimBuffer);fflush(stdout);
         tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
         if(aimBuffer[0] == 0) {
           #if !defined(ALTERNATE_TAM_MENU)
@@ -287,6 +285,7 @@
     bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
+    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -329,7 +328,13 @@
             popSoftmenu();
             --numberOfTamMenusToPop;
           }
-          calcModeTamGui();
+          if(calcMode == CM_ASSIGN) {
+            leaveTamModeIfEnabled();
+            calcModeNormalGui();
+          }
+          else {
+            calcModeTamGui();
+          }
         }
       }
       else if(tam.digitsSoFar > 0) {
@@ -420,6 +425,9 @@
       else {
         leaveTamModeIfEnabled();
         scrollPemBackwards();
+        if(calcMode == CM_ASSIGN) {
+          calcMode = CM_NORMAL;
+        }
       }
       return;
     }
@@ -630,9 +638,9 @@
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
     else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
-      tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a; 
-      forceTry = true; 
-      tryOoR = true; 
+      tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
+      forceTry = true;
+      tryOoR = true;
     }
 
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
@@ -1039,7 +1047,12 @@
 
 
   void tamEnterMode(int16_t func) {
-    tam.mode = func == ITM_ASSIGN ? TM_NEWMENU : indexOfItems[func].param;
+    #if !defined(ALTERNATE_TAM_MENU)
+      tam.mode = func == ITM_ASSIGN ? TM_NEWMENU : indexOfItems[func].param;
+    #else
+      tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
+      func = func == ITM_USERMODE ? ITM_ASSIGN : func;
+    #endif // !ALTERNATE_TAM_MENU
     tam.function = func;
     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
     tam.max = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
@@ -1145,7 +1158,12 @@
       }
 
       case TM_LABEL: {
-        showSoftmenu(-MNU_TAMLABEL);
+        if(func == ITM_ASSIGN) {
+          showSoftmenu(-MNU_TAMALPHA);
+        }
+        else {
+          showSoftmenu(-MNU_TAMLABEL);
+        }
         break;
       }
 
@@ -1228,7 +1246,8 @@
         case CM_NORMAL:
         case CM_PEM:
         case CM_MIM:
-        case CM_TIMER: {
+        case CM_TIMER:
+        case CM_ASSIGN: {
           calcModeNormalGui();
           break;
         }

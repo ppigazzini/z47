@@ -697,7 +697,6 @@ typedef struct {
     #endif // PC_BUILD
     //resetKeytimers();  //JM
 
-    printf("**[DL]** addItemToBuffer item %d\n",item);fflush(stdout);
     if(item == NOPARAM) {
       displayBugScreen(bugScreenNoParam);
     }
@@ -714,7 +713,7 @@ typedef struct {
             insertAlphaCharacter(item, &alphaCursor);
           }
           else
-      #endif //ALTERNATE_TAM_MENU
+        #endif //ALTERNATE_TAM_MENU
         if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
           sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
           displayBugScreen(errorMessage);
@@ -1042,9 +1041,6 @@ typedef struct {
   }
 
   void addItemToNimBuffer(int16_t item) {
-    #if defined(PC_BUILD)
-      printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
-    #endif //PC_BUILD
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -2907,7 +2903,6 @@ typedef struct {
     char *srcPos = aimBuffer;
     char *dstPos = aimBuffer;
     char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
-    printf("**[DL]** deleteAlphaCharacter currentCursor %d\n",*currentCursor);fflush(stdout);
     --*currentCursor;
     for(int16_t i = 0; i < *currentCursor; ++i) {
       dstPos += (*dstPos & 0x80) ? 2 : 1;
