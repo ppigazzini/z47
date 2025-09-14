@@ -33,18 +33,29 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 
 
-
-
-void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext, int acc) {
+static void C47Cvt2RadSinCosTan1071(real1071_t *an, angularMode_t angularMode, real1071_t *sinOut, real1071_t *cosOut, real1071_t *tanOut, realContext_t *realContext) {
   explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
 }
+static void WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+  explicitTaylorIterVisibilitySelection = true;
+  C47_WP34S_Asin((real_t*)x, (real_t*)angle, realContext);
+}
+static void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+  explicitTaylorIterVisibilitySelection = true;
+  C47_WP34S_Acos((real_t*)x, (real_t*)angle, realContext);
+}
+static void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+  explicitTaylorIterVisibilitySelection = true;
+  C47_WP34S_Atan((real_t*)x, (real_t*)angle, realContext);
+}
+
+
 
 // Replacement Taylor sin/cos/tan function for high accuracy
 // Capable of 1071 digit input and a final accuracy parameter, being the number of required digits.
-//
-// Only the mod reduction needs double the digits. The Taylor function has 1071 only, and the internal angle manipulation (and reduction) is on 1071.
-// That means the major bignumber  reduction must be done outside Taylor
+// Only the mod reduction needs double the digits. The Taylor function uses 1071 only, and the internal angle manipulation (and reduction) is on 1071.
+// The major bignumber reduction must be done outside Taylor
 
 #undef DEBUG_XFN
 
@@ -57,159 +68,10 @@ void C47Cvt2RadSinCosTan2(real1071_t *an, angularMode_t angularMode, real1071_t 
 #define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
 
-// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
-// Especially convergence modified
-void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
-  real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
-  int doubles = 0;
-  int invert;
-  int n;
-  int neg = realIsNegative((real_t*)x);
-  char tmpEpsilon[16]; //-- for epsilon string conversion
 
-  if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
-    return;
-  }
-
-  realCopy((real_t*)x, (real_t*)&a);
-
-  // arrange for a >= 0
-  if(neg) {
-    realChangeSign((real_t*)&a);
-  }
-
-  // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
-  invert = realCompareGreaterThan((real_t*)&a, const_1);
-  if(invert) {
-    realDivide(const_1, (real_t*)&a, (real_t*)&a, realContext);
-  }
-
-  // Range reduce to small enough limit to use taylor series using:
-  //  tan(x/2) = tan(x)/(1+sqrt(1+tan(x)²))
-  //-- create const_1on10 equivalent for 1071 precision
-  uInt32ToReal(10, (real_t*)&z);
-  realDivide(const_1, (real_t*)&z, (real_t*)&z, realContext);
-  for(n=0; n<1000; n++) {
-    if(realCompareLessEqual((real_t*)&a, (real_t*)&z)) {
-      break;
-    }
-    doubles++;
-    // a = a/(1+sqrt(1+a²)) -- at most 3 iterations.
-    realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&b, realContext);
-    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
-    realSquareRoot((real_t*)&b, (real_t*)&b, realContext);
-    realAdd((real_t*)&b, const_1, (real_t*)&b, realContext);
-    realDivide((real_t*)&a, (real_t*)&b, (real_t*)&a, realContext);
-  }
-
-  // Now Taylor series
-  // atan(x) = x(1-x²/3+x⁴/5-x⁶/7...)
-  // We calculate pairs of terms and stop when the estimate doesn't change
-  //-- use epsilon convergence instead of exact equality
-  sprintf(tmpEpsilon, "1E-%d", accNumberDigits);
-  stringToReal(tmpEpsilon, (real_t*)&epsilon, realContext);
-
-  uInt32ToReal(3, (real_t*)angle);
-  uInt32ToReal(5, (real_t*)&j);
-  realMultiply((real_t*)&a, (real_t*)&a, (real_t*)&a2, realContext); // a²
-  realCopy((real_t*)&a2, (real_t*)&t);
-  realDivide((real_t*)&t, (real_t*)angle, (real_t*)angle, realContext); // s = 1-t/3 -- first two terms
-  realSubtract(const_1, (real_t*)angle, (real_t*)angle, realContext);
-
-  do { // Loop until there is no digits changed
-    realCopy((real_t*)angle, (real_t*)&last);
-
-    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
-    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
-    realAdd((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
-
-    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
-
-    realMultiply((real_t*)&t, (real_t*)&a2, (real_t*)&t, realContext);
-    realDivide((real_t*)&t, (real_t*)&j, (real_t*)&z, realContext);
-    realSubtract((real_t*)angle, (real_t*)&z, (real_t*)angle, realContext);
-
-    realAdd((real_t*)&j, const_2, (real_t*)&j, realContext);
-
-    //-- use epsilon convergence test instead of exact equality
-    realSubtract((real_t*)angle, (real_t*)&last, (real_t*)&b, realContext);
-    realCopyAbs((real_t*)&b, (real_t*)&b);
-  } while(!realCompareLessThan((real_t*)&b, (real_t*)&epsilon));
-
-  realMultiply((real_t*)angle, (real_t*)&a, (real_t*)angle, realContext);
-
-  while(doubles) {
-    realAdd((real_t*)angle, (real_t*)angle, (real_t*)angle, realContext);
-    doubles--;
-  }
-
-  if(invert) {
-    realSubtract(const1071_piOn2, (real_t*)angle, (real_t*)angle, realContext);
-  }
-
-  if(neg) {
-    realChangeSign((real_t*)angle);
-  }
-}
 
 // Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
-void WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
-  real1071_t abx, z;
-
-  if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
-    return;
-  }
-
-  realCopyAbs((real_t*)x, (real_t*)&abx);
-  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
-    realCopy(const_NaN, (real_t*)angle);
-    return;
-  }
-
-  // angle = 2*atan(x/(1+sqrt(1-x*x)))
-  realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
-  realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
-  realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
-  realAdd((real_t*)&z, const_1, (real_t*)&z, realContext);
-  realDivide((real_t*)x, (real_t*)&z, (real_t*)&z, realContext);
-  WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
-  realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
-}
-
-// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
-void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext, int accNumberDigits) {
-  real1071_t abx, z;
-
-  if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
-    return;
-  }
-
-  realCopyAbs((real_t*)x, (real_t*)&abx);
-  if(realCompareGreaterThan((real_t*)&abx, const_1)) {
-    realCopy(const_NaN, (real_t*)angle);
-    return;
-  }
-
-  // angle = 2*atan((1-x)/sqrt(1-x*x))
-  if(realCompareEqual((real_t*)x, const_1)) {
-    realZero((real_t*)angle);
-  }
-  else {
-    realMultiply((real_t*)x, (real_t*)x, (real_t*)&z, realContext);
-    realSubtract(const_1, (real_t*)&z, (real_t*)&z, realContext);
-    realSquareRoot((real_t*)&z, (real_t*)&z, realContext);
-    realSubtract(const_1, (real_t*)x, (real_t*)&abx, realContext);
-    realDivide((real_t*)&abx, (real_t*)&z, (real_t*)&z, realContext);
-    WP34S_Atan1071(&z, &abx, realContext, accNumberDigits);
-    realAdd((real_t*)&abx, (real_t*)&abx, (real_t*)angle, realContext);
-  }
-}
-
-// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
-void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext, int accNumberDigits) {
+void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext) {
   real1071_t r, t;
   const bool_t xNeg = realIsNegative((real_t*)x);
   const bool_t yNeg = realIsNegative((real_t*)y);
@@ -304,7 +166,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
   }
 
   realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
-  WP34S_Atan1071(&t, &r, realContext, accNumberDigits);
+  WP34S_Atan1071(&t, &r, realContext);
   if(xNeg) {
     realCopy(const1071_pi, (real_t*)&t);
     if(yNeg) {
@@ -322,8 +184,7 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
 }
 
 
-// Does not seem needed and solved with the larger pi
-// Manual replacement for big due to to realDivideRemainder not working on very very large input
+// Mod reduction
 // set up for 1071 input, with internal mod reduction for double the digits for the following example which illustrates you need to process double the digits for 2pi
 // const_2139_2pi is available but commented out in generateCatalogs.
 //
@@ -433,9 +294,8 @@ void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContex
     const bool_t use1071 = HIMEMORY && user1071Flag;
   #endif //TESTSUITE_BUILD
 
-  #define accuracy          (use1071 ? 1044 : 72) // 1050 // 1000 mantissa longint, 34 remainder in Real, 37 guard digits, passed to Taylor to set accuracy expectation in the iteration. Can be set down to say 1000 or more to create guard digits
-  #define maxAllowedDigits  (use1071 ? 1000 : 68) // 1000
-  #define maxContextDigits  (use1071 ? 1071 : 75) // 1071
+  #define maxAllowedDigits  (use1071 ? 1000 : 68)
+  #define maxContextDigits  (use1071 ? 1071 : 75)
 
 
 
@@ -510,44 +370,43 @@ returnUnity:
   #define FT_DYADIC   102
 
 typedef struct {
-      const char* name;
       int function_id;
       int function_type;
   } FunctionLookup;
 
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      {"",    ITM_pi_XFN      ,FT_NILADIC },
-      {"",    ITM_DROP_XFN    ,FT_NILADIC },
-      {"",    ITM_SWAP_XFN    ,FT_NILADIC },
-      {"",    ITM_DEG2_XFN    ,FT_MONADIC },
-      {"",    ITM_RAD2_XFN    ,FT_MONADIC },
-      {"",    ITM_sin_XFN     ,FT_MONADIC },
-      {"",    ITM_cos_XFN     ,FT_MONADIC },
-      {"",    ITM_tan_XFN     ,FT_MONADIC },
-      {"",    ITM_arcsin_XFN  ,FT_MONADIC },
-      {"",    ITM_arccos_XFN  ,FT_MONADIC },
-      {"",    ITM_arctan_XFN  ,FT_MONADIC },
-      {"",    ITM_LN_XFN      ,FT_MONADIC },
-      {"",    ITM_LOG_XFN     ,FT_MONADIC },
-      {"",    ITM_EXP_XFN     ,FT_MONADIC },
-      {"",    ITM_10X_XFN     ,FT_MONADIC },
-      {"",    ITM_SQRT_XFN    ,FT_MONADIC },
-      {"",    ITM_MODANG_XFN  ,FT_MONADIC },
-      {"",    ITM_1ONX_XFN    ,FT_MONADIC },
-      {"",    ITM_atan2_XFN   ,FT_DYADIC  },
-      {"",    ITM_ADD_XFN     ,FT_DYADIC  },
-      {"",    ITM_SUB_XFN     ,FT_DYADIC  },
-      {"",    ITM_POWER_XFN   ,FT_DYADIC  },
-      {"",    ITM_MULT_XFN    ,FT_DYADIC  },
-      {"",    ITM_DIV_XFN     ,FT_DYADIC  },
-      {"",    ITM_MOD_XFN     ,FT_DYADIC  },
-      {NULL,  0               ,0   }
+      { ITM_pi_XFN      ,FT_NILADIC },
+      { ITM_DROP_XFN    ,FT_NILADIC },
+      { ITM_SWAP_XFN    ,FT_NILADIC },
+      { ITM_DEG2_XFN    ,FT_MONADIC },
+      { ITM_RAD2_XFN    ,FT_MONADIC },
+      { ITM_sin_XFN     ,FT_MONADIC },
+      { ITM_cos_XFN     ,FT_MONADIC },
+      { ITM_tan_XFN     ,FT_MONADIC },
+      { ITM_arcsin_XFN  ,FT_MONADIC },
+      { ITM_arccos_XFN  ,FT_MONADIC },
+      { ITM_arctan_XFN  ,FT_MONADIC },
+      { ITM_LN_XFN      ,FT_MONADIC },
+      { ITM_LOG_XFN     ,FT_MONADIC },
+      { ITM_EXP_XFN     ,FT_MONADIC },
+      { ITM_10X_XFN     ,FT_MONADIC },
+      { ITM_SQRT_XFN    ,FT_MONADIC },
+      { ITM_MODANG_XFN  ,FT_MONADIC },
+      { ITM_1ONX_XFN    ,FT_MONADIC },
+      { ITM_atan2_XFN   ,FT_DYADIC  },
+      { ITM_ADD_XFN     ,FT_DYADIC  },
+      { ITM_SUB_XFN     ,FT_DYADIC  },
+      { ITM_POWER_XFN   ,FT_DYADIC  },
+      { ITM_MULT_XFN    ,FT_DYADIC  },
+      { ITM_DIV_XFN     ,FT_DYADIC  },
+      { ITM_MOD_XFN     ,FT_DYADIC  },
+      { 0               ,0   }
   };
 
 
   static int lookupFunctionId(int function_id) {
-      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->name; entry++) {
+      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
           if (entry->function_id == function_id) {
               return entry->function_type;
           }
@@ -569,7 +428,6 @@ typedef struct {
         }
     } else
     if(getRegisterDataType(registerNo) == dtReal34) {
-//must still deal with the angle if applicable in Y
         if(getRegisterAsReal(registerNo, (real_t *)result)) {
           return true;
         }
@@ -611,7 +469,6 @@ typedef struct {
     realMultiply((real_t *)result, (real_t *)temporary, (real_t *)result, c);
 
     if(!getLongintegerRegisterAsReal1071(registerNo+2, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
-//Must still deal with getRegisterAsReal should TI or error if dataloss will occur
         return false;
     }
     realAdd((real_t *)result, (real_t*)temporary, (real_t *)result, c);
@@ -918,24 +775,24 @@ typedef struct {
             real1071_t aa,bb;
             realCopy(const_0,(real_t*)&aa);
             realCopy(const_0,(real_t*)&bb);
-            if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &paramX, NULL,    NULL,    &c, accuracy); } else
-            if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, NULL,    &paramX, NULL,    &c, accuracy); } else
-            if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan2(&paramX, angleMode, &aa,     &bb,     &paramX, &c, accuracy); }
+            if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); } else
+            if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); } else
+            if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
             }
             break;
 
         case ITM_arcsin_XFN: {
-          WP34S_Asin1071(&paramX, &paramX, &c, accuracy);
+          WP34S_Asin1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
         case ITM_arccos_XFN: {
-          WP34S_Acos1071(&paramX, &paramX, &c, accuracy);
+          WP34S_Acos1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
         case ITM_arctan_XFN: {
-          WP34S_Atan1071(&paramX, &paramX, &c, accuracy);
+          WP34S_Atan1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
@@ -1001,7 +858,7 @@ typedef struct {
           break;
         }
         case ITM_atan2_XFN: {
-          WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c, accuracy);
+          WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
