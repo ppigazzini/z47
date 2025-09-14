@@ -26,7 +26,7 @@
 
 
 
-void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
+static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
   const real_t *angle45, *angle90, *angle180;
   angle45  = const_0;
   angle90  = const_0;
@@ -288,7 +288,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 
 // Calculate sin, cos by Taylor series and tan by division
 void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
-  const bool_t doEpsilon = false;
+  bool_t doEpsilon = false;
   int   epsilonDigits;
   real_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
 
@@ -296,11 +296,13 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 
   if(realContext->digits > 51) {
     realContext->digits = 75;
-    epsilonDigits = 39;           //only applicable if doEpsilon is true
+    epsilonDigits = 72;           //only applicable if doEpsilon is true, as well as in the iteration display
+    doEpsilon = true;
   }
   else {
     realContext->digits = 51;
-    epsilonDigits = 39;           //only applicable if doEpsilon is true
+    epsilonDigits = 39;           //only applicable if doEpsilon is true, as well as in the iteration display
+    doEpsilon = false;            //stay compaitble with the old Taylor
   }
 
   doTaylorIterations(a, &angle, &a2, &t, &j, &z, &sin, &cos, sinOut, cosOut, &epsilonOrCompare, doEpsilon, epsilonDigits, realContext);
@@ -361,10 +363,9 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 
 // Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
 void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
-  const bool_t doEpsilon = false;
   real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
 
-  doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, doEpsilon, 1010, realContext);
+  doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
 
   if(sinOut != NULL) {
     realPlus((real_t*)&sin, sinOut, realContext);
@@ -388,87 +389,197 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
 }
 
 
-
-void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
-  real_t a, b, a2, t, j, z, last;
-  int doubles = 0;
-  int invert;
-  int n;
-  int neg = realIsNegative(x);
-
-  if(realIsNaN(x)) {
-    realCopy(const_NaN, angle);
-    return;
+static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* j, real_t* z, const real_t* x, real_t* b, real_t* epsilon, real_t* last,
+              const bool_t doEpsilon, int epsilonDigits, 
+              int* doubles, int* invert, int* neg,
+              realContext_t *realContext){
+  bool_t conditionToKeepIterating = false;
+  char tmpEpsilon[16]; //-- for epsilon string conversion
+  //-- use epsilon convergence instead of exact equality
+  if(doEpsilon) {
+    sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
+    stringToReal(tmpEpsilon, (real_t*)epsilon, realContext);
+      //-- create const_1on10 equivalent for 1071 precision, temporary use of z - up to for loop below
+//    uInt32ToReal(10, (real_t*)z);
+//    realDivide(const_1, (real_t*)z, (real_t*)z, realContext);
   }
 
-  realCopy(x, &a);
+
+  *neg = realIsNegative((real_t*)x);
+
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return false;
+  }
+
+  realCopy((real_t*)x, (real_t*)a);
 
   // arrange for a >= 0
-  if(neg) {
-    realChangeSign(&a);
+  if(*neg) {
+    realChangeSign((real_t*)a);
   }
 
   // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
-  invert = realCompareGreaterThan(&a, const_1);
-  if(invert) {
-    realDivide(const_1, &a, &a, realContext);
+  *invert = realCompareGreaterThan((real_t*)a, const_1);
+  if(*invert) {
+    realDivide(const_1, (real_t*)a, (real_t*)a, realContext);
   }
 
   // Range reduce to small enough limit to use taylor series using:
   //  tan(x/2) = tan(x)/(1+sqrt(1+tan(x)²))
-  for(n=0; n<1000; n++) {
-    if(realCompareLessEqual(&a, const_1on10)) {
+  for(int n=0; n<TaylorIterationMax; n++) {
+    if(!doEpsilon && realCompareLessEqual(a, const_1on10)) {
+      break;
+    } else 
+    if(doEpsilon && realCompareLessEqual((real_t*)a, const_1on10)){//  (real_t*)z)) {
       break;
     }
-    doubles++;
+
+    (*doubles)++;
     // a = a/(1+sqrt(1+a²)) -- at most 3 iterations.
-    realMultiply(&a, &a, &b, realContext);
-    realAdd(&b, const_1, &b, realContext);
-    realSquareRoot(&b, &b, realContext);
-    realAdd(&b, const_1, &b, realContext);
-    realDivide(&a, &b, &a, realContext);
+    realMultiply((real_t*)a, (real_t*)a, (real_t*)b, realContext);
+    realAdd((real_t*)b, const_1, (real_t*)b, realContext);
+    realSquareRoot((real_t*)b, (real_t*)b, realContext);
+    realAdd((real_t*)b, const_1, (real_t*)b, realContext);
+    realDivide((real_t*)a, (real_t*)b, (real_t*)a, realContext);
   }
 
   // Now Taylor series
   // atan(x) = x(1-x²/3+x⁴/5-x⁶/7...)
   // We calculate pairs of terms and stop when the estimate doesn't change
-  realCopy(const_3, angle);
-  realCopy(const_5, &j);
-  realMultiply(&a, &a, &a2, realContext); // a²
-  realCopy(&a2, &t);
-  realDivide(&t, angle, angle, realContext); // s = 1-t/3 -- first two terms
-  realSubtract(const_1, angle, angle, realContext);
+  uInt32ToReal(3, (real_t*)angle);
+  uInt32ToReal(5, (real_t*)j);
+  realMultiply((real_t*)a, (real_t*)a, (real_t*)a2, realContext); // a²
+  realCopy((real_t*)a2, (real_t*)t);
+  realDivide((real_t*)t, (real_t*)angle, (real_t*)angle, realContext); // s = 1-t/3 -- first two terms
+  realSubtract(const_1, (real_t*)angle, (real_t*)angle, realContext);
 
+  int i = 0;
   do { // Loop until there is no digits changed
-    realCopy(angle, &last);
+    realCopy((real_t*)angle, (real_t*)last);
 
-    realMultiply(&t, &a2, &t, realContext);
-    realDivide(&t, &j, &z, realContext);
-    realAdd(angle, &z, angle, realContext);
+    realMultiply((real_t*)t, (real_t*)a2, (real_t*)t, realContext);
+    realDivide((real_t*)t, (real_t*)j, (real_t*)z, realContext);
+    realAdd((real_t*)angle, (real_t*)z, (real_t*)angle, realContext);
 
-    realAdd(&j, const_2, &j, realContext);
+    realAdd((real_t*)j, const_2, (real_t*)j, realContext);
 
-    realMultiply(&t, &a2, &t, realContext);
-    realDivide(&t, &j, &z, realContext);
-    realSubtract(angle, &z, angle, realContext);
+    realMultiply((real_t*)t, (real_t*)a2, (real_t*)t, realContext);
+    realDivide((real_t*)t, (real_t*)j, (real_t*)z, realContext);
+    realSubtract((real_t*)angle, (real_t*)z, (real_t*)angle, realContext);
 
-    realAdd(&j, const_2, &j, realContext);
+    realAdd((real_t*)j, const_2, (real_t*)j, realContext);
 
-  } while(!realCompareEqual(angle, &last));
+    if(doEpsilon) {
+      //-- use epsilon convergence test instead of exact equality
+      realSubtract((real_t*)angle, (real_t*)last, (real_t*)b, realContext);
+      realCopyAbs((real_t*)b, (real_t*)b);
+      realSubtract((real_t*)b, (real_t*)epsilon, (real_t*)b, realContext);
+      conditionToKeepIterating = realIsPositive((real_t*)b);
+    }
+     else {
+      realSubtract((real_t*)angle, (real_t*)last, (real_t*)b, realContext);
+      realPlus((real_t*)b, (real_t*)b, realContext);
+      conditionToKeepIterating = !realIsZero((real_t*)b);
+    }
 
-  realMultiply(angle, &a, angle, realContext);
 
-  while(doubles) {
-    realAdd(angle, angle, angle, realContext);
-    doubles--;
+    #if !defined(TESTSUITE_BUILD)
+      if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
+        char ss[100];
+        sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
+        ss[40] = 0; //Hard limit to screen display
+        #if defined(DEBUGTAYLOR)
+          printf("%s%d\n",ss,epsilonDigits);
+        #endif //DEBUGTAYLOR
+        if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        }
+      }
+      #if !defined(PC_BUILD)
+        if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          break;
+        }
+      #endif //PC_BUILD
+    #endif //TESTSUITE_BUILD
+
+
+    #ifdef DEBUGTAYLOR
+      if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
+        realToString((real_t*)angle, tmpString); tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
+        realToString((real_t*)b , tmpString); tmpString[80]=0; printf(" diff=%s\n", tmpString);
+      }
+    #endif //DEBUGTAYLOR
+    i++;
+
+  } while(conditionToKeepIterating && i < TaylorIterationMax);
+
+  realMultiply((real_t*)angle, (real_t*)a, (real_t*)angle, realContext);
+
+  while(*doubles) {
+    realAdd((real_t*)angle, (real_t*)angle, (real_t*)angle, realContext);
+    (*doubles)--;
+  }
+  if(*invert) {
+    realSubtract(((realContext->digits) > 51) ? const1071_piOn2 : const_piOn2, (real_t*)angle, (real_t*)angle, realContext);
+  }
+  if(*neg) {
+    realChangeSign((real_t*)angle);
+  }
+  return true;
+}
+
+
+void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+  bool_t doEpsilon = false;
+  real_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence;
+  int doubles = 0;
+  int invert;
+  int neg;
+  int32_t savedContextDigits = realContext->digits;
+  int epsilonDigits;
+
+  if(realContext->digits > 39) {
+    realContext->digits = 75;
+    epsilonDigits = 72;           //only applicable if doEpsilon is true, as well as in the iteration display
+    doEpsilon = true;
+  }
+  else {
+    realContext->digits = 39;
+    epsilonDigits = 39;           //only applicable if doEpsilon is true, as well as in the iteration display
+    doEpsilon = false;            //stay compaitble with the old Taylor
   }
 
-  if(invert) {
-    realSubtract(const_piOn2, angle, angle, realContext);
+  if(!doAtan( (real_t*)&a, (real_t*)angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)x, (real_t*)&b, (real_t*)&epsilon, (real_t*)&last,
+              doEpsilon, epsilonDigits,
+              &doubles, &invert, &neg,
+              realContext)) {
+    realContext->digits = savedContextDigits;
+    return; //NaN
   }
+  realContext->digits = savedContextDigits;
+}
 
-  if(neg) {
-    realChangeSign(angle);
+
+static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+  real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
+  int doubles = 0;
+  int invert;
+  int neg;
+  if(!doAtan( (real_t*)&a, (real_t*)angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)x, (real_t*)&b, (real_t*)&epsilon, (real_t*)&last,
+              true, 1040, 
+              &doubles, &invert, &neg,
+              realContext)) {
+    return; //NaN
+  }
+}
+
+void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+  if(realContext->digits >= 1071) {
+    C47do_WP34S_Atan(x, angle, realContext);
+  } else {
+    WP34S_Atan(x, angle, realContext);
   }
 }
 
@@ -586,59 +697,93 @@ void WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *
 }
 
 
+static bool_t doAsin(real_t *x, real_t *angle, real_t *abx, real_t *z, realContext_t *realContext) {
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return false;
+  }
+  realCopyAbs((real_t*)x, (real_t*)abx);
+  if(realCompareGreaterThan((real_t*)abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return false;
+  }
+  // angle = 2*atan(x/(1+sqrt(1-x*x)))
+  realMultiply((real_t*)x, (real_t*)x, (real_t*)z, realContext);
+  realSubtract(const_1, (real_t*)z, (real_t*)z, realContext);
+  realSquareRoot((real_t*)z, (real_t*)z, realContext);
+  realAdd((real_t*)z, const_1, (real_t*)z, realContext);
+  realDivide((real_t*)x, (real_t*)z, (real_t*)z, realContext);
+  C47_WP34S_Atan((real_t*)z, (real_t*)abx, realContext);
+  realAdd((real_t*)abx, (real_t*)abx, (real_t*)angle, realContext);
+  return true;
+}
+
+
 void WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
+  doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+}
 
-  if(realIsNaN(x)) {
-    realCopy(const_NaN, angle);
-    return;
+static void C47do_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
+  real1071_t abx, z;
+  doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+}
+
+void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
+  if(realContext->digits >= 1071) {
+    C47do_WP34S_Asin(x, angle, realContext);
+  } else {
+    WP34S_Asin(x, angle, realContext);
   }
+}
 
-  realCopyAbs(x, &abx);
-  if(realCompareGreaterThan(&abx, const_1)) {
-    realCopy(const_NaN, angle);
-    return;
+
+
+static bool_t doAcos(real_t *x, real_t *angle, real_t *abx, real_t *z, realContext_t *realContext) {
+  if(realIsNaN((real_t*)x)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return false;
   }
-
-  // angle = 2*atan(x/(1+sqrt(1-x*x)))
-  realMultiply(x, x, &z, realContext);
-  realSubtract(const_1, &z, &z, realContext);
-  realSquareRoot(&z, &z, realContext);
-  realAdd(&z, const_1, &z, realContext);
-  realDivide(x, &z, &z, realContext);
-  WP34S_Atan(&z, &abx, realContext);
-  realAdd(&abx, &abx, angle, realContext);
+  realCopyAbs((real_t*)x, (real_t*)abx);
+  if(realCompareGreaterThan((real_t*)abx, const_1)) {
+    realCopy(const_NaN, (real_t*)angle);
+    return false;
+  }
+  // angle = 2*atan((1-x)/sqrt(1-x*x))
+  if(realCompareEqual((real_t*)x, const_1)) {
+    realZero((real_t*)angle);
+  }
+  else {
+    realMultiply((real_t*)x, (real_t*)x, (real_t*)z, realContext);
+    realSubtract(const_1, (real_t*)z, (real_t*)z, realContext);
+    realSquareRoot((real_t*)z, (real_t*)z, realContext);
+    realSubtract(const_1, (real_t*)x, (real_t*)abx, realContext);
+    realDivide((real_t*)abx, (real_t*)z, (real_t*)z, realContext);
+    C47_WP34S_Atan((real_t*)z, (real_t*)abx, realContext);
+    realAdd((real_t*)abx, (real_t*)abx, (real_t*)angle, realContext);
+  }
+  return true;
 }
 
 
 void WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
+  doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+}
 
-  if(realIsNaN(x)) {
-    realCopy(const_NaN, angle);
-    return;
-  }
+static void C47do_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
+  real1071_t abx, z;
+  doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+}
 
-  realCopyAbs(x, &abx);
-  if(realCompareGreaterThan(&abx, const_1)) {
-    realCopy(const_NaN, angle);
-    return;
-  }
-
-  // angle = 2*atan((1-x)/sqrt(1-x*x))
-  if(realCompareEqual(x, const_1)) {
-    realZero(angle);
-  }
-  else {
-    realMultiply(x, x, &z, realContext);
-    realSubtract(const_1, &z, &z, realContext);
-    realSquareRoot(&z, &z, realContext);
-    realSubtract(const_1, x, &abx, realContext);
-    realDivide(&abx, &z, &z, realContext);
-    WP34S_Atan(&z, &abx, realContext);
-    realAdd(&abx, &abx, angle, realContext);
+void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
+  if(realContext->digits >= 1071) {
+    C47do_WP34S_Acos(x, angle, realContext);
+  } else {
+    WP34S_Acos(x, angle, realContext);
   }
 }
+
 
 
 static void WP34S_Calc_Gamma_LnGamma_Lanczos(const real_t *xin, real_t *res, bool_t calculateLnGamma, realContext_t *realContext) {
