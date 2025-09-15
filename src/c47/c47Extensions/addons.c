@@ -37,18 +37,23 @@ static void C47Cvt2RadSinCosTan1071(real1071_t *an, angularMode_t angularMode, r
   explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Cvt2RadSinCosTan((real_t*)an, angularMode, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, realContext);
 }
-static void WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+static void C47_WP34S_Asin1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
   explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Asin((real_t*)x, (real_t*)angle, realContext);
 }
-static void WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+static void C47_WP34S_Acos1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
   explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Acos((real_t*)x, (real_t*)angle, realContext);
 }
-static void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
+static void C47_WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *realContext) {
   explicitTaylorIterVisibilitySelection = true;
   C47_WP34S_Atan((real_t*)x, (real_t*)angle, realContext);
 }
+static void C47_WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext) {
+  explicitTaylorIterVisibilitySelection = true;
+  C47_WP34S_Atan2((real_t*)y, (real_t*)x, (real_t*)atan, realContext);
+}
+
 
 
 
@@ -68,120 +73,6 @@ static void WP34S_Atan1071(real1071_t *x, real1071_t *angle, realContext_t *real
 #define modulus(a)            (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
 
-
-
-// Tightly based on the original wp34 module in the C47 code : 2025-08-17 JM
-void WP34S_Atan2_1071(real1071_t *y, real1071_t *x, real1071_t *atan, realContext_t *realContext) {
-  real1071_t r, t;
-  const bool_t xNeg = realIsNegative((real_t*)x);
-  const bool_t yNeg = realIsNegative((real_t*)y);
-
-  if(realIsNaN((real_t*)x) || realIsNaN((real_t*)y)) {
-    realCopy(const_NaN, (real_t*)atan);
-    return;
-  }
-
-  if(realCompareEqual((real_t*)y, const_0)) {
-    if(yNeg) {
-      if(realCompareEqual((real_t*)x, const_0)) {
-        if(xNeg) {
-          realMinus(const1071_pi, (real_t*)atan, realContext);
-        }
-        else {
-          realCopy((real_t*)y, (real_t*)atan);
-        }
-      }
-      else if(xNeg) {
-        realMinus(const1071_pi, (real_t*)atan, realContext);
-      }
-      else {
-        realCopy((real_t*)y, (real_t*)atan);
-      }
-    }
-    else {
-      if(realCompareEqual((real_t*)x, const_0)) {
-        if(xNeg) {
-          realCopy(const1071_pi, (real_t*)atan);
-        }
-        else {
-          realZero((real_t*)atan);
-        }
-      }
-      else if(xNeg) {
-        realCopy(const1071_pi, (real_t*)atan);
-      }
-      else {
-        realZero((real_t*)atan);
-      }
-    }
-    return;
-  }
-
-  if(realCompareEqual((real_t*)x, const_0)) {
-    realCopy(const1071_piOn2, (real_t*)atan);
-    if(yNeg) {
-      realSetNegativeSign((real_t*)atan);
-    }
-    return;
-  }
-
-  if(realIsInfinite((real_t*)x)) {
-    if(xNeg) {
-      if(realIsInfinite((real_t*)y)) {
-        realCopy(const1071_3piOn4, (real_t*)atan);
-        if(yNeg) {
-          realSetNegativeSign((real_t*)atan);
-        }
-      }
-      else {
-        realCopy(const1071_pi, (real_t*)atan);
-        if(yNeg) {
-          realSetNegativeSign((real_t*)atan);
-        }
-      }
-    }
-    else {
-      if(realIsInfinite((real_t*)y)) {
-        realCopy(const1071_piOn4, (real_t*)atan);
-        if(yNeg) {
-          realSetNegativeSign((real_t*)atan);
-        }
-      }
-      else {
-        realZero((real_t*)atan);
-        if(yNeg) {
-          realSetNegativeSign((real_t*)atan);
-        }
-      }
-    }
-    return;
-  }
-
-  if(realIsInfinite((real_t*)y)) {
-    realCopy(const1071_piOn2, (real_t*)atan);
-    if(yNeg) {
-      realSetNegativeSign((real_t*)atan);
-    }
-    return;
-  }
-
-  realDivide((real_t*)y, (real_t*)x, (real_t*)&t, realContext);
-  WP34S_Atan1071(&t, &r, realContext);
-  if(xNeg) {
-    realCopy(const1071_pi, (real_t*)&t);
-    if(yNeg) {
-     realSetNegativeSign((real_t*)&t);
-    }
-  }
-  else {
-    realZero((real_t*)&t);
-  }
-
-  realAdd((real_t*)&r, (real_t*)&t, (real_t*)atan, realContext);
-  if(realCompareEqual((real_t*)atan, const_0) && yNeg) {
-    realSetNegativeSign((real_t*)atan);
-  }
-}
 
 
 // Mod reduction
@@ -782,17 +673,17 @@ typedef struct {
             break;
 
         case ITM_arcsin_XFN: {
-          WP34S_Asin1071(&paramX, &paramX, &c);
+          C47_WP34S_Asin1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
         case ITM_arccos_XFN: {
-          WP34S_Acos1071(&paramX, &paramX, &c);
+          C47_WP34S_Acos1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
         case ITM_arctan_XFN: {
-          WP34S_Atan1071(&paramX, &paramX, &c);
+          C47_WP34S_Atan1071(&paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
@@ -858,7 +749,7 @@ typedef struct {
           break;
         }
         case ITM_atan2_XFN: {
-          WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c);
+          C47_WP34S_Atan2_1071(&paramY, &paramX, &paramX, &c);
           convertAngleFromTo((real_t *)&paramX, amRadian, currentAngularMode, &c);
           break;
         }
