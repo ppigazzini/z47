@@ -1240,24 +1240,22 @@ int16_t lastItem = 0;
             if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu() || item == ITM_KEYMAP)) {
               closeAim();
             }
-            #if defined(ALTERNATE_TAM_MENU)
-              if(tam.mode && tam.alpha) {
-                if(item == ITM_T_LEFT_ARROW) {
-                  fnAlphaCursorLeft(NOPARAM);
-                  tamProcessInput(ITM_T_LEFT_ARROW);      // To update the tam buffer
-                  goto noMoreToDo;
-                }
-                else if(item == ITM_T_RIGHT_ARROW) {
-                  fnAlphaCursorRight(NOPARAM);
-                  tamProcessInput(ITM_NOP);      // To update the tam buffer
-                  goto noMoreToDo;
-                }
-                else if(item == ITM_NOP) {
-                  tamProcessInput(ITM_NOP);      // To update the tam buffer
-                  goto noMoreToDo;
-                }
+            if(tam.mode && tam.alpha) {
+              if(item == ITM_T_LEFT_ARROW) {
+                fnAlphaCursorLeft(NOPARAM);
+                tamProcessInput(ITM_T_LEFT_ARROW);      // To update the tam buffer
+                goto noMoreToDo;
               }
-            #endif //ALTERNATE_TAM_MENU
+              else if(item == ITM_T_RIGHT_ARROW) {
+                fnAlphaCursorRight(NOPARAM);
+                tamProcessInput(ITM_NOP);      // To update the tam buffer
+                goto noMoreToDo;
+              }
+              else if(item == ITM_NOP) {
+                tamProcessInput(ITM_NOP);      // To update the tam buffer
+                goto noMoreToDo;
+              }
+            }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
               !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
@@ -2779,11 +2777,7 @@ RELEASE_END:
             keyActionProcessed = true;
           }
           else if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && item == ITM_USERMODE) {
-            #if !defined(ALTERNATE_TAM_MENU)
-              tamEnterMode(ITM_ASSIGN);
-            #else
-              tamEnterMode(ITM_USERMODE);
-            #endif // !ALTERNATE_TAM_MENU
+            tamEnterMode(ITM_USERMODE);
             calcMode = previousCalcMode;
             keyActionProcessed = true;
           }
@@ -4364,22 +4358,17 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
       case CM_EIM: {
         if(xCursor > 0) {
-          #if !defined(ALTERNATE_TAM_MENU_XXX)
-            char *srcPos = aimBuffer;
-            char *dstPos = aimBuffer;
-            char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
-            --xCursor;
-            for(uint32_t i = 0; i < xCursor; ++i) {
-              dstPos += (*dstPos & 0x80) ? 2 : 1;
-            }
-            srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
-            for(; srcPos <= lstPos;) {
-              *(dstPos++) = *(srcPos++);
-            }
-          #else
-            int16_t currentCursor = (int16_t)xCursor;
-            deleteAlphaCharacter(&currentCursor);
-          #endif //!ALTERNATE_TAM_MENU
+          char *srcPos = aimBuffer;
+          char *dstPos = aimBuffer;
+          char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
+          --xCursor;
+          for(uint32_t i = 0; i < xCursor; ++i) {
+            dstPos += (*dstPos & 0x80) ? 2 : 1;
+          }
+          srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
+          for(; srcPos <= lstPos;) {
+            *(dstPos++) = *(srcPos++);
+          }
         }
         break;
       }
@@ -4482,17 +4471,10 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             showFunctionName(ITM_CLX, 1000, ""); //JM 1000ms = 1s
           }
           else if(stringByteLength(aimBuffer) != 0) {
-            #if !defined(ALTERNATE_TAM_MENU)
-              // Delete the last character
-              int16_t lg = stringLastGlyph(aimBuffer);
-              aimBuffer[lg] = 0;
-              alphaCursor -=1;
-            #else
-              // Delete the character before the cursor
-              if(alphaCursor > 0) {
-                deleteAlphaCharacter(&alphaCursor);
-              }
-            #endif //!ALTERNATE_TAM_MENU
+            // Delete the character before the cursor
+            if(alphaCursor > 0) {
+              deleteAlphaCharacter(&alphaCursor);
+            }
           }
           else {
             assignLeaveAlpha();
@@ -4504,17 +4486,10 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             itemToBeAssigned = 0;
           }
           else if(stringByteLength(aimBuffer) != 0) {
-            #if !defined(ALTERNATE_TAM_MENU)
-              // Delete the last character
-              int16_t lg = stringLastGlyph(aimBuffer);
-              aimBuffer[lg] = 0;
-              alphaCursor -=1;
-            #else
-              // Delete the character before the cursor
-              if(T_cursorPos > 0) {
-                deleteAlphaCharacter(&T_cursorPos);
-              }
-            #endif //!ALTERNATE_TAM_MENU
+            // Delete the character before the cursor
+            if(T_cursorPos > 0) {
+              deleteAlphaCharacter(&T_cursorPos);
+            }
           }
           else {
             assignLeaveAlpha();
@@ -4558,13 +4533,11 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
 
-    #if defined(ALTERNATE_TAM_MENU)
-      if(tam.mode && tam.alpha) {
-        fnAlphaCursorHome(NOPARAM);
-        tamProcessInput(ITM_NOP);      // To update the tam buffer
-        return;
-      }
-    #endif //ALTERNATE_TAM_MENU
+    if(tam.mode && tam.alpha && currentMenu() == -MNU_TAMALPHA) {
+      fnAlphaCursorHome(NOPARAM);
+      tamProcessInput(ITM_NOP);      // To update the tam buffer
+      return;
+    }
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_1);
@@ -4791,13 +4764,12 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 //--       return;
 //--     }                             //JMSHOW ^^
 
-    #if defined(ALTERNATE_TAM_MENU)
-      if(tam.mode && tam.alpha) {
-        fnAlphaCursorEnd(NOPARAM);
-        tamProcessInput(ITM_NOP);      // To update the tam buffer
-        return;
-      }
-    #endif //ALTERNATE_TAM_MENU
+
+    if(tam.mode && tam.alpha && currentMenu() == -MNU_TAMALPHA) {
+      fnAlphaCursorEnd(NOPARAM);
+      tamProcessInput(ITM_NOP);      // To update the tam buffer
+      return;
+    }
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_2);

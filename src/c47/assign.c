@@ -552,11 +552,6 @@ void fnAssign(uint16_t mode) {
   if(mode) {
     createMenu(aimBuffer);
     aimBuffer[0] = 0;
-    #if !defined(TESTSUITE_BUILD)
-      #if !defined(ALTERNATE_TAM_MENU)
-        popSoftmenu();
-      #endif //!ALTERNATE_TAM_MENU
-    #endif // !TESTSUITE_BUILD
   }
   else {
     previousCalcMode = calcMode;
@@ -740,20 +735,12 @@ void updateAssignTamBuffer(void) {
     if(tam.alpha) {
       tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
       if(aimBuffer[0] == 0) {
-        #if !defined(ALTERNATE_TAM_MENU)
-          tbPtr = stringCopy(tbPtr, "_");
-        #else
-          tbPtr = stringCopy(tbPtr, STD_CURSOR);
-        #endif //!ALTERNATE_TAM_MENU
+        tbPtr = stringCopy(tbPtr, STD_CURSOR);
       }
       else {
-        #if !defined(ALTERNATE_TAM_MENU)
-          tbPtr = stringCopy(tbPtr, aimBuffer);
-        #else
-          stringCopy(tmpString, aimBuffer);
-          insertAlphaCursor(0);
-          tbPtr = stringCopy(tbPtr, tmpString);
-        #endif //!ALTERNATE_TAM_MENU
+        stringCopy(tmpString, aimBuffer);
+        insertAlphaCursor(0);
+        tbPtr = stringCopy(tbPtr, tmpString);
         tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
       }
     }
@@ -794,20 +781,12 @@ void updateAssignTamBuffer(void) {
   if(itemToBeAssigned != 0 && tam.alpha) {
     tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
     if(aimBuffer[0] == 0) {
-      #if !defined(ALTERNATE_TAM_MENU)
-        tbPtr = stringCopy(tbPtr, "_");
-      #else
-        tbPtr = stringCopy(tbPtr, STD_CURSOR);
-      #endif //!ALTERNATE_TAM_MENU
+      tbPtr = stringCopy(tbPtr, STD_CURSOR);
     }
     else {
-      #if !defined(ALTERNATE_TAM_MENU)
-        tbPtr = stringCopy(tbPtr, aimBuffer);
-      #else
-        stringCopy(tmpString, aimBuffer);
-        insertAlphaCursor(0);
-        tbPtr = stringCopy(tbPtr, tmpString);
-      #endif //!ALTERNATE_TAM_MENU
+      stringCopy(tmpString, aimBuffer);
+      insertAlphaCursor(0);
+      tbPtr = stringCopy(tbPtr, tmpString);
       tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
     }
   }
@@ -1133,13 +1112,8 @@ void assignEnterAlpha(void) {
     tam.alpha = true;
     setSystemFlag(FLAG_ALPHA);
     aimBuffer[0] = 0;
-    #if defined(ALTERNATE_TAM_MENU)
-      tamEnterMode(ITM_ASSIGN);
-      calcModeAim(NOPARAM);
-    #else
-      calcModeAim(NOPARAM);
-      numberOfTamMenusToPop = 0;
-    #endif //ALTERNATE_TAM_MENU
+    tamEnterMode(ITM_ASSIGN);
+    calcModeAim(NOPARAM);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -1148,23 +1122,8 @@ void assignLeaveAlpha(void) {
   #if !defined(TESTSUITE_BUILD)
     tam.alpha = false;
     clearSystemFlag(FLAG_ALPHA);
-    #if defined(ALTERNATE_TAM_MENU)
-      leaveTamModeIfEnabled();
-      alphaCursor = 0;
-    #else
-      while(numberOfTamMenusToPop--) {
-        if(currentMenu() == -MNU_ALPHA) {
-          popSoftmenu();
-        }
-        popSoftmenu();
-      }
-      if(currentMenu() == -MNU_ALPHA) {
-        popSoftmenu();
-      }
-      if(softmenuStack[0].softmenuId == 1) { // MyAlpha
-        softmenuStack[0].softmenuId = 0; // MyMenu
-       }
-    #endif //ALTERNATE_TAM_MENU
+    leaveTamModeIfEnabled();
+    alphaCursor = 0;
     calcModeNormalGui();
   #endif // !TESTSUITE_BUILD
 }

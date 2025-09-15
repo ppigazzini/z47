@@ -4,16 +4,6 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
-//*********************************
-// DL ALPHA MENUS OPTIONS
-//*********************************
-
-// Uncomment ALTERNATE_ALPHA_MENU to get new alpha & matrix menus with left arrow on F5
-// Uncomment ALTERNATE_TAM_MENU   to get new TAM alpha      menu  with arrows on F5/F6
-// Comment both to use original menus and code
-
-#define ALTERNATE_ALPHA_MENU     // New Menus with left arrow on F5
-#define ALTERNATE_TAM_MENU       // TAM menu  with arrows on F5/F6
 
 //*********************************
 // JM VARIOUS OPTIONS
@@ -1366,11 +1356,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#if defined(ALTERNATE_TAM_MENU)
-  #define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
-#else
-  #define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-#endif //ALTERNATE_TAM_MENU
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -2005,20 +1991,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define IS_SEPARATOR_(digitCount)            (   (digitCount+1 == GROUPWIDTH_LEFT1) \
                                               || ((digitCount+1  > GROUPWIDTH_LEFT1 || digitCount < 0) \
                                                   && (modulo(digitCountNEW(digitCount), (uint16_t)GROUPWIDTH_(digitCount)) == (uint16_t)GROUPWIDTH_(digitCount) - 1)) )
-#if defined(ALTERNATE_ALPHA_MENU)
-  #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
+
+#define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
                                                (menu == -MNU_ALPHA     && y == 0 && (x == 4 || x == 5)) || \
                                                (menu == -MNU_M_EDIT    && y == 0 && (x == 4 || x == 5)) || \
                                                (menu == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) || \
                                                (menu == -MNU_TAMALPHA  && y == 0 && (x == 4 || x == 5)) \
                                              )
-#else
-  #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (menu == -MNU_ALPHA     && y == 0) || \
-                                               (menu == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
-                                               (menu == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) \
-                                             )
-#endif //!ALTERNATE_ALPHA_MENU
 
 
 #define IS_SIM_ARROW_ALLOWED_IN_MENU(menu, key) ( \
