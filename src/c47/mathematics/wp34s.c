@@ -53,10 +53,11 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
         angle45 = const_piOn4_75;
         angle90 = const_piOn2_75;
         angle180 = const_pi_75;
-        WP34S_Mod((real_t*)angle, const1071_2pi, angle, realContext); // mod(angle, 2pi) --> angle
+        mod2Pi((real_t*)angle, angle, realContext); // mod(angle, 2pi) --> angle
       }
       break;
     }
+
     case amMultPi: {
       angle45 = const_1on4;
       angle90 = const_1on2;
@@ -64,6 +65,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       WP34S_Mod((real_t*)angle, const_2, angle, realContext); // mod(angle, 2) --> angle
       break;
     }
+
     case amGrad: {
       angle45 = const_50;
       angle90 = const_100;
@@ -71,6 +73,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       WP34S_Mod((real_t*)angle, const_400, angle, realContext); // mod(angle, 400g) --> angle
       break;
     }
+
     case amDegree:
     case amDMS: {
       angle45 = const_45;
@@ -80,6 +83,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       angularMode = amDegree;
       break;
     }
+
     default: {
     }
   }
@@ -93,6 +97,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     *sinNeg = !(*sinNeg);
     *cosNeg = !(*cosNeg);
   }
+
   // sin(90+x) = cos(x), cos(90+x) = -sin(x)
   if(realCompareGreaterEqual((real_t*)angle, angle90)) {        // angle >= 90°
     realSubtract((real_t*)angle, angle90, angle, realContext); // angle - 90° --> angle
@@ -126,6 +131,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
   }
 
   realContext->digits = savedContextDigits;
+
   if(sinOut != NULL) {
     if(*sinNeg) {
       realSetNegativeSign(sinOut);
@@ -141,6 +147,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     realPlus(sinOut, sinOut, realContext);
   }
+
   if(cosOut != NULL) {
     if(*cosNeg) {
       realSetNegativeSign(cosOut);
@@ -153,6 +160,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     realPlus(cosOut, cosOut, realContext);
   }
+
   if(tanOut != NULL && realIsZero(cosOut)) {
     realSetPositiveSign(tanOut);
     realPlus(tanOut, tanOut, realContext);
@@ -182,6 +190,7 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   realCopy(an, &angle);
 
   int32_t savedContextDigits = realContext->digits;
+
   if(realContext->digits > 51) {
     realContext->digits = 75;
   }
@@ -1406,31 +1415,83 @@ void WP34S_ComplexLnGamma(const real_t *zinReal, const real_t *zinImag, real_t *
 }
 
 
-void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-  /* Declare a structure large enough to hold a really long number.
-   * This structure is likely to be larger than is required.
-   */
-  real1071_t out;
+static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext,
+                  unsigned int digits, real_t *out) {
   realContext_t c = *realContext;
 
-  c.digits = 1071;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+  c.digits = digits;
+  realDivideRemainder(x, y, out, &c);
+  realPlus(out, res, realContext);
+}
+
+
+// Original e900193 fixes 2025-08 Pauli
+// When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
+void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  unsigned int digits = 6147;
+  const size_t blocks = TO_BLOCKS(sizeof(real6147_t));
+  void *tofree = allocC47Blocks(blocks);
+  real2139_t small; // Fallback size
+  real_t *out;
+
+  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  doMod(x, y, res, realContext, digits, out);
+  freeC47Blocks(out, blocks);
+#else
+  real6147_t temp;
+
+  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+#endif
+}
+
+
+// Original e900193 fixes 2025-08 Pauli
+// When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
+void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  unsigned int digits = 12321;
+  const size_t blocks = TO_BLOCKS(sizeof(real12321_t));
+  void *tofree = allocC47Blocks(blocks);
+  real2139_t small; // Fallback size
+  real_t *out;
+
+  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  doMod(x, y, res, realContext, digits, out);
+  freeC47Blocks(out, blocks);
+#else
+  real12321_t temp;
+
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+#endif
+}
+
+
+void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  real2139_t small; // Fallback size
+  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+#else
+  real6147_t temp;
+  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+#endif
 }
 
 
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
-  /* Declare a structure large enough to hold a really long number.
-   * This structure is likely to be larger than is required.
-   */
-  real2139_t out;
-  realContext_t c = *realContext;
-
-  c.digits = 2139;
-  realDivideRemainder(x, y, (real_t *)&out, &c);
-  realPlus((real_t *)&out, res, realContext);
+#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
+  real2139_t small; // Fallback size
+  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+#else
+  real12321_t temp;
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+#endif
 }
 
+
+void mod2Pi(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_BigMod(x, const6147_2pi, res, realContext);
+}
 
 static void gser(const real_t *a, const real_t *x, const real_t *gln, real_t *res, realContext_t *realContext) {
   real_t ap, del, sum, t, u;

@@ -28,7 +28,7 @@
 /* Specify the memory areas */
 MEMORY {
   FLASH   (rx) : ORIGIN = 0x08050000, LENGTH =  704K
-  SRAM2  (xrw) : ORIGIN = 0x10000000, LENGTH =    8K     /* Why not 32K? */
+  SRAM2  (xrw) : ORIGIN = 0x10000000, LENGTH =   16K     /* Why not 32K? */
   SRAM1  (xrw) : ORIGIN = 0x20000000, LENGTH =   96K
   QSPI    (rx) : ORIGIN = 0x90000000, LENGTH = 2048K-12K /* a 4K block from 0x901FD000 to 0x901FDFFF is reserved by DMCP */
 }

@@ -1218,10 +1218,11 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       break;
     }
     case amRadian: {
-      //incoming longInteger, converted via tempString to real1071, modulus 2pi into real1071, convert to real75
-      real1071_t reducedAngleTmp, reducedAngleTmp2;
+      //incoming longInteger, converted via tempString to real6147, modulus 2pi into real6147, convert to real75
+      real2139_t reducedAngleTmp, reducedAngleTmp2;  // This cannot be increased to 6147 further. 6147 overruns the stack even if we just have the type in here also when using 2139 digits below.
       realContext_t c = ctxtReal75;
-      c.digits = 1071;
+      c.digits = 2139;                               // Cannot be increased further. It works well on 1071, worked for a few tests already on 2139 but crashes if this goes to 6147 (together with the real_xxx above)
+                                                     // The minimum required for 1000 digits input reduction is slightly less than double, so 1071 is maybe ok for 99.99% cases, but 2139 is preferred as theoretically you will not have a case where 2139 will not work.
       convertLongIntegerRegisterToLongInteger(regist, angle);
 
       if(longIntegerBase10Digits(angle) > 1000) {
@@ -1235,7 +1236,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 
       longIntegerToString(angle, 10, tmpString);   //replaced mpz_get_str(tmpString, 10, angle);
       decNumberFromString((real_t *)&reducedAngleTmp, tmpString, &c);
-      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const1071_2pi, (real_t *)&reducedAngleTmp2, &c);
+      WP34S_Mod((real_t *)&reducedAngleTmp, (real_t *)const6147_2pi, (real_t *)&reducedAngleTmp2, &c);
       realPlus((real_t *)&reducedAngleTmp2, reducedAngle, &ctxtReal75);
       longIntegerFree(angle);
       return;
