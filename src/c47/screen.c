@@ -1870,11 +1870,9 @@ return res;
     showFunctionNameCounter = delayInMs;
 
 
-    #if defined(ALTERNATE_TAM_MENU)
-      if(tam.alpha && ((item == ITM_BACKSPACE) || (item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {               // For smooth display in tam.alpha
-        return;
-      }
-    #endif //ALTERNATE_TAM_MENU
+    if(tam.alpha && ((item == ITM_BACKSPACE) || (item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {               // For smooth display in tam.alpha
+      return;
+    }
 
     if(functionName[0] != 0)
     {
@@ -1908,18 +1906,13 @@ return res;
   void hideFunctionName(void) {
     if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
-        #if defined(ALTERNATE_TAM_MENU)
-          if(!tam.alpha || (showFunctionNameItem != ITM_BACKSPACE &&               // For smooth display in tam.alpha
-                            showFunctionNameItem != ITM_T_LEFT_ARROW &&
-                            showFunctionNameItem != ITM_T_RIGHT_ARROW &&
-                            showFunctionNameItem != ITM_NULL)) {
-            refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
-            force_Registerrefresh(REGISTER_T, true, true);
-          }
-        #else
+        if(!tam.alpha || (showFunctionNameItem != ITM_BACKSPACE &&               // For smooth display in tam.alpha
+                          showFunctionNameItem != ITM_T_LEFT_ARROW &&
+                          showFunctionNameItem != ITM_T_RIGHT_ARROW &&
+                          showFunctionNameItem != ITM_NULL)) {
           refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
           force_Registerrefresh(REGISTER_T, true, true);
-        #endif //ALTERNATE_TAM_MENU
+        }
       } else {
         _refreshPemScreen();
         //force reset is done at _refreshPemScreen
@@ -5750,7 +5743,6 @@ void fnAGraph(uint16_t regist) {
 }
 
 
-#if defined(ALTERNATE_TAM_MENU)
 void insertAlphaCursor(uint16_t startAt) {
   #if !defined(TESTSUITE_BUILD)
     char       *bufPtr = tmpString + startAt;
@@ -5802,4 +5794,3 @@ void insertAlphaCursor(uint16_t startAt) {
     }
   #endif // !TESTSUITE_BUILD
 }
-#endif //ALTERNATE_TAM_MENU

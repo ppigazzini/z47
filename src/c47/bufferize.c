@@ -708,13 +708,10 @@ typedef struct {
       }
       else if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
         item = convertItemToSubOrSup(item, nextChar);
-        #if defined(ALTERNATE_TAM_MENU)
-          if(tam.alpha){
-            insertAlphaCharacter(item, &alphaCursor);
-          }
-          else
-        #endif //ALTERNATE_TAM_MENU
-        if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
+        if(tam.alpha){
+          insertAlphaCharacter(item, &alphaCursor);
+        }
+        else if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
           sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
           displayBugScreen(errorMessage);
         }
@@ -897,7 +894,7 @@ typedef struct {
               xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
             }
           #endif //SCROLL_ASM
- 
+
           stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
@@ -2863,7 +2860,6 @@ typedef struct {
   }
 
 
-#if defined(ALTERNATE_TAM_MENU)
   void insertAlphaCharacter(uint16_t item, int16_t *currentCursor) {
     const char *addChar = item == ITM_PAIR_OF_PARENTHESES ? "()" :
                           item == ITM_VERTICAL_BAR        ? "||" :
@@ -2936,7 +2932,5 @@ typedef struct {
   void fnAlphaCursorEnd(uint16_t unusedButMandatoryParameter) {
     alphaCursor = (uint16_t)stringGlyphLength(aimBuffer);
   }
-
-#endif //ALTERNATE_TAM_MENU
 
 #endif // !TESTSUITE_BUILD

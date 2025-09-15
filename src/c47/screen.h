@@ -30,9 +30,7 @@ void       fnClLcd                            (uint16_t unusedButMandatoryParame
 void       fnPixel                            (uint16_t unusedButMandatoryParameter);
 void       fnPoint                            (uint16_t unusedButMandatoryParameter);
 void       fnAGraph                           (uint16_t regist);
-#if defined(ALTERNATE_TAM_MENU)
 void       insertAlphaCursor                  (uint16_t startAt);
-#endif //ALTERNATE_TAM_MENU
 
 void       drawSinglePixelFullWidthLine       (int y);
 
