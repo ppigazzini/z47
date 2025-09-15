@@ -1897,7 +1897,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tamProcessInput(ITM_alpha);
                 varOrLblName[6] = 0;  // Ensure name is 6 characters maximum
                 strcpy(aimBuffer, varOrLblName);
-                T_cursorPos = strlen(varOrLblName);
+                alphaCursor = strlen(varOrLblName);
                 tamProcessInput(ITM_NOP);                 // to insert the resulting string in program
               }
 
