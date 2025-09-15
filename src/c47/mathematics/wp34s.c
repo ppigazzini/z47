@@ -593,115 +593,143 @@ void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) 
 }
 
 
-void WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
-  real_t r, t;
-  const bool_t xNeg = realIsNegative(x);
-  const bool_t yNeg = realIsNegative(y);
+#define _pi(d)     (d > 51 ? (d > 75 ? const1071_pi     : const_pi_75)     : const_pi)
+#define _piOn2(d)  (d > 51 ? (d > 75 ? const1071_piOn2  : const_piOn2_75)  : const_piOn2)
+#define _piOn4(d)  (d > 51 ? (d > 75 ? const1071_piOn4  : const_piOn4_75)  : const_piOn4)
+#define _3piOn4(d) (d > 51 ? (d > 75 ? const1071_3piOn4 : const_3piOn4_75) : const_3piOn4)
 
-  if(realIsNaN(x) || realIsNaN(y)) {
-    realCopy(const_NaN, atan);
-    return;
+static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r, real_t *t, realContext_t *realContext) {
+  const bool_t xNeg = realIsNegative((real_t*)x);
+  const bool_t yNeg = realIsNegative((real_t*)y);
+
+  if(realIsNaN((real_t*)x) || realIsNaN((real_t*)y)) {
+    realCopy(const_NaN, (real_t*)atan);
+    return false;
   }
 
-  if(realCompareEqual(y, const_0)) {
+  if(realCompareEqual((real_t*)y, const_0)) {
     if(yNeg) {
-      if(realCompareEqual(x, const_0)) {
+      if(realCompareEqual((real_t*)x, const_0)) {
         if(xNeg) {
-          realMinus(const_pi, atan, realContext);
+          realMinus( _pi(realContext->digits), (real_t*)atan, realContext);
         }
         else {
-          realCopy(y, atan);
+          realCopy((real_t*)y, (real_t*)atan);
         }
       }
       else if(xNeg) {
-        realMinus(const_pi, atan, realContext);
+        realMinus( _pi(realContext->digits), (real_t*)atan, realContext);
       }
       else {
-        realCopy(y, atan);
+        realCopy((real_t*)y, (real_t*)atan);
       }
     }
     else {
-      if(realCompareEqual(x, const_0)) {
+      if(realCompareEqual((real_t*)x, const_0)) {
         if(xNeg) {
-          realCopy(const_pi, atan);
+          realCopy( _pi(realContext->digits), (real_t*)atan);
         }
         else {
-          realZero(atan);
+          realZero((real_t*)atan);
         }
       }
       else if(xNeg) {
-        realCopy(const_pi, atan);
+        realCopy( _pi(realContext->digits), (real_t*)atan);
       }
       else {
-        realZero(atan);
+        realZero((real_t*)atan);
       }
     }
-    return;
+    return true;
   }
 
-  if(realCompareEqual(x, const_0)) {
-    realCopy(const_piOn2, atan);
+  if(realCompareEqual((real_t*)x, const_0)) {
+    realCopy( _piOn2(realContext->digits), (real_t*)atan);
     if(yNeg) {
-      realSetNegativeSign(atan);
+      realSetNegativeSign((real_t*)atan);
     }
-    return;
+    return true;
   }
 
-  if(realIsInfinite(x)) {
+  if(realIsInfinite((real_t*)x)) {
     if(xNeg) {
-      if(realIsInfinite(y)) {
-        realCopy(const_3piOn4, atan);
+      if(realIsInfinite((real_t*)y)) {
+        realCopy( _3piOn4(realContext->digits), (real_t*)atan);
         if(yNeg) {
-          realSetNegativeSign(atan);
+          realSetNegativeSign((real_t*)atan);
         }
       }
       else {
-        realCopy(const_pi, atan);
+        realCopy( _pi(realContext->digits), (real_t*)atan);
         if(yNeg) {
-          realSetNegativeSign(atan);
+          realSetNegativeSign((real_t*)atan);
         }
       }
     }
     else {
-      if(realIsInfinite(y)) {
-        realCopy(const_piOn4, atan);
+      if(realIsInfinite((real_t*)y)) {
+        realCopy( _piOn4(realContext->digits), (real_t*)atan);
         if(yNeg) {
-          realSetNegativeSign(atan);
+          realSetNegativeSign((real_t*)atan);
         }
       }
       else {
-        realZero(atan);
+        realZero((real_t*)atan);
         if(yNeg) {
-          realSetNegativeSign(atan);
+          realSetNegativeSign((real_t*)atan);
         }
       }
     }
-    return;
+    return true;
   }
 
-  if(realIsInfinite(y)) {
-    realCopy(const_piOn2, atan);
+  if(realIsInfinite((real_t*)y)) {
+    realCopy( _piOn2(realContext->digits), (real_t*)atan);
     if(yNeg) {
-      realSetNegativeSign(atan);
+      realSetNegativeSign((real_t*)atan);
     }
-    return;
+    return true;
   }
 
-  realDivide(y, x, &t, realContext);
-  WP34S_Atan(&t, &r, realContext);
+  realDivide((real_t*)y, (real_t*)x, (real_t*)t, realContext);
+  C47_WP34S_Atan((real_t*)t, (real_t*)r, realContext);
   if(xNeg) {
-    realCopy(const_pi, &t);
+    realCopy( _pi(realContext->digits), (real_t*)t);
     if(yNeg) {
-     realSetNegativeSign(&t);
+     realSetNegativeSign((real_t*)t);
     }
   }
   else {
-    realZero(&t);
+    realZero((real_t*)t);
   }
 
-  realAdd(&r, &t, atan, realContext);
-  if(realCompareEqual(atan, const_0) && yNeg) {
-    realSetNegativeSign(atan);
+  realAdd((real_t*)r, (real_t*)t, (real_t*)atan, realContext);
+  if(realCompareEqual((real_t*)atan, const_0) && yNeg) {
+    realSetNegativeSign((real_t*)atan);
+  }
+  return true;
+}
+
+
+void WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+  real_t r, t;
+  if(!doAtan2(y, x, atan, &r, &t, realContext)) {
+    return; //NaN
+  }
+}
+
+void C47do_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+  real1071_t r, t;
+  if(!doAtan2((real_t*)y, (real_t*)x, (real_t*)atan, (real_t*)&r, (real_t*)&t, realContext)) {
+    return; //NaN
+  }
+}
+
+void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+  if(realContext->digits >= 1071) {
+    C47do_WP34S_Atan2(y, x, atan, realContext);
+  } else {
+    WP34S_Atan2(y, x, atan, realContext);
   }
 }
 
@@ -730,12 +758,16 @@ static bool_t doAsin(real_t *x, real_t *angle, real_t *abx, real_t *z, realConte
 
 void WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
-  doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+  if(!doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
+    return; //NaN
+  }
 }
 
 static void C47do_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   real1071_t abx, z;
-  doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+  if(!doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
+    return; //NaN
+  }
 }
 
 void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
@@ -777,12 +809,16 @@ static bool_t doAcos(real_t *x, real_t *angle, real_t *abx, real_t *z, realConte
 
 void WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
-  doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+  if(!doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
+    return; //NaN
+  }
 }
 
 static void C47do_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   real1071_t abx, z;
-  doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext);
+  if(!doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
+    return; //NaN
+  }
 }
 
 void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
