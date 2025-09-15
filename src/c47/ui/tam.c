@@ -191,21 +191,13 @@
       if(tam.alpha) {
         tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
         if(aimBuffer[0] == 0) {
-          #if !defined(ALTERNATE_TAM_MENU)
-            tbPtr = stringCopy(tbPtr, "_");
-          #else
-            *(tbPtr++) = STD_CURSOR[0];
-            *(tbPtr++) = STD_CURSOR[1];
-            *(tbPtr) = 0;
-          #endif //!ALTERNATE_TAM_MENU
+          *(tbPtr++) = STD_CURSOR[0];
+          *(tbPtr++) = STD_CURSOR[1];
+          *(tbPtr) = 0;
         }
         else {
-          #if !defined(ALTERNATE_TAM_MENU)
-            tbPtr = stringCopy(tbPtr, aimBuffer);
-          #else
-            insertAlphaCursor(0);
-            tbPtr = stringCopy(tbPtr, tmpString);
-          #endif //!ALTERNATE_TAM_MENU
+          insertAlphaCursor(0);
+          tbPtr = stringCopy(tbPtr, tmpString);
           tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
         }
       }
@@ -303,16 +295,10 @@
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
         if(stringByteLength(aimBuffer) != 0) {
-          #if !defined(ALTERNATE_TAM_MENU)
-            // Delete the last character
-            int16_t lg = stringLastGlyph(aimBuffer);
-            aimBuffer[lg] = 0;
-          #else
           // Delete the character before the cursor
-            if(alphaCursor > 0) {
-              deleteAlphaCharacter(&alphaCursor);
-            }
-          #endif //!ALTERNATE_TAM_MENU
+          if(alphaCursor > 0) {
+            deleteAlphaCharacter(&alphaCursor);
+          }
         }
         else if(tam.mode == TM_NEWMENU) {
           leaveTamModeIfEnabled();
@@ -455,9 +441,7 @@
         tam.alpha = true;
         setSystemFlag(FLAG_ALPHA);
         aimBuffer[0] = 0;
-        #if defined(ALTERNATE_TAM_MENU)
-          alphaCursor = 0;
-        #endif //ALTERNATE_TAM_MENU
+        alphaCursor = 0;
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
           alphaCase = CAPS_STOetc_DEFAULT;
@@ -1047,12 +1031,8 @@
 
 
   void tamEnterMode(int16_t func) {
-    #if !defined(ALTERNATE_TAM_MENU)
-      tam.mode = func == ITM_ASSIGN ? TM_NEWMENU : indexOfItems[func].param;
-    #else
-      tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
-      func = func == ITM_USERMODE ? ITM_ASSIGN : func;
-    #endif // !ALTERNATE_TAM_MENU
+    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
+    func = func == ITM_USERMODE ? ITM_ASSIGN : func;
     tam.function = func;
     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
     tam.max = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
@@ -1091,9 +1071,7 @@
     }
 
     tam.alpha = (func == ITM_ASSIGN);
-    #if defined(ALTERNATE_TAM_MENU)
-      alphaCursor = 0;
-    #endif //ALTERNATE_TAM_MENU
+    alphaCursor = 0;
     tam.currentOperation = tam.function;
     tam.digitsSoFar = 0;
     tam.dot = false;
