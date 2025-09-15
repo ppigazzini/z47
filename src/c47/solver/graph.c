@@ -1319,9 +1319,9 @@ static bool_t checkRegisterXYImagZeroTol(calcRegister_t tol) {
 
 static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
   if(getRegisterDataType(REGISTER_X) == dtComplex34 && getRegisterDataType(REGISTER_Y) == dtComplex34) {
-    runFunction(ITM_ABS);
+    runFunction(ITM_MAGNITUDE);
     runFunction(ITM_XexY);
-    runFunction(ITM_ABS);
+    runFunction(ITM_MAGNITUDE);
     runFunction(ITM_XexY);
   }
   return checkRegisterXYRealZeroTol(tol);
@@ -1897,8 +1897,8 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
       copySourceRegisterToDestRegister(SREG_Y2,SREG_Y1); //old y2 copied to y1
       copySourceRegisterToDestRegister(SREG_X2,SREG_X1); //old x2 copied to x1
 
-      fnRCL(SREG_DY);   runFunction(ITM_ABS); //difference |dy| is in Y
-      fnRCL(SREG_DX);   runFunction(ITM_ABS); //difference |dx| is in X
+      fnRCL(SREG_DY);   runFunction(ITM_MAGNITUDE); //difference |dy| is in Y
+      fnRCL(SREG_DX);   runFunction(ITM_MAGNITUDE); //difference |dx| is in X
 
 
       checkzero |= checkRegisterXYRealZeroTol(SREG_TOL);

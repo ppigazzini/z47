@@ -818,6 +818,10 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+#define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
+#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC 
+#define EIM_DY                             ( 1 << 15 ) // DYADIC
 
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
@@ -1582,7 +1586,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_CONFIGS                           19
 #define CATALOG_ALLVARS                           20
 #define CATALOG_NUMBRS                            21
-#define NUMBER_OF_CATALOGS                        22
+#define CATALOG_FCNS_EIM                          22
+#define NUMBER_OF_CATALOGS                        23
 
 // String comparison type
 #define CMP_BINARY                                 0

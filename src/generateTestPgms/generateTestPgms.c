@@ -9666,8 +9666,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_2COMPL >> 8) | 0x80;
     *(currentStep++) =  ITM_2COMPL       & 0xff;
 
-    *(currentStep++) = (ITM_ABS >> 8) | 0x80;
-    *(currentStep++) =  ITM_ABS       & 0xff;
+    *(currentStep++) = (ITM_MAGNITUDE >> 8) | 0x80;
+    *(currentStep++) =  ITM_MAGNITUDE       & 0xff;
 
     *(currentStep++) = (ITM_AGM >> 8) | 0x80;
     *(currentStep++) =  ITM_AGM       & 0xff;
@@ -15147,24 +15147,6 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_XRMS >> 8) | 0x80;
     *(currentStep++) =  ITM_XRMS       & 0xff;
 
-    *(currentStep++) = (ITM_ACOS >> 8) | 0x80;
-    *(currentStep++) =  ITM_ACOS       & 0xff;
-
-    *(currentStep++) = (ITM_ASIN >> 8) | 0x80;
-    *(currentStep++) =  ITM_ASIN       & 0xff;
-
-    *(currentStep++) = (ITM_ATAN >> 8) | 0x80;
-    *(currentStep++) =  ITM_ATAN       & 0xff;
-
-    *(currentStep++) = (ITM_DET >> 8) | 0x80;
-    *(currentStep++) =  ITM_DET       & 0xff;
-
-    *(currentStep++) = (ITM_INVRT >> 8) | 0x80;
-    *(currentStep++) =  ITM_INVRT       & 0xff;
-
-    *(currentStep++) = (ITM_TRANS >> 8) | 0x80;
-    *(currentStep++) =  ITM_TRANS       & 0xff;
-
     *(currentStep++) = (ITM_HIDE >> 8) | 0x80;
     *(currentStep++) =  ITM_HIDE       & 0xff;
     *(currentStep++) = 99;
@@ -15180,9 +15162,6 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = (ITM_GETHIDE >> 8) | 0x80;
     *(currentStep++) =  ITM_GETHIDE       & 0xff;
-
-    *(currentStep++) = (ITM_SQRT >> 8) | 0x80;
-    *(currentStep++) =  ITM_SQRT       & 0xff;
 
     *(currentStep++) = (ITM_atan2 >> 8) | 0x80;
     *(currentStep++) =  ITM_atan2       & 0xff;

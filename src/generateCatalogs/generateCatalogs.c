@@ -29,6 +29,8 @@ static int sortItems(void const *a, void const *b)  {
 
 
 void sortOneCatalog(const char *menuName, int catalogType, int16_t generationType) {
+  bool onlyEIM     = (strcmp(menuName, "FCNS_EIM") == 0);
+
   #if defined(DEBUG)
     printf("Generating catalog %s\n", menuName);
   #endif // DEBUG
@@ -40,10 +42,12 @@ void sortOneCatalog(const char *menuName, int catalogType, int16_t generationTyp
       if(   generationType == GENERATION_FOR_DMCP
          || generationType == GENERATION_FOR_BOTH
          || (generationType == GENERATION_FOR_PC )) {
-        itemList[numberOfItems++] = item;
-        if(numberOfItems == MAX_NUMBER_OF_ITEMS) {
-          printf("Array itemList is too small: increase the value of MAX_NUMBER_OF_ITEMS\n");
-          exit(-1);
+        if(!onlyEIM || ((indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED)) {
+          itemList[numberOfItems++] = item;
+          if(numberOfItems == MAX_NUMBER_OF_ITEMS) {
+            printf("Array itemList is too small: increase the value of MAX_NUMBER_OF_ITEMS\n");
+            exit(-1);
+          }
         }
       }
     }
@@ -114,6 +118,7 @@ int main(int argc, char* argv[]) {
   sortOneCatalog("FCNS",       CAT_FNCT, GENERATION_FOR_PC);
   fprintf(catalogFile, "  #endif // DMCP_BUILD\n");
 
+  sortOneCatalog("FCNS_EIM",   CAT_FNCT, GENERATION_FOR_BOTH);
   sortOneCatalog("CONST",      CAT_CNST, GENERATION_FOR_BOTH);
   sortOneCatalog("SYSFL",      CAT_SYFL, GENERATION_FOR_BOTH);
   sortOneCatalog("alpha_INTL", CAT_AINT, GENERATION_FOR_BOTH);
