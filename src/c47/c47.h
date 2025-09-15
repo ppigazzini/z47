@@ -462,6 +462,7 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW

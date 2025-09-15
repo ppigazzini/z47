@@ -10,6 +10,14 @@
   extern bool_t delayCloseNim;
 
   void     fnAim                    (uint16_t unusedButMandatoryParameter);
+#if defined(ALTERNATE_TAM_MENU)
+  void     insertAlphaCharacter     (uint16_t item, int16_t *currentCursor);
+  void     deleteAlphaCharacter     (int16_t *currentCursor);
+  void     fnAlphaCursorLeft        (uint16_t unusedButMandatoryParameter);
+  void     fnAlphaCursorRight       (uint16_t unusedButMandatoryParameter);
+  void     fnAlphaCursorHome        (uint16_t unusedButMandatoryParameter);
+  void     fnAlphaCursorEnd         (uint16_t unusedButMandatoryParameter);
+#endif //ALTERNATE_TAM_MENU
   void     resetAlphaSelectionBuffer(void);
   uint16_t convertItemToSubOrSup    (uint16_t item, int16_t subOrSup);
   void     light_ASB_icon(void);                        //JM
