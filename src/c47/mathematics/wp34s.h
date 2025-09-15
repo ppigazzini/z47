@@ -18,6 +18,7 @@
   void   C47_WP34S_Asin            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   C47_WP34S_Acos            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   C47_WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
+  void   C47_WP34S_Atan2           (const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext);
 
   void   WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   WP34S_Atan2           (const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
