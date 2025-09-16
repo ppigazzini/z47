@@ -3977,22 +3977,23 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_ASN_BROWSER: {
         if(previousCalcMode == CM_AIM || tam.alpha) {
-          calcMode = CM_AIM;
           if(currentMenu() == -MNU_AIMCATALOG) {
             popSoftmenu();
           }
           showSoftmenu(-MNU_ALPHA);
-        }
-        if(previousCalcMode == CM_EIM) {
+          screenUpdatingMode = SCRUPD_AUTO;
+        } else {
+          if(previousCalcMode == CM_EIM) {
+            if(currentMenu() == -MNU_EIMCATALOG) {
+              popSoftmenu();
+            }
+            showSoftmenu(-MNU_EQ_EDIT);
+          }
           screenUpdatingMode = SCRUPD_AUTO;
           calcMode = CM_NORMAL; //without changing the refresh scheme: change to normal mode to get the stack back, then switch back to CM_EIM
           refreshScreen(0);
-          calcMode = CM_EIM;
-          if(currentMenu() == -MNU_EIMCATALOG) {
-            popSoftmenu();
-          }
-          showSoftmenu(-MNU_EQ_EDIT);
         }
+        calcMode = previousCalcMode;
         break;
       }
 
@@ -4381,23 +4382,14 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_ASN_BROWSER: {
-        calcMode = previousCalcMode;
-        if(calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) {
-          if(currentMenu() == -MNU_AIMCATALOG) {
-            popSoftmenu();
-          }
-          showSoftmenu(-MNU_ALPHA);
-        }
-        screenUpdatingMode = SCRUPD_AUTO;
-        break;
+        fnKeyExit(NOPARAM);                          // Rather use the Exit routine as the code is the same
       }
 
-       //Rather use the Exit routine as the code was the same
-       case CM_BUG_ON_SCREEN:
-       case CM_LISTXY:
-       case CM_GRAPH:
-       case CM_PLOT_STAT:
-       case CM_CONFIRMATION: {
+      case CM_BUG_ON_SCREEN:
+      case CM_LISTXY:
+      case CM_GRAPH:
+      case CM_PLOT_STAT:
+      case CM_CONFIRMATION: {
         temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
