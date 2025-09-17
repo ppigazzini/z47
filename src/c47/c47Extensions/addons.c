@@ -652,15 +652,6 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           uint8_t opParam3 = currentStep[i];
         #endif
 
-
-#if !defined(SAVE_SPACE_DM42_23_EDIT2)
-        if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
-          for(index = 0;  index < opParam2; index++) {
-            varOrLblName[index] = currentStep[i++];
-          }
-          varOrLblName[index] = 0;
-        }
-#endif // !SAVE_SPACE_DM42_23_EDIT2
         //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
@@ -860,6 +851,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         else {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
+          if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
+            for(index = 0;  index < opParam2; index++) {
+              varOrLblName[index] = currentStep[i++];
+            }
+            varOrLblName[index] = 0;
+          }
           switch (paramMode) {
             case PARAM_DECLARE_LABEL:
             case PARAM_LABEL:
