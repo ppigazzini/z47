@@ -3186,11 +3186,16 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           real34_t tmp3;
           #define FMA_X 19-3
           #define FMA_T -1-3
+          uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+          displayFormat = DF_ALL;
+          displayFormatDigits = 19;
+
           {
             sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
-            showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
               if(isXFNregisterValid(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
               } else {
                 strcpy(tmpString, "invalid register type/angle ");
               }
@@ -3198,14 +3203,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(getSystemFlag(FLAG_SSIZE8)) {
             sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
-            showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
               if(isXFNregisterValid(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
               } else {
                 strcpy(tmpString, "invalid register type/angle ");
               }
               showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
           }
+          displayFormat = savedDisplayFormat;
+          displayFormatDigits = savedDisplayFormatDigits;
           drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
           fnDisplayStack(3);
         }
