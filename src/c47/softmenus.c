@@ -331,6 +331,12 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_EVEN,                      ITM_ODD,                    ITM_ISREQ,                ITM_ISIMQ,             ITM_ISVECT2DQ,               ITM_ISVECT3DQ,
                                              ITM_NUMBRQ,                    ITM_ANGLEQ,                 ITM_NANQ,                 ITM_INFQ,              ITM_SPECQ,                                                  };
 
+#if !defined(SAVE_SPACE_DM42_18_XFN)
+  #define XFN_M MNU_XXFCNS
+#else
+  #define XFN_M ITM_NULL
+#endif
+
 TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_PRIME,                  ITM_FACTORS,              ITM_FIB,               ITM_AGM,                     ITM_LINPOL,
                                              ITM_zetaX,                     ITM_EULPHI,                 ITM_PFACTORSMULT,         ITM_EE_EXP_TH,         ITM_M1X,                     ITM_XFACT,
                                              ITM_GD,                        ITM_GDM1,                  -MNU_E_SIGMA,              ITM_PARALLEL,          ITM_BN,                      ITM_BNS,
@@ -339,7 +345,7 @@ TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_
                                              ITM_WM,                        ITM_WP,                     ITM_WM1,                  ITM_IXYZ,              ITM_BETAXY,                  ITM_LNBETA,
                                             -MNU_ELLIPT,                   -MNU_ORTHOG,                 ITM_JYX,                  ITM_YYX,               ITM_ERF,                     ITM_ERFC,
 
-                                             ITM_MIN,                       ITM_MAX,                   -MNU_XXFCNS,               ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_MIN,                       ITM_MAX,                   -XFN_M,                    ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
