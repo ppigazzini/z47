@@ -1529,6 +1529,17 @@ continueWithOldDetections:
       //ORIGINAL MODIFIED KEYBOARD DETECTION
       //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
       switch(event_keyval) {
+
+        case GDK_KEY_question: // Question mark is blank key
+          if(calcModel == USER_R47fg_bk && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
+            btnClicked(w, "11");
+          } else
+          if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
+            btnClicked(w, "10");
+          }
+          break;
+
+
         case GDK_KEY_Left:                                               //JM     // CursorLt  //JM Left
           btnFnClicked(w, "5");  //F5
           break;
