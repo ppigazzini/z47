@@ -132,5 +132,6 @@
   #include "w_negative.h"
   #include "w_positive.h"
   #include "wp34s.h"
+  #include "xfn.h"
   #include "zeta.h"
 #endif // !MATHEMATICS_H

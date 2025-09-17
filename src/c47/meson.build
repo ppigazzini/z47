@@ -173,6 +173,7 @@ c47_src = files(
   'mathematics/w_negative.c',
   'mathematics/w_positive.c',
   'mathematics/wp34s.c',
+  'mathematics/xfn.c',
   'mathematics/xthRoot.c',
   'mathematics/zeta.c',
   'c47Extensions/addons.c',
