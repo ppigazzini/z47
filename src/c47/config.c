@@ -137,7 +137,7 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_DREAL,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-3,                                   1,          xxx,                            xxx,             FLAG_DREAL,           xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_DREAL,           FLAG_DREAL,             xxx,             xxx,             xxx,
 
 
 
@@ -222,7 +222,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM,32768+_gapr,    xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+ITM_WDOT,       49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
 
