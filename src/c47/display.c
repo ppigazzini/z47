@@ -3138,7 +3138,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
 
 void realToSci(real_t* num, char* dispString) {
-   char *p, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT, *prod = PRODUCT_SIGN;
+   char *p, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT;
    int neg, exp, mi = 0, i = 1, d = 0;
    int sepGroup = GROUPWIDTH_RIGHT;
 
