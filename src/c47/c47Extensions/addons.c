@@ -1563,6 +1563,35 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
 }
 
 
+void fnExchangeStkToMx(uint16_t opType) {
+  switch(opType) {
+    case ITM_stkexV2:{
+      if(isRegisterMatrix2dVector(REGISTER_X)) {
+        fnConvertMxToStk(indexOfItems[ITM_V2toSTK].param);
+      } 
+      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
+        fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);        
+      }
+      break;
+    }
+
+    case ITM_stkexV3:{
+      if(isRegisterMatrix3dVector(REGISTER_X)) {
+        fnConvertMxToStk(indexOfItems[ITM_V3toSTK].param);
+      } 
+      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Z) == dtReal34 || getRegisterDataType(REGISTER_Z) == dtLongInteger)) {
+        fnConvertStkToMx(indexOfItems[ITM_STKtoV3].param);        
+      }
+      break;
+    }
+    default:break;
+  }
+}
+
+
 void fnConvertStkToMx(uint16_t constVector) {
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
@@ -1629,39 +1658,75 @@ void fnConvertStkToMx(uint16_t constVector) {
 
 }
 
-void fnConvertMxToStk(uint16_t param) {
+void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nibble, then try the vector type in higher nibble unless high nibble = 0
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
+  uint16_t Xrows, Xcols;
 
   if(!(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
     return;
   }
 
+  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+    Xrows = matrixC.header.matrixRows;
+    Xcols = matrixC.header.matrixColumns;
+  } else {
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    Xrows = matrix.header.matrixRows;
+    Xcols = matrix.header.matrixColumns;
+  }
+
+  uint16_t constVector = param & 0x0F;
+  if(!((Xrows == vecCreate[constVector].rows && Xcols == vecCreate[constVector].cols) || (Xrows == vecCreate[constVector].cols && Xcols == vecCreate[constVector].rows))) {
+    constVector = (param & 0xF0) >> 4;
+    if(constVector == 0 || !((Xrows == vecCreate[constVector].rows && Xcols == vecCreate[constVector].cols) || (Xrows == vecCreate[constVector].cols && Xcols == vecCreate[constVector].rows))) {
+      return;
+    }
+  }
+
+  uint16_t elements = Xrows * Xcols;
+
   if(!saveLastX()) {
     return;
   }
 
-  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Y,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Z,amNone);
+  //can only be 2 or 3 elements
+  //assuming 2 elements, clearing X and preparing Y
 
-  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
+    convertRealToResultRegister(const_0, REGISTER_X,amNone);
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    convertRealToResultRegister(const_0, REGISTER_X,amNone);
   } else {
-    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+  }
+  if(elements > 2) {
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      convertRealToResultRegister(const_0, REGISTER_X,amNone);
+    } else {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+    }
   }
 
 
-  for (int i = 0; i < 3; i++) {
-    uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
+  for (int i = 0; i < elements; i++) {
+    uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
+                  vecCreate[constVector].y == elements-1-i ? REGISTER_Y : \
+                  vecCreate[constVector].z == elements-1-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      real34Copy(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      setRegisterAngularMode(rg, getComplexRegisterAngularMode(TEMP_REGISTER_1) | getComplexRegisterPolarMode(TEMP_REGISTER_1));
     }
     else {
       real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
@@ -1835,6 +1900,14 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       setComplexRegisterPolarMode(REGISTER_X, amPolar);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
     }
+    else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      //printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
+      //printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+      VtoAngleMode(AMODE);
+      //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+    }
+
+
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
 
@@ -1882,7 +1955,6 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     case dtTime:
     case dtDate:
     case dtString:
-    case dtReal34Matrix:
     case dtConfig:
       goto to_return_noLastX;
       break;
@@ -1920,6 +1992,12 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     fnCvtFromCurrentAngularMode(dest);
     //currentAngularMode = dest;          //remove setting of ADM!
   }
+  else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    dest = getVectorRegisterAngularMode(REGISTER_X);
+    DRG_cyc(&dest);
+    VtoAngleMode(dest);
+  }
+  
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);

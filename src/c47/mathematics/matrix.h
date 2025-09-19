@@ -63,6 +63,9 @@
    */
   void       fnEuclideanNorm                (uint16_t unusedParamButMandatory);
   void       fnVectorDist                   (uint16_t unusedParamButMandatory);
+  void       convert3DtoSPH                 (const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay);
+  void       convert3DtoCYL                 (const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am, decContext *ctxtRealDisplay);
+  void       convert2DtoPOL                 (const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay);
 
   /**
    * Row sum of matrix X.
@@ -235,8 +238,9 @@
    * \param[in] matrix
    * \param[in] prefixWidth
    */
+  #define regXp true
   #define toDisplayVectorMatrix true
-  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay);
+  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition);
 
   /**
    * Calculates width of columns of a real matrix.
@@ -258,7 +262,7 @@
    * \param[in] matrix
    * \param[in] prefixWidth
    */
-  void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode);
+  void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode, bool_t regXposition);
 
   /**
    * Calculates width of columns of a complex matrix.
@@ -426,5 +430,11 @@
   void       elementwiseCxmaRema            (void (*f)(void));
   void       elementwiseCplxRema            (void (*f)(void));
   void       elementwiseRemaCplx            (void (*f)(void));
+
+  void       V3RectoToSph                   (uint16_t am);
+  void       V3RectoToCyl                   (uint16_t am);
+  bool_t     VtoAngleMode                   (angularMode_t angleMode);
+  void       fnComplexToVector              (uint16_t unusedButMandatoryParameter);
+
 
 #endif // !MATRIX_H

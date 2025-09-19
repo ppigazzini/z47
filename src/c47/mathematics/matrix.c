@@ -1873,6 +1873,9 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
 void linkToRealMatrixRegister(calcRegister_t regist, real34Matrix_t *linkedMatrix) {
   linkedMatrix->header.matrixRows    = REGISTER_MATRIX_HEADER(regist)->matrixRows;
   linkedMatrix->header.matrixColumns = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+  if((REGISTER_X <= regist && regist <= REGISTER_T) && isMatrixVector(linkedMatrix->header.matrixRows,linkedMatrix->header.matrixColumns)) {
+    linkedMatrix->header.mtag        = globalRegister[regist].tag;  // Get directly from register; this is only used for display of X-T registers, so it is hard coded to globalregisters
+  }
   linkedMatrix->matrixElements       = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
 }
 
@@ -5858,4 +5861,194 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+
 #endif // !TESTSUITE_BUILD
+
+
+
+//   Conversion from [x, y, z] to Spherical [r, θ, φ]:
+//     Radius          : r = √(x² + y² + z²)
+//     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
+//     Polar angle     : φ = cos⁻¹(z/r) (measured from the positive z-axis)
+//     r: Distance from origin
+//     θ: Angle from positive x-axis toward positive y-axis (counterclockwise in xy-plane)
+//     φ: Angle from positive z-axis toward xy-plane
+//
+//   Conversion from [x, y, z] to Cylindrical [r, θ, z]:
+//     Radius          : r = √(x² + y²)
+//     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
+//     Height          : z = z (remains the same)
+//     r: Distance from z-axis
+//     θ: Angle from positive x-axis toward positive y-axis (counterclockwise in xy-plane)
+//     z: Height along z-axis
+//     
+
+//   Special Cases in Coordinate Conversions Rectangular to Cylindrical [r, θ, z]
+//     Origin: [0, 0, 0] → [0, undefined°, 0]
+//     Z-axis points: [0, 0, z] → [0, undefined°, z]
+//     Positive x-axis: [x, 0, z] → [x, 0°, z]
+//     Negative x-axis: [-x, 0, z] → [x, 180°, z]
+//     Positive y-axis: [0, y, z] → [y, 90°, z]
+//     Negative y-axis: [0, -y, z] → [y, 270°, z]
+//   
+//   Special Cases in Coordinate Conversions Rectangular to Spherical [r, θ, φ]
+//     Origin: [0, 0, 0] → [0, undefined°, undefined°]
+//     Positive z-axis: [0, 0, z] → [z, 0°, undefined°]
+//     Negative z-axis: [0, 0, -z] → [z, 180°, undefined°]
+//     Positive x-axis: [x, 0, 0] → [x, 90°, 0°]
+//     Negative x-axis: [-x, 0, 0] → [x, 90°, 180°]
+//     Positive y-axis: [0, y, 0] → [y, 90°, 90°]
+//     Negative y-axis: [0, -y, 0] → [y, 90°, 270°]
+//     XY-plane points: [x, y, 0] → [√(x²+y²), 90°, arctan(y/x)°]
+//   
+//   Note: "undefined°" indicates angles that are mathematically indeterminate but can be set to any value by convention (chosen to be 0°)
+
+
+
+void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay) {
+    real_t x, y, z;
+    _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
+
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+    real34ToReal(&matrix->matrixElements[2], &z);
+
+    if(realIsZero(&x) && realIsZero(&y) && realIsZero(&z)) { //by convention [0 0 0] ==> Both angles (θ and φ) are undefined since there's no direction from the origin. By convention, both angles can be set to 0, but any values could be used
+      realCopy(const_0,r);
+      realCopy(const_0,th1);
+      realCopy(const_0,th2);
+      goto SPH_ret1;
+    }
+
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    realDivide(&z, r, &z, ctxtRealDisplay);
+    WP34S_Acos(&z, th2, ctxtRealDisplay);
+
+SPH_ret1:
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
+    if(realIsZero(th1)) {
+      realZero(th1);
+    }
+    convertAngleFromTo(th2, amRadian, am, ctxtRealDisplay);
+    if(realIsZero(th2)) {
+      realZero(th2);
+    }
+}
+
+
+void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am, decContext *ctxtRealDisplay) {
+    real_t x, y, t;
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+    real34ToReal(&matrix->matrixElements[2], z);
+
+    realMultiply(&x, &x, r, ctxtRealDisplay);
+    realMultiply(&y, &y, &t, ctxtRealDisplay);
+    realAdd(&t, r, r, ctxtRealDisplay);
+    realSquareRoot(r, r, ctxtRealDisplay);
+
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
+    if(realIsZero(th1)) {realZero(th1);}
+}
+
+
+void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay) {
+    real_t x, y;
+    _euclideanNormRealMatrix(matrix, r, ctxtRealDisplay);
+
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
+    if(realIsZero(th1)) {realZero(th1);}
+}
+
+
+void V3err(void) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "2D or 3D Vector required, not %s, %ix%i", getRegisterDataTypeName(REGISTER_X, true, false), REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+      moreInfoOnError("In function V3RectoToSph/V3RectoToCyl:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+
+
+bool_t VtoAngleMode(angularMode_t angleMode) {
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isRegisterMatrixVector(REGISTER_X)) {
+      setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
+    } else return false;
+  } else return false;
+  return true;
+}
+
+void V3RectoToSph(uint16_t am) {
+  angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isRegisterMatrix3dVector(REGISTER_X)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
+      setVectorRegisterAngularMode(REGISTER_X, angleMode);
+    } else V3err();
+  } else V3err();
+}
+
+void V3RectoToCyl(uint16_t am) {
+  angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isRegisterMatrix3dVector(REGISTER_X)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
+      setVectorRegisterAngularMode(REGISTER_X, angleMode);
+    } else V3err();
+  } else V3err();
+}
+
+
+
+void fnComplexToVector (uint16_t opType) {
+  real34Matrix_t matrix;
+  if(isRegisterMatrix2dVector(REGISTER_X) && (opType == ITM_CPXexV || opType == ITM_VtoCPX)) {
+    //MatrixVector2D ==> Complex
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    real34Copy(&matrix.matrixElements[0], REGISTER_REAL34_DATA(REGISTER_X));
+    real34Copy(&matrix.matrixElements[1], REGISTER_IMAG34_DATA(REGISTER_X));
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    setComplexRegisterAngularMode(REGISTER_X, getVectorRegisterAngularMode(TEMP_REGISTER_1));
+    setComplexRegisterPolarMode(REGISTER_X, (getVectorRegisterPolarMode(TEMP_REGISTER_1) != amNone) ? amPolar : amNone);
+    clearRegister(TEMP_REGISTER_1);
+    return;
+  }
+  else if(getRegisterDataType(REGISTER_X) == dtComplex34  && (opType == ITM_CPXexV || opType == ITM_CPXtoV)) {
+    //Complex ==> MatrixVector2D
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    //Initialize Memory for Matrix
+    if(initMatrixRegister(REGISTER_X, 1, 2, false)) {
+    }
+    else {
+      // ignore error condition, because no extra bytes are needed converting from complex34 to Real matrix 2D vector
+      return;
+    }
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+    real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &matrix.matrixElements[0]);
+    real34Copy(REGISTER_IMAG34_DATA(TEMP_REGISTER_1), &matrix.matrixElements[1]);
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    setVectorRegisterAngularMode(REGISTER_X, getComplexRegisterAngularMode(TEMP_REGISTER_1));
+    setVectorRegisterPolarMode(REGISTER_X,   getComplexRegisterPolarMode(TEMP_REGISTER_1));
+    clearRegister(TEMP_REGISTER_1);
+    return;
+  }
+
+  #if !defined(TESTSUITE_BUILD)
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function fnComplexToVector:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // !TESTSUITE_BUILD
+}
+
