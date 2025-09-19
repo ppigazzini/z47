@@ -5,7 +5,7 @@ Demonstration programs included in C47 distro
 1b.  Binet3.rft     BinetV3.p47    Binet graphing version 3, Jaco Mostert
                                    https://forum.swissmicros.com/viewtopic.php?p=17761#p17761
 
-2.   SPIRALk.rtf    SPIRALk.p47    Revised spiral program by Jaco Mostert, mofified by RAprism, barrymead
+2.   SPIRALk.rtf    SPIRALk.p47    Revised spiral program by Jaco Mostert, modified by RAprism, barrymead
                                    https://forum.swissmicros.com/viewtopic.php?p=35422#p35422
 
 3a.  TRIangle4.rtf  TRIangle4.p47  Triangle program, original p58 42S Programming manual, ported by Bruce Young, Didier Lachieze, Barry Mead
