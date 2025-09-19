@@ -3149,21 +3149,23 @@ void realToSci(real_t* num, char* dispString) {
     exp = realGetExponent(num);
     realToString(num, dispString + 1500);
     if(realIsZero(num)) {
-      sprintf(dispString, "0.0");
+      sprintf(dispString, "0%s0", radix);
       return;
     }
     
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
     
-    while(*p && (*p < '1' || *p > '9')) p++;
+    while(*p && (*p < '0' || *p > '9')) p++;
     
     dispString[mi++] = neg ? '-' : ' ';
     dispString[mi++] = *p++;
     if(*p == '.') p++;
-    dispString[mi++] = radix[0];
-    if(radix[0] & 0x80 && radix[1] && radix[1] != '\1') dispString[mi++] = radix[1];
-    
+    if(*p != 'E') {
+      dispString[mi++] = radix[0];
+      if(radix[0] & 0x80 && radix[1] && radix[1] != '\1') dispString[mi++] = radix[1];
+    }
+
     while(*p && *p != 'E' && i < 1000) {
       if(*p >= '0' && *p <= '9') {
         if(d > 0 && d % sepGroup == 0 && !GROUPRIGHT_DISABLED) {
@@ -3182,7 +3184,9 @@ void realToSci(real_t* num, char* dispString) {
     if(mi > 0 && (dispString[mi-1] == radix[0] || (radix[1] != '\1' && dispString[mi-1] == radix[1]))) mi--;
     
     dispString[mi] = '\0';
-    sprintf(dispString + mi, "%s%s%s10^%d", sep, prod, sep, exp);
+    char tt[32];
+    exponentToDisplayString(exp, tt, NULL, false);
+    sprintf(dispString + mi, "%s", tt);
 }
 
 
