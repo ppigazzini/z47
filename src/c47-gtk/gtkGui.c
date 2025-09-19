@@ -748,7 +748,7 @@ returnKeyReleasedFalse:
 
     if(CTRL_State == 65536 && !C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
 
-    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
+    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha))) {
       switch(event_key_strip_capslock) {
         case GDK_KEY_f: //f
 
@@ -1011,18 +1011,30 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
 //New Matrix arrows
 if(   (CTRL_State != 65536 || allowAltGrKey)
    && !catalog
-   && calcMode == CM_NORMAL
+   && (calcMode == CM_NORMAL || calcMode == CM_MIM || calcMode == CM_EIM)
    && IS_SIM_ARROW_ALLOWED_IN_MENU(currentMenu(), event_keyval)
   ) {
   #if defined(VERBOSEKEYS)
-      printf("------------------------ Checking Matric arrows functions\n");
+      printf("------------------------ Checking Matrix arrows functions\n");
   #endif
 
   //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
+  #if defined(ALTERNATE_ALPHA_F1)
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
+  #elif defined(ALTERNATE_ALPHA_F5)
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
+  #else
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
+    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
+  #endif //ALTERNATE_ALPHA_F1
   #if defined(VERBOSEKEYS)
     printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");
   #else
@@ -1164,8 +1176,8 @@ continueWithOldDetections:
 
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
-      //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha) {
+      printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);fflush(stdout);
       switch(event_keyval) {
 
         //ROW 0
@@ -1193,29 +1205,36 @@ continueWithOldDetections:
         case GDK_KEY_Left:                                               //JM     // CursorLt BST //JM Left
           if(AlphaArrowsOffAndUpDn) {
           }
-          else if(calcMode == CM_EIM) {
-
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 0;
-            btnFnClicked(w, "5");  //F1
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
+//          else if(calcMode == CM_EIM) {                 //removed, because EQ_EDIT was changed long ago to have left right arrows on every key.
+//            int16_t jj = softmenuStack[0].firstItem;
+//            softmenuStack[0].firstItem = 0;
+//            btnFnClicked(w, "5");  //F1
+//            softmenuStack[0].firstItem = jj;
+//            showSoftmenuCurrentPart();
+//          }
+//          else
+          {
+            #if defined(ALTERNATE_ALPHA_F1)
+              btnFnClicked(w, "1");  //F5
+            #elif defined(ALTERNATE_ALPHA_F5)
+              btnFnClicked(w, "5");  //F5
+            #else
+              btnFnClicked(w, "5");  //F5
+            #endif //ALTERNATE_ALPHA_F1
           }
-          else
-            btnFnClicked(w, "5");  //F5
           break;
         case GDK_KEY_Right:                                               //JM     // CursorRt SST //JM Right
           if(AlphaArrowsOffAndUpDn) {
           }
-          else if(calcMode == CM_EIM) {
-
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 0;
-            btnFnClicked(w, "6");  //F6
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
-          }
-          else {
+  //        else if(calcMode == CM_EIM) {                 //removed, because EQ_EDIT was changed long ago to have left right arrows on every key.
+  //          int16_t jj = softmenuStack[0].firstItem;
+  //          softmenuStack[0].firstItem = 0;
+  //          btnFnClicked(w, "6");  //F6
+  //          softmenuStack[0].firstItem = jj;
+  //          showSoftmenuCurrentPart();
+  //        }
+  //        else 
+          {
             btnFnClicked(w, "6");  //F6
           }
           break;
@@ -1510,6 +1529,17 @@ continueWithOldDetections:
       //ORIGINAL MODIFIED KEYBOARD DETECTION
       //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
       switch(event_keyval) {
+
+        case GDK_KEY_question: // Question mark is blank key
+          if(calcModel == USER_R47fg_bk && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
+            btnClicked(w, "11");
+          } else
+          if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
+            btnClicked(w, "10");
+          }
+          break;
+
+
         case GDK_KEY_Left:                                               //JM     // CursorLt  //JM Left
           btnFnClicked(w, "5");  //F5
           break;

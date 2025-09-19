@@ -64,6 +64,9 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
 //    { "ATAN2",                               ITM_atan2,       0}, // Binary arctangent
     { "atan2",                               ITM_atan2,       0}, // C47 Binary arctangent
 
+    { "ABS",                                 ITM_MAGNITUDE,   0}, // Ceiling function
+    { "abs",                                 ITM_MAGNITUDE,   0}, // Ceiling function
+
     { "CEIL",                                ITM_CEIL,        0}, // Ceiling function
 //    { "ceil",                                ITM_CEIL,        0}, // C47 Ceiling function
     { "EXP",                                 ITM_EXP,         0}, // Natural exponential
@@ -104,6 +107,8 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
     { STD_SQUARE_ROOT,                       ITM_SQUAREROOTX, 0}, // Square root (available through f SQRT in EIM)
     { STD_zeta,                              ITM_zetaX,       0}, // Riemann zeta function
 //    { "conj",                                ITM_CONJ,        0}, // Complex Conjugate
+    { STD_CUBE_ROOT,                         ITM_CUBEROOT,    0}, // Cube root (available through f CATALOG>FNCS in EIM)
+    { STD_xTH_ROOT,                          ITM_XTHROOT,     0}, // Xth root (available through f CATALOG>FNCS in EIM)
 
     { "",                                    0,               0}  // Sentinel
   };
@@ -900,7 +905,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
             break;
           }
           case PARSER_OPERATOR_ITM_VERTICAL_BAR_LEFT: {
-            _runEqFunction(mvarBuffer, ITM_ABS);
+            _runEqFunction(mvarBuffer, ITM_MAGNITUDE);
             if(func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT) {
               displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1015,7 +1020,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
       /* pop an operator */
       else {
         _runEqFunction(mvarBuffer, PARSER_OPERATOR_STACK[i - 1] == PARSER_OPERATOR_ITM_YX ? ITM_YX :
-                                   PARSER_OPERATOR_STACK[i - 1] == PARSER_OPERATOR_ITM_VERTICAL_BAR_LEFT ? ITM_ABS :
+                                   PARSER_OPERATOR_STACK[i - 1] == PARSER_OPERATOR_ITM_VERTICAL_BAR_LEFT ? ITM_MAGNITUDE :
                                    PARSER_OPERATOR_STACK[i - 1]);
         if(i == 1) {
           PARSER_OPERATOR_STACK[i - 1] = func;

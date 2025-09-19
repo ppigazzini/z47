@@ -2278,8 +2278,8 @@
 #define ITM_RCLP1                   2224
 #define ITM_2225                    2225
 #define ITM_2226                    2226
-#define ITM_2227                    2227
-#define ITM_2228                    2228
+#define MNU_EIMCATALOG              2227
+#define MNU_FCNS_EIM                2228
 #define MNU_PREFIX                  2229
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
@@ -2331,7 +2331,7 @@
 #define SFL_TOPHEX                  2275 // The SFL item names are not used
 #define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_PCURVE                  2277 // The SFL item names are not used
-#define SFL_2278                    2278 // The SFL item names are not used
+#define SFL_CLX_DROP                2278 // The SFL item names are not used
 #define SFL_2279                    2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
 #define SFL_2281                    2281 // The SFL item names are not used
@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468           
+#define ITM_BANANAtoMM              2468
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470

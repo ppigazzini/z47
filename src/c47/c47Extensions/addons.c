@@ -108,7 +108,7 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
   while(number) {
     unit = number % base;
     number /= base;
-    displayString[i++] = hexadecimalDigits[unit];
+    displayString[i++] = baseDigits[unit];
   }
 
   if(sign) {
@@ -294,7 +294,10 @@ void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
   #if !defined(TESTSUITE_BUILD)
-    int16_t index;
+    #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+      int16_t index;
+    #endif //!defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+
     #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
       uint8_t grpGroupingLeftOld;
       uint8_t grpGroupingRightOld;
@@ -649,15 +652,6 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           uint8_t opParam3 = currentStep[i];
         #endif
 
-
-#if !defined(SAVE_SPACE_DM42_23_EDIT2)
-        if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
-          for(index = 0;  index < opParam2; index++) {
-            varOrLblName[index] = currentStep[i++];
-          }
-          varOrLblName[index] = 0;
-        }
-#endif // !SAVE_SPACE_DM42_23_EDIT2
         //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
@@ -857,6 +851,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         else {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
+          if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
+            for(index = 0;  index < opParam2; index++) {
+              varOrLblName[index] = currentStep[i++];
+            }
+            varOrLblName[index] = 0;
+          }
           switch (paramMode) {
             case PARAM_DECLARE_LABEL:
             case PARAM_LABEL:
@@ -959,7 +959,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tamProcessInput(ITM_alpha);
                 varOrLblName[6] = 0;  // Ensure name is 6 characters maximum
                 strcpy(aimBuffer, varOrLblName);
-                T_cursorPos = strlen(varOrLblName);
+                alphaCursor = strlen(varOrLblName);
                 tamProcessInput(ITM_NOP);                 // to insert the resulting string in program
               }
 

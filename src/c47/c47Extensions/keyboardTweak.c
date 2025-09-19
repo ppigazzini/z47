@@ -255,7 +255,7 @@ void resetKeytimers(void) {
   void Setup_MultiPresses(int16_t result) {                            //Setup and start double press for DROP timer, and check for second press
     JM_auto_doublepress_autodrop_enabled = 0;                          //JM TIMER CLRDROP. Autodrop means double click normal key.
     int16_t tmp = 0;
-    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0) {             //Set up backspace double click to DROP
+    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0 && !getSystemFlag(FLAG_CLX_DROP)) {             //Set up backspace double click to DROP
       tmp = ITM_DROP;
     }
 
@@ -667,7 +667,7 @@ void resetKeytimers(void) {
     //printf("^^^^ softmenu=%d -MNU_ALPHA=%d currentFirstItem=%d\n", softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA, softmenuStack[0].firstItem);
     //**************JM DOUBLE CLICK DETECTION ******************************* // JM FN-DOUBLE
     double_click_detected = false;                                            //JM FN-DOUBLE - Dip detection flag
-    if((jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(softmenuStack[0].softmenuId,FN_key_pressed-38,0)  )) {
+    if((jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0)  )) {
       if(exexute_double_g) {
         if(FN_key_pressed !=0 && FN_key_pressed == FN_key_pressed_last) {     //Identified valid double press dip, the same key in rapid succession
           shiftF = false;                                                     //JM
@@ -763,7 +763,7 @@ void resetKeytimers(void) {
       printf(">>>>Z 0050B btnFnReleased_StateMachine ------------------ FN_state=%d\n", FN_state);
     #endif // VERBOSEKEYS
 
-    if(jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(softmenuStack[0].softmenuId,FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
+    if(jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
       uint8_t offset =  0;
       if(shiftF && !shiftG) {
         offset =  6;
@@ -1283,7 +1283,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-
+      
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);

@@ -1,0 +1,25 @@
+Demonstration programs included in C47 distro
+
+1a.  Binet1.txt     -------.---    Original Binet graphing program, Jaco Mostert, in text format
+
+1b.  Binet3.rft     BinetV3.p47    Binet graphing version 3, Jaco Mostert
+                                   https://forum.swissmicros.com/viewtopic.php?p=17761#p17761
+
+2.   SPIRALk.rtf    SPIRALk.p47    Revised spiral program by Jaco Mostert, modified by RAprism, barrymead
+                                   https://forum.swissmicros.com/viewtopic.php?p=35422#p35422
+
+3a.  TRIangle4.rtf  TRIangle4.p47  Triangle program, original p58 42S Programming manual, ported by Bruce Young, Didier Lachieze, Barry Mead
+                                   https://forum.swissmicros.com/viewtopic.php?p=38646#p38646
+
+3b.  TRIv1p13.rtf   TRIv1p13.p47   Triangle program, re-imagined by Mike L
+                                   https://forum.swissmicros.com/viewtopic.php?p=38746#p38746
+
+4.   NQueens.rtf    NQueens.p47    NQueens implementation for test purposes; modified from Calcman54's program
+                                   https://forum.swissmicros.com/viewtopic.php?p=34743#p34743
+
+5.   GudrmPL.rtf    GudrmPL.p47    Gudermannian inverse function plot, J Mostert (jaymos), version 2
+
+6.   SETT.rtf       SETT.p47       Example to effect bundled settings for different calculator setups. 
+                                   Complete setting example related to forum post on 'engineering settings'
+                                   https://forum.swissmicros.com/viewtopic.php?p=33113#p33113
+

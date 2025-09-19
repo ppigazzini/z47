@@ -418,3 +418,4 @@ Added QRNZ to NUM font
 2025-04-01 Add in Std font
     U+24EA STD_BASE_0
     
+2025-09-11 Fix Numfont arrow directions and arrow glyph names

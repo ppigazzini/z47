@@ -134,7 +134,6 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
 
   void resetAlphaSelectionBuffer(void) {
-    lgCatalogSelection = 0;
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
     fnTimerStop(TO_ASM_ACTIVE);
@@ -592,7 +591,6 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_SIGMA1ony2  },
     {ITM_SIGMAx3     },
     {ITM_SIGMAx4     },
-    {ITM_ABS         },
     {ITM_BATT        },
     {ITM_BN          },
     {ITM_BNS         },
@@ -707,9 +705,12 @@ typedef struct {
       if(calcMode == CM_NORMAL && fnKeyInCatalog && (isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu()) && !tam.mode) {
         fnAim(NOPARAM);
       }
-      if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
+      else if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
         item = convertItemToSubOrSup(item, nextChar);
-        if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
+        if(tam.alpha){
+          insertAlphaCharacter(item, &alphaCursor);
+        }
+        else if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
           sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
           displayBugScreen(errorMessage);
         }
@@ -717,10 +718,16 @@ typedef struct {
           const char *addChar0 = item == ITM_EEXCHR               ? "E":                      //PRODUCT_SIGN "10^" :
                                  item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
+                                 item == ITM_MAGNITUDE            ? "||" :
                                  item == ITM_ROOT_SIGN            ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_SQUAREROOTX          ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_CUBEROOT             ? STD_CUBE_ROOT "()" :
+                                 item == ITM_XTHROOT              ? STD_xTH_ROOT "(:)" :
+                                 item == ITM_EXP                  ? STD_EulerE "^()" :
                                  item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :
                                  item == ITM_LG_SIGN              ? "LOG()" :
                                  item == ITM_LN_SIGN              ? "LN()"  :
+                                 item == ITM_LOG2                 ? "LB()" :
                                  item == ITM_SIN_SIGN             ? "SIN()" :
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
@@ -729,6 +736,11 @@ typedef struct {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
+                                 item == ITM_XFACT                ? "!" :
+                                 item == ITM_M1X                  ? "(-1)^()" :
+                                 item == ITM_COMB                 ? "COMB(:)" :
+                                 item == ITM_PERM                 ? "PERM(:)" :
+
                                  item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
                                  item >= ITM_SUP_0 &&
@@ -782,6 +794,15 @@ typedef struct {
                 xCursor += 0;
                 break;
               }
+              case ITM_M1X: {
+                xCursor += 6;
+                break;
+              }
+              case ITM_COMB:
+              case ITM_PERM: {
+                xCursor += 5;
+                break;
+              }
               case ITM_LG_SIGN:
               case ITM_SIN_SIGN:
               case ITM_COS_SIGN:
@@ -790,21 +811,31 @@ typedef struct {
                 break;
               }
               case ITM_ALOG_SIGN:
+              case ITM_LOG2:
+              case ITM_EXP:
               case ITM_LN_SIGN: {
                 xCursor += 3;
                 break;
               }
               case ITM_ROOT_SIGN:
+              case ITM_SQUAREROOTX:
+              case ITM_CUBEROOT:
+              case ITM_XTHROOT:
               case ITM_GAMMAX:
               case ITM_zetaX: {
                 xCursor += 2;
                 break;
               }
               case ITM_PAIR_OF_PARENTHESES:
-              case ITM_VERTICAL_BAR: {
+              case ITM_VERTICAL_BAR:
+              case ITM_MAGNITUDE: {
                 xCursor += 1;
                 break;
               }
+              case ITM_XFACT: {
+                break;
+              }
+
               default: {
                 xCursor += stringGlyphLength(addChar);
               }
@@ -868,6 +899,13 @@ typedef struct {
         }
       }
 
+      #undef SCROLL_ASM          // define this to have the ASM letters scroll if you type more than two. Alternative is it takes two, then you wait 3 and type again another word
+      #ifdef SCROLL_ASM
+        #define Scroll_Asm 2
+      #else
+        #define Scroll_Asm 1
+      #endif
+
       if(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) {
         if(item == ITM_BACKSPACE) {
           calcModeNormal();
@@ -877,18 +915,16 @@ typedef struct {
         // NOP if not a single character input for search
         // or if we already have two characters in the search buffer
         else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 &&
-                (lgCatalogSelection < ((asmBuffer[0] & 0x80) ? 3 :2)) &&
+                stringGlyphLength(asmBuffer) <= Scroll_Asm &&
+                item != ITM_CR && item != ITM_ROOT_SIGN &&
                 currentSoftmenuScrolls()) {
-          int32_t pos = lgCatalogSelection++;
-          if(asmBuffer[pos] != 0) {
-            pos++;
-          }
+          #ifdef SCROLL_ASM
+            if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
+              xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
+            }
+          #endif //SCROLL_ASM
 
-          asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[0];
-          if(indexOfItems[item].itemSoftmenuName[0] & 0x80) { // 2 bytes
-            asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[1];
-          }
-          asmBuffer[pos] = 0;
+          stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
           setCatalogLastPos();
@@ -1031,9 +1067,6 @@ typedef struct {
   }
 
   void addItemToNimBuffer(int16_t item) {
-    #if defined(PC_BUILD)
-      printf("**[DL]** addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);fflush(stdout);
-    #endif //PC_BUILD
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -2854,4 +2887,79 @@ typedef struct {
       setSystemFlag(FLAG_ASLIFT);
     }
   }
+
+
+  void insertAlphaCharacter(uint16_t item, int16_t *currentCursor) {
+    const char *addChar = item == ITM_PAIR_OF_PARENTHESES ? "()" :
+                          item == ITM_VERTICAL_BAR        ? "||" :
+                          item == ITM_ROOT_SIGN           ? STD_SQUARE_ROOT "()" :
+      #if USE_ITALIC_CONSTANT != 0
+                          item == ITM_ALOG_SYMBOL         ? STD_EULER_e "^()" :
+      #endif /* USE_ITALIC_CONSTANT != 0 */
+                          indexOfItems[item].itemSoftmenuName;
+    char *aimCursorPos = aimBuffer;
+    char *aimBottomPos = aimBuffer + stringByteLength(aimBuffer);
+    uint32_t itemLen = stringByteLength(addChar);
+    for(int32_t i = 0; i < *currentCursor; ++i) {
+      aimCursorPos += (*aimCursorPos & 0x80) ? 2 : 1;
+    }
+    for(; aimBottomPos >= aimCursorPos; --aimBottomPos) {
+      *(aimBottomPos + itemLen) = *aimBottomPos;
+    }
+    xcopy(aimCursorPos, addChar, itemLen);
+    switch(item) {
+      case ITM_ROOT_SIGN: {
+        *currentCursor += 2;
+        break;
+      }
+      case ITM_PAIR_OF_PARENTHESES:
+      case ITM_VERTICAL_BAR: {
+        *currentCursor += 1;
+        break;
+      }
+      default: {
+        *currentCursor += stringGlyphLength(indexOfItems[item].itemSoftmenuName);
+      }
+    }
+  }
+
+
+  void deleteAlphaCharacter(int16_t *currentCursor) {
+    char *srcPos = aimBuffer;
+    char *dstPos = aimBuffer;
+    char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
+    --*currentCursor;
+    for(int16_t i = 0; i < *currentCursor; ++i) {
+      dstPos += (*dstPos & 0x80) ? 2 : 1;
+    }
+    srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
+    for(; srcPos <= lstPos;) {
+      *(dstPos++) = *(srcPos++);
+    }
+  }
+
+
+  void fnAlphaCursorLeft(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor > 0) {
+      --alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorRight(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor < (uint16_t)stringGlyphLength(aimBuffer)) {
+      ++alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorHome(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = 0;
+  }
+
+
+  void fnAlphaCursorEnd(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = (uint16_t)stringGlyphLength(aimBuffer);
+  }
+
 #endif // !TESTSUITE_BUILD

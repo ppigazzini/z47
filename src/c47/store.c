@@ -385,7 +385,6 @@ void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
-  bool_t compatibility_byte0  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte2  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte3  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
@@ -445,7 +444,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(    compatibility_byte00);   //added
   storeToDtConfigDescriptor(    compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
-  storeToDtConfigDescriptor(    compatibility_byte0);    //added
+  storeToDtConfigDescriptor(dispBase);
   storeToDtConfigDescriptor(BASE_MYM);
   storeToDtConfigDescriptor(jm_G_DOUBLETAP);
   storeToDtConfigDescriptor(compatibility_float1);

@@ -263,7 +263,7 @@
   extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
-  extern const char                      hexadecimalDigits[17];
+  extern const char                      baseDigits[63];
   extern const char                      registerFlagLetters[27];
   extern any34Matrix_t                   openMatrixMIMPointer;
   extern uint16_t                        matrixIndex;
@@ -394,6 +394,7 @@
   extern uint8_t                timeDisplayFormatDigits;
   extern uint8_t                shortIntegerWordSize;
   extern uint8_t                significantDigits;
+  extern uint8_t                dispBase;
   extern uint8_t                fractionDigits;
   extern uint8_t                shortIntegerMode;
   extern uint8_t                previousCalcMode;
@@ -461,6 +462,7 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW

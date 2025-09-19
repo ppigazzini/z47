@@ -552,9 +552,6 @@ void fnAssign(uint16_t mode) {
   if(mode) {
     createMenu(aimBuffer);
     aimBuffer[0] = 0;
-    #if !defined(TESTSUITE_BUILD)
-      popSoftmenu();
-    #endif // !TESTSUITE_BUILD
   }
   else {
     previousCalcMode = calcMode;
@@ -738,10 +735,12 @@ void updateAssignTamBuffer(void) {
     if(tam.alpha) {
       tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
       if(aimBuffer[0] == 0) {
-        tbPtr = stringCopy(tbPtr, "_");
+        tbPtr = stringCopy(tbPtr, STD_CURSOR);
       }
       else {
-        tbPtr = stringCopy(tbPtr, aimBuffer);
+        stringCopy(tmpString, aimBuffer);
+        insertAlphaCursor(0);
+        tbPtr = stringCopy(tbPtr, tmpString);
         tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
       }
     }
@@ -782,10 +781,12 @@ void updateAssignTamBuffer(void) {
   if(itemToBeAssigned != 0 && tam.alpha) {
     tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
     if(aimBuffer[0] == 0) {
-      tbPtr = stringCopy(tbPtr, "_");
+      tbPtr = stringCopy(tbPtr, STD_CURSOR);
     }
     else {
-      tbPtr = stringCopy(tbPtr, aimBuffer);
+      stringCopy(tmpString, aimBuffer);
+      insertAlphaCursor(0);
+      tbPtr = stringCopy(tbPtr, tmpString);
       tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
     }
   }
@@ -1111,8 +1112,8 @@ void assignEnterAlpha(void) {
     tam.alpha = true;
     setSystemFlag(FLAG_ALPHA);
     aimBuffer[0] = 0;
+    tamEnterMode(ITM_ASSIGN);
     calcModeAim(NOPARAM);
-    numberOfTamMenusToPop = 0;
   #endif // !TESTSUITE_BUILD
 }
 
@@ -1121,18 +1122,8 @@ void assignLeaveAlpha(void) {
   #if !defined(TESTSUITE_BUILD)
     tam.alpha = false;
     clearSystemFlag(FLAG_ALPHA);
-    while(numberOfTamMenusToPop--) {
-      if(currentMenu() == -MNU_ALPHA) {
-        popSoftmenu();
-      }
-      popSoftmenu();
-    }
-    if(currentMenu() == -MNU_ALPHA) {
-      popSoftmenu();
-    }
-    if(softmenuStack[0].softmenuId == 1) { // MyAlpha
-      softmenuStack[0].softmenuId = 0; // MyMenu
-    }
+    leaveTamModeIfEnabled();
+    alphaCursor = 0;
     calcModeNormalGui();
   #endif // !TESTSUITE_BUILD
 }

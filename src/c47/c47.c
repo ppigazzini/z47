@@ -32,7 +32,7 @@
 
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
-TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
+TO_QSPI const char     baseDigits[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
@@ -149,6 +149,7 @@ uint8_t                displayFormatDigits;
 uint8_t                timeDisplayFormatDigits;
 uint8_t                shortIntegerWordSize;
 uint8_t                significantDigits;
+uint8_t                dispBase;
 uint8_t                fractionDigits;
 uint8_t                shortIntegerMode;
 uint8_t                previousCalcMode;
@@ -218,6 +219,7 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+int16_t                alphaCursor;                  //DL
 int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
