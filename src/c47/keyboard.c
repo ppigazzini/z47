@@ -4383,6 +4383,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
       case CM_ASN_BROWSER: {
         fnKeyExit(NOPARAM);                          // Rather use the Exit routine as the code is the same
+        break;
       }
 
       case CM_BUG_ON_SCREEN:
