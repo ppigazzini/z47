@@ -3138,7 +3138,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
 
 void realToSci(real_t* num, char* dispString) {
-   char *p, *radix = RADIX34_MARK_STRING, *sep = SEPARATOR_RIGHT;
+   char *p, *radix = Rx, *sep = SEPARATOR_RIGHT;
    int neg, exp, mi = 0, i = 1, d = 0;
    int sepGroup = GROUPWIDTH_RIGHT;
 
@@ -3156,17 +3156,19 @@ void realToSci(real_t* num, char* dispString) {
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
     
-    while(*p && (*p < '0' || *p > '9')) p++;
-    
-    dispString[mi++] = neg ? '-' : ' ';
-    dispString[mi++] = *p++;
-    if(*p == '.') p++;
-    if(*p != 'E') {
-      dispString[mi++] = radix[0];
-      if(radix[0] & 0x80 && radix[1] && radix[1] != '\1') dispString[mi++] = radix[1];
+    while(*p && (*p < '0' || *p > '9')) p++;    // skips to first digit
+
+    dispString[mi++] = neg ? '-' : ' ';         // inserts - if prior determined
+    dispString[mi++] = *p++;                    // copies first digit incr and continue
+    if(*p == '.') p++;                          // if 2nd char is . skip it
+    if(*p != 'E') {                             // as long as current (2nd/3rd) char is not at the end E meaning 1E, it must have been the 1., so continue to add the proper radix
+      dispString[mi++] = radix[0];              // add first half of radix
+      if(radix[0] & 0x80 && radix[1] && radix[1] != '\1') {
+        dispString[mi++] = radix[1];            // add 2nd half of radix if second half > 1
+      }
     }
 
-    while(*p && *p != 'E' && i < 1000) {
+    while(*p && *p != 'E' && i < 1000) {        // add seps
       if(*p >= '0' && *p <= '9') {
         if(d > 0 && d % sepGroup == 0 && !GROUPRIGHT_DISABLED) {
           dispString[mi++] = sep[0]; 
@@ -3180,8 +3182,14 @@ void realToSci(real_t* num, char* dispString) {
     }
     
     // Remove trailing zeros and separators from the right, until first non-zero or decimal is reached
-    while(mi > 0 && (dispString[mi-1] == '0' || dispString[mi-1] == sep[0] || (sep[1] != '\1' && dispString[mi-1] == sep[1]))) mi--;
-    if(mi > 0 && (dispString[mi-1] == radix[0] || (radix[1] != '\1' && dispString[mi-1] == radix[1]))) mi--;
+    while( mi > 1 && 
+          ((dispString[mi-1] == '0') || 
+           (dispString[mi-2] == sep[0] && sep[1] != '\0' && sep[1] != '\1' && dispString[mi-1] == sep[1]) || 
+           (dispString[mi-1] == sep[0] && sep[1] != '\0' && sep[1] != '\1' && dispString[mi  ] == sep[1])
+          )
+         ) mi--;
+    if(mi > 0 && (dispString[mi-1] == radix[0] && (radix[1] == '\0' || radix[1] == '\1' || (radix[1] != '\0' && radix[1] != '\1' && dispString[mi-1] == radix[1])) )) mi--;
+    if(mi > 1 && (dispString[mi-2] == radix[0] && (                                        (radix[1] != '\0' && radix[1] != '\1' && dispString[mi-1] == radix[1])) )) mi -= 2;
     
     dispString[mi] = '\0';
     char tt[32];
