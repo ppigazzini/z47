@@ -498,7 +498,8 @@
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
 #define ERROR_RESERVED_VARIABLE_NAME              61
-#define LAST_ERROR_MESSAGE                        61
+#define ERROR_INVALID_TYPE_XFN                    62
+#define LAST_ERROR_MESSAGE                        62
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
