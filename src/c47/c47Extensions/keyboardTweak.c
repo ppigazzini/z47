@@ -314,6 +314,27 @@ void resetKeytimers(void) {
         }
       }
     }                                                                   //yellow and blue function keys ^^
+    #define TAMALPHA_f //select the yellow or blue text labels
+    else if(tam.alpha) {
+      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+      #if defined(TAMALPHA_f)
+        tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
+      #else //TAMALPHA_f
+        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      #endif //TAMALPHA_f
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+        ) {
+        if(!shiftF && !shiftG) {
+          #if defined(TAMALPHA_f)
+            longpressDelayedkey1 = tmpf_;
+            tmpg = tmpf_;
+          #else //TAMALPHA_f
+            longpressDelayedkey1 = tmpg_;
+            tmpg = tmpg_;
+          #endif //TAMALPHA_f
+        }
+      }
+    }
 
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);

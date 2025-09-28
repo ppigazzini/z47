@@ -839,7 +839,7 @@ void execTimerApp(uint16_t timerType) {
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
           if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
             // stub for code to process on up1/down longpress
@@ -853,7 +853,7 @@ void execTimerApp(uint16_t timerType) {
           if(calcMode == CM_AIM) {
             refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
           } else
-          if(calcMode == CM_EIM) {
+          if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(131);
           }
