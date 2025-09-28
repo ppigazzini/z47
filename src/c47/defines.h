@@ -9,7 +9,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07a12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
@@ -22,7 +22,8 @@
 // Version 7b10 bugfixes for FACTORS
 // Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
 // Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
-
+// Version 7a12 temporary test for longpress alpha keys
+// cont.        with generic EDIT; XFN3 1000-digit precision; EigenValue fixl Delete Program fix, and more
 
 #if !defined(CALCMODEL)
   #define CALCMODEL USER_C47               // USER_C47 or USER_R47
@@ -49,6 +50,7 @@
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
 #undef SAVE_SPACE_DM42_17
+#undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 
@@ -65,6 +67,7 @@
     #undef TWO_FILE_PGM
     #undef HARDWARE_MODEL
     #define HARDWARE_MODEL HWM_DM42n
+    #define INFRARED  // Enable IR printing for on new hardware
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -111,7 +114,7 @@
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+      #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
@@ -119,10 +122,11 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
-    #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
-    #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+      #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+      #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -705,6 +709,16 @@ typedef enum {
   LI_POSITIVE = 2  // Long integer sign +
 } longIntegerSign_t;
 
+
+
+typedef enum {
+  PRINT_BYTE, 
+  PRINT_CHAR, 
+  PRINT_TAB,
+  PRINT_ALPHA,
+  PRINT_ALPHA_NOADV,
+  PRINT_ALPHA_JUST
+} printArgument_t;
 
 
 
@@ -1692,7 +1706,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1900,6 +1914,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
+#define inputAngleMode(r)                    (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
+#define deemedInputAngleMode(r)              (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
+#define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+#define inputIsNoAngle(r)                    ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
+#define inputAngleError(r)                   (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
+#define isXFNregisterValid(r)                ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
+                                              !inputAngleError(r))
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid(r))  
+
+
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)

@@ -2630,7 +2630,10 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define LAST_ITEM                   2553
+
+#define ITM_PRINTERALPHA            2553
+
+#define LAST_ITEM                   2554
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

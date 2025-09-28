@@ -39,7 +39,11 @@ void fnInDefault    (uint16_t inputDefault);
 #define PRN_TMP     7
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
-void fnP_Alpha      (void);
+void fnP_Alpha      (uint16_t registerNo);
+void fnP_Advance    (uint16_t unusedButMandatoryParameter);
+void fnP_Byte       (uint16_t byte);
+void fnP_Char       (uint16_t character);
+void fnP_Tab        (uint16_t column);
 void fnMinute       (uint16_t unusedButMandatoryParameter);
 void fnSecond       (uint16_t unusedButMandatoryParameter);
 void fnHrDeg        (uint16_t unusedButMandatoryParameter);

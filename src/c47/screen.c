@@ -5551,7 +5551,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   char ss[TAM_BUFFER_LENGTH];
   xcopy(ss, tamBuffer, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
   if(calcMode == CM_AIM) {
-    fnP_Alpha();     //print alpha
+    fnP_Alpha(NOPARAM);     //print alpha
   }
   else {
     fnP_All_Regs(PRN_STK); //print stack

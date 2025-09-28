@@ -89,6 +89,7 @@
     #include "hal/gui.h"
     #include "hal/io.h"
     #include "hal/lcd.h"
+    #include "hal/printer.h"
     #include "integers.h"
     #include "items.h"
     #include "keyboard.h"
@@ -599,6 +600,10 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
+  
+  #if defined(INFRARED)
+    extern printerState_t         printerState;
+  #endif //INFRARED
 
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;

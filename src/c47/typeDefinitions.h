@@ -615,6 +615,17 @@ typedef struct {
 } letteredFlagDisplay_t;
 
 
+/**
+ * \struct printerState_t
+   * Structure keeping the printer status
+   */
+typedef struct {
+  bool_t  print_on;	             ///< Printing on/off 
+  uint8_t print_blank_line;	     ///< Print space between lines
+  uint8_t print_mode;  	         ///< printer modes
+} printerState_t;
+
+
   #if defined(PC_BUILD)
   /**
    * \struct calcKeyboard_t
