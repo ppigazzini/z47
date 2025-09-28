@@ -822,6 +822,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
+         ||  calcMode == CM_TIMER
          || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
         )
      && !getSystemFlag(FLAG_ALPHA)
@@ -838,8 +839,20 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
     //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
 //}
 
+
+  switch(event_keyval) {
+    case GDK_KEY_backslash:
+      if(SHOWMODE){// || currentMenu() == -MNU_TIMERF) {
+        btnClicked(w, "35");  //R/S
+        goto returnKeyPressedFalse;
+      }
+      break;
+    default:;
+  }
+
+
 //C47 & R47============
-  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
+  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",        0b0100000000001101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
   if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[v]erse
   if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} else        //                        s[q]rt
   if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} else        //                         l[o]g
@@ -913,8 +926,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
   if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
   if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-  if(!SHOWMODE &&
-     shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",        0b0100000000001101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
 //                                             PC_GTK3_code                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno ,            Valid CalcMode requiredCalcMode2  itemForRunFunction
@@ -1525,12 +1537,6 @@ continueWithOldDetections:
           } else
           if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             btnClicked(w, "10");
-          }
-          break;
-
-        case GDK_KEY_backslash:
-          if(SHOWMODE) {
-            btnClicked(w, "35");  //R/S
           }
           break;
 
