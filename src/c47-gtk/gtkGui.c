@@ -913,7 +913,8 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
   if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
   if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
+  if(!SHOWMODE &&
+     shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
 //                                             PC_GTK3_code                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno ,            Valid CalcMode requiredCalcMode2  itemForRunFunction
@@ -1019,22 +1020,10 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
   #endif
 
   //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
-  #if defined(ALTERNATE_ALPHA_F1)
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #elif defined(ALTERNATE_ALPHA_F5)
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #else
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #endif //ALTERNATE_ALPHA_F1
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
   #if defined(VERBOSEKEYS)
     printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");
   #else
@@ -1539,6 +1528,11 @@ continueWithOldDetections:
           }
           break;
 
+        case GDK_KEY_backslash:
+          if(SHOWMODE) {
+            btnClicked(w, "35");  //R/S
+          }
+          break;
 
         case GDK_KEY_Left:                                               //JM     // CursorLt  //JM Left
           btnFnClicked(w, "5");  //F5
