@@ -2050,11 +2050,16 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading pseudo menus
 }
 
 
-static  char FF[16];
-static char *changeItoJ(int16_t item) {
 
-  //printf(">>>> changeItoJ: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
-  if(getSystemFlag(FLAG_CPXj)) {
+char FF[16]; //using static char FF
+static char *changeDotAndIJ(int16_t item, const char* itemN) {
+  if((item == ITM_DREAL || item == SFL_DREAL) && itemN[3] == '.') { //this replaces the 4th byte of dℤ.0 with the ascii ./,
+    stringCopy(FF, itemN);
+    FF[3] = RADIX34_MARK_CHAR;
+    return FF;
+  }
+  else if(getSystemFlag(FLAG_CPXj)) {
+    stringCopy(FF, itemN);
     if((item == ITM_op_j || item == ITM_op_j_pol || item == ITM_op_j_SIGN) && FF[1] == STD_op_i[1]) {
       //printf(">>>> changed: %u %u %u %u %u %s %u %u\n", (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
       FF[1]++;
@@ -2062,33 +2067,9 @@ static char *changeItoJ(int16_t item) {
     if(item == ITM_EE_EXP_TH && FF[3] == STD_SUP_i[1]) {
       FF[3]++;
     }
-  }
-  return FF;
-}
-
-static char *changeDotInDreal(int16_t item) {
-  //printf(">>>> changeDreal: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
-  if(item != ITM_DREAL) {
     return FF;
   }
-  uint16_t ii;
-  for(ii = 0; FF[ii] != '.' && FF[ii] != ','; ii++) {
-    if(FF[ii] == 0) {
-      return FF;
-    }
-  }
-  FF[ii] = 0; //clear string from dot onward and replace with below
-  strcat(FF,RADIX34_MARK_STRING);
-  strcat(FF,STD_SPACE_3_PER_EM "0");
-  return FF;
-}
-
-//using static char FF
-static char *changeDynamicName(int16_t item) {
-  stringCopy(FF, indexOfItems[item%10000].itemSoftmenuName);
-  changeItoJ(item);
-  changeDotInDreal(item);
-  return FF;
+  return (char*)itemN;
 }
 
 
@@ -2341,7 +2322,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       stringCopy(itemName, indexOfItems[itemNr%10000].itemCatalogName);
     }
     else {
-      stringCopy(itemName, changeDynamicName(itemNr));
+      stringCopy(itemName, changeDotAndIJ(itemNr, indexOfItems[itemNr%10000].itemSoftmenuName));
       //printf("WWW2: itemName=%s, ItemNr=%i \n",itemName,itemNr);
       return;
     }
@@ -2783,10 +2764,10 @@ void showSoftmenuCurrentPart(void) {
           else if(softmenu[m].menuItem == -MNU_SYSFL) {                                         //JMvv add radiobuttons to standard flags
             if(indexOfItems[item%10000].itemCatalogName[0] != 0) {
               if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
-                showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
               }
               else {
-                showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
               }
             }
           }                                                                      //JM^^
@@ -2817,7 +2798,7 @@ void showSoftmenuCurrentPart(void) {
             else {
               if( (softmenu[m].menuItem == -MNU_FCNS || softmenu[m].menuItem == -MNU_FCNS_EIM || softmenu[m].menuItem  == -MNU_CONST) || //CONST is a normal menu not a catalog, but we expect the catalog to be treated as a catalog. //The same could be a problem with any of the generated catalogs (MNU_SYSFL, MNU_alpha_INTL, MNU_alpha_intl, )
                  ((softmenu[m].menuItem == -MNU_IO   || softmenu[m].menuItem  == -MNU_PFN  ) && (item == ITM_STOCFG || item == ITM_RCLCFG))) { //do not display "Config"
-                stringCopy(itemName, indexOfItems[item%10000].itemCatalogName);
+                stringCopy(itemName, changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName));
               }
               showSoftkey(itemName, x, y-currentFirstItem/6, vm, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText, !greyout);
             }
