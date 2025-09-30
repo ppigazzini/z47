@@ -558,18 +558,23 @@ void showMatrixEditor() {
 }
 
 void mimEnter(bool_t commit) {
+  bool_t realChanged = false;
   int cols = openMatrixMIMPointer.header.matrixColumns;
+  int rows = openMatrixMIMPointer.header.matrixRows;
+  int tag  = openMatrixMIMPointer.header.mtag;
   int16_t row = getIRegisterAsInt(true);
   int16_t col = getJRegisterAsInt(true);
 
   if(aimBuffer[0] != 0) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+      real34_t real34tmp;
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
 
       switch(nimNumberPart) {
         case NP_FRACTION_DENOMINATOR:
         case NP_HP32SII_DENOMINATOR:
-          closeNimWithFraction(real34Ptr);
+          closeNimWithFraction(&real34tmp);
+          realChanged = true;
           break;
         case NP_COMPLEX_INT_PART:
         case NP_COMPLEX_FLOAT_PART:
@@ -589,7 +594,45 @@ void mimEnter(bool_t commit) {
           break;
         }
         default:
-          stringToReal34(aimBuffer, real34Ptr);
+          stringToReal34(aimBuffer, &real34tmp);
+          realChanged = true;
+      }
+
+      if(realChanged) {
+        if(isMatrixVector(rows, cols)) {
+          if(isMatrix2dVectorPOL(rows, cols, tag)) {
+            real_t magnitude, theta;
+            int ang = (tag & 0x07) == amNone ? currentAngularMode : (tag & 0x07);
+            real34ToReal(&openMatrixMIMPointer.realMatrix.matrixElements[0], &magnitude);
+            real34ToReal(&openMatrixMIMPointer.realMatrix.matrixElements[1], &theta);
+            realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+            convertAngleFromTo(&theta, amRadian, ang, &ctxtReal39);
+            if(col == 0) {
+              real34ToReal(&real34tmp, &magnitude);
+            }
+            if(col == 1) {
+              real34ToReal(&real34tmp, &theta);
+            }
+            convertAngleFromTo(&theta, ang, amRadian, &ctxtReal39);
+            if(realCompareLessThan(&magnitude, const_0)) {
+              realSetPositiveSign(&magnitude);
+              realAdd(&theta, const_pi, &theta, &ctxtReal39);
+            }
+            realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+            realToReal34(&magnitude, &openMatrixMIMPointer.realMatrix.matrixElements[0]);
+            realToReal34(&theta,     &openMatrixMIMPointer.realMatrix.matrixElements[1]);
+          } else
+          if(isMatrix3dVectorSPH(rows, cols, tag)) {
+//add code for CYL editing           //
+          } else
+          if(isMatrix3dVectorCYL(rows, cols, tag)) {
+//add code for SPH editing           //
+          } else {
+            real34Copy(&real34tmp, real34Ptr);
+          }
+        } else {
+          real34Copy(&real34tmp, real34Ptr);
+        }
       }
     }
     else {
@@ -624,9 +667,11 @@ void mimEnter(bool_t commit) {
   if(commit) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, matrixIndex);
+      setRegisterTag(matrixIndex, openMatrixMIMPointer.header.mtag);
     }
     else {
       convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, matrixIndex);
+      setRegisterTag(matrixIndex, openMatrixMIMPointer.header.mtag);
     }
   }
   updateMatrixHeightCache();
@@ -999,6 +1044,8 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
 void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
+  //printf("matrix->header.mtag = %d\n",matrix->header.mtag);
+  //printf("openMatrixMIMPointer.header.mtag) %d\n", openMatrixMIMPointer.header.mtag);
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
   int16_t X_POS = 0;
   int16_t totalWidth = 0, width = 0;
@@ -1059,8 +1106,9 @@ smallFont:
     Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
   }
 
+  bool_t allowIntegerDisplay = (matrix->header.mtag == amNone) || !is3dVectorPolarSPH(matrix->header.mtag) || !(is3dVectorPolarCYL(matrix->header.mtag) || is2dVectorPolar(matrix->header.mtag));
   for(int j = 0; j < maxCols; j++) {
-    allElementsInColAreIntegers[j]=true;
+    allElementsInColAreIntegers[j] = allowIntegerDisplay;
     for(int i = 0; i < maxRows; i++) {
       if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) || isMatrix3dVectorSPH(rows, cols, matrix->header.mtag) || isMatrix3dVectorCYL(rows, cols, matrix->header.mtag) ) {
         allElementsInColAreIntegers[j]=false;

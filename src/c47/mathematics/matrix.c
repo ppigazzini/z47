@@ -1657,6 +1657,7 @@ void getMatrixFromRegister(calcRegister_t regist) {
     }
     convertReal34MatrixRegisterToReal34Matrix(regist, &matrix);
 
+    matrix.header.mtag = getRegisterTag(regist);
     openMatrixMIMPointer.realMatrix = matrix;
   }
   else if(getRegisterDataType(regist) == dtComplex34Matrix) {
@@ -1667,6 +1668,7 @@ void getMatrixFromRegister(calcRegister_t regist) {
     }
     convertComplex34MatrixRegisterToComplex34Matrix(regist, &matrix);
 
+    matrix.header.mtag = getRegisterTag(regist);
     openMatrixMIMPointer.complexMatrix = matrix;
   }
   else {
@@ -6018,7 +6020,7 @@ void fnComplexToVector (uint16_t opType) {
     real34Copy(&matrix.matrixElements[1], REGISTER_IMAG34_DATA(REGISTER_X));
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
     setComplexRegisterAngularMode(REGISTER_X, getVectorRegisterAngularMode(TEMP_REGISTER_1));
-    setComplexRegisterPolarMode(REGISTER_X, (getVectorRegisterPolarMode(TEMP_REGISTER_1) != amNone) ? amPolar : amNone);
+    setComplexRegisterPolarMode(REGISTER_X, (getVectorRegisterPolarMode(TEMP_REGISTER_1) == amPolar) ? amPolar : amNone);
     clearRegister(TEMP_REGISTER_1);
     return;
   }
