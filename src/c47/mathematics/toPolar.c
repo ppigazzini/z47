@@ -46,7 +46,7 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
   } else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix){
     if(isRegisterMatrix3dVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, 
-        ((getVectorRegisterPolarMode(REGISTER_X) == 0) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : amPolarSPH));
+        ((getVectorRegisterPolarMode(REGISTER_X) == 0) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL) ? amPolarSPH : 0 ));
       setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
       return;
     }
