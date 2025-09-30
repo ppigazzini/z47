@@ -1106,8 +1106,9 @@ smallFont:
     Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
   }
 
+  bool_t allowIntegerDisplay = (matrix->header.mtag == amNone) || !is3dVectorPolarSPH(matrix->header.mtag) || !(is3dVectorPolarCYL(matrix->header.mtag) || is2dVectorPolar(matrix->header.mtag));
   for(int j = 0; j < maxCols; j++) {
-    allElementsInColAreIntegers[j]=true;
+    allElementsInColAreIntegers[j] = allowIntegerDisplay;
     for(int i = 0; i < maxRows; i++) {
       if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) || isMatrix3dVectorSPH(rows, cols, matrix->header.mtag) || isMatrix3dVectorCYL(rows, cols, matrix->header.mtag) ) {
         allElementsInColAreIntegers[j]=false;
