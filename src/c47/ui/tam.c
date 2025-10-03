@@ -291,6 +291,16 @@
     dupNum = 0;
     if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
+      if(tam.alpha && calcMode == CM_ASSIGN) {
+        assignLeaveAlpha();
+        if(itemToBeAssigned == 0) {
+          assignGetName1();
+        }
+        else {
+          assignGetName2();
+        }
+        return;
+      }
     }
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
