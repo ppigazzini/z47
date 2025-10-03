@@ -1573,6 +1573,15 @@ void fnExchangeStkToMx(uint16_t opType) {
               (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
         fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);        
       }
+      else {
+        #if !defined(TESTSUITE_BUILD)
+          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+            moreInfoOnError("In function fnExchangeStkToMx:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #endif // !TESTSUITE_BUILD
+      }
       break;
     }
 
@@ -1584,6 +1593,15 @@ void fnExchangeStkToMx(uint16_t opType) {
               (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger) &&
               (getRegisterDataType(REGISTER_Z) == dtReal34 || getRegisterDataType(REGISTER_Z) == dtLongInteger)) {
         fnConvertStkToMx(indexOfItems[ITM_STKtoV3].param);        
+      }
+      else {
+        #if !defined(TESTSUITE_BUILD)
+          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+            moreInfoOnError("In function fnExchangeStkToMx:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #endif // !TESTSUITE_BUILD
       }
       break;
     }
@@ -1609,6 +1627,21 @@ void fnConvertStkToMx(uint16_t constVector) {
   if(!saveLastX()) {
     return;
   }
+
+
+  int32_t ang = getRegisterAngularMode(REGISTER_X);
+  if(constVector != 6 || ang == amNone) {      //xy => v2
+    ang = amNone;
+  } 
+  if(ang != amNone) {
+    convertAngleFromTo(&x[0].r, ang, amRadian, &ctxtReal39);
+    if(realCompareLessThan(&x[1].r, const_0)) {
+      realSetPositiveSign(&x[1].r);
+      realAdd(&x[0].r, const_pi, &x[0].r, &ctxtReal39);
+    }
+    realPolarToRectangular(&x[1].r, &x[0].r, &x[1].r, &x[0].r, &ctxtReal39); // theta in radian
+  }
+
 
   if(vecCreate[constVector].xdef < 2 || vecCreate[constVector].ydef < 2 || vecCreate[constVector].zdef < 2) {
     setSystemFlag(FLAG_ASLIFT);
@@ -1656,6 +1689,10 @@ void fnConvertStkToMx(uint16_t constVector) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 
+  if(ang != amNone) {
+    setVectorRegisterAngularMode(REGISTER_X, ang);
+    setVectorRegisterPolarMode(REGISTER_X, amPolar);
+  }
 }
 
 void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nibble, then try the vector type in higher nibble unless high nibble = 0
@@ -1664,7 +1701,19 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
   uint16_t Xrows, Xcols;
 
   if(!(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+        moreInfoOnError("In function fnConvertMxToStk:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif // !TESTSUITE_BUILD
     return;
+  }
+
+  int ang = amNone;
+  if(isRegisterMatrix2dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolar)) {
+    ang = getRegisterAngularMode(REGISTER_X) & amAngleMask;
   }
 
   copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
@@ -1718,6 +1767,15 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     }
   }
 
+  if(param == 6 || ang != amNone) {      //xy <= v2; y=magnitude; x=angle; same as complex
+    real_t theta, magnitude;
+    real34ToReal(&matrix.matrixElements[0], &magnitude);
+    real34ToReal(&matrix.matrixElements[1], &theta);
+    realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+    convertAngleFromTo(&theta, amRadian, ang, &ctxtReal39);
+    realToReal34(&magnitude, &matrix.matrixElements[0]);
+    realToReal34(&theta    , &matrix.matrixElements[1]);
+  }
 
   for (int i = 0; i < elements; i++) {
     uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
@@ -1732,6 +1790,9 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
       real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
     }
     adjustResult(rg, false, false, rg, -1, -1);
+  }
+  if(param == 6 || ang != amNone) {      //xy <= v2
+    setRegisterAngularMode(REGISTER_X, ang);
   }
 }
 
