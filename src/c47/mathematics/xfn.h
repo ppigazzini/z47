@@ -39,5 +39,6 @@ void fnXXfn_MULT    (uint16_t registerNo);
 void fnXXfn_DIV     (uint16_t registerNo);
 void fnXXfn_MOD     (uint16_t registerNo);
 void fnXXfn_MODANG  (uint16_t registerNo);
+void fnXXfn_TO      (uint16_t registerNo);
 
 #endif // !XFN_H

@@ -1907,16 +1907,16 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
-#define inputAngleMode(r)                    (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
-#define deemedInputAngleMode(r)              (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
+#define inputAngleMode3r(r)                  (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
+#define deemedInputAngleMode3r(r)            (inputAngleError3r(r) ? amNone : inputAngleMode3r(r) == amNone ? currentAngularMode : inputAngleMode3r(r))
 #define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
-#define inputIsNoAngle(r)                    ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
-#define inputAngleError(r)                   (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
-#define isXFNregisterValid(r)                ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
+#define inputIsNoAngle3r(r)                  ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
+#define inputAngleError3r(r)                 (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
+#define isXFNregisterValid3r(r)              ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
                                               (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
-                                              !inputAngleError(r))
-#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid(r))  
+                                              !inputAngleError3r(r))
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))  
 
 
 

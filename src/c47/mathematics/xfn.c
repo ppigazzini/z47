@@ -74,6 +74,8 @@
   }
   void fnXXfn_MODANG              (uint16_t registerNo) {
   }
+  void fnXXfn_TO                  (uint16_t registerNo) {
+  }
 #endif //SAVE_SPACE_DM42_18_XFN
 
 
@@ -205,7 +207,7 @@ int32_t realGetDigits(const real1071_t* x) {
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
     // integer part has at most maxAllowedDigits (1000) digits
     #if defined(DEBUG_XFN)
-      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal: input: %s\n", tmpString);
+      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 000: input: %s\n", tmpString);
     #endif //DEBUG_XFN
 //--------//--------//--------//--------//-------- pre-check on original x
     int32_t digits = realGetDigits(x);
@@ -243,7 +245,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     }
 
     #if defined(DEBUG_XFN)
-      printf("decomposeReal: longintegerstring: %s\n", tmpString);
+      printf("decomposeReal: longintegerstring 002: %s\n", tmpString);
     #endif //DEBUG_XFN
 
     stringToLongInteger(tmpString, 10, integerPart);
@@ -258,6 +260,9 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 returnUnity:
     uInt32ToLongInteger(1, integerPart);
     realCopy((real_t*)x, (real_t*)fractionalPart);
+    #if defined(DEBUG_XFN)
+      realToString((real_t *)fractionalPart, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 003: fractionalPart: %s\n", tmpString);
+    #endif //DEBUG_XFN
     return;
 
 }
@@ -267,6 +272,7 @@ returnUnity:
   #define FT_NILADIC  100
   #define FT_MONADIC  101
   #define FT_DYADIC   102
+  #define FT_SINGLEX  103
 
 typedef struct {
       int function_id;
@@ -278,6 +284,7 @@ typedef struct {
       { ITM_pi_XFN      ,FT_NILADIC },
       { ITM_DROP_XFN    ,FT_NILADIC },
       { ITM_SWAP_XFN    ,FT_NILADIC },
+      { ITM_TO_XFN      ,FT_SINGLEX },  //special case where hte function drops one register
       { ITM_DEG2_XFN    ,FT_MONADIC },
       { ITM_RAD2_XFN    ,FT_MONADIC },
       { ITM_sin_XFN     ,FT_MONADIC },
@@ -341,8 +348,8 @@ typedef struct {
 
 
   static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
-    if(!inputAngleError(registerNo)) {
-      *angleMode = deemedInputAngleMode(registerNo);
+    if(!inputAngleError3r(registerNo)) {
+      *angleMode = deemedInputAngleMode3r(registerNo);
       return true;
     }
     return false;
@@ -395,12 +402,38 @@ typedef struct {
       return false;
     }
     #if defined(DEBUG_XFN)
-        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
+        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s; anglemode = %d\n", param, tmpString, *angleMode);
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
+            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+    }
+    return true;
+  }
+
+  static bool getSingleParameter (int registerNo, real1071_t* combined, angularMode_t* angleMode, realContext_t* c) {
+printf("Dddd %d\n",registerNo);
+    *angleMode = registerIsNoAngle(registerNo) ? amNone : getRegisterAngularMode(registerNo);
+
+    if(!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {                        //ignore anglemode, it is handled elsewhere
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input registers: getLongintegerRegisterAsReal1071");
+          moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+    #if defined(DEBUG_XFN)
+        realToString((real_t *)combined, tmpString); printf("VAR: x * y + z: %s\n", tmpString);
+    #endif //DEBUG_XFN
+    if(!validateExponent(combined)) {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Total VAR = r%d exceeds the maximum exponent %d > %d", registerNo, realGetExponent(combined), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
@@ -457,7 +490,7 @@ typedef struct {
     if(functionType == XFN_NOTFOUND) {
       ErrorLocation = 14;
     }
-    if((functionType == FT_NILADIC) ||
+    if((functionType == FT_NILADIC) || (functionType == FT_SINGLEX) ||
        (functionType == FT_MONADIC && (registerNo <= FIRST_LETTERED_REGISTER - 3 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 3) ))  ||
        (functionType == FT_DYADIC  && (registerNo <= FIRST_LETTERED_REGISTER - 6 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 6) )))   {
       doXfn(registerNo, function, functionType, ErrorLocation);
@@ -548,6 +581,9 @@ typedef struct {
   void fnXXfn_MODANG              (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_MODANG_XFN);
   }
+  void fnXXfn_TO                  (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_TO_XFN);
+  }
 
 
 
@@ -580,6 +616,11 @@ typedef struct {
 
     if(functionType == FT_NILADIC) {
       ; //no input needed, continue
+    } else
+    if(functionType == FT_SINGLEX) {
+      if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
+        return;
+      }      
     } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
@@ -632,11 +673,11 @@ typedef struct {
 
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
-          if(inputIsNoAngle(registerNo)) {
+          if(inputIsNoAngle3r(registerNo)) {
             angleMode = amRadian;
             break;
           } else
-          if(!inputAngleError(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+          if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
           }
@@ -645,11 +686,11 @@ typedef struct {
         }
 
         case ITM_DEG2_XFN: {
-          if(inputIsNoAngle(registerNo)) {
+          if(inputIsNoAngle3r(registerNo)) {
             angleMode = amDegree;
             break;
           } else
-          if(!inputAngleError(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+          if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
           }
@@ -733,6 +774,11 @@ typedef struct {
           }
           break;
         }
+  //--------//SINGLE REG FUNCTIONS
+        case ITM_TO_XFN: {
+            //paramX input ->> output
+          break;
+        }
   //--------//DYADIC FUNCTIONS
         case ITM_ADD_XFN: {
           realAdd       ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
@@ -785,6 +831,8 @@ typedef struct {
     //Step 0: Prep the stack
     if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
         fnDrop3();
+    } else if(functionType == FT_SINGLEX) {
+        fnDrop(NOPARAM);
     }
 
 
@@ -794,7 +842,11 @@ typedef struct {
       case ITM_arctan_XFN:
       case ITM_atan2_XFN:
       case ITM_RAD2_XFN:
-      case ITM_DEG2_XFN: {
+      case ITM_DEG2_XFN:
+      case ITM_TO_XFN:
+      case ITM_ADD_XFN:
+      case ITM_SUB_XFN:
+      case ITM_MULT_XFN: {
         //leave angleMode
         break;
       }

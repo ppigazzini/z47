@@ -1464,6 +1464,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnXXfn_DIV                 (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_MOD                 (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_MODANG              (uint16_t unusedButMandatoryParameter) {}
+  void fnXXfn_TO                  (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_ToDEG               (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_ToRAD               (uint16_t unusedButMandatoryParameter) {}
 
@@ -1512,6 +1513,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_MULT    fnXXfn_MULT    
   #define S18_fnXXfn_DIV     fnXXfn_DIV     
   #define S18_fnXXfn_MOD     fnXXfn_MOD     
+  #define S18_fnXXfn_TO      fnXXfn_TO     
   #define S18_fnXXfn_MODANG  fnXXfn_MODANG  
   #define S18_fnXXfn_ToDEG   fnXXfn_ToDEG   
   #define S18_fnXXfn_ToRAD   fnXXfn_ToRAD   
@@ -1540,6 +1542,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_MULT    itemToBeCoded
   #define S18_fnXXfn_DIV     itemToBeCoded
   #define S18_fnXXfn_MOD     itemToBeCoded
+  #define S18_fnXXfn_TO      itemToBeCoded
   #define S18_fnXXfn_MODANG  itemToBeCoded
   #define S18_fnXXfn_ToDEG   itemToBeCoded
   #define S18_fnXXfn_ToRAD   itemToBeCoded
@@ -4193,9 +4196,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2575 */  { S18_fnXXfn_MULT,              TM_REGISTER,                 "XMULT",                                       "XMULT",                                       (0 << TAM_MAX_BITS) |    97, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 2576 */  { S18_fnXXfn_DIV,               TM_REGISTER,                 "XDIV",                                        "XDIV",                                        (0 << TAM_MAX_BITS) |    97, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 2577 */  { S18_fnXXfn_MOD,               TM_REGISTER,                 "XMOD",                                        "XMOD",                                        (0 << TAM_MAX_BITS) |    97, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
-/* 2578 */  { S18_fnXXfn_MODANG,            TM_REGISTER,                 "XMOD" STD_MEASURED_ANGLE,                     "XMOD" STD_MEASURED_ANGLE,                     (0 << TAM_MAX_BITS) |    97, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER      | HG_ENABLED         },
+/* 2578 */  { S18_fnXXfn_MODANG,            TM_REGISTER,                 "XMOD" STD_MEASURED_ANGLE,                     "XMOD" STD_MEASURED_ANGLE,                     (0 << TAM_MAX_BITS) |    97, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 2579 */  { S18_fnXXfn_TO,                REGISTER_X,                  "X" STD_RIGHT_ARROW "XFN",                     "X" STD_RIGHT_ARROW "XFN",                     (0 << TAM_MAX_BITS) |     0, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
-
-/* 2579 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2580 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };
