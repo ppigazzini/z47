@@ -205,7 +205,7 @@ int32_t realGetDigits(const real1071_t* x) {
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
     // integer part has at most maxAllowedDigits (1000) digits
     #if defined(DEBUG_XFN)
-      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal: input: %s\n", tmpString);
+      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 000: input: %s\n", tmpString);
     #endif //DEBUG_XFN
 //--------//--------//--------//--------//-------- pre-check on original x
     int32_t digits = realGetDigits(x);
@@ -243,7 +243,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     }
 
     #if defined(DEBUG_XFN)
-      printf("decomposeReal: longintegerstring: %s\n", tmpString);
+      printf("decomposeReal: longintegerstring 002: %s\n", tmpString);
     #endif //DEBUG_XFN
 
     stringToLongInteger(tmpString, 10, integerPart);
@@ -258,6 +258,9 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 returnUnity:
     uInt32ToLongInteger(1, integerPart);
     realCopy((real_t*)x, (real_t*)fractionalPart);
+    #if defined(DEBUG_XFN)
+      realToString((real_t *)fractionalPart, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 003: fractionalPart: %s\n", tmpString);
+    #endif //DEBUG_XFN
     return;
 
 }
@@ -341,8 +344,8 @@ typedef struct {
 
 
   static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
-    if(!inputAngleError(registerNo)) {
-      *angleMode = deemedInputAngleMode(registerNo);
+    if(!inputAngleError3r(registerNo)) {
+      *angleMode = deemedInputAngleMode3r(registerNo);
       return true;
     }
     return false;
@@ -395,7 +398,7 @@ typedef struct {
       return false;
     }
     #if defined(DEBUG_XFN)
-        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s\n", param, tmpString);
+        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s; anglemode = %d\n", param, tmpString, *angleMode);
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -632,11 +635,11 @@ typedef struct {
 
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
-          if(inputIsNoAngle(registerNo)) {
+          if(inputIsNoAngle3r(registerNo)) {
             angleMode = amRadian;
             break;
           } else
-          if(!inputAngleError(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+          if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
           }
@@ -645,11 +648,11 @@ typedef struct {
         }
 
         case ITM_DEG2_XFN: {
-          if(inputIsNoAngle(registerNo)) {
+          if(inputIsNoAngle3r(registerNo)) {
             angleMode = amDegree;
             break;
           } else
-          if(!inputAngleError(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+          if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
           }
