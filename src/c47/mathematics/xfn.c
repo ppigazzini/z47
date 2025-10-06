@@ -865,7 +865,7 @@ printf("Dddd %d\n",registerNo);
         break;
       }
       case ITM_TO_XFN: {
-        angleMode = getRegisterAngularMode(registerNo);
+        angleMode = amNone;
         break;
       }
       default: {
