@@ -820,21 +820,29 @@ printf("Dddd %d\n",registerNo);
       }
     }
 
+    //Test code to force a specific output to check
+    // real_t aaaa;
+    // stringToReal("1E-1200", &aaaa, &c);
+    // stringToReal("1E-1000", (real_t *)&paramX, &c);
+    // realAdd  ((real_t *)&paramX, &aaaa, (real_t *)&paramX, &c);
+    // stringToReal("1E-2030", &aaaa, &c);
+    // realAdd  ((real_t *)&paramX, &aaaa, (real_t *)&paramX, &c);
+    //****************
+
+//--------//--------//-- Clip to 1034 digits                               --//--------//--------//--------
+
+    realContext_t cc = ctxtReal75;
+    cc.digits = maxAllowedDigits + 34;
+    cc.round = DEC_ROUND_HALF_UP;
+    realPlus((real_t *)&paramX, (real_t *)&paramX, &cc);
+
     #if defined(DEBUG_XFN)
       printRegisterToConsole(REGISTER_X,"\nX:","\n");
       realToString((real_t *)&paramX, tmpString); tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
     #endif //DEBUG_XFN
 
+
 //--------//--------//-- Processing stack output with paramX as the output --//--------//--------//--------
-
-
-    //Step 0: Prep the stack
-    if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
-        fnDrop3();
-    } else if(functionType == FT_SINGLEX) {
-        fnDrop(NOPARAM);
-    }
-
 
     switch(function) {
       case ITM_arcsin_XFN:
@@ -842,12 +850,22 @@ printf("Dddd %d\n",registerNo);
       case ITM_arctan_XFN:
       case ITM_atan2_XFN:
       case ITM_RAD2_XFN:
-      case ITM_DEG2_XFN:
-      case ITM_TO_XFN:
+      case ITM_DEG2_XFN: {
+        //leave angleMode
+        break;
+      }
       case ITM_ADD_XFN:
       case ITM_SUB_XFN:
       case ITM_MULT_XFN: {
-        //leave angleMode
+        if(getRegisterAngularMode(registerNo+3) != amNone) {
+          angleMode = getRegisterAngularMode(registerNo+3);
+        } else {
+          angleMode = getRegisterAngularMode(registerNo);
+        }
+        break;
+      }
+      case ITM_TO_XFN: {
+        angleMode = getRegisterAngularMode(registerNo);
         break;
       }
       default: {
@@ -856,6 +874,12 @@ printf("Dddd %d\n",registerNo);
       }
     }
 
+    //Step 0: Prep the stack
+    if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
+        fnDrop3();
+    } else if(functionType == FT_SINGLEX) {
+        fnDrop(NOPARAM);
+    }
 
     //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
     setSystemFlag(FLAG_ASLIFT);
