@@ -838,17 +838,15 @@ void execTimerApp(uint16_t timerType) {
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
-        if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && isArrowUp(currentKeyCode)) {
+        if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
           aimBuffer[0] = 0;
           ++currentLocalStepNumber;
           currentStep = findNextStep(currentStep);
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-          refreshScreen(131);
-        } else
-        if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && isArrowDown(currentKeyCode)) {
+          refreshRegisterLine(REGISTER_T);
+        }
+        else if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && (isArrowDown(currentKeyCode))) {
           programRunStop = PGM_STOPPED;
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-          refreshScreen(131);
+          refreshRegisterLine(REGISTER_T);
         }
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
