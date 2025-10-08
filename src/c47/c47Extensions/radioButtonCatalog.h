@@ -60,6 +60,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_BA                  155 // BASE SCREEN/MENU
 #define RB_GW                  156 // GROW/WRAP
 #define RB_KY                  157 // KEYS LAYOUT
+#define RB_PRM                 158 // PRINTER MODEL
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not
 #define JC_HOME_TRIPLE         159    // HOME.3

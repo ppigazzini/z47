@@ -2631,9 +2631,14 @@
 #define MNU_AIMCATALOG              2552
 
 
-#define ITM_PRINTERALPHA            2553
+#define MNU_PRINTER                 2553
+#define ITM_PRINTERALPHA            2554
+#define ITM_PRINTERHP               2555
+#define ITM_PRINTERMARTEL           2556
+#define ITM_PRINTEROTHER            2557
+#define ITM_TRACE                   2558
 
-#define LAST_ITEM                   2554
+#define LAST_ITEM                   2559
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

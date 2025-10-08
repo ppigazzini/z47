@@ -355,9 +355,9 @@ bool_t                 cancelFilename;
 uint8_t                firstDayOfWeek = 1;     // Monday
 uint8_t                firstWeekOfYearDay = 4; // Thursday
 
-#if defined(INFRARED)
+//#if defined(INFRARED)
   printerState_t         printerState;
-#endif //INFRARED
+//#endif //INFRARED
 
 
 #if defined(DMCP_BUILD)

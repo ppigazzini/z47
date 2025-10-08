@@ -620,9 +620,10 @@ typedef struct {
    * Structure keeping the printer status
    */
 typedef struct {
-  bool_t  print_on;	             ///< Printing on/off 
-  uint8_t print_blank_line;	     ///< Print space between lines
-  uint8_t print_mode;  	         ///< printer modes
+  bool_t         print_on;	             ///< Printing on/off 
+  uint8_t        print_blank_line;	     ///< Print space between lines
+  uint8_t        print_mode;  	         ///< printer modes
+  printerModel_t printer_model;         ///< printer model
 } printerState_t;
 
 

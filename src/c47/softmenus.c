@@ -604,11 +604,15 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
                                              ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
-TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
-                                             ITM_PRINTERCHAR,               ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
-                                             ITM_PRTACT,                    ITM_PRINTERADV,             ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH,
+TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
+                                             ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERUSER,             ITM_PRINTERTAB,
+                                            -MNU_PRINTER,                   ITM_PRTACT,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TRACE,             
 
-                                             ITM_PRINTERXY,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_NULL,              ITM_NULL,                    ITM_PRINTERADV,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                            -MNU_PRINTER,                   ITM_PRTACT,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TRACE                     };
+
+TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_PRINTERMODE,       ITM_PRINTERDLAY,             ITM_PRINTERWIDTH              };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -1004,7 +1008,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 161 */  {.menuItem = -MNU_AIMCATALOG,  .numItems = sizeof(menu_AIMCATALOG    )/sizeof(int16_t), .softkeyItem = menu_AIMCATALOG     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 162 */  {.menuItem = -MNU_EIMCATALOG,  .numItems = sizeof(menu_EIMCATALOG    )/sizeof(int16_t), .softkeyItem = menu_EIMCATALOG     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 163 */  {.menuItem = -MNU_FCNS_EIM,    .numItems = sizeof(menu_FCNS_EIM      )/sizeof(int16_t), .softkeyItem = menu_FCNS_EIM       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 164 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 164 */  {.menuItem = -MNU_PRINTER,     .numItems = sizeof(menu_Printer       )/sizeof(int16_t), .softkeyItem = menu_Printer        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 165 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -2334,6 +2339,19 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     }
   }
   else if(itemNr < 0) { //itemNr >= 0
+    if(itemNr == -MNU_PRINTER) {
+      switch(printerState.printer_model) {
+        case PRINTER_HP:
+          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_8 STD_SUB_2 STD_SUB_2 STD_SUB_4 STD_SUB_0);
+          break;
+        case PRINTER_MARTEL:
+          stringCopy(showText + stringByteLength(showText), STD_SUB_M STD_SUB_a STD_SUB_r STD_SUB_t STD_SUB_e STD_SUB_l);
+          break;
+        case PRINTER_OTHER:
+          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_O STD_SUB_t STD_SUB_h STD_SUB_e STD_SUB_r);
+          break;
+     }
+    }
     stringCopy(itemName, indexOfItems[-itemNr%10000].itemSoftmenuName);
     //printf("WWW3: itemName=%s, ItemNr=%i \n",itemName,itemNr);
     return;
@@ -2714,7 +2732,6 @@ void showSoftmenuCurrentPart(void) {
           }
           changeSoftKey(softmenu[m].menuItem, item, itemName, &vm, &showCb, &showValue, showText);
 
-
           if(item < 0) { // item is softmenu name
             int16_t menu = 0;
             while(softmenu[menu].menuItem != 0) {
@@ -2748,6 +2765,9 @@ void showSoftmenuCurrentPart(void) {
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_LOWER) {
               showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+            }
+            else if(softmenu[menu].menuItem == -MNU_PRINTER) {
+              showSoftkey(indexOfItems[MNU_PRINTER].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, showText, !greyout);
             }
             else {
               #if defined(INLINE_TEST)

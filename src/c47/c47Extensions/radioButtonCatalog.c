@@ -121,6 +121,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_PROPFR,           FLAG_PROPFR ,           CB_JC},
   {ITM_FRACT,            FLAG_FRACT  ,           CB_JC},
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
+  {ITM_TRACE,            FLAG_TRACE ,            CB_JC},  // SFL_TRACE
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
   {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
   {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
@@ -193,7 +194,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPPER_RX,        ITM_PERIOD,             RB_RX},
   {ITM_GAPWIDPER_RX,     ITM_WPERIOD,            RB_RX},
   {ITM_GAPCOM_RX,        ITM_COMMA,              RB_RX},
-  {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX}
+  {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
+  
+  {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
+  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM}
+  
 };
 
 
@@ -307,6 +312,9 @@ int8_t fnCbIsSet(int16_t item) {
                      }
                      break;
 
+        case RB_PRM: rb_param = printerState.printer_model;
+                     break;
+
         case CB_JC:  is_cb = true;
           switch(indexOfRadioCbEepromItems[i].param) {
 
@@ -345,6 +353,7 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_PROPFR :
             case FLAG_FRACT  :
             case FLAG_PRTACT :
+            case FLAG_TRACE  :
             case FLAG_ERPN   :
             case FLAG_CARRY  :
             case FLAG_OVERFLOW:
@@ -452,6 +461,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
     case ITM_YY_DFLT:   result = lastCenturyHighUsed & 0x3FFF;                        break;
+    case MNU_PRINTER:   result = (printerState.printer_model == PRINTER_HP ? 82240 : 7850);                                   break; // DL
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }

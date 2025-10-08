@@ -2054,6 +2054,19 @@ void fnByteShortcutsU(uint16_t size) {
   fnIntegerMode(SIM_UNSIGN);
 }
 
+//********************************************************
+// PRINTER FUNCTIONS
+//********************************************************
+
+
+// Printer model selection
+void fnSetPrinter(uint16_t model) {
+  #if !defined(TESTSUITE_BUILD)
+    //#if defined(INFRARED)
+      printerState.printer_model    = model;
+    //#endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
 
 // Printer paper advance
 void fnP_Advance(uint16_t unusedButMandatoryParameter) {
@@ -2094,13 +2107,32 @@ void fnP_Tab(uint16_t column) {
   #endif //TESTSUITE_BUILD
 }
 
+// Print LCD
+void fnP_LCD(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+    #if defined(INFRARED)
+      resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+      refreshScreen(80);
+      print_lcd();
+    #endif //INFRARED
+    }
+    else {                             // SNAP
+      fnSNAP(NOPARAM);
+    }
+  #endif //TESTSUITE_BUILD
+}
 
+
+// Print Alpha string
 void fnP_Alpha(uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
-    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+    #if defined(INFRARED)
       if (getRegisterDataType(registerNo) == dtString) {
         print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
       }
+    #endif //INFRARED
     }
     else {                             // Print to file
       if(calcMode != CM_AIM) {
@@ -2131,8 +2163,9 @@ void fnP_Alpha(uint16_t registerNo) {
 
 void fnP_Regs (uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
-    char label[100];
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    #if defined(INFRARED)
+      char label[16];
       label[0] = 0;
       if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
         label[0] = letteredRegisterName((calcRegister_t)registerNo);
@@ -2151,6 +2184,7 @@ void fnP_Regs (uint16_t registerNo) {
         sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       }
       print_reg(registerNo, label, true );
+    #endif //INFRARED
     }
     else {                             // Print to file
       if(calcMode != CM_NORMAL) {
@@ -2180,6 +2214,7 @@ void fnP_Regs (uint16_t registerNo) {
 void fnP_All_Regs(uint16_t option) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    #if defined(INFRARED)
       switch(option) {
         case PRN_Xr:
           print_reg(REGISTER_X, NULL, false );
@@ -2194,6 +2229,7 @@ void fnP_All_Regs(uint16_t option) {
 
         default: ;
       }
+    #endif //INFRARED
     }
     else {                             // Print to file
       if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {

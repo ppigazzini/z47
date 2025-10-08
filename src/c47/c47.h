@@ -601,9 +601,9 @@
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
   
-  #if defined(INFRARED)
+  //#if defined(INFRARED)
     extern printerState_t         printerState;
-  #endif //INFRARED
+  //#endif //INFRARED
 
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;

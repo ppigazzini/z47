@@ -722,6 +722,14 @@ typedef enum {
 
 
 
+typedef enum {
+  PRINTER_HP, 
+  PRINTER_MARTEL, 
+  PRINTER_OTHER
+} printerModel_t;
+
+
+
 // PC GUI
 #if NARROW_SCREEN == 1
   #define CSSFILE "res/c47_narrow_screen_pre.css"

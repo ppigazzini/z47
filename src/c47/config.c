@@ -1729,9 +1729,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     
     //Initialize Printer status
     #if defined(INFRARED)
-      printerState.print_on = true;               ///< Printing off
-      printerState.print_blank_line = 0; 	      ///< Print space between lines
-      printerState.print_mode = PMODE_DEFAULT;    ///< printer modes;
+      printerState.print_on         = false;          ///< Printing off
+      printerState.print_blank_line = 0; 	          ///< Print space between lines
+      printerState.print_mode       = PMODE_DEFAULT;  ///< printer modes;
+      printerState.printer_model    = PRINTER_HP;     ///< printer modes;      
     #endif //INFRARED
 
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)

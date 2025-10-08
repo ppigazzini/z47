@@ -6,6 +6,7 @@ dmcp_cargs = [
   '-fno-exceptions',                  # added in symmetry with DM42
   '-fno-unwind-tables',               # added in symmetry with DM42
   '-fno-asynchronous-unwind-tables',  # added in symmetry with DM42
+  '-IC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/include',  # Added this line for absolute path support
 ]
 
 dmcp_linkargs = [
@@ -19,8 +20,9 @@ dmcp_linkargs = [
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
-  '-T' + meson.current_source_dir() + '/stm32_program.ld'
+  '-T' + meson.current_source_dir() + '/stm32_program.ld',
 # '-Wl,--strip-all',
+  '-LC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/lib',  # Added this line for absolute path support
 ]
 
 
@@ -30,7 +32,8 @@ dmcp_linkargs = [
 
 c47_dmcp_src = files(
   'hal/audio.c',
-  'hal/io.c'
+  'hal/io.c',
+  'hal/printer.c'
 )
 
 c47_lib = static_library(
@@ -147,7 +150,8 @@ alias_target('dmcp5', c47_pg5, c47_qspi, c47_sizes)
 
 r47_dmcp_src = files(
   'hal/audio.c',
-  'hal/io.c'
+  'hal/io.c',
+  'hal/printer.c'
 )
 
 r47_lib = static_library(
