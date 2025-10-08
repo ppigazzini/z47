@@ -1313,6 +1313,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnP_Char                   (uint16_t unusedButMandatoryParameter) {}
   void fnP_Alpha                  (uint16_t unusedButMandatoryParameter) {}
   void fnP_LCD                    (uint16_t unusedButMandatoryParameter) {}
+  void fnP_GetDelay               (uint16_t unusedButMandatoryParameter) {}
+  void fnP_SetDelay               (uint16_t unusedButMandatoryParameter) {}
   void fnSetPrinter               (uint16_t unusedButMandatoryParameter) {}
   void fnToPolar2                 (uint16_t unusedButMandatoryParameter) {}
   void fnToRect2                  (uint16_t unusedButMandatoryParameter) {}
@@ -3226,7 +3228,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1707 */  { fnP_All_Regs,                 PRN_XYr,                     STD_PRINTER "xy",                              STD_PRINTER "xy",                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1708 */  { fnP_Advance,                  NOPARAM,                     STD_PRINTER "ADV",                             STD_PRINTER "ADV",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1709 */  { fnP_Char,                     TM_VALUE,                    STD_PRINTER "CHAR",                            STD_PRINTER "CHAR",                            (0 << TAM_MAX_BITS) |   255, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
-/* 1710 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER "DLAY",                            STD_PRINTER "DLAY",                            (0 << TAM_MAX_BITS) |   127, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
+/* 1710 */  { fnP_SetDelay,                 TM_VALUE,                    STD_PRINTER "DLAY",                            STD_PRINTER "DLAY",                            (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 /* 1711 */  { fnP_LCD      ,                NOPARAM,                     STD_PRINTER "LCD",                             STD_PRINTER "LCD",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1712 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER "MODE",                            STD_PRINTER "MODE",                            (0 << TAM_MAX_BITS) |     3, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 /* 1713 */  { fnExportProgram,              TM_LABEL,                    STD_PRINTER "PROG",                            STD_PRINTER "PROG",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
@@ -4094,6 +4096,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2556 */  { fnSetPrinter,                 PRINTER_MARTEL,              "Martel",                                      "Martel",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2557 */  { fnSetPrinter,                 PRINTER_OTHER,               "Other",                                       "Other",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2558 */  { SetSetting,                   FLAG_TRACE,                  "TRACE",                                       "TRACE",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2559 */  { fnP_GetDelay,                 NOPARAM,                     STD_PRINTER "DLAY?",                           STD_PRINTER "DLAY?",                            (0 << TAM_MAX_BITS) |   127, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 
 /* 2559 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 

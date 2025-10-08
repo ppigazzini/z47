@@ -2058,13 +2058,37 @@ void fnByteShortcutsU(uint16_t size) {
 // PRINTER FUNCTIONS
 //********************************************************
 
-
 // Printer model selection
 void fnSetPrinter(uint16_t model) {
   #if !defined(TESTSUITE_BUILD)
     //#if defined(INFRARED)
       printerState.printer_model    = model;
     //#endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Get printer line delay
+void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      longInteger_t delay;
+
+      liftStack();
+
+      longIntegerInit(delay);
+      int32ToLongInteger(get_line_delay(), delay);
+      convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
+      longIntegerFree(delay);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Set printer line delay
+void fnP_SetDelay(uint16_t delay) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      set_line_delay(delay);
+    #endif //INFRARED
   #endif //TESTSUITE_BUILD
 }
 

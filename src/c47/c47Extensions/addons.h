@@ -38,6 +38,8 @@ void fnInDefault    (uint16_t inputDefault);
 #define PRN_XYr     6
 #define PRN_TMP     7
 void fnSetPrinter   (uint16_t model);
+void fnP_GetDelay   (uint16_t unusedButMandatoryParameter);
+void fnP_SetDelay   (uint16_t delay);
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (uint16_t registerNo);

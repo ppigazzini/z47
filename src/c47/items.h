@@ -2637,8 +2637,9 @@
 #define ITM_PRINTERMARTEL           2556
 #define ITM_PRINTEROTHER            2557
 #define ITM_TRACE                   2558
+#define ITM_PRINTERDLAYQ            2559
 
-#define LAST_ITEM                   2559
+#define LAST_ITEM                   2560
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

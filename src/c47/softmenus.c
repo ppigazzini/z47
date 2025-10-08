@@ -608,11 +608,11 @@ TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_
                                              ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERUSER,             ITM_PRINTERTAB,
                                             -MNU_PRINTER,                   ITM_PRTACT,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TRACE,             
 
-                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_NULL,              ITM_NULL,                    ITM_PRINTERADV,
+                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_NULL,                    ITM_PRINTERADV,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                             -MNU_PRINTER,                   ITM_PRTACT,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TRACE                     };
 
-TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_PRINTERMODE,       ITM_PRINTERDLAY,             ITM_PRINTERWIDTH              };
+TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_PRINTERMODE,       ITM_PRINTERDLAYQ,            ITM_PRINTERDLAY               };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
