@@ -3251,7 +3251,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
@@ -3262,7 +3262,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
