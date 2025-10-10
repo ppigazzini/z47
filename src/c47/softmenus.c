@@ -2933,7 +2933,7 @@ void showSoftmenuCurrentPart(void) {
       if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it
 
         if(!catalog) {                                                                                 //remember the page number if the menu you are opening was already open and in the stack
-          if(!getSystemFlag(FLAG_MNUp1)) {
+          if(!getSystemFlag(FLAG_MNUp1) && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             lastCatalogPosition[CATALOG_NONE] = softmenuStack[i].firstItem;
             calcMode = softmenuStack[i].calcMode;
           } else {
