@@ -3075,23 +3075,23 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
-  if(!jm_G_DOUBLETAP && !ShiftTimoutMode && !HOME3 && !MYM3) {
+  if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
     fgLN            = RBX_FGLNFUL;  //not in conditional clear
-    jm_G_DOUBLETAP  = true;
-    ShiftTimoutMode = true;
-    HOME3           = true;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+    setSystemFlag  (FLAG_G_DOUBLETAP);
+    setSystemFlag  (FLAG_SHFT_4s);
+    setSystemFlag  (FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
   else {
     fgLN            = RBX_FGLNOFF;  //not in conditional clear
-    jm_G_DOUBLETAP  = false;
-    ShiftTimoutMode = false;
-    HOME3           = false;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+    clearSystemFlag(FLAG_G_DOUBLETAP);
+    clearSystemFlag(FLAG_SHFT_4s);
+    clearSystemFlag(FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
 }
 
@@ -3117,7 +3117,7 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 void fnRESET_MyM(uint16_t param) {
   //Pre-assign the MyMenu                   //JM
   #if !defined(TESTSUITE_BUILD)
-    BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
+    clearSystemFlag(FLAG_BASE_MYM);                                                   //JM prevent slow updating of 6 menu items
     for(int8_t fn = 1; fn <= 6; fn++) {
       if(param == ITM_RIBBON_SAV) {
         switch(fn) {
@@ -3244,7 +3244,7 @@ void fnRESET_MyM(uint16_t param) {
         assignToMyMenu_(12 + fn - 1);
       }
     }
-    BASE_MYM = true;                                           //JM Menu system default (removed from reset_jm_defaults)
+    setSystemFlag(FLAG_BASE_MYM);                                           //JM Menu system default (removed from reset_jm_defaults)
     refreshScreen(42);
   #endif // !TESTSUITE_BUILD
 }
