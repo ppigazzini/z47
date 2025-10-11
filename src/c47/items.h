@@ -529,7 +529,7 @@
 #define SFL_SOLVING                  501 // The SFL item names are not used
 #define SFL_VMDISP                   502 // The SFL item names are not used
 #define SFL_USB                      503 // The SFL item names are not used
-#define SFL_TVMBGN                   504 // The SFL item names are not used
+#define SFL_ENDPMT                   504 // The SFL item names are not used
 #define SFL_FRCSRN                   505 // The SFL item names are not used
 #define SFL_HPRP                     506 // The SFL item names are not used
 #define SFL_SBdate                   507 // The SFL item names are not used
@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468
+#define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2619,7 +2619,6 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
-
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547

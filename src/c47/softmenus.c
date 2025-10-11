@@ -2038,7 +2038,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 }
 
 
-bool_t isFunctionItemAMenu(int16_t item) { //masquarading pseudo menus
+bool_t isFunctionItemAMenu(int16_t item) { //masquarading
   return item == ITM_PLOT_SCATR||
          item == ITM_PLOT_ASSESS||
          item == ITM_HPLOT     ||
