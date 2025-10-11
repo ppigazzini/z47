@@ -395,42 +395,43 @@ static void executeFunction(const char *data, int16_t item_);
     //  The previous system closes a normal menu if the CAT main menu happens to be in one of the older menu slots in the menu stack
     //    and that happens if you call CAT and then say CLK or any other menu and runn a command from there. Then CAT is present and the menu closed after the command executed.
 
+    TO_QSPI const int16_t CatalogMenus[] = {
+      //          MNU_CATALOG,  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
+      MNU_ALPHA_OMEGA,
+      MNU_ALPHAMISC,
+      MNU_ALPHA,
+      //CAT MENU
+      MNU_FCNS,
+      MNU_CONST,
+      MNU_CHARS,
+      MNU_PROGS,
+      MNU_VARS,
+      MNU_MENUS,
+      //VARS MENU
+      MNU_CONFIGS,
+      MNU_MATRS,
+      MNU_DATES,
+      MNU_TIMES,
+      MNU_SINTS,
+      MNU_STRINGS,
+      MNU_NUMBRS,
+      MNU_CPXS,
+      MNU_REALS,
+      MNU_ANGLES,
+      MNU_LINTS,
+      MNU_ALLVARS
+    };
+
     static void closeAllCatalogMenus(void) {
-        switch(-currentMenu()) {
-          //          case MNU_CATALOG:  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
-          case MNU_ALPHA_OMEGA:
-          case MNU_ALPHAMISC:
-          case MNU_ALPHA:
-
-          //CAT MENU
-          case MNU_FCNS:
-          case MNU_CONST:
-          case MNU_CHARS:
-          case MNU_PROGS:
-          case MNU_VARS:
-          case MNU_MENUS:
-
-          //VARS MENU
-          case MNU_CONFIGS:
-          case MNU_MATRS:
-          case MNU_DATES:
-          case MNU_TIMES:
-          case MNU_SINTS:
-          case MNU_STRINGS:
-          case MNU_NUMBRS:
-          case MNU_CPXS:
-          case MNU_REALS:
-          case MNU_ANGLES:
-          case MNU_LINTS:
-          case MNU_ALLVARS:
-          {
-            popSoftmenu();
-            //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
-          }
-          default: break;
+      int16_t menu = -currentMenu();
+      for(uint_fast16_t i = 0; i < nbrOfElements(CatalogMenus); i++) {
+        if(menu == CatalogMenus[i]) {
+          popSoftmenu();
+          //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
+          break;
         }
       }
-
+    }
 
 
     static void _closeCatalog(void) {

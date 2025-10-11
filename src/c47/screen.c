@@ -391,41 +391,41 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     if(statisticalSumsPointer != NULL) {
+      TO_QSPI const char * const StatSumNames[NUMBER_OF_STATISTICAL_SUMS] = {
+        /* 0*/ "n             ",
+        /* 1*/ STD_SIGMA "(x)          ",
+        /* 2*/ STD_SIGMA "(y)          ",
+        /* 3*/ STD_SIGMA "(x" STD_SUP_2 ")         ",
+        /* 4*/ STD_SIGMA "(x" STD_SUP_2 "y)        ",
+        /* 5*/ STD_SIGMA "(y" STD_SUP_2 ")         ",
+        /* 6*/ STD_SIGMA "(xy)         ",
+        /* 7*/ STD_SIGMA "(ln(x)" STD_CROSS "ln(y))",
+        /* 8*/ STD_SIGMA "(ln(x))      ",
+        /* 9*/ STD_SIGMA "(ln" STD_SUP_2 "(x))     ",
+        /*10*/ STD_SIGMA "(y ln(x))    ",
+        /*11*/ STD_SIGMA "(ln(y))      ",
+        /*12*/ STD_SIGMA "(ln" STD_SUP_2 "(y))     ",
+        /*13*/ STD_SIGMA "(x ln(y))    ",
+        /*14*/ STD_SIGMA "(ln(y)/x)    ",
+        /*15*/ STD_SIGMA "(x" STD_SUP_2 "/y)       ",
+        /*16*/ STD_SIGMA "(1/x)        ",
+        /*17*/ STD_SIGMA "(1/x" STD_SUP_2 ")       ",
+        /*18*/ STD_SIGMA "(x/y)        ",
+        /*19*/ STD_SIGMA "(1/y)        ",
+        /*20*/ STD_SIGMA "(1/y" STD_SUP_2 ")       ",
+        /*21*/ STD_SIGMA "(x" STD_SUP_3 ")         ",
+        /*22*/ STD_SIGMA "(x" STD_SUP_4 ")         ",
+        /*23*/ "x min         ",
+        /*24*/ "x max         ",
+        /*25*/ "y min         ",
+        /*26*/ "y max         "
+      };
+
       char sumName[40];
       for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS; sum++) {
         ptr += strlen(ptr);
-
-        switch(sum) {
-          case  0: strcpy(sumName,           "n             ");            break;
-          case  1: strcpy(sumName, STD_SIGMA "(x)          ");             break;
-          case  2: strcpy(sumName, STD_SIGMA "(y)          ");             break;
-          case  3: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 ")         "); break;
-          case  4: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 "y)        "); break;
-          case  5: strcpy(sumName, STD_SIGMA "(y" STD_SUP_2 ")         "); break;
-          case  6: strcpy(sumName, STD_SIGMA "(xy)         ");             break;
-          case  7: strcpy(sumName, STD_SIGMA "(ln(x)" STD_CROSS "ln(y))"); break;
-          case  8: strcpy(sumName, STD_SIGMA "(ln(x))      ");             break;
-          case  9: strcpy(sumName, STD_SIGMA "(ln" STD_SUP_2 "(x))     "); break;
-          case 10: strcpy(sumName, STD_SIGMA "(y ln(x))    ");             break;
-          case 11: strcpy(sumName, STD_SIGMA "(ln(y))      ");             break;
-          case 12: strcpy(sumName, STD_SIGMA "(ln" STD_SUP_2 "(y))     "); break;
-          case 13: strcpy(sumName, STD_SIGMA "(x ln(y))    ");             break;
-          case 14: strcpy(sumName, STD_SIGMA "(ln(y)/x)    ");             break;
-          case 15: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 "/y)       "); break;
-          case 16: strcpy(sumName, STD_SIGMA "(1/x)        ");             break;
-          case 17: strcpy(sumName, STD_SIGMA "(1/x" STD_SUP_2 ")       "); break;
-          case 18: strcpy(sumName, STD_SIGMA "(x/y)        ");             break;
-          case 19: strcpy(sumName, STD_SIGMA "(1/y)        ");             break;
-          case 20: strcpy(sumName, STD_SIGMA "(1/y" STD_SUP_2 ")       "); break;
-          case 21: strcpy(sumName, STD_SIGMA "(x" STD_SUP_3 ")         "); break;
-          case 22: strcpy(sumName, STD_SIGMA "(x" STD_SUP_4 ")         "); break;
-          case 23: strcpy(sumName,           "x min         ");            break;
-          case 24: strcpy(sumName,           "x max         ");            break;
-          case 25: strcpy(sumName,           "y min         ");            break;
-          case 26: strcpy(sumName,           "y max         ");            break;
-          default: strcpy(sumName,           "?             ");
-        }
-
+        strcpy(sumName, StatSumNames[sum]);
+  
         sprintf(ptr, LINEBREAK "SR%02d = ", sum);
         ptr += strlen(ptr);
         stringToUtf8(sumName, (uint8_t *)ptr);
