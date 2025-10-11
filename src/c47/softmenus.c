@@ -2753,6 +2753,13 @@ void showSoftmenuCurrentPart(void) {
               else {
                 showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
               }
+            } else {
+              if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemSoftmenuName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
+              }
+              else {
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemSoftmenuName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+              }
             }
           }                                                                      //JM^^
 

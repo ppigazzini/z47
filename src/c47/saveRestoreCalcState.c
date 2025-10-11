@@ -1338,12 +1338,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
     if(backupVersion < 1013) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "ShiftTimoutMode",                 "bool");    //JM
-      printf("Version number of configfile < 1003, transferring SFL_SHFT_4s.");
+      printf("Version number of configfile < 1003, transferring FLAG_SHFT_4s.");
       if(tmp1) {
-        setSystemFlag(SFL_SHFT_4s);
+        setSystemFlag(FLAG_SHFT_4s);
       }
       else {
-        clearSystemFlag(SFL_SHFT_4s);
+        clearSystemFlag(FLAG_SHFT_4s);
       }
     }
     if(backupVersion < 1013) {

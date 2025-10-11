@@ -1537,7 +1537,7 @@ int16_t lastItem = 0;
       Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
-      if(getSystemFlag(SFL_SHFT_4s)) {
+      if(getSystemFlag(FLAG_SHFT_4s)) {
         fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
       }
       if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
