@@ -529,7 +529,7 @@
 #define SFL_SOLVING                  501 // The SFL item names are not used
 #define SFL_VMDISP                   502 // The SFL item names are not used
 #define SFL_USB                      503 // The SFL item names are not used
-#define SFL_TVMBGN                   504 // The SFL item names are not used
+#define SFL_ENDPMT                   504 // The SFL item names are not used
 #define SFL_FRCSRN                   505 // The SFL item names are not used
 #define SFL_HPRP                     506 // The SFL item names are not used
 #define SFL_SBdate                   507 // The SFL item names are not used
