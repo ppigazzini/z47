@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1012     // Added FNCS_EIM catalog
+#define BACKUP_VERSION                     1013     // Converted flags
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -19,7 +19,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000021 // Change constant format in equation, adding a # prefix
+#define configFileVersion                  10000022 // Converted flags
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -610,16 +610,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //saveStateValue(screenData,                      0,                                                           "screenData",                     "screenData");
-    saveStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
-    saveStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     saveStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
-    saveStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
     saveStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
     saveStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
     saveStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
-    saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
-    saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
     saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
     saveStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     saveStateValue(&overrideShowBottomLine,         sizeof(overrideShowBottomLine),                              "overrideShowBottomLine",         "uint8");   //JM ^^
@@ -643,7 +638,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
-    saveStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
@@ -1189,17 +1183,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //restoreStateValue(loadedScreen,                    0,                                                           "screenData",                     "screenData");
-    restoreStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
-    restoreStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
-    restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
     restoreStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
     restoreStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
     restoreStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
-    restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
-    restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
     IrFractionsCurrentStatus = CF_NORMAL;
     restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
     restoreStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
@@ -1230,7 +1219,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
     restoreStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
-    restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
     dispBase = 0;
     restoreStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
 
@@ -1318,6 +1306,88 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         clearSystemFlag(FLAG_PFX_ALL);
       }
     }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "jm_G_DOUBLETAP",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring FLAG_G_DOUBLETAP.");
+      if(tmp1) {
+        setSystemFlag(FLAG_G_DOUBLETAP);
+      }
+      else {
+        clearSystemFlag(FLAG_G_DOUBLETAP);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "HOME3",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring FLAG_HOME_TRIPLE.");
+      if(tmp1) {
+        setSystemFlag(FLAG_HOME_TRIPLE);
+      }
+      else {
+        clearSystemFlag(FLAG_HOME_TRIPLE);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "MYM3",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring FLAG_MYM_TRIPLE.");
+      if(tmp1) {
+        setSystemFlag(FLAG_MYM_TRIPLE);
+      }
+      else {
+        clearSystemFlag(FLAG_MYM_TRIPLE);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "ShiftTimoutMode",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring SFL_SHFT_4s.");
+      if(tmp1) {
+        setSystemFlag(SFL_SHFT_4s);
+      }
+      else {
+        clearSystemFlag(SFL_SHFT_4s);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "BASE_HOME",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring BASE_HOME.");
+      if(tmp1) {
+        setSystemFlag(FLAG_BASE_HOME);
+      }
+      else {
+        clearSystemFlag(FLAG_BASE_HOME);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SH_BASE_HOME",                 "bool");    //JM backwards compatible
+      printf("Version number of configfile < 1003, transferring SH_BASE_HOME.");
+      if(tmp1) {
+        setSystemFlag(FLAG_BASE_HOME);
+      }
+      else {
+        clearSystemFlag(FLAG_BASE_HOME);
+      }
+    } 
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "BASE_MYM",                 "bool");    //JM
+      printf("Version number of configfile < 1003, transferring BASE_MYM.");
+      if(tmp1) {
+        setSystemFlag(FLAG_BASE_MYM);
+      }
+      else {
+        clearSystemFlag(FLAG_BASE_MYM);
+      }
+    }
+    if(backupVersion < 1013) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "jm_BASE_SCREEN",                 "bool");    //JM backward compatible
+      printf("Version number of configfile < 1003, transferring jm_BASE_SCREEN.");
+      if(tmp1) {
+        setSystemFlag(FLAG_BASE_MYM);
+      }
+      else {
+        clearSystemFlag(FLAG_BASE_MYM);
+      }
+    }
+
+
     clearScreen(210); // implicit forceSBupdate();
 
 
@@ -1847,18 +1917,12 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "dispBase\n%"                   PRIu8  "\n",     (uint8_t)dispBase);            save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
         //prevent empty string from being written to config file.
         sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     (Norm_Key_00.funcParam[0]==0) ? "NoNormKeyParamDef" : Norm_Key_00.funcParam); save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
@@ -2845,12 +2909,32 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }
           else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
-          else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "HOME3"                       ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
           else if(strcmp(aimBuffer, "dispBase"                    ) == 0) { dispBase              = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) { BASE_HOME             = toUint8(tmpString) != 0; }  //Keep compatible with old name by repeating it
-          else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_SHFT_4s, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) {//Keep compatible with old name by repeating it
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_BASE_HOME, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_BASE_HOME, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
           else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
             // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
             if(Norm_Key_00_key != -1) {
@@ -2874,9 +2958,22 @@ int64_t stringToInt64(const char *str) {
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }        //Keep compatible by repeating
-          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) {        //Keep compatible by repeating
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_BASE_MYM, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_BASE_MYM, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) {
+            if(loadedVersion < 10000022) {
+              forceSystemFlag(FLAG_G_DOUBLETAP, toUint8(tmpString) != 0);
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) {
             if(loadedVersion < 10000020) {

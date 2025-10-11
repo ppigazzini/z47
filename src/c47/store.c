@@ -421,6 +421,12 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte25 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte26 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte27 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte28 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte29 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte30 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte31 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -449,16 +455,16 @@ void fnStoreConfig(uint16_t regist) {
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
   storeToDtConfigDescriptor(    compatibility_byte19);
-  storeToDtConfigDescriptor(HOME3);
-  storeToDtConfigDescriptor(ShiftTimoutMode);
+  storeToDtConfigDescriptor(    compatibility_byte28);
+  storeToDtConfigDescriptor(    compatibility_byte29);
   storeToDtConfigDescriptor(    compatibility_byte21);
-  storeToDtConfigDescriptor(BASE_HOME);
+  storeToDtConfigDescriptor(    compatibility_byte30);
   storeToDtConfigDescriptor(    compatibility_byte00);   //added
   storeToDtConfigDescriptor(    compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(dispBase);
-  storeToDtConfigDescriptor(BASE_MYM);
-  storeToDtConfigDescriptor(jm_G_DOUBLETAP);
+  storeToDtConfigDescriptor(    compatibility_byte31);
+  storeToDtConfigDescriptor(compatibility_byte26);
   storeToDtConfigDescriptor(compatibility_float1);
   storeToDtConfigDescriptor(compatibility_float2);
   storeToDtConfigDescriptor(Norm_Key_00.func);
@@ -500,7 +506,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(exponentLimit);
   storeToDtConfigDescriptor(exponentHideLimit);
   storeToDtConfigDescriptor(lastIntegerBase);
-  storeToDtConfigDescriptor(MYM3);
+  storeToDtConfigDescriptor(compatibility_byte27);
   storeToDtConfigDescriptor(timeDisplayFormatDigits);
 }
 

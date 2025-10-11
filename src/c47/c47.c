@@ -198,16 +198,10 @@ char *                 showFunctionNameArg;
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;
 bool_t                doRefreshSoftMenu;                       //dr
-bool_t                BASE_MYM;                                //JM Screen / keyboard operation setup
-bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
 uint8_t               IrFractionsCurrentStatus;
 bool_t                tvmIKnown;
 bool_t                tvmIChanges;
 
-bool_t                HOME3;                                   //JM HOME Create a flag to enable or disable triple shift HOME3. Create a flag to enable or disable HOME TIMER CANCEL.
-bool_t                MYM3;                                    //JM HOME Create a flag to enable or disable triple shift MYM3. Create a flag to enable or disable HOME TIMER CANCEL.
-bool_t                ShiftTimoutMode;                         //JM SHIFT Create a flag to enable or disable SHIFT TIMER CANCEL.
-bool_t                BASE_HOME;                               //JM BASEHOME
 normKey_t             Norm_Key_00;                             //JM USER NORMAL
 uint8_t               Input_Default;                           //JM Input Default
 uint8_t               DRG_Cycling = 0;
