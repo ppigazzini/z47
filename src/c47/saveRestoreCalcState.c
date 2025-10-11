@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1011     // Added reserve variables at the end of the list
+#define BACKUP_VERSION                     1012     // Added FNCS_EIM catalog
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -529,7 +529,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
     saveStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
     saveStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
-    saveStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
     saveStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     saveStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     saveStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
@@ -1090,8 +1089,13 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&c47MemInBlocks,                 sizeof(c47MemInBlocks),                                      "c47MemInBlocks",                 "uint64");
     restoreStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
     restoreStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
-    restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
-    restoreStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
+    if(backupVersion < 1012) { // add FNCS_EIM catalog
+      restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition) - 4,                             "lastCatalogPosition",            "int16");
+      lastCatalogPosition[22 /* MNU_FNCS_EIM */]  = 0;
+    }
+    else {
+      restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    }
     restoreStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     restoreStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     restoreStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
@@ -1352,7 +1356,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       paramCurrent = paramHead;
     }
 
-    printf("End of calc's restoration\n");
+    printf("End of calc's restoration\n");fflush(stdout);
 
     setFGLSettings(fgLN);
 

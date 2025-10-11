@@ -838,8 +838,19 @@ void execTimerApp(uint16_t timerType) {
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
+        if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
+          aimBuffer[0] = 0;
+          ++currentLocalStepNumber;
+          currentStep = findNextStep(currentStep);
+          refreshRegisterLine(REGISTER_T);
+        }
+        else if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && (isArrowDown(currentKeyCode))) {
+          programRunStop = PGM_STOPPED;
+          refreshRegisterLine(REGISTER_T);
+        }
+
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
           if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
             // stub for code to process on up1/down longpress
@@ -853,12 +864,11 @@ void execTimerApp(uint16_t timerType) {
           if(calcMode == CM_AIM) {
             refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
           } else
-          if(calcMode == CM_EIM) {
+          if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(131);
           }
           return;
-
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
@@ -1870,6 +1880,11 @@ return res;
     showFunctionNameItem = item;
     showFunctionNameCounter = delayInMs;
 
+
+    if(tam.alpha && ((item == ITM_BACKSPACE) || (item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {               // For smooth display in tam.alpha
+      return;
+    }
+
     if(functionName[0] != 0)
     {
       bool_t overLapPossible = (calcMode == CM_PEM);
@@ -1902,8 +1917,13 @@ return res;
   void hideFunctionName(void) {
     if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
-        refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
-        force_Registerrefresh(REGISTER_T, true, true);
+        if(!tam.alpha || (showFunctionNameItem != ITM_BACKSPACE &&               // For smooth display in tam.alpha
+                          showFunctionNameItem != ITM_T_LEFT_ARROW &&
+                          showFunctionNameItem != ITM_T_RIGHT_ARROW &&
+                          showFunctionNameItem != ITM_NULL)) {
+          refreshRegisterLineRestoreT();                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+          force_Registerrefresh(REGISTER_T, true, true);
+        }
       } else {
         _refreshPemScreen();
         //force reset is done at _refreshPemScreen
@@ -2791,7 +2811,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
-            moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[24], NULL);
+            moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           w = stringWidth(tmpString, &standardFont, true, true);
           showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -3080,8 +3100,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
         // STATISTICAL DISTR & SOLVER
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && 
-            ( (PROBMENU) || 
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM &&
+            ( (PROBMENU) ||
               (currentMenu() == -MNU_Solver_TOOL && solverEstimatesUsed && temporaryInformation != TI_SOLVER_VARIABLE_RESULT)
             )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
@@ -3224,7 +3244,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
               sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
-              
+
               showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
             }
             else {
@@ -4759,9 +4779,37 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     _refreshRegisterLine(REGISTER_T, RESTORE_T);
   }
 
+  static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
+    switch(angularMode) {
+      case amMultPi: {
+        showString(STD_SUP_pir, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amRadian: {
+        showString(STD_SUP_BOLD_r, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amGrad: {
+        showString(STD_SUP_BOLD_g, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amDegree: {
+        showString(STD_DEGREE, font, x, y, vmNormal, true, true);
+        break;
+      }
+      case amSecond: {
+        showString("s", font, x, y, vmNormal, true, true);
+        break;
+      }
+      default: {
+      }
+    }
+  }
+
 
   void displayNim(const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard) {
     int16_t w;
+    angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
     if(stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) { // 16 is the numeric font cursor width
       xCursor = showString(nim, &numericFont, 0, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
       yCursor = Y_POSITION_OF_NIM_LINE;
@@ -4769,6 +4817,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
         showString(lastBase, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
+      }
+      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset);
       }
     }
     else if(stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) { // 8 is the standard font cursor width
@@ -4778,6 +4829,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
         showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, true, true);
+      }
+      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+        _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6);
       }
     }
     else {
@@ -4801,6 +4855,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1] == '/')) {
           showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, true, true);
+        }
+        else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
+          _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18);
         }
       }
     }
@@ -5143,7 +5200,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
         if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
-            if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
+            if(calcMode != CM_TIMER && !tam.alpha && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);
             }
             //printf("##> BBBB 4lines Normal Mode\n");
@@ -5788,6 +5845,59 @@ void fnAGraph(uint16_t regist) {
           moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", NULL);
         #endif // PC_BUILD
       }
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void insertAlphaCursor(uint16_t startAt) {
+  #if !defined(TESTSUITE_BUILD)
+    char       *bufPtr = tmpString + startAt;
+    const char *strPtr = aimBuffer;
+    uint16_t    strLength = 0;
+//    int16_t     strWidth = 0;
+//    int16_t     glyphWidth = 0;
+
+    *bufPtr       = 0;
+
+    if(alphaCursor == 0) {
+      *bufPtr       = STD_CURSOR[0];
+      *(bufPtr + 1) = STD_CURSOR[1];
+      *(bufPtr + 2) = 0;
+//      glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+//      strWidth += glyphWidth;
+      bufPtr += 2;
+    }
+
+    while((*strPtr) != 0) {
+      ++strLength;
+      *bufPtr = *strPtr;
+
+      /* Double-byte characters */
+      if((*strPtr) & 0x80) {
+        *(bufPtr + 1) = *(strPtr + 1);
+        *(bufPtr + 2) = 0;
+        bufPtr += 2;
+      }
+
+      /* Single-byte characters */
+      else {
+      *(bufPtr + 1) = 0;
+      bufPtr += 1;
+      }
+
+      /* Cursor */
+      if(strLength == alphaCursor) {
+        *bufPtr       = STD_CURSOR[0];
+        *(bufPtr + 1) = STD_CURSOR[1];
+        *(bufPtr + 2) = 0;
+//        glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+//        strWidth += glyphWidth;
+        bufPtr += 2;
+      }
+
+      /* Next character */
+      strPtr += ((*strPtr) & 0x80) ? 2 : 1;
     }
   #endif // !TESTSUITE_BUILD
 }

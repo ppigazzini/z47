@@ -98,6 +98,10 @@
         catalog = CATALOG_FCNS;
         break;
       }
+      case MNU_FCNS_EIM: {
+        catalog = CATALOG_FCNS_EIM;
+        break;
+      }
       case MNU_CONST: {
         catalog = CATALOG_CNST;
         break;
@@ -255,6 +259,7 @@
 
     liftStack();
     real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+    setRegisterAngularMode(REGISTER_X, amNone);
 
     aimBuffer[0] = 0;
     hexDigits = 0;

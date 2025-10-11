@@ -4,6 +4,7 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
+
 //*********************************
 // JM VARIOUS OPTIONS
 //*********************************
@@ -111,7 +112,7 @@
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-  //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
@@ -121,7 +122,9 @@
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
       #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+    #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -673,8 +676,9 @@
 #define FLAG_TOPHEX                           0x8058
 #define FLAG_BCD                              0x8059 //26
 #define FLAG_PCURVE                           0x805A //27
+#define FLAG_CLX_DROP                         0x805B //28
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+27 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -807,6 +811,10 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+#define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
+#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC 
+#define EIM_DY                             ( 1 << 15 ) // DYADIC
 
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
@@ -1350,7 +1358,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1567,7 +1575,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_CONFIGS                           19
 #define CATALOG_ALLVARS                           20
 #define CATALOG_NUMBRS                            21
-#define NUMBER_OF_CATALOGS                        22
+#define CATALOG_FCNS_EIM                          22
+#define NUMBER_OF_CATALOGS                        23
 
 // String comparison type
 #define CMP_BINARY                                 0
@@ -1984,17 +1993,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define IS_SEPARATOR_(digitCount)            (   (digitCount+1 == GROUPWIDTH_LEFT1) \
                                               || ((digitCount+1  > GROUPWIDTH_LEFT1 || digitCount < 0) \
                                                   && (modulo(digitCountNEW(digitCount), (uint16_t)GROUPWIDTH_(digitCount)) == (uint16_t)GROUPWIDTH_(digitCount) - 1)) )
+
 #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA    && y == 0) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT   && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
+                                               (menu == -MNU_ALPHA     && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_M_EDIT    && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_TAMALPHA  && y == 0 && (x == 4 || x == 5)) \
                                              )
 
 
 #define IS_SIM_ARROW_ALLOWED_IN_MENU(menu, key) ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA   && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT  && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
+                                               (menu == -MNU_ALPHA   && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (menu == -MNU_M_EDIT  && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (menu == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
                                              )
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
