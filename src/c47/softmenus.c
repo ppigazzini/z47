@@ -2778,6 +2778,13 @@ void showSoftmenuCurrentPart(void) {
               else {
                 showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
               }
+            } else {
+              if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemSoftmenuName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
+              }
+              else {
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemSoftmenuName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+              }
             }
           }                                                                      //JM^^
 
@@ -2815,7 +2822,7 @@ void showSoftmenuCurrentPart(void) {
 
             //softkey modifications
 
-            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
+            if((getSystemFlag(FLAG_G_DOUBLETAP) && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
@@ -3009,10 +3016,10 @@ void showSoftmenuCurrentPart(void) {
     else if(softmenuStack[0].softmenuId == 1 && calcMode != CM_AIM) { // MyAlpha displayed and not in AIM
       softmenuStack[0].softmenuId = 0; // MyMenu
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
-    else if(softmenuStack[0].softmenuId == 0 && BASE_MYM && calcMode != CM_AIM) {
+    else if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_MYM) && calcMode != CM_AIM) {
       //softmenuStack[0].softmenuId = 0;                                                       //already 0, not needed to change
     }
     else if(softmenuStack[0].softmenuId == 1 && calcMode == CM_AIM) {
@@ -3196,7 +3203,7 @@ void showSoftmenuCurrentPart(void) {
         }
       }
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
   }

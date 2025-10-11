@@ -890,7 +890,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
-        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
+        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;

@@ -156,19 +156,19 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if((HOME3 || MYM3) && !GRAPHMODE) {
+    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
-        jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
+        jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
       } else if(situation == keypress_long_f) {
-        jm_show_calc_state("screen.c: Shft_handler: HOME3");
+        jm_show_calc_state("screen.c: Shft_handler: openHOMEorMyM");
       }
       #endif // PC_BUILD
 
       int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
       int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
 
-      if(HOME3 && currentMenu() == target_HOME) {
+      if((getSystemFlag(FLAG_HOME_TRIPLE) && currentMenu() == target_HOME)) {
         if(situation == keypress_fff) {
           popSoftmenu();
         }
@@ -179,11 +179,11 @@ void resetKeytimers(void) {
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
-          if(HOME3) {
+          if(getSystemFlag(FLAG_HOME_TRIPLE)) {
             leaveTamModeIfEnabled();
             showSoftmenu(target_HOME);
           }
-          else if(MYM3) {
+          else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
             leaveTamModeIfEnabled();
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
@@ -197,8 +197,8 @@ void resetKeytimers(void) {
   }
 
   void fg_processing_jm(void) {
-    if(ShiftTimoutMode || HOME3 || MYM3) {
-      if((HOME3 || MYM3) && !GRAPHMODE) {
+    if(getSystemFlag(FLAG_SHFT_4s) || (getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE))) {
+      if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
@@ -695,7 +695,7 @@ void resetKeytimers(void) {
     //printf("^^^^ softmenu=%d -MNU_ALPHA=%d currentFirstItem=%d\n", softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA, softmenuStack[0].firstItem);
     //**************JM DOUBLE CLICK DETECTION ******************************* // JM FN-DOUBLE
     double_click_detected = false;                                            //JM FN-DOUBLE - Dip detection flag
-    if((jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0)  )) {
+    if((getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0)  )) {
       if(exexute_double_g) {
         if(FN_key_pressed !=0 && FN_key_pressed == FN_key_pressed_last) {     //Identified valid double press dip, the same key in rapid succession
           shiftF = false;                                                     //JM
@@ -791,7 +791,7 @@ void resetKeytimers(void) {
       printf(">>>>Z 0050B btnFnReleased_StateMachine ------------------ FN_state=%d\n", FN_state);
     #endif // VERBOSEKEYS
 
-    if(jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
+    if(getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
       uint8_t offset =  0;
       if(shiftF && !shiftG) {
         offset =  6;
