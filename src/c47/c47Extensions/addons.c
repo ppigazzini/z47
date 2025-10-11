@@ -3074,25 +3074,6 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   }
 
 
-void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
-  uint16_t constant =constantAddr;
-  *constNr = constant;
-  //printf(">>> %u\n",constant);
-  if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
-  }
-  else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), rVal);
-  }
-}
-
-
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
   if(!jm_G_DOUBLETAP && !ShiftTimoutMode && !HOME3 && !MYM3) {
     fgLN            = RBX_FGLNFUL;  //not in conditional clear

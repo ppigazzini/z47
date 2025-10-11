@@ -4,11 +4,6 @@
 #if !defined(ADDONS_H)
 #define ADDONS_H
 
-bool_t  exitKeyWaiting(void);
-#define DISPLAY_WAIT_FOR_RELEASE true
-int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
-
-
 void standardScreenDump(void);
 
 void fnEdit         (uint16_t unusedParamButMandatory);

@@ -1054,7 +1054,6 @@
     }
 
     if(func == ITM_CNST) {
-//    tam.max = NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_34 - 1;  //use this line if UI access to all constants are needed.
       tam.max = LAST_CONSTANT-FIRST_CONSTANT - 1;
     }
 

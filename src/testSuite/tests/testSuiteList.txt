@@ -206,6 +206,8 @@ tanh
 ;The standard calculator performance test arcsin(arccos(arctan(tan(cos(sin(9°))))))-9
 trig
 
+xfn
+
 erf
 erfc
 

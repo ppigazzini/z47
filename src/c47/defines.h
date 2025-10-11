@@ -49,6 +49,7 @@
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
 #undef SAVE_SPACE_DM42_17
+#undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 
@@ -119,6 +120,7 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
@@ -499,7 +501,8 @@
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
 #define ERROR_RESERVED_VARIABLE_NAME              61
-#define LAST_ERROR_MESSAGE                        61
+#define ERROR_INVALID_TYPE_XFN                    62
+#define LAST_ERROR_MESSAGE                        62
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -1692,7 +1695,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1889,7 +1892,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
 
-#define XXFNMODEACTIVE false //temporary until merged with XFN
+#define XXFNMODEACTIVE                       (!SHOWMODE && !GRAPHMODE && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_XXFCNS && calcMode != CM_NIM &&\
+                                             ( (getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) ||\
+                                               (getRegisterDataType(REGISTER_T) == dtReal34 || getRegisterDataType(REGISTER_T) == dtLongInteger)) )
+                                               //PROBMENU not needed, as a specific menu is required for XXFN
 
 #define DBASEMODE                            (!SHOWMODE && !GRAPHMODE && !PROBMENU && !XXFNMODEACTIVE && dispBase >= 2)
 
@@ -1900,6 +1906,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
+#define inputAngleMode3r(r)                  (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
+#define deemedInputAngleMode3r(r)            (inputAngleError3r(r) ? amNone : inputAngleMode3r(r) == amNone ? currentAngularMode : inputAngleMode3r(r))
+#define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+#define inputIsNoAngle3r(r)                  ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
+#define inputAngleError3r(r)                 (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
+#define isXFNregisterValid3r(r)              ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
+                                              !inputAngleError3r(r))
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))  
+
+
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)

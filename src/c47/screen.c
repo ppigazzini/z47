@@ -2609,6 +2609,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
+  // Calculates a shortened real, using only reaal34
   bool_t registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c) {
     if(getRegisterDataType(regist) == dtShortInteger || getRegisterDataType(regist+1) == dtShortInteger || getRegisterDataType(regist+2) == dtShortInteger) {  //check for SI, because getRegisterAsRealQuiet will accept SI as leagl number.
       return false;
@@ -3081,7 +3082,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                             free(strs);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
-                                        #endif //PC_BUILD          
+                                        #endif //PC_BUILD
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
           if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
@@ -3105,7 +3106,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             )) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
-
 
           switch(currentMenu()) {
             case -MNU_Solver_TOOL:
@@ -3206,22 +3206,38 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           real34_t tmp3;
           #define FMA_X 19-3
           #define FMA_T -1-3
-          if(registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-            sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
-            showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
-            real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
-            showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_X, vmNormal, false, true);
+          uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+          displayFormat = DF_ALL;
+          displayFormatDigits = 19;
 
-            if(getSystemFlag(FLAG_SSIZE8) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-              sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
-              showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
-              real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
-              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
-            }
-            drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
-            fnDisplayStack(3);
+          {
+            sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+              if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+              } else {
+                sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
+              }
+              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_X, vmNormal, false, true);
           }
+          if(getSystemFlag(FLAG_SSIZE8)) {
+            sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+              if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+              } else {
+                sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
+              }
+              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
+          }
+          displayFormat = savedDisplayFormat;
+          displayFormatDigits = savedDisplayFormatDigits;
+          drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
+          fnDisplayStack(3);
         }
+
 
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
@@ -4441,7 +4457,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, 
+              showString(prefix, &standardFont, 1,
                 baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
             if(tmpString[0] != 0) {
@@ -4674,7 +4690,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             lineWidth = w;
             if(w > SCREEN_WIDTH - 1) {
               w = stringWidth(tmpString, &standardFont, false, true);
-              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits 
+              //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits
               showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
             } else {
               showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
@@ -4760,7 +4776,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   static void refreshRegisterLineRestoreT(void) {
-    _refreshRegisterLine(REGISTER_T, RESTORE_T);    
+    _refreshRegisterLine(REGISTER_T, RESTORE_T);
   }
 
   static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
@@ -4946,7 +4962,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         refreshStatusBar();
       }
 
-      
+
       //now clear stack area, first the left graph info area, then the actual area covered by the graph if not in graph mode
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
