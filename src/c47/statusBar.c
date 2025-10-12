@@ -549,9 +549,11 @@ void drawBattery(uint16_t voltage);
       }
     }
 
-    char statusMessage[3];
+    char statusMessage[4];
     statusMessage[0]=0;
     statusMessage[1]=0;
+    statusMessage[2]=0;
+    statusMessage[3]=0;
     int32_t offs = 0;
     int32_t yoffs = 0;
     switch(programRunStop) {
@@ -561,8 +563,8 @@ void drawBattery(uint16_t voltage);
         break;
       }
       case PGM_RUNNING: {
-        strcpy(statusMessage,STD_P);
-        offs = +2;
+        sprintf(statusMessage, STD_SPACE_HAIR STD_P);
+        offs = +1;
         break;
       }
       default: {

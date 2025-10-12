@@ -191,6 +191,7 @@ void     fnGetFractionDigits(uint16_t unusedButMandatoryParameter);
  *
  * \param[in] unusedButMandatoryParameter uint16_t
  ***********************************************/
+void     fnSetBaseNr(uint16_t S);
 void     fnSetSignificantDigits(uint16_t S);
 void     fnSetFractionDigits(uint16_t S);
 

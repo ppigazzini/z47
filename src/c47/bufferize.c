@@ -134,7 +134,6 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
 
   void resetAlphaSelectionBuffer(void) {
-    lgCatalogSelection = 0;
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
     fnTimerStop(TO_ASM_ACTIVE);
@@ -592,7 +591,6 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_SIGMA1ony2  },
     {ITM_SIGMAx3     },
     {ITM_SIGMAx4     },
-    {ITM_ABS         },
     {ITM_BATT        },
     {ITM_BN          },
     {ITM_BNS         },
@@ -707,9 +705,12 @@ typedef struct {
       if(calcMode == CM_NORMAL && fnKeyInCatalog && (isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu()) && !tam.mode) {
         fnAim(NOPARAM);
       }
-      if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
+      else if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
         item = convertItemToSubOrSup(item, nextChar);
-        if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
+        if(tam.alpha){
+          insertAlphaCharacter(item, &alphaCursor);
+        }
+        else if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
           sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
           displayBugScreen(errorMessage);
         }
@@ -717,10 +718,16 @@ typedef struct {
           const char *addChar0 = item == ITM_EEXCHR               ? "E":                      //PRODUCT_SIGN "10^" :
                                  item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
+                                 item == ITM_MAGNITUDE            ? "||" :
                                  item == ITM_ROOT_SIGN            ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_SQUAREROOTX          ? STD_SQUARE_ROOT "()" :
+                                 item == ITM_CUBEROOT             ? STD_CUBE_ROOT "()" :
+                                 item == ITM_XTHROOT              ? STD_xTH_ROOT "(:)" :
+                                 item == ITM_EXP                  ? STD_EulerE "^()" :
                                  item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :
                                  item == ITM_LG_SIGN              ? "LOG()" :
                                  item == ITM_LN_SIGN              ? "LN()"  :
+                                 item == ITM_LOG2                 ? "LB()" :
                                  item == ITM_SIN_SIGN             ? "SIN()" :
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
@@ -729,6 +736,11 @@ typedef struct {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
+                                 item == ITM_XFACT                ? "!" :
+                                 item == ITM_M1X                  ? "(-1)^()" :
+                                 item == ITM_COMB                 ? "COMB(:)" :
+                                 item == ITM_PERM                 ? "PERM(:)" :
+
                                  item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
                                  item >= ITM_SUP_0 &&
@@ -782,6 +794,15 @@ typedef struct {
                 xCursor += 0;
                 break;
               }
+              case ITM_M1X: {
+                xCursor += 6;
+                break;
+              }
+              case ITM_COMB:
+              case ITM_PERM: {
+                xCursor += 5;
+                break;
+              }
               case ITM_LG_SIGN:
               case ITM_SIN_SIGN:
               case ITM_COS_SIGN:
@@ -790,21 +811,31 @@ typedef struct {
                 break;
               }
               case ITM_ALOG_SIGN:
+              case ITM_LOG2:
+              case ITM_EXP:
               case ITM_LN_SIGN: {
                 xCursor += 3;
                 break;
               }
               case ITM_ROOT_SIGN:
+              case ITM_SQUAREROOTX:
+              case ITM_CUBEROOT:
+              case ITM_XTHROOT:
               case ITM_GAMMAX:
               case ITM_zetaX: {
                 xCursor += 2;
                 break;
               }
               case ITM_PAIR_OF_PARENTHESES:
-              case ITM_VERTICAL_BAR: {
+              case ITM_VERTICAL_BAR:
+              case ITM_MAGNITUDE: {
                 xCursor += 1;
                 break;
               }
+              case ITM_XFACT: {
+                break;
+              }
+
               default: {
                 xCursor += stringGlyphLength(addChar);
               }
@@ -868,6 +899,13 @@ typedef struct {
         }
       }
 
+      #undef SCROLL_ASM          // define this to have the ASM letters scroll if you type more than two. Alternative is it takes two, then you wait 3 and type again another word
+      #ifdef SCROLL_ASM
+        #define Scroll_Asm 2
+      #else
+        #define Scroll_Asm 1
+      #endif
+
       if(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) {
         if(item == ITM_BACKSPACE) {
           calcModeNormal();
@@ -877,18 +915,16 @@ typedef struct {
         // NOP if not a single character input for search
         // or if we already have two characters in the search buffer
         else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 &&
-                (lgCatalogSelection < ((asmBuffer[0] & 0x80) ? 3 :2)) &&
+                stringGlyphLength(asmBuffer) <= Scroll_Asm &&
+                item != ITM_CR && item != ITM_ROOT_SIGN &&
                 currentSoftmenuScrolls()) {
-          int32_t pos = lgCatalogSelection++;
-          if(asmBuffer[pos] != 0) {
-            pos++;
-          }
+          #ifdef SCROLL_ASM
+            if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
+              xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
+            }
+          #endif //SCROLL_ASM
 
-          asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[0];
-          if(indexOfItems[item].itemSoftmenuName[0] & 0x80) { // 2 bytes
-            asmBuffer[pos++] = indexOfItems[item].itemSoftmenuName[1];
-          }
-          asmBuffer[pos] = 0;
+          stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
           setCatalogLastPos();
@@ -1031,7 +1067,6 @@ typedef struct {
   }
 
   void addItemToNimBuffer(int16_t item) {
-    //printf("addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -1039,7 +1074,7 @@ typedef struct {
 
     if((calcMode == CM_NIM || calcMode == CM_NORMAL) && Input_Default == ID_LI && item == ITM_PERIOD) {
       return;
-    }  
+    }
 
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
@@ -1173,7 +1208,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1238,7 +1273,7 @@ typedef struct {
             }
             break;
           }
-          
+
           case NP_COMPLEX_HP32SII_DENOMINATOR:
           case NP_COMPLEX_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
@@ -1301,6 +1336,7 @@ typedef struct {
           hexDigits++;
 
           nimNumberPart = NP_INT_16;
+          if(lastIntegerBase <= 10) lastIntegerBase = 16;       // [DL] auto set base to hex when entering A-F digit
           //debugNIM();
         }
         break;
@@ -1875,10 +1911,16 @@ typedef struct {
           }
         }
         break;
-    }
+      }
 
       case ITM_dotD: {
-        if(nimNumberPart == NP_REAL_FLOAT_PART) {
+        angularMode_t xangularMode;
+        xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
+
+        if(xangularMode < amNone) {  // If editing with angular mode, then cancel angular mode
+          xangularMode = amNone;
+        }
+        else if(nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
@@ -1897,7 +1939,7 @@ typedef struct {
           }
 
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtDate) {
             convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
             temporaryInformation = TI_DAY_OF_WEEK;
@@ -1919,7 +1961,7 @@ typedef struct {
           closeNim();               //JM
         }
         break;
-    }
+      }
 
       case ITM_ms : {                      //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
@@ -1928,7 +1970,7 @@ typedef struct {
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
-          if(calcMode != CM_NIM && lastErrorCode == 0) {
+          if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtTime) {
             if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
               convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
             }
@@ -1989,6 +2031,10 @@ typedef struct {
         break;
       }
 
+      case ITM_NOP: {   // NOP: do nothing in NIM
+        break;
+      }
+
       default: {
         keyActionProcessed = false;
       }
@@ -1996,7 +2042,6 @@ typedef struct {
 
     if(done) {
       //Convert nimBuffer to display string
-
       strcpy(nimBufferDisplay, STD_SPACE_HAIR);
 
       switch(nimNumberPart) {
@@ -2111,7 +2156,7 @@ typedef struct {
       }
     }
 
-    else {
+    else if(item != ITM_NOP) {
       #if defined (PC_BUILD)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
       #endif
@@ -2290,7 +2335,7 @@ typedef struct {
     if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
       nimBufferToDisplayBuffer(buffer, displayBuffer);
       strcat(displayBuffer, STD_SPACE_4_PER_EM);
-      
+
       for(index=2; buffer[index]!=' '; index++) {
       }
     }
@@ -2563,11 +2608,22 @@ typedef struct {
 
           if(nimNumberPart == NP_INT_10) {
             longInteger_t lgInt;
+            angularMode_t xangularMode;
+            xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
 
-            longIntegerInit(lgInt);
-            stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 :0), 10, lgInt);
-            convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-            longIntegerFree(lgInt);
+            if(xangularMode < amNone) {  // If editing with angular mode, then convert to real and preserve angular mode
+              reallocateRegister(REGISTER_X, dtReal34, 0, getRegisterAngularMode(REGISTER_X));
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+              if(xangularMode == amDMS) {
+                real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+              }
+            }
+            else {
+              longIntegerInit(lgInt);
+              stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 : 0), 10, lgInt);
+              convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+              longIntegerFree(lgInt);
+            }
           }
           else if(nimNumberPart == NP_INT_BASE) {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2716,19 +2772,73 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
+            uint16_t dataType = getRegisterDataType(REGISTER_X);
+            if(dataType == dtTime) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+                  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                }
+
+                hmmssInRegisterToSeconds(REGISTER_X);
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferC\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+              }
+            }
+            else if(dataType == dtDate) {
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+
+              if(calcMode != CM_NIM && lastErrorCode == 0) {
+                convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
+                checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
+                temporaryInformation = TI_DAY_OF_WEEK;
+
+                if(lastErrorCode == 0) {
+                  setSystemFlag(FLAG_ASLIFT);
+                }
+                else {
+                  #if defined(DEBUGUNDO)
+                    printf(">>> undo from addItemToNimBufferB\n");
+                  #endif // DEBUGUNDO
+                  undo();
+                }
+                //return;
+              }
+            }
+            else {
+
               if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, 0, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
               }                                                                       //JM Input default type
               else {                                                                  //JM Input default type
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                angularMode_t xangularMode;
+                xangularMode = ((getRegisterDataType(REGISTER_X) == dtReal34) == dtReal34 ? getRegisterAngularMode(REGISTER_X) : amNone);
+
+                reallocateRegister(REGISTER_X, dtReal34, 0, xangularMode);
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
-              }                                                                       //JM Input default type
+                if(xangularMode == amDMS) {
+                  real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+                }
+              }              //JM Input default type
+            }
 
           }
           else if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, 0, getRegisterAngularMode(REGISTER_X));
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
           else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
@@ -2777,4 +2887,79 @@ typedef struct {
       setSystemFlag(FLAG_ASLIFT);
     }
   }
+
+
+  void insertAlphaCharacter(uint16_t item, int16_t *currentCursor) {
+    const char *addChar = item == ITM_PAIR_OF_PARENTHESES ? "()" :
+                          item == ITM_VERTICAL_BAR        ? "||" :
+                          item == ITM_ROOT_SIGN           ? STD_SQUARE_ROOT "()" :
+      #if USE_ITALIC_CONSTANT != 0
+                          item == ITM_ALOG_SYMBOL         ? STD_EULER_e "^()" :
+      #endif /* USE_ITALIC_CONSTANT != 0 */
+                          indexOfItems[item].itemSoftmenuName;
+    char *aimCursorPos = aimBuffer;
+    char *aimBottomPos = aimBuffer + stringByteLength(aimBuffer);
+    uint32_t itemLen = stringByteLength(addChar);
+    for(int32_t i = 0; i < *currentCursor; ++i) {
+      aimCursorPos += (*aimCursorPos & 0x80) ? 2 : 1;
+    }
+    for(; aimBottomPos >= aimCursorPos; --aimBottomPos) {
+      *(aimBottomPos + itemLen) = *aimBottomPos;
+    }
+    xcopy(aimCursorPos, addChar, itemLen);
+    switch(item) {
+      case ITM_ROOT_SIGN: {
+        *currentCursor += 2;
+        break;
+      }
+      case ITM_PAIR_OF_PARENTHESES:
+      case ITM_VERTICAL_BAR: {
+        *currentCursor += 1;
+        break;
+      }
+      default: {
+        *currentCursor += stringGlyphLength(indexOfItems[item].itemSoftmenuName);
+      }
+    }
+  }
+
+
+  void deleteAlphaCharacter(int16_t *currentCursor) {
+    char *srcPos = aimBuffer;
+    char *dstPos = aimBuffer;
+    char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
+    --*currentCursor;
+    for(int16_t i = 0; i < *currentCursor; ++i) {
+      dstPos += (*dstPos & 0x80) ? 2 : 1;
+    }
+    srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
+    for(; srcPos <= lstPos;) {
+      *(dstPos++) = *(srcPos++);
+    }
+  }
+
+
+  void fnAlphaCursorLeft(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor > 0) {
+      --alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorRight(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor < (uint16_t)stringGlyphLength(aimBuffer)) {
+      ++alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorHome(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = 0;
+  }
+
+
+  void fnAlphaCursorEnd(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = (uint16_t)stringGlyphLength(aimBuffer);
+  }
+
 #endif // !TESTSUITE_BUILD

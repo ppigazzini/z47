@@ -255,7 +255,7 @@ void resetKeytimers(void) {
   void Setup_MultiPresses(int16_t result) {                            //Setup and start double press for DROP timer, and check for second press
     JM_auto_doublepress_autodrop_enabled = 0;                          //JM TIMER CLRDROP. Autodrop means double click normal key.
     int16_t tmp = 0;
-    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0) {             //Set up backspace double click to DROP
+    if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0 && !getSystemFlag(FLAG_CLX_DROP)) {             //Set up backspace double click to DROP
       tmp = ITM_DROP;
     }
 
@@ -314,11 +314,39 @@ void resetKeytimers(void) {
         }
       }
     }                                                                   //yellow and blue function keys ^^
+    #define TAMALPHA_f //select the yellow or blue text labels
+    else if(tam.alpha) {
+      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+      #if defined(TAMALPHA_f)
+        tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
+      #else //TAMALPHA_f
+        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      #endif //TAMALPHA_f
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+        ) {
+        if(!shiftF && !shiftG) {
+          #if defined(TAMALPHA_f)
+            longpressDelayedkey1 = tmpf_;
+            tmpg = tmpf_;
+          #else //TAMALPHA_f
+            longpressDelayedkey1 = tmpg_;
+            tmpg = tmpg_;
+          #endif //TAMALPHA_f
+        }
+      }
+    }
 
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
-    if(calcMode == CM_ASSIGN && *result == ITM_EXIT1) {
+    if(calcMode == CM_NORMAL && *result == ITM_UP1) {
+      longpressDelayedkey1 = ITM_NOP;
+    }
+    else if(calcMode == CM_NORMAL && *result == ITM_DOWN1) {
+      longpressDelayedkey1 = ITM_NOP;
+    }
+
+    else if(calcMode == CM_ASSIGN && *result == ITM_EXIT1) {
       longpressDelayedkey1 = -MNU_MyMenu;
       longpressDelayedkey2 = -MNU_HOME;
       longpressDelayedkey3 = -MNU_PFN;
@@ -667,7 +695,7 @@ void resetKeytimers(void) {
     //printf("^^^^ softmenu=%d -MNU_ALPHA=%d currentFirstItem=%d\n", softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA, softmenuStack[0].firstItem);
     //**************JM DOUBLE CLICK DETECTION ******************************* // JM FN-DOUBLE
     double_click_detected = false;                                            //JM FN-DOUBLE - Dip detection flag
-    if((jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(softmenuStack[0].softmenuId,FN_key_pressed-38,0)  )) {
+    if((jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0)  )) {
       if(exexute_double_g) {
         if(FN_key_pressed !=0 && FN_key_pressed == FN_key_pressed_last) {     //Identified valid double press dip, the same key in rapid succession
           shiftF = false;                                                     //JM
@@ -763,7 +791,7 @@ void resetKeytimers(void) {
       printf(">>>>Z 0050B btnFnReleased_StateMachine ------------------ FN_state=%d\n", FN_state);
     #endif // VERBOSEKEYS
 
-    if(jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(softmenuStack[0].softmenuId,FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
+    if(jm_G_DOUBLETAP && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
       uint8_t offset =  0;
       if(shiftF && !shiftG) {
         offset =  6;
@@ -1283,7 +1311,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-
+      
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);

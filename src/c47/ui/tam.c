@@ -191,10 +191,13 @@
       if(tam.alpha) {
         tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
         if(aimBuffer[0] == 0) {
-          tbPtr = stringCopy(tbPtr, "_");
+          *(tbPtr++) = STD_CURSOR[0];
+          *(tbPtr++) = STD_CURSOR[1];
+          *(tbPtr) = 0;
         }
         else {
-          tbPtr = stringCopy(tbPtr, aimBuffer);
+          insertAlphaCursor(0);
+          tbPtr = stringCopy(tbPtr, tmpString);
           tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
         }
       }
@@ -271,9 +274,10 @@
   static void _tamProcessInput(uint16_t item) {
     int16_t min, max, min2, max2, dupNum;
     bool_t forceTry = false, tryOoR = false;
-    bool_t valueParameter = (tam.function == ITM_GTOP || tam.function == ITM_BESTF || tam.function == ITM_SKIP || tam.function == ITM_BACK);
+    bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
+    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -287,13 +291,24 @@
     dupNum = 0;
     if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
+      if(tam.alpha && calcMode == CM_ASSIGN) {
+        assignLeaveAlpha();
+        if(itemToBeAssigned == 0) {
+          assignGetName1();
+        }
+        else {
+          assignGetName2();
+        }
+        return;
+      }
     }
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
         if(stringByteLength(aimBuffer) != 0) {
-          // Delete the last character
-          int16_t lg = stringLastGlyph(aimBuffer);
-          aimBuffer[lg] = 0;
+          // Delete the character before the cursor
+          if(alphaCursor > 0) {
+            deleteAlphaCharacter(&alphaCursor);
+          }
         }
         else if(tam.mode == TM_NEWMENU) {
           leaveTamModeIfEnabled();
@@ -309,7 +324,13 @@
             popSoftmenu();
             --numberOfTamMenusToPop;
           }
-          calcModeTamGui();
+          if(calcMode == CM_ASSIGN) {
+            leaveTamModeIfEnabled();
+            calcModeNormalGui();
+          }
+          else {
+            calcModeTamGui();
+          }
         }
       }
       else if(tam.digitsSoFar > 0) {
@@ -400,6 +421,9 @@
       else {
         leaveTamModeIfEnabled();
         scrollPemBackwards();
+        if(calcMode == CM_ASSIGN) {
+          calcMode = CM_NORMAL;
+        }
       }
       return;
     }
@@ -427,6 +451,7 @@
         tam.alpha = true;
         setSystemFlag(FLAG_ALPHA);
         aimBuffer[0] = 0;
+        alphaCursor = 0;
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
           alphaCase = CAPS_STOetc_DEFAULT;
@@ -607,13 +632,13 @@
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
     else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
-      tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a; 
-      forceTry = true; 
-      tryOoR = true; 
+      tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
+      forceTry = true;
+      tryOoR = true;
     }
 
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
-      if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
+      if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
             // Local label from A to J
@@ -659,7 +684,7 @@
     else if(item == ITM_0P || item == ITM_1P) {
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       real34Copy(item == ITM_1P ? const34_1 : const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      if(!tam.digitsSoFar && tam.function != ITM_BESTF && tam.function != ITM_CNST && tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB) {
+      if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB) {
         tam.value = TEMP_REGISTER_1;
         forceTry = true;
         // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
@@ -1016,7 +1041,8 @@
 
 
   void tamEnterMode(int16_t func) {
-    tam.mode = func == ITM_ASSIGN ? TM_NEWMENU : indexOfItems[func].param;
+    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
+    func = func == ITM_USERMODE ? ITM_ASSIGN : func;
     tam.function = func;
     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
     tam.max = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
@@ -1055,6 +1081,7 @@
     }
 
     tam.alpha = (func == ITM_ASSIGN);
+    alphaCursor = 0;
     tam.currentOperation = tam.function;
     tam.digitsSoFar = 0;
     tam.dot = false;
@@ -1119,7 +1146,12 @@
       }
 
       case TM_LABEL: {
-        showSoftmenu(-MNU_TAMLABEL);
+        if(func == ITM_ASSIGN) {
+          showSoftmenu(-MNU_TAMALPHA);
+        }
+        else {
+          showSoftmenu(-MNU_TAMLABEL);
+        }
         break;
       }
 
@@ -1202,7 +1234,8 @@
         case CM_NORMAL:
         case CM_PEM:
         case CM_MIM:
-        case CM_TIMER: {
+        case CM_TIMER:
+        case CM_ASSIGN: {
           calcModeNormalGui();
           break;
         }
