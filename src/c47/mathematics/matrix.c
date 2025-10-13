@@ -1718,11 +1718,13 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
         REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-        for(uint16_t i = 0; i < origRows * origCols; ++i) {
+        for(uint16_t i = 0; i < min(origRows * origCols, rows * cols); ++i) {
           real34Copy(newMatrix.matrixElements + i, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
         }
-        for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-          real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
+        if(origRows * origCols < rows * cols) {
+          for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
+            real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
+          }
         }
         realMatrixFree(&newMatrix);
         return true;
@@ -1745,12 +1747,14 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
         REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-        for(uint16_t i = 0; i < origRows * origCols; ++i) {
+        for(uint16_t i = 0; i < min(origRows * origCols, rows * cols); ++i) {
           complex34Copy(newMatrix.matrixElements + i, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i);
         }
-        for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-          real34Zero(VARIABLE_REAL34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
-          real34Zero(VARIABLE_IMAG34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
+        if(origRows * origCols < rows * cols) {
+          for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
+            real34Zero(VARIABLE_REAL34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
+            real34Zero(VARIABLE_IMAG34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
+          }
         }
         complexMatrixFree(&newMatrix);
         return true;
