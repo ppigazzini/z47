@@ -4535,14 +4535,13 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
             // Calculate threshold - looser for 2x2 blocks, stricter for others
             real_t factor;
 
-            if(activeSize == 3 && i == 1) {
+if(activeSize == 3 && i == 1) {
               // Extract the 2x2 block and solve it directly
               #if defined(EIGENDEBUG)
               printf("Solving 2x2 block directly at iteration %d\n", iteration);
               #endif
 
-              // Copy the 2x2 block to a temporary matrix
-              real_t temp_2x2[8]; // 2x2 complex matrix = 8 reals
+              real_t temp_2x2[8];
               for(int row = 0; row < 2; row++) {
                 for(int col = 0; col < 2; col++) {
                   int src_row = activeSize - 2 + row;
@@ -4552,17 +4551,17 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
                 }
               }
 
-              // Solve the 2x2 block and store results back in the correct positions
               calculateEigenvalues22(temp_2x2, 2,
                                     eig + (1 * size + 1) * 2, eig + (1 * size + 1) * 2 + 1,
                                     eig + (2 * size + 2) * 2, eig + (2 * size + 2) * 2 + 1, realContext);
-              activeSize = 1;
-              deflated = true;
-              break;
+              
+              if(size <= 5) {
+                activeSize = 1;
+              }
+              deflated = false;
             }
-
             else {
-              stringToReal("10000", &factor, realContext); // Stricter for others
+              stringToReal("10000", &factor, realContext);
             }
 
             realMultiply(&tol, &factor, &threshold, realContext);
