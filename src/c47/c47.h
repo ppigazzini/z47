@@ -263,7 +263,7 @@
   extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
-  extern const char                      hexadecimalDigits[17];
+  extern const char                      baseDigits[63];
   extern const char                      registerFlagLetters[27];
   extern any34Matrix_t                   openMatrixMIMPointer;
   extern uint16_t                        matrixIndex;
@@ -394,6 +394,7 @@
   extern uint8_t                timeDisplayFormatDigits;
   extern uint8_t                shortIntegerWordSize;
   extern uint8_t                significantDigits;
+  extern uint8_t                dispBase;
   extern uint8_t                fractionDigits;
   extern uint8_t                shortIntegerMode;
   extern uint8_t                previousCalcMode;
@@ -461,6 +462,7 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
@@ -485,6 +487,7 @@
   extern uint8_t                fgLN;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
+  extern uint8_t                editingLiteralType;
 
   // Variables from jm.h
   extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.
@@ -543,6 +546,7 @@
   extern uint32_t               denMax;
   extern uint32_t               lastDenominator;
   extern uint32_t               lastIntegerBase;
+  extern uint32_t               decodedIntegerBase;
   extern uint32_t               xCursor;
   extern uint32_t               yCursor;
   extern uint32_t               tamOverPemYPos;

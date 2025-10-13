@@ -7,6 +7,9 @@
 
 #include "c47.h"
 
+#define AsnDispShortForm (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha)
+#define AsnDisplayUSER   (fnAsnDisplayUSER ^ (AsnDispShortForm & !getSystemFlag(FLAG_USER)))
+
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8ASN)
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
@@ -26,7 +29,7 @@
 
     clearScreen(12);
     showSoftmenuCurrentPart();
-    showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
+    showString(AsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
     switch(page) {
       case 1:   showString("unshifted keyboard mapping", &standardFont, 30, YOFF, vmNormal, false, false); break;
       case 2:   showString("f-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
@@ -36,7 +39,7 @@
       case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
       default:break;
     }
-    showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] View STD keys", &standardFont, 30, 220, vmNormal, false, false);
+    showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] Toggle STD/USER View", &standardFont, 20, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
       if(key == 6 || key ==12 || key == 17 || key == 22 || key == 27 || key == 32) {
@@ -48,7 +51,7 @@
                     pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 5.0f + 0.5f);
 
       bool_t Norm_Key_00_used = false;
-      if(fnAsnDisplayUSER) {
+      if(AsnDisplayUSER) {
         switch(page) {// in user mode, user keys override if set, and if not set, the allows +NRM to override
           case 1:
              kk = kbd_usr[key].primary;  //not even the +NRM key location, therefore normal user operation
@@ -111,7 +114,7 @@
           !Norm_Key_00_used ? (((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse) : vmReverse,
           true, true, NOVAL, NOVAL, NOTEXT);
 
-      if(fnAsnDisplayUSER &&
+      if(AsnDisplayUSER &&
           ( ((page == 1) && (kbd_std[key].primary == kbd_usr[key].primary)  )       ||
             ((page == 2) && (kbd_std[key].fShifted == kbd_usr[key].fShifted))       ||
             ((page == 3) && (kbd_std[key].gShifted == kbd_usr[key].gShifted))       ||
@@ -139,7 +142,7 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       previousCalcMode = calcMode;
       calcMode = CM_ASN_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentAsnScr = (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) ? 6 : 1;
+      currentAsnScr = AsnDispShortForm ? 6 : 1;
       return;
     }
   fnAsnDisplay(currentAsnScr);

@@ -74,7 +74,7 @@ for i in range(len(sizes)):
 def output(sect):
     print("%-5s  %8d  %8d  %8d" % (sect, used[sect], mem[sect], mem[sect] - used[sect]))
 
-print("%-7s%8s  %8s  %8s" % ("section", "used", "total", "left"))
+print("\n%-7s%8s  %8s  %8s" % ("section", "used", "total", "left"))
 output("flash")
 output("ram")
 output("qspi")
