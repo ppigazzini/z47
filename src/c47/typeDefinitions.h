@@ -247,16 +247,16 @@ typedef struct {
   calcKey_t      kbd_usr[37];                                              //  All user keys
   uint8_t        fgLN;                                                     //  fg.OFF/fg.FLIM/fg.FUL
   bool_t         compatibility_byte19;                                     //  
-  bool_t         HOME3;                                                    //  HOME.3
-  bool_t         ShiftTimoutMode;                                          //  SH.4s
+  bool_t         compatibility_byte27;
+  bool_t         compatibility_byte29;
   bool_t         compatibility_byte21;              //Spare Byte           //  
-  bool_t         BASE_HOME;                                                //  HOME.b
+  bool_t         compatibility_byte30;
   bool_t         compatibility_byte00;               //Spare Byte          //  
   int16_t        compatibility_int1;               //Spare Word            //  
   uint8_t        Input_Default;                                            //  iLi/R, iR, iC, iLI
   bool_t         dispBase;                                                 //  dBASE
-  bool_t         BASE_MYM;                                                 //  MyMb
-  bool_t         jm_G_DOUBLETAP;                                           //  g.2Tp
+  bool_t         compatibility_byte31;
+  bool_t         compatibility_byte26;
   float          compatibility_float1;              //Spare float          //  
   float          compatibility_float2;              //Spare float          //  
   normKey_t      Norm_Key_00;                                              //  BlankKey Config
@@ -296,7 +296,7 @@ typedef struct {
   int16_t        exponentLimit;                                            //  RNG
   int16_t        exponentHideLimit;                                        //  HIDE
   uint32_t       lastIntegerBase;                                          //  internal control variable for the last base used. Control BASE mode.
-  bool_t         MYM3;                                                     //  MyM.3
+  bool_t         compatibility_byte28;
   uint8_t        timeDisplayFormatDigits;                                  //  TDISP
   uint8_t        reservedForPossibleFutureUse[6]; //additional buffer to pad up to 840 bytes for the descriptor record
   //2025-04-21 Verified all variables above, and in recall.c and store.c
