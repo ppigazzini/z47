@@ -4325,12 +4325,130 @@ static void solve3x3Block(real_t *a, real_t *eig, uint16_t size, realContext_t *
 }
 
 
+static bool_t isMatrixDiagonal(real_t *matrix, uint16_t size, real_t *tol, realContext_t *realContext) {
+  for(uint16_t i = 0; i < size; i++) {
+    for(uint16_t j = 0; j < size; j++) {
+      if(i != j) {
+        real_t offdiag_mag;
+        complexMagnitude(matrix + (i * size + j) * 2, matrix + (i * size + j) * 2 + 1, &offdiag_mag, realContext);
+        if(!realCompareLessThan(&offdiag_mag, tol)) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
+static bool_t checkOffDiagonalConvergence(real_t *eig, uint16_t size, real_t *tol, real_t *max_offdiag, realContext_t *realContext) {
+  bool_t converged = true;
+  realCopy(const_0, max_offdiag);
+  
+  for(uint16_t i = 0; i < size; i++) {
+    for(uint16_t j = 0; j < size; j++) {
+      if(i != j) {
+        real_t offdiag_mag;
+        complexMagnitude(eig + (i * size + j) * 2, eig + (i * size + j) * 2 + 1, &offdiag_mag, realContext);
+        if(realCompareLessThan(max_offdiag, &offdiag_mag)) {
+          realCopy(&offdiag_mag, max_offdiag);
+        }
+        if(!realCompareLessThan(&offdiag_mag, tol)) {
+          converged = false;
+        }
+      }
+    }
+  }
+  return converged;
+}
+
+static bool_t checkDiagonalConvergence(real_t *a, real_t *eig, uint16_t size, real_t *tol, real_t *diff_max, realContext_t *realContext) {
+  bool_t converged = true;
+  realCopy(const_0, diff_max);
+  
+  for(uint16_t i = 0; i < size; i++) {
+    real_t old_diag_re, old_diag_im;
+    realCopy(a + (i * size + i) * 2, &old_diag_re);
+    realCopy(a + (i * size + i) * 2 + 1, &old_diag_im);
+    
+    real_t diff_real, diff_imag, diff_mag;
+    realSubtract(&old_diag_re, eig + (i * size + i) * 2, &diff_real, realContext);
+    realSubtract(&old_diag_im, eig + (i * size + i) * 2 + 1, &diff_imag, realContext);
+    complexMagnitude(&diff_real, &diff_imag, &diff_mag, realContext);
+    
+    if(!realCompareLessThan(&diff_mag, tol)) {
+      converged = false;
+    }
+    if(!realCompareLessThan(&diff_mag, diff_max)) {
+      realCopy(&diff_mag, diff_max);
+    }
+  }
+  return converged;
+}
+
+static bool_t checkStagnation(uint16_t iteration, real_t *max_offdiag, real_t *diff_max, real_t *tol, realContext_t *realContext) {
+  static real_t prev_max_offdiag, prev_diff_max;
+  static real_t prev2_max_offdiag, prev2_diff_max;
+  static bool_t first_check = true;
+  static int stagnation_count = 0;
+  
+  // Reset statics at iteration 1
+  if(iteration == 1) {
+    first_check = true;
+    stagnation_count = 0;
+    realZero(&prev_max_offdiag);
+    realZero(&prev_diff_max);
+    realZero(&prev2_max_offdiag);
+    realZero(&prev2_diff_max);
+  }
+  
+  bool_t is_stagnant = false;
+  
+  // Need at least 3 iterations to detect stagnation
+  if(iteration >= 3 && !first_check) {
+    real_t offdiag_improvement, diag_improvement;
+    realSubtract(&prev_max_offdiag, max_offdiag, &offdiag_improvement, realContext);
+    realSubtract(&prev_diff_max, diff_max, &diag_improvement, realContext);
+    
+    // Check for oscillation
+    real_t prev_offdiag_change, prev_diag_change;
+    realSubtract(&prev2_max_offdiag, &prev_max_offdiag, &prev_offdiag_change, realContext);
+    realSubtract(&prev2_diff_max, &prev_diff_max, &prev_diag_change, realContext);
+    
+    bool_t offdiag_oscillating = (realIsNegative(&offdiag_improvement) != realIsNegative(&prev_offdiag_change));
+    bool_t diag_oscillating = (realIsNegative(&diag_improvement) != realIsNegative(&prev_diag_change));
+    
+    bool_t offdiag_stagnant = realCompareLessThan(&offdiag_improvement, tol) || offdiag_oscillating;
+    bool_t diag_stagnant = realCompareLessThan(&diag_improvement, tol) || diag_oscillating;
+    
+    if(offdiag_stagnant && diag_stagnant) {
+      stagnation_count++;
+      if(stagnation_count > 10) {
+        is_stagnant = true;
+      }
+    } else {
+      stagnation_count = 0;
+    }
+  }
+  
+  // Update history
+  realCopy(&prev_max_offdiag, &prev2_max_offdiag);
+  realCopy(&prev_diff_max, &prev2_diff_max);
+  realCopy(max_offdiag, &prev_max_offdiag);
+  realCopy(diff_max, &prev_diff_max);
+  if(iteration >= 2) first_check = false;
+  
+  return is_stagnant;
+}
+
+
+
 //NOTE TEMPORARIES ARE real_t AND 39 DIGITS
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t shiftRe, shiftIm;
   uint16_t i, j;
-  bool_t converged;
+  bool_t converged = false;
   uint16_t iteration = 0;
   uint16_t activeSize = size;
   //shifted = false; // Can disable shifts here - they cause instability in minimal cases. 
@@ -4403,7 +4521,14 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       printf("realContext.digits=%d\n", (int)(realContext->digits));
     #endif //EIGENDEBUG
 
-    while(iteration++ < maxEigenIter && activeSize > 1) {
+    if(isMatrixDiagonal(a, size, &tol, realContext)) {
+      for(i = 0; i < size * size * 2; i++) {
+        realCopy(a + i, eig + i);
+      }
+      converged = true;
+    }
+
+    while(!converged && iteration++ < maxEigenIter && activeSize > 1) {
 
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
@@ -4499,20 +4624,20 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
 
 
-      #if defined(EIGENDEBUG)
-      printf("=== MATRIX STATE AFTER MULCPXMAT, BEFORE DEFLATION ===\n");
-      for(int i = 0; i < size; i++) {
-        for(int j = 0; j < size; j++) {
-          real_t val_re, val_im;
-          char reStr[32], imStr[32];
-          realPlus(eig + (i * size + j) * 2, &val_re, &ctxtReal4);
-          realPlus(eig + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
-          realToString(&val_re, reStr);
-          realToString(&val_im, imStr);
-          printf("eig[%d][%d] = %s + %si\n", i, j, reStr, imStr);
-        }
-      }
-      #endif
+//      #if defined(EIGENDEBUG)
+//      printf("=== MATRIX STATE AFTER MULCPXMAT, BEFORE DEFLATION ===\n");
+//      for(int i = 0; i < size; i++) {
+//        for(int j = 0; j < size; j++) {
+//          real_t val_re, val_im;
+//          char reStr[32], imStr[32];
+//          realPlus(eig + (i * size + j) * 2, &val_re, &ctxtReal4);
+//          realPlus(eig + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
+//          realToString(&val_re, reStr);
+//          realToString(&val_im, imStr);
+//          printf("eig[%d][%d] = %s + %si\n", i, j, reStr, imStr);
+//        }
+//      }
+//      #endif
 
 
 
@@ -4535,7 +4660,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
             // Calculate threshold - looser for 2x2 blocks, stricter for others
             real_t factor;
 
-if(activeSize == 3 && i == 1) {
+            if(activeSize == 3 && i == 1) {
               // Extract the 2x2 block and solve it directly
               #if defined(EIGENDEBUG)
               printf("Solving 2x2 block directly at iteration %d\n", iteration);
@@ -4597,7 +4722,6 @@ if(activeSize == 3 && i == 1) {
       } // end of deflation check
 
 
-
       if(shifted) {
         for(i = 0; i < size; i++) {
           realAdd(a   + (i * size + i) * 2,     &shiftRe, a   + (i * size + i) * 2,     realContext);
@@ -4607,46 +4731,53 @@ if(activeSize == 3 && i == 1) {
         }
       }
 
+      // Check convergence
+      real_t max_offdiag, diff_max;
+      bool_t offdiag_converged = checkOffDiagonalConvergence(eig, size, &tol, &max_offdiag, realContext);
+      bool_t diag_converged = checkDiagonalConvergence(a, eig, size, &tol, &diff_max, realContext);
+      
+      converged = offdiag_converged || diag_converged;
+      
+      // Fallback: check for stagnation if not converged
+      if(!converged && checkStagnation(iteration, &max_offdiag, &diff_max, &tol, realContext)) {
         converged = true;
-        realCopy(const_0,&diff_max);
-        for(i = 0; i < size; i++) {
-          real_t old_diag_re, old_diag_im;
-          // Store previous diagonal values before updating
-          realCopy(a + (i * size + i) * 2, &old_diag_re);
-          realCopy(a + (i * size + i) * 2 + 1, &old_diag_im);
-
-          real_t diff_real, diff_imag, diff_mag;
-          realSubtract(&old_diag_re, eig + (i * size + i) * 2, &diff_real, realContext);
-          realSubtract(&old_diag_im, eig + (i * size + i) * 2 + 1, &diff_imag, realContext);
-          complexMagnitude(&diff_real, &diff_imag, &diff_mag, realContext);
-
-          if(!realCompareLessThan(&diff_mag, &tol)) {
-            converged = false;
-            if(!realCompareLessThan(&diff_mag, &diff_max)) realCopy(&diff_mag, &diff_max);
-          }
+        break;
       }
-
+      
       if(converged) {
         break;
       }
       else {
-          for(i = 0; i < size * size * 2; i++) {
-            realCopy(eig + i, a + i);
+        // Copy eig to a for next iteration
+        for(i = 0; i < size * size * 2; i++) {
+          realCopy(eig + i, a + i);
         }
       }
 
     } // End of while loop
 
 
-    if(size == 3) {
+    #if defined(EIGENDEBUG)
+      printf("Final: iteration-1=%d, activeSize=%d, size=%d, converged=%d\n", iteration-1, activeSize, size, converged);
+    #endif //EIGENDEBUG
+
+
+
+    if(activeSize == 3) {
       solve3x3Block(a, eig, size, realContext);
     }
-    else if(size >= 2) {
+    else if(activeSize == 2) {
       solve2x2Block(a, eig, size, realContext);
     }
+    else if(activeSize == 1) {
+      // Single eigenvalue already on diagonal
+      realCopy(a, eig);
+      realCopy(a + 1, eig + 1);
+    }
+
 
     #if defined(EIGENDEBUG)
-    printf("\nEIGENVAL finished after %d iterations, converged = %d\n", iteration-1, converged);
+    printf("\nEIGENVAL finished after %d iterations-1, converged = %d\n", iteration-1, converged);
     printf("Final eigenvalues:\n");
     for(i = 0; i < size; i++) {
       real_t tmpRe, tmpIm;
