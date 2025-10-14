@@ -4534,6 +4534,46 @@ static bool_t checkStagnation(uint16_t iteration, real_t *max_offdiag, real_t *d
 }
 
 
+static bool_t isSymmetricTridiagonal(const real_t *a, uint16_t size, realContext_t *realContext) {
+  real_t type_tol;
+  realCopy(const_1, &type_tol);
+  type_tol.exponent -= 30;
+  
+  for(uint16_t i = 0; i < size; i++) {
+    for(uint16_t j = 0; j < size; j++) {
+      int diff = (int)i - (int)j;
+      if(diff < 0) diff = -diff;
+      
+      // Check 1: Tridiagonal structure - elements beyond main and first off-diagonals should be zero
+      if(diff > 1) {
+        real_t val_mag;
+        complexMagnitude(a + (i * size + j) * 2, a + (i * size + j) * 2 + 1, &val_mag, realContext);
+        if(!realCompareLessThan(&val_mag, &type_tol)) {
+          return false;
+        }
+      }
+      
+      // Check 2: Real matrix - imaginary parts should be zero
+      real_t imag_mag;
+      complexMagnitude(a + (i * size + j) * 2 + 1, const_0, &imag_mag, realContext);
+      if(!realCompareLessThan(&imag_mag, &type_tol)) {
+        return false;
+      }
+      
+      // Check 3: Symmetry - a[i][j] should equal a[j][i]
+      if(i < j) {
+        real_t diff_val;
+        realSubtract(a + (i * size + j) * 2, a + (j * size + i) * 2, &diff_val, realContext);
+        complexMagnitude(&diff_val, const_0, &diff_val, realContext);
+        if(!realCompareLessThan(&diff_val, &type_tol)) {
+          return false;
+        }
+      }
+    }
+  }  
+  return true;
+}
+
 
 //NOTE TEMPORARIES ARE real_t AND 39 DIGITS
 
@@ -4611,7 +4651,24 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     #if defined(EIGENDEBUG)
       printRealToConsole(&tol, "\nTol: ", " ");
       printf("realContext.digits=%d\n", (int)(realContext->digits));
-    #endif //EIGENDEBUG
+    #endif
+
+    // Detect if matrix is symmetric tridiagonal
+    #if defined(EIGENDEBUG)
+      printRealToConsole(&tol, "\nTol: ", " ");
+      printf("realContext.digits=%d\n", (int)(realContext->digits));
+    #endif
+
+    bool_t is_sym_tridiag = isSymmetricTridiagonal(a, size, realContext);
+    
+    #if defined(EIGENDEBUG)
+    if(is_sym_tridiag) {
+      printf("DETECTED: Real Symmetric Tridiagonal Matrix\n");
+    }
+    #endif
+
+
+
 
     if(isMatrixDiagonal(a, size, &tol, realContext)) {
       for(i = 0; i < size * size * 2; i++) {
@@ -4704,14 +4761,23 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       mulCpxMat(r, q, size, size, size, eig, realContext);
 
       // Truncate to 34 digits
-      for(i = 0; i < size * size; i++) {
-        realPlus(eig + i * 2,     eig + i * 2,     &ctxtReal34);
-        realPlus(eig + i * 2 + 1, eig + i * 2 + 1, &ctxtReal34);
-        if(realGetExponent(eig + i * 2) < -eigenTolerance) {
-          realZero(eig + i * 2);
-        }
-        if(realGetExponent(eig + i * 2 + 1) < -eigenTolerance) {
-          realZero(eig + i * 2 + 1);
+      for(i = 0; i < size; i++) {
+        for(uint16_t j = 0; j < size; j++) {
+          uint16_t idx = i * size + j;
+          realPlus(eig + idx * 2,     eig + idx * 2,     &ctxtReal34);
+          realPlus(eig + idx * 2 + 1, eig + idx * 2 + 1, &ctxtReal34);
+          
+          // For symmetric tridiagonal, preserve diagonal elements from underflow
+          if(is_sym_tridiag && i == j) {
+            continue;  // Skip zeroing diagonal elements
+          }
+          
+          if(realGetExponent(eig + idx * 2) < -eigenTolerance) {
+            realZero(eig + idx * 2);
+          }
+          if(realGetExponent(eig + idx * 2 + 1) < -eigenTolerance) {
+            realZero(eig + idx * 2 + 1);
+          }
         }
       }
 
@@ -4831,11 +4897,15 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       converged = offdiag_converged || diag_converged;
       
       // Fallback: check for stagnation if not converged
-      if(!converged && checkStagnation(iteration, &max_offdiag, &diff_max, &tol, realContext)) {
+      // BUT: Don't use stagnation for symmetric tridiagonal - let it converge naturally
+      if(!converged && !is_sym_tridiag && checkStagnation(iteration, &max_offdiag, &diff_max, &tol, realContext)) {
+        #if defined(EIGENDEBUG)
+        printf("CONVERGENCE BY STAGNATION at iteration %d, activeSize=%d\n", iteration, activeSize);
+        #endif
         converged = true;
         break;
       }
-      
+
       if(converged) {
         break;
       }
@@ -4850,8 +4920,24 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
 
     #if defined(EIGENDEBUG)
-      printf("Final: iteration-1=%d, activeSize=%d, size=%d, converged=%d\n", iteration-1, activeSize, size, converged);
+      printf("Final: iteration=%d, activeSize=%d, size=%d, converged=%d\n", iteration, activeSize, size, converged);
     #endif //EIGENDEBUG
+
+    // Add this new debug:
+    #if defined(EIGENDEBUG)
+    printf("\n=== STATE AT END OF LOOP ===\n");
+    printf("activeSize = %d\n", activeSize);
+    printf("Eigenvalues in EIG matrix:\n");
+    for(i = 0; i < size; i++) {
+      real_t tmpRe, tmpIm;
+      char tmpReStr[80], tmpImStr[80];
+      realPlus(eig + (i * size + i) * 2, &tmpRe, &ctxtReal4);
+      realPlus(eig + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
+      realToString(&tmpRe, tmpReStr);
+      realToString(&tmpIm, tmpImStr);
+      printf("  eig[%d][%d] = %s + %si\n", i, i, tmpReStr, tmpImStr);
+    }
+    #endif
 
 
 
@@ -4869,7 +4955,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
 
     #if defined(EIGENDEBUG)
-    printf("\nEIGENVAL finished after %d iterations-1, converged = %d\n", iteration-1, converged);
+    printf("\nEIGENVAL finished after %d iteration, converged = %d\n", iteration, converged);
     printf("Final eigenvalues:\n");
     for(i = 0; i < size; i++) {
       real_t tmpRe, tmpIm;
@@ -4887,7 +4973,22 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
     // check for condition number of the diagonal elements
     // at least one of eigenvalues is 0 if and only if the given matrix is singular
+
+    #if defined(EIGENDEBUG)
+    printf("\n=== EIGENVALUES BEFORE SORTING/CONDITIONING ===\n");
+    for(i = 0; i < size; i++) {
+      real_t tmpRe, tmpIm;
+      char tmpReStr[80], tmpImStr[80];
+      realPlus(a + (i * size + i) * 2, &tmpRe, &ctxtReal4);
+      realPlus(a + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
+      realToString(&tmpRe, tmpReStr);
+      realToString(&tmpIm, tmpImStr);
+      printf("  a[%d][%d] = %s + %si\n", i, i, tmpReStr, tmpImStr);
+    }
+    #endif
+
     sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+
     complexMagnitude(eig, eig + 1, &maxM, realContext);
     #if defined(EIGENDEBUG)
       printf("\nnEIGENVAL CONDITION NUMBERn");
