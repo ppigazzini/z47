@@ -3276,7 +3276,6 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
 
 
 void fnRESET_MyM(uint16_t param) {
-printf("AAAA %i\n",param);
   //Pre-assign the MyMenu
   #if !defined(TESTSUITE_BUILD)
     clearSystemFlag(FLAG_BASE_MYM);                                                   //switch off menu to prevent slow updating of 6 menu items
@@ -3286,7 +3285,7 @@ printf("AAAA %i\n",param);
       searchParam = isR47FAM ? ITM_RIBBON_ENG_R47 : ITM_RIBBON_ENG_C47;
     }
 
-    uint i;
+    uint16_t i;
     for(int8_t fn = 1; fn <= 6; fn++) {
       for(i = 0; i < nbrOfElements(ribbonMappings); i++) {
         if(ribbonMappings[i][0] == searchParam) {
