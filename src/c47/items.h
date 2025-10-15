@@ -1786,7 +1786,7 @@
 #define ITM_SST                     1736
 #define ITM_EXIT1                   1737
 #define ITM_BACKSPACE               1738
-#define ITM_1739                    1739
+#define ITM_M_DIM_GR                1739
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
@@ -2587,8 +2587,8 @@
 #define ITM_RIBBON_R47              2511
 #define ITM_RIBBON_R47PL            2512
 #define ITM_RIBBON_ENG              2513
-#define ITM_2514                    2514
-#define ITM_2515                    2515
+#define ITM_RIBBON_FIN2             2514
+#define ITM_RIBBON_SAV2             2515
 #define ITM_2516                    2516
 #define ITM_2517                    2517
 #define ITM_2518                    2518

@@ -457,7 +457,7 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
       return;
     }
     else {
-      if(!redimMatrixRegister(regStats, rows - 1, 2)) {
+      if(!redimMatrixRegister(regStats, rows - 1, 2, ITM_M_DIM)) {
         regStats = INVALID_VARIABLE;
       }
     }

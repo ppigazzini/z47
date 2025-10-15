@@ -1230,8 +1230,10 @@ void restoreStats(void){
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
       {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
+      {0,ITM_RIBBON_FIN2 , "MyMenu primary F-key financial ribbon 2"     },
       {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
       {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
+      {0,ITM_RIBBON_SAV2 , "MyMenu primary F-key save/load ribbon 2"     },
       {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
       {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
       {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
@@ -2005,8 +2007,10 @@ void fnKeysManagement(uint16_t choice) {
 
     case ITM_RIBBON_CPX  :
     case ITM_RIBBON_FIN  :
+    case ITM_RIBBON_FIN2 :
     case ITM_RIBBON_ENG  :
     case ITM_RIBBON_SAV  :
+    case ITM_RIBBON_SAV2 :
     case ITM_RIBBON_C47  :
     case ITM_RIBBON_C47PL:
     case ITM_RIBBON_R47  :
