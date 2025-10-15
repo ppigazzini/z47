@@ -4433,104 +4433,13 @@ static bool_t isMatrixDiagonal(real_t *matrix, uint16_t size, real_t *tol, realC
 }
 
 
-static bool_t checkOffDiagonalConvergence(real_t *eig, uint16_t size, real_t *tol, real_t *max_offdiag, realContext_t *realContext) {
-  bool_t converged = true;
-  realCopy(const_0, max_offdiag);
-  
+static void diagonalSumOfSquares(const real_t *matrix, uint16_t size, real_t *sum, realContext_t *realContext) {
+  realZero(sum);
   for(uint16_t i = 0; i < size; i++) {
-    for(uint16_t j = 0; j < size; j++) {
-      if(i != j) {
-        real_t offdiag_mag;
-        complexMagnitude(eig + (i * size + j) * 2, eig + (i * size + j) * 2 + 1, &offdiag_mag, realContext);
-        if(realCompareLessThan(max_offdiag, &offdiag_mag)) {
-          realCopy(&offdiag_mag, max_offdiag);
-        }
-        if(!realCompareLessThan(&offdiag_mag, tol)) {
-          converged = false;
-        }
-      }
-    }
+    // sum += diag_re^2 + diag_im^2
+    realFMA(matrix + (i * size + i) * 2,     matrix + (i * size + i) * 2,     sum, sum, realContext);
+    realFMA(matrix + (i * size + i) * 2 + 1, matrix + (i * size + i) * 2 + 1, sum, sum, realContext);
   }
-  return converged;
-}
-
-static bool_t checkDiagonalConvergence(real_t *a, real_t *eig, uint16_t size, real_t *tol, real_t *diff_max, realContext_t *realContext) {
-  bool_t converged = true;
-  realCopy(const_0, diff_max);
-  
-  for(uint16_t i = 0; i < size; i++) {
-    real_t old_diag_re, old_diag_im;
-    realCopy(a + (i * size + i) * 2, &old_diag_re);
-    realCopy(a + (i * size + i) * 2 + 1, &old_diag_im);
-    
-    real_t diff_real, diff_imag, diff_mag;
-    realSubtract(&old_diag_re, eig + (i * size + i) * 2, &diff_real, realContext);
-    realSubtract(&old_diag_im, eig + (i * size + i) * 2 + 1, &diff_imag, realContext);
-    complexMagnitude(&diff_real, &diff_imag, &diff_mag, realContext);
-    
-    if(!realCompareLessThan(&diff_mag, tol)) {
-      converged = false;
-    }
-    if(!realCompareLessThan(&diff_mag, diff_max)) {
-      realCopy(&diff_mag, diff_max);
-    }
-  }
-  return converged;
-}
-
-static bool_t checkStagnation(uint16_t iteration, real_t *max_offdiag, real_t *diff_max, real_t *tol, realContext_t *realContext) {
-  static real_t prev_max_offdiag, prev_diff_max;
-  static real_t prev2_max_offdiag, prev2_diff_max;
-  static bool_t first_check = true;
-  static int stagnation_count = 0;
-  
-  // Reset statics at iteration 1
-  if(iteration == 1) {
-    first_check = true;
-    stagnation_count = 0;
-    realZero(&prev_max_offdiag);
-    realZero(&prev_diff_max);
-    realZero(&prev2_max_offdiag);
-    realZero(&prev2_diff_max);
-  }
-  
-  bool_t is_stagnant = false;
-  
-  // Need at least 3 iterations to detect stagnation
-  if(iteration >= 3 && !first_check) {
-    real_t offdiag_improvement, diag_improvement;
-    realSubtract(&prev_max_offdiag, max_offdiag, &offdiag_improvement, realContext);
-    realSubtract(&prev_diff_max, diff_max, &diag_improvement, realContext);
-    
-    // Check for oscillation
-    real_t prev_offdiag_change, prev_diag_change;
-    realSubtract(&prev2_max_offdiag, &prev_max_offdiag, &prev_offdiag_change, realContext);
-    realSubtract(&prev2_diff_max, &prev_diff_max, &prev_diag_change, realContext);
-    
-    bool_t offdiag_oscillating = (realIsNegative(&offdiag_improvement) != realIsNegative(&prev_offdiag_change));
-    bool_t diag_oscillating = (realIsNegative(&diag_improvement) != realIsNegative(&prev_diag_change));
-    
-    bool_t offdiag_stagnant = realCompareLessThan(&offdiag_improvement, tol) || offdiag_oscillating;
-    bool_t diag_stagnant = realCompareLessThan(&diag_improvement, tol) || diag_oscillating;
-    
-    if(offdiag_stagnant && diag_stagnant) {
-      stagnation_count++;
-      if(stagnation_count > 10) {
-        is_stagnant = true;
-      }
-    } else {
-      stagnation_count = 0;
-    }
-  }
-  
-  // Update history
-  realCopy(&prev_max_offdiag, &prev2_max_offdiag);
-  realCopy(&prev_diff_max, &prev2_diff_max);
-  realCopy(max_offdiag, &prev_max_offdiag);
-  realCopy(diff_max, &prev_diff_max);
-  if(iteration >= 2) first_check = false;
-  
-  return is_stagnant;
 }
 
 
@@ -4578,6 +4487,10 @@ static bool_t isSymmetricTridiagonal(const real_t *a, uint16_t size, realContext
 //NOTE TEMPORARIES ARE real_t AND 39 DIGITS
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
+  real_t tol_1e_35;
+  realCopy(const_1, &tol_1e_35);
+  tol_1e_35.exponent -= 35;
+
   real_t shiftRe, shiftIm;
   uint16_t i, j;
   bool_t converged = false;
@@ -4854,10 +4767,10 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
               realZero(eig + (i * size + (i-1)) * 2 + 1);
 
               #if defined(EIGENDEBUG)
-              printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
+                printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
               #endif
               #if defined(EIGENDEBUG)
-              printf("=== MATRIX STATE AFTER DEFLATION ===\n");
+                printf("=== MATRIX STATE AFTER DEFLATION ===\n");
               for(int i = 0; i < size; i++) {
                 for(int j = 0; j < size; j++) {
                   real_t val_re, val_im;
@@ -4889,23 +4802,69 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
         }
       }
 
-      // Check convergence
-      real_t max_offdiag, diff_max;
-      bool_t offdiag_converged = checkOffDiagonalConvergence(eig, size, &tol, &max_offdiag, realContext);
-      bool_t diag_converged = checkDiagonalConvergence(a, eig, size, &tol, &diff_max, realContext);
+
+      // Check convergence: sum of squares of diagonal elements
+      static real_t prev_diag_sum;
+      static real_t prev_change;
+      static uint16_t last_check_iter = 0;
+      static uint16_t no_improvement_count = 0;
       
-      converged = offdiag_converged || diag_converged;
+      if(iteration == 1) {
+        realZero(&prev_diag_sum);
+        realCopy(const_1, &prev_change);  // Start with large value
+        last_check_iter = 0;
+        no_improvement_count = 0;
+      }
       
-      // Fallback: check for stagnation if not converged
-      // BUT: Don't use stagnation for symmetric tridiagonal - let it converge naturally
-      if(!converged && !is_sym_tridiag && checkStagnation(iteration, &max_offdiag, &diff_max, &tol, realContext)) {
+      converged = false;
+      if(iteration - last_check_iter >= 20) {
+        real_t current_diag_sum, change;
+        diagonalSumOfSquares(eig, size, &current_diag_sum, &ctxtReal39);
+        
+        realSubtract(&prev_diag_sum, &current_diag_sum, &change, realContext);
+        if(realIsNegative(&change)) {
+          realChangeSign(&change);
+        }
+        
+        converged = realCompareLessThan(&change, &tol_1e_35);
+        
+        // Check if making progress (change is decreasing)
+        if(!converged) {
+          // Is change getting smaller?
+          if(realCompareGreaterThan(&change, &prev_change)) {
+            // Change increased or stayed same - no progress
+            no_improvement_count++;
+            
+            // For symmetric tridiagonal: allow 5 cycles (100 iters) of no improvement; for general matrices: allow 3 cycles (60 iters)
+            uint16_t max_no_improvement = is_sym_tridiag ? 5 : 3;
+            
+            if(no_improvement_count >= max_no_improvement) {
+              #if defined(EIGENDEBUG)
+                printf("STAGNATION detected at iter %d - change not decreasing\n", iteration);
+              #endif
+              converged = true;  // Give up, use what we have
+            }
+          } else {
+            // change is decreasing, reset counter
+            no_improvement_count = 0;
+          }
+        }
+        
         #if defined(EIGENDEBUG)
-        printf("CONVERGENCE BY STAGNATION at iteration %d, activeSize=%d\n", iteration, activeSize);
+        if(iteration % 100 == 0 || converged) {
+          printf("Iter %d: diag_sum_change = ", iteration);
+          printRealToConsole(&change, "", "\n");
+          if(converged) printf("CONVERGED by diagonal sum check\n");
+        }
         #endif
-        converged = true;
-        break;
+        
+        realCopy(&current_diag_sum, &prev_diag_sum);
+        realCopy(&change, &prev_change);
+        last_check_iter = iteration;
       }
 
+
+            
       if(converged) {
         break;
       }
