@@ -1525,7 +1525,7 @@ typedef struct FactorAdder
                                               gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
                                               fflush(stdout);
                                             #endif //MONITOR_FACTORS
-    if(!redimMatrixRegister(regist, rows, wkgCols)) {
+    if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
       if(errorMessage != 0) goto returnFalse;
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -1585,7 +1585,7 @@ typedef struct FactorAdder
 
         ++wkgCols;
         faddr->expons[faddr->nExpons-1] = 1;
-        if(!redimMatrixRegister(regist, rows, wkgCols)) {
+        if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
           if(errorMessage != 0) goto returnFalse;
           #if !defined(TESTSUITE_BUILD)
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);

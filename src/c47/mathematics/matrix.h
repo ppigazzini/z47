@@ -20,6 +20,7 @@
    * \param[in] regist
    */
   void       fnSetMatrixDimensions          (uint16_t regist);
+  void       fnSetMatrixDimensionsGr        (uint16_t regist);
 
   /**
    * Get dimensions of matrix X.
@@ -308,7 +309,7 @@
    * \param[in] cols
    * \return true if succeeded, false otherwise
    */
-  bool_t   redimMatrixRegister            (calcRegister_t regist, uint16_t rows, uint16_t cols);
+  bool_t   redimMatrixRegister            (calcRegister_t regist, uint16_t rows, uint16_t cols, uint16_t dimMode);
 
   /**
    * Allocates a named matrix. Redimentions if the matrix already existed.
