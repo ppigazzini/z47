@@ -1304,7 +1304,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       ires.header.matrixRows = ires.header.matrixColumns = 0;
       ires.matrixElements = NULL;
       realEigenvalues(&x, &res, &ires);
-      if(lastErrorCode == ERROR_NONE) {
+      if(lastErrorCode == ERROR_NONE || lastErrorCode == ERROR_SOLVER_ABORT) {
         if(ires.matrixElements) {
           complex34Matrix_t cres;
           if(complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
@@ -4541,7 +4541,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     calculateEigenvalues33(a, size, eig, eig + 1, eig + 8, eig + 9, eig + 16, eig + 17, realContext);
     sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
   }
-  else {
+  else { //size > 3
     real_t tol, maxM, minM, tmpM;
     if(reducedSignificantDigits) {
       if(significantDigits == 0 || significantDigits >= 34) {
@@ -4590,7 +4590,11 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       converged = true;
     }
 
-    while(!converged && iteration++ < maxEigenIter && activeSize > 1) {
+    currentKeyCode = 255;
+    ++currentSolverNestingDepth;
+    setSystemFlag(FLAG_SOLVING);
+
+    while(!converged && iteration++ < maxEigenIter && activeSize > 1 && lastErrorCode == ERROR_NONE) {
 
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
@@ -4605,13 +4609,14 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           }
         }
-        #if !defined(PC_BUILD)
-          if(exitKeyWaiting()) {
-              progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-            break;
-          }
-        #endif //!PC_BUILD
+        if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Exit while calculating");
+          moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
       #endif //TESTSUITE_BUILD
 
       if(shifted) {
@@ -4693,24 +4698,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         }
       }
-
-
-//      #if defined(EIGENDEBUG)
-//      printf("=== MATRIX STATE AFTER MULCPXMAT, BEFORE DEFLATION ===\n");
-//      for(int i = 0; i < size; i++) {
-//        for(int j = 0; j < size; j++) {
-//          real_t val_re, val_im;
-//          char reStr[32], imStr[32];
-//          realPlus(eig + (i * size + j) * 2, &val_re, &ctxtReal4);
-//          realPlus(eig + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
-//          realToString(&val_re, reStr);
-//          realToString(&val_im, imStr);
-//          printf("eig[%d][%d] = %s + %si\n", i, j, reStr, imStr);
-//        }
-//      }
-//      #endif
-
-
 
       // Deflation and 2x2 block detection
       if(iteration > 2 && (iteration % 5) == 0) {
@@ -4878,24 +4865,29 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     } // End of while loop
 
 
+    if((--currentSolverNestingDepth) == 0) {
+      clearSystemFlag(FLAG_SOLVING);
+    }
+
+
     #if defined(EIGENDEBUG)
       printf("Final: iteration=%d, activeSize=%d, size=%d, converged=%d\n", iteration, activeSize, size, converged);
     #endif //EIGENDEBUG
 
-    // Add this new debug:
+
     #if defined(EIGENDEBUG)
-    printf("\n=== STATE AT END OF LOOP ===\n");
-    printf("activeSize = %d\n", activeSize);
-    printf("Eigenvalues in EIG matrix:\n");
-    for(i = 0; i < size; i++) {
-      real_t tmpRe, tmpIm;
-      char tmpReStr[80], tmpImStr[80];
-      realPlus(eig + (i * size + i) * 2, &tmpRe, &ctxtReal4);
-      realPlus(eig + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
-      realToString(&tmpRe, tmpReStr);
-      realToString(&tmpIm, tmpImStr);
-      printf("  eig[%d][%d] = %s + %si\n", i, i, tmpReStr, tmpImStr);
-    }
+      printf("\n=== STATE AT END OF LOOP ===\n");
+      printf("activeSize = %d\n", activeSize);
+      printf("Eigenvalues in EIG matrix:\n");
+      for(i = 0; i < size; i++) {
+        real_t tmpRe, tmpIm;
+        char tmpReStr[80], tmpImStr[80];
+        realPlus(eig + (i * size + i) * 2, &tmpRe, &ctxtReal4);
+        realPlus(eig + (i * size + i) * 2 + 1, &tmpIm, &ctxtReal4);
+        realToString(&tmpRe, tmpReStr);
+        realToString(&tmpIm, tmpImStr);
+        printf("  eig[%d][%d] = %s + %si\n", i, i, tmpReStr, tmpImStr);
+      }
     #endif
 
 
@@ -4930,8 +4922,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     shifted = false;
 
 
-    // check for condition number of the diagonal elements
-    // at least one of eigenvalues is 0 if and only if the given matrix is singular
+    // check for condition number of the diagonal elements, at least one of eigenvalues is 0 if and only if the given matrix is singular
 
     #if defined(EIGENDEBUG)
     printf("\n=== EIGENVALUES BEFORE SORTING/CONDITIONING ===\n");
@@ -4998,6 +4989,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       realCopy(eig + (i * size + i) * 2 + 1, a + (i * size + i) * 2 + 1);
     }
 
+
+
     #if defined(EIGENDEBUG)
       printf("\nEIGENVAL after conditioning\n");
       printf("Final eigenvalues:\n");
@@ -5012,21 +5005,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
     #endif //EIGENDEBUG
 
-  }
-  //  #if defined(EIGENDEBUG)
-  //  printf("=== FINAL MATRIX STATE ===\n");
-  //  for(int i = 0; i < size; i++) {
-  //    for(int j = 0; j < size; j++) {
-  //      real_t val_re, val_im;
-  //      char reStr[32], imStr[32];
-  //      realPlus(a + (i * size + j) * 2, &val_re, &ctxtReal4);
-  //      realPlus(a + (i * size + j) * 2 + 1, &val_im, &ctxtReal4);
-  //      realToString(&val_re, reStr);
-  //      realToString(&val_im, imStr);
-  //      printf("FINAL[%d][%d] = %s + %si\n", i, j, reStr, imStr);
-  //    }
-  //  }
-  //  #endif
+  } // size > 3
+
 
   #if defined(EIGENDEBUG)
     printf("\n=== EIGENVALUE VERIFICATION ===\n");
