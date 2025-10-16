@@ -458,12 +458,12 @@ bool_t recallStatsMatrix(void) {
 }
 
 
-void fnSetMatrixDimensions(uint16_t regist) {
+static void _SetMatrixDimensions(uint16_t regist, uint16_t dimMode) {
   uint32_t y, x;
 
   if(!getDimensionArg(&y, &x)) {
   }
-  else if(redimMatrixRegister(regist, y, x)) {
+  else if(redimMatrixRegister(regist, y, x, dimMode)) {
   }
   else {
     #if !defined(TESTSUITE_BUILD)
@@ -475,6 +475,15 @@ void fnSetMatrixDimensions(uint16_t regist) {
     #endif // !TESTSUITE_BUILD
     return;
   }
+}
+
+
+void fnSetMatrixDimensions(uint16_t regist) {
+  _SetMatrixDimensions(regist, ITM_M_DIM);
+}
+
+void fnSetMatrixDimensionsGr(uint16_t regist) {
+  _SetMatrixDimensions(regist, ITM_M_DIM_GR);
 }
 
 
@@ -1706,13 +1715,10 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
 
 
 
+//Matrix redimension
 
-#undef KEEPRECT
-// defaulting to the old way; use the keepRect method later with user option if needed.
-
-#ifdef KEEPRECT
-  const bool_t keepRect = true;
-  // My new proposed way, is about keeping rectangles, adding zero lines below and zero columns to the right, and when reducing, removing those lines and columns so the elements in the new shape is kept as is. See examples:
+  // KEEPRECT
+  // Keeping rectangles, adding zero lines below and zero columns to the right, and when reducing, removing those lines and columns so the elements in the new shape is kept as is. See examples:
   // 1 2 3
   // 4 5 6 
   // 7 8 9 
@@ -1726,9 +1732,9 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
   // 1 2 0
   // 3 4 0
   // 0 0 0
-#else
-  const bool_t keepRect = false;
-  // Currently, all elements are kept, but re-listed from element 1. If it overruns the new matrix, the end elements are deleted: examples:
+
+
+  // Reflow elements: all elements are kept, but re-listed from element 1. If it overruns the new matrix, the end elements are deleted: examples:
   // 1 2 3
   // 4 5 6 
   // 7 8 9 
@@ -1742,7 +1748,6 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
   // 1 2 3
   // 4 0 0
   // 0 0 0
-#endif
 
 
 static void real34CopyWrapper(void *src, void *dst) {
@@ -1764,7 +1769,6 @@ static void complex34ZeroWrapper(void *dst) {
 
 
 static void copyAndZeroMatrixElements(void *src, void *dst, uint16_t srcRows, uint16_t srcCols, uint16_t dstRows, uint16_t dstCols, size_t elementSize, void (*copyFunc)(void*, void*), void (*zeroFunc)(void*), bool_t keepRect) {
-#ifdef KEEPRECT
   if(keepRect) {
     // Copy preserving rectangular structure
     const uint16_t copyRows = min(srcRows, dstRows);
@@ -1788,9 +1792,7 @@ static void copyAndZeroMatrixElements(void *src, void *dst, uint16_t srcRows, ui
       }
     }
   }
-  else
-#endif
-  {
+  else {
     // Linear copy
     for(uint16_t i = 0; i < min(srcRows * srcCols, dstRows * dstCols); ++i) {
       copyFunc((uint8_t*)src + i * elementSize, (uint8_t*)dst + i * elementSize);
@@ -1807,7 +1809,7 @@ static void copyAndZeroMatrixElements(void *src, void *dst, uint16_t srcRows, ui
 
 
 
-bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) {
+bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, uint16_t dimMode) {
   const uint16_t origRows = REGISTER_MATRIX_HEADER(regist)->matrixRows, origCols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
   if(regist == INVALID_VARIABLE) {
     return false;
@@ -1821,7 +1823,7 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
         REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_REAL34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, REAL34_SIZE_IN_BYTES, real34CopyWrapper, real34ZeroWrapper, keepRect);
+        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_REAL34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, REAL34_SIZE_IN_BYTES, real34CopyWrapper, real34ZeroWrapper, dimMode == ITM_M_DIM_GR);
         realMatrixFree(&newMatrix);
         return true;
       }
@@ -1843,7 +1845,7 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
         REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, COMPLEX34_SIZE_IN_BYTES, complex34CopyWrapper, complex34ZeroWrapper, keepRect);
+        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, COMPLEX34_SIZE_IN_BYTES, complex34CopyWrapper, complex34ZeroWrapper, dimMode == ITM_M_DIM_GR);
         complexMatrixFree(&newMatrix);
         return true;
       }
@@ -1868,7 +1870,7 @@ calcRegister_t allocateNamedMatrix(const char *name, uint16_t rows, uint16_t col
   if(regist == INVALID_VARIABLE) {
     return INVALID_VARIABLE;
   }
-  else if(redimMatrixRegister(regist, rows, cols)) {
+  else if(redimMatrixRegister(regist, rows, cols, ITM_M_DIM)) {
     return regist;
   }
   else {
@@ -1882,7 +1884,7 @@ bool_t appendRowAtMatrixRegister(calcRegister_t regist) {
     return false;
   }
   else if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-    return redimMatrixRegister(regist, rows + 1, cols);
+    return redimMatrixRegister(regist, rows + 1, cols, ITM_M_DIM);
   }
   else {
     return false;
