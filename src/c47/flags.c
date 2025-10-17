@@ -702,7 +702,6 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_LARGELI:
     case FLAG_FRACT:
     case FLAG_IRFRAC:
-    case ITM_DREAL:
     case FLAG_G_DOUBLETAP:
     case FLAG_SHFT_4s:
                            fnFlipFlag(jmConfig);                               break;
@@ -713,6 +712,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_BASE_MYM:    fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
     case FLAG_BASE_HOME:   fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
 
+    case ITM_DREAL:        fnFlipFlag(FLAG_DREAL); break;
 
     case JC_UC:
       if(alphaCase == AC_LOWER) {
