@@ -21,25 +21,34 @@ bool_t registerCmp(calcRegister_t regist1, calcRegister_t regist2, int8_t *res) 
   const uint32_t type1 = getRegisterDataType(regist1);
   const uint32_t type2 = getRegisterDataType(regist2);
 
-  if (type1 == dtString && type2 == dtString) {
+  if(type1 == dtString && type2 == dtString) {
     *res = compareString(REGISTER_STRING_DATA(regist1), REGISTER_STRING_DATA(regist2), CMP_EXTENSIVE);
-  } else if ((type1 == dtShortInteger || type1 == dtLongInteger) && (type2 == dtShortInteger || type2 == dtLongInteger)) {
+  }
+  else if((type1 == dtShortInteger || type1 == dtLongInteger) && (type2 == dtShortInteger || type2 == dtLongInteger)) {
     longInteger_t int1, int2;
 
-    longIntegerInit(int1);
-    longIntegerInit(int2);
     /* These should never fail */
-    if (getRegisterAsLongIntQuiet(regist1, int1, NULL) != ERROR_NONE
-        || getRegisterAsLongIntQuiet(regist2, int2, NULL))
+    if(getRegisterAsLongIntQuiet(regist1, int1, NULL) != ERROR_NONE) {
+      goto end;
+    }
+
+    if(getRegisterAsLongIntQuiet(regist2, int2, NULL)) {
+      longIntegerFree(int2);
+end:
+      longIntegerFree(int1);
       return false;
+    }
+
     *res = longIntegerCompare(int1, int2);
     longIntegerFree(int1);
     longIntegerFree(int2);
-  } else {
+  }
+  else {
     real_t rcmp, real1, real2;
 
-    if (!getRegisterAsAnyRealQuiet(regist1, &real1) || !getRegisterAsAnyRealQuiet(regist2, &real2))
+    if(!getRegisterAsAnyRealQuiet(regist1, &real1) || !getRegisterAsAnyRealQuiet(regist2, &real2)) {
       return false;
+    }
     realCompare(&real1, &real2, &rcmp, &ctxtReal39);
     *res = realIsZero(&rcmp) ? 0 : realIsPositive(&rcmp) ? 1 : -1;
   }
@@ -173,54 +182,70 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     const uint32_t typeX = getRegisterDataType(REGISTER_X);
     const uint32_t typeR = getRegisterDataType(regist);
 
-    if (typeX == dtString || typeR == dtString) {
-      if (typeX != typeR)
+    if(typeX == dtString || typeR == dtString) {
+      if(typeX != typeR) {
         compareTypeError(regist);
-      else
+      }
+      else {
         cmpToResult(compareString(REGISTER_STRING_DATA(REGISTER_X), REGISTER_STRING_DATA(regist), CMP_EXTENSIVE), mode);
-    } else if (typeX == dtConfig || typeR == dtConfig) {
-      if (typeX != typeR)
+      }
+    }
+    else if(typeX == dtConfig || typeR == dtConfig) {
+      if(typeX != typeR) {
         compareTypeError(regist);
-      else if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
+      }
+      else if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
         compareTypeError(regist);
-      else
+      }
+      else {
         cmpToResult(memcmp(REGISTER_CONFIG_DATA(REGISTER_X), REGISTER_CONFIG_DATA(regist), CONFIG_SIZE_IN_BLOCKS), mode);
-    } else if (typeX == dtReal34Matrix || typeX == dtComplex34Matrix || typeR == dtReal34Matrix || typeR == dtComplex34Matrix) {
-      if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
+      }
+    }
+    else if(typeX == dtReal34Matrix || typeX == dtComplex34Matrix || typeR == dtReal34Matrix || typeR == dtComplex34Matrix) {
+      if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
         compareTypeError(regist);
-      else if (regist == TEMP_REGISTER_1)
+      }
+      else if(regist == TEMP_REGISTER_1) {
         compareMatrix01(regist, mode, typeX);
-      else if ((typeX != dtReal34Matrix && typeX != dtComplex34Matrix) || (typeR != dtReal34Matrix && typeR != dtComplex34Matrix))
+      }
+      else if((typeX != dtReal34Matrix && typeX != dtComplex34Matrix) || (typeR != dtReal34Matrix && typeR != dtComplex34Matrix)) {
         compareTypeError(regist);
-      else
+      }
+      else {
         compareMatrices(regist, mode, typeX, typeR);
-    } else if ((typeX == dtShortInteger || typeX == dtLongInteger) && (typeR == dtShortInteger || typeR == dtLongInteger)) {
+      }
+    }
+    else if((typeX == dtShortInteger || typeX == dtLongInteger) && (typeR == dtShortInteger || typeR == dtLongInteger)) {
       longInteger_t xInt, rInt;
 
-      longIntegerInit(xInt);
-      longIntegerInit(rInt);
-      if (getRegisterAsLongInt(REGISTER_X, xInt, NULL) && getRegisterAsLongInt(regist, rInt, NULL))
+      if(getRegisterAsLongInt(REGISTER_X, xInt, NULL) && getRegisterAsLongInt(regist, rInt, NULL)) {
         cmpToResult(longIntegerCompare(xInt, rInt), mode);
+      }
       longIntegerFree(xInt);
       longIntegerFree(rInt);
-    } else {
+    }
+    else {
       real_t xReal, xImag, rReal, rImag;
       bool cmplx = false;
 
-      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx)
-          || !getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx))
+      if(!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx) || !getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx)) {
         return;
-      if (cmplx) {
-        if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
+      }
+      if(cmplx) {
+        if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
           compareTypeError(regist);
-        else if (realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) || realIsNaN(&rImag))
+        }
+        else if(realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) || realIsNaN(&rImag)) {
           temporaryInformation = TI_FALSE;
-        else
-          SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) && realCompareEqual(&xImag, &rImag))
-                            == (mode == COMPARE_MODE_EQUAL));
-      } else {
-        if (realIsNaN(&xReal) || realIsNaN(&rReal))
+        }
+        else {
+          SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) && realCompareEqual(&xImag, &rImag)) == (mode == COMPARE_MODE_EQUAL));
+        }
+      }
+      else {
+        if(realIsNaN(&xReal) || realIsNaN(&rReal)) {
           temporaryInformation = TI_FALSE;
+        }
         else {
           realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
           cmpToResult(realIsZero(&xImag) ? 0 : realIsNegative(&xImag) ? -1 : 1, mode);

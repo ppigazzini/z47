@@ -10,11 +10,13 @@
 static void squareLonI(void) {
   longInteger_t lgInt;
 
-  if(!getRegisterAsLongInt(REGISTER_X, lgInt, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, lgInt, NULL)) {
+    goto end;
+  }
 
   longIntegerMultiply(lgInt, lgInt, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+end:
   longIntegerFree(lgInt);
 }
 

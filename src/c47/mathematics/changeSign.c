@@ -11,11 +11,12 @@ static void chsLonI(void) {
   longInteger_t x;
 
   if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
-    return;
+    goto end;
   }
 
   longIntegerChangeSign(x);
   convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+end:
   longIntegerFree(x);
 }
 

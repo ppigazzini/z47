@@ -11,12 +11,13 @@ void fnCheckInteger(uint16_t mode) {
   longInteger_t x;
   bool_t frac;
 
-  longIntegerInit(x);
-  if (getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
+  if(getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
     compareTypeErrorX();
-  } else if (frac) {
+  }
+  else if (frac) {
     SET_TI_TRUE_FALSE(mode == CHECK_INTEGER_FP);
-  } else {
+  }
+  else {
     #if defined(DMCP_BUILD)
       lcd_refresh();
     #else // !DMCP_BUILD
