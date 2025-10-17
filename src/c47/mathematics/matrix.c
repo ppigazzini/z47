@@ -19,13 +19,15 @@
   #endif //PC_BUILD
 
   #if defined(TESTSUITE_BUILD)
-    #define tolConvergeDigits      35
+    #define sumSqToleranceDigits  35
+    #define eigenTolerance        70
   #else
-    #define tolConvergeDigits      (significantDigits == 0 ? 35 : significantDigits == 34 ? 16 : significantDigits)
+    #define sumSqToleranceDigits  (significantDigits == 0 ? 35 : significantDigits == 34 ? 16 : significantDigits)
+    #define eigenTolerance        (sumSqToleranceDigits+5)
   #endif
-  #define eigenTolerance           70           // SDIGS = 0 or 34 it is eigenTolerance; SDIGS = 1 - 33 it is SDIGS+3
-  #define eigenNoiseThreshold      70           // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
-  #define eigenContext             &ctxtReal75  // &ctxtReal75 / &ctxtReal51 / &ctxtReal39)
+
+  #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
+  #define eigenContext            &ctxtReal75
 
   #if defined TESTSUITE_BUILD
     #undef EIGENDEBUG
@@ -4455,6 +4457,19 @@ static void diagonalSumOfSquares(const real_t *matrix, uint16_t size, real_t *su
 }
 
 
+static void dropNoise(real_t *eig, uint16_t size, uint16_t dig) {
+    // Conditioned eigenvalues in eig to drop noise beyond the accuracy limit
+    int i;
+    realContext_t c;
+    c = ctxtReal39;
+    c.digits = dig;
+    for(i = 0; i < size; i++) {
+      realPlus(eig + (i * size + i) * 2,     eig + (i * size + i) * 2    , &c);
+      realPlus(eig + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1, &c);
+    }
+  }
+
+
 static bool_t isSymmetricTridiagonal(const real_t *a, uint16_t size, realContext_t *realContext) {
   real_t type_tol;
   realCopy(const_1, &type_tol);
@@ -4498,12 +4513,13 @@ static bool_t isSymmetricTridiagonal(const real_t *a, uint16_t size, realContext
 
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
-  real_t toleranceConverge;
-  realCopy(const_1, &toleranceConverge);
-  toleranceConverge.exponent -= tolConvergeDigits;
+  real_t sumSqTolerance;
+  realCopy(const_1, &sumSqTolerance);
+  sumSqTolerance.exponent -= sumSqToleranceDigits;
 
   // Check convergence: sum of squares of diagonal elements
-  real_t currentDiagonalSumSq, changeDiagonalSumSq;
+  real_t currentDiagonalSumSq, changeDiagonalSumSq, progress_indicator;
+  realZero(&progress_indicator);
   realZero(&currentDiagonalSumSq);
   realZero(&changeDiagonalSumSq);
   static real_t previousDiagonalSumSq;
@@ -4543,7 +4559,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   }
 
   #if defined(EIGENDEBUG)
-    // Save original matrix for verification, last debig step of this function
+    // Save original matrix for verification, last debug step of this function
     real_t original_matrix[size * size * 2];
     for(int i = 0; i < size * size * 2; i++) {
       realCopy(a + i, original_matrix + i);
@@ -4553,10 +4569,12 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   if(size == 2) {
     calculateEigenvalues22(a, size, eig, eig + 1, eig + 6, eig + 7, realContext);
     sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+    dropNoise(eig, size, sumSqToleranceDigits);
   }
   else if(size == 3) {
     calculateEigenvalues33(a, size, eig, eig + 1, eig + 8, eig + 9, eig + 16, eig + 17, realContext);
     sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+    dropNoise(eig, size, sumSqToleranceDigits);
   }
   else { //size > 3
     real_t tol, maxM, minM, tmpM;
@@ -4621,24 +4639,27 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           real_t rr;
           realContext_t c;
           c = ctxtReal4;
-          c.digits = 3;
-          realPlus(&changeDiagonalSumSq,&rr,&c);
-          realToString(&rr,tt);
-
 //Experimental display
-diagonalSumOfSquares(eig, size, &currentDiagonalSumSq, &ctxtReal39);
+
+//          c.digits = 3;
+//          realPlus(&changeDiagonalSumSq,&rr,&c);
+//          realToString(&rr,tt);
+char uuu[30];
+uint16_t eigenvalues_found = size - activeSize;
+int progress_pct = (eigenvalues_found * 100) / size;
+sprintf(uuu, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
+
 c.digits = 4;
-real_t changeDiagonalSumSqrt;
-real34_t changeDiagonalSumSq34;
+real34_t progress_indicator34;
 bool_t bb;
 char sss[50];ss[0]=0;
-realSquareRoot(&changeDiagonalSumSq, &changeDiagonalSumSqrt, &c);
-realToReal34(&changeDiagonalSumSqrt,&changeDiagonalSumSq34);
-strcpy(tt, formatDoubleWidth(&changeDiagonalSumSq34, 6, "", &bb, 100, sss, 80));
-printf("-----%s\n",tt);
+realPlus(&progress_indicator, &progress_indicator, &c);
+realToReal34(&progress_indicator,&progress_indicator34);
+strcpy(tt, formatDoubleWidth(&progress_indicator34, 6, "", &bb, 100, sss, 80));
+//printf("-----%s\n",tt);
 //end of exp
 
-          sprintf(ss,"Tol: %s/1E%d Iter: ", tt, -tolConvergeDigits);
+          sprintf(ss,"%s Tol: %s/1E%d Iter: ", uuu, tt, -sumSqToleranceDigits);
           if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           }
         }
@@ -4835,7 +4856,7 @@ printf("-----%s\n",tt);
         realSubtract(&previousDiagonalSumSq, &currentDiagonalSumSq, &changeDiagonalSumSq, realContext);
         realSetPositiveSign(&changeDiagonalSumSq);
 
-        converged = realCompareLessThan(&changeDiagonalSumSq, &toleranceConverge);
+        converged = realCompareLessThan(&changeDiagonalSumSq, &sumSqTolerance);
 
         if(!converged) {
           if(realCompareGreaterThan(&changeDiagonalSumSq, &previousChangeDiagonalSumSq)) {                                   // Change increased or stayed same - no progress
@@ -4879,6 +4900,22 @@ printf("-----%s\n",tt);
         last_check_iter = iteration;
       }
 
+
+// Calculate meaningful progress metric for user display
+// Show smallest subdiagonal magnitude approaching deflation threshold
+// Show largest subdiagonal magnitude - indicates remaining work
+realCopy(const_1, &progress_indicator);
+progress_indicator.exponent += 10;
+for(uint16_t i = 1; i < activeSize; i++) {
+  real_t subdiag_mag;
+  complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);
+printf("iter=%10d ",iteration);
+printRealToConsole(&subdiag_mag,"subdiag_mag:","\n");
+  if(realCompareLessThan(&subdiag_mag, &progress_indicator)) {
+    realCopy(&subdiag_mag, &progress_indicator);
+  }
+}
+printRealToConsole(&progress_indicator,"TT:","\n");
 
       if(converged) {
         break;
@@ -5067,13 +5104,16 @@ printf("-----%s\n",tt);
       printf("=== END CONDITION NUMBER CHECK ===\n");
     #endif
 
-    // Copy sorted and conditioned eigenvalues from eig back to a
-    for(i = 0; i < size; i++) {
-      realCopy(eig + (i * size + i) * 2,     a + (i * size + i) * 2);
-      realCopy(eig + (i * size + i) * 2 + 1, a + (i * size + i) * 2 + 1);
-    }
+    dropNoise(eig, size, sumSqToleranceDigits);
+
 
                                                                 #if defined(EIGENDEBUG)
+                                                                  // Copy sorted and conditioned eigenvalues from eig back to a
+                                                                  for(i = 0; i < size; i++) {
+                                                                    realCopy(eig + (i * size + i) * 2,     a + (i * size + i) * 2    );
+                                                                    realCopy(eig + (i * size + i) * 2 + 1, a + (i * size + i) * 2 + 1);
+                                                                  }
+
                                                                   printf("\nEIGENVAL after conditioning\n");
                                                                   printf("Final eigenvalues:\n");
                                                                   for(i = 0; i < size; i++) {
