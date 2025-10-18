@@ -492,7 +492,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo) {
+        if(thereIsSomethingToUndo && 
+          !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
       }
