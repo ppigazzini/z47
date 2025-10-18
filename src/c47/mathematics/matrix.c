@@ -4642,32 +4642,28 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
-          char ss[50], tt[20];
-          real_t rr;
           realContext_t c;
           c = ctxtReal4;
-//Experimental display
 
-//          c.digits = 3;
-//          realPlus(&changeDiagonalSumSq,&rr,&c);
-//          realToString(&rr,tt);
-char uuu[30];
-uint16_t eigenvalues_found = size - activeSize;
-int progress_pct = (eigenvalues_found * 100) / size;
-sprintf(uuu, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
+          char outSubStr1[32]; outSubStr1[0] = 0;
+          uint16_t eigenvalues_found = size - activeSize;
+//        int progress_pct = (eigenvalues_found * 100) / size;
+//        sprintf(outSubStr1, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
+          sprintf(outSubStr1, "%d/%d", eigenvalues_found, size);
+          //printf("-----outSubStr1:%s\n",outSubStr1);
 
-c.digits = 4;
-real34_t progress_indicator34;
-bool_t bb;
-char sss[50];ss[0]=0;
-realPlus(&progress_indicator, &progress_indicator, &c);
-realToReal34(&progress_indicator,&progress_indicator34);
-strcpy(tt, formatDoubleWidth(&progress_indicator34, 6, "", &bb, 100, sss, 80));
-//printf("-----%s\n",tt);
-//end of exp
+          c.digits = 4;
+          real34_t progress_indicator34;
+          bool_t boolNotUsed;
+          char outSubStr2[32]; outSubStr2[0] = 0;
+          realPlus(&progress_indicator, &progress_indicator, &c);
+          realToReal34(&progress_indicator,&progress_indicator34);
+          formatDoubleWidth(&progress_indicator34, 6, "", &boolNotUsed, 100, outSubStr2, 80);
+          //printf("-----outSubStr2:%s\n",outSubStr2);
 
-          sprintf(ss,"%s Tol: %s/1E%d Iter: ", uuu, tt, -sumSqToleranceDigits);
-          if(progressHalfSecUpdate_Integer(timed, ss, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          char outStr[32+32+3+16 + 5]; //5 spare 
+          sprintf(outStr,"%s Tol: %s/1E%d Iter: ", outSubStr1, outSubStr2, -sumSqToleranceDigits);
+          if(progressHalfSecUpdate_Integer(timed, outStr, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           }
         }
         if(exitKeyWaiting()) {
@@ -4908,21 +4904,24 @@ strcpy(tt, formatDoubleWidth(&progress_indicator34, 6, "", &bb, 100, sss, 80));
       }
 
 
-// Calculate meaningful progress metric for user display
-// Show smallest subdiagonal magnitude approaching deflation threshold
-// Show largest subdiagonal magnitude - indicates remaining work
-realCopy(const_1, &progress_indicator);
-progress_indicator.exponent += 10;
-for(uint16_t i = 1; i < activeSize; i++) {
-  real_t subdiag_mag;
-  complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);
-printf("iter=%10d ",iteration);
-printRealToConsole(&subdiag_mag,"subdiag_mag:","\n");
-  if(realCompareLessThan(&subdiag_mag, &progress_indicator)) {
-    realCopy(&subdiag_mag, &progress_indicator);
-  }
-}
-printRealToConsole(&progress_indicator,"TT:","\n");
+      // Progress metric for user display: subdiagonal magnitude - indicates remaining work
+      realCopy(const_1, &progress_indicator);
+      progress_indicator.exponent += 10;
+      for(uint16_t i = 1; i < activeSize; i++) {
+        real_t subdiag_mag;
+        complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);
+        #if defined(EIGENDEBUG)
+          printf("iter=%10d ",iteration);
+          printRealToConsole(&subdiag_mag,"subdiag_mag:","\n");
+        #endif //EIGENDEBUG
+        if(realCompareLessThan(&subdiag_mag, &progress_indicator)) {
+          realCopy(&subdiag_mag, &progress_indicator);
+        }
+      }
+      #if defined(EIGENDEBUG)
+        printRealToConsole(&progress_indicator,"TT:","\n");
+      #endif //EIGENDEBUG
+
 
       if(converged) {
         break;
