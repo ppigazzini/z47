@@ -361,19 +361,18 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 
 
 //XFCNS is different for C47hw, R47hw. Sim is not R47, therefore the C47 layout
-TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN, 
-                                             ITM_DEG,                       ITM_RAD,                    ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
-                                             ITM_LARGELI,                   ITM_DREAL,                  ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
+TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_MODANG_XFN,             ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN, 
+                                             ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
+                                             ITM_DEG,                       ITM_RAD,                    ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
 #if (CALCMODEL != USER_R47)
-                                             ITM_TO_XFN,                    ITM_1ONX_XFN,               ITM_SQRT_XFN,             ITM_LOG_XFN,           ITM_LN_XFN,                  ITM_MOD_XFN,
-                                             ITM_DROP_XFN,                  ITM_SWAP_XFN,               ITM_POWER_XFN,            ITM_10X_XFN,           ITM_EXP_XFN,                 ITM_MODANG_XFN,
-                                             ITM_EE_STO_Z,                  ITM_EE_RCL_Z,               ITM_EE_STO_V,             ITM_EE_RCL_V,          ITM_EE_STO_I,                ITM_EE_RCL_I                   };
+                                             ITM_TO_XFN,                    ITM_1ONX_XFN,               ITM_SQRT_XFN,             ITM_LOG_XFN,           ITM_LN_XFN,                  ITM_SWAP_XFN,
+                                             ITM_MOD_XFN,                   ITM_POWER_XFN,              ITM_SQR_XFN,              ITM_10X_XFN,           ITM_EXP_XFN,                 ITM_DUP_XFN,
+                                             ITM_STO_XFN,                   ITM_RCL_XFN,                ITM_YRTX_XFN,             ITM_LARGELI,           ITM_DREAL,                   ITM_DROP_XFN                   };
 #else
-                                             ITM_TO_XFN,                    ITM_SQRT_XFN,               ITM_1ONX_XFN,             ITM_POWER_XFN,         ITM_LOG_XFN,                 ITM_LN_XFN,
-                                             ITM_DROP_XFN,                  ITM_SWAP_XFN,               ITM_MOD_XFN,              ITM_MODANG_XFN,        ITM_10X_XFN,                 ITM_EXP_XFN,
-                                             ITM_EE_STO_Z,                  ITM_EE_RCL_Z,               ITM_EE_STO_V,             ITM_EE_RCL_V,          ITM_EE_STO_I,                ITM_EE_RCL_I                   };
+                                             ITM_SQR_XFN,                   ITM_SQRT_XFN,               ITM_1ONX_XFN,             ITM_POWER_XFN,         ITM_LOG_XFN,                 ITM_LN_XFN,
+                                             ITM_MOD_XFN,                   ITM_TO_XFN,                 ITM_DUP_XFN,              ITM_YRTX_XFN,          ITM_10X_XFN,                 ITM_EXP_XFN,
+                                             ITM_STO_XFN,                   ITM_RCL_XFN,                ITM_DROP_XFN,             ITM_SWAP_XFN,          ITM_LARGELI,                 ITM_DREAL                     };
 #endif
-
 
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */

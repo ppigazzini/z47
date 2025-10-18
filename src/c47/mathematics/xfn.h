@@ -40,5 +40,10 @@ void fnXXfn_DIV     (uint16_t registerNo);
 void fnXXfn_MOD     (uint16_t registerNo);
 void fnXXfn_MODANG  (uint16_t registerNo);
 void fnXXfn_TO      (uint16_t registerNo);
+void fnXXfn_STO     (uint16_t registerNo);
+void fnXXfn_RCL     (uint16_t registerNo);
+void fnXXfn_DRG     (uint16_t registerNo);
+void fnXXfn_SQR     (uint16_t registerNo);
+void fnXXfn_YRTX    (uint16_t registerNo);
 
 #endif // !XFN_H

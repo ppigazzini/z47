@@ -2657,8 +2657,14 @@
 #define ITM_MOD_XFN                 2577
 #define ITM_MODANG_XFN              2578
 #define ITM_TO_XFN                  2579
+#define ITM_STO_XFN                 2580
+#define ITM_RCL_XFN                 2581
+#define ITM_DRG_XFN                 2582
+#define ITM_SQR_XFN                 2583
+#define ITM_YRTX_XFN                2584
+#define ITM_DUP_XFN                 2585
 
-#define LAST_ITEM                   2580
+#define LAST_ITEM                   2586
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

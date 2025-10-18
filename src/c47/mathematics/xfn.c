@@ -76,6 +76,20 @@
   }
   void fnXXfn_TO                  (uint16_t registerNo) {
   }
+  void fnXXfn_STO                 (uint16_t registerNo) {
+  }
+  void fnXXfn_RCL                 (uint16_t registerNo) {
+  }
+  void fnXXfn_DRG                 (uint16_t registerNo) {
+  }
+  void fnXXfn_SQR                 (uint16_t registerNo) {
+  }
+  void fnXXfn_YRTX                (uint16_t registerNo) {
+  }
+  void fnXXfn_DUPX                (uint16_t registerNo) {
+  }
+
+
 #endif //SAVE_SPACE_DM42_18_XFN
 
 
@@ -269,7 +283,7 @@ returnUnity:
 
 
   #define XFN_NOTFOUND 99
-  #define FT_NILADIC  100
+  #define FT_NILADIC  100  //this controls the reading and dropping of the stack
   #define FT_MONADIC  101
   #define FT_DYADIC   102
   #define FT_SINGLEX  103
@@ -283,7 +297,10 @@ typedef struct {
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
       { ITM_pi_XFN      ,FT_NILADIC },
       { ITM_DROP_XFN    ,FT_NILADIC },
+      { ITM_DUP_XFN     ,FT_NILADIC },
       { ITM_SWAP_XFN    ,FT_NILADIC },
+      { ITM_STO_XFN     ,FT_NILADIC },
+      { ITM_RCL_XFN     ,FT_NILADIC },
       { ITM_TO_XFN      ,FT_SINGLEX },  //special case where hte function drops one register
       { ITM_DEG2_XFN    ,FT_MONADIC },
       { ITM_RAD2_XFN    ,FT_MONADIC },
@@ -300,15 +317,19 @@ typedef struct {
       { ITM_SQRT_XFN    ,FT_MONADIC },
       { ITM_MODANG_XFN  ,FT_MONADIC },
       { ITM_1ONX_XFN    ,FT_MONADIC },
+      { ITM_DRG_XFN     ,FT_MONADIC },
+      { ITM_SQR_XFN     ,FT_MONADIC },
       { ITM_atan2_XFN   ,FT_DYADIC  },
       { ITM_ADD_XFN     ,FT_DYADIC  },
       { ITM_SUB_XFN     ,FT_DYADIC  },
       { ITM_POWER_XFN   ,FT_DYADIC  },
+      { ITM_YRTX_XFN    ,FT_DYADIC  },
       { ITM_MULT_XFN    ,FT_DYADIC  },
       { ITM_DIV_XFN     ,FT_DYADIC  },
       { ITM_MOD_XFN     ,FT_DYADIC  },
       { 0               ,0   }
   };
+
 
 
   static int lookupFunctionId(int function_id) {
@@ -593,7 +614,24 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_TO                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_TO_XFN);
   }
-
+  void fnXXfn_STO                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_STO_XFN);
+  }
+  void fnXXfn_RCL                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_RCL_XFN);
+  }
+  void fnXXfn_DRG                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_DRG_XFN);
+  }
+  void fnXXfn_SQR                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_SQR_XFN);
+  }
+  void fnXXfn_YRTX                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_YRTX_XFN);
+  }
+  void fnXXfn_DUPX                (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_DUP_XFN);
+  }
 
 
 
@@ -679,6 +717,33 @@ printf("Dddd %d\n",registerNo);
           fnDrop3();
           return;
         }
+        case ITM_DUP_XFN: {
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(REGISTER_Z);
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(REGISTER_Z);
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(REGISTER_Z);
+          return;
+        }
+        case ITM_STO_XFN: {
+//          saveForUndo();
+          setSystemFlag(FLAG_ASLIFT);
+          copySourceRegisterToDestRegister(REGISTER_X, registerNo + 0);
+          copySourceRegisterToDestRegister(REGISTER_Y, registerNo + 1);
+          copySourceRegisterToDestRegister(REGISTER_Z, registerNo + 2);
+          return; 
+        }
+        case ITM_RCL_XFN: {
+//          saveForUndo();
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(registerNo + 2);
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(registerNo + 1);
+          setSystemFlag(FLAG_ASLIFT);
+          fnRecall(registerNo + 0);
+          return; 
+        }
 
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
@@ -704,6 +769,26 @@ printf("Dddd %d\n",registerNo);
             realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
           }
           angleMode = amDegree;
+          break;
+        }
+
+        case ITM_DRG_XFN: {
+          angularMode_t nextAngleMode = angleMode == amDegree ? amRadian : angleMode == amRadian ? amGrad : angleMode == amGrad ? amMultPi : angleMode == amMultPi ? amDegree : amDegree;
+printf("aa001\n");
+          if(inputIsNoAngle3r(registerNo)) {
+printf("aa002\n");
+            angleMode = currentAngularMode;
+            break;
+          } else {
+printf("aa003\n");
+            if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
+printf("aa004\n");
+              realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
+              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);        
+            }
+          }
+printf("aa005\n");
+          angleMode = nextAngleMode;
           break;
         }
 
@@ -770,6 +855,10 @@ printf("Dddd %d\n",registerNo);
           realPower((real_t *)&paramX, const_1on2, (real_t *)&paramX, &c);
           break;
         }
+        case ITM_SQR_XFN : {
+          realPower((real_t *)&paramX, const_2, (real_t *)&paramX, &c);
+          break;
+        }
         case ITM_1ONX_XFN: {
           realDivide(const_1, (real_t *)&paramX, (real_t *)&paramX, &c);
           break;
@@ -798,6 +887,12 @@ printf("Dddd %d\n",registerNo);
           break;
         }
         case ITM_POWER_XFN: {
+          realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
+          break;
+        }
+        case ITM_YRTX_XFN: {
+          realDivide    (const_1, (real_t *)&paramX, (real_t *)&paramX, &c);
+//ADD ERROR FOR 0
           realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
           break;
         }
@@ -864,7 +959,8 @@ printf("Dddd %d\n",registerNo);
         break;
       }
       case ITM_RAD2_XFN:    //leave angleMode, it is set in the function
-      case ITM_DEG2_XFN: {
+      case ITM_DEG2_XFN: 
+      case ITM_DRG_XFN:  {
         break;
       }
       case ITM_ADD_XFN:
