@@ -391,41 +391,41 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     if(statisticalSumsPointer != NULL) {
+      TO_QSPI const char * const StatSumNames[NUMBER_OF_STATISTICAL_SUMS] = {
+        /* 0*/ "n             ",
+        /* 1*/ STD_SIGMA "(x)          ",
+        /* 2*/ STD_SIGMA "(y)          ",
+        /* 3*/ STD_SIGMA "(x" STD_SUP_2 ")         ",
+        /* 4*/ STD_SIGMA "(x" STD_SUP_2 "y)        ",
+        /* 5*/ STD_SIGMA "(y" STD_SUP_2 ")         ",
+        /* 6*/ STD_SIGMA "(xy)         ",
+        /* 7*/ STD_SIGMA "(ln(x)" STD_CROSS "ln(y))",
+        /* 8*/ STD_SIGMA "(ln(x))      ",
+        /* 9*/ STD_SIGMA "(ln" STD_SUP_2 "(x))     ",
+        /*10*/ STD_SIGMA "(y ln(x))    ",
+        /*11*/ STD_SIGMA "(ln(y))      ",
+        /*12*/ STD_SIGMA "(ln" STD_SUP_2 "(y))     ",
+        /*13*/ STD_SIGMA "(x ln(y))    ",
+        /*14*/ STD_SIGMA "(ln(y)/x)    ",
+        /*15*/ STD_SIGMA "(x" STD_SUP_2 "/y)       ",
+        /*16*/ STD_SIGMA "(1/x)        ",
+        /*17*/ STD_SIGMA "(1/x" STD_SUP_2 ")       ",
+        /*18*/ STD_SIGMA "(x/y)        ",
+        /*19*/ STD_SIGMA "(1/y)        ",
+        /*20*/ STD_SIGMA "(1/y" STD_SUP_2 ")       ",
+        /*21*/ STD_SIGMA "(x" STD_SUP_3 ")         ",
+        /*22*/ STD_SIGMA "(x" STD_SUP_4 ")         ",
+        /*23*/ "x min         ",
+        /*24*/ "x max         ",
+        /*25*/ "y min         ",
+        /*26*/ "y max         "
+      };
+
       char sumName[40];
       for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS; sum++) {
         ptr += strlen(ptr);
-
-        switch(sum) {
-          case  0: strcpy(sumName,           "n             ");            break;
-          case  1: strcpy(sumName, STD_SIGMA "(x)          ");             break;
-          case  2: strcpy(sumName, STD_SIGMA "(y)          ");             break;
-          case  3: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 ")         "); break;
-          case  4: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 "y)        "); break;
-          case  5: strcpy(sumName, STD_SIGMA "(y" STD_SUP_2 ")         "); break;
-          case  6: strcpy(sumName, STD_SIGMA "(xy)         ");             break;
-          case  7: strcpy(sumName, STD_SIGMA "(ln(x)" STD_CROSS "ln(y))"); break;
-          case  8: strcpy(sumName, STD_SIGMA "(ln(x))      ");             break;
-          case  9: strcpy(sumName, STD_SIGMA "(ln" STD_SUP_2 "(x))     "); break;
-          case 10: strcpy(sumName, STD_SIGMA "(y ln(x))    ");             break;
-          case 11: strcpy(sumName, STD_SIGMA "(ln(y))      ");             break;
-          case 12: strcpy(sumName, STD_SIGMA "(ln" STD_SUP_2 "(y))     "); break;
-          case 13: strcpy(sumName, STD_SIGMA "(x ln(y))    ");             break;
-          case 14: strcpy(sumName, STD_SIGMA "(ln(y)/x)    ");             break;
-          case 15: strcpy(sumName, STD_SIGMA "(x" STD_SUP_2 "/y)       "); break;
-          case 16: strcpy(sumName, STD_SIGMA "(1/x)        ");             break;
-          case 17: strcpy(sumName, STD_SIGMA "(1/x" STD_SUP_2 ")       "); break;
-          case 18: strcpy(sumName, STD_SIGMA "(x/y)        ");             break;
-          case 19: strcpy(sumName, STD_SIGMA "(1/y)        ");             break;
-          case 20: strcpy(sumName, STD_SIGMA "(1/y" STD_SUP_2 ")       "); break;
-          case 21: strcpy(sumName, STD_SIGMA "(x" STD_SUP_3 ")         "); break;
-          case 22: strcpy(sumName, STD_SIGMA "(x" STD_SUP_4 ")         "); break;
-          case 23: strcpy(sumName,           "x min         ");            break;
-          case 24: strcpy(sumName,           "x max         ");            break;
-          case 25: strcpy(sumName,           "y min         ");            break;
-          case 26: strcpy(sumName,           "y max         ");            break;
-          default: strcpy(sumName,           "?             ");
-        }
-
+        strcpy(sumName, StatSumNames[sum]);
+  
         sprintf(ptr, LINEBREAK "SR%02d = ", sum);
         ptr += strlen(ptr);
         stringToUtf8(sumName, (uint8_t *)ptr);
@@ -838,8 +838,19 @@ void execTimerApp(uint16_t timerType) {
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
 
+        if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
+          aimBuffer[0] = 0;
+          ++currentLocalStepNumber;
+          currentStep = findNextStep(currentStep);
+          refreshRegisterLine(REGISTER_T);
+        }
+        else if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && (isArrowDown(currentKeyCode))) {
+          programRunStop = PGM_STOPPED;
+          refreshRegisterLine(REGISTER_T);
+        }
+
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
           if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
             // stub for code to process on up1/down longpress
@@ -853,7 +864,7 @@ void execTimerApp(uint16_t timerType) {
           if(calcMode == CM_AIM) {
             refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
           } else
-          if(calcMode == CM_EIM) {
+          if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(131);
           }
@@ -2832,7 +2843,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
-            moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[24], NULL);
+            moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           w = stringWidth(tmpString, &standardFont, true, true);
           showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);

@@ -128,7 +128,7 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
+                                             ITM_M_RR,                      ITM_M_DIM_GR,               ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,
 
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_CLSTK,
@@ -741,15 +741,9 @@ TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
-#if (CALCMODEL != USER_R47) //C47 et al
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_C47,            ITM_RIBBON_C47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_R47,            ITM_RIBBON_R47PL,
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_C47,            ITM_RIBBON_R47,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_FIN2,           ITM_RIBBON_SAV2,           ITM_RIBBON_C47PL,          ITM_RIBBON_R47PL,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
-#else //R47
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_R47,            ITM_RIBBON_R47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_C47,            ITM_RIBBON_C47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
-#endif //R47
 
 TO_QSPI const int16_t menu_BLUE_C47[]    = { ITM_MAGNITUDE,       -MNU_CPX,         -MNU_STK,         -MNU_TRG_C47,     -MNU_EXP,         ITM_UNDO,
                                              ITM_ARG,             ITM_DELTAPC,      ITM_XTHROOT,      ITM_op_j,         ITM_toREC2,       ITM_toPOL2,
@@ -2035,11 +2029,16 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading pseudo menus
 }
 
 
-static  char FF[16];
-static char *changeItoJ(int16_t item) {
 
-  //printf(">>>> changeItoJ: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
-  if(getSystemFlag(FLAG_CPXj)) {
+char FF[16]; //using static char FF
+static char *changeDotAndIJ(int16_t item, const char* itemN) {
+  if((item == ITM_DREAL || item == SFL_DREAL) && itemN[3] == '.') { //this replaces the 4th byte of dℤ.0 with the ascii ./,
+    stringCopy(FF, itemN);
+    FF[3] = RADIX34_MARK_CHAR;
+    return FF;
+  }
+  else if(getSystemFlag(FLAG_CPXj)) {
+    stringCopy(FF, itemN);
     if((item == ITM_op_j || item == ITM_op_j_pol || item == ITM_op_j_SIGN) && FF[1] == STD_op_i[1]) {
       //printf(">>>> changed: %u %u %u %u %u %s %u %u\n", (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
       FF[1]++;
@@ -2047,33 +2046,9 @@ static char *changeItoJ(int16_t item) {
     if(item == ITM_EE_EXP_TH && FF[3] == STD_SUP_i[1]) {
       FF[3]++;
     }
-  }
-  return FF;
-}
-
-static char *changeDotInDreal(int16_t item) {
-  //printf(">>>> changeDreal: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
-  if(item != ITM_DREAL) {
     return FF;
   }
-  uint16_t ii;
-  for(ii = 0; FF[ii] != '.' && FF[ii] != ','; ii++) {
-    if(FF[ii] == 0) {
-      return FF;
-    }
-  }
-  FF[ii] = 0; //clear string from dot onward and replace with below
-  strcat(FF,RADIX34_MARK_STRING);
-  strcat(FF,STD_SPACE_3_PER_EM "0");
-  return FF;
-}
-
-//using static char FF
-static char *changeDynamicName(int16_t item) {
-  stringCopy(FF, indexOfItems[item%10000].itemSoftmenuName);
-  changeItoJ(item);
-  changeDotInDreal(item);
-  return FF;
+  return (char*)itemN;
 }
 
 
@@ -2326,7 +2301,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       stringCopy(itemName, indexOfItems[itemNr%10000].itemCatalogName);
     }
     else {
-      stringCopy(itemName, changeDynamicName(itemNr));
+      stringCopy(itemName, changeDotAndIJ(itemNr, indexOfItems[itemNr%10000].itemSoftmenuName));
       //printf("WWW2: itemName=%s, ItemNr=%i \n",itemName,itemNr);
       return;
     }
@@ -2767,10 +2742,10 @@ void showSoftmenuCurrentPart(void) {
           else if(softmenu[m].menuItem == -MNU_SYSFL) {                                         //JMvv add radiobuttons to standard flags
             if(indexOfItems[item%10000].itemCatalogName[0] != 0) {
               if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
-                showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
               }
               else {
-                showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
               }
             }
           }                                                                      //JM^^
@@ -2801,7 +2776,7 @@ void showSoftmenuCurrentPart(void) {
             else {
               if( (softmenu[m].menuItem == -MNU_FCNS || softmenu[m].menuItem == -MNU_FCNS_EIM || softmenu[m].menuItem  == -MNU_CONST) || //CONST is a normal menu not a catalog, but we expect the catalog to be treated as a catalog. //The same could be a problem with any of the generated catalogs (MNU_SYSFL, MNU_alpha_INTL, MNU_alpha_intl, )
                  ((softmenu[m].menuItem == -MNU_IO   || softmenu[m].menuItem  == -MNU_PFN  ) && (item == ITM_STOCFG || item == ITM_RCLCFG))) { //do not display "Config"
-                stringCopy(itemName, indexOfItems[item%10000].itemCatalogName);
+                stringCopy(itemName, changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName));
               }
               showSoftkey(itemName, x, y-currentFirstItem/6, vm, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText, !greyout);
             }
@@ -2809,7 +2784,7 @@ void showSoftmenuCurrentPart(void) {
 
             //softkey modifications
 
-            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
+            if((getSystemFlag(FLAG_G_DOUBLETAP) && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
@@ -2952,7 +2927,7 @@ void showSoftmenuCurrentPart(void) {
       if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it
 
         if(!catalog) {                                                                                 //remember the page number if the menu you are opening was already open and in the stack
-          if(!getSystemFlag(FLAG_MNUp1)) {
+          if(!getSystemFlag(FLAG_MNUp1) && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             lastCatalogPosition[CATALOG_NONE] = softmenuStack[i].firstItem;
             calcMode = softmenuStack[i].calcMode;
           } else {
@@ -3003,10 +2978,10 @@ void showSoftmenuCurrentPart(void) {
     else if(softmenuStack[0].softmenuId == 1 && calcMode != CM_AIM) { // MyAlpha displayed and not in AIM
       softmenuStack[0].softmenuId = 0; // MyMenu
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
-    else if(softmenuStack[0].softmenuId == 0 && BASE_MYM && calcMode != CM_AIM) {
+    else if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_MYM) && calcMode != CM_AIM) {
       //softmenuStack[0].softmenuId = 0;                                                       //already 0, not needed to change
     }
     else if(softmenuStack[0].softmenuId == 1 && calcMode == CM_AIM) {
@@ -3190,7 +3165,7 @@ void showSoftmenuCurrentPart(void) {
         }
       }
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
   }

@@ -657,14 +657,6 @@ void fnIsFlagSetFlip(uint16_t flag) {
  ***********************************************/
 void SetSetting(uint16_t jmConfig) {
   switch(jmConfig) {
-    case JC_G_DOUBLETAP: jm_G_DOUBLETAP = !jm_G_DOUBLETAP;                           fnRefreshState(); break;
-    case JC_HOME_TRIPLE: HOME3 = !HOME3;           if(HOME3) {MYM3 = false;}         fnRefreshState(); break;
-    case JC_MYM_TRIPLE:  MYM3 = !MYM3;             if(MYM3) {HOME3 = false;}         fnRefreshState(); break;
-    case JC_SHFT_4s:     ShiftTimoutMode = !ShiftTimoutMode;                         fnRefreshState(); break;
-    case JC_BASE_MYM:    BASE_MYM = !BASE_MYM;     if(BASE_MYM) {BASE_HOME = false;} fnRefreshState(); break;
-    case JC_BASE_HOME:   BASE_HOME = !BASE_HOME;   if(BASE_HOME) {BASE_MYM = false;} fnRefreshState(); break;
-
-
     case TF_H12:         fnClearFlag(FLAG_TDM24);                               break;
     case TF_H24:         fnSetFlag(FLAG_TDM24);                                 break;
     case CU_I:           fnClearFlag(FLAG_CPXj);                                break;
@@ -708,22 +700,19 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_TOPHEX :
     case FLAG_BCD    :
     case FLAG_LARGELI:
-              fnFlipFlag(jmConfig);                                  break; //
-    case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
-    case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
-
     case FLAG_FRACT:
-      fnFlipFlag(FLAG_FRACT);
-      break;
     case FLAG_IRFRAC:
-      fnFlipFlag(FLAG_IRFRAC);
-      fnRefreshState();
-      break;
-    case ITM_DREAL:
-      fnFlipFlag(FLAG_DREAL);
-      break;
+    case FLAG_G_DOUBLETAP:
+    case FLAG_SHFT_4s:
+                           fnFlipFlag(jmConfig);                               break;
+    case FLAG_DENANY:      fnFlipFlag(jmConfig); clearSystemFlag(FLAG_DENFIX); break;
+    case FLAG_DENFIX:      fnFlipFlag(jmConfig); clearSystemFlag(FLAG_DENANY); break;
+    case FLAG_HOME_TRIPLE: fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_HOME_TRIPLE)) {clearSystemFlag(FLAG_MYM_TRIPLE );}; break;
+    case FLAG_MYM_TRIPLE:  fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_MYM_TRIPLE )) {clearSystemFlag(FLAG_HOME_TRIPLE);}; break;
+    case FLAG_BASE_MYM:    fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
+    case FLAG_BASE_HOME:   fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
 
-
+    case ITM_DREAL:        fnFlipFlag(FLAG_DREAL); break;
 
     case JC_UC:
       if(alphaCase == AC_LOWER) {

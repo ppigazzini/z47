@@ -5,59 +5,71 @@
 
 
 bool_t isRegInRange(uint16_t regist) {
-  return (regist <= LAST_LETTERED_REGISTER) ||                              //this includes r00-r99
-    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||
-    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||
-    (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
-    (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
-    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||
-    (FIRST_TEMP_REGISTER  <= regist && regist <= LAST_TEMP_REGISTER);
+  return (regist <= LAST_LETTERED_REGISTER) ||                                                           // r00 -> r99 and includes X -> K
+    (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||                                  // M -> S
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||                                 // E -> W                                  
+    (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || // 7000 -> 7098
+    (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||        // 256  -> 1999 *
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||                           // 2000 -> 2047 *
+    (FIRST_TEMP_REGISTER  <= regist && regist <= LAST_TEMP_REGISTER);                                    // 135, 136
 }
 
 bool_t regInRange(uint16_t regist) {
-  bool_t inRange = isRegInRange(regist);
-  #if defined(PC_BUILD)
-    if(!inRange) {
-      if(!(regist <= LAST_LETTERED_REGISTER)){
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "Lettered register %04d", regist - FIRST_LETTERED_REGISTER);
-      }
-      else if(!(FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER)){
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "Stat register %04d", regist - FIRST_STAT_REGISTER);
-      }
-      else if(!(FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER)){
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "Spare register %04d", regist - FIRST_SPARE_REGISTER);
-      }
-      else if(!(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters)) {
-        printf("Local Not in range.\n");
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
-      }
-      else if(!(FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
-        displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-        // This error message is not massively useful because it doesn't have the original name
-        // But it shouldn't have even got this far if the name doesn't exist
-        sprintf(errorMessage, "named register .%02d", regist - FIRST_NAMED_VARIABLE);
-      }
-      else if(!(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE)){
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "reserved variable %04d", regist - FIRST_RESERVED_VARIABLE);
-      }
-      else if(!(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER)){
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "temporary register %04d", regist - LAST_TEMP_REGISTER);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        sprintf(errorMessage, "generic");
-      }
-      moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
+  if(isRegInRange(regist)) {
+    return true;
+  }
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    const char *regType;
+    uint16_t offset;
+    uint8_t  errorType = ERROR_OUT_OF_RANGE;
+    
+    if(regist <= LAST_LETTERED_REGISTER) {
+      regType = "Lettered register";
+      offset = regist - FIRST_LETTERED_REGISTER;
     }
-  #endif // PC_BUILD
-  return inRange;
+    else if(FIRST_STAT_REGISTER <= regist && regist <= LAST_STAT_REGISTER) {
+      regType = "Stat register";
+      offset = regist - FIRST_STAT_REGISTER;
+    }
+    else if(FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) {
+      regType = "Spare register";
+      offset = regist - FIRST_SPARE_REGISTER;
+    }
+    else if(FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
+      regType = "local register .";
+      offset = regist - FIRST_LOCAL_REGISTER;
+    }
+    else if(FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
+      regType = "named register .";
+      offset = regist - FIRST_NAMED_VARIABLE;
+      errorType = ERROR_UNDEF_SOURCE_VAR;
+    }
+    else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
+      regType = "reserved variable";
+      offset = regist - FIRST_RESERVED_VARIABLE;
+    }
+    else if(FIRST_TEMP_REGISTER <= regist && regist <= LAST_TEMP_REGISTER) {
+      regType = "temporary register";
+      offset = regist - LAST_TEMP_REGISTER;
+    }
+    else {
+      regType = "generic";
+      offset = 0;
+    }
+    displayCalcErrorMessage(errorType, ERR_REGISTER_LINE, REGISTER_X);
+    if(strcmp(regType, "generic") == 0) {
+      sprintf(errorMessage, "generic");
+    }
+    else {
+      sprintf(errorMessage, "%s %04d", regType, offset);
+    }
+    moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
+  #else
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  #endif
+  return false;
 }
+
 
 static bool_t _checkReadOnlyVariable(uint16_t regist) {
   if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
@@ -409,6 +421,12 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte23 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte24 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte25 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte26 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte27 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte28 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte29 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte30 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte31 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
@@ -437,16 +455,16 @@ void fnStoreConfig(uint16_t regist) {
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
   storeToDtConfigDescriptor(    compatibility_byte19);
-  storeToDtConfigDescriptor(HOME3);
-  storeToDtConfigDescriptor(ShiftTimoutMode);
+  storeToDtConfigDescriptor(    compatibility_byte28);
+  storeToDtConfigDescriptor(    compatibility_byte29);
   storeToDtConfigDescriptor(    compatibility_byte21);
-  storeToDtConfigDescriptor(BASE_HOME);
+  storeToDtConfigDescriptor(    compatibility_byte30);
   storeToDtConfigDescriptor(    compatibility_byte00);   //added
   storeToDtConfigDescriptor(    compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(dispBase);
-  storeToDtConfigDescriptor(BASE_MYM);
-  storeToDtConfigDescriptor(jm_G_DOUBLETAP);
+  storeToDtConfigDescriptor(    compatibility_byte31);
+  storeToDtConfigDescriptor(compatibility_byte26);
   storeToDtConfigDescriptor(compatibility_float1);
   storeToDtConfigDescriptor(compatibility_float2);
   storeToDtConfigDescriptor(Norm_Key_00.func);
@@ -488,7 +506,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(exponentLimit);
   storeToDtConfigDescriptor(exponentHideLimit);
   storeToDtConfigDescriptor(lastIntegerBase);
-  storeToDtConfigDescriptor(MYM3);
+  storeToDtConfigDescriptor(compatibility_byte27);
   storeToDtConfigDescriptor(timeDisplayFormatDigits);
 }
 

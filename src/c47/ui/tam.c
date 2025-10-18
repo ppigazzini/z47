@@ -4,107 +4,67 @@
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
+    TO_QSPI const int16_t StoOperations[][2] = {
+      {ITM_ADD,      ITM_STOADD},
+      {ITM_SUB,      ITM_STOSUB},
+      {ITM_MULT,     ITM_STOMULT},
+      {ITM_DIV,      ITM_STODIV},
+      {ITM_Max,      ITM_STOMAX},
+      {ITM_Min,      ITM_STOMIN},
+      {ITM_Config,   ITM_STOCFG},
+      {ITM_Stack,    ITM_STOS},
+      {ITM_dddEL,    ITM_STOEL},
+      {ITM_dddIJ,    ITM_STOIJ},
+      {ITM_dddVEL,   ITM_STOVEL},
+      {ITM_dddIX,    ITM_INDEX}
+    };
+
+    TO_QSPI const int16_t RclOperations[][2] = {
+      {ITM_ADD,      ITM_RCLADD},
+      {ITM_SUB,      ITM_RCLSUB},
+      {ITM_MULT,     ITM_RCLMULT},
+      {ITM_DIV,      ITM_RCLDIV},
+      {ITM_Max,      ITM_RCLMAX},
+      {ITM_Min,      ITM_RCLMIN},
+      {ITM_Config,   ITM_RCLCFG},
+      {ITM_Stack,    ITM_RCLS},
+      {ITM_dddEL,    ITM_RCLEL},
+      {ITM_dddIJ,    ITM_RCLIJ},
+      {ITM_dddVEL,   ITM_RCLVEL}
+    };
+
+    TO_QSPI const int16_t DelitmOperations[][2] = {
+      {MNU_PROGS,    ITM_DELITM_PROG},
+      {MNU_MENUS,    ITM_DELITM_MENU}
+    };
+
   int16_t tamOperation(void) {
     switch(tam.function) {
       case ITM_STO: {
-        switch(tam.currentOperation) {
-          case ITM_ADD: {
-            return ITM_STOADD;
-          }
-          case ITM_SUB: {
-            return ITM_STOSUB;
-          }
-          case ITM_MULT: {
-            return ITM_STOMULT;
-          }
-          case ITM_DIV: {
-            return ITM_STODIV;
-          }
-          case ITM_Max: {
-            return ITM_STOMAX;
-          }
-          case ITM_Min: {
-            return ITM_STOMIN;
-          }
-          case ITM_Config: {
-            return ITM_STOCFG;
-          }
-          case ITM_Stack: {
-            return ITM_STOS;
-          }
-          case ITM_dddEL: {
-            return ITM_STOEL;
-          }
-          case ITM_dddIJ: {
-           return ITM_STOIJ;
-          }
-          case ITM_dddVEL: {
-            return ITM_STOVEL;
-          }
-          case ITM_dddIX: {
-            return ITM_INDEX;
-          }
-          default: {
-            return ITM_STO;
+        for(uint_fast8_t i = 0; i < nbrOfElements(StoOperations); i++) {
+          if(tam.currentOperation == StoOperations[i][0]) {
+            return StoOperations[i][1];
           }
         }
+        return ITM_STO;
       }
-
       case ITM_RCL: {
-        switch(tam.currentOperation) {
-          case ITM_ADD: {
-            return ITM_RCLADD;
-          }
-          case ITM_SUB: {
-            return ITM_RCLSUB;
-          }
-          case ITM_MULT: {
-            return ITM_RCLMULT;
-          }
-          case ITM_DIV: {
-            return ITM_RCLDIV;
-          }
-          case ITM_Max: {
-            return ITM_RCLMAX;
-          }
-          case ITM_Min: {
-            return ITM_RCLMIN;
-          }
-          case ITM_Config: {
-            return ITM_RCLCFG;
-          }
-          case ITM_Stack: {
-            return ITM_RCLS;
-          }
-          case ITM_dddEL: {
-            return ITM_RCLEL;
-          }
-          case ITM_dddIJ: {
-            return ITM_RCLIJ;
-          }
-          case ITM_dddVEL: {
-            return ITM_RCLVEL;
-          }
-          default: {
-            return ITM_RCL;
+        for(uint_fast8_t i = 0; i < nbrOfElements(RclOperations); i++) {
+          if(tam.currentOperation == RclOperations[i][0]) {
+            return RclOperations[i][1];
           }
         }
+        return ITM_RCL;
       }
-
       case ITM_DELITM: {
-        switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
-          case MNU_PROGS: {
-            return ITM_DELITM_PROG;
-          }
-          case MNU_MENUS: {
-            return ITM_DELITM_MENU;
-          }
-          default: {
-            return ITM_DELITM;
+        int16_t menu = -softmenu[softmenuStack[0].softmenuId].menuItem;
+        for(uint_fast8_t i = 0; i < nbrOfElements(DelitmOperations); i++) {
+          if(menu == DelitmOperations[i][0]) {
+            return DelitmOperations[i][1];
           }
         }
+        return ITM_DELITM;
       }
-
       default: {
         return tam.function;
       }
@@ -291,6 +251,16 @@
     dupNum = 0;
     if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
+      if(tam.alpha && calcMode == CM_ASSIGN) {
+        assignLeaveAlpha();
+        if(itemToBeAssigned == 0) {
+          assignGetName1();
+        }
+        else {
+          assignGetName2();
+        }
+        return;
+      }
     }
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
