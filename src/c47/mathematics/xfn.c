@@ -322,16 +322,17 @@ typedef struct {
 
   static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
-        longInteger_t lint;
-        bool_t frac = false;
-        if(getRegisterAsLongInt(registerNo, lint, &frac)) {
-          if(!frac) {   //cannot be false due to longint type check
-            longIntegerToString(lint, 10, tmpString);
-            longIntegerFree(lint);
-            decNumberFromString((real_t *)result, tmpString, c);
-          }
-          return true;
+      longInteger_t lint;
+      bool_t frac = false;
+      if(getRegisterAsLongInt(registerNo, lint, &frac)) {
+        if(!frac) {   //cannot be false due to longint type check
+          longIntegerToString(lint, 10, tmpString);
+          longIntegerFree(lint);
+          decNumberFromString((real_t *)result, tmpString, c);
         }
+        return true;
+      }
+      longIntegerFree(lint);
     } else
     if(getRegisterDataType(registerNo) == dtReal34) {
         if(getRegisterAsReal(registerNo, (real_t *)result)) {
