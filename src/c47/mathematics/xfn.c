@@ -324,12 +324,10 @@ typedef struct {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
       longInteger_t lint;
       bool_t frac = false;
-      if(getRegisterAsLongInt(registerNo, lint, &frac)) {
-        if(!frac) {   //cannot be false due to longint type check
-          longIntegerToString(lint, 10, tmpString);
-          longIntegerFree(lint);
-          decNumberFromString((real_t *)result, tmpString, c);
-        }
+      if(getRegisterAsLongInt(registerNo, lint, &frac)) { // frac cannot be set; due to longint type check in the first line
+        longIntegerToString(lint, 10, tmpString);
+        longIntegerFree(lint);
+        stringToReal(tmpString, (real_t *)result, c);
         return true;
       }
       longIntegerFree(lint);
@@ -347,14 +345,25 @@ typedef struct {
     return false;
   }
 
-
-  static bool_t getAngleModeForRegister(int registerNo, angularMode_t *angleMode ) {
-    if(!inputAngleError3r(registerNo)) {
-      *angleMode = deemedInputAngleMode3r(registerNo);
-      return true;
-    }
+  //true only if an angle is tagged; false for longinteger angle; false and error for invalid
+  static bool_t getAngleModeForRegister3r(int registerNo, angularMode_t *angleMode ) {
+    if(isXFNregisterValid3r(registerNo)) {
+      if(getRegisterDataType(registerNo) == dtLongInteger) {
+        *angleMode = amNone;
+        return false;
+      } else {
+        *angleMode = inputAngleMode3r(registerNo);
+        return true;
+      }
+    } else {
+    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Invalid input angle register");
+        moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
-   }
+    }
+  }
 
 
 
@@ -385,11 +394,10 @@ typedef struct {
 
 
   static bool getCombinedParameter (int param, int registerNo, real1071_t* combined, real1071_t* temporary, angularMode_t* angleMode, realContext_t* c) {
-
-    if(!getAngleModeForRegister(registerNo, angleMode)) {
+    if(!getAngleModeForRegister3r(registerNo, angleMode) && getRegisterDataType(registerNo) != dtLongInteger) {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister ");
+          sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister3r ");
           moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
@@ -845,23 +853,27 @@ printf("Dddd %d\n",registerNo);
 
 //--------//--------//-- Processing stack output with paramX as the output --//--------//--------//--------
 
-    switch(function) {
+
+    //Step 00: Handle the angle
+    switch(function) {      //will always be the deemed angle
       case ITM_arcsin_XFN:
       case ITM_arccos_XFN:
       case ITM_arctan_XFN:
-      case ITM_atan2_XFN:
-      case ITM_RAD2_XFN:
+      case ITM_atan2_XFN: {
+            angleMode = currentAngularMode;
+        break;
+      }
+      case ITM_RAD2_XFN:    //leave angleMode, it is set in the function
       case ITM_DEG2_XFN: {
-        //leave angleMode
         break;
       }
       case ITM_ADD_XFN:
       case ITM_SUB_XFN:
-      case ITM_MULT_XFN: {
-        if(getRegisterAngularMode(registerNo+3) != amNone) {
-          angleMode = getRegisterAngularMode(registerNo+3);
-        } else {
-          angleMode = getRegisterAngularMode(registerNo);
+      case ITM_MULT_XFN: {  // Y's angle mode dominates if it is an angle. If it is not an angle, use that of X
+        if(!getAngleModeForRegister3r(registerNo+3, &angleMode) || angleMode == amNone) {  // if Y is tagged angle, take it
+          if(!getAngleModeForRegister3r(registerNo, &angleMode)) {  // otherwise if X is tagged angle or no angle, take that,
+            angleMode = amNone;                                     // otherwise it becomes a non-angle
+          }
         }
         break;
       }
