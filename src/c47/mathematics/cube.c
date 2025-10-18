@@ -10,15 +10,17 @@
 static void cubeLonI(void) {
   longInteger_t x, c;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end;
+  }
 
   longIntegerInit(c);
   longIntegerMultiply(x, x, c);
   longIntegerMultiply(c, x, c);
   convertLongIntegerToLongIntegerRegister(c, REGISTER_X);
-  longIntegerFree(x);
   longIntegerFree(c);
+end:
+  longIntegerFree(x);
 }
 
 static void cubeShoI(void) {

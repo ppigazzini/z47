@@ -34,9 +34,7 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   longInteger_t tmp;
   bool_t res = false;
 
-  longIntegerInit(tmp);
-
-  if (!getRegisterAsLongInt(reg, tmp, NULL)) {
+  if(!getRegisterAsLongInt(reg, tmp, NULL)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1283,7 +1281,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto ErrorExit;
     }
-    
+
     if(!saveLastX()) {
       goto ErrorExit;
     }
@@ -1412,7 +1410,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto ErrorExit;
     }
-    
+
     if(!saveLastX()) {
       goto ErrorExit;
     }
@@ -1722,12 +1720,12 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
   // KEEPRECT
   // Keeping rectangles, adding zero lines below and zero columns to the right, and when reducing, removing those lines and columns so the elements in the new shape is kept as is. See examples:
   // 1 2 3
-  // 4 5 6 
-  // 7 8 9 
+  // 4 5 6
+  // 7 8 9
   // reduced to 2x2, will become
   // 1 2
   // 4 5
-  // -------- 
+  // --------
   // 1 2
   // 3 4
   // redimmed to 3x3 will become
@@ -1738,12 +1736,12 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
 
   // Reflow elements: all elements are kept, but re-listed from element 1. If it overruns the new matrix, the end elements are deleted: examples:
   // 1 2 3
-  // 4 5 6 
-  // 7 8 9 
+  // 4 5 6
+  // 7 8 9
   // reduced to 2x2, will become
   // 1 2
   // 3 4
-  // -------- 
+  // --------
   // 1 2
   // 3 4
   // redimmed to 3x3 will become

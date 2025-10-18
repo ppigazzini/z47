@@ -65,10 +65,10 @@ void rootLonI(int32_t n) {
   longInteger_t lgInt, rem, root;
 
   if(!getRegisterAsLongInt(REGISTER_X, lgInt, NULL)) {
-    return;
+    goto end;
   }
   bool_t nIsOdd = (n % 2) != 0;
-  if (n > 0 && (nIsOdd || (!nIsOdd && !longIntegerIsNegative(lgInt)))) {
+  if(n > 0 && (nIsOdd || (!nIsOdd && !longIntegerIsNegative(lgInt)))) {
     longIntegerInit(rem);
     longIntegerInit(root);
     mpz_rootrem(root, rem, lgInt, n); // square root
@@ -76,13 +76,11 @@ void rootLonI(int32_t n) {
       convertLongIntegerToLongIntegerRegister(root, REGISTER_X);
       longIntegerFree(rem);
       longIntegerFree(root);
-      longIntegerFree(lgInt);
-      return;
+      goto end;
     }
     longIntegerFree(rem);
     longIntegerFree(root);
   }
-  longIntegerFree(lgInt);
   //fall through to Real calculation with errors
   if(n == 2) {
     sqrtReal();
@@ -90,12 +88,14 @@ void rootLonI(int32_t n) {
   else if(n == 3) {
     curtReal();
   }
+end:
+  longIntegerFree(lgInt);
 //This section is not needed as only sqrt and qubert are using this helper function
 //  else { // fallthrough n is even and x < 1
 //    real_t x;
 //    if (!getRegisterAsReal(REGISTER_X, &x)) {
 //      return;
-//    }      
+//    }
 //    real_t nn;
 //    if(n <= 2147483647) {
 //      int32ToReal(n, &nn);
