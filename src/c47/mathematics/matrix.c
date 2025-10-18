@@ -458,12 +458,12 @@ bool_t recallStatsMatrix(void) {
 }
 
 
-void fnSetMatrixDimensions(uint16_t regist) {
+static void _SetMatrixDimensions(uint16_t regist, uint16_t dimMode) {
   uint32_t y, x;
 
   if(!getDimensionArg(&y, &x)) {
   }
-  else if(redimMatrixRegister(regist, y, x)) {
+  else if(redimMatrixRegister(regist, y, x, dimMode)) {
   }
   else {
     #if !defined(TESTSUITE_BUILD)
@@ -475,6 +475,15 @@ void fnSetMatrixDimensions(uint16_t regist) {
     #endif // !TESTSUITE_BUILD
     return;
   }
+}
+
+
+void fnSetMatrixDimensions(uint16_t regist) {
+  _SetMatrixDimensions(regist, ITM_M_DIM);
+}
+
+void fnSetMatrixDimensionsGr(uint16_t regist) {
+  _SetMatrixDimensions(regist, ITM_M_DIM_GR);
 }
 
 
@@ -1704,86 +1713,149 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
 }
 
 
-bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) {
+
+
+//Matrix redimension
+
+  // KEEPRECT
+  // Keeping rectangles, adding zero lines below and zero columns to the right, and when reducing, removing those lines and columns so the elements in the new shape is kept as is. See examples:
+  // 1 2 3
+  // 4 5 6 
+  // 7 8 9 
+  // reduced to 2x2, will become
+  // 1 2
+  // 4 5
+  // -------- 
+  // 1 2
+  // 3 4
+  // redimmed to 3x3 will become
+  // 1 2 0
+  // 3 4 0
+  // 0 0 0
+
+
+  // Reflow elements: all elements are kept, but re-listed from element 1. If it overruns the new matrix, the end elements are deleted: examples:
+  // 1 2 3
+  // 4 5 6 
+  // 7 8 9 
+  // reduced to 2x2, will become
+  // 1 2
+  // 3 4
+  // -------- 
+  // 1 2
+  // 3 4
+  // redimmed to 3x3 will become
+  // 1 2 3
+  // 4 0 0
+  // 0 0 0
+
+
+static void real34CopyWrapper(void *src, void *dst) {
+  real34Copy((real34_t*)src, (real34_t*)dst);
+}
+
+static void real34ZeroWrapper(void *dst) {
+  real34Zero((real34_t*)dst);
+}
+
+static void complex34CopyWrapper(void *src, void *dst) {
+  complex34Copy((complex34_t*)src, (complex34_t*)dst);
+}
+
+static void complex34ZeroWrapper(void *dst) {
+  real34Zero(VARIABLE_REAL34_DATA((real34_t*)dst));
+  real34Zero(VARIABLE_IMAG34_DATA((real34_t*)dst));
+}
+
+
+static void copyAndZeroMatrixElements(void *src, void *dst, uint16_t srcRows, uint16_t srcCols, uint16_t dstRows, uint16_t dstCols, size_t elementSize, void (*copyFunc)(void*, void*), void (*zeroFunc)(void*), bool_t keepRect) {
+  if(keepRect) {
+    // Copy preserving rectangular structure
+    const uint16_t copyRows = min(srcRows, dstRows);
+    const uint16_t copyCols = min(srcCols, dstCols);
+    for(uint16_t row = 0; row < copyRows; ++row) {
+      for(uint16_t col = 0; col < copyCols; ++col) {
+        copyFunc((uint8_t*)src + (row * srcCols + col) * elementSize,
+                 (uint8_t*)dst + (row * dstCols + col) * elementSize);
+      }
+    }
+    // Zero new columns in existing rows
+    for(uint16_t row = 0; row < min(srcRows, dstRows); ++row) {
+      for(uint16_t col = srcCols; col < dstCols; ++col) {
+        zeroFunc((uint8_t*)dst + (row * dstCols + col) * elementSize);
+      }
+    }
+    // Zero entire new rows
+    for(uint16_t row = srcRows; row < dstRows; ++row) {
+      for(uint16_t col = 0; col < dstCols; ++col) {
+        zeroFunc((uint8_t*)dst + (row * dstCols + col) * elementSize);
+      }
+    }
+  }
+  else {
+    // Linear copy
+    for(uint16_t i = 0; i < min(srcRows * srcCols, dstRows * dstCols); ++i) {
+      copyFunc((uint8_t*)src + i * elementSize, (uint8_t*)dst + i * elementSize);
+    }
+    // Zero new elements
+    if(srcRows * srcCols < dstRows * dstCols) {
+      for(uint16_t i = srcRows * srcCols; i < dstRows * dstCols; ++i) {
+        zeroFunc((uint8_t*)dst + i * elementSize);
+      }
+    }
+  }
+}
+
+
+
+
+bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, uint16_t dimMode) {
   const uint16_t origRows = REGISTER_MATRIX_HEADER(regist)->matrixRows, origCols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
   if(regist == INVALID_VARIABLE) {
     return false;
   }
   else if(getRegisterDataType(regist) == dtReal34Matrix) {
-    const size_t oldSize = (origRows * origCols) * REAL34_SIZE_IN_BLOCKS;
-    const size_t newSize = (rows     * cols    ) * REAL34_SIZE_IN_BLOCKS;
-    if(newSize <= oldSize) {
-      if(newSize < oldSize) {
-        freeC47Blocks(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + rows * cols, oldSize - newSize);
-      }
-      REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
-      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-      return true;
-    }
-    else {
-      real34Matrix_t newMatrix;
-      convertReal34MatrixRegisterToReal34Matrix(regist, &newMatrix);
+    const size_t newSize = (rows * cols) * REAL34_SIZE_IN_BLOCKS;
+    real34Matrix_t newMatrix;
+    convertReal34MatrixRegisterToReal34Matrix(regist, &newMatrix);
+    if(lastErrorCode == ERROR_NONE) {
+      reallocateRegister(regist, dtReal34Matrix, newSize, amNone);
       if(lastErrorCode == ERROR_NONE) {
-        reallocateRegister(regist, dtReal34Matrix, newSize, amNone);
-        if(lastErrorCode == ERROR_NONE) {
-          REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
-          REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-          for(uint16_t i = 0; i < origRows * origCols; ++i) {
-            real34Copy(newMatrix.matrixElements + i, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
-          }
-          for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-            real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
-          }
-          realMatrixFree(&newMatrix);
-          return true;
-        }
-        else {
-          realMatrixFree(&newMatrix);
-          return false;
-        }
+        REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+        REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_REAL34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, REAL34_SIZE_IN_BYTES, real34CopyWrapper, real34ZeroWrapper, dimMode == ITM_M_DIM_GR);
+        realMatrixFree(&newMatrix);
+        return true;
       }
       else {
+        realMatrixFree(&newMatrix);
         return false;
       }
+    }
+    else {
+      return false;
     }
   }
   else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-    const size_t oldSize = (origRows * origCols) * COMPLEX34_SIZE_IN_BLOCKS;
-    const size_t newSize = (rows     * cols    ) * COMPLEX34_SIZE_IN_BLOCKS;
-    if(newSize <= oldSize) {
-      if(newSize < oldSize) {
-        freeC47Blocks(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + rows * cols, oldSize - newSize);
-      }
-      REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
-      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-      return true;
-    }
-    else {
-      complex34Matrix_t newMatrix;
-      convertComplex34MatrixRegisterToComplex34Matrix(regist, &newMatrix);
+    const size_t newSize = (rows * cols) * COMPLEX34_SIZE_IN_BLOCKS;
+    complex34Matrix_t newMatrix;
+    convertComplex34MatrixRegisterToComplex34Matrix(regist, &newMatrix);
+    if(lastErrorCode == ERROR_NONE) {
+      reallocateRegister(regist, dtComplex34Matrix, newSize, amNone);
       if(lastErrorCode == ERROR_NONE) {
-        reallocateRegister(regist, dtComplex34Matrix, newSize, amNone);
-        if(lastErrorCode == ERROR_NONE) {
-          REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
-          REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-          for(uint16_t i = 0; i < origRows * origCols; ++i) {
-            complex34Copy(newMatrix.matrixElements + i, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i);
-          }
-          for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-            real34Zero(VARIABLE_REAL34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
-            real34Zero(VARIABLE_IMAG34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
-          }
-          complexMatrixFree(&newMatrix);
-          return true;
-        }
-        else {
-          complexMatrixFree(&newMatrix);
-          return false;
-        }
+        REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+        REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+        copyAndZeroMatrixElements(newMatrix.matrixElements, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), origRows, origCols, rows, cols, COMPLEX34_SIZE_IN_BYTES, complex34CopyWrapper, complex34ZeroWrapper, dimMode == ITM_M_DIM_GR);
+        complexMatrixFree(&newMatrix);
+        return true;
       }
       else {
+        complexMatrixFree(&newMatrix);
         return false;
       }
+    }
+    else {
+      return false;
     }
   }
   else {
@@ -1798,7 +1870,7 @@ calcRegister_t allocateNamedMatrix(const char *name, uint16_t rows, uint16_t col
   if(regist == INVALID_VARIABLE) {
     return INVALID_VARIABLE;
   }
-  else if(redimMatrixRegister(regist, rows, cols)) {
+  else if(redimMatrixRegister(regist, rows, cols, ITM_M_DIM)) {
     return regist;
   }
   else {
@@ -1812,7 +1884,7 @@ bool_t appendRowAtMatrixRegister(calcRegister_t regist) {
     return false;
   }
   else if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-    return redimMatrixRegister(regist, rows + 1, cols);
+    return redimMatrixRegister(regist, rows + 1, cols, ITM_M_DIM);
   }
   else {
     return false;

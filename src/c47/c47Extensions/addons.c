@@ -3075,23 +3075,23 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
-  if(!jm_G_DOUBLETAP && !ShiftTimoutMode && !HOME3 && !MYM3) {
+  if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
     fgLN            = RBX_FGLNFUL;  //not in conditional clear
-    jm_G_DOUBLETAP  = true;
-    ShiftTimoutMode = true;
-    HOME3           = true;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+    setSystemFlag  (FLAG_G_DOUBLETAP);
+    setSystemFlag  (FLAG_SHFT_4s);
+    setSystemFlag  (FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
   else {
     fgLN            = RBX_FGLNOFF;  //not in conditional clear
-    jm_G_DOUBLETAP  = false;
-    ShiftTimoutMode = false;
-    HOME3           = false;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+    clearSystemFlag(FLAG_G_DOUBLETAP);
+    clearSystemFlag(FLAG_SHFT_4s);
+    clearSystemFlag(FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
 }
 
@@ -3114,118 +3114,56 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #endif // !TESTSUITE_BUILD
 
 
+
+// Pseudo ITM constants for conditional ENG C47/R47 ribbons
+#define ITM_RIBBON_ENG_C47  32000
+#define ITM_RIBBON_ENG_R47  32001
+
+// Ribbon mappings: [param, fn1, fn2, fn3, fn4, fn5, fn6]
+TO_QSPI static const int16_t ribbonMappings[][7] = {
+  {ITM_RIBBON_ENG_C47,  -MNU_CPX,      -MNU_MATX,     ITM_CONSTpi,   ITM_op_j,      ITM_EXP,       -MNU_TRG_C47},
+  {ITM_RIBBON_ENG_R47,  ITM_op_j,      -MNU_CPX,      ITM_CONSTpi,   -MNU_MATX,     -MNU_TRG_R47,  ITM_EXP},
+
+  {ITM_RIBBON_SAV,      ITM_SYSTEM2,   ITM_ACTUSB,    ITM_SAVE,      ITM_LOAD,      ITM_SAVEST,    ITM_LOADST},
+  {ITM_RIBBON_SAV2,     ITM_SYSTEM2,   ITM_ACTUSB,    ITM_WRITEP,    ITM_READP,     ITM_SAVEST,    ITM_LOADST},
+  {ITM_RIBBON_FIN,      ITM_PC,        ITM_DELTAPC,   ITM_YX,        ITM_SQUARE,    ITM_10x,       -MNU_FIN},
+  {ITM_RIBBON_FIN2,     ITM_PCPMG,     ITM_PCT,       ITM_PC,        ITM_DELTAPC,   -MNU_TVM,      -MNU_FIN},
+  {ITM_RIBBON_CPX,      ITM_DRG,       ITM_CC,        ITM_EE_EXP_TH, ITM_EXP,       ITM_op_j_pol,  ITM_op_j},
+  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j},
+  {ITM_RIBBON_C47PL,    ITM_DRG,       ITM_DSP,       ITM_DREAL,     ITM_FF,        ITM_Rup,       ITM_XFACT},
+  {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
+  {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
+};
+
+
 void fnRESET_MyM(uint16_t param) {
-  //Pre-assign the MyMenu                   //JM
+  //Pre-assign the MyMenu
   #if !defined(TESTSUITE_BUILD)
-    BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
+    clearSystemFlag(FLAG_BASE_MYM);                                                   //switch off menu to prevent slow updating of 6 menu items
+
+    int16_t searchParam = param;
+    if(param == ITM_RIBBON_ENG) {
+      searchParam = isR47FAM ? ITM_RIBBON_ENG_R47 : ITM_RIBBON_ENG_C47;
+    }
+
+    uint16_t i;
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == ITM_RIBBON_SAV) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_SYSTEM2; break;
-          case 2: itemToBeAssigned = ITM_ACTUSB;  break;
-          case 3: itemToBeAssigned = ITM_SAVE;    break;
-          case 4: itemToBeAssigned = ITM_LOAD;    break;
-          case 5: itemToBeAssigned = ITM_SAVEST;  break;
-          case 6: itemToBeAssigned = ITM_LOADST;  break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_FIN) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_PC;      break;
-          case 2: itemToBeAssigned = ITM_DELTAPC; break;
-          case 3: itemToBeAssigned = ITM_YX;      break;
-          case 4: itemToBeAssigned = ITM_SQUARE;  break;
-          case 5: itemToBeAssigned = ITM_10x;     break;
-          case 6: itemToBeAssigned = -MNU_FIN;    break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_CPX) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_CC;       break;
-          case 3: itemToBeAssigned = ITM_EE_EXP_TH;break;
-          case 4: itemToBeAssigned = ITM_EXP;      break;
-          case 5: itemToBeAssigned = ITM_op_j_pol; break;
-          case 6: itemToBeAssigned = ITM_op_j;     break;
-          default:break;
-        }
-      }
-
-      //C47 et al
-          else if(!isR47FAM && param == ITM_RIBBON_ENG) {
-            switch(fn) {
-              case 1: itemToBeAssigned = -MNU_CPX;     break;
-              case 2: itemToBeAssigned = -MNU_MATX;    break;
-              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
-              case 4: itemToBeAssigned = ITM_op_j;     break;
-              case 5: itemToBeAssigned = ITM_EXP;      break;
-              case 6: itemToBeAssigned = -MNU_TRG_C47; break;
-              default:break;
-            }
+      for(i = 0; i < nbrOfElements(ribbonMappings); i++) {
+        if(ribbonMappings[i][0] == searchParam) {
+          if(fn >= 1 && fn <= 6) {
+            itemToBeAssigned = ribbonMappings[i][fn];
           }
-      //R47
-          else if(isR47FAM && param == ITM_RIBBON_ENG) {
-            switch(fn) {
-              case 1: itemToBeAssigned = ITM_op_j;     break;
-              case 2: itemToBeAssigned = -MNU_CPX;     break;
-              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
-              case 4: itemToBeAssigned = -MNU_MATX;    break;
-              case 5: itemToBeAssigned = -MNU_TRG_R47; break;
-              case 6: itemToBeAssigned = ITM_EXP;      break;
-              default:break;
-            }
+          else {
+            itemToBeAssigned = ASSIGN_CLEAR;
           }
-      //END CONDITIONAL
-
-      else if(param == ITM_RIBBON_C47) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_YX;       break;
-          case 3: itemToBeAssigned = ITM_SQUARE;   break;
-          case 4: itemToBeAssigned = ITM_10x;      break;
-          case 5: itemToBeAssigned = ITM_EXP;      break;
-          case 6: itemToBeAssigned = ITM_op_j;     break;
-          default:break;
+          break;
         }
       }
-      else if(param == ITM_RIBBON_C47PL) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_DSP;      break;
-          case 3: itemToBeAssigned = ITM_DREAL;    break;
-          case 4: itemToBeAssigned = ITM_FF;       break;
-          case 5: itemToBeAssigned = ITM_Rup;      break;
-          case 6: itemToBeAssigned = ITM_XFACT;    break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_R47) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_op_j;     break;
-          case 2: itemToBeAssigned = ITM_op_j_pol; break;
-          case 3: itemToBeAssigned = ITM_XFACT;    break;
-          case 4: itemToBeAssigned = ITM_XTHROOT;  break;
-          case 5: itemToBeAssigned = ITM_10x;      break;
-          case 6: itemToBeAssigned = ITM_EXP;      break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_R47PL) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_TIMER;    break;
-          case 2: itemToBeAssigned = ITM_DSP;      break;
-          case 3: itemToBeAssigned = ITM_DREAL;    break;
-          case 4: itemToBeAssigned = ITM_FF;       break;
-          case 5: itemToBeAssigned = -MNU_LOOP;    break;
-          case 6: itemToBeAssigned = -MNU_TEST;    break;
-          default:break;
-        }
-      }
-      else {
+      if(i >= nbrOfElements(ribbonMappings)) {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
+    
+
 
       if(itemToBeAssigned == -MNU_PFN) {
         strcpy(aimBuffer,"P.FN");
@@ -3244,7 +3182,7 @@ void fnRESET_MyM(uint16_t param) {
         assignToMyMenu_(12 + fn - 1);
       }
     }
-    BASE_MYM = true;                                           //JM Menu system default (removed from reset_jm_defaults)
+    setSystemFlag(FLAG_BASE_MYM);                                           //JM Menu system default (removed from reset_jm_defaults)
     refreshScreen(42);
   #endif // !TESTSUITE_BUILD
 }

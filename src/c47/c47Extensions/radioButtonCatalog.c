@@ -100,8 +100,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_USER_R47fg_bk,    USER_R47fg_bk,          CB_JC},  //SetSetting
   {ITM_USER_R47fg_g,     USER_R47fg_g,           CB_JC},  //SetSetting
 
-  {ITM_G_DOUBLETAP,      JC_G_DOUBLETAP,         CB_JC},  //SetSetting
-  {ITM_SHTIM,            JC_SHFT_4s,             CB_JC},  //SetSetting
+  {ITM_G_DOUBLETAP,      FLAG_G_DOUBLETAP,       CB_JC},  //SetSetting
+  {ITM_SHTIM,            FLAG_SHFT_4s,           CB_JC},  //SetSetting
 
   {ITM_TEST,             JC_ITM_TST,             CB_JC},  //fnSetInlineTest
   {ITM_INTG,             JC_INTG,                CB_JC},  //
@@ -155,11 +155,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_2DEC,             10,                     RB_HX},  //fnChangeBaseJM
   {ITM_2HEX,             16,                     RB_HX},  //fnChangeBaseJM
 
-  {ITM_HOMEx3,           JC_HOME_TRIPLE,         CB_JC},  //SetSetting
-  {ITM_MYMx3,            JC_MYM_TRIPLE,          CB_JC},  //SetSetting
+  {ITM_HOMEx3,           FLAG_HOME_TRIPLE,       CB_JC},  //SetSetting
+  {ITM_MYMx3,            FLAG_MYM_TRIPLE,        CB_JC},  //SetSetting
 
-  {ITM_BASE_HOME,        JC_BASE_HOME,           CB_JC},  //SetSetting
-  {ITM_BASE_MYM,         JC_BASE_MYM,            CB_JC},  //SetSetting
+  {ITM_BASE_HOME,        FLAG_BASE_HOME,         CB_JC},  //SetSetting
+  {ITM_BASE_MYM,         FLAG_BASE_MYM,          CB_JC},  //SetSetting
 
 
   {ITM_GAPDOT_L,         ITM_DOT,                RB_IP},
@@ -326,8 +326,6 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_GAUSS_FITTING:       cb_param = ((lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING      ); break;
             case JC_ORTHOGONAL_FITTING:  cb_param = (orOrtho(lrSelection)                   == CF_ORTHOGONAL_FITTING ); break;
 
-            case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
-            case JC_SHFT_4s:             cb_param = ShiftTimoutMode;                                                  break;
             case JC_DIFF:                cb_param = PLOT_DIFF;                                                        break;
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
@@ -369,21 +367,19 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_CPXMULT     :
             case FLAG_TOPHEX      :
             case FLAG_BCD         :
+            case FLAG_G_DOUBLETAP :
+            case FLAG_SHFT_4s :
                        cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
 
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
-            case JC_MYM_TRIPLE:          cb_param = MYM3;
-                                         if(MYM3 && HOME3) MYM3 = false;
+            case FLAG_MYM_TRIPLE: 
+            case FLAG_HOME_TRIPLE:       cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);
+                                         if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) clearSystemFlag(FLAG_MYM_TRIPLE);
                                          break;
-            case JC_HOME_TRIPLE:         cb_param = HOME3;
-                                         if(MYM3 && HOME3) MYM3 = false;
-                                         break;
-            case JC_BASE_HOME:           cb_param = BASE_HOME;
-                                         if(BASE_HOME && BASE_MYM) BASE_HOME = false;
-                                         break;
-            case JC_BASE_MYM:            cb_param = BASE_MYM;
-                                         if(BASE_HOME && BASE_MYM) BASE_HOME = false;
+            case FLAG_BASE_HOME:
+            case FLAG_BASE_MYM:          cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);
+                                         if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) clearSystemFlag(FLAG_BASE_HOME);
                                          break;
             #if defined(INLINE_TEST)
               case JC_ITM_TST:           cb_param = testEnabled;                                                      break;

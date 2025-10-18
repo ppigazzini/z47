@@ -261,6 +261,12 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_byte23;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte24;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte25;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte26;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte27;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte28;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte29;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte30;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte31;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
@@ -289,16 +295,16 @@ void fnRecallConfig(uint16_t regist) {
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
     recallFromDtConfigDescriptor(fgLN);
     recallFromDtConfigDescriptor(    compatibility_byte19);
-    recallFromDtConfigDescriptor(HOME3);
-    recallFromDtConfigDescriptor(ShiftTimoutMode);
+    recallFromDtConfigDescriptor(    compatibility_byte28);
+    recallFromDtConfigDescriptor(    compatibility_byte29);
     recallFromDtConfigDescriptor(    compatibility_byte21);
-    recallFromDtConfigDescriptor(BASE_HOME);                       //fixed!
+    recallFromDtConfigDescriptor(    compatibility_byte30);                       //fixed!
     recallFromDtConfigDescriptor(    compatibility_byte00);   //spare
     recallFromDtConfigDescriptor(    compatibility_int1);     //spare
     recallFromDtConfigDescriptor(Input_Default);
     recallFromDtConfigDescriptor(dispBase);
-    recallFromDtConfigDescriptor(BASE_MYM);
-    recallFromDtConfigDescriptor(jm_G_DOUBLETAP);
+    recallFromDtConfigDescriptor(compatibility_byte31);
+    recallFromDtConfigDescriptor(compatibility_byte26);
     recallFromDtConfigDescriptor(compatibility_float1);   //spare
     recallFromDtConfigDescriptor(compatibility_float2);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00.func);
@@ -340,7 +346,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(exponentLimit);
     recallFromDtConfigDescriptor(exponentHideLimit);
     recallFromDtConfigDescriptor(lastIntegerBase);
-    recallFromDtConfigDescriptor(MYM3);
+    recallFromDtConfigDescriptor(compatibility_byte27);
     recallFromDtConfigDescriptor(timeDisplayFormatDigits);
   }
 

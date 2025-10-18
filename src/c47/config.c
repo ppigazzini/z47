@@ -112,8 +112,6 @@ InputDefaultDataType,                xxx,        xxx,                           
 SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,
 AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,
 FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,
-MymB,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,
-HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,
 FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,
@@ -220,6 +218,17 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 
+
+3,                                   1,          FLAG_G_DOUBLETAP,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_HOME_TRIPLE,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_MYM_TRIPLE,                xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_SHFT_4s,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_BASE_MYM,                  xxx,             FLAG_BASE_MYM,        FLAG_BASE_MYM,          FLAG_BASE_MYM,   xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_BASE_MYM,   xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_BASE_HOME,                 FLAG_BASE_HOME,  FLAG_BASE_HOME,       FLAG_BASE_HOME,         FLAG_BASE_HOME,  xxx,             xxx,
+
+
+
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM,32768+_gapr,    xxx,             xxx,                  //fnSetGapChar
@@ -251,8 +260,6 @@ void Sett(int16_t grp) {
         case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
         case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits
         case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits
-        case MymB                 : {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB
-        case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB
         case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
         case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
         case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
@@ -1223,8 +1230,10 @@ void restoreStats(void){
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
       {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
+      {0,ITM_RIBBON_FIN2 , "MyMenu primary F-key financial ribbon 2"     },
       {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
       {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
+      {0,ITM_RIBBON_SAV2 , "MyMenu primary F-key save/load ribbon 2"     },
       {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
       {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
       {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
@@ -1282,14 +1291,10 @@ void resetOtherConfigurationStuff(void) {
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
   IrFractionsCurrentStatus = CF_NORMAL;
-  HOME3 = true;
-  MYM3 = false;
-  ShiftTimoutMode = false;
   Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Norm_Key_00.funcParam[0] = 0;
   Norm_Key_00.used = false;
   Input_Default =  ID_43S;
-  jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
@@ -1610,7 +1615,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     #if !defined(TESTSUITE_BUILD)
       calcModeNormal();
-      if(BASE_HOME) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
+      if(getSystemFlag(FLAG_BASE_HOME)) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
     #endif // !TESTSUITE_BUILD
 
     showRegis = 9999;                                          //JMSHOW
@@ -2003,8 +2008,10 @@ void fnKeysManagement(uint16_t choice) {
 
     case ITM_RIBBON_CPX  :
     case ITM_RIBBON_FIN  :
+    case ITM_RIBBON_FIN2 :
     case ITM_RIBBON_ENG  :
     case ITM_RIBBON_SAV  :
+    case ITM_RIBBON_SAV2 :
     case ITM_RIBBON_C47  :
     case ITM_RIBBON_C47PL:
     case ITM_RIBBON_R47  :

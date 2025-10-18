@@ -677,8 +677,14 @@
 #define FLAG_BCD                              0x8059 //26
 #define FLAG_PCURVE                           0x805A //27
 #define FLAG_CLX_DROP                         0x805B //28
+#define FLAG_BASE_MYM                         0x805C
+#define FLAG_G_DOUBLETAP                      0x805D
+#define FLAG_BASE_HOME                        0x805E
+#define FLAG_MYM_TRIPLE                       0x805F
+#define FLAG_HOME_TRIPLE                      0x8060
+#define FLAG_SHFT_4s                          0x8061
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -2008,7 +2014,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                (menu == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
                                              )
 
-#define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
+#define IS_BASEBLANK_(menuId)                (menuId==0 && !getSystemFlag(FLAG_BASE_MYM) && !getSystemFlag(FLAG_BASE_HOME))
 
 #define currentReturnProgramNumber           (currentSubroutineLevelData->returnProgramNumber   )
 #define currentReturnLocalStep               (currentSubroutineLevelData->returnLocalStep       )

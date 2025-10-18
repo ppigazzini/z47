@@ -529,7 +529,7 @@
 #define SFL_SOLVING                  501 // The SFL item names are not used
 #define SFL_VMDISP                   502 // The SFL item names are not used
 #define SFL_USB                      503 // The SFL item names are not used
-#define SFL_TVMBGN                   504 // The SFL item names are not used
+#define SFL_ENDPMT                   504 // The SFL item names are not used
 #define SFL_FRCSRN                   505 // The SFL item names are not used
 #define SFL_HPRP                     506 // The SFL item names are not used
 #define SFL_SBdate                   507 // The SFL item names are not used
@@ -1786,7 +1786,7 @@
 #define ITM_SST                     1736
 #define ITM_EXIT1                   1737
 #define ITM_BACKSPACE               1738
-#define ITM_1739                    1739
+#define ITM_M_DIM_GR                1739
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
@@ -2332,12 +2332,12 @@
 #define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_PCURVE                  2277 // The SFL item names are not used
 #define SFL_CLX_DROP                2278 // The SFL item names are not used
-#define SFL_2279                    2279 // The SFL item names are not used
-#define SFL_2280                    2280 // The SFL item names are not used
-#define SFL_2281                    2281 // The SFL item names are not used
-#define SFL_2282                    2282 // The SFL item names are not used
-#define SFL_2283                    2283 // The SFL item names are not used
-#define SFL_2284                    2284 // The SFL item names are not used
+#define SFL_BASE_MYM                2279 // The SFL item names are not used
+#define SFL_G_DOUBLETAP             2280 // The SFL item names are not used
+#define SFL_BASE_HOME               2281 // The SFL item names are not used
+#define SFL_MYM_TRIPLE              2282 // The SFL item names are not used
+#define SFL_HOME_TRIPLE             2283 // The SFL item names are not used
+#define SFL_SHFT_4s                 2284 // The SFL item names are not used
 #define SFL_2285                    2285 // The SFL item names are not used
 #define SFL_2286                    2286 // The SFL item names are not used
 #define SFL_2287                    2287 // The SFL item names are not used
@@ -2587,8 +2587,8 @@
 #define ITM_RIBBON_R47              2511
 #define ITM_RIBBON_R47PL            2512
 #define ITM_RIBBON_ENG              2513
-#define ITM_2514                    2514
-#define ITM_2515                    2515
+#define ITM_RIBBON_FIN2             2514
+#define ITM_RIBBON_SAV2             2515
 #define ITM_2516                    2516
 #define ITM_2517                    2517
 #define ITM_2518                    2518

@@ -491,14 +491,8 @@
   extern uint8_t                editingLiteralType;
 
   // Variables from jm.h
-  extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.
-  extern bool_t                 MYM3;                         //JM HOME Create a flag to enable or disable triple shift MYM3; enable or disable TRIPLE SHIFT TIMER.
-  extern bool_t                 ShiftTimoutMode;              //JM HOME Create a flag to enable or disable SHIFT TIMER CANCEL.
-  extern bool_t                 BASE_HOME;                    //JM BASEHOME Create a flag to enable or disable triple shift
   extern normKey_t              Norm_Key_00;                  //JM USER NORMAL
   extern uint8_t                Input_Default;                //JM Input Default
-  extern bool_t                 BASE_MYM;                     //JM Screen / keyboard operation setup
-  extern bool_t                 jm_G_DOUBLETAP;               //JM Screen / keyboard operation setup
   extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;

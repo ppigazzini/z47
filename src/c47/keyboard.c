@@ -1538,7 +1538,7 @@ int16_t lastItem = 0;
       Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
-      if(ShiftTimoutMode) {
+      if(getSystemFlag(FLAG_SHFT_4s)) {
         fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
       }
       if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
@@ -3807,10 +3807,10 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           else if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed
             currentInputVariable = INVALID_VARIABLE;
-            if(BASE_HOME) {
+            if(getSystemFlag(FLAG_BASE_HOME)) {
                showSoftmenu(-MNU_HOME);
             }
-            else if(BASE_MYM) {
+            else if(getSystemFlag(FLAG_BASE_MYM)) {
               BASE_OVERRIDEONCE = true;
               showSoftmenu(-MNU_MyMenu);
             }                             //If none selected, do not display any menu, keep the screen blank

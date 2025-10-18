@@ -128,7 +128,7 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
+                                             ITM_M_RR,                      ITM_M_DIM_GR,               ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,
 
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_CLSTK,
@@ -764,15 +764,9 @@ TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
-#if (CALCMODEL != USER_R47) //C47 et al
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_C47,            ITM_RIBBON_C47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_R47,            ITM_RIBBON_R47PL,
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_C47,            ITM_RIBBON_R47,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_FIN2,           ITM_RIBBON_SAV2,           ITM_RIBBON_C47PL,          ITM_RIBBON_R47PL,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
-#else //R47
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_ENG,            ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_R47,            ITM_RIBBON_R47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_RIBBON_C47,            ITM_RIBBON_C47PL,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
-#endif //R47
 
 TO_QSPI const int16_t menu_BLUE_C47[]    = { ITM_MAGNITUDE,       -MNU_CPX,         -MNU_STK,         -MNU_TRG_C47,     -MNU_EXP,         ITM_UNDO,
                                              ITM_ARG,             ITM_DELTAPC,      ITM_XTHROOT,      ITM_op_j,         ITM_toREC2,       ITM_toPOL2,
@@ -2815,7 +2809,7 @@ void showSoftmenuCurrentPart(void) {
 
             //softkey modifications
 
-            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
+            if((getSystemFlag(FLAG_G_DOUBLETAP) && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
@@ -3009,10 +3003,10 @@ void showSoftmenuCurrentPart(void) {
     else if(softmenuStack[0].softmenuId == 1 && calcMode != CM_AIM) { // MyAlpha displayed and not in AIM
       softmenuStack[0].softmenuId = 0; // MyMenu
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
-    else if(softmenuStack[0].softmenuId == 0 && BASE_MYM && calcMode != CM_AIM) {
+    else if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_MYM) && calcMode != CM_AIM) {
       //softmenuStack[0].softmenuId = 0;                                                       //already 0, not needed to change
     }
     else if(softmenuStack[0].softmenuId == 1 && calcMode == CM_AIM) {
@@ -3196,7 +3190,7 @@ void showSoftmenuCurrentPart(void) {
         }
       }
     }
-    if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
+    if(softmenuStack[0].softmenuId == 0 && getSystemFlag(FLAG_BASE_HOME) && calcMode != CM_AIM) {
       changeToHOME();
     }
   }
