@@ -19,13 +19,15 @@ void fnLint(uint16_t unusedButMandatoryParameter) {
   longInteger_t val;
   uint32_t type = getRegisterDataType(REGISTER_X);
 
-  if (!saveLastX())
+  if(!saveLastX()) {
     return;
-  longIntegerInit(val);
+  }
+
   if(getRegisterAsLongInt(REGISTER_X, val, NULL)) {
     convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
-    if (type == dtShortInteger)
+    if(type == dtShortInteger) {
       setLastintegerBasetoZero();
+    }
   }
   longIntegerFree(val);
 }

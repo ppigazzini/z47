@@ -31,19 +31,25 @@ static void neighbShoI(void) {
 static void neighbLonI(void) {
   longInteger_t x, y;
 
-  longIntegerInit(x);
-  longIntegerInit(y);
-  if (getRegisterAsLongInt(REGISTER_X, x, NULL) && getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
-    const int32_t cmp = longIntegerCompare(y, x);
-
-    if (cmp != 0) {
-      int32ToLongInteger(cmp > 0 ? 1 : -1, y);
-      longIntegerAdd(x, y, x);
-    }
-    convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end1;
   }
-  longIntegerFree(x);
+  if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    goto end2;
+  }
+
+  const int32_t cmp = longIntegerCompare(y, x);
+
+  if(cmp != 0) {
+    int32ToLongInteger(cmp > 0 ? 1 : -1, y);
+    longIntegerAdd(x, y, x);
+  }
+  convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+
+end2:
   longIntegerFree(y);
+end1:
+  longIntegerFree(x);
 }
 
 static void neighbReal(void) {
