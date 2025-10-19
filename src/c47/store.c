@@ -230,6 +230,20 @@ void fnStore(uint16_t regist) {
 }
 
 
+void fn2Sto(uint16_t regist) {
+  setSystemFlag(FLAG_ASLIFT);
+  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+}
+
+
+void fn3Sto(uint16_t regist) {
+  setSystemFlag(FLAG_ASLIFT);
+  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+  copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
+}
+
 
 void fnStoreAdd(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {

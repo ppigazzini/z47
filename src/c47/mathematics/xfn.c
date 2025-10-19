@@ -36,10 +36,6 @@
   }
   void fnXXfn_pi                  (uint16_t registerNo) {
   }
-  void fnXXfn_swap                (uint16_t registerNo) {
-  }
-  void fnXXfn_drop                (uint16_t registerNo) {
-  }
   void fnXXfn_atan2               (uint16_t registerNo) {
   }
   void fnXXfn_arcsin              (uint16_t registerNo) {
@@ -76,17 +72,11 @@
   }
   void fnXXfn_TO                  (uint16_t registerNo) {
   }
-  void fnXXfn_STO                 (uint16_t registerNo) {
-  }
-  void fnXXfn_RCL                 (uint16_t registerNo) {
-  }
   void fnXXfn_DRG                 (uint16_t registerNo) {
   }
   void fnXXfn_SQR                 (uint16_t registerNo) {
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
-  }
-  void fnXXfn_DUPX                (uint16_t registerNo) {
   }
 
 
@@ -296,11 +286,6 @@ typedef struct {
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
       { ITM_pi_XFN      ,FT_NILADIC },
-      { ITM_DROP_XFN    ,FT_NILADIC },
-      { ITM_DUP_XFN     ,FT_NILADIC },
-      { ITM_SWAP_XFN    ,FT_NILADIC },
-      { ITM_STO_XFN     ,FT_NILADIC },
-      { ITM_RCL_XFN     ,FT_NILADIC },
       { ITM_TO_XFN      ,FT_SINGLEX },  //special case where hte function drops one register
       { ITM_DEG2_XFN    ,FT_MONADIC },
       { ITM_RAD2_XFN    ,FT_MONADIC },
@@ -323,7 +308,7 @@ typedef struct {
       { ITM_ADD_XFN     ,FT_DYADIC  },
       { ITM_SUB_XFN     ,FT_DYADIC  },
       { ITM_POWER_XFN   ,FT_DYADIC  },
-      { ITM_YRTX_XFN    ,FT_DYADIC  },
+      { ITM_XTHROOT_XFN ,FT_DYADIC  },
       { ITM_MULT_XFN    ,FT_DYADIC  },
       { ITM_DIV_XFN     ,FT_DYADIC  },
       { ITM_MOD_XFN     ,FT_DYADIC  },
@@ -489,6 +474,11 @@ printf("Dddd %d\n",registerNo);
 
 
 
+//        case ITM_DROP_XFN: {
+  //        fnDrop3();
+    //      return;
+
+
   void fnDrop3(void) {
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
@@ -554,12 +544,6 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_pi                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_pi_XFN);
   }
-  void fnXXfn_swap                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_SWAP_XFN);
-  }
-  void fnXXfn_drop                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_DROP_XFN);
-  }
   void fnXXfn_atan2               (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_atan2_XFN);
   }
@@ -614,12 +598,6 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_TO                  (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_TO_XFN);
   }
-  void fnXXfn_STO                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_STO_XFN);
-  }
-  void fnXXfn_RCL                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_RCL_XFN);
-  }
   void fnXXfn_DRG                 (uint16_t registerNo) {
     fnXfnIndirect(registerNo, ITM_DRG_XFN);
   }
@@ -627,10 +605,7 @@ printf("Dddd %d\n",registerNo);
     fnXfnIndirect(registerNo, ITM_SQR_XFN);
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_YRTX_XFN);
-  }
-  void fnXXfn_DUPX                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_DUP_XFN);
+    fnXfnIndirect(registerNo, ITM_XTHROOT_XFN);
   }
 
 
@@ -707,44 +682,6 @@ printf("Dddd %d\n",registerNo);
 //          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
           break;
         }
-        case ITM_SWAP_XFN: {
-          fnSwapX(REGISTER_T);
-          fnSwapY(REGISTER_A);
-          fnSwapZ(REGISTER_B);
-          return;
-        }
-        case ITM_DROP_XFN: {
-          fnDrop3();
-          return;
-        }
-        case ITM_DUP_XFN: {
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(REGISTER_Z);
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(REGISTER_Z);
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(REGISTER_Z);
-          return;
-        }
-        case ITM_STO_XFN: {
-//          saveForUndo();
-          setSystemFlag(FLAG_ASLIFT);
-          copySourceRegisterToDestRegister(REGISTER_X, registerNo + 0);
-          copySourceRegisterToDestRegister(REGISTER_Y, registerNo + 1);
-          copySourceRegisterToDestRegister(REGISTER_Z, registerNo + 2);
-          return; 
-        }
-        case ITM_RCL_XFN: {
-//          saveForUndo();
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(registerNo + 2);
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(registerNo + 1);
-          setSystemFlag(FLAG_ASLIFT);
-          fnRecall(registerNo + 0);
-          return; 
-        }
-
   //--------//MONADIC FUNCTIONS
         case ITM_RAD2_XFN: {
           if(inputIsNoAngle3r(registerNo)) {
@@ -890,7 +827,7 @@ printf("aa005\n");
           realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
           break;
         }
-        case ITM_YRTX_XFN: {
+        case ITM_XTHROOT_XFN: {
           realDivide    (const_1, (real_t *)&paramX, (real_t *)&paramX, &c);
 //ADD ERROR FOR 0
           realPower     ((real_t*)&paramY, (real_t*)&paramX, (real_t*)&paramX, &c);
