@@ -99,4 +99,9 @@
    * \param[in] regist
    */
   void         fnRecallIJ     (uint16_t unusedButMandatoryParameter);
+
+
+  void         fn2Rcl(uint16_t regist);
+  void         fn3Rcl(uint16_t regist);
+
 #endif // !RECALL_H

@@ -2629,12 +2629,12 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define ITM_SWAP_XFN                2553
+#define ITM_2553                    2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
+#define ITM_2556                    2556
 
-#define ITM_DROP_XFN                2556
-#define MNU_XXFCNS                  2557
+#define MNU_2557                    2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
 #define ITM_tan_XFN                 2560
@@ -2657,14 +2657,28 @@
 #define ITM_MOD_XFN                 2577
 #define ITM_MODANG_XFN              2578
 #define ITM_TO_XFN                  2579
-#define ITM_STO_XFN                 2580
-#define ITM_RCL_XFN                 2581
+#define ITM_2580                    2580
+#define ITM_2581                    2581
 #define ITM_DRG_XFN                 2582
 #define ITM_SQR_XFN                 2583
-#define ITM_YRTX_XFN                2584
-#define ITM_DUP_XFN                 2585
+#define ITM_XTHROOT_XFN             2584
 
-#define LAST_ITEM                   2586
+#define ITM_3DUP                    2585
+#define ITM_3SWAP                   2586
+#define ITM_3DROP                   2587
+#define ITM_3STO                    2588
+#define ITM_3RCL                    2589
+
+#define ITM_NDUP                    2590
+#define ITM_NSWAP                   2591
+#define ITM_NDROP                   2592
+#define ITM_2STO                    2593
+#define ITM_2RCL                    2594
+
+#define MNU_XXFCNS                  2595
+#define MNU_MULTSTK                 2596
+
+#define LAST_ITEM                   2597
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
