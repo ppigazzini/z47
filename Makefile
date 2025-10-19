@@ -95,6 +95,7 @@ dist_install_PC: sim
 	mkdir -p $(DIST_DIR_PC)/res/
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) $(DIST_DIR_PC)/
 	cp -r res/PROGRAMS $(DIST_DIR_PC)/res/
+	cp -r res/STATE $(DIST_DIR_PC)/res/
 	cp res/c47_pre.css $(DIST_DIR_PC)/res/
 	cp res/C47.png $(DIST_DIR_PC)/res/
 	cp res/C47short.png $(DIST_DIR_PC)/res/
@@ -153,6 +154,7 @@ dist_install_DM: build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DIST_DIR_DM)/offimg
 	cp -r res/offimg/C47/ $(DIST_DIR_DM)/offimg
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
+	cp -r res/STATE $(DIST_DIR_DM)
 	cp res/keymaps/DM42_keymap.bin $(DIST_DIR_DM)/resources
 
 ifeq ($(FORCENEW_TESTPGMS),)

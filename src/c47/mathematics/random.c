@@ -95,14 +95,17 @@ static void doIntRandomI(void) {
   saveForUndo();
   thereIsSomethingToUndo = true;
 
-  if (!getRegisterAsLongInt(REGISTER_X, regX, &frac) || frac)
-    return;
-  if (!getRegisterAsLongInt(REGISTER_Y, regY, &frac) || frac)
+  if(!getRegisterAsLongInt(REGISTER_X, regX, &frac) || frac) {
     goto err1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_Y, regY, &frac) || frac) {
+    goto err2;
+  }
 
   cmp = longIntegerCompare(regX, regY);
-  if(cmp == 0)
+  if(cmp == 0) {
     goto end;
+  }
 
   init_minmax = true;
   longIntegerInit(mini);
@@ -123,7 +126,7 @@ static void doIntRandomI(void) {
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     fnUndo(0);
-    goto err2;
+    goto err3;
   }
 
   longIntegerToUInt32(regX, maxRand);
@@ -134,11 +137,12 @@ end:
   convertLongIntegerToLongIntegerRegister(regX, REGISTER_X);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-err2:
-  if (init_minmax) {
+err3:
+  if(init_minmax) {
     longIntegerFree(maxi);
     longIntegerFree(mini);
   }
+err2:
   longIntegerFree(regY);
 err1:
   longIntegerFree(regX);
