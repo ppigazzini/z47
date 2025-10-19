@@ -105,11 +105,11 @@ static void powShoI(void) {
 static void powLonI(void) {
   longInteger_t base, exponent, result;
 
-  if (!getRegisterAsLongInt(REGISTER_Y, base, NULL))
-    return;
-  if (!getRegisterAsLongInt(REGISTER_X, exponent, NULL)) {
-    longIntegerFree(base);
-    return;
+  if(!getRegisterAsLongInt(REGISTER_Y, base, NULL)) {
+    goto finish1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_X, exponent, NULL)) {
+    goto finish2;
   }
 
   if(longIntegerIsZero(exponent) && longIntegerIsZero(base)) {
@@ -117,16 +117,16 @@ static void powLonI(void) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function powLonI: Cannot calculate 0^0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto finish;
+    goto finish2;
   }
 
   if((longIntegerCompareInt(base, 1) == 0 || longIntegerCompareInt(base, -1) == 0) && longIntegerCompareInt(exponent, -1) == 0) {
     convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
-    goto finish;
+    goto finish2;
   }
   else if(longIntegerIsNegative(exponent)) {
     powReal();
-    goto finish;
+    goto finish2;
   }
 
   longIntegerInit(result);
@@ -135,9 +135,10 @@ static void powLonI(void) {
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
 
   longIntegerFree(result);
-finish:
-  longIntegerFree(base);
+finish2:
   longIntegerFree(exponent);
+finish1:
+  longIntegerFree(base);
 }
 
 
@@ -287,7 +288,7 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
         realMultiply(&tmp, rReal, rReal, realContext);
       }
   }
-  
+
   return errorCode;
 }
 

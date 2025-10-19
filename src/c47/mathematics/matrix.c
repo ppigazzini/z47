@@ -22,8 +22,9 @@
     #define sumSqToleranceDigits  35
     #define eigenTolerance        70
   #else
-    #define sumSqToleranceDigits  (significantDigits == 0 ? 35 : significantDigits == 34 ? 16 : significantDigits)
-    #define eigenTolerance        (sumSqToleranceDigits+5)
+    #define extraDigits           3
+    #define sumSqToleranceDigits  ((significantDigits == 0 || significantDigits == 34) ? 16 : significantDigits) + extraDigits
+    #define eigenTolerance        (min(70,sumSqToleranceDigits*2))
   #endif
 
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
@@ -63,9 +64,7 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   longInteger_t tmp;
   bool_t res = false;
 
-  longIntegerInit(tmp);
-
-  if (!getRegisterAsLongInt(reg, tmp, NULL)) {
+  if(!getRegisterAsLongInt(reg, tmp, NULL)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -4657,7 +4656,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           //printf("-----outSubStr2:%s\n",outSubStr2);
 
           char outStr[32+32+3+16 + 5]; //5 spare 
-          sprintf(outStr,"%s Tol: %s/1E%d Iter: ", outSubStr1, outSubStr2, -sumSqToleranceDigits);
+          sprintf(outStr,"%s Tol: %s/1E%d Iter: ", outSubStr1, outSubStr2, - (sumSqToleranceDigits - extraDigits) );
           if(progressHalfSecUpdate_Integer(timed, outStr, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           }
         }

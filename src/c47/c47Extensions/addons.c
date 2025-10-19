@@ -3120,6 +3120,7 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #define ITM_RIBBON_ENG_R47  32001
 
 // Ribbon mappings: [param, fn1, fn2, fn3, fn4, fn5, fn6]
+#if !defined(TESTSUITE_BUILD)
 TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_ENG_C47,  -MNU_CPX,      -MNU_MATX,     ITM_CONSTpi,   ITM_op_j,      ITM_EXP,       -MNU_TRG_C47},
   {ITM_RIBBON_ENG_R47,  ITM_op_j,      -MNU_CPX,      ITM_CONSTpi,   -MNU_MATX,     -MNU_TRG_R47,  ITM_EXP},
@@ -3134,6 +3135,7 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
   {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
 };
+#endif //!TESTSUITE_BUILD
 
 
 void fnRESET_MyM(uint16_t param) {
