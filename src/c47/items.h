@@ -2674,11 +2674,13 @@
 #define ITM_NDROP                   2592
 #define ITM_2STO                    2593
 #define ITM_2RCL                    2594
+#define ITM_4SWAP                   2595
 
-#define MNU_XXFCNS                  2595
-#define MNU_MULTSTK                 2596
 
-#define LAST_ITEM                   2597
+#define MNU_XXFCNS                  2596
+#define MNU_MULTSTK                 2597
+
+#define LAST_ITEM                   2598
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
