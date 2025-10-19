@@ -315,10 +315,10 @@ TO_QSPI const int16_t menu_HPLOT[]   = {
 
 TO_QSPI const int16_t menu_STK[]         = { ITM_DROP,                      ITM_Rdown,                  ITM_Rup,                  ITM_LASTX,             ITM_FILL,                    ITM_CLSTK,
                                              ITM_DROPY,                     ITM_Xex,                    ITM_Yex,                  ITM_Zex,               ITM_Tex,                     ITM_SHUFFLE,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_MULTSTK                   };
+                                             ITM_4SWAP,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_MULTSTK                   };
 
-TO_QSPI const int16_t menu_MULTSTK[]     = { ITM_3DROP,                     ITM_3DUP,                   ITM_3SWAP,                ITM_3STO,              ITM_3RCL,                    ITM_NULL,
-                                             ITM_NDROP,                     ITM_NDUP,                   ITM_NSWAP,                ITM_2STO,              ITM_2RCL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_MULTSTK[]     = { ITM_3STO,                      ITM_3RCL,                   ITM_3DROP,                ITM_3DUP,              ITM_3SWAP,                   ITM_NULL,
+                                             ITM_2STO,                      ITM_2RCL,                   ITM_NDROP,                ITM_NDUP,              ITM_NSWAP,                   ITM_NULL                      };
 
 
 

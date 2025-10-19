@@ -4629,14 +4629,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
-          else if(temporaryInformation == TI_DAY_OF_WEEK) {
-            if(regist == REGISTER_X) {
+          else if(temporaryInformation != TI_VIEW_REGISTER /*== TI_DAY_OF_WEEK*/) { // Change to ignore TI_DAY_OF_WEEK as TI, and permanently display the weekday on registers X, Y & Z
+            if(regist >= REGISTER_X && regist <= REGISTER_Z) {
               strcpy(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
+            strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
+            strcat(prefix," ");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
           else if(temporaryInformation == TI_VIEW_REGISTER) {          //X, Y, & Z, not T
             userTI(currentViewRegister, regist, prefix, &prefixWidth);

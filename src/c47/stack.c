@@ -174,9 +174,9 @@ void fnSwapN(uint16_t number) {
 
 
 void fnDupN(uint16_t number) {
-  for(int n = 0; n < min(4,number); n++) {
+  for(int n = 0; n < min(4, number); n++) {
     setSystemFlag(FLAG_ASLIFT);
-    fnRecall(REGISTER_X + number);
+    fnRecall(REGISTER_X + (number - 1));
   }
 }
 
