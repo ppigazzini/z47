@@ -47,6 +47,25 @@ void fnRecall(uint16_t regist) {
 }
 
 
+void fn2Rcl(uint16_t regist) {
+  setSystemFlag(FLAG_ASLIFT);
+  fnRecall(regist + 1);
+  setSystemFlag(FLAG_ASLIFT);
+  fnRecall(regist + 0);
+}
+
+
+void fn3Rcl(uint16_t regist) {
+  setSystemFlag(FLAG_ASLIFT);
+  fnRecall(regist + 2);
+  setSystemFlag(FLAG_ASLIFT);
+  fnRecall(regist + 1);
+  setSystemFlag(FLAG_ASLIFT);
+  fnRecall(regist + 0);
+}
+
+
+
 
 void fnLastX(uint16_t unusedButMandatoryParameter) {
   fnRecall(REGISTER_L);

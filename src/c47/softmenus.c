@@ -314,7 +314,13 @@ TO_QSPI const int16_t menu_HPLOT[]   = {
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_STK[]         = { ITM_DROP,                      ITM_Rdown,                  ITM_Rup,                  ITM_LASTX,             ITM_FILL,                    ITM_CLSTK,
-                                             ITM_DROPY,                     ITM_Xex,                    ITM_Yex,                  ITM_Zex,               ITM_Tex,                     ITM_SHUFFLE                   };
+                                             ITM_DROPY,                     ITM_Xex,                    ITM_Yex,                  ITM_Zex,               ITM_Tex,                     ITM_SHUFFLE,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_MULTSTK                   };
+
+TO_QSPI const int16_t menu_MULTSTK[]     = { ITM_3DROP,                     ITM_3DUP,                   ITM_3SWAP,                ITM_3STO,              ITM_3RCL,                    ITM_NULL,
+                                             ITM_NDROP,                     ITM_NDUP,                   ITM_NSWAP,                ITM_2STO,              ITM_2RCL,                    ITM_NULL                      };
+
+
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -365,13 +371,13 @@ TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_
                                              ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
                                              ITM_DEG,                       ITM_RAD,                    ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
 #if (CALCMODEL != USER_R47)
-                                             ITM_TO_XFN,                    ITM_1ONX_XFN,               ITM_SQRT_XFN,             ITM_LOG_XFN,           ITM_LN_XFN,                  ITM_SWAP_XFN,
-                                             ITM_MOD_XFN,                   ITM_POWER_XFN,              ITM_SQR_XFN,              ITM_10X_XFN,           ITM_EXP_XFN,                 ITM_DUP_XFN,
-                                             ITM_STO_XFN,                   ITM_RCL_XFN,                ITM_YRTX_XFN,             ITM_LARGELI,           ITM_DREAL,                   ITM_DROP_XFN                   };
+                                             ITM_TO_XFN,                    ITM_1ONX_XFN,               ITM_SQRT_XFN,             ITM_LOG_XFN,           ITM_LN_XFN,                  ITM_3SWAP,
+                                             ITM_MOD_XFN,                   ITM_POWER_XFN,              ITM_SQR_XFN,              ITM_10X_XFN,           ITM_EXP_XFN,                 ITM_3DUP,
+                                             ITM_3STO,                      ITM_3RCL,                   ITM_XTHROOT_XFN,          ITM_LARGELI,           ITM_DREAL,                   ITM_3DROP                   };
 #else
                                              ITM_SQR_XFN,                   ITM_SQRT_XFN,               ITM_1ONX_XFN,             ITM_POWER_XFN,         ITM_LOG_XFN,                 ITM_LN_XFN,
-                                             ITM_MOD_XFN,                   ITM_TO_XFN,                 ITM_DUP_XFN,              ITM_YRTX_XFN,          ITM_10X_XFN,                 ITM_EXP_XFN,
-                                             ITM_STO_XFN,                   ITM_RCL_XFN,                ITM_DROP_XFN,             ITM_SWAP_XFN,          ITM_LARGELI,                 ITM_DREAL                     };
+                                             ITM_MOD_XFN,                   ITM_TO_XFN,                 ITM_3DUP,                 ITM_XTHROOT_XFN,       ITM_10X_XFN,                 ITM_EXP_XFN,
+                                             ITM_3STO,                      ITM_3RCL,                   ITM_3DROP,                ITM_3SWAP,             ITM_LARGELI,                 ITM_DREAL                     };
 #endif
 
 
@@ -1019,7 +1025,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 162 */  {.menuItem = -MNU_EIMCATALOG,  .numItems = sizeof(menu_EIMCATALOG    )/sizeof(int16_t), .softkeyItem = menu_EIMCATALOG     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 163 */  {.menuItem = -MNU_FCNS_EIM,    .numItems = sizeof(menu_FCNS_EIM      )/sizeof(int16_t), .softkeyItem = menu_FCNS_EIM       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 164 */  {.menuItem = -MNU_XXFCNS,      .numItems = sizeof(menu_XXFCNS        )/sizeof(int16_t), .softkeyItem = menu_XXFCNS         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 165 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 165 */  {.menuItem = -MNU_MULTSTK,     .numItems = sizeof(menu_MULTSTK       )/sizeof(int16_t), .softkeyItem = menu_MULTSTK        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 166 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

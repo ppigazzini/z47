@@ -76,6 +76,11 @@ void fnDropT(uint16_t unusedButMandatoryParameter) {
   _Drop(REGISTER_T);
 }
 
+void fnDropN(uint16_t number) {
+  for(int n = 0; n < min(8,number); n++) {
+    _Drop(REGISTER_X);
+  }
+}
 
 
 void fnRollUp(uint16_t unusedButMandatoryParameter) {
@@ -158,6 +163,21 @@ void fnSwapZ(uint16_t regist) {
 
 void fnSwapT(uint16_t regist) {
   _swapRegs(REGISTER_T, regist);
+}
+
+
+void fnSwapN(uint16_t number) {
+  for(int n = 0; n < min(4,number); n++) {
+  _swapRegs(REGISTER_X + n, REGISTER_X + number + n);
+  }
+}
+
+
+void fnDupN(uint16_t number) {
+  for(int n = 0; n < min(4,number); n++) {
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(REGISTER_X + number);
+  }
 }
 
 
