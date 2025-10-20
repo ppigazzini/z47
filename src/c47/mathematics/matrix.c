@@ -1297,6 +1297,34 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
 }
 
 
+static void extractDiagonalToRowReal34Matrix(const real34Matrix_t *source, real34Matrix_t *dest) {
+  uint16_t size = source->header.matrixRows;
+  if(realMatrixInit(dest, 1, size)) {
+    for(uint32_t i = 0; i < size; i++) {
+      real34Copy(&source->matrixElements[i * size + i], &dest->matrixElements[i]);
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  }
+}
+
+static void extractDiagonalToRowComplex34Matrix(const complex34Matrix_t *source, complex34Matrix_t *dest) {
+  uint16_t size = source->header.matrixRows;
+  if(complexMatrixInit(dest, 1, size)) {
+    for(uint32_t i = 0; i < size; i++) {
+      real34Copy(VARIABLE_REAL34_DATA(&source->matrixElements[i * size + i]), 
+                 VARIABLE_REAL34_DATA(&dest->matrixElements[i]));
+      real34Copy(VARIABLE_IMAG34_DATA(&source->matrixElements[i * size + i]), 
+                 VARIABLE_IMAG34_DATA(&dest->matrixElements[i]));
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  }
+}
+
+
 void fnEigenvalues(uint16_t unusedParamButMandatory) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t x, res, ires;
@@ -1335,6 +1363,17 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
               real34Copy(&ires.matrixElements[i], VARIABLE_IMAG34_DATA(&cres.matrixElements[i]));
             }
             convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
+            adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+
+            //provide additional matrix for the eigenvalue outputs in a vector
+            complex34Matrix_t cresRow;
+            extractDiagonalToRowComplex34Matrix(&cres, &cresRow);
+            setSystemFlag(FLAG_ASLIFT);
+            liftStack();
+            convertComplex34MatrixToComplex34MatrixRegister(&cresRow, REGISTER_X);
+            adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+            complexMatrixFree(&cresRow);
+
             realMatrixFree(&ires);
             complexMatrixFree(&cres);
           }
@@ -1344,6 +1383,17 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         }
         else {
           convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
+          adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+
+          //provide additional matrix for the eigenvalue outputs in a vector
+          real34Matrix_t resRow;
+          extractDiagonalToRowReal34Matrix(&res, &resRow);
+          setSystemFlag(FLAG_ASLIFT);
+          liftStack();
+          convertReal34MatrixToReal34MatrixRegister(&resRow, REGISTER_X);
+          adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+          realMatrixFree(&resRow);
+
         }
         realMatrixFree(&res);
       }
@@ -1376,6 +1426,17 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       liftStack();
       complexEigenvalues(&x, &res);
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+      adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+
+      //provide additional matrix for the eigenvalue outputs in a vector
+      complex34Matrix_t resRow;
+      extractDiagonalToRowComplex34Matrix(&res, &resRow);
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      convertComplex34MatrixToComplex34MatrixRegister(&resRow, REGISTER_X);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+      complexMatrixFree(&resRow);
+
       complexMatrixFree(&res);
     }
     goto Success;
@@ -1392,7 +1453,6 @@ ErrorExit:
 return;
 
 Success:
-adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 return;
 
 
