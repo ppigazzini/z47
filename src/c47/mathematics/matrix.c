@@ -1326,6 +1326,7 @@ static void extractDiagonalToRowComplex34Matrix(const complex34Matrix_t *source,
 
 
 void fnEigenvalues(uint16_t unusedParamButMandatory) {
+  bool_t doneAdjusting = false;
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t x, res, ires;
 
@@ -1364,6 +1365,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
             }
             convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
             adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+            doneAdjusting = true;
 
             //provide additional matrix for the eigenvalue outputs in a vector
             complex34Matrix_t cresRow;
@@ -1384,6 +1386,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         else {
           convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
           adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+          doneAdjusting = true;
 
           //provide additional matrix for the eigenvalue outputs in a vector
           real34Matrix_t resRow;
@@ -1427,6 +1430,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       complexEigenvalues(&x, &res);
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      doneAdjusting = true;
 
       //provide additional matrix for the eigenvalue outputs in a vector
       complex34Matrix_t resRow;
@@ -1453,6 +1457,9 @@ ErrorExit:
 return;
 
 Success:
+  if(!doneAdjusting) {
+    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+  }
 return;
 
 
