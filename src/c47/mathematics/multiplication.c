@@ -132,6 +132,37 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
   }
 }
 
+
+// This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). The 159 series is needed for 39 digit precision in cuberoots and the cubic formula solver
+void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
+  real159_t a, b, c, d, p, t;
+  
+  realZero((real_t *)&a); realZero((real_t *)&b);
+  realZero((real_t *)&c); realZero((real_t *)&d);
+  realZero((real_t *)&p); realZero((real_t *)&t);  
+  realCopy(factor1Real, (real_t *)&a);
+  realCopy(factor1Imag, (real_t *)&b);
+  realCopy(factor2Real, (real_t *)&c);
+  realCopy(factor2Imag, (real_t *)&d);
+  
+  // Real part
+  realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&p, realContext);
+  realChangeSign((real_t *)&b);
+  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, (real_t *)&t, realContext);
+  realChangeSign((real_t *)&b);
+  realChangeSign((real_t *)&p);
+  realFMA((real_t *)&a, (real_t *)&c, (real_t *)&p, productReal, realContext);
+  realAdd(productReal, (real_t *)&t, productReal, realContext);
+  
+  // Imaginary part
+  realMultiply((real_t *)&a, (real_t *)&d, (real_t *)&p, realContext);
+  realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, (real_t *)&t, realContext);
+  realChangeSign((real_t *)&p);
+  realFMA((real_t *)&a, (real_t *)&d, (real_t *)&p, productImag, realContext);
+  realAdd(productImag, (real_t *)&t, productImag, realContext);
+}
+
+
 void mulComplexReal(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2, real_t *productReal, real_t *productImag, realContext_t *realContext) {
   realMultiply(factor1Real, factor2, productReal, realContext);
   realMultiply(factor1Imag, factor2, productImag, realContext);
