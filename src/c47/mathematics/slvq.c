@@ -257,3 +257,106 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
     }
   }
 }
+
+
+
+void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, realContext_t *realContext) {
+  
+  bool_t realCoefs = realIsZero(aImag) && realIsZero(bImag) && realIsZero(cImag);
+
+  if(realCoefs) {
+    // All coefficients are real - use high precision
+    real159_t rR, a_h, b_h, c_h, temp, sqrt_r;
+    realZero((real_t *)&rR); realZero((real_t *)&a_h);
+    realZero((real_t *)&b_h); realZero((real_t *)&c_h);
+    realZero((real_t *)&temp); realZero((real_t *)&sqrt_r);
+    
+    realCopy(aReal, (real_t *)&a_h);
+    realCopy(bReal, (real_t *)&b_h);
+    realCopy(cReal, (real_t *)&c_h);
+    
+    if(realIsZero(aReal)) {
+      // bx + c = 0
+      realMultiply((real_t *)&b_h, (real_t *)&b_h, rReal, realContext);
+      realZero(rImag);
+      
+      realDivide((real_t *)&c_h, (real_t *)&b_h, x1Real, realContext);
+      realChangeSign(x1Real);
+      realCopy(const_NaN, x2Real);
+      realZero(x1Imag);
+      realZero(x2Imag);
+    }
+    else if(realIsZero(cReal)) {
+      // ax² + bx = 0
+      realMultiply((real_t *)&b_h, (real_t *)&b_h, rReal, realContext);
+      realZero(rImag);
+      
+      realZero(x1Real);
+      realDivide((real_t *)&b_h, (real_t *)&a_h, x2Real, realContext);
+      realChangeSign(x2Real);
+      realZero(x1Imag);
+      realZero(x2Imag);
+    }
+    else {
+      // ax² + bx + c = 0
+      // r = b² - 4ac
+      realMultiply(const__4, (real_t *)&a_h, (real_t *)&temp, realContext);
+      realMultiply((real_t *)&c_h, (real_t *)&temp, (real_t *)&temp, realContext);
+      realMultiply((real_t *)&b_h, (real_t *)&b_h, (real_t *)&rR, realContext);
+      realSubtract((real_t *)&rR, (real_t *)&temp, (real_t *)&rR, realContext);
+      
+      realCopy((real_t *)&rR, rReal);
+      realZero(rImag);
+
+      if(realIsPositive((real_t *)&rR)) {
+        // Real roots
+        realSquareRoot((real_t *)&rR, (real_t *)&sqrt_r, realContext);
+        
+        // x1 = (-b - sign(b)*sqrt(r)) / 2a
+        if(realIsPositive((real_t *)&b_h)) {
+          realChangeSign((real_t *)&sqrt_r);
+        }
+        realSubtract((real_t *)&sqrt_r, (real_t *)&b_h, (real_t *)&temp, realContext);
+        realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
+        realDivide((real_t *)&temp, (real_t *)&a_h, x1Real, realContext);
+        
+        // x2 = c / (a*x1)
+        realDivide((real_t *)&c_h, (real_t *)&a_h, (real_t *)&temp, realContext);
+        realDivide((real_t *)&temp, x1Real, x2Real, realContext);
+        
+        realZero(x1Imag);
+        realZero(x2Imag);
+      }
+      else {
+        // Complex roots
+        realMinus((real_t *)&rR, (real_t *)&temp, realContext);
+        realSquareRoot((real_t *)&temp, (real_t *)&sqrt_r, realContext);
+        
+        if(realIsPositive((real_t *)&b_h)) {
+          realChangeSign((real_t *)&sqrt_r);
+        }
+        
+        // x1 = (-b + i*sqrt(-r)) / 2a
+        realMinus((real_t *)&b_h, (real_t *)&temp, realContext);
+        realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
+        realDivide((real_t *)&temp, (real_t *)&a_h, x1Real, realContext);
+        
+        realMultiply((real_t *)&sqrt_r, const_1on2, (real_t *)&temp, realContext);
+        realDivide((real_t *)&temp, (real_t *)&a_h, x1Imag, realContext);
+        
+        // x2 = conj(x1)
+        realCopy(x1Real, x2Real);
+        realCopy(x1Imag, x2Imag);
+        realChangeSign(x2Imag);
+      }
+    }
+  }
+  else {
+    // Complex coefficients - use standard precision for now
+    // (Can expand this later if needed)
+    solveQuadraticEquation(aReal, aImag, bReal, bImag, cReal, cImag, 
+                          rReal, rImag, x1Real, x1Imag, x2Real, x2Imag, 
+                          realContext);
+  }
+}
+

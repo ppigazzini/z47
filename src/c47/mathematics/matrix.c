@@ -4299,63 +4299,84 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
 }
 
 
-static void abmcd(const real_t *a, const real_t *b, const real_t *c, const real_t *d, real_t *r, realContext_t *realContext) {
-  real_t p;
-
-  realCopy(c, &p);
-  realChangeSign(&p);
-  dotCplx(a, &p, b, d, r, realContext);
-}
 
 static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, bool_t is_real_symmetric, realContext_t *realContext) {
-  // Calculate eigenvalues of 2x2 bottom right submatrix
-  // Characteristic equation of A = [[a b] [c d]] : t^2 - trace(A) t +      det(A) = 0
-  //                                                t^2 -  (a + d) t + (a d - b c) = 0
-  //                                            t = ((a + d) ± √(a^2 + 2 a d + d^2 - 4 (a d - b c))) / 2
-  //                                                ((a + d) ± √(a^2         + d^2 - 2 a d + 4 b c)) / 2
+// This re-write is needed because the 2x2 solver result in about 35 digits MAX accuracy if 75 digits internally is used. This is not acceptable.
+// In order to increase this to around 39 diits, estimated 120 digits is needed. A 159 digit type was created for this to be used in the temprary variables in the helpers.
+// The 159 digit budget results in typically maybe half.
+// This allows zero noise in the eigenvalues 
+// The mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). 
+//
+  // Calculate eigenvalues of 2x2 (bottom right sub-)matrix using 159-digit precision
+  // Characteristic equation of A = [[a b] [c d]]:
+  //   det(A - λI) = λ² - trace(A)·λ + det(A) = 0
+  // Standard form: λ² + p·λ + q = 0 where:
+  //   p = -(a + d)  [negative trace]
+  //   q = ad - bc   [determinant]
+  // Solution: λ = (-(a+d) ± √((a+d)² - 4(ad-bc))) / 2
+  //            = (-(a+d) ± √(a² + d² - 2ad + 4bc)) / 2
+
+  realContext_t ctx159 = ctxtReal75;
+  ctx159.digits = 159;
+  
+  // Use real159_t for all intermediate calculations
+  real159_t trR, trI, detR, detI, discrR, discrI;
+  real159_t t1rH, t1iH, t2rH, t2iH;
+  
+  // Initialize all
+  realZero((real_t *)&trR); realZero((real_t *)&trI);
+  realZero((real_t *)&detR); realZero((real_t *)&detI);
+  realZero((real_t *)&discrR); realZero((real_t *)&discrI);
+  realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
+  realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
+  
   const real_t *ar, *ai, *br, *bi, *cr, *ci, *dr, *di;
-  real_t trR, trI, detR, detI, discrR, discrI;
-
-  realZero(t1r);
-  realZero(t1i);
-  realZero(t2r);
-  realZero(t2i);
-  realZero(&discrR);
-  realZero(&discrI);
-
-
   ar = mat + ((size - 2) * size + (size - 2)) * 2; ai = ar + 1;
   br = mat + ((size - 2) * size + (size - 1)) * 2; bi = br + 1;
   cr = mat + ((size - 1) * size + (size - 2)) * 2; ci = cr + 1;
   dr = mat + ((size - 1) * size + (size - 1)) * 2; di = dr + 1;
 
-  // determinant
+  // Determinant calculation in high precision
   if(realIsZero(ai) && realIsZero(bi) && realIsZero(ci) && realIsZero(di)) {
-    abmcd(ar, dr, br, cr, &detR, realContext);
-    realZero(&detI);
+      // All real - compute ad - bc directly
+      realMultiply(ar, dr, (real_t *)&detR, &ctx159);
+      realMultiply(br, cr, (real_t *)&trR, &ctx159);  // Reuse trR as temp
+      realSubtract((real_t *)&detR, (real_t *)&trR, (real_t *)&detR, &ctx159);
+      realZero((real_t *)&detI);
   }
   else {
-    mulComplexComplex(ar, ai, dr, di, &detR, &detI, realContext);
-    mulComplexComplex(br, bi, cr, ci, &trR,  &trI,  realContext);
-    realSubtract(&detR, &trR, &detR, realContext);
-    realSubtract(&detI, &trI, &detI, realContext);
+      mulComplexComplex159(ar, ai, dr, di, (real_t *)&detR, (real_t *)&detI, &ctx159);
+      mulComplexComplex159(br, bi, cr, ci, (real_t *)&trR, (real_t *)&trI, &ctx159);
+      realSubtract((real_t *)&detR, (real_t *)&trR, (real_t *)&detR, &ctx159);
+      realSubtract((real_t *)&detI, (real_t *)&trI, (real_t *)&detI, &ctx159);
   }
-
-  // trace
-  realAdd(ar, dr, &trR, realContext);
-  realAdd(ai, di, &trI, realContext);
-  realChangeSign(&trR);
-  realChangeSign(&trI);
-
+  
+  // Trace in high precision
+  realAdd(ar, dr, (real_t *)&trR, &ctx159);
+  realAdd(ai, di, (real_t *)&trI, &ctx159);
+  realChangeSign((real_t *)&trR);
+  realChangeSign((real_t *)&trI);
+  
   blockMonitoring = true;
-  solveQuadraticEquation(const_1, const_0, &trR, &trI, &detR, &detI, &discrR, &discrI, t1r, t1i, t2r, t2i, realContext);
+  solveQuadraticEquation159(const_1, const_0, (real_t *)&trR, (real_t *)&trI, (real_t *)&detR, (real_t *)&detI, 
+                         (real_t *)&discrR, (real_t *)&discrI, 
+                         (real_t *)&t1rH, (real_t *)&t1iH, 
+                         (real_t *)&t2rH, (real_t *)&t2iH, 
+                         &ctx159);
   blockMonitoring = false;
+  
+  // Convert back to 75-digit precision
+  decNumberPlus(t1r, (decNumber *)&t1rH, realContext);
+  decNumberPlus(t1i, (decNumber *)&t1iH, realContext);
+  decNumberPlus(t2r, (decNumber *)&t2rH, realContext);
+  decNumberPlus(t2i, (decNumber *)&t2iH, realContext);
+  
   if (is_real_symmetric) {
     #if defined(EIGENDEBUG)
       printf("clear calculateEigenvalues22 imag output\n");
-    #endif //EIGENDEBUG  
-    realZero(t1i);  // Zero imaginary part of first eigenvalue
-    realZero(t2i);  // Zero imaginary part of second eigenvalue
+    #endif
+    realZero(t1i);
+    realZero(t2i);
   }
 }
 
@@ -4368,9 +4389,14 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
 // This allows zero noise in the eigenvalues 
 // The mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). 
 //
-  // Calculate eigenvalues of 3x3 (bottom right sub-)matrix
-  // Characteristic equation of A = [[a b c] [d e f] [g h k]] : t^3 -    trace(A) t^2 +                                   c t -                                        det(A) = 0
-  //                                                            t^3 - (a + e + k) t^2 + (a e - b d + a k - c g + e k - f h) t - a e k - b f g - c d h + c e g + b d k + a f h = 0
+  // Calculate eigenvalues of 3x3 (bottom right sub-)matrix using 159-digit precision
+  // Characteristic equation of A = [[a b c] [d e f] [g h k]]:
+  //   det(A - λI) = -λ³ + trace(A)·λ² - (sum of 2×2 principal minors)·λ + det(A) = 0
+  // Standard form: λ³ + c2·λ² + c1·λ + c0 = 0 where:
+  //   c2 = -(a + e + k)
+  //   c1 = (ae - bd) + (ak - cg) + (ek - fh)  [sum of principal 2×2 minors]
+  //   c0 = -(aek + bfg + cdh - ceg - bdk - afh)  [negative determinant]
+
   const real_t *mr[9], *mi[9];
   real159_t br, bi, cr, ci, dr, di, discrR, discrI;
   realContext_t ctx159 = ctxtReal75;

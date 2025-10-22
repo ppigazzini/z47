@@ -111,6 +111,60 @@ void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const r
 }
 
 
+void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
+  real159_t realNumer, realDenom, a, b, c, d;
+  
+  realZero((real_t *)&realNumer); realZero((real_t *)&realDenom);
+  realZero((real_t *)&a); realZero((real_t *)&b);
+  realZero((real_t *)&c); realZero((real_t *)&d);
+  
+  realCopy(numerReal, (real_t *)&a);
+  realCopy(numerImag, (real_t *)&b);
+  realCopy(denomReal, (real_t *)&c);
+  realCopy(denomImag, (real_t *)&d);
+  
+  if(realIsNaN((real_t *)&a) || realIsNaN((real_t *)&b) || realIsNaN((real_t *)&c) || realIsNaN((real_t *)&d)) {
+    realCopy(const_NaN, quotientReal);
+    realCopy(const_NaN, quotientImag);
+    return;
+  }
+  
+  if(realIsInfinite((real_t *)&c) || realIsInfinite((real_t *)&d)) {
+    if(realIsInfinite((real_t *)&a) || realIsInfinite((real_t *)&b)) {
+      realCopy(const_NaN, quotientReal);
+      realCopy(const_NaN, quotientImag);
+    }
+    else {
+      realZero(quotientReal);
+      realZero(quotientImag);
+    }
+    return;
+  }
+  
+  if(realIsInfinite((real_t *)&a) && !realIsInfinite((real_t *)&b)) {
+    realZero((real_t *)&b);
+  }
+  if(realIsInfinite((real_t *)&b) && !realIsInfinite((real_t *)&a)) {
+    realZero((real_t *)&a);
+  }
+  
+  // Denominator: c² + d²
+  realMultiply((real_t *)&c, (real_t *)&c, (real_t *)&realDenom, realContext);
+  realFMA((real_t *)&d, (real_t *)&d, (real_t *)&realDenom, (real_t *)&realDenom, realContext);
+  
+  // Real part: (a*c + b*d) / (c² + d²)
+  realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&realNumer, realContext);
+  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&realNumer, (real_t *)&realNumer, realContext);
+  realDivide((real_t *)&realNumer, (real_t *)&realDenom, quotientReal, realContext);
+  
+  // Imaginary part: (b*c - a*d) / (c² + d²)
+  realMultiply((real_t *)&b, (real_t *)&c, (real_t *)&realNumer, realContext);
+  realChangeSign((real_t *)&a);
+  realFMA((real_t *)&a, (real_t *)&d, (real_t *)&realNumer, (real_t *)&realNumer, realContext);
+  realDivide((real_t *)&realNumer, (real_t *)&realDenom, quotientImag, realContext);
+}
+
+
 
 void divRealComplex(const real_t *numerReal, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
   real_t a, c, d, denom;
