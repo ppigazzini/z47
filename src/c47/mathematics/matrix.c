@@ -1306,6 +1306,7 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
+
 static void extractDiagonalToRowReal34Matrix(const real34Matrix_t *source, real34Matrix_t *dest) {
   uint16_t size = source->header.matrixRows;
   #if defined(EIGEN_TESTOUT)
@@ -4358,14 +4359,22 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
 
 
 static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, real_t *t3r, real_t *t3i, bool_t is_real_symmetric, realContext_t *realContext) {
+// This re-write is needed because the 3x3 solver result in 25 digits MAX accuracy if 75 digits internally is used. This is not acceptable.
+// In order to increase this to around 39 diits, estimated 120 digits is needed. A 159 digit type was created for this to be used in the temprary variables in the helpers.
+// The 159 digit budget results in typically 40 digits, so a lot more digit loss is exeprienced, but 40 exceeds 39 and also exceeds 34. 
+// This allows zero noise in the eigenvalues 
+// The mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). 
+//
   // Calculate eigenvalues of 3x3 (bottom right sub-)matrix
   // Characteristic equation of A = [[a b c] [d e f] [g h k]] : t^3 -    trace(A) t^2 +                                   c t -                                        det(A) = 0
   //                                                            t^3 - (a + e + k) t^2 + (a e - b d + a k - c g + e k - f h) t - a e k - b f g - c d h + c e g + b d k + a f h = 0
-
   const real_t *mr[9], *mi[9];
-  real_t br, bi, cr, ci, dr, di, discrR, discrI;
+  real159_t br, bi, cr, ci, dr, di, discrR, discrI;
+  realContext_t ctx159 = ctxtReal75;
+  ctx159.digits = 159;
+  
   {
-    real_t aekr, aeki, bfgr, bfgi, cdhr, cdhi, cegr, cegi, bdkr, bdki, afhr, afhi;
+    real159_t aekr, aeki, bfgr, bfgi, cdhr, cdhi, cegr, cegi, bdkr, bdki, afhr, afhi;
 
     mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2; mr[2] = mr[1] + 2;
     mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2; mr[5] = mr[4] + 2;
@@ -4374,95 +4383,96 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
       mi[i] = mr[i] + 1;
     }
 
+    // Initialize all 159-digit variables
+    realZero((real_t *)&br); realZero((real_t *)&bi);
+    realZero((real_t *)&cr); realZero((real_t *)&ci);
+    realZero((real_t *)&dr); realZero((real_t *)&di);
+    realZero((real_t *)&discrR); realZero((real_t *)&discrI);
+    realZero((real_t *)&aekr); realZero((real_t *)&aeki);
+    realZero((real_t *)&bfgr); realZero((real_t *)&bfgi);
+    realZero((real_t *)&cdhr); realZero((real_t *)&cdhi);
+    realZero((real_t *)&cegr); realZero((real_t *)&cegi);
+    realZero((real_t *)&bdkr); realZero((real_t *)&bdki);
+    realZero((real_t *)&afhr); realZero((real_t *)&afhi);
+
     // quadratic coefficient: trace
-    realAdd(mr[0], mr[4], &br, realContext); realAdd(mi[0], mi[4], &bi, realContext);
-    realAdd(&br, mr[8], &br, realContext); realAdd(&bi, mi[8], &bi, realContext);
-    realChangeSign(&br); realChangeSign(&bi);
+    realAdd(mr[0], mr[4], (real_t *)&br, &ctx159); 
+    realAdd(mi[0], mi[4], (real_t *)&bi, &ctx159);
+    realAdd((real_t *)&br, mr[8], (real_t *)&br, &ctx159); 
+    realAdd((real_t *)&bi, mi[8], (real_t *)&bi, &ctx159);
+    realChangeSign((real_t *)&br); 
+    realChangeSign((real_t *)&bi);
 
     // linear coefficient: sum of determinant of principal minors
-    mulComplexComplex(mr[0], mi[0], mr[4], mi[4], &aekr, &aeki, realContext);
-    mulComplexComplex(mr[1], mi[1], mr[3], mi[3], &bdkr, &bdki, realContext);
-    mulComplexComplex(mr[0], mi[0], mr[8], mi[8], &cdhr, &cdhi, realContext);
-    mulComplexComplex(mr[2], mi[2], mr[6], mi[6], &cegr, &cegi, realContext);
-    mulComplexComplex(mr[4], mi[4], mr[8], mi[8], &bfgr, &bfgi, realContext);
-    mulComplexComplex(mr[5], mi[5], mr[7], mi[7], &afhr, &afhi, realContext);
-    realAdd(&aekr, &cdhr, &cr, realContext); realAdd(&aeki, &cdhi, &ci, realContext);
-    realAdd(&cr, &bfgr, &cr, realContext); realAdd(&ci, &bfgi, &ci, realContext);
-    realSubtract(&cr, &bdkr, &cr, realContext); realSubtract(&ci, &bdki, &ci, realContext);
-    realSubtract(&cr, &cegr, &cr, realContext); realSubtract(&ci, &cegi, &ci, realContext);
-    realSubtract(&cr, &afhr, &cr, realContext); realSubtract(&ci, &afhi, &ci, realContext);
+    mulComplexComplex159(mr[0], mi[0], mr[4], mi[4], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
+    mulComplexComplex159(mr[1], mi[1], mr[3], mi[3], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
+    mulComplexComplex159(mr[0], mi[0], mr[8], mi[8], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex159(mr[2], mi[2], mr[6], mi[6], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
+    mulComplexComplex159(mr[4], mi[4], mr[8], mi[8], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex159(mr[5], mi[5], mr[7], mi[7], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
+    realAdd((real_t *)&aekr, (real_t *)&cdhr, (real_t *)&cr, &ctx159); 
+    realAdd((real_t *)&aeki, (real_t *)&cdhi, (real_t *)&ci, &ctx159);
+    realAdd((real_t *)&cr, (real_t *)&bfgr, (real_t *)&cr, &ctx159); 
+    realAdd((real_t *)&ci, (real_t *)&bfgi, (real_t *)&ci, &ctx159);
+    realSubtract((real_t *)&cr, (real_t *)&bdkr, (real_t *)&cr, &ctx159); 
+    realSubtract((real_t *)&ci, (real_t *)&bdki, (real_t *)&ci, &ctx159);
+    realSubtract((real_t *)&cr, (real_t *)&cegr, (real_t *)&cr, &ctx159); 
+    realSubtract((real_t *)&ci, (real_t *)&cegi, (real_t *)&ci, &ctx159);
+    realSubtract((real_t *)&cr, (real_t *)&afhr, (real_t *)&cr, &ctx159); 
+    realSubtract((real_t *)&ci, (real_t *)&afhi, (real_t *)&ci, &ctx159);
 
     // constant term: determinant
-    mulComplexComplex(&aekr, &aeki, mr[8], mi[8], &aekr, &aeki, realContext);
-    mulComplexComplex(mr[1], mi[1], mr[5], mi[5], &bfgr, &bfgi, realContext);
-    mulComplexComplex(&bfgr, &bfgi, mr[6], mi[6], &bfgr, &bfgi, realContext);
-    mulComplexComplex(mr[2], mi[2], mr[3], mi[3], &cdhr, &cdhi, realContext);
-    mulComplexComplex(&cdhr, &cdhi, mr[7], mi[7], &cdhr, &cdhi, realContext);
-    mulComplexComplex(&cegr, &cegi, mr[4], mi[4], &cegr, &cegi, realContext);
-    mulComplexComplex(&bdkr, &bdki, mr[8], mi[8], &bdkr, &bdki, realContext);
-    mulComplexComplex(&afhr, &afhi, mr[0], mi[0], &afhr, &afhi, realContext);
-    realAdd(&aekr, &bfgr, &dr, realContext); realAdd(&aeki, &bfgi, &di, realContext);
-    realAdd(&dr, &cdhr, &dr, realContext); realAdd(&di, &cdhi, &di, realContext);
-    realSubtract(&dr, &cegr, &dr, realContext); realSubtract(&di, &cegi, &di, realContext);
-    realSubtract(&dr, &bdkr, &dr, realContext); realSubtract(&di, &bdki, &di, realContext);
-    realSubtract(&dr, &afhr, &dr, realContext); realSubtract(&di, &afhi, &di, realContext);
-    realChangeSign(&dr); realChangeSign(&di);
+    mulComplexComplex159((real_t *)&aekr, (real_t *)&aeki, mr[8], mi[8], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
+    mulComplexComplex159(mr[1], mi[1], mr[5], mi[5], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex159((real_t *)&bfgr, (real_t *)&bfgi, mr[6], mi[6], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex159(mr[2], mi[2], mr[3], mi[3], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex159((real_t *)&cdhr, (real_t *)&cdhi, mr[7], mi[7], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex159((real_t *)&cegr, (real_t *)&cegi, mr[4], mi[4], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
+    mulComplexComplex159((real_t *)&bdkr, (real_t *)&bdki, mr[8], mi[8], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
+    mulComplexComplex159((real_t *)&afhr, (real_t *)&afhi, mr[0], mi[0], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
+    realAdd((real_t *)&aekr, (real_t *)&bfgr, (real_t *)&dr, &ctx159); 
+    realAdd((real_t *)&aeki, (real_t *)&bfgi, (real_t *)&di, &ctx159);
+    realAdd((real_t *)&dr, (real_t *)&cdhr, (real_t *)&dr, &ctx159); 
+    realAdd((real_t *)&di, (real_t *)&cdhi, (real_t *)&di, &ctx159);
+    realSubtract((real_t *)&dr, (real_t *)&cegr, (real_t *)&dr, &ctx159); 
+    realSubtract((real_t *)&di, (real_t *)&cegi, (real_t *)&di, &ctx159);
+    realSubtract((real_t *)&dr, (real_t *)&bdkr, (real_t *)&dr, &ctx159); 
+    realSubtract((real_t *)&di, (real_t *)&bdki, (real_t *)&di, &ctx159);
+    realSubtract((real_t *)&dr, (real_t *)&afhr, (real_t *)&dr, &ctx159); 
+    realSubtract((real_t *)&di, (real_t *)&afhi, (real_t *)&di, &ctx159);
+    realChangeSign((real_t *)&dr); 
+    realChangeSign((real_t *)&di);
   }
 
   blockMonitoring = true;
-  solveCubicEquation(&br, &bi, &cr, &ci, &dr, &di, &discrR, &discrI, t1r, t1i, t2r, t2i, t3r, t3i, realContext);
+  real159_t t1rH, t1iH, t2rH, t2iH, t3rH, t3iH;
+  realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
+  realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
+  realZero((real_t *)&t3rH); realZero((real_t *)&t3iH);
+  
+  solveCubicEquation159((real_t *)&br, (real_t *)&bi, 
+                      (real_t *)&cr, (real_t *)&ci,
+                      (real_t *)&dr, (real_t *)&di,
+                      (real_t *)&discrR, (real_t *)&discrI,
+                      (real_t *)&t1rH, (real_t *)&t1iH,
+                      (real_t *)&t2rH, (real_t *)&t2iH,
+                      (real_t *)&t3rH, (real_t *)&t3iH,
+                      &ctx159);
   blockMonitoring = false;
-
-
-  #if defined(EIGENDEBUG)
-  printf("\n=== CALLING solveCubicEquation ===\n");
-  printf("Input coefficients (x³ + c2·x² + c1·x + c0 = 0):\n");
-  printf("  c2 = "); printRealToConsole(&br, "", " + "); printRealToConsole(&bi, "", "i\n");
-  printf("  c1 = "); printRealToConsole(&cr, "", " + "); printRealToConsole(&ci, "", "i\n");
-  printf("  c0 = "); printRealToConsole(&dr, "", " + "); printRealToConsole(&di, "", "i\n");
-  printf("is_real_symmetric = %d\n", is_real_symmetric);
-  #endif
-
-  solveCubicEquation(&br, &bi, &cr, &ci, &dr, &di, &discrR, &discrI, t1r, t1i, t2r, t2i, t3r, t3i, realContext);
-
-  #if defined(EIGENDEBUG)
-  printf("\n=== solveCubicEquation OUTPUTS ===\n");
-  printf("Discriminant:\n");
-  printf("  discr = "); printRealToConsole(&discrR, "", " + "); printRealToConsole(&discrI, "", "i\n");
-  printf("Root 1 (before cleanup):\n");
-  printf("  λ1 = "); printRealToConsole(t1r, "", " + "); printRealToConsole(t1i, "", "i\n");
-  printf("Root 2 (before cleanup):\n");
-  printf("  λ2 = "); printRealToConsole(t2r, "", " + "); printRealToConsole(t2i, "", "i\n");
-  printf("Root 3 (before cleanup):\n");
-  printf("  λ3 = "); printRealToConsole(t3r, "", " + "); printRealToConsole(t3i, "", "i\n");
-  #endif
-
+ 
+  // Convert back to real_t
+  decNumberPlus(t1r, (decNumber *)&t1rH, realContext);
+  decNumberPlus(t1i, (decNumber *)&t1iH, realContext);
+  decNumberPlus(t2r, (decNumber *)&t2rH, realContext);
+  decNumberPlus(t2i, (decNumber *)&t2iH, realContext);
+  decNumberPlus(t3r, (decNumber *)&t3rH, realContext);
+  decNumberPlus(t3i, (decNumber *)&t3iH, realContext);
+  
   if (is_real_symmetric) {
-    #if defined(EIGENDEBUG)
-    printf("\nApplying real symmetric cleanup (zeroing imaginary parts):\n");
-    #endif
-    
-    realZero(t1i);
-    realZero(t2i);
-    realZero(t3i);
-    
-    #if defined(EIGENDEBUG)
-    printf("Root 1 (after cleanup):\n");
-    printf("  r1 = "); printRealToConsole(t1r, "", " + "); printRealToConsole(t1i, "", "i\n");
-    printf("Root 2 (after cleanup):\n");
-    printf("  r2 = "); printRealToConsole(t2r, "", " + "); printRealToConsole(t2i, "", "i\n");
-    printf("Root 3 (after cleanup):\n");
-    printf("  r3 = "); printRealToConsole(t3r, "", " + "); printRealToConsole(t3i, "", "i\n");
-    #endif //EIGENDEBUG  
     realZero(t1i);
     realZero(t2i);
     realZero(t3i);
   }
-
-#if defined(EIGENDEBUG)
-printf("=== END solveCubicEquation ===\n\n");
-#endif
-
 }
 
 /* old shifter routine. Still operable
@@ -4473,7 +4483,7 @@ static void calculateQrShiftOld(const real_t *mat, uint16_t size, real_t *re, re
 
   dr = mat + ((size - 1) * size + (size - 1)) * 2; di = dr + 1;
 
-  calculateEigenvalues22(mat, size, &t1r, &t1i, &t2r, &t2i, is_real_symmetric, realContext);
+  calculateEigenvalues22(mat, size, &t1r, &t1i, &t2r, &t2i, realContext);
 
   // Choose shift parameter
   realSubtract(&t1r, dr, &tmpR, realContext), realSubtract(&t1i, di, &tmpI, realContext);
@@ -4638,9 +4648,9 @@ static void solve2x2Block(real_t *a, real_t *eig, uint16_t size, bool_t is_real_
   for(int i = 0; i < 2; i++) {
     realCopy(a + (i * size + i) * 2,     eig + (i * size + i) * 2);
     realCopy(a + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1);
-    }
   }
-  
+}
+
 
 static void solve3x3Block(real_t *a, real_t *eig, uint16_t size, bool_t is_real_symmetric, realContext_t *realContext) {
   #if defined(EIGENDEBUG)
@@ -4858,6 +4868,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     #endif
 
 
+
     if(isMatrixDiagonal(a, size, &tol, realContext)) {
       for(i = 0; i < size * size * 2; i++) {
         realCopy(a + i, eig + i);
@@ -4931,8 +4942,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
 
       QR_decomposition_householder(a, size, q, r, realContext);
-
-
 
 
                                               #if defined(EIGENDEBUG)
@@ -5152,6 +5161,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
                                                                       if(converged) printf("CONVERGED: |Δ(sum diag²)| < tolerance\n");
                                                                     }
                                                                     #endif
+
         realCopy(&currentDiagonalSumSq, &previousDiagonalSumSq);
         realCopy(&changeDiagonalSumSq, &previousChangeDiagonalSumSq);
         last_check_iter = iteration;
