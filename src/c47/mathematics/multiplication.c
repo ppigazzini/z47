@@ -145,21 +145,15 @@ void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, 
   realCopy(factor2Real, (real_t *)&c);
   realCopy(factor2Imag, (real_t *)&d);
   
-  // Real part
+  // Real part: ac - bd
   realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&p, realContext);
   realChangeSign((real_t *)&b);
-  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, (real_t *)&t, realContext);
+  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, productReal, realContext);
   realChangeSign((real_t *)&b);
-  realChangeSign((real_t *)&p);
-  realFMA((real_t *)&a, (real_t *)&c, (real_t *)&p, productReal, realContext);
-  realAdd(productReal, (real_t *)&t, productReal, realContext);
   
-  // Imaginary part
+  // Imaginary part: ad + bc
   realMultiply((real_t *)&a, (real_t *)&d, (real_t *)&p, realContext);
-  realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, (real_t *)&t, realContext);
-  realChangeSign((real_t *)&p);
-  realFMA((real_t *)&a, (real_t *)&d, (real_t *)&p, productImag, realContext);
-  realAdd(productImag, (real_t *)&t, productImag, realContext);
+  realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, productImag, realContext);
 }
 
 

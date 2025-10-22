@@ -14,14 +14,17 @@
     #define EIGENDEBUG
     #define EIGENDEBUGMINIMAL
     #define EIGEN_TESTOUT
-    #undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
-    #undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
-    #undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
+    #define EIGENDEBUG_QR
+    //#undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
+    //#undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
+    //#undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
+    #undef EIGENDEBUG_QR
   #else
     #define maxEigenIter 10000
     #undef EIGENDEBUG
     #undef EIGENDEBUGMINIMAL
     #undef EIGEN_TESTOUT
+    #undef EIGENDEBUG_QR
   #endif //PC_BUILD
 
   #if defined(TESTSUITE_BUILD)
@@ -4648,9 +4651,9 @@ static void solve2x2Block(real_t *a, real_t *eig, uint16_t size, bool_t is_real_
   for(int i = 0; i < 2; i++) {
     realCopy(a + (i * size + i) * 2,     eig + (i * size + i) * 2);
     realCopy(a + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1);
+    }
   }
-}
-
+  
 
 static void solve3x3Block(real_t *a, real_t *eig, uint16_t size, bool_t is_real_symmetric, realContext_t *realContext) {
   #if defined(EIGENDEBUG)
@@ -4946,41 +4949,43 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
                                               #if defined(EIGENDEBUG)
                                               if (iteration % 100 == 0 || iteration < 2) {
-                                                  real_t tmp;
-                                                  char realStr[80], imagStr[80];
-                                                  const int colWidth = 24;
-                                                  int i, j;
-
                                                   #if defined(EIGENDEBUG)
                                                     printf("\n---iteration %5d ",iteration++);
                                                     printRealToConsole(&tol,"\nTol:",": ");
                                                   #endif //EIGENDEBUG
 
-                                                  // Print Q matrix
-                                                  printf("\nQ matrix aa:\n");
-                                                  for (i = 0; i < size; i++) {
-                                                      for (j = 0; j < size; j++) {
-                                                          realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
-                                                          realToString(&tmp, realStr);
-                                                          realPlus(q + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
-                                                          realToString(&tmp, imagStr);
-                                                          printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
-                                                      }
-                                                      printf("\n");
-                                                  }
+                                                  #if defined(EIGENDEBUG_QR)
+                                                    real_t tmp;
+                                                    char realStr[80], imagStr[80];
+                                                    const int colWidth = 24;
+                                                    int i, j;
 
-                                                  // Print R matrix
-                                                  printf("\nR matrix aa:\n");
-                                                  for (i = 0; i < size; i++) {
-                                                      for (j = 0; j < size; j++) {
-                                                          realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
-                                                          realToString(&tmp, realStr);
-                                                          realPlus(r + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
-                                                          realToString(&tmp, imagStr);
-                                                          printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
-                                                      }
-                                                      printf("\n");
-                                                  }
+                                                    // Print Q matrix
+                                                    printf("\nQ matrix aa:\n");
+                                                    for (i = 0; i < size; i++) {
+                                                        for (j = 0; j < size; j++) {
+                                                            realPlus(q + (i*size+j)*2, &tmp, &ctxtReal4);
+                                                            realToString(&tmp, realStr);
+                                                            realPlus(q + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                                                            realToString(&tmp, imagStr);
+                                                            printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+                                                        }
+                                                        printf("\n");
+                                                    }
+
+                                                    // Print R matrix
+                                                    printf("\nR matrix aa:\n");
+                                                    for (i = 0; i < size; i++) {
+                                                        for (j = 0; j < size; j++) {
+                                                            realPlus(r + (i*size+j)*2, &tmp, &ctxtReal4);
+                                                            realToString(&tmp, realStr);
+                                                            realPlus(r + (i*size+j)*2 + 1, &tmp, &ctxtReal4);
+                                                            realToString(&tmp, imagStr);
+                                                            printf("%*s%*si  |", colWidth-9, realStr, colWidth-9, imagStr);
+                                                        }
+                                                        printf("\n");
+                                                    }
+                                                  #endif //EIGENDEBUG_QR
                                               }
                                               #endif
 

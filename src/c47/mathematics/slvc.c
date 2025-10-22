@@ -269,23 +269,23 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   if(realIn) {
     if(realIsZero(rReal) || realIsNegative(rImag)) {
       /* Three real roots */
-      realCopy(const_0, x1Imag);
-      realCopy(const_0, x2Imag);
-      realCopy(const_0, x3Imag);
+      realZero(x1Imag);
+      realZero(x2Imag);
+      realZero(x3Imag);
     }
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
         if(realCompareAbsLessThan(x1Imag, x3Imag))
-          realCopy(const_0, x1Imag);
+          realZero(x1Imag);
         else
-          realCopy(const_0, x3Imag);
+          realZero(x3Imag);
       }
       else {
         if(realCompareAbsLessThan(x2Imag, x3Imag))
-          realCopy(const_0, x2Imag);
+          realZero(x2Imag);
         else
-          realCopy(const_0, x3Imag);
+          realZero(x3Imag);
       }
     }
   }
@@ -379,8 +379,19 @@ static void sqrtComplex159(const real_t *zReal, const real_t *zImag, real_t *res
   realCopy((real_t *)&xi, resImag);
 }
 
+
 // Complex cube root using Halley's method: x_{n+1} = x_n * (x_n³ + 2z) / (2x_n³ + z)
 static void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  // create 159 constants
+  real159_t const159_1on3, const159_root3on2;
+  realZero((real_t *)&const159_1on3);
+  realZero((real_t *)&const159_root3on2);
+  // 1/3 = 1 ÷ 3
+  realDivide(const_1, const_3, (real_t *)&const159_1on3, realContext);
+  // sqrt(3)/2 = sqrt(3) ÷ 2
+  realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
+  realDivide((real_t *)&const159_root3on2, const_2, (real_t *)&const159_root3on2, realContext);
+
   real159_t xr, xi, zr, zi;
   real159_t x3r, x3i, temp1r, temp1i, temp2r, temp2i, numr, numi, denomr, denomi, quotr, quoti;
   real159_t temp, denom_mag;
@@ -403,15 +414,43 @@ static void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *res
     realZero(resImag);
     return;
   }
+
+
+  // Handle pure imaginary case
+  if(realIsZero((real_t *)&zr)) {
+    // cbrt(0 + bi) where b != 0
+    // Use polar: bi = |b| * e^(i*π/2*sign(b))
+    // cbrt = |b|^(1/3) * e^(i*π/6*sign(b))
+    // = |b|^(1/3) * (cos(π/6*sign(b)) + i*sin(π/6*sign(b)))
+    // cos(π/6) = sqrt(3)/2, sin(π/6) = 1/2 for positive
+    // cos(-π/6) = sqrt(3)/2, sin(-π/6) = -1/2 for negative
+    
+    realSetPositiveSign((real_t *)&zi);
+    realPower((real_t *)&zi, (real_t *)&const159_1on3, (real_t *)&temp, realContext);
+    
+    // xr = |zi|^(1/3) * sqrt(3)/2
+    realMultiply((real_t *)&temp, (real_t *)&const159_root3on2, (real_t *)&xr, realContext);
+    
+    // xi = |zi|^(1/3) * 1/2 * sign(zi_original)
+    realMultiply((real_t *)&temp, const_1on2, (real_t *)&xi, realContext);
+    if(realIsNegative(zImag)) {
+      realChangeSign((real_t *)&xi);
+    }
+    
+    realCopy((real_t *)&xr, resReal);
+    realCopy((real_t *)&xi, resImag);
+    return;
+  }
+
   
   // Handle real-only case (common for real symmetric matrices)
   if(realIsZero((real_t *)&zi)) {
     if(realIsPositive((real_t *)&zr)) {
-      realPower((real_t *)&zr, const_1on3, (real_t *)&xr, realContext);
+      realPower((real_t *)&zr, (real_t *)&const159_1on3, (real_t *)&xr, realContext);
       realZero((real_t *)&xi);
     } else {
       realSetPositiveSign((real_t *)&zr);
-      realPower((real_t *)&zr, const_1on3, (real_t *)&xr, realContext);
+      realPower((real_t *)&zr, (real_t *)&const159_1on3, (real_t *)&xr, realContext);
       realSetNegativeSign((real_t *)&xr);
       realZero((real_t *)&xi);
       realSetPositiveSign((real_t *)&zr); // Restore sign
@@ -427,7 +466,7 @@ static void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *res
   realMultiply((real_t *)&zr, (real_t *)&zr, (real_t *)&temp, realContext);
   realMultiply((real_t *)&zi, (real_t *)&zi, (real_t *)&denom_mag, realContext);
   realAdd((real_t *)&temp, (real_t *)&denom_mag, (real_t *)&temp, realContext);
-  realPower((real_t *)&temp, const_1on3, (real_t *)&denom_mag, realContext); // |z|^(1/3)
+  realPower((real_t *)&temp, (real_t *)&const159_1on3, (real_t *)&denom_mag, realContext); // |z|^(1/3)
   
   // Normalize z and scale by |z|^(1/3)
   realSquareRoot((real_t *)&temp, (real_t *)&temp, realContext); // |z|
@@ -505,6 +544,14 @@ static void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *res
 void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const real_t *c1Real, const real_t *c1Imag, const real_t *c0Real, const real_t *c0Imag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, real_t *x3Real, real_t *x3Imag, realContext_t *realContext) {
   // x^3 + b x^2 + c x + d = 0
   // Abramowitz & Stegun §3.8.2
+
+  // create 159 constants
+  real159_t const159_root3on2;
+  realZero((real_t *)&const159_root3on2);
+  // sqrt(3)/2 = sqrt(3) ÷ 2
+  realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
+  realDivide((real_t *)&const159_root3on2, const_2, (real_t *)&const159_root3on2, realContext);
+
   real159_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 
@@ -560,7 +607,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
   // reusing q, r for (s1 ± s2)
   addComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, (real_t *)&qr, (real_t *)&qi, realContext);
   subComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, (real_t *)&rr, (real_t *)&ri, realContext);
-  mulComplexComplex159((real_t *)&rr, (real_t *)&ri, const_0, const_root3on2, (real_t *)&rr, (real_t *)&ri, realContext);
+  mulComplexComplex159((real_t *)&rr, (real_t *)&ri, const_0, (real_t *)&const159_root3on2, (real_t *)&rr, (real_t *)&ri, realContext);
 
   // roots
   divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext);
@@ -575,23 +622,23 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
   if(realIn) {
     if(realIsZero(rReal) || realIsNegative(rImag)) {
       /* Three real roots */
-      realCopy(const_0, x1Imag);
-      realCopy(const_0, x2Imag);
-      realCopy(const_0, x3Imag);
+      realZero(x1Imag);
+      realZero(x2Imag);
+      realZero(x3Imag);
     }
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
         if(realCompareAbsLessThan(x1Imag, x3Imag))
-          realCopy(const_0, x1Imag);
+          realZero(x1Imag);
         else
-          realCopy(const_0, x3Imag);
+          realZero(x3Imag);
       }
       else {
         if(realCompareAbsLessThan(x2Imag, x3Imag))
-          realCopy(const_0, x2Imag);
+          realZero(x2Imag);
         else
-          realCopy(const_0, x3Imag);
+          realZero(x3Imag);
       }
     }
   }
@@ -777,7 +824,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
 //   realMultiply((real_t *)&s1i, (real_t *)&s1i, (real_t *)&temp2, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext); // sqrt = ^(1/2)
-//   realPower((real_t *)&mag, const_1on3, (real_t *)&mag, realContext); // ^(1/3) => total ^(1/6)
+//   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext); // ^(1/3) => total ^(1/6)
 //   
 //   // angle = atan2(s1i, s1r) / 3
 //   WP34S_Atan2((real_t *)&s1r, (real_t *)&s1i, (real_t *)&angle, realContext);
@@ -793,7 +840,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
 //   realMultiply((real_t *)&s2i, (real_t *)&s2i, (real_t *)&temp2, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
-//   realPower((real_t *)&mag, const_1on3, (real_t *)&mag, realContext);
+//   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext);
 //   
 //   WP34S_Atan2((real_t *)&s2r, (real_t *)&s2i, (real_t *)&angle, realContext);
 //   realDivide((real_t *)&angle, const_3, (real_t *)&angle, realContext);
@@ -816,9 +863,9 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
 //   // Multiply by i*sqrt(3)/2 = multiply by (0 + i*sqrt(3)/2)
 //   // result_real = real*0 - imag*sqrt(3)/2
 //   // result_imag = real*sqrt(3)/2 + imag*0
-//   realMultiply((real_t *)&temp2, const_root3on2, (real_t *)&rr, realContext);
+//   realMultiply((real_t *)&temp2, (real_t *)&const159_root3on2, (real_t *)&rr, realContext);
 //   realChangeSign((real_t *)&rr);
-//   realMultiply((real_t *)&temp1, const_root3on2, (real_t *)&ri, realContext);
+//   realMultiply((real_t *)&temp1, (real_t *)&const159_root3on2, (real_t *)&ri, realContext);
 //   
 //   // x2Real+x2Imag = c2 / 3
 //   realDivide(c2Real, const_3, x2Real, realContext);
@@ -851,22 +898,22 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
 //   // ===== Force real outputs when appropriate =====
 //   if(realIn) {
 //     if(realIsZero(rReal) || realIsNegative(rImag)) {
-//       realCopy(const_0, x1Imag);
-//       realCopy(const_0, x2Imag);
-//       realCopy(const_0, x3Imag);
+//       realZero(x1Imag);
+//       realZero(x2Imag);
+//       realZero(x3Imag);
 //     }
 //     else {
 //       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
 //         if(realCompareAbsLessThan(x1Imag, x3Imag))
-//           realCopy(const_0, x1Imag);
+//           realZero(x1Imag);
 //         else
-//           realCopy(const_0, x3Imag);
+//           realZero(x3Imag);
 //       }
 //       else {
 //         if(realCompareAbsLessThan(x2Imag, x3Imag))
-//           realCopy(const_0, x2Imag);
+//           realZero(x2Imag);
 //         else
-//           realCopy(const_0, x3Imag);
+//           realZero(x3Imag);
 //       }
 //     }
 //   }
