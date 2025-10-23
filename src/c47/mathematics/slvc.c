@@ -298,19 +298,28 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
 
 
 
-void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const real_t *c1Real, const real_t *c1Imag, const real_t *c0Real, const real_t *c0Imag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, real_t *x3Real, real_t *x3Imag, realContext_t *realContext) {
-  // x^3 + b x^2 + c x + d = 0
-  // Abramowitz & Stegun §3.8.2
+// Calculate eigenvalues of cubic equation using 159-digit precision
+// Standard form: x³ + c2·x² + c1·x + c0 = 0
+// Abramowitz & Stegun §3.8.2
+void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
+                           const real_t *c1Real, const real_t *c1Imag,
+                           const real_t *c0Real, const real_t *c0Imag,
+                           real_t *rReal, real_t *rImag,
+                           real_t *x1Real, real_t *x1Imag,
+                           real_t *x2Real, real_t *x2Imag,
+                           real_t *x3Real, real_t *x3Imag,
+                           realContext_t *realContext) {
 
-  // create 159 constants
+  const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
+
+  // Compute high-precision constant sqrt(3)/2
   real159_t const159_root3on2;
   realZero((real_t *)&const159_root3on2);
-  // sqrt(3)/2 = sqrt(3) ÷ 2
   realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
   realDivide((real_t *)&const159_root3on2, const_2, (real_t *)&const159_root3on2, realContext);
 
+  // Intermediate variables in 159-digit precision
   real159_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
-  const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 
   realZero((real_t *)&qr); realZero((real_t *)&qi);
   realZero((real_t *)&rr); realZero((real_t *)&ri);
@@ -343,7 +352,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
   addComplex((real_t *)&ar, (real_t *)&ai, (real_t *)&ar, (real_t *)&ai, (real_t *)&ar, (real_t *)&ai, realContext);
   subComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, (real_t *)&rr, (real_t *)&ri, realContext);
 
-  // q^3 + r^2 = (4 (9q)^3 + r^2) / 2916
+  // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
   mulComplexComplex159((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
   mulComplexComplex159(rReal, rImag, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
   mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
@@ -368,12 +377,16 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
 
   // roots
   divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext);
-  realSubtract((real_t *)&qr, x2Real, x1Real, realContext); realSubtract((real_t *)&qi, x2Imag, x1Imag, realContext);
+  realSubtract((real_t *)&qr, x2Real, x1Real, realContext); 
+  realSubtract((real_t *)&qi, x2Imag, x1Imag, realContext);
   mulComplexReal((real_t *)&qr, (real_t *)&qi, const_1on2, x3Real, x3Imag, realContext);
-  realAdd(x3Real, x2Real, x3Real, realContext);   realAdd(x3Imag, x2Imag, x3Imag, realContext);
+  realAdd(x3Real, x2Real, x3Real, realContext); 
+  realAdd(x3Imag, x2Imag, x3Imag, realContext);
   chsComplex(x3Real, x3Imag);
-  realAdd(x3Real, (real_t *)&rr, x2Real, realContext);      realAdd(x3Imag, (real_t *)&ri, x2Imag, realContext);
-  realSubtract(x3Real, (real_t *)&rr, x3Real, realContext); realSubtract(x3Imag, (real_t *)&ri, x3Imag, realContext);
+  realAdd(x3Real, (real_t *)&rr, x2Real, realContext); 
+  realAdd(x3Imag, (real_t *)&ri, x2Imag, realContext);
+  realSubtract(x3Real, (real_t *)&rr, x3Real, realContext); 
+  realSubtract(x3Imag, (real_t *)&ri, x3Imag, realContext);
 
   // Force real outputs when the roots are known to be real
   if(realIn) {
@@ -400,12 +413,28 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, const rea
     }
   }
 
+  // Zero tiny imaginary parts that are below precision threshold
+  int eff_exp;
+  eff_exp = realGetExponent(x1Imag);
+  if(eff_exp < -realContext->digits) {
+    realZero(x1Imag);
+  }
+
+  eff_exp = realGetExponent(x2Imag);
+  if(eff_exp < -realContext->digits) {
+    realZero(x2Imag);
+  }
+
+  eff_exp = realGetExponent(x3Imag);
+  if(eff_exp < -realContext->digits) {
+    realZero(x3Imag);
+  }
+
 #ifdef DISCRIMINANT
   // discriminant
   mulComplexReal(rReal, rImag, const__108, rReal, rImag, realContext);
 #endif
 }
-
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------

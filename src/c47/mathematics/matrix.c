@@ -5250,6 +5250,41 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
                                                                     }
                                                                     #endif
 
+ // After main QR loop, scan for any remaining unconverged blocks
+ for(int i = 0; i < size - 1; i++) {
+   real_t offdiag_mag;
+   complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
+   
+   if(!realCompareLessThan(&offdiag_mag, &tol)) {
+     // Found unconverged 2×2 block at positions i, i+1
+     #if defined(EIGENDEBUG)
+     printf("Found unconverged 2x2 block at positions %d-%d\n", i, i+1);
+     #endif
+     
+     // Extract and solve 2×2 block
+     real_t temp_2x2[8];
+     for(int row = 0; row < 2; row++) {
+       for(int col = 0; col < 2; col++) {
+         realCopy(eig + ((i + row) * size + (i + col)) * 2, temp_2x2 + (row * 2 + col) * 2);
+         realCopy(eig + ((i + row) * size + (i + col)) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
+       }
+     }
+     
+     real_t ev1_re, ev1_im, ev2_re, ev2_im;
+     calculateEigenvalues22(temp_2x2, 2, &ev1_re, &ev1_im, &ev2_re, &ev2_im, is_real_symmetric, realContext);
+     
+     // Put eigenvalues back
+     realCopy(&ev1_re, a + ((i + 0) * size + (i + 0)) * 2);
+     realCopy(&ev1_im, a + ((i + 0) * size + (i + 0)) * 2 + 1);
+     realCopy(&ev2_re, a + ((i + 1) * size + (i + 1)) * 2);
+     realCopy(&ev2_im, a + ((i + 1) * size + (i + 1)) * 2 + 1);
+     
+     i++; // Skip next position since we just solved i and i+1
+   }
+ }
+
+
+
     uint16_t remaining_size = size - activeSize;                                                                             // Solve remaining unconverged blocks
 
     #if defined(EIGENDEBUG)
