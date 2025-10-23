@@ -28,21 +28,18 @@
   #endif //PC_BUILD
 
   #if defined(TESTSUITE_BUILD)
-    #define extraDigits            3
+    #define extraDigits           3
     #define toleranceDigits       (34 + extraDigits)
   #else
-    #define extraDigits            3
-    #define toleranceDigits  (significantDigits + extraDigits)                    // previous method:  (((significantDigits == 0 || significantDigits >= 34) ? 16 : significantDigits == 33 ? 34 : significantDigits) + extraDigits)
+    #define extraDigits           3
+    #define toleranceDigits       (significantDigits + extraDigits)                    // previous method:  (((significantDigits == 0 || significantDigits >= 34) ? 16 : significantDigits == 33 ? 34 : significantDigits) + extraDigits)
   #endif
 
   #define eigenTolerance          (min(70,toleranceDigits*2))
   #define symmetricTolerance      30
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
   #define eigenContext            &ctxtReal75
-
-  #define ACTIVE3x3SOLVE true     //can be switched off, the accuracy is way better if the 3x3 analytical block is not running. The reason is digit loss in the cubic root finder
-
-  #define ctxtTruncate &ctxtReal39  //ctxtReal34
+  #define ctxtTruncate            &ctxtReal39  //ctxtReal34
   #if defined TESTSUITE_BUILD
     #undef EIGENDEBUG
   #endif
@@ -5117,7 +5114,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
               printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
               #endif
 
-              if(ACTIVE3x3SOLVE && activeSize == 3 && i == 1) {
+              if(activeSize == 3 && i == 1) {
                 #if defined(EIGENDEBUG)
                 printf("After deflating [1][0], positions [1][2] form a 2x2 block, solving immediately\n");
                 #endif
@@ -5348,7 +5345,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     }
 
 
-    if(ACTIVE3x3SOLVE && remaining_size == 3) {
+    if(scan_first_unconverged != -1) {
+      
       #if defined(EIGENDEBUG)
       printf("Solving remaining 3x3 block from position %d to %d\n", activeSize, size-1);
       #endif
