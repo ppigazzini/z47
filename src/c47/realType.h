@@ -54,6 +54,22 @@
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
   #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((void *)(a) + REAL34_SIZE_IN_BYTES))
 
+
+//****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
+//       will be replaced once the new realtype macros are merged
+  typedef struct {
+    int32_t digits;      // Count of digits in the coefficient; >0
+    int32_t exponent;    // Unadjusted exponent, unbiased, in
+                         // range: -1999999997 through 999999999
+    uint8_t bits;        // Indicator bits (see above)
+                         // Coefficient, from least significant unit
+    decNumberUnit lsu[(159+DECDPUN-1)/DECDPUN]; // 1071 = 39 + 10*12
+  } real159_t; // used for cube root and calculateeigenvalues3x3
+  #define REAL159_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real159_t))
+  #define REAL159_SIZE_IN_BYTES     TO_BYTES(REAL159_SIZE_IN_BLOCKS)
+//****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
+
+
   int32_t  realToInt32C47 (const real_t *r);
   uint32_t realToUint32C47(const real_t *r);
   //int64_t  realToInt64C47 (const real_t *r);
@@ -115,9 +131,6 @@
 
 
 
-
-
-
   #define int32ToReal(source, destination)                       decNumberFromInt32       (destination, source)
   #define realAdd(operand1, operand2, res, ctxt)                 decNumberAdd             (res, operand1, operand2, ctxt)
   #define realChangeSign(operand)                                (operand)->bits ^= 0x80
@@ -125,6 +138,7 @@
   #define realCopy(source, destination)                          decNumberCopy            (destination, source)
   #define realCopyAbs(source, destination)                       decNumberCopyAbs         (destination, source)
   #define realDivide(operand1, operand2, res, ctxt)              decNumberDivide          (res, operand1, operand2, ctxt)
+  #define realDivideBy2(operand, ctxt)                           decNumberDivide          (operand, operand, const_2, ctxt)
   #define realDivideRemainder(operand1, operand2, res, ctxt)     decNumberRemainder       (res, operand1, operand2, ctxt)
   #define realFMA(factor1, factor2, term, res, ctxt)             decNumberFMA             (res, factor1,  factor2,  term, ctxt)
   #define realGetCoefficient(source, destination)                decNumberGetBCD          (source, (uint8_t *)(destination))
