@@ -1271,13 +1271,13 @@ void setParameter(char *p) {
               stringToReal34(r, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element);
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
-                  printf("\nmisformed register value. Not enough elements\n");
+                  printf("\nmalformed register value. Not enough elements\n");
                   abortTest();
                 }
                 break;
               }
               if(element >= (rows * cols - 1)) {
-                printf("\nmisformed register value. Too many elements\n");
+                printf("\nmalformed register value. Too many elements\n");
                 abortTest();
                 break;
               }
@@ -1288,17 +1288,17 @@ void setParameter(char *p) {
             }
           }
           else {
-            printf("\nmisformed register value. Missing left bracket after number of columns\n");
+            printf("\nmalformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmalformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmisformed register value. Value does not begin with 'M'\n");
+        printf("\nmalformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
@@ -1371,13 +1371,13 @@ void setParameter(char *p) {
               }
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
-                  printf("\nmisformed register value. Not enough elements\n");
+                  printf("\nmalformed register value. Not enough elements\n");
                   abortTest();
                 }
                 break;
               }
               if(element >= (rows * cols - 1)) {
-                printf("\nmisformed register value. Too many elements\n");
+                printf("\nmalformed register value. Too many elements\n");
                 abortTest();
                 break;
               }
@@ -1388,17 +1388,17 @@ void setParameter(char *p) {
             }
           }
           else {
-            printf("\nmisformed register value. Missing left bracket after number of columns\n");
+            printf("\nmalformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmalformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmisformed register value. Value does not begin with 'M'\n");
+        printf("\nmalformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
@@ -2571,13 +2571,13 @@ void checkExpectedOutParameter(char *p) {
                 }
                 if(lastElement) {
                   if(element < (rows * cols - 1)) {
-                    printf("\nmisformed register value. Not enough elements\n");
+                    printf("\nmalformed register value. Not enough elements\n");
                     abortTest();
                   }
                   break;
                 }
                 if(element >= (rows * cols - 1)) {
-                  printf("\nmisformed register value. Too many elements\n");
+                  printf("\nmalformed register value. Too many elements\n");
                   abortTest();
                   break;
                 }
@@ -2592,17 +2592,17 @@ void checkExpectedOutParameter(char *p) {
             }
           }
           else {
-            printf("\nmisformed register value. Missing left bracket after number of columns\n");
+            printf("\nmalformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmalformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmisformed register value. Value does not begin with 'M'\n");
+        printf("\nmalformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
@@ -2813,13 +2813,13 @@ void checkExpectedOutParameter(char *p) {
 
                 if(lastElement) {
                   if(element < (rows * cols - 1)) {
-                    printf("\nmisformed register value. Not enough elements\n");
+                    printf("\nmalformed register value. Not enough elements\n");
                     abortTest();
                   }
                   break;
                 }
                 if(element >= (rows * cols - 1)) {
-                  printf("\nmisformed register value. Too many elements\n");
+                  printf("\nmalformed register value. Too many elements\n");
                   abortTest();
                   break;
                 }
@@ -2836,17 +2836,17 @@ void checkExpectedOutParameter(char *p) {
             }
           }
           else {
-            printf("\nmisformed register value. Missing left bracket after number of columns\n");
+            printf("\nmalformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmalformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmisformed register value. Value does not begin with 'M'\n");
+        printf("\nmalformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
