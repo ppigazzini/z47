@@ -300,51 +300,6 @@ void fnJM(uint16_t JM_OPCODE) {
       temporaryInformation = TI_012;
     }
 
-    else if(JM_OPCODE == 11) {                                  //STO Z
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 90);
-      copySourceRegisterToDestRegister(REGISTER_Y, 91);
-      copySourceRegisterToDestRegister(REGISTER_Z, 92);
-    }
-
-    else if(JM_OPCODE == 13) {                                  //STO V
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 93);
-      copySourceRegisterToDestRegister(REGISTER_Y, 94);
-      copySourceRegisterToDestRegister(REGISTER_Z, 95);
-    }
-
-    else if(JM_OPCODE == 15) {                                  //STO I
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 96);
-      copySourceRegisterToDestRegister(REGISTER_Y, 97);
-      copySourceRegisterToDestRegister(REGISTER_Z, 98);
-    }
-
-    else if(JM_OPCODE == 12) {                                  //RCL Z
-      saveForUndo();
-      fnRCL(92);
-      fnRCL(91);
-      fnRCL(90);
-    }
-
-    else if(JM_OPCODE == 14) {                                  //RCL V
-      saveForUndo();
-      fnRCL(95);
-      fnRCL(94);
-      fnRCL(93);
-    }
-
-    else if(JM_OPCODE == 16) {                                  //RCL I
-      saveForUndo();
-      fnRCL(98);
-      fnRCL(97);
-      fnRCL(96);
-    }
-
     else if(JM_OPCODE == 17) {                                  // V/I
       saveForUndo();
       fnRCL(95);

@@ -1258,7 +1258,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, val);
+      longIntegerAngleReduction(reg, currentAngularMode, val); 
       // out of range error rolled into longIntegerAngleReduction as the longintegr is not accessible here except for converting again
       *xAngularMode = currentAngularMode;
       break;

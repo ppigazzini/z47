@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468
+#define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2619,7 +2619,6 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
-
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
@@ -2630,7 +2629,58 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define LAST_ITEM                   2553
+#define ITM_2553                    2553
+#define ITM_DEG2_XFN                2554
+#define ITM_RAD2_XFN                2555
+#define ITM_2556                    2556
+
+#define MNU_2557                    2557
+#define ITM_sin_XFN                 2558
+#define ITM_cos_XFN                 2559
+#define ITM_tan_XFN                 2560
+#define ITM_pi_XFN                  2561
+#define ITM_1ONX_XFN                2562
+#define ITM_atan2_XFN               2563
+#define ITM_arcsin_XFN              2564
+#define ITM_arccos_XFN              2565
+#define ITM_arctan_XFN              2566
+#define ITM_LN_XFN                  2567
+#define ITM_LOG_XFN                 2568
+#define ITM_EXP_XFN                 2569
+#define ITM_10X_XFN                 2570
+#define ITM_POWER_XFN               2571
+#define ITM_SQRT_XFN                2572
+#define ITM_ADD_XFN                 2573
+#define ITM_SUB_XFN                 2574
+#define ITM_MULT_XFN                2575
+#define ITM_DIV_XFN                 2576
+#define ITM_MOD_XFN                 2577
+#define ITM_MODANG_XFN              2578
+#define ITM_TO_XFN                  2579
+#define ITM_2580                    2580
+#define ITM_2581                    2581
+#define ITM_DRG_XFN                 2582
+#define ITM_SQR_XFN                 2583
+#define ITM_XTHROOT_XFN             2584
+
+#define ITM_3DUP                    2585
+#define ITM_3SWAP                   2586
+#define ITM_3DROP                   2587
+#define ITM_3STO                    2588
+#define ITM_3RCL                    2589
+
+#define ITM_NDUP                    2590
+#define ITM_NSWAP                   2591
+#define ITM_NDROP                   2592
+#define ITM_2STO                    2593
+#define ITM_2RCL                    2594
+#define ITM_4SWAP                   2595
+
+
+#define MNU_XXFCNS                  2596
+#define MNU_MULTSTK                 2597
+
+#define LAST_ITEM                   2598
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

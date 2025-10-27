@@ -19,6 +19,8 @@ wp43.dat
 c47.sav
 c47.dat
 *.s47
+!xfnToC47user.s47
+!xfnToR47user.s47
 tags
 /PROGRAMS
 /src/generated
