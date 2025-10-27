@@ -34,11 +34,19 @@ void fnConstant(const uint16_t constant) {
                                       + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES
                                       + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL6147_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
   }
+  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_2139) { // 1071 digit constant
+    realToReal34((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES
+                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL1071_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
+  }
   else { // 34 digit constants
     real34Copy((real34_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES
                                       + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_2139 * REAL2139_SIZE_IN_BYTES
                                       + NUMBER_OF_CONSTANTS_6147 * REAL6147_SIZE_IN_BYTES
-                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_6147) * REAL34_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
+                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071 - NUMBER_OF_CONSTANTS_2139 - NUMBER_OF_CONSTANTS_6147) * REAL34_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
   }
 
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
