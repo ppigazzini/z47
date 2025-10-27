@@ -253,7 +253,7 @@ void realPolarToRectangular(const real_t *mag, const real_t *the, real_t *real, 
   }
 
   realCopy(mag, &magnitude);
-  WP34S_Mod(the, const1071_2pi, &theta, &ctxtReal75);  // here   0 ≤ theta < 2pi
+  mod2Pi(the, &theta, &ctxtReal75);  // here   0 ≤ theta < 2pi
   negativeAngle = realIsNegative(&theta);
 
   // Magnitude is infinite

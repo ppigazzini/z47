@@ -96,9 +96,9 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
   realMultiply(alpha, const_2, &chi, realContext);
   realAdd(&chi, const_1, &chi, realContext);
   realMultiply(&chi, const_piOn4, &chi, realContext);
-  WP34S_Mod(x, const1071_2pi, &tmp, realContext);
+  mod2Pi(x, &tmp, realContext);
   realSubtract(&tmp, &chi, &tmp, realContext);
-  WP34S_Mod(&tmp, const1071_2pi, &chi, realContext);
+  mod2Pi(&tmp, &chi, realContext);
 
   if(is_y) {
     WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, NULL, realContext);
@@ -336,7 +336,7 @@ static void bessel_asymptotic_large_order_hyp(const real_t *nu, const real_t *x,
   }
 
   // coefficient denominator
-  realMultiply(is_y ? const_piOn2 : const_2pi, nu, &tmp, realContext);
+  realMultiply(is_y ? const_piOn2_75 : const_2pi_75, nu, &tmp, realContext);
   realMultiply(&tmp, &tanh_alpha, &tmp, realContext);
   realSquareRoot(&tmp, &tmp, realContext);
   realDivide(&coefficient, &tmp, &coefficient, realContext);
@@ -368,7 +368,7 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
   realSubtract(&tan_beta, &beta, &psi, realContext);
   realMultiply(&psi, nu, &psi, realContext);
   realSubtract(&psi, const_piOn4, &psi, realContext);
-  WP34S_Mod(&psi, const1071_2pi, &psi, realContext);
+  mod2Pi(&psi, &psi, realContext);
   if(is_y) {
     WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, NULL, realContext);
   }
@@ -602,7 +602,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   }
 
   WP34S_BesselJ(n, x, &u, realContext);
-  realDivide(&u, const_piOn2, &t, realContext);
+  realDivide(&u, const_piOn2_75, &t, realContext);
 
   WP34S_Ln(&xon2, &u, realContext);
   realMultiply(&u, &t, &v, realContext);
