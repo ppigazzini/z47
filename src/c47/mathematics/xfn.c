@@ -357,18 +357,41 @@ typedef struct {
       if(getRegisterDataType(registerNo) == dtLongInteger) {
         *angleMode = amNone;
         return false;
-      } else {
+      }
+      if(!inputAngleError3r(registerNo)) {
+        *angleMode = inputAngleMode3r(registerNo) == amNone ? currentAngularMode : inputAngleMode3r(registerNo);
+        return true;
+      }
+    } else {
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input angle register");
+          moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    return false;
+  }
+
+
+  //true only if an angle is tagged; false for longinteger angle; false and error for invalid, anglemode untouched
+  static bool_t getAngleModeForArithmetic3r(int registerNo, angularMode_t *angleMode ) {
+    if(isXFNregisterValid3r(registerNo)) {
+      if(getRegisterDataType(registerNo) == dtLongInteger) {
+        *angleMode = amNone;
+        return false;
+      }
+      if(!inputAngleError3r(registerNo)) {
         *angleMode = inputAngleMode3r(registerNo);
         return true;
       }
     } else {
-    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Invalid input angle register");
-        moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return false;
+      displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Invalid input angle register");
+          moreInfoOnError("In function fnXfn:getAngleModeForArithmetic3r:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
+    return false;
   }
 
 
@@ -903,9 +926,9 @@ printf("aa005\n");
       case ITM_ADD_XFN:
       case ITM_SUB_XFN:
       case ITM_MULT_XFN: {  // Y's angle mode dominates if it is an angle. If it is not an angle, use that of X
-        if(!getAngleModeForRegister3r(registerNo+3, &angleMode) || angleMode == amNone) {  // if Y is tagged angle, take it
-          if(!getAngleModeForRegister3r(registerNo, &angleMode)) {  // otherwise if X is tagged angle or no angle, take that,
-            angleMode = amNone;                                     // otherwise it becomes a non-angle
+        if(!getAngleModeForArithmetic3r(registerNo+3, &angleMode)) {  // if Y is tagged angle, take it
+          if(!getAngleModeForArithmetic3r(registerNo, &angleMode)) {  // otherwise if X is tagged angle or no angle, take that,
+            angleMode = amNone;                                       // otherwise it becomes a non-angle
           }
         }
         break;

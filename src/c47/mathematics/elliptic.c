@@ -531,7 +531,7 @@ static void _ellipticF_3(const real_t *phi, const real_t *m, real_t *res, real_t
     // Abramowitz & Stegun §17.4.15
     real_t k, m_1, theta, thetai, a;
 
-    WP34S_Mod(phi, const1071_2pi, &theta, realContext);
+    mod2Pi(phi, &theta, realContext);
     WP34S_Cvt2RadSinCosTan(&theta, amRadian, &a, NULL, NULL, realContext);
     realSquareRoot(m, &k, realContext);
     realDivide(const_1, m, &m_1, realContext);
@@ -985,9 +985,9 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
           }
           for(int i = n; i > 0; --i) {
             realCopy(&k, &q);
-            WP34S_Mod(&q, const1071_2pi, &k, realContext);
+            mod2Pi(&q, &k, realContext);
             if(realCompareGreaterThan(&k, const_pi)) {
-              realSubtract(&k, const1071_2pi, &k, realContext);
+              realSubtract(&k, const_2pi_75, &k, realContext);
             }
             realSubtract(&q, &k, &q, realContext);
             realSubtract(a + i - 1, b + i - 1, &c, realContext); realSubtract(ai + i - 1, bi + i - 1, &ci, realContext);
