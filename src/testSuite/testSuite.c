@@ -560,7 +560,7 @@ char hexToChar(const char *string) {
     }
   }
   else {
-    printf("\nMissformed parameter setting. The hexadecimal char \\x%c%c is erroneous.\n", string[0], string[1]);
+    printf("\nMisformed parameter setting. The hexadecimal char \\x%c%c is erroneous.\n", string[0], string[1]);
     abortTest();
   }
 
@@ -609,7 +609,7 @@ void setParameter(char *p) {
     i++;
   }
   if(p[i] == 0) {
-    printf("\nMissformed parameter setting. Missing equal sign, remember that no space is allowed around the equal sign.\n");
+    printf("\nMisformed parameter setting. Missing equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
   }
 
@@ -618,14 +618,14 @@ void setParameter(char *p) {
   strcpy(r, p + i + 1);
 
   if(r[0] == 0) {
-    printf("\nMissformed parameter setting. Missing value after equal sign, remember that no space is allowed around the equal sign.\n");
+    printf("\nMisformed parameter setting. Missing value after equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
   }
 
   //Setting a flag
   if(!strncmp(l, "FL_", 3)) {
     if(r[0] != '0' && r[0] != '1' && r[1] != 0) {
-      printf("\nMissformed flag setting. The rvalue must be 0 or 1\n");
+      printf("\nMisformed flag setting. The rvalue must be 0 or 1\n");
       abortTest();
     }
 
@@ -650,7 +650,7 @@ void setParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -671,7 +671,7 @@ void setParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -750,7 +750,7 @@ void setParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed numbered flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed numbered flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -779,7 +779,7 @@ void setParameter(char *p) {
       //printf("  Set integer mode to SIGNMT\n");
     }
     else {
-      printf("\nMissformed integer mode setting. The rvalue must be 1COMPL, 2COMPL, UNSIGN or SIGNMT.\n");
+      printf("\nMisformed integer mode setting. The rvalue must be 1COMPL, 2COMPL, UNSIGN or SIGNMT.\n");
       abortTest();
     }
   }
@@ -795,7 +795,7 @@ void setParameter(char *p) {
       //printf("  Set complex mode to POLAR\n");
     }
     else {
-      printf("\nMissformed complex mode setting. The rvalue must be RECT or POLAR.\n");
+      printf("\nMisformed complex mode setting. The rvalue must be RECT or POLAR.\n");
       abortTest();
     }
   }
@@ -823,7 +823,7 @@ void setParameter(char *p) {
       //printf("  Set angular mode to GRAD\n");
     }
     else {
-      printf("\nMissformed angular mode setting. The rvalue must be DEG, DMS, GRAD, RAD or MULTPI.\n");
+      printf("\nMisformed angular mode setting. The rvalue must be DEG, DMS, GRAD, RAD or MULTPI.\n");
       abortTest();
     }
   }
@@ -839,7 +839,7 @@ void setParameter(char *p) {
       //printf("  Set stack size to 8\n");
     }
     else {
-      printf("\nMissformed stack size setting. The rvalue must be 4 or 8.\n");
+      printf("\nMisformed stack size setting. The rvalue must be 4 or 8.\n");
       abortTest();
     }
   }
@@ -858,12 +858,12 @@ void setParameter(char *p) {
         //printf("  Set word size to %d bit\n", ws);
       }
       else {
-        printf("\nMissformed word size setting. The rvalue must be from 0 to 64 (0 is the same as 64).\n");
+        printf("\nMisformed word size setting. The rvalue must be from 0 to 64 (0 is the same as 64).\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed word size setting. The rvalue must be a number from 0 to 64 (0 is the same as 64).\n");
+      printf("\nMisformed word size setting. The rvalue must be a number from 0 to 64 (0 is the same as 64).\n");
       abortTest();
     }
   }
@@ -881,12 +881,12 @@ void setParameter(char *p) {
         //printf("  Set grouping gap to %d\n", gap);
       }
       else {
-        printf("\nMissformed grouping gap setting. The rvalue must be from 0 to 15.\n");
+        printf("\nMisformed grouping gap setting. The rvalue must be from 0 to 15.\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed grouping gap setting. The rvalue must be a number from 0 to 15.\n");
+      printf("\nMisformed grouping gap setting. The rvalue must be a number from 0 to 15.\n");
       abortTest();
     }
   }
@@ -906,7 +906,7 @@ void setParameter(char *p) {
       firstGregorianDay = atoi(r);
     }
     else {
-      printf("\nMissformed J/G setting. The rvalue must be a number.\n");
+      printf("\nMisformed J/G setting. The rvalue must be a number.\n");
       abortTest();
     }
   }
@@ -922,12 +922,12 @@ void setParameter(char *p) {
         //printf("  Set significant digits to %d\n", sd);
       }
       else {
-        printf("\nMissformed significant digits setting. The rvalue must be from 0 to 34 (0 is the same as 34).\n");
+        printf("\nMisformed significant digits setting. The rvalue must be from 0 to 34 (0 is the same as 34).\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed significant digits setting. The rvalue must be a number from 0 to 34 (0 is the same as 34).\n");
+      printf("\nMisformed significant digits setting. The rvalue must be a number from 0 to 34 (0 is the same as 34).\n");
       abortTest();
     }
   }
@@ -943,12 +943,12 @@ void setParameter(char *p) {
         //printf("  Set rounding mode to %d\n", rm);
       }
       else {
-        printf("\nMissformed rounding mode setting. The rvalue must be a number from 0 to 6.\n");
+        printf("\nMisformed rounding mode setting. The rvalue must be a number from 0 to 6.\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed rounding mode setting. The rvalue must be a number from 0 to 6.\n");
+      printf("\nMisformed rounding mode setting. The rvalue must be a number from 0 to 6.\n");
       abortTest();
     }
   }
@@ -964,7 +964,7 @@ void setParameter(char *p) {
         regist = REGISTER_X + (p - regNames);
       }
       else {
-        printf("\nMissformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
+        printf("\nMisformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
         abortTest();
       }
     }
@@ -992,7 +992,7 @@ void setParameter(char *p) {
       i++;
     }
     if(r[i] == 0) {
-      printf("\nMissformed register value. Missing colon between data type and value.\n");
+      printf("\nMisformed register value. Missing colon between data type and value.\n");
       abortTest();
     }
 
@@ -1049,7 +1049,7 @@ void setParameter(char *p) {
         am = amNone;
       }
       else {
-        printf("\nMissformed register real%d angular mode. Unknown angular mode after real value.\n", strcmp(l, "RE16") == 0 ? 16 : 34);
+        printf("\nMisformed register real%d angular mode. Unknown angular mode after real value.\n", strcmp(l, "RE16") == 0 ? 16 : 34);
         abortTest();
       }
 
@@ -1082,7 +1082,7 @@ void setParameter(char *p) {
         i++;
       }
       if(r[i] == 0) {
-        printf("\nMissformed register short integer value. Missing # between value and base.\n");
+        printf("\nMisformed register short integer value. Missing # between value and base.\n");
         abortTest();
       }
 
@@ -1116,7 +1116,7 @@ void setParameter(char *p) {
         i++;
       }
       if(r[i] == 0) {
-        printf("\nMissformed register complex34 value. Missing i between real and imaginary part.\n");
+        printf("\nMisformed register complex34 value. Missing i between real and imaginary part.\n");
         abortTest();
       }
 
@@ -1271,13 +1271,13 @@ void setParameter(char *p) {
               stringToReal34(r, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element);
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
-                  printf("\nmissformed register value. Not enough elements\n");
+                  printf("\nmisformed register value. Not enough elements\n");
                   abortTest();
                 }
                 break;
               }
               if(element >= (rows * cols - 1)) {
-                printf("\nmissformed register value. Too many elements\n");
+                printf("\nmisformed register value. Too many elements\n");
                 abortTest();
                 break;
               }
@@ -1288,17 +1288,17 @@ void setParameter(char *p) {
             }
           }
           else {
-            printf("\nmissformed register value. Missing left bracket after number of columns\n");
+            printf("\nmisformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmissformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmissformed register value. Value does not begin with 'M'\n");
+        printf("\nmisformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
@@ -1371,13 +1371,13 @@ void setParameter(char *p) {
               }
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
-                  printf("\nmissformed register value. Not enough elements\n");
+                  printf("\nmisformed register value. Not enough elements\n");
                   abortTest();
                 }
                 break;
               }
               if(element >= (rows * cols - 1)) {
-                printf("\nmissformed register value. Too many elements\n");
+                printf("\nmisformed register value. Too many elements\n");
                 abortTest();
                 break;
               }
@@ -1388,22 +1388,22 @@ void setParameter(char *p) {
             }
           }
           else {
-            printf("\nmissformed register value. Missing left bracket after number of columns\n");
+            printf("\nmisformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmissformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmissformed register value. Value does not begin with 'M'\n");
+        printf("\nmisformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nMisformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
 
@@ -1748,7 +1748,7 @@ void checkExpectedOutParameter(char *p) {
     i++;
   }
   if(p[i] == 0) {
-    printf("\nMissformed out parameter. Missing equal sign, remember that no space is allowed around the equal sign.\n");
+    printf("\nMisformed out parameter. Missing equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
   }
 
@@ -1757,14 +1757,14 @@ void checkExpectedOutParameter(char *p) {
   strcpy(r, p + i + 1);
 
   if(r[0] == 0) {
-    printf("\nMissformed out parameter. Missing value after equal sign, remember that no space is allowed around the equal sign.\n");
+    printf("\nMisformed out parameter. Missing value after equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
   }
 
   //Checking a flag
   if(!strncmp(l, "FL_", 3)) {
     if(r[0] != '0' && r[0] != '1' && r[1] != 0) {
-      printf("\nMissformed flag checking. The rvalue must be 0 or 1.\n");
+      printf("\nMisformed flag checking. The rvalue must be 0 or 1.\n");
       abortTest();
     }
 
@@ -1793,7 +1793,7 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed flag checking. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed flag checking. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -1814,7 +1814,7 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed flag checking in line. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed flag checking in line. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -1902,7 +1902,7 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed numbered flag checking. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
+        printf("\nMisformed numbered flag checking. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
       }
     }
@@ -1935,7 +1935,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMissformed integer mode checking. The rvalue must be 1COMPL, 2COMPL, UNSIGN or SIGNMT.\n");
+      printf("\nMisformed integer mode checking. The rvalue must be 1COMPL, 2COMPL, UNSIGN or SIGNMT.\n");
       abortTest();
     }
   }
@@ -1955,7 +1955,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMissformed complex mode checking. The rvalue must be RECT or POLAR.\n");
+      printf("\nMisformed complex mode checking. The rvalue must be RECT or POLAR.\n");
       abortTest();
     }
   }
@@ -1993,7 +1993,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMissformed angular mode checking. The rvalue must be DEG, DMS, GRAD, RAD or MULTPI.\n");
+      printf("\nMisformed angular mode checking. The rvalue must be DEG, DMS, GRAD, RAD or MULTPI.\n");
       abortTest();
     }
   }
@@ -2013,7 +2013,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMissformed stack size checking. The rvalue must be 4 or 8.\n");
+      printf("\nMisformed stack size checking. The rvalue must be 4 or 8.\n");
       abortTest();
     }
   }
@@ -2034,12 +2034,12 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed word size checking. The rvalue must be from 0 to 64 (0 is the same as 64).\n");
+        printf("\nMisformed word size checking. The rvalue must be from 0 to 64 (0 is the same as 64).\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed word size checking. The rvalue must be a number from 0 to 64 (0 is the same as 64).\n");
+      printf("\nMisformed word size checking. The rvalue must be a number from 0 to 64 (0 is the same as 64).\n");
       abortTest();
     }
   }
@@ -2064,7 +2064,7 @@ void checkExpectedOutParameter(char *p) {
       firstGregorianDay = atoi(r);
     }
     else {
-      printf("\nMissformed J/G setting. The rvalue must be a number.\n");
+      printf("\nMisformed J/G setting. The rvalue must be a number.\n");
       abortTest();
     }
   }
@@ -2082,12 +2082,12 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed significant digits checking. The rvalue must be from 0 to 34 (0 is the same as 34).\n");
+        printf("\nMisformed significant digits checking. The rvalue must be from 0 to 34 (0 is the same as 34).\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed significant digits checking. The rvalue must be a number from 0 to 34 (0 is the same as 34).\n");
+      printf("\nMisformed significant digits checking. The rvalue must be a number from 0 to 34 (0 is the same as 34).\n");
       abortTest();
     }
   }
@@ -2104,12 +2104,12 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed rounding mode checking. The rvalue must be a number from 0 to 6.\n");
+        printf("\nMisformed rounding mode checking. The rvalue must be a number from 0 to 6.\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed rounding mode checking. The rvalue must be a number from 0 to 6.\n");
+      printf("\nMisformed rounding mode checking. The rvalue must be a number from 0 to 6.\n");
       abortTest();
     }
   }
@@ -2127,12 +2127,12 @@ void checkExpectedOutParameter(char *p) {
         }
       }
       else {
-        printf("\nMissformed error code checking. The rvalue must be a number from 0 to 28.\n");
+        printf("\nMisformed error code checking. The rvalue must be a number from 0 to 28.\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed error code checking. The rvalue must be a number from 0 to 28.\n");
+      printf("\nMisformed error code checking. The rvalue must be a number from 0 to 28.\n");
       abortTest();
     }
   }
@@ -2149,7 +2149,7 @@ void checkExpectedOutParameter(char *p) {
         regist = REGISTER_X + (p - regNames);
       }
       else {
-        printf("\nMissformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
+        printf("\nMisformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
         abortTest();
       }
     }
@@ -2160,14 +2160,14 @@ void checkExpectedOutParameter(char *p) {
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)) {
       regist = atoi(l + 1);
       if(regist > LAST_SPARE_REGISTER || regist < 0) {
-        printf("\nMissformed numbered register checking. The number after R shall be a number from 0 to 111.\n");
+        printf("\nMisformed numbered register checking. The number after R shall be a number from 0 to 111.\n");
         abortTest();
       }
       letter = 0;
     }
 
     else {
-      printf("\nMissformed register checking. After R there shall be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
+      printf("\nMisformed register checking. After R there shall be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
 
@@ -2177,7 +2177,7 @@ void checkExpectedOutParameter(char *p) {
       i++;
     }
     if(r[i] == 0) {
-      printf("\nMissformed register value. Missing colon between data type and value.\n");
+      printf("\nMisformed register value. Missing colon between data type and value.\n");
       abortTest();
     }
 
@@ -2228,7 +2228,7 @@ void checkExpectedOutParameter(char *p) {
       else if(strcmp(angMod, "GRAD"  ) == 0) am = amGrad;
       else if(strcmp(angMod, "NONE"  ) == 0) am = amNone;
       else {
-        printf("\nMissformed register real%d angular mode. Unknown angular mode after real value.\n", strcmp(l, "RE16") == 0 ? 16 : 34);
+        printf("\nMisformed register real%d angular mode. Unknown angular mode after real value.\n", strcmp(l, "RE16") == 0 ? 16 : 34);
         abortTest();
       }
 
@@ -2301,7 +2301,7 @@ void checkExpectedOutParameter(char *p) {
         i++;
       }
       if(r[i] == 0) {
-        printf("\nMissformed register short integer value. Missing # between value and base.\n");
+        printf("\nMisformed register short integer value. Missing # between value and base.\n");
         abortTest();
       }
 
@@ -2341,7 +2341,7 @@ void checkExpectedOutParameter(char *p) {
         i++;
       }
       if(r[i] == 0) {
-        printf("\nMissformed register complex34 value. Missing i between real and imaginary part.\n");
+        printf("\nMisformed register complex34 value. Missing i between real and imaginary part.\n");
         abortTest();
       }
 
@@ -2571,13 +2571,13 @@ void checkExpectedOutParameter(char *p) {
                 }
                 if(lastElement) {
                   if(element < (rows * cols - 1)) {
-                    printf("\nmissformed register value. Not enough elements\n");
+                    printf("\nmisformed register value. Not enough elements\n");
                     abortTest();
                   }
                   break;
                 }
                 if(element >= (rows * cols - 1)) {
-                  printf("\nmissformed register value. Too many elements\n");
+                  printf("\nmisformed register value. Too many elements\n");
                   abortTest();
                   break;
                 }
@@ -2592,17 +2592,17 @@ void checkExpectedOutParameter(char *p) {
             }
           }
           else {
-            printf("\nmissformed register value. Missing left bracket after number of columns\n");
+            printf("\nmisformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmissformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmissformed register value. Value does not begin with 'M'\n");
+        printf("\nmisformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
@@ -2813,13 +2813,13 @@ void checkExpectedOutParameter(char *p) {
 
                 if(lastElement) {
                   if(element < (rows * cols - 1)) {
-                    printf("\nmissformed register value. Not enough elements\n");
+                    printf("\nmisformed register value. Not enough elements\n");
                     abortTest();
                   }
                   break;
                 }
                 if(element >= (rows * cols - 1)) {
-                  printf("\nmissformed register value. Too many elements\n");
+                  printf("\nmisformed register value. Too many elements\n");
                   abortTest();
                   break;
                 }
@@ -2836,22 +2836,22 @@ void checkExpectedOutParameter(char *p) {
             }
           }
           else {
-            printf("\nmissformed register value. Missing left bracket after number of columns\n");
+            printf("\nmisformed register value. Missing left bracket after number of columns\n");
             abortTest();
           }
         }
         else {
-          printf("\nmissformed register value. Missing comma between number of rows and of columns\n");
+          printf("\nmisformed register value. Missing comma between number of rows and of columns\n");
           abortTest();
         }
       }
       else {
-        printf("\nmissformed register value. Value does not begin with 'M'\n");
+        printf("\nmisformed register value. Value does not begin with 'M'\n");
         abortTest();
       }
     }
     else {
-      printf("\nMissformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nMisformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
   }
@@ -2940,7 +2940,7 @@ void functionToCall(char *functionName) {
   char *openParenthesis = strchr(functionName, '(');
   char *closeParenthesis = strchr(functionName, ')');
   if((openParenthesis && !closeParenthesis) || (!openParenthesis && closeParenthesis)) {
-    printf("\nParameter arenthesis do not match!\n");
+    printf("\nParameter parenthesis do not match!\n");
     abortTest();
   }
   else if(openParenthesis && closeParenthesis) {
@@ -3058,6 +3058,25 @@ void standardizeLine(void) {
 }
 
 
+static bool_t timerOperation = false;
+static bool_t timedFunction = false;
+static time_t startTime = 0;  // module-level static variable
+void startTimer(void) {
+    startTime = time(NULL);
+}
+
+void stopTimerAndPrint(void) {
+    if (startTime == 0) {
+        printf("Timer was not started.\n");
+        return;
+    }
+    time_t endTime = time(NULL);
+    double elapsed = difftime(endTime, startTime);
+    if(elapsed > 1)
+      printf("\n -- Processing time > 1 second: %d s\n", (int)elapsed);
+}
+
+
 
 void processLine(void) {
   // convert to upper case
@@ -3078,7 +3097,14 @@ void processLine(void) {
     }
   }
 
-  if(strncmp(line, "IN: ", 4) == 0) {
+
+  if(strncmp(line, "TIMER: ", 7) == 0) {
+    printf("\n%s", line);
+    timerOperation = true;
+    timedFunction = true;
+  }
+
+  else if(strncmp(line, "IN: ", 4) == 0) {
     //printf("%s\n", line);
     strcpy(lastInParameters, line);
     inParameters(line + 4);
@@ -3106,7 +3132,12 @@ void processLine(void) {
 
   else if(strncmp(line, "OUT: ", 5) == 0) {
     //printf("%s\n", line);
+    if(timedFunction && timerOperation) startTimer();
     callFunction();
+    if(timedFunction && timerOperation) {
+      timedFunction = true;
+      stopTimerAndPrint();
+    }
 
     if((numTestsFile++ % 10) == 0) {
       printf(".");
@@ -3166,6 +3197,8 @@ void processOneFile(void) {
 
   fclose(testSuite);
 
+  timedFunction = false;
+  timerOperation = false;
   //printf(" %d passed successfully\n", numTestsFile);
   printf("\n");
 }
