@@ -5626,6 +5626,11 @@ if(first_unconverged != -1) {
                                                                   printRealToConsole(&trace_error, "", "\n");
                                                                   printf("=== END VERIFICATION ===\n");
                                                                 #endif
+
+  if((--currentSolverNestingDepth) == 0) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
+
 }
 
 
