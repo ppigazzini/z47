@@ -32,7 +32,7 @@
     #define toleranceDigits       (34 + extraDigits)
   #else
     #define extraDigits           3
-    #define toleranceDigits       (significantDigits + extraDigits)                    // previous method:  (((significantDigits == 0 || significantDigits >= 34) ? 16 : significantDigits == 33 ? 34 : significantDigits) + extraDigits)
+    #define toleranceDigits       ((significantDigits == 0 ? 34 : significantDigits) + extraDigits)
   #endif
 
   #define eigenTolerance          (min(70,toleranceDigits*2))
@@ -4959,7 +4959,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   else { //size > 3
     real_t tol, maxM, minM, tmpM;
     if(reducedSignificantDigits) {
-      if(toleranceDigits >= 34) {        // typ 37
+      if(toleranceDigits >= 34 || toleranceDigits == 0) {        // typ 37
         realCopy(const_1, &tol);
         tol.exponent -= eigenTolerance;  // typ 70
       }
@@ -4975,6 +4975,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
     #if defined(EIGENDEBUG)
       printRealToConsole(&tol, "calculateEigenvalues Tol: ", " ");
+      printf("significantDigits=%d\n",significantDigits);
       printf("realContext.digits=%d\n", (int)(realContext->digits));
     #endif
 
@@ -4998,6 +4999,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     currentKeyCode = 255;
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
+    #if defined(EIGENDEBUG)
+      debugf("========================= FLAG_SOLVING SET =========================\n");
+    #endif // defined(EIGENDEBUG)
 
 
     // =========================
@@ -5624,6 +5628,9 @@ if(first_unconverged != -1) {
 
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_SOLVING);
+    #if defined(EIGENDEBUG)
+      debugf("========================= FLAG_SOLVING CLEARED =========================\n");
+    #endif //defined(EIGENDEBUG)
   }
 
 }
