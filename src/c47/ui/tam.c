@@ -326,6 +326,9 @@
         else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
           showSoftmenu(-MNU_TAM);
         }
+        else if(tam.mode == TM_VARONLY) {
+          showSoftmenu(-MNU_TAMVARONLY);
+        }
         else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
           showSoftmenu(-MNU_TAMFLAG);
         }
@@ -340,7 +343,7 @@
         }
         else if(tam.mode == TM_SOLVE) {
           if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
-            showSoftmenu(-MNU_TAM);
+            showSoftmenu(-MNU_TAM);                                 //not changed to VARONLY, as SOLVE can need local labels in PEM. Must be fixed for the crash on local labels though.
           }
           else {
             showSoftmenu(-MNU_TAMLBLONLY);
@@ -373,7 +376,7 @@
         tam.min         = 1;
         tam.digitsSoFar = 1;
         popSoftmenu();
-        showSoftmenu(-MNU_TAM);
+        showSoftmenu(-MNU_TAM); //probably best to leave this fallback as TAM not TAMVARONLY
         --numberOfTamMenusToPop;
         if(tam.alpha) {
           setSystemFlag(FLAG_ALPHA);
@@ -403,7 +406,7 @@
     }
     else if(!(tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && item == ITM_alpha) {
       bool_t allowAlphaMode = false, beginWithLowercase = false;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && !valueParameter && (tam.mode == TM_STORCL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP || tam.function == ITM_MVAR));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && !valueParameter && (tam.mode == TM_STORCL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_VARONLY || tam.mode == TM_CMP || tam.function == ITM_MVAR));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
@@ -427,6 +430,7 @@
           case -MNU_TAMLABEL    :
           case -MNU_TAMLBLONLY  :
           case -MNU_TAM         :
+          case -MNU_TAMVARONLY  :
           case -MNU_TAMSTO      :
           case -MNU_TAMRCL      :
           case -MNU_TAMMENU     :
@@ -1084,6 +1088,10 @@
         }
         break;
       }
+      case TM_VARONLY: {
+        showSoftmenu(-MNU_TAMVARONLY);
+        break;
+      }
 
       case TM_CMP: {
         showSoftmenu(-MNU_TAMCMP);
@@ -1130,7 +1138,7 @@
 
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
-          showSoftmenu(-MNU_TAM); // here must actually be a VAR only menu!
+          showSoftmenu(-MNU_TAM);                       //not changed to VARONLY, as SOLVE can need local labels in PEM. Must be fixed for the crash on local labels though.
         }
         else {
           showSoftmenu(-MNU_TAMLBLONLY);

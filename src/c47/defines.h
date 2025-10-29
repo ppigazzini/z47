@@ -1394,7 +1394,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_VALUE_TRK                           10016
 #define TM_MENU                                10017
 #define TM_LBLONLY                             10018
-#define TM_CMP                                 10019 // TM_CMP must be the last in this list
+#define TM_VARONLY                             10019
+#define TM_CMP                                 10020 // TM_CMP must be the last in this list
 
 // gamma function type
 #define GAMMA_XYLOWER                              0

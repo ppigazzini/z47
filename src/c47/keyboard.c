@@ -445,6 +445,7 @@ static void executeFunction(const char *data, int16_t item_);
       if(inCatalog || currentMenu() == -MNU_CONST) {
         switch(-currentMenu()) {
           case MNU_TAM:
+          case MNU_TAMVARONLY:
           case MNU_TAMNONREG:
           case MNU_TAMCMP:
           case MNU_TAMSTO:
