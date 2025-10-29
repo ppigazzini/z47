@@ -691,6 +691,8 @@ TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU
 
 TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU_MENU,                  ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 
+TO_QSPI const int16_t menu_TamLabelOnly[]= { ITM_INDIRECTION,               -MNU_PROG,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+
 
 TO_QSPI const int16_t menu_Eim[]         = {
                                              ITM_ALOG_SIGN,                 ITM_x_SIGN,                ITM_CIRCUMFLEX,            ITM_ROOT_SIGN,         ITM_EQ_LEFT,                 ITM_EQ_RIGHT,                     //DL
@@ -1026,6 +1028,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 163 */  {.menuItem = -MNU_FCNS_EIM,    .numItems = sizeof(menu_FCNS_EIM      )/sizeof(int16_t), .softkeyItem = menu_FCNS_EIM       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 164 */  {.menuItem = -MNU_XXFCNS,      .numItems = sizeof(menu_XXFCNS        )/sizeof(int16_t), .softkeyItem = menu_XXFCNS         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 165 */  {.menuItem = -MNU_MULTSTK,     .numItems = sizeof(menu_MULTSTK       )/sizeof(int16_t), .softkeyItem = menu_MULTSTK        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 165 */  {.menuItem = -MNU_TAMLBLONLY,  .numItems = sizeof(menu_TamLabelOnly  )/sizeof(int16_t), .softkeyItem = menu_TamLabelOnly   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 166 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 

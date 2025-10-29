@@ -1721,7 +1721,7 @@ void insertStepInProgram(const int16_t func) {
         _insertInProgram((uint8_t *)tmpString, opBytes + 2);
       }
       else {
-        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : (tam.mode == TM_LABEL) ? tam.value : regCtoKS(tam.value));
+        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) ? tam.value : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
   }

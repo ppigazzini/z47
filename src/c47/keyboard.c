@@ -452,6 +452,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_TAMFLAG:
           case MNU_TAMSHUFFLE:
           case MNU_TAMLABEL:
+          case MNU_TAMLBLONLY:
           case ITM_DELITM: {
             // TAM menus are processed elsewhere
             break;
@@ -1258,7 +1259,7 @@ int16_t lastItem = 0;
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
@@ -2076,7 +2077,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       for(int i=0; i<43; i++) {
         xMin = calcKeyboard[i].x;
         yMin = calcKeyboard[i].y;
-        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
+        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
           xMax = xMin + calcKeyboard[10].width[3];
           yMax = yMin + calcKeyboard[10].height[3];
         }
@@ -3727,12 +3728,12 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
     if(tam.mode) {                               //if in TAM mode
       // [DL] : TM_LABEL specific Alpha Exit logic below replaced by TM generic exit logic, so it should not be needed anymore
-        /*if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
+        /*if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
             popSoftmenu();
             keyActionProcessed = true;
             return;
           }
-          if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
+          if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
             if(menu(0) == -MNU_TAMALPHA) {
               popSoftmenu();
               if(isAlphaSubmenu(0)) {

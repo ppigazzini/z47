@@ -1364,7 +1364,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1393,7 +1393,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_VALUE_MAX                           10015
 #define TM_VALUE_TRK                           10016
 #define TM_MENU                                10017
-#define TM_CMP                                 10018 // TM_CMP must be the last in this list
+#define TM_LBLONLY                             10018
+#define TM_CMP                                 10019 // TM_CMP must be the last in this list
 
 // gamma function type
 #define GAMMA_XYLOWER                              0

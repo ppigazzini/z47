@@ -335,12 +335,15 @@
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           showSoftmenu(-MNU_TAMLABEL);
         }
+        else if(tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+          showSoftmenu(-MNU_TAMLBLONLY);
+        }
         else if(tam.mode == TM_SOLVE) {
           if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
             showSoftmenu(-MNU_TAM);
           }
           else {
-            showSoftmenu(-MNU_TAMLABEL);
+            showSoftmenu(-MNU_TAMLBLONLY);
           }
         }
         else if(tam.mode == TM_MENU) {
@@ -404,7 +407,7 @@
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && ((tam.mode == TM_LABEL) || (tam.mode == TM_MENU)));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_MENU));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.keyInputFinished && tam.mode == TM_KEY);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && (tam.function == ITM_LBL || tam.function == ITM_GTOP));
       if(allowAlphaMode) {
@@ -422,6 +425,7 @@
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
           case -MNU_TAMCMP      :
           case -MNU_TAMLABEL    :
+          case -MNU_TAMLBLONLY  :
           case -MNU_TAM         :
           case -MNU_TAMSTO      :
           case -MNU_TAMRCL      :
@@ -591,7 +595,7 @@
     }
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
-    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
       tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
       forceTry = true;
       tryOoR = true;
@@ -599,7 +603,7 @@
 
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
-        if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
+        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
             // Local label from A to J
             case REGISTER_A: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'A'; forceTry = true; tryOoR = true; break;
@@ -702,7 +706,7 @@
         else if(tam.indirect && (currentNumberOfLocalRegisters || calcMode == CM_PEM)) {
           tam.dot = true;
         }
-        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL && tam.mode != TM_MENU) {
+        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL && tam.mode != TM_LBLONLY && tam.mode != TM_MENU) {
           if(calcMode == CM_PEM || ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && currentLocalFlags != NULL) || ((tam.mode != TM_FLAGR && tam.mode != TM_FLAGW) && currentNumberOfLocalRegisters)) {
             tam.dot = true;
           }
@@ -754,7 +758,7 @@
         tam.min         = 0;
         tam.digitsSoFar = 0;
         popSoftmenu();
-        showSoftmenu(-MNU_TAMLABEL);
+        showSoftmenu(-MNU_TAMLABEL); // Probably better to have the fallback TAMLABEL, not TAMLBLONLY
         --numberOfTamMenusToPop;
         clearSystemFlag(FLAG_ALPHA);
         calcModeTamGui();
@@ -834,7 +838,7 @@
       if(tam.mode == TM_NEWMENU) {
         value = 1;
       }
-      else if(tam.mode == TM_LABEL || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
+      else if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
         if(!tam.indirect) {
           value = findNamedLabelWithDuplicate(buffer, dupNum);
         }
@@ -1001,7 +1005,7 @@
 
 
   void tamEnterMode(int16_t func) {
-    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
+    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param; // TM_LABEL should be fine and TM_LBLONLY not needed here
     func = func == ITM_USERMODE ? ITM_ASSIGN : func;
     tam.function = func;
     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
@@ -1114,6 +1118,16 @@
         break;
       }
 
+      case TM_LBLONLY: {
+        if(func == ITM_ASSIGN) {
+          showSoftmenu(-MNU_TAMALPHA);
+        }
+        else {
+          showSoftmenu(-MNU_TAMLBLONLY);
+        }
+        break;
+      }
+
       case TM_MENU: {
         showSoftmenu(-MNU_TAMMENU);
         break;
@@ -1121,10 +1135,10 @@
 
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
-          showSoftmenu(-MNU_TAM);
+          showSoftmenu(-MNU_TAM); // here must actually be a VAR only menu!
         }
         else {
-          showSoftmenu(-MNU_TAMLABEL);
+          showSoftmenu(-MNU_TAMLBLONLY);
         }
         break;
       }
