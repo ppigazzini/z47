@@ -1119,12 +1119,7 @@
       }
 
       case TM_LBLONLY: {
-        if(func == ITM_ASSIGN) {
-          showSoftmenu(-MNU_TAMALPHA);
-        }
-        else {
-          showSoftmenu(-MNU_TAMLBLONLY);
-        }
+        showSoftmenu(-MNU_TAMLBLONLY);
         break;
       }
 
