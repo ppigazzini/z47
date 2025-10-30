@@ -343,7 +343,7 @@
         }
         else if(tam.mode == TM_SOLVE) {
           if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
-            showSoftmenu(-MNU_TAM);                                 //not changed to VARONLY, as SOLVE can need local labels in PEM. Must be fixed for the crash on local labels though.
+            showSoftmenu(-MNU_TAMVARONLY);
           }
           else {
             showSoftmenu(-MNU_TAMLBLONLY);
@@ -1138,7 +1138,7 @@
 
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
-          showSoftmenu(-MNU_TAM);                       //not changed to VARONLY, as SOLVE can need local labels in PEM. Must be fixed for the crash on local labels though.
+          showSoftmenu(-MNU_TAMVARONLY);
         }
         else {
           showSoftmenu(-MNU_TAMLBLONLY);
