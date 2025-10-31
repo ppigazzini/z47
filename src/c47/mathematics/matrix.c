@@ -45,7 +45,7 @@
   #define symmetricTolerance      30
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
   #define eigenContext            &ctxtReal75
-  #define ctxtTruncate            &ctxtReal39  //ctxtReal34
+  #define ctxtTruncate            &ctxtReal51  //ctxtReal34
   #define ctxtDeNoise             &ctxtReal39                                     // tested, no benfit on 51
   #define tolerance_complex_noise_removal_except_conjugate const_1e_32            // to test. Make very small to skip it, like const_1e_6143
 // End Eigenvalue setup
@@ -5098,163 +5098,134 @@ static bool_t isMatrixDiagonal(real_t *matrix, uint16_t size, real_t *tol, realC
 
 
 
+/**
+ * sumOfSubSupDiagonalAll - compute sum of selected elements in a square matrix
+ *
+ * This function computes a sum over elements of the top-left `activeSize x activeSize` submatrix of a square matrix, depending on the selected mode:
+ *   DIAG        - sum of diagonal elements
+ *   SUPSUBDIAG  - sum of superdiagonal and subdiagonal elements
+ *   NONDIAG     - sum of all non-diagonal elements
+ *   CHDIAG      - sum of changes in the diagonal since previous call
+ *
+ * For CHDIAG, a bool_t `firstCall` must be provided: if true, the function initializes `previousDiagonal` and returns sum = 0. Otherwise, it sums the absolute change from `previousDiagonal`.
+ *
+ * Parameters:
+ *   heading          - debug print heading
+ *   matrix           - pointer to square matrix (size x size, complex stored as [re,im])
+ *   previousDiagonal - array to store previous diagonal (only used in CHDIAG)
+ *   size             - full matrix size
+ *   activeSize       - size of submatrix to process
+ *   mode             - mode - which elements to sum
+ *   sum              - output sum (squares or abs depending on compile flags)
+ *   firstCall        - only for CHDIAG, indicates array reset
+ *   realContext
+ */
+
 typedef enum {
   DIAG,
   SUPSUBDIAG,
-  NONDIAG
+  NONDIAG,
+  CHDIAG
 } diagMode_t;
 
-static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, diagMode_t mode, real_t *sum, realContext_t *realContext) {
+
+static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, diagMode_t mode, real_t *sum, bool_t firstCall, realContext_t *realContext) {
+  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+    printf("%s\n", heading);                 // print heading for debug
+  #endif //EIGENDEBUG
   #if defined(CONV_SUM_159)
-    real159_t sum159;
+    real159_t sum159;                        // 159-digit intermediate sum
     realZero((real_t*)&sum159);
     realContext_t ctx159 = ctxtReal75;
     ctx159.digits = 159;
   #endif //CONV_SUM_159
 
   real_t elemRe, elemIm;
-  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-    printf("%s\n", heading);
-  #endif //EIGENDEBUG
-  realZero(sum);
+  realZero(sum);                             // initialize sum to 0
+
   for(uint16_t i = 0; i < activeSize; i++) {
     for(uint16_t j = 0; j < activeSize; j++) {
       bool include = false;
       switch(mode) {
         case DIAG:
-          include = (i == j);
+          include = (i == j);               // only diagonal elements
           break;
         case SUPSUBDIAG:
-          include = (i == j + 1) || (j == i + 1);
+          include = (i == j + 1) || (j == i + 1);  // only super/subdiagonal
           break;
         case NONDIAG:
-          include = (i != j);
+          include = (i != j);               // all non-diagonal elements
+          break;
+        case CHDIAG:
+          include = (i == j);               // only diagonal, changes measured
           break;
       }
       if(include) {
         realCopy(matrix + (i * size + j) * 2, &elemRe);
-        realCopy(matrix + (i * size + j) * 2 + 1, &elemIm);;
-        realSetPositiveSign(&elemRe);
-        realSetPositiveSign(&elemIm);
+        realCopy(matrix + (i * size + j) * 2 + 1, &elemIm);
+
         #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-          printf("Calculate diagonal options [%d,%d] = ", i, j);
+          printf("Calculate element [%d,%d] = ", i, j);  // debug print
           printRealToConsole(&elemRe, "[", ",");
           printRealToConsole(&elemIm, "", "]\n");
         #endif
+
+        if(mode == CHDIAG) {
+          if(firstCall) {
+            // store the initial diagonal and skip summing
+            realCopy(&elemRe, previousDiagonal + (i * 2));
+            realCopy(&elemIm, previousDiagonal + (i * 2 + 1));
+            continue;
+          } else {
+            // calculate change = abs(current - previous)
+            real_t prevRe, prevIm;
+            real_t changeRe, changeIm;
+            realCopy(previousDiagonal + (i * 2), &prevRe);
+            realCopy(previousDiagonal + (i * 2 + 1), &prevIm);
+            realSubtract(&elemRe, &prevRe, &changeRe, realContext);
+            realSubtract(&elemIm, &prevIm, &changeIm, realContext);
+            realSetPositiveSign(&changeRe);    // absolute value
+            realSetPositiveSign(&changeIm);
+            // update previous diagonal
+            realCopy(&elemRe, previousDiagonal + (i * 2));
+            realCopy(&elemIm, previousDiagonal + (i * 2 + 1));
+            elemRe = changeRe;                 // sum the change
+            elemIm = changeIm;
+          }
+        }
+        else {
+          realSetPositiveSign(&elemRe);    // absolute value
+          realSetPositiveSign(&elemIm);
+        }
+
         #if defined(CONV_SUM_159)
           #if defined(ABS_SUMS)
-             realAdd(&elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of absolute values
-             realAdd(&elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of absolute values
-           #else
-             realFMA(&elemRe, &elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of the squares
-             realFMA(&elemIm, &elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of the squares
-           #endif
+            realAdd(&elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // sum abs
+            realAdd(&elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+          #else
+            realFMA(&elemRe, &elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);  // sum squares
+            realFMA(&elemIm, &elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+          #endif
         #else //CONV_SUM_159
           #if defined(ABS_SUMS)
-            realAdd(&elemRe, sum, sum, realContext);   // Sum of absolute values
-            realAdd(&elemIm, sum, sum, realContext);   // Sum of absolute values
+            realAdd(&elemRe, sum, sum, realContext);   // sum abs
+            realAdd(&elemIm, sum, sum, realContext);
           #else
-            realFMA(&elemRe, &elemRe, sum, sum, realContext);   // Sum of the squares
-            realFMA(&elemIm, &elemIm, sum, sum, realContext);   // Sum of the squares
+            realFMA(&elemRe, &elemRe, sum, sum, realContext);  // sum squares
+            realFMA(&elemIm, &elemIm, sum, sum, realContext);
           #endif
         #endif //CONV_SUM_159
       }
     }
   }
   #if defined(CONV_SUM_159)
-    realPlus((real_t*)&sum159, sum, realContext);
-  #endif //CONV_SUM_159 
-}
-
-
-static void ChangedDiagonal(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, real_t *sum, bool_t firstCall, realContext_t *realContext) {
-//  static bool_t firstCall = true;
-  
-  #if defined(CONV_SUM_159)
-    real159_t sum159;
-    realZero((real_t*)&sum159);
-    realContext_t ctx159 = ctxtReal75;
-    ctx159.digits = 159;
+    realPlus((real_t*)&sum159, sum, realContext);    // move sum159 to output
   #endif //CONV_SUM_159
-  
-  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-    printf("%s\n", heading);
-  #endif //EIGENDEBUG
-  
-  realZero(sum);
-    
-  // First call: just store the diagonal, return zero change
-  if(firstCall) {
-    for(uint16_t i = 0; i < activeSize; i++) {
-      realCopy(matrix + (i * size + i) * 2, previousDiagonal + (i * 2));
-      realCopy(matrix + (i * size + i) * 2 + 1, previousDiagonal + (i * 2 + 1));
-    }
-//    firstCall = false;
-    return;
-  }
-  
-  // Calculate sum of changes for each diagonal element
-  for(uint16_t i = 0; i < activeSize; i++) {
-    real_t currentRe, currentIm, prevRe, prevIm;
-    real_t changeRe, changeIm;
-    
-    // Get current diagonal element
-    realCopy(matrix + (i * size + i) * 2, &currentRe);
-    realCopy(matrix + (i * size + i) * 2 + 1, &currentIm);
-    
-    // Get previous diagonal element
-    realCopy(previousDiagonal + (i * 2), &prevRe);
-    realCopy(previousDiagonal + (i * 2 + 1), &prevIm);
-    
-    // Calculate change
-    realSubtract(&currentRe, &prevRe, &changeRe, realContext);
-    realSubtract(&currentIm, &prevIm, &changeIm, realContext);
-    realSetPositiveSign(&changeRe);
-    realSetPositiveSign(&changeIm);
-    
-    #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-      printf("Diagonal [%d,%d] current = ", i, i);
-      printRealToConsole(&currentRe, "[", ",");
-      printRealToConsole(&currentIm, "", "]\n");
-      printf("Diagonal [%d,%d] change  = ", i, i);
-      printRealToConsole(&changeRe, "[", ",");
-      printRealToConsole(&changeIm, "", "]\n");
-    #endif
-    
-    #if defined(CONV_SUM_159)
-      #if defined(ABS_SUMS)
-        realAdd(&changeRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
-        realAdd(&changeIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
-      #else //squares
-        realFMA(&changeRe, &changeRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
-        realFMA(&changeIm, &changeIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
-      #endif
-    #else //CONV_SUM_159
-      #if defined(ABS_SUMS)
-        realAdd(&changeRe, sum, sum, realContext);
-        realAdd(&changeIm, sum, sum, realContext);
-      #else //squares
-        realFMA(&changeRe, &changeRe, sum, sum, realContext);
-        realFMA(&changeIm, &changeIm, sum, sum, realContext);
-      #endif
-    #endif //CONV_SUM_159
-    
-    // Update previous diagonal for next call
-    realCopy(&currentRe, previousDiagonal + (i * 2));
-    realCopy(&currentIm, previousDiagonal + (i * 2 + 1));
-  }
-  
-  #if defined(CONV_SUM_159)
-    realPlus((real_t*)&sum159, sum, realContext);
-    #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-      printRealToConsole((real_t*)&sum159, "Sum159:", "\n");
-    #endif
-  #endif //CONV_SUM_159
-
   #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
     printRealToConsole(sum, "Sum:   ", "\n");
   #endif
 }
+
 
 
 static void dropNoise(real_t *eig, uint16_t size, uint16_t dig) {
@@ -5384,7 +5355,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   real_t SumTolerance, changeDiagonalSum, previousChangeDiagonalSum;
 
   real_t progress_indicator;
-  
+  real_t currentOffDiagonalSum, changeOffDiagonalSum, previousOffDiagonalSum;
+  uint16_t offdiag_no_improvement_count = 0;
   real_t shiftRe, shiftIm;
   realCopy(const_1, &SumTolerance);
   SumTolerance.exponent -= toleranceDigits;
@@ -5396,6 +5368,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   uint16_t iteration = 0;
   uint16_t activeSize = size;
   bool_t converged = false;
+
+
  
 //shifted = false; // Can disable shifts here - they cause instability in minimal cases.
 
@@ -5432,7 +5406,12 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 // initialize
   // initialize digaonal check variables
+    realZero(&currentOffDiagonalSum);
+    realZero(&changeOffDiagonalSum);
+    realZero(&previousOffDiagonalSum);
 
+  // Off-diagonal stagnation tracking
+    offdiag_no_improvement_count = 0;
 
 
 
@@ -5737,8 +5716,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         real_t deltaChangeDiagonalSum;
         realZero(&deltaChangeDiagonalSum);
 
-        if(iteration == 1) ChangedDiagonal("Stagnation test init", eig, previousDiagonal, size, activeSize, &changeDiagonalSum, true, &ctxtReal39);
-        ChangedDiagonal("Stagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, &changeDiagonalSum, false, &ctxtReal39);
+        if(iteration == 1) sumOfSubSupDiagonalAll("Stagnation test init", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, true, &ctxtReal39);
+        sumOfSubSupDiagonalAll("Stagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &ctxtReal39);
         
         converged = false;
         if(realGetExponent(&changeDiagonalSum) < -toleranceDigits && iteration != 1) {                                  // changed presumably faster:        if(realCompareLessThan(&changeDiagonalSum, &SumTolerance) && iteration != 1) {
@@ -5790,6 +5769,66 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
             no_improvement_count = 0;                                                                                        // change is decreasing, possibly settiling; reset counter
           }
         }
+
+
+
+      if(converged) {
+
+        sumOfSubSupDiagonalAll("Off-diagonal stability test 2: allow convergence if off-diagonals are stable", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &ctxtReal75);
+        realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &ctxtReal75);
+        #if defined(EIGENDEBUG)
+          printRealToConsole(&changeOffDiagonalSum,"\nchangeOffDiagonalSum: ","\n");
+        #endif
+
+        // Check if off-diagonal sum is small enough
+        #if defined(EIGENDEBUG)
+          printf("___Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponent(&currentOffDiagonalSum), -3*(toleranceDigits-1));
+        #endif
+        if(realGetExponent(&currentOffDiagonalSum) <= 3*-(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
+          #if defined(EIGENDEBUG)
+            printf("___  → Off-diagonals sufficiently small - accepting current state\n");
+          #endif                                                                              // Continue without changing converged flag
+        }
+        // Check if off-diagonal sum is decreasing
+        else if(realIsNegative(&changeOffDiagonalSum)) {
+          #if defined(EIGENDEBUG)
+            printf("___  → Off-diagonals decreasing, checking step size:\n     exp(changeOffDiagonalSum)=%d > -(eigenTolerance-extraDigits)=%d\n", realGetExponent(&changeOffDiagonalSum), -(eigenTolerance - extraDigits));
+          #endif
+          
+          // Decreasing - check if change is large enough
+          if(realGetExponent(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {     // Change is large - good progress
+            #if defined(EIGENDEBUG)
+              printf("___     → Large steps - clearing converged, resetting counter\n");
+            #endif
+            converged = false;
+            offdiag_no_improvement_count = 0;                                                // Continue without further action
+          }
+          else {                                                                             // Change is too small - stagnating
+            #if defined(EIGENDEBUG)
+              printf("___     → Steps too small - stagnation detected, counter=%d\n", offdiag_no_improvement_count + 1);
+            #endif
+            converged = false;
+            offdiag_no_improvement_count++;
+          }
+        }
+        // Off-diagonal sum increased or stayed same
+        else {
+          // No progress or diverging
+          #if defined(EIGENDEBUG)
+            printf("___  → Off-diagonals not decreasing (changeOffDiagonalSum >= 0), counter=%d\n", offdiag_no_improvement_count + 1);
+          #endif
+          converged = false;
+          offdiag_no_improvement_count++;
+        }
+        // Check if stagnation threshold reached
+        if(offdiag_no_improvement_count >= (is_sym_tridiag ? 7 : 5)) {
+          #if defined(EIGENDEBUG)
+            printf("___OFF-DIAGONAL STAGNATION: counter=%d >= threshold=%d - BREAKING\n", offdiag_no_improvement_count, (is_sym_tridiag ? 7 : 5));
+          #endif
+          break;
+        }
+      }
+
                                                                     #if defined(EIGENDEBUG)
                                                                       //printComplexMatrix("eig:", eig, size, size, &ctxtReal4);
                                                                       //printComplexMatrix("eig activeSize:", eig, size, activeSize, &ctxtReal4);
@@ -5803,6 +5842,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                                                                       }
                                                                     #endif
   
+        realCopy(&currentOffDiagonalSum, &previousOffDiagonalSum);
         realCopy(&changeDiagonalSum, &previousChangeDiagonalSum);
         last_check_iter = iteration;
       }
