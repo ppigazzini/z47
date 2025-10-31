@@ -164,7 +164,7 @@ static void powReal(void) {
     }
     else {
       if(realIsPositive(&x) && realIsAnInteger(&x)) {
-        WP34S_BigMod(&x, const_2, &res, &ctxtReal39);
+        WP34S_Mod(&x, const_2, &res, &ctxtReal39);
         realCopy(realIsZero(&res) ? const_plusInfinity : const_minusInfinity, &res);
       }
       else {

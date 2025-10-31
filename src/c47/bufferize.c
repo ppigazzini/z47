@@ -2510,7 +2510,6 @@ typedef struct {
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
           realAdd(&theta, const_pi, &theta, &ctxtReal39);
-          //WP34S_Mod(&theta, const1071_2pi, &theta, &c);   // this is not needed here, it is done in realPolarToRectangular() below
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
         realToReal34(&magnitude, dest_r);

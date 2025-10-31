@@ -260,10 +260,10 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Ram full");
-          moreInfoOnError("In function getMatrixComplex:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full");
+            moreInfoOnError("In function getMatrixComplex:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
     }
@@ -1677,6 +1677,10 @@ bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t cols) {
   if(!isMemoryBlockAvailable(neededSize)) {
     matrix->header.matrixColumns = matrix->header.matrixRows = 0;
     matrix->matrixElements = NULL;
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function realMatrixInit:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   matrix->matrixElements = allocC47Blocks(neededSize);
@@ -1750,6 +1754,10 @@ bool_t complexMatrixInit(complex34Matrix_t *matrix, uint16_t rows, uint16_t cols
   if(!isMemoryBlockAvailable(neededSize)) {
     matrix->header.matrixColumns = matrix->header.matrixRows = 0;
     matrix->matrixElements = NULL;
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function complexMatrixInit:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   matrix->matrixElements = allocC47Blocks(neededSize);
@@ -2436,10 +2444,10 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Ram full, 1");
-      moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
@@ -2457,10 +2465,10 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Ram full, 2");
-      moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4403,12 +4411,12 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       realSquareRoot(&sum, &sum, realContext);
 
       // Calculate u = x - alpha e1
-if(realIsZero(v + 1)) {
+      if(realIsZero(v + 1)) {
         if(realIsNegative(v)) {
-    realChangeSign(&sum);
-  }
-  realSubtract(v, &sum, v, realContext);
-}
+          realChangeSign(&sum);
+        }
+        realSubtract(v, &sum, v, realContext);
+      }
       else {
         blockMonitoring = true;
         realRectangularToPolar(v, v + 1, &m, &t, realContext);
@@ -4693,7 +4701,7 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
   cr = mat + ((size - 1) * size + (size - 2)) * 2; ci = cr + 1;
   dr = mat + ((size - 1) * size + (size - 1)) * 2; di = dr + 1;
 
-  // Determinant calculation in high precision
+  // determinant
   if(realIsZero(ai) && realIsZero(bi) && realIsZero(ci) && realIsZero(di)) {
       // All real - compute ad - bc directly
       realMultiply(ar, dr, (real_t *)&detR, &ctx159);
@@ -5435,7 +5443,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
           }
         }
       }
-
       QR_decomposition_householder(a, size, q, r, realContext);
                                                                                               #if defined(EIGENDEBUG)
                                                                                               if (iteration % 100 == 0 || iteration < 2) {
