@@ -9,6 +9,11 @@
 
 
 // Eigenvalue setup
+//unlikely to change:
+#undef  CONV_SUM_159       //DEFAULT NOT SET  //use for higher accuracy on the converge sums. Need need seen for the higher accuracy.
+#define ABS_SUMS           //DEFAULT  //use absulate value sums instead of sum of squares, to preserve the digits better
+
+//can change:
   #if defined PC_BUILD
     #define maxEigenIter 10000
     #define EIGENDEBUG
@@ -4364,9 +4369,10 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
   real_t *matq, *matr;
 
   real_t *v, *qq, *qt, *newMat, sum, m, t;
+  size_t bulkSize = (size_t)(size * size * 5 + size) * REAL_SIZE_IN_BLOCKS * 2;
 
   // Allocate
-  if((bulk = allocC47Blocks((size * size * 5 + size) * REAL_SIZE_IN_BLOCKS * 2))) {
+  if((bulk = allocC47Blocks(bulkSize))) {
     // ZERO THE ENTIRE BULK ALLOCATION
     for(uint32_t i = 0; i < (uint32_t)((size * size * 5 + size) * 2); i++) {
       realZero(bulk + i);
@@ -4522,7 +4528,7 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
     }
 
     // Cleanup
-    freeC47Blocks(bulk, (size * size * 5 + size) * REAL_SIZE_IN_BLOCKS * 2);
+    freeC47Blocks(bulk, bulkSize);
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -5091,13 +5097,163 @@ static bool_t isMatrixDiagonal(real_t *matrix, uint16_t size, real_t *tol, realC
 }
 
 
-static void diagonalSumOfSquares(const real_t *matrix, uint16_t size, real_t *sum, realContext_t *realContext) {
+
+typedef enum {
+  DIAG,
+  SUPSUBDIAG,
+  NONDIAG
+} diagMode_t;
+
+static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, diagMode_t mode, real_t *sum, realContext_t *realContext) {
+  #if defined(CONV_SUM_159)
+    real159_t sum159;
+    realZero((real_t*)&sum159);
+    realContext_t ctx159 = ctxtReal75;
+    ctx159.digits = 159;
+  #endif //CONV_SUM_159
+
+  real_t elemRe, elemIm;
+  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+    printf("%s\n", heading);
+  #endif //EIGENDEBUG
   realZero(sum);
-  for(uint16_t i = 0; i < size; i++) {
-    // sum += diag_re^2 + diag_im^2
-    realFMA(matrix + (i * size + i) * 2,     matrix + (i * size + i) * 2,     sum, sum, realContext);
-    realFMA(matrix + (i * size + i) * 2 + 1, matrix + (i * size + i) * 2 + 1, sum, sum, realContext);
+  for(uint16_t i = 0; i < activeSize; i++) {
+    for(uint16_t j = 0; j < activeSize; j++) {
+      bool include = false;
+      switch(mode) {
+        case DIAG:
+          include = (i == j);
+          break;
+        case SUPSUBDIAG:
+          include = (i == j + 1) || (j == i + 1);
+          break;
+        case NONDIAG:
+          include = (i != j);
+          break;
+      }
+      if(include) {
+        realCopy(matrix + (i * size + j) * 2, &elemRe);
+        realCopy(matrix + (i * size + j) * 2 + 1, &elemIm);;
+        realSetPositiveSign(&elemRe);
+        realSetPositiveSign(&elemIm);
+        #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+          printf("Calculate diagonal options [%d,%d] = ", i, j);
+          printRealToConsole(&elemRe, "[", ",");
+          printRealToConsole(&elemIm, "", "]\n");
+        #endif
+        #if defined(CONV_SUM_159)
+          #if defined(ABS_SUMS)
+             realAdd(&elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of absolute values
+             realAdd(&elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of absolute values
+           #else
+             realFMA(&elemRe, &elemRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of the squares
+             realFMA(&elemIm, &elemIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);   // Sum of the squares
+           #endif
+        #else //CONV_SUM_159
+          #if defined(ABS_SUMS)
+            realAdd(&elemRe, sum, sum, realContext);   // Sum of absolute values
+            realAdd(&elemIm, sum, sum, realContext);   // Sum of absolute values
+          #else
+            realFMA(&elemRe, &elemRe, sum, sum, realContext);   // Sum of the squares
+            realFMA(&elemIm, &elemIm, sum, sum, realContext);   // Sum of the squares
+          #endif
+        #endif //CONV_SUM_159
+      }
+    }
   }
+  #if defined(CONV_SUM_159)
+    realPlus((real_t*)&sum159, sum, realContext);
+  #endif //CONV_SUM_159 
+}
+
+
+static void ChangedDiagonal(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, real_t *sum, bool_t firstCall, realContext_t *realContext) {
+//  static bool_t firstCall = true;
+  
+  #if defined(CONV_SUM_159)
+    real159_t sum159;
+    realZero((real_t*)&sum159);
+    realContext_t ctx159 = ctxtReal75;
+    ctx159.digits = 159;
+  #endif //CONV_SUM_159
+  
+  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+    printf("%s\n", heading);
+  #endif //EIGENDEBUG
+  
+  realZero(sum);
+    
+  // First call: just store the diagonal, return zero change
+  if(firstCall) {
+    for(uint16_t i = 0; i < activeSize; i++) {
+      realCopy(matrix + (i * size + i) * 2, previousDiagonal + (i * 2));
+      realCopy(matrix + (i * size + i) * 2 + 1, previousDiagonal + (i * 2 + 1));
+    }
+//    firstCall = false;
+    return;
+  }
+  
+  // Calculate sum of changes for each diagonal element
+  for(uint16_t i = 0; i < activeSize; i++) {
+    real_t currentRe, currentIm, prevRe, prevIm;
+    real_t changeRe, changeIm;
+    
+    // Get current diagonal element
+    realCopy(matrix + (i * size + i) * 2, &currentRe);
+    realCopy(matrix + (i * size + i) * 2 + 1, &currentIm);
+    
+    // Get previous diagonal element
+    realCopy(previousDiagonal + (i * 2), &prevRe);
+    realCopy(previousDiagonal + (i * 2 + 1), &prevIm);
+    
+    // Calculate change
+    realSubtract(&currentRe, &prevRe, &changeRe, realContext);
+    realSubtract(&currentIm, &prevIm, &changeIm, realContext);
+    realSetPositiveSign(&changeRe);
+    realSetPositiveSign(&changeIm);
+    
+    #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+      printf("Diagonal [%d,%d] current = ", i, i);
+      printRealToConsole(&currentRe, "[", ",");
+      printRealToConsole(&currentIm, "", "]\n");
+      printf("Diagonal [%d,%d] change  = ", i, i);
+      printRealToConsole(&changeRe, "[", ",");
+      printRealToConsole(&changeIm, "", "]\n");
+    #endif
+    
+    #if defined(CONV_SUM_159)
+      #if defined(ABS_SUMS)
+        realAdd(&changeRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+        realAdd(&changeIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+      #else //squares
+        realFMA(&changeRe, &changeRe, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+        realFMA(&changeIm, &changeIm, (real_t*)&sum159, (real_t*)&sum159, &ctx159);
+      #endif
+    #else //CONV_SUM_159
+      #if defined(ABS_SUMS)
+        realAdd(&changeRe, sum, sum, realContext);
+        realAdd(&changeIm, sum, sum, realContext);
+      #else //squares
+        realFMA(&changeRe, &changeRe, sum, sum, realContext);
+        realFMA(&changeIm, &changeIm, sum, sum, realContext);
+      #endif
+    #endif //CONV_SUM_159
+    
+    // Update previous diagonal for next call
+    realCopy(&currentRe, previousDiagonal + (i * 2));
+    realCopy(&currentIm, previousDiagonal + (i * 2 + 1));
+  }
+  
+  #if defined(CONV_SUM_159)
+    realPlus((real_t*)&sum159, sum, realContext);
+    #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+      printRealToConsole((real_t*)&sum159, "Sum159:", "\n");
+    #endif
+  #endif //CONV_SUM_159
+
+  #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+    printRealToConsole(sum, "Sum:   ", "\n");
+  #endif
 }
 
 
@@ -5224,9 +5380,8 @@ static void printEigenvaluesComparison(const char *heading, const real_t *a, con
 #endif //EIGENDEBUG
 
 
-static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
+static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t SumTolerance, changeDiagonalSum, previousChangeDiagonalSum;
-  real_t currentDiagonalSum, previousDiagonalSum;
 
   real_t progress_indicator;
   
@@ -5241,7 +5396,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
   uint16_t iteration = 0;
   uint16_t activeSize = size;
   bool_t converged = false;
-  //shifted = false; // Can disable shifts here - they cause instability in minimal cases.
+ 
+//shifted = false; // Can disable shifts here - they cause instability in minimal cases.
 
                                                           #if defined(EIGENDEBUG)
                                                           printf("Input matrix verification:\n");
@@ -5285,8 +5441,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     realZero(&shiftIm);
 
     // Reset static variables
-    realZero(&currentDiagonalSum);
-    realZero(&previousDiagonalSum);
+    realZero(&changeDiagonalSum);
     realZero(&previousChangeDiagonalSum);
     last_check_iter = 0;
     no_improvement_count = 0;
@@ -5352,7 +5507,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       tol.exponent -= eigenTolerance;    // typ 70
     }
 
-    #if defined(EIGENDEBUG)
+    #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
       printRealToConsole(&tol, "calculateEigenvalues deep tolerance: ", " ");
       printf("called with realContext = %d digits, ", (int)(realContext->digits));
       printRealToConsole(&SumTolerance, "user tolerance + extra: ", "\n");
@@ -5378,9 +5533,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
     currentKeyCode = 255;
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
-    #if defined(EIGENDEBUG)
-      debugf("========================= FLAG_SOLVING SET =========================\n");
-    #endif // defined(EIGENDEBUG)
+
 
 
     // =========================
@@ -5402,8 +5555,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
           char outSubStr1[32]; outSubStr1[0] = 0;
           uint16_t eigenvalues_found = size - activeSize;
-//        int progress_pct = (eigenvalues_found * 100) / size;
-//        sprintf(outSubStr1, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
+          //int progress_pct = (eigenvalues_found * 100) / size;
+          //sprintf(outSubStr1, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
           sprintf(outSubStr1, "%d/%d", eigenvalues_found, size);
           //printf("-----outSubStr1:%s\n",outSubStr1);
 
@@ -5424,10 +5577,10 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
         if(exitKeyWaiting()) {
           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Exit while calculating");
-          moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Exit while calculating");
+            moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       #endif //TESTSUITE_BUILD
 
@@ -5579,64 +5732,77 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
         }
       }
 
+      if(iteration - last_check_iter >= 20 || iteration == 1) {
 
+        real_t deltaChangeDiagonalSum;
+        realZero(&deltaChangeDiagonalSum);
 
-      converged = false;
-      if(iteration - last_check_iter >= 20) {
-        diagonalSumOfSquares(eig, size, &currentDiagonalSum, &ctxtReal39);
-
-        realSubtract(&previousDiagonalSum, &currentDiagonalSum, &changeDiagonalSum, realContext);
-        realSetPositiveSign(&changeDiagonalSum);
-
-        converged = realCompareLessThan(&changeDiagonalSum, &SumTolerance);
+        if(iteration == 1) ChangedDiagonal("Stagnation test init", eig, previousDiagonal, size, activeSize, &changeDiagonalSum, true, &ctxtReal39);
+        ChangedDiagonal("Stagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, &changeDiagonalSum, false, &ctxtReal39);
+        
+        converged = false;
+        if(realGetExponent(&changeDiagonalSum) < -toleranceDigits && iteration != 1) {                                  // changed presumably faster:        if(realCompareLessThan(&changeDiagonalSum, &SumTolerance) && iteration != 1) {
+          converged = true;
+                                                                    #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
+                                                                      printf("Diagonal changed with less than 1E-%d. Set to converge.\n", toleranceDigits);
+                                                                    #endif
+        } else {
+          realSubtract(&changeDiagonalSum, &previousChangeDiagonalSum, &deltaChangeDiagonalSum, realContext);
+          if(realGetExponent(&changeDiagonalSum) < -(toleranceDigits - extraDigits) && realIsZero(&deltaChangeDiagonalSum) && iteration !=1) {
+            converged = true;
+                                                                    #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
+                                                                      printf("Diagonal changed with less than 1E-%d AND it is exactly the same as the prior check, hence numerical noise. Set to converge.\n", toleranceDigits - extraDigits);
+                                                                    #endif
+          }
+        }
 
         if(!converged) {
-          if(realCompareGreaterThan(&changeDiagonalSum, &previousChangeDiagonalSum)) {                                   // Change increased or stayed same - no progress
+          if(!realIsNegative(&deltaChangeDiagonalSum)) {                                                                 // Change increased or stayed same - no progress
             no_improvement_count++;
-
-            uint16_t max_no_improvement = is_sym_tridiag ? 5+3 : 3+2;                                                        // For symmetric tridiagonal: allow 5 cycles (100 iters) of no improvement; for general matrices: allow 3 cycles (60 iters)
-
+            uint16_t max_no_improvement = is_sym_tridiag ? 5+3 : 3+2;                                                    // For symmetric tridiagonal: allow 5 cycles (100 iters) of no improvement; for general matrices: allow 3 cycles (60 iters)
             if(no_improvement_count >= max_no_improvement) {
-              #if defined(EIGENDEBUG)
-                printf("STAGNATION detected at iter %d - no progress after %d checks\n", iteration, no_improvement_count);
-                printf("Change in diagonal sum: ");
-                printRealToConsole(&changeDiagonalSum, "", "\n");
-                printf("Tolerance required: ");
-                printRealToConsole(&SumTolerance, "", "\n");
-                // Print the current diagonal elements
-                for(int k = 0; k < activeSize; k++) {
-                  printf("eig[%d][%d] = ", k, k);
-                  printRealToConsole(eig + (k * size + k) * 2, "", " + ");
-                  printRealToConsole(eig + (k * size + k) * 2 + 1, "", "i\n");
-                }
+              converged = true;                                                                                          // Give up, use what we have
+                                                                    #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
+                                                                      printf("Stagnation DETECTED at iter %d - no progress after %d checks\n", iteration, no_improvement_count);
+                                                                      printf("Change in diagonal sum: ");
+                                                                      printRealToConsole(&changeDiagonalSum, "", "\n");
+                                                                      printf("Tolerance required: ");
+                                                                      printRealToConsole(&SumTolerance, "", "\n");
+                                                                    #endif
+  
+                                                                    #if defined(EIGENDEBUG)
+                                                                      // Print the current diagonal elements
+                                                                      for(int k = 0; k < activeSize; k++) {
+                                                                        printf("eig[%d][%d] = ", k, k);
+                                                                        printRealToConsole(eig + (k * size + k) * 2, "", " + ");
+                                                                        printRealToConsole(eig + (k * size + k) * 2 + 1, "", "i\n");
+                                                                      }
 
-                // Print subdiagonal elements
-                for(int k = 1; k < activeSize; k++) {
-                  printf("eig[%d][%d] = ", k, k-1);
-                  printRealToConsole(eig + (k * size + (k-1)) * 2, "", " + ");
-                  printRealToConsole(eig + (k * size + (k-1)) * 2 + 1, "", "i\n");
-                }
-              #endif
-              converged = true;                                                                                              // Give up, use what we have
+                                                                      // Print subdiagonal elements
+                                                                      for(int k = 1; k < activeSize; k++) {
+                                                                        printf("eig[%d][%d] = ", k, k-1);
+                                                                        printRealToConsole(eig + (k * size + (k-1)) * 2, "", " + ");
+                                                                        printRealToConsole(eig + (k * size + (k-1)) * 2 + 1, "", "i\n");
+                                                                      }
+                                                                    #endif
             }
           } else {
-            no_improvement_count = 0;                                                                                        // change is decreasing, reset counter
+            no_improvement_count = 0;                                                                                        // change is decreasing, possibly settiling; reset counter
           }
         }
                                                                     #if defined(EIGENDEBUG)
-//                                                                      printComplexMatrix("eig:", eig, size, size, &ctxtReal4);
-//                                                                      printComplexMatrix("eig activeSize:", eig, size, activeSize, &ctxtReal4);
-                                                                    if(iteration % 100 == 0 || converged) {
-//                                                                      printComplexMatrix("eig:", eig, size, size, &ctxtReal4);
-                                                                      printComplexMatrix("eig activeSize:", eig, size, activeSize, &ctxtReal4);
-                                                                      printf("IterB %d: |Δ(sum diag²)| = ", iteration);
-                                                                      printRealToConsole(&changeDiagonalSum, "", ", tol = ");
-                                                                      printRealToConsole(&SumTolerance, "", "\n");
-                                                                      if(converged) printf("CONVERGED: |Δ(sum diag²)| < tolerance\n");
-                                                                    }
+                                                                      //printComplexMatrix("eig:", eig, size, size, &ctxtReal4);
+                                                                      //printComplexMatrix("eig activeSize:", eig, size, activeSize, &ctxtReal4);
+                                                                      if(iteration % 100 == 0 || converged) {
+                                                                        //printComplexMatrix("eig:", eig, size, size, &ctxtReal4);
+                                                                        printComplexMatrix("eig activeSize:", eig, size, activeSize, &ctxtReal4);
+                                                                        printf("IterB %d: |Δ(sum diag)| = ", iteration);
+                                                                        printRealToConsole(&changeDiagonalSum, "", ", tol = ");
+                                                                        printRealToConsole(&SumTolerance, "", "\n");
+                                                                        if(converged) printf("CONVERGED: |Δ(sum diag)| < tolerance\n");
+                                                                      }
                                                                     #endif
-
-        realCopy(&currentDiagonalSum, &previousDiagonalSum);
+  
         realCopy(&changeDiagonalSum, &previousChangeDiagonalSum);
         last_check_iter = iteration;
       }
@@ -5659,10 +5825,14 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
       }
       #if defined(EIGENDEBUG)
         //printRealToConsole(&progress_indicator,"TT:","\n");
+        //printf("converged? AA = %d, end of main  loop\n", converged);
       #endif //EIGENDEBUG
 
 
       if(converged) {
+        #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+          printf("CONVERGED: BREAKING = %d, end of main  loop\n", converged);
+        #endif
         break;
       }
       else {
@@ -6005,9 +6175,6 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, u
 
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_SOLVING);
-    #if defined(EIGENDEBUG)
-      debugf("========================= FLAG_SOLVING CLEARED =========================\n");
-    #endif //defined(EIGENDEBUG)
   }
 
 }
@@ -6169,17 +6336,19 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
 
 void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
   const uint16_t size = matrix->header.matrixRows;
-  real_t *bulk, *a, *q, *r, *eig;
+  real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
   bool_t isComplex;
   bool_t shifted = true;
+  size_t bulkSize = (size_t) REAL_SIZE_IN_BLOCKS * (size * size * 2 * 4 + size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(bulkSize))) {
       a   = bulk;
       q   = bulk + size * size * 2;
       r   = bulk + size * size * 2 * 2;
       eig = bulk + size * size * 2 * 3;
+      previousDiagonal = bulk + size * size * 2 * 4;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -6188,7 +6357,7 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenContext);
+      calculateEigenvalues(a, q, r, eig, previousDiagonal, size, shifted, true, eigenContext);
       shifted = false;
 
       // Check imaginary part (mutually conjugate complex roots are possible in real quadratic equations)
@@ -6228,7 +6397,7 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
-      freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, bulkSize);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -6243,16 +6412,18 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
 
 void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   const uint16_t size = matrix->header.matrixRows;
-  real_t *bulk, *a, *q, *r, *eig;
+  real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
   bool_t shifted = true;
+  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS * (size * size * 2 * 4 + size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(bulkSize))) {
       a   = bulk;
       q   = bulk + size * size * 2;
       r   = bulk + size * size * 2 * 2;
       eig = bulk + size * size * 2 * 3;
+      previousDiagonal = bulk + size * size * 2 * 4;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -6261,7 +6432,7 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
       }
 
       // Calculate
-      calculateEigenvalues(a, q, r, eig, size, shifted, true, eigenContext);
+      calculateEigenvalues(a, q, r, eig, previousDiagonal, size, shifted, true, eigenContext);
       shifted = false;
 
       // Write back
@@ -6279,7 +6450,7 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
-      freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, bulkSize);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -6294,17 +6465,19 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
 
 void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
   const uint16_t size = matrix->header.matrixRows;
-  real_t *bulk, *a, *q, *r, *eig;
+  real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i, j;
   bool_t isComplex;
   bool_t shifted = true;
+  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS * (size * size * 2 * 4 + size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(bulkSize))) {
       a   = bulk;
       q   = bulk + size * size * 4 * 2;
       r   = bulk + size * size * 4 * 2 * 2;
       eig = bulk + size * size * 4 * 2 * 3;
+      previousDiagonal = bulk + size * size * 2 * 4;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -6313,7 +6486,7 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
       }
 
       // Calculate eigenvalues
-      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenContext);
+      calculateEigenvalues(a, q, r, eig, previousDiagonal, size, shifted, false, eigenContext);
       shifted = false;
       calculateEigenvectors((any34Matrix_t *)matrix, false, a, q, r, eig, eigenContext);
 
@@ -6374,7 +6547,7 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
-      freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, bulkSize);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -6389,16 +6562,18 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
 
 void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   const uint16_t size = matrix->header.matrixRows;
-  real_t *bulk, *a, *q, *r, *eig;
+  real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
   bool_t shifted = true;
+  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS * (size * size * 2 * 4 + size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
-    if((bulk = allocC47Blocks(size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4))) {
+    if((bulk = allocC47Blocks(bulkSize))) {
       a   = bulk;
       q   = bulk + size * size * 4 * 2;
       r   = bulk + size * size * 4 * 2 * 2;
       eig = bulk + size * size * 4 * 2 * 3;
+      previousDiagonal = bulk + size * size * 2 * 4;
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
@@ -6407,7 +6582,7 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
       }
 
       // Calculate eigenvalues
-      calculateEigenvalues(a, q, r, eig, size, shifted, false, eigenContext);
+      calculateEigenvalues(a, q, r, eig, previousDiagonal, size, shifted, false, eigenContext);
       shifted = false;
       calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, eigenContext);
 
@@ -6426,7 +6601,7 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
-      freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
+      freeC47Blocks(bulk, bulkSize);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
