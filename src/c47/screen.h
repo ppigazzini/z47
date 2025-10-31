@@ -5,6 +5,8 @@
 #define SCREEN_H
 
   extern bool_t blockMonitoring;
+  bool_t   registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c);
+
   void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
   void     FN_handler();                                                                                          //JM LONGPRESS
@@ -159,7 +161,6 @@ char       letteredRegisterName(calcRegister_t regist);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
-
   void     refreshScreen                      (uint16_t source);
 
   /**
