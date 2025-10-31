@@ -168,6 +168,10 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full");
+            moreInfoOnError("In function getMatrixReal:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return false;
         }
       }
@@ -216,6 +220,10 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full");
+            moreInfoOnError("In function getMatrixComplex:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
     }
@@ -618,6 +626,10 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 1");
+          moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
 
@@ -675,11 +687,19 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
             }
             else {
               displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "Ram full, 2");
+                moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
             complexMatrixFree(&u);
           }
           else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 3");
+              moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           complexMatrixFree(&l);
         }
@@ -694,6 +714,10 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 4");
+          moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
 
@@ -938,6 +962,10 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function fnRowSum:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -963,6 +991,10 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function fnRowSum:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
@@ -1310,6 +1342,10 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
           }
           else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
         else {
@@ -1437,6 +1473,10 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full");
+            moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
       else {
@@ -1500,6 +1540,10 @@ bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t cols) {
   if(!isMemoryBlockAvailable(neededSize)) {
     matrix->header.matrixColumns = matrix->header.matrixRows = 0;
     matrix->matrixElements = NULL;
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function realMatrixInit:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   matrix->matrixElements = allocC47Blocks(neededSize);
@@ -1530,6 +1574,10 @@ void realMatrixIdentity(real34Matrix_t *matrix, uint16_t size) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function realMatrixIdentity:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -1554,6 +1602,10 @@ void realMatrixRedim(real34Matrix_t *matrix, uint16_t rows, uint16_t cols) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function realMatrixRedim:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 #endif // !TESTSUITE_BUILD
@@ -1565,6 +1617,10 @@ bool_t complexMatrixInit(complex34Matrix_t *matrix, uint16_t rows, uint16_t cols
   if(!isMemoryBlockAvailable(neededSize)) {
     matrix->header.matrixColumns = matrix->header.matrixRows = 0;
     matrix->matrixElements = NULL;
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function complexMatrixInit:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   matrix->matrixElements = allocC47Blocks(neededSize);
@@ -1598,6 +1654,10 @@ void complexMatrixIdentity(complex34Matrix_t *matrix, uint16_t size) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function complexMatrixIdentity:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -1621,6 +1681,10 @@ void complexMatrixRedim(complex34Matrix_t *matrix, uint16_t rows, uint16_t cols)
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function complexMatrixRedim:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -1905,6 +1969,10 @@ void copyRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function copyRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -1920,6 +1988,10 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function copyComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -1969,6 +2041,10 @@ void insRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add) 
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function insRowRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2004,6 +2080,10 @@ void insColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo, bool_t add) 
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function insColRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2036,6 +2116,10 @@ void insRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo, bool_t
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function insRowComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2072,6 +2156,10 @@ void insColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo, bool_t
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function insColComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2098,6 +2186,10 @@ void delRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function delRowRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2127,6 +2219,10 @@ void delColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function delColRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2152,6 +2248,10 @@ void delRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function delRowComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2180,6 +2280,10 @@ void delColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function delColComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2203,6 +2307,10 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
@@ -2220,6 +2328,10 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -2240,6 +2352,10 @@ void transposeComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function transposeComplexMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
@@ -2257,6 +2373,10 @@ void transposeComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function transposeComplexMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -2277,6 +2397,10 @@ static void addSubRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x,
   if((y != res) && (x != res)) {
     if(!realMatrixInit(res, rows, cols)) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full");
+        moreInfoOnError("In function addSubRealMatrices:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
   }
@@ -2326,6 +2450,10 @@ static void addSubComplexMatrices(const complex34Matrix_t *y, const complex34Mat
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function addSubComplexMatrices:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2353,6 +2481,10 @@ void multiplyRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34M
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function multiplyRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2372,6 +2504,10 @@ void _multiplyRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Ma
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function _multiplyRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2406,6 +2542,10 @@ void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function multiplyRealMatrices:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2435,6 +2575,10 @@ void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, c
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function _multiplyComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2502,6 +2646,10 @@ void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function multiplyComplexMatrices:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2610,6 +2758,10 @@ void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Ma
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function crossRealVectors:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2689,6 +2841,10 @@ void crossComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x,
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function crossComplexVectors:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2814,6 +2970,10 @@ void WP34S_LU_decomposition(const real34Matrix_t *matrix, real34Matrix_t *lu, ui
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function WP34S_LU_decomposition:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
 
     freeC47Blocks(tmpMat, m * n * REAL_SIZE_IN_BLOCKS);
@@ -2824,6 +2984,10 @@ void WP34S_LU_decomposition(const real34Matrix_t *matrix, real34Matrix_t *lu, ui
       lu->header.matrixRows = lu->header.matrixColumns = 0;
     }
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 2");
+      moreInfoOnError("In function WP34S_LU_decomposition:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2938,6 +3102,10 @@ void complex_LU_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function complex_LU_decomposition:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
 
     freeC47Blocks(tmpMat, m * n * REAL_SIZE_IN_BLOCKS * 2);
@@ -2948,6 +3116,10 @@ void complex_LU_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
       lu->header.matrixRows = lu->header.matrixColumns = 0;
     }
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 2");
+      moreInfoOnError("In function complex_LU_decomposition:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -2973,6 +3145,10 @@ void realMatrixSwapRows(const real34Matrix_t *matrix, real34Matrix_t *res, uint1
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function realMatrixSwapRows:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3001,6 +3177,10 @@ void complexMatrixSwapRows(const complex34Matrix_t *matrix, complex34Matrix_t *r
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function complexMatrixSwapRows:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 #endif // !TESTSUITE_BUILD
@@ -3035,6 +3215,10 @@ static void detCpxMat(const real_t *matrix, uint16_t size, real_t *res_r, real_t
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 1");
+        moreInfoOnError("In function detCpxMat:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       realCopy(const_NaN, res_r), realCopy(const_NaN, res_i);
     }
 
@@ -3042,6 +3226,10 @@ static void detCpxMat(const real_t *matrix, uint16_t size, real_t *res_r, real_t
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 2");
+      moreInfoOnError("In function detCpxMat:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     realCopy(const_NaN, res_r), realCopy(const_NaN, res_i);
   }
 }
@@ -3068,6 +3256,10 @@ void detRealMatrix(const real34Matrix_t *matrix, real34_t *res) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function detRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     realToReal34(const_NaN, res);
   }
 }
@@ -3096,6 +3288,10 @@ void detComplexMatrix(const complex34Matrix_t *matrix, real34_t *res_r, real34_t
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function detComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     realToReal34(const_NaN, res_r);
     realToReal34(const_NaN, res_i);
   }
@@ -3219,21 +3415,37 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 1");
+            moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
         freeC47Blocks(x, n * REAL_SIZE_IN_BLOCKS * 2);
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       freeC47Blocks(pivots, TO_BLOCKS(n * sizeof(uint16_t)));
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     freeC47Blocks(lu, n * n * REAL_SIZE_IN_BLOCKS * 2);
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 4");
+      moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   return lastErrorCode == ERROR_NONE;
 }
@@ -3274,6 +3486,10 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 1");
+          moreInfoOnError("In function invertRealMatrix:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
     else { // singular matrix
@@ -3287,6 +3503,10 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 2");
+      moreInfoOnError("In function invertRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3327,6 +3547,10 @@ void invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 1");
+          moreInfoOnError("In function invertComplexMatrix:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
     else { // singular matrix
@@ -3340,6 +3564,10 @@ void invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 2");
+      moreInfoOnError("In function invertComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3357,6 +3585,10 @@ void divideRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Mat
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function divideRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3373,6 +3605,10 @@ void divideByRealMatrix(const real34_t *y, const real34Matrix_t *matrix, real34M
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function divideByRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3392,6 +3628,10 @@ void _divideRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matr
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function _divideRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3411,6 +3651,10 @@ void _divideByRealMatrix(const real_t *y, const real34Matrix_t *matrix, real34Ma
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function _divideRealMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3451,6 +3695,10 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
               res->header.matrixRows = res->header.matrixColumns = 0;
             }
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 1");
+              moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
         else { // singular matrix
@@ -3468,6 +3716,10 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
           res->header.matrixRows = res->header.matrixColumns = 0;
         }
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       freeC47Blocks(xx, size * size * REAL_SIZE_IN_BLOCKS * 2);
     }
@@ -3477,6 +3729,10 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
         res->header.matrixRows = res->header.matrixColumns = 0;
       }
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     freeC47Blocks(yy, sizeY * size * REAL_SIZE_IN_BLOCKS * 2);
   }
@@ -3486,6 +3742,10 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 4");
+      moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3524,6 +3784,10 @@ void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, con
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function divideComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3545,6 +3809,10 @@ void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34M
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function _divideByComplexMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3586,6 +3854,10 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
               res->header.matrixRows = res->header.matrixColumns = 0;
             }
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 1");
+              moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
         else { // Singular matrix
@@ -3603,6 +3875,10 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
           res->header.matrixRows = res->header.matrixColumns = 0;
         }
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       freeC47Blocks(xx, size * size * REAL_SIZE_IN_BLOCKS * 2);
     }
@@ -3612,6 +3888,10 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
         res->header.matrixRows = res->header.matrixColumns = 0;
       }
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     freeC47Blocks(yy, sizeY * size * REAL_SIZE_IN_BLOCKS * 2);
   }
@@ -3621,6 +3901,10 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full, 4");
+      moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3645,6 +3929,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function cpxLinearEqn:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -3695,6 +3983,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
                 r->header.matrixRows = r->header.matrixColumns = 0;
               }
               displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "Ram full, 1");
+                moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
           }
           else { // singular
@@ -3711,6 +4003,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
             r->header.matrixRows = r->header.matrixColumns = 0;
           }
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 2");
+            moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
         freeC47Blocks(bb, size * REAL_SIZE_IN_BLOCKS * 2);
       }
@@ -3720,6 +4016,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
           r->header.matrixRows = r->header.matrixColumns = 0;
         }
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 3");
+          moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       freeC47Blocks(aa, size * size * REAL_SIZE_IN_BLOCKS * 2);
     }
@@ -3729,6 +4029,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
         r->header.matrixRows = r->header.matrixColumns = 0;
       }
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 4");
+        moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 
@@ -3779,6 +4083,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
                 r->header.matrixRows = r->header.matrixColumns = 0;
               }
               displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "Ram full, 1");
+                moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
           }
           else { // singular
@@ -3795,6 +4103,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
             r->header.matrixRows = r->header.matrixColumns = 0;
           }
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 2");
+            moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
         freeC47Blocks(bb, size * REAL_SIZE_IN_BLOCKS * 2);
       }
@@ -3804,6 +4116,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
           r->header.matrixRows = r->header.matrixColumns = 0;
         }
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 3");
+          moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       freeC47Blocks(aa, size * size * REAL_SIZE_IN_BLOCKS * 2);
     }
@@ -3813,6 +4129,10 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
         r->header.matrixRows = r->header.matrixColumns = 0;
       }
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 4");
+        moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 #endif // !TESTSUITE_BUILD
@@ -3980,6 +4300,10 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Ram full");
+      moreInfoOnError("In function QR_decomposition_householder:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -4015,14 +4339,26 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
           }
           else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 1");
+              moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 2");
+            moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       // Cleanup
@@ -4030,6 +4366,10 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4067,10 +4407,18 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 1");
+            moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       // Cleanup
@@ -4078,6 +4426,10 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4489,6 +4841,10 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Ram full, 1");
+            moreInfoOnError("In function calculateEigenvectors:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           for(i = 0; i < size; i++) {
             realCopy(const_NaN, r + (i * size + k) * 2    );
             realCopy(const_NaN, r + (i * size + k) * 2 + 1);
@@ -4500,6 +4856,10 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function calculateEigenvectors:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       for(i = 0; i < size; i++) {
         realCopy(const_NaN, r + (i * size + k) * 2    );
         realCopy(const_NaN, r + (i * size + k) * 2 + 1);
@@ -4555,17 +4915,29 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
           }
           else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 1");
+              moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4603,12 +4975,20 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 1");
+          moreInfoOnError("In function complexEigenvalues:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       freeC47Blocks(bulk, size * size * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function complexEigenvalues:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4678,17 +5058,29 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
           }
           else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full, 1");
+              moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 2");
+          moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 3");
+        moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
@@ -4727,12 +5119,20 @@ void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Ram full, 1");
+          moreInfoOnError("In function complexEigenvectors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
 
       freeC47Blocks(bulk, size * size * 4 * REAL_SIZE_IN_BLOCKS * 2 * 4);
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full, 2");
+        moreInfoOnError("In function complexEigenvectors:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 }
