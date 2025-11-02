@@ -5810,10 +5810,10 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
         // Check if off-diagonal sum is small enough
         #if defined(EIGENDEBUG)
-          printf("___ Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponentComp(&currentOffDiagonalSum), -3*(toleranceDigits-1));
+          printf("___ Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponentComp(&currentOffDiagonalSum), -(toleranceDigits-1));
         #endif
 //note temporary 3x
-        if(realGetExponentComp(&currentOffDiagonalSum) <= 3*-(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
+        if(realGetExponentComp(&currentOffDiagonalSum) <= -(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
           #if defined(EIGENDEBUG)
             printf("___  → Off-diagonals sufficiently small - accepting current state\n");
           #endif                                                                              // Continue without changing converged flag
