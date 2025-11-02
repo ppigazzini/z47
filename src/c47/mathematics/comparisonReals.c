@@ -104,34 +104,37 @@ bool_t real34CompareLessThan(const real34_t *number1, const real34_t *number2) {
 
 
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
-  real_t num1, num2;
+  real_t compare;
 
-  realCopyAbs(number1, &num1);
-  realCopyAbs(number2, &num2);
-  realCompare(&num1, &num2, &num2, &ctxtReal75);
-  return realIsPositive(&num2) && !realIsZero(&num2);
+  realCompare(number1, number2, &compare, &ctxtReal75);
+  if (!realIsPositive(&compare) && !realIsZero(&compare)) {
+    realCompare(number2, number1, &compare, &ctxtReal75);
+  }
+  return realIsPositive(&compare) && !realIsZero(&compare);
 }
 
 
 /*
 bool_t realCompareAbsGreaterEqual(const real_t *number1, const real_t *number2) {
-  real_t num1, num2;
+  real_t compare;
 
-  realCopyAbs(number1, &num1);
-  realCopyAbs(number2, &num2);
-  realCompare(&num1, &num2, &num2, &ctxtReal75);
-  return realIsPositive(&num2) || realIsZero(&num2);
+  realCompare(number1, number2, &compare, &ctxtReal75);
+  if (!realIsPositive(&compare) && !realIsZero(&compare)) {
+    realCompare(number2, number1, &compare, &ctxtReal75);
+  }
+  return realIsPositive(&compare) || realIsZero(&compare);
 }
 */
 
 
 bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2) {
-  real_t num1, num2;
+  real_t compare;
 
-  realCopyAbs(number1, &num1);
-  realCopyAbs(number2, &num2);
-  realCompare(&num1, &num2, &num2, &ctxtReal75);
-  return realIsNegative(&num2) && !realIsZero(&num2);
+  realCompare(number1, number2, &compare, &ctxtReal75);
+  if (!realIsNegative(&compare) && !realIsZero(&compare)) {
+    realCompare(number2, number1, &compare, &ctxtReal75);
+  }
+  return realIsNegative(&compare) && !realIsZero(&compare);
 }
 
 
@@ -146,12 +149,13 @@ bool_t realCompareEqual(const real_t *number1, const real_t *number2) {
 
 
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
-  real_t num1, num2;
+  real_t compare;
 
-  realCopyAbs(number1, &num1);
-  realCopyAbs(number2, &num2);
-  realCompare(&num1, &num2, &num2, &ctxtReal75);
-  return realIsZero(&num2);
+  realCompare(number1, number2, &compare, &ctxtReal75);
+  if (realIsNegative(&compare) || realIsPositive(&compare)) {
+    realCompare(number2, number1, &compare, &ctxtReal75);
+  }
+  return realIsZero(&compare);
 }
 
 
