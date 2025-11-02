@@ -104,66 +104,92 @@ bool_t real34CompareLessThan(const real34_t *number1, const real34_t *number2) {
 
 
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
-  real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
-  if (!realIsPositive(&compare) && !realIsZero(&compare)) {
-    realCompare(number2, number1, &compare, &ctxtReal75);
+  real159_t num1, num2;
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
   }
-  return realIsPositive(&compare) && !realIsZero(&compare);
+  realCopyAbs(number1, (real_t*)&num1);
+  realCopyAbs(number2, (real_t*)&num2);
+  realCompare((real_t*)&num1, (real_t*)&num2, (real_t*)&num2, &c);
+  return realIsPositive((real_t*)&num2) && !realIsZero((real_t*)&num2);
 }
 
 
 /*
 bool_t realCompareAbsGreaterEqual(const real_t *number1, const real_t *number2) {
-  real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
-  if (!realIsPositive(&compare) && !realIsZero(&compare)) {
-    realCompare(number2, number1, &compare, &ctxtReal75);
+  real159_t num1, num2;
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
   }
-  return realIsPositive(&compare) || realIsZero(&compare);
+  realCopyAbs(number1, (real_t*)&num1);
+  realCopyAbs(number2, (real_t*)&num2);
+  realCompare((real_t*)&num1, (real_t*)&num2, (real_t*)&num2, &c);
+  return realIsPositive((real_t*)&num2) || realIsZero((real_t*)&num2);
 }
 */
 
 
 bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2) {
-  real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
-  if (!realIsNegative(&compare) && !realIsZero(&compare)) {
-    realCompare(number2, number1, &compare, &ctxtReal75);
+  real159_t num1, num2;
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
   }
-  return realIsNegative(&compare) && !realIsZero(&compare);
+  realCopyAbs(number1, (real_t*)&num1);
+  realCopyAbs(number2, (real_t*)&num2);
+  realCompare((real_t*)&num1, (real_t*)&num2, (real_t*)&num2, &c);
+  return realIsNegative((real_t*)&num2) && !realIsZero((real_t*)&num2);
 }
 
 
 
 bool_t realCompareEqual(const real_t *number1, const real_t *number2) {
   real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
+  realCompare(number1, number2, &compare, &c);
   return realIsZero(&compare);
 }
 
 
 
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
-  real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
-  if (realIsNegative(&compare) || realIsPositive(&compare)) {
-    realCompare(number2, number1, &compare, &ctxtReal75);
+  real159_t num1, num2;
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
   }
-  return realIsZero(&compare);
+  realCopyAbs(number1, (real_t*)&num1);
+  realCopyAbs(number2, (real_t*)&num2);
+  realCompare((real_t*)&num1, (real_t*)&num2, (real_t*)&num2, &c);
+  return realIsZero((real_t*)&num2);
 }
 
 
 
 bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2) {
   real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
+  realCompare(number1, number2, &compare, &c);
   return realIsPositive(&compare) || realIsZero(&compare);
 }
 
@@ -171,8 +197,13 @@ bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2) {
 
 bool_t realCompareGreaterThan(const real_t *number1, const real_t *number2) {
   real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
+  realCompare(number1, number2, &compare, &c);
   return realIsPositive(&compare) && !realIsZero(&compare);
 }
 
@@ -180,8 +211,13 @@ bool_t realCompareGreaterThan(const real_t *number1, const real_t *number2) {
 
 bool_t realCompareLessEqual(const real_t *number1, const real_t *number2) {
   real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
+  realCompare(number1, number2, &compare, &c);
   return realIsNegative(&compare) || realIsZero(&compare);
 }
 
@@ -189,8 +225,13 @@ bool_t realCompareLessEqual(const real_t *number1, const real_t *number2) {
 
 bool_t realCompareLessThan(const real_t *number1, const real_t *number2) {
   real_t compare;
-
-  realCompare(number1, number2, &compare, &ctxtReal75);
+  realContext_t c = ctxtReal75;
+  c.digits = max(max(75, number1->digits), number2->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
+  realCompare(number1, number2, &compare, &c);
   return realIsNegative(&compare) && !realIsZero(&compare);
 }
 
@@ -212,8 +253,13 @@ bool_t real34IsAnInteger(const real34_t *x) {
 
 
 bool_t realIsAnInteger(const real_t *x) {
-  real_t y;
-
+  real159_t y;
+  realContext_t c = ctxtReal75;
+  c.digits = max(75, x->digits);
+  if(c.digits > 159) {
+    sprintf(errorMessage, "Exceed 159 digits in comparisonReals.c");
+    displayBugScreen(errorMessage);
+  }
   if(realIsNaN(x)) {
     return false;
   }
@@ -221,11 +267,9 @@ bool_t realIsAnInteger(const real_t *x) {
   if(realIsInfinite(x)) {
     return true;
   }
-
-  realToIntegralValue(x, &y, DEC_ROUND_DOWN, &ctxtReal75);
-  realSubtract(x, &y, &y, &ctxtReal75);
-
-  return realCompareEqual(&y, const_0);
+  realToIntegralValue(x, (real_t*)&y, DEC_ROUND_DOWN, &c);
+  realSubtract(x, (real_t*)&y, (real_t*)&y, &c);
+  return realCompareEqual((real_t*)&y, const_0);
 }
 
 
