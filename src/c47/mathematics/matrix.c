@@ -4452,7 +4452,7 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
 
       for(i = 0; i < (size - j); i++) {
         if(realCompareLessThan(&sum, &min_norm)) {
-          // Norm too small relative to precision - use original vecto, no normalization,; this effectively skips this Householder step
+          // Norm too small relative to precision - use original vector, no normalization; this effectively skips this Householder step
           realCopy(v + i * 2,     &m);
           realCopy(v + i * 2 + 1, &t);
         }
@@ -5165,7 +5165,7 @@ static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, re
         realCopy(matrix + (i * size + j) * 2 + 1, &elemIm);
 
         #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-          printf("Calculate element [%d,%d] = ", i, j);  // debug print
+          printf("Calculate element [%2d,%2d] = ", i, j);  // debug print
           printRealToConsole(&elemRe, "[", ",");
           printRealToConsole(&elemIm, "", "]\n");
         #endif
@@ -5222,7 +5222,8 @@ static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, re
     realPlus((real_t*)&sum159, sum, realContext);    // move sum159 to output
   #endif //CONV_SUM_159
   #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-    printRealToConsole(sum, "Sum:   ", "\n");
+    printf("Sum%s", mode == CHDIAG ? " of |changes|:" : "|diagonal values|:");
+    printRealToConsole(sum, "", "\n");
   #endif
 }
 
@@ -5634,6 +5635,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         bool_t deflated = true;
         while(deflated && activeSize > 2) {
           deflated = false;
+          #if defined(EIGENDEBUG)
+            printf("\n");
+          #endif
 
           for(i = activeSize - 1; i >= 1; i--) {
             real_t subdiag_mag, threshold;
@@ -5717,20 +5721,23 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         realZero(&deltaChangeDiagonalSum);
 
         if(iteration == 1) sumOfSubSupDiagonalAll("Stagnation test init", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, true, &ctxtReal39);
-        sumOfSubSupDiagonalAll("Stagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &ctxtReal39);
-        
+        sumOfSubSupDiagonalAll("\nStagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &ctxtReal39);
+                                                                    #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
+                                                                      printRealToConsole(&changeDiagonalSum, "\n=== Diagonal change: ", "\n");
+                                                                    #endif
+
         converged = false;
-        if(realGetExponent(&changeDiagonalSum) < -toleranceDigits && iteration != 1) {                                  // changed presumably faster:        if(realCompareLessThan(&changeDiagonalSum, &SumTolerance) && iteration != 1) {
+        if(realGetExponentComp(&changeDiagonalSum) < -toleranceDigits && iteration != 1) {                                  // changed presumably faster:        if(realCompareLessThan(&changeDiagonalSum, &SumTolerance) && iteration != 1) {
           converged = true;
                                                                     #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
-                                                                      printf("Diagonal changed with less than 1E-%d. Set to converge.\n", toleranceDigits);
+                                                                      printf("    Diagonal changed with less than 1E-%d. Set to converge.\n", toleranceDigits);
                                                                     #endif
         } else {
           realSubtract(&changeDiagonalSum, &previousChangeDiagonalSum, &deltaChangeDiagonalSum, realContext);
-          if(realGetExponent(&changeDiagonalSum) < -(toleranceDigits - extraDigits) && realIsZero(&deltaChangeDiagonalSum) && iteration !=1) {
+          if(realGetExponentComp(&changeDiagonalSum) < -(toleranceDigits - extraDigits) && realIsZero(&deltaChangeDiagonalSum) && iteration !=1) {
             converged = true;
                                                                     #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
-                                                                      printf("Diagonal changed with less than 1E-%d AND it is exactly the same as the prior check, hence numerical noise. Set to converge.\n", toleranceDigits - extraDigits);
+                                                                      printf("    Diagonal changed with less than 1E-%d AND it is exactly the same as the prior check, hence numerical noise. Set to converge.\n", toleranceDigits - extraDigits);
                                                                     #endif
           }
         }
@@ -5777,14 +5784,15 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         sumOfSubSupDiagonalAll("Off-diagonal stability test 2: allow convergence if off-diagonals are stable", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &ctxtReal75);
         realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &ctxtReal75);
         #if defined(EIGENDEBUG)
-          printRealToConsole(&changeOffDiagonalSum,"\nchangeOffDiagonalSum: ","\n");
+          printRealToConsole(&changeOffDiagonalSum,"=== changeOffDiagonalSum: ","\n");
         #endif
 
         // Check if off-diagonal sum is small enough
         #if defined(EIGENDEBUG)
-          printf("___Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponent(&currentOffDiagonalSum), -3*(toleranceDigits-1));
+          printf("___ Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponentComp(&currentOffDiagonalSum), -3*(toleranceDigits-1));
         #endif
-        if(realGetExponent(&currentOffDiagonalSum) <= 3*-(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
+//note temporary 3x
+        if(realGetExponentComp(&currentOffDiagonalSum) <= 3*-(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
           #if defined(EIGENDEBUG)
             printf("___  → Off-diagonals sufficiently small - accepting current state\n");
           #endif                                                                              // Continue without changing converged flag
@@ -5792,20 +5800,20 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         // Check if off-diagonal sum is decreasing
         else if(realIsNegative(&changeOffDiagonalSum)) {
           #if defined(EIGENDEBUG)
-            printf("___  → Off-diagonals decreasing, checking step size:\n     exp(changeOffDiagonalSum)=%d > -(eigenTolerance-extraDigits)=%d\n", realGetExponent(&changeOffDiagonalSum), -(eigenTolerance - extraDigits));
+            printf("___  → Off-diagonals decreasing, checking step size:\n     exp(changeOffDiagonalSum)=%d > -(eigenTolerance-extraDigits)=%d\n", realGetExponentComp(&changeOffDiagonalSum), -(eigenTolerance - extraDigits));
           #endif
           
           // Decreasing - check if change is large enough
-          if(realGetExponent(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {     // Change is large - good progress
+          if(realGetExponentComp(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {     // Change is large - good progress
             #if defined(EIGENDEBUG)
-              printf("___     → Large steps - clearing converged, resetting counter\n");
+              printf("___    → Large steps - clearing converged, resetting counter\n");
             #endif
             converged = false;
             offdiag_no_improvement_count = 0;                                                // Continue without further action
           }
           else {                                                                             // Change is too small - stagnating
             #if defined(EIGENDEBUG)
-              printf("___     → Steps too small - stagnation detected, counter=%d\n", offdiag_no_improvement_count + 1);
+              printf("___    → Steps too small - stagnation detected, counter=%d\n", offdiag_no_improvement_count + 1);
             #endif
             converged = false;
             offdiag_no_improvement_count++;
@@ -5815,7 +5823,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         else {
           // No progress or diverging
           #if defined(EIGENDEBUG)
-            printf("___  → Off-diagonals not decreasing (changeOffDiagonalSum >= 0), counter=%d\n", offdiag_no_improvement_count + 1);
+            printf("___ → Off-diagonals not decreasing (changeOffDiagonalSum >= 0), counter=%d\n", offdiag_no_improvement_count + 1);
           #endif
           converged = false;
           offdiag_no_improvement_count++;
@@ -5823,7 +5831,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         // Check if stagnation threshold reached
         if(offdiag_no_improvement_count >= (is_sym_tridiag ? 7 : 5)) {
           #if defined(EIGENDEBUG)
-            printf("___OFF-DIAGONAL STAGNATION: counter=%d >= threshold=%d - BREAKING\n", offdiag_no_improvement_count, (is_sym_tridiag ? 7 : 5));
+            printf("___ OFF-DIAGONAL STAGNATION: counter=%d >= threshold=%d - BREAKING\n", offdiag_no_improvement_count, (is_sym_tridiag ? 7 : 5));
           #endif
           break;
         }
@@ -5898,9 +5906,12 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                                                                     }
                                                                     printf("\nFinal subdiagonal elements:\n");
                                                                     for(int k = 1; k < size; k++) {
-                                                                      printf("eig[%d][%d] = ", k, k-1);
+                                                                      printf("eig[%2d][%2d] = ", k, k-1);
                                                                       printRealToConsole(eig + (k * size + (k-1)) * 2, "", " + ");
                                                                       printRealToConsole(eig + (k * size + (k-1)) * 2 + 1, "", "i\n");
+                                                                      printf("eig[%2d][%2d] = ", k-1, k);
+                                                                      printRealToConsole(eig + ((k-1) * size + (k)) * 2, "", " + ");
+                                                                      printRealToConsole(eig + ((k-1) * size + (k)) * 2 + 1, "", "i\n");
                                                                     }
                                                                     printEigenvaluesComparison("EIGENVAL after main QR loop", a, eig, size, iteration, converged);
                                                                     #endif //EIGENDEBUG
