@@ -5352,6 +5352,21 @@ static void printEigenvaluesComparison(const char *heading, const real_t *a, con
 #endif //EIGENDEBUG
 
 
+
+// Helper to make the exponent -99999 when the input is 0
+// This is used where the exponent is used to determine convergence close to 0, hence 0 is seen as 10^-99999
+int32_t realGetExponentComp(const real_t *val) {
+
+//OPTIONS
+#undef NEW_CONVERGE
+#if defined(NEW_CONVERGE)
+  if(realIsZero(val)) return -99999;
+#endif
+
+  return realGetExponent(val);
+}
+
+
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t SumTolerance, changeDiagonalSum, previousChangeDiagonalSum;
 
