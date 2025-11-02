@@ -4417,13 +4417,19 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
       realSquareRoot(&sum, &sum, realContext);
 
       // Calculate u = x - alpha e1
+      // using STABLE sign choice to avoid cancellation When v[0] and ||v|| have same sign, catastrophic cancellation occurs.
+      // change to alpha sign being OPPOSITE to v[0] sign, making subtraction effectively addition.
       if(realIsZero(v + 1)) {
-        if(realIsNegative(v)) {
+        // v is real only
+        if(!realIsNegative(v)) {
+          // v[0] >= 0: alpha = -||v|| so u = v[0] - (-||v||) = v[0] + ||v|| (safe addition)
           realChangeSign(&sum);
         }
+        // v[0] < 0: alpha = +||v|| so u = v[0] - ||v|| (more negative, safe)
         realSubtract(v, &sum, v, realContext);
       }
       else {
+        // alpha = ||v|| * exp(i*arg(v[0]))
         blockMonitoring = true;
         realRectangularToPolar(v, v + 1, &m, &t, realContext);
         blockMonitoring = true;
