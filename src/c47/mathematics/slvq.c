@@ -308,31 +308,34 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
     }
     else {
       // ax² + bx + c = 0   (a and c are not 0 here)
-
-      // r = b² - 4ac
+      
+      // r = b² - 4ac (using FMA for better precision)
       realMultiply(const_4, (real_t *)&a_h, (real_t *)&temp, realContext);
       realMultiply((real_t *)&c_h, (real_t *)&temp, (real_t *)&temp, realContext);
-      realMultiply((real_t *)&b_h, (real_t *)&b_h, (real_t *)&rR, realContext);
-      realSubtract((real_t *)&rR, (real_t *)&temp, (real_t *)&rR, realContext);
+      realSetNegativeSign((real_t *)&temp);
+      realFMA((real_t *)&b_h, (real_t *)&b_h, (real_t *)&temp, (real_t *)&rR, realContext);
       
       realCopy((real_t *)&rR, rReal);
       realZero(rImag);
 
-      if(realIsPositive((real_t *)&rR)) {
-        // real roots
+      if(!realIsNegative((real_t *)&rR)) {
+        // Real roots (r ≥ 0, including double root when r = 0)
         realSquareRoot((real_t *)&rR, (real_t *)&sqrt_r, realContext);
         
         // x1 = (-b - sign(b)*sqrt(r)) / 2a
-        // Uses numerically stable formula to avoid cancellation
-        if(realIsPositive((real_t *)&b_h)) {
-          realChangeSign((real_t *)&sqrt_r);
+        // Numerically stable formula to avoid cancellation
+        realCopy((real_t *)&sqrt_r, (real_t *)&temp);
+        if(!realIsNegative((real_t *)&b_h)) {
+          realChangeSign((real_t *)&temp);
         }
-        realSubtract((real_t *)&sqrt_r, (real_t *)&b_h, (real_t *)&temp, realContext);
+        
+        real159_t neg_b;
+        realMinus((real_t *)&b_h, (real_t *)&neg_b, realContext);
+        realAdd((real_t *)&neg_b, (real_t *)&temp, (real_t *)&temp, realContext);
         realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
         realDivide((real_t *)&temp, (real_t *)&a_h, x1Real, realContext);
         
-        // x2 = c / (a*x1)  (x1 cannot be 0 here)
-        // Uses Vieta's formula to avoid cancellation
+        // x2 = c / (a*x1)  (using Vieta's formula to avoid cancellation)
         realDivide((real_t *)&c_h, (real_t *)&a_h, (real_t *)&temp, realContext);
         realDivide((real_t *)&temp, x1Real, x2Real, realContext);
         
@@ -340,21 +343,20 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
         realZero(x2Imag);
       }
       else {
-        // complex roots
+        // Complex roots (r < 0)
         realMinus((real_t *)&rR, (real_t *)&temp, realContext);
         realSquareRoot((real_t *)&temp, (real_t *)&sqrt_r, realContext);
-        
-        // x1 = (-b - sign(b)*sqrt(r)) / 2a
-        if(realIsPositive((real_t *)&b_h)) {
-          realChangeSign((real_t *)&sqrt_r);
-        }
         
         // x1 = (-b + i*sqrt(-r)) / 2a
         realMinus((real_t *)&b_h, (real_t *)&temp, realContext);
         realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
         realDivide((real_t *)&temp, (real_t *)&a_h, x1Real, realContext);
         
-        realMultiply((real_t *)&sqrt_r, const_1on2, (real_t *)&temp, realContext);
+        realCopy((real_t *)&sqrt_r, (real_t *)&temp);
+        if(realIsPositive((real_t *)&b_h)) {
+          realChangeSign((real_t *)&temp);
+        }
+        realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
         realDivide((real_t *)&temp, (real_t *)&a_h, x1Imag, realContext);
         
         // x2 = conj(x1)
@@ -382,8 +384,11 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       
       if(realIsZero(aReal) && realIsZero(aImag)) {
         // bx + c = 0 => x = -c/b
+        
+        // r = b²
         mulComplexComplex159((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, rReal, rImag, realContext);
         
+        // x1 = -c/b, x2 = NaN
         divComplexComplex159((real_t *)&c_h, (real_t *)&cI_h, (real_t *)&b_h, (real_t *)&bI_h, x1Real, x1Imag, realContext);
         realChangeSign(x1Real);
         realChangeSign(x1Imag);
@@ -393,10 +398,8 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       else {
         // Discriminant: r = b² - 4ac
         mulComplexComplex159((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, (real_t *)&rR, (real_t *)&rI, realContext);
-        
         mulComplexComplex159((real_t *)&a_h, (real_t *)&aI_h, (real_t *)&c_h, (real_t *)&cI_h, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
         mulComplexReal((real_t *)&temp1R, (real_t *)&temp1I, const_4, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
-        
         realSubtract((real_t *)&rR, (real_t *)&temp1R, (real_t *)&rR, realContext);
         realSubtract((real_t *)&rI, (real_t *)&temp1I, (real_t *)&rI, realContext);
         
@@ -410,7 +413,6 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
         realMinus((real_t *)&b_h, (real_t *)&temp1R, realContext);
         realMinus((real_t *)&bI_h, (real_t *)&temp1I, realContext);
         addComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&sqrtR, (real_t *)&sqrtI, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
-        
         mulComplexReal((real_t *)&a_h, (real_t *)&aI_h, const_2, (real_t *)&temp2R, (real_t *)&temp2I, realContext);
         divComplexComplex159((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x1Real, x1Imag, realContext);
         
@@ -418,7 +420,6 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
         realMinus((real_t *)&b_h, (real_t *)&temp1R, realContext);
         realMinus((real_t *)&bI_h, (real_t *)&temp1I, realContext);
         subComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&sqrtR, (real_t *)&sqrtI, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
-        
         divComplexComplex159((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x2Real, x2Imag, realContext);
       }
   }
@@ -429,10 +430,8 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
   if(eff_exp < -realContext->digits) {
     realZero(x1Imag);
   }
-  
   eff_exp = realGetExponent(x2Imag);
   if(eff_exp < -realContext->digits) {
     realZero(x2Imag);
   }
 }
-
