@@ -344,20 +344,34 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       }
       else {
         // Complex roots (r < 0)
-        realMinus((real_t *)&rR, (real_t *)&temp, realContext);
-        realSquareRoot((real_t *)&temp, (real_t *)&sqrt_r, realContext);
+        real159_t x1R_h, x1I_h, temp_sqrt, temp_calc;
+        realZero((real_t *)&x1R_h);
+        realZero((real_t *)&x1I_h);
+        realZero((real_t *)&temp_sqrt);
+        realZero((real_t *)&temp_calc);
         
-        // x1 = (-b + i*sqrt(-r)) / 2a
-        realMinus((real_t *)&b_h, (real_t *)&temp, realContext);
-        realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
-        realDivide((real_t *)&temp, (real_t *)&a_h, x1Real, realContext);
+        // Compute sqrt(|r|)
+        realCopy((real_t *)&rR, (real_t *)&temp_sqrt);
+        realChangeSign((real_t *)&temp_sqrt);  // temp_sqrt = -r = |r|
+        realSquareRoot((real_t *)&temp_sqrt, (real_t *)&sqrt_r, realContext);
         
-        realCopy((real_t *)&sqrt_r, (real_t *)&temp);
+        // Real part: x_real = -b / 2a
+        realCopy((real_t *)&b_h, (real_t *)&temp_calc);
+        realChangeSign((real_t *)&temp_calc);  // temp_calc = -b
+        realMultiply((real_t *)&temp_calc, const_1on2, (real_t *)&temp_calc, realContext);
+        realDivide((real_t *)&temp_calc, (real_t *)&a_h, (real_t *)&x1R_h, realContext);
+        
+        // Imaginary part: x_imag = ±sqrt(|r|) / 2a
+        realCopy((real_t *)&sqrt_r, (real_t *)&temp_calc);
         if(realIsPositive((real_t *)&b_h)) {
-          realChangeSign((real_t *)&temp);
+          realChangeSign((real_t *)&temp_calc);
         }
-        realMultiply((real_t *)&temp, const_1on2, (real_t *)&temp, realContext);
-        realDivide((real_t *)&temp, (real_t *)&a_h, x1Imag, realContext);
+        realMultiply((real_t *)&temp_calc, const_1on2, (real_t *)&temp_calc, realContext);
+        realDivide((real_t *)&temp_calc, (real_t *)&a_h, (real_t *)&x1I_h, realContext);
+        
+        // Copy to output variables
+        realCopy((real_t *)&x1R_h, x1Real);
+        realCopy((real_t *)&x1I_h, x1Imag);
         
         // x2 = conj(x1)
         realCopy(x1Real, x2Real);
