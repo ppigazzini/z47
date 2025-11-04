@@ -425,7 +425,7 @@ char letteredRegisterName(calcRegister_t regist) {
       for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS; sum++) {
         ptr += strlen(ptr);
         strcpy(sumName, StatSumNames[sum]);
-  
+
         sprintf(ptr, LINEBREAK "SR%02d = ", sum);
         ptr += strlen(ptr);
         stringToUtf8(sumName, (uint8_t *)ptr);
@@ -2682,7 +2682,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
     } else {
       if(XXFNMODEACTIVE) {
-        fnDisplayStack(3);        
+        fnDisplayStack(3);
       }
     }
 
@@ -4503,11 +4503,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {
               int day;
-              if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
-                day = (int)tmpString[4] - '0';
-              } else {
-                day = (int)tmpString[0] - '0';
-              }
+              longInteger_t li;
+              getRegisterAsLongInt(REGISTER_X, li, NULL); // Cannot fail as REGISTER_X is a dtLongInteger
+              longIntegerToInt32(li, day);
+              longIntegerFree(li);
               if(day < 1 || day > 7) {
                 day = 0;
               }
