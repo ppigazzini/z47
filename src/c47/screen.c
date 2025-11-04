@@ -4504,7 +4504,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(regist == REGISTER_X) {
               int day;
               longInteger_t li;
-              convertLongIntegerRegisterToLongInteger(REGISTER_X, li);
+              getRegisterAsLongInt(REGISTER_X, li, NULL); // Cannot fail as REGISTER_X is a dtLongInteger
               longIntegerToInt32(li, day);
               longIntegerFree(li);
               if(day < 1 || day > 7) {
