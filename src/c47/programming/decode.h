@@ -12,6 +12,7 @@
 
   void decodeOneStep          (uint8_t *step);
   void decodeOneStep_XPORT    (uint8_t *step);
+  void decodeOneStep_PRINT42S (uint8_t *step);
   void listPrograms           (void);
   void listLabelsAndPrograms  (void);
 #endif // !DECODE_H

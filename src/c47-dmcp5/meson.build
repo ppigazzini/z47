@@ -33,7 +33,7 @@ dmcp_linkargs = [
 c47_dmcp_src = files(
   'hal/audio.c',
   'hal/io.c',
-  'hal/printer.c'
+  'hal/print_ir.c'
 )
 
 c47_lib = static_library(
@@ -151,7 +151,7 @@ alias_target('dmcp5', c47_pg5, c47_qspi, c47_sizes)
 r47_dmcp_src = files(
   'hal/audio.c',
   'hal/io.c',
-  'hal/printer.c'
+  'hal/print_ir.c'
 )
 
 r47_lib = static_library(

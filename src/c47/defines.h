@@ -54,6 +54,10 @@
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 
+#if defined(WIN32)
+    #define INFRARED  // Enable IR printing for on Windows simulator
+#endif // WIN32
+
 #if defined(DMCP_BUILD)
 
   #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
@@ -730,6 +734,15 @@ typedef enum {
 
 
 
+typedef enum  {
+	PMODE_DEFAULT = 0,
+	PMODE_GRAPHICS = 1,
+	PMODE_SMALLGRAPHICS = 2,
+	PMODE_SERIAL = 3
+} print_modes_t;
+
+
+
 // PC GUI
 #if NARROW_SCREEN == 1
   #define CSSFILE "res/c47_narrow_screen_pre.css"
@@ -839,9 +852,10 @@ typedef enum {
 #define DEC_FLAG                                   1
 
 
-//Export type
+//Export/print type
 #define MODE_NRM 2
 #define MODE_RTF 1
+#define MODE_42S 3
 
 
 // List of constants

@@ -80,6 +80,46 @@ typedef struct {
 
 
 /**
+ * \struct glyphPrinter_t
+ * Structure keeping the informations for one 82240 printer glyph.
+ */
+typedef struct {
+  uint16_t charCode;         ///< Unicode code point
+  char     data[5];          ///< Hexadecimal data representing the glyph (5 columns)
+                             ///< There are rowsGlyph x (colsGlyph rounded up to 8 bit boundary) bytes
+} glyphPrinter_t;
+
+
+/**
+ * \struct printerFont_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t        numberOfGlyphs; ///< Number of glyphs in the font
+  glyphPrinter_t  glyphs[];       ///< Pointer to the glyph description structure
+} printerFont_t;
+
+
+/**
+ * \struct names42s_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t  item;       ///< Item number
+  char      name[16];    ///< 42s equivalent item name for printing
+} names42s_t;
+
+
+/**
+ * \struct summationRegisterName_t
+ * Font description.
+ */
+typedef struct {
+  char      name[16];    ///< summatioon register name
+} summationRegisterName_t;
+
+
+/**
  * \struct freeMemoryRegion_t
  * Keeps track of free memory regions.
  */
@@ -87,6 +127,7 @@ typedef struct {
   uint16_t blockAddress; ///< Address of the free memory region
   uint16_t sizeInBlocks; ///< Size in blocks of the free memory region
 } freeMemoryRegion_t;
+
 
 
 /**
@@ -622,8 +663,9 @@ typedef struct {
 typedef struct {
   bool_t         print_on;	             ///< Printing on/off 
   uint8_t        print_blank_line;	     ///< Print space between lines
-  uint8_t        print_mode;  	         ///< printer modes
-  printerModel_t printer_model;         ///< printer model
+  print_modes_t  print_mode;  	         ///< printer modes
+  printerModel_t printer_model;          ///< printer model
+  uint16_t       delay;                  ///< printer line delay
 } printerState_t;
 
 

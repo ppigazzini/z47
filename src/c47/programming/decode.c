@@ -11,6 +11,32 @@ TO_QSPI const char shuffleReg[4] = {'x', 'y', 'z', 't'};
 TO_QSPI const char supDigit[24] = STD_SUP_0 STD_SUP_1 STD_SUP_2 STD_SUP_3 STD_SUP_4 STD_SUP_5 STD_SUP_6 STD_SUP_7 STD_SUP_8 STD_SUP_9;
 TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BASE_4 STD_BASE_5 STD_BASE_6 STD_BASE_7 STD_BASE_8 STD_BASE_9 STD_BASE_10 STD_BASE_11 STD_BASE_12 STD_BASE_13 STD_BASE_14 STD_BASE_15 STD_BASE_16;
 TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir;
+TO_QSPI const names42s_t Names42[] = {
+//             item             name     
+/*   36 */  { ITM_XexY,        "X<>Y"        },
+/*   60 */  { ITM_YX,          "Y^X"         },
+/*   61 */  { ITM_SQUAREROOTX, "SQRT"        },
+/*   62 */  { ITM_CUBEROOT,    STD_SUP_3 STD_SQUARE_ROOT "X"        },
+/*   63 */  { ITM_XTHROOT,     STD_SUP_x STD_SQUARE_ROOT "Y"        },
+/*   64 */  { ITM_2X,          "2^X"         },
+/*   65 */  { ITM_EXP,         "E^X"         },
+/*   67 */  { ITM_10x,         "10^X"        },
+/*  127 */  { ITM_Xex,         "X<>"        },
+/*  981 */  { ITM_ex,          "<>"         },
+/* 1539 */  { ITM_M_RR,        "M.R<>R"      },   
+/* 1570 */  { ITM_REexIM,      "Re<>Im"      },  
+/* 1575 */  { ITM_EX1,         "E^X-1"       }, 
+/* 1625 */  { ITM_Tex,         "T<>"        },
+/* 1650 */  { ITM_Yex,         "Y<>"        },
+/* 1651 */  { ITM_Zex,         "Z<>"        },  
+/* 1679 */  { ITM_M1X,         "(-1)^X"      },
+/* 1694 */  { ITM_SHUFFLE,     "<>"         },
+/* 1794 */  { ITM_SQRT1PX2,    STD_SQUARE_ROOT "(1+x^2)" },
+/* 1816 */  { ITM_EE_EXP_TH,   "E^iX"        },
+  
+/*      */  { LAST_ITEM,       ""            }
+};
+
 
 #if !defined(DMCP_BUILD)
   void listPrograms(void) {
@@ -804,7 +830,17 @@ static void decodeRem(uint8_t *literalAddress) {
   #endif // !DMCP_BUILD
 }
 
-
+static void _name42s(uint16_t op, char *nameOp) {
+  uint16_t i = 0;
+  while(Names42[i].item != LAST_ITEM) {
+    if(Names42[i].item == op) {
+      strcpy(nameOp,Names42[i].name);
+      return;
+    }
+    i++;
+  }
+  strcpy(nameOp,indexOfItems[op].itemCatalogName);
+}    
 
 static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
   uint16_t op = *(step++);
@@ -831,7 +867,12 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
-        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
+        if(textVersion == MODE_42S) {
+          _name42s(op, nameOp); 
+        }
+        else {
+          strcpy(nameOp,indexOfItems[op].itemCatalogName);
+        }
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
@@ -863,7 +904,14 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
-          if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
+          if(nameOp[0] == 0) {
+            if(textVersion == MODE_42S) {
+              _name42s(op, nameOp); 
+            }
+            else {
+              strcpy(nameOp,indexOfItems[op].itemCatalogName);
+            }
+          }
         }
         decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       }
@@ -877,4 +925,8 @@ void decodeOneStep(uint8_t *step) {
 
 void decodeOneStep_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_RTF);
+}
+
+void decodeOneStep_PRINT42S(uint8_t *step) {
+  _decodeOneStep(step, MODE_42S);
 }

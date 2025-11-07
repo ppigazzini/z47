@@ -377,7 +377,14 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     #endif // DMCP_BUILD
 
     _selectProgram(label);
-    _fnExportProgram(path);
+    if ((getSystemFlag(FLAG_PRTACT)) && (lastFunc == ITM_PRINTERPROG)) {     // If printer active and command is to print program then print to IR printer
+    #if defined(INFRARED)
+      printProgram();
+    #endif //INFRARED
+    }
+    else {                                                                   // else print to file
+      _fnExportProgram(path);
+    }
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;

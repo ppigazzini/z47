@@ -147,7 +147,7 @@ typedef struct {
     }
   }
 
-  void copyRegisterToClipboardString(calcRegister_t regist, char *clipboardString) {
+  void copyRegisterToClipboardString(calcRegister_t regist, char *clipboardString, bool_t forPrinter) {
     longInteger_t lgInt;
     int16_t base, sign, n;
     uint64_t shortInt;
@@ -243,7 +243,12 @@ typedef struct {
         base = getRegisterShortIntegerBase(regist);
 
         n = ERROR_MESSAGE_LENGTH - 100;
-        sprintf(errorMessage + n--, "#%d (word size = %u)", base, shortIntegerWordSize);
+        if(forPrinter) {
+          sprintf(errorMessage + n--, "#%d", base);
+        }
+        else {
+          sprintf(errorMessage + n--, "#%d (word size = %u)", base, shortIntegerWordSize);
+        }
 
         if(shortInt == 0) {
           errorMessage[n--] = '0';
@@ -307,7 +312,14 @@ typedef struct {
       }
 
       case dtConfig:
-        xcopy(string, "Configuration data", 19);
+        if(forPrinter) {
+          xcopy(string, "Config. data", 13);
+        }
+        else {
+          xcopy(string, "Configuration data", 19);
+        }
+
+        
         break;
 
       default:
@@ -334,7 +346,7 @@ char letteredRegisterName(calcRegister_t regist) {
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyRegisterToClipboardString(REGISTER_X, clipboardString);
+    copyRegisterToClipboardString(REGISTER_X, clipboardString, false);
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
   }
 
@@ -345,7 +357,7 @@ char letteredRegisterName(calcRegister_t regist) {
 
     for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
-      copyRegisterToClipboardString(r, ptr);
+      copyRegisterToClipboardString(r, ptr, false);
       ptr = strchr(ptr, '\0');
       sep = LINEBREAK;
     }
@@ -380,14 +392,14 @@ char letteredRegisterName(calcRegister_t regist) {
       ptr += strlen(ptr);
       sprintf(ptr, LINEBREAK "R%02d = ", regist);
       ptr += strlen(ptr);
-      copyRegisterToClipboardString(regist, ptr);
+      copyRegisterToClipboardString(regist, ptr, false);
     }
 
     for(int32_t regist=currentNumberOfLocalRegisters-1; regist>=0; --regist) {
       ptr += strlen(ptr);
       sprintf(ptr, LINEBREAK "R.%02d = ", regist);
       ptr += strlen(ptr);
-      copyRegisterToClipboardString(FIRST_LOCAL_REGISTER + regist, ptr);
+      copyRegisterToClipboardString(FIRST_LOCAL_REGISTER + regist, ptr, false);
     }
 
     if(statisticalSumsPointer != NULL) {

@@ -357,6 +357,11 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 //#if defined(INFRARED)
   printerState_t         printerState;
+  /*
+   *  Where will the next data be printed?
+   *  Columns are in pixel units from 0 to 165 for the HP-82240 and 0 to 383 for the Martel graphic mode
+   */
+  uint16_t               printerColumn; 
 //#endif //INFRARED
 
 

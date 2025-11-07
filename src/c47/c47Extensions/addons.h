@@ -29,25 +29,6 @@ void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
-#define PRN_ALL     0
-#define PRN_STK     1
-#define PRN_GLOBALr 2
-#define PRN_LOCALr  3
-#define PRN_NAMEDr  4
-#define PRN_Xr      5
-#define PRN_XYr     6
-#define PRN_TMP     7
-void fnSetPrinter   (uint16_t model);
-void fnP_GetDelay   (uint16_t unusedButMandatoryParameter);
-void fnP_SetDelay   (uint16_t delay);
-void fnP_All_Regs   (uint16_t option);
-void fnP_Regs       (uint16_t registerNo);
-void fnP_Alpha      (uint16_t registerNo);
-void fnP_Advance    (uint16_t unusedButMandatoryParameter);
-void fnP_Byte       (uint16_t byte);
-void fnP_Char       (uint16_t character);
-void fnP_Tab        (uint16_t column);
-void fnP_LCD        (uint16_t unusedButMandatoryParameter);
 void fnMinute       (uint16_t unusedButMandatoryParameter);
 void fnSecond       (uint16_t unusedButMandatoryParameter);
 void fnHrDeg        (uint16_t unusedButMandatoryParameter);
