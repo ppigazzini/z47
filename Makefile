@@ -1,6 +1,6 @@
 .PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
 
-all: sim
+all: sim simr47
 
 EXE =
 ifeq ($(OS),Windows_NT)
@@ -40,6 +40,13 @@ build.dmcp5:
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
+	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
+	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+
+simr47: $(BUILD_PC)
+	cd $(BUILD_PC) && ninja simr47
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
 	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
 	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
 	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
@@ -91,9 +98,10 @@ else
   FORCENEW_TESTPGMS = 1
 endif
 
-dist_install_PC: sim
+dist_install_PC: sim simr47
 	mkdir -p $(DIST_DIR_PC)/res/
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) $(DIST_DIR_PC)/
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) $(DIST_DIR_PC)/
 	cp -r res/PROGRAMS $(DIST_DIR_PC)/res/
 	cp -r res/STATE $(DIST_DIR_PC)/res/
 	cp res/c47_pre.css $(DIST_DIR_PC)/res/
