@@ -233,7 +233,7 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   addComplex(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
   subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
 
-  // q^3 + r^2 = (4 (9q)^3 + r^2) / 2916
+  // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
   mulComplexComplex(&qr, &qi, &qr, &qi, rReal, rImag, realContext);
   mulComplexComplex(rReal, rImag, &qr, &qi, rReal, rImag, realContext);
   mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
@@ -258,12 +258,16 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
 
   // roots
   divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext);
-  _realCheckedSubtract(&qr, x2Real, x1Real, realContext); _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
+  _realCheckedSubtract(&qr, x2Real, x1Real, realContext);
+  _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
   mulComplexReal(&qr, &qi, const_1on2, x3Real, x3Imag, realContext);
-  _realCheckedAdd(x3Real, x2Real, x3Real, realContext);   _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);
+  _realCheckedAdd(x3Real, x2Real, x3Real, realContext);
+  _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);
   chsComplex(x3Real, x3Imag);
-  _realCheckedAdd(x3Real, &rr, x2Real, realContext);      _realCheckedAdd(x3Imag, &ri, x2Imag, realContext);
-  _realCheckedSubtract(x3Real, &rr, x3Real, realContext); _realCheckedSubtract(x3Imag, &ri, x3Imag, realContext);
+  _realCheckedAdd(x3Real, &rr, x2Real, realContext);
+  _realCheckedAdd(x3Imag, &ri, x2Imag, realContext);
+  _realCheckedSubtract(x3Real, &rr, x3Real, realContext);
+  _realCheckedSubtract(x3Imag, &ri, x3Imag, realContext);
 
   // Force real outputs when the roots are known to be real
   if(realIn) {
@@ -345,6 +349,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   mulComplexComplex159(c2Real, c2Imag, c1Real, c1Imag, (real_t *)&rr, (real_t *)&ri, realContext);
   mulComplexReal(c0Real, c0Imag, const_3, (real_t *)&ar, (real_t *)&ai, realContext);
   subComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, (real_t *)&rr, (real_t *)&ri, realContext);
+  char dbg[2000];
   mulComplexReal((real_t *)&rr, (real_t *)&ri, const_9, (real_t *)&rr, (real_t *)&ri, realContext);
 
   mulComplexComplex159(c2Real, c2Imag, c2Real, c2Imag, (real_t *)&ar, (real_t *)&ai, realContext);
@@ -353,18 +358,34 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   subComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, (real_t *)&rr, (real_t *)&ri, realContext);
 
   // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
-  mulComplexComplex159((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
-  mulComplexComplex159(rReal, rImag, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
-  mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
+//  mulComplexComplex159((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
+//  mulComplexComplex159(rReal, rImag, (real_t *)&qr, (real_t *)&qi, rReal, rImag, realContext);
+//  mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
+//  mulComplexComplex159((real_t *)&rr, (real_t *)&ri, (real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, realContext);
+//  addComplex(rReal, rImag, (real_t *)&ar, (real_t *)&ai, rReal, rImag, realContext);
+//  divComplexReal(rReal, rImag, const_2916, rReal, rImag, realContext);
+
+// Compute discriminant using intermediate 159-digit variables
+  real159_t discrimR, discrimI;
+  realZero((real_t *)&discrimR);
+  realZero((real_t *)&discrimI);
+  
+  // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
+  mulComplexComplex159((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
+  mulComplexComplex159((real_t *)&discrimR, (real_t *)&discrimI, (real_t *)&qr, (real_t *)&qi, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
+  mulComplexReal((real_t *)&discrimR, (real_t *)&discrimI, const_4, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
   mulComplexComplex159((real_t *)&rr, (real_t *)&ri, (real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, realContext);
-  addComplex(rReal, rImag, (real_t *)&ar, (real_t *)&ai, rReal, rImag, realContext);
-  divComplexReal(rReal, rImag, const_2916, rReal, rImag, realContext);
+  addComplex((real_t *)&discrimR, (real_t *)&discrimI, (real_t *)&ar, (real_t *)&ai, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
+  divComplexReal((real_t *)&discrimR, (real_t *)&discrimI, const_2916, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
+  // Copy discriminant to output
+  realCopy((real_t *)&discrimR, rReal);
+  realCopy((real_t *)&discrimI, rImag);
 
   // Scale r back to it's proper range, q isn't needed anymore so it's good.
   divComplexReal((real_t *)&rr, (real_t *)&ri, const_54, (real_t *)&rr, (real_t *)&ri, realContext);
 
   // s1, s2 = cbrt(r ± sqrt(q^3 + r^2))
-  sqrtComplex159(rReal, rImag, (real_t *)&s1r, (real_t *)&s1i, realContext);
+  sqrtComplex159((real_t *)&discrimR, (real_t *)&discrimI, (real_t *)&s1r, (real_t *)&s1i, realContext);
   subComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, realContext);
   addComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&s1r, (real_t *)&s1i, (real_t *)&s1r, (real_t *)&s1i, realContext);
   curtComplex159((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s1r, (real_t *)&s1i, realContext);
@@ -375,18 +396,25 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   subComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, (real_t *)&rr, (real_t *)&ri, realContext);
   mulComplexComplex159((real_t *)&rr, (real_t *)&ri, const_0, (real_t *)&const159_root3on2, (real_t *)&rr, (real_t *)&ri, realContext);
 
-  // roots
-  divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext);
-  realSubtract((real_t *)&qr, x2Real, x1Real, realContext); 
-  realSubtract((real_t *)&qi, x2Imag, x1Imag, realContext);
-  mulComplexReal((real_t *)&qr, (real_t *)&qi, const_1on2, x3Real, x3Imag, realContext);
-  realAdd(x3Real, x2Real, x3Real, realContext); 
-  realAdd(x3Imag, x2Imag, x3Imag, realContext);
-  chsComplex(x3Real, x3Imag);
-  realAdd(x3Real, (real_t *)&rr, x2Real, realContext); 
-  realAdd(x3Imag, (real_t *)&ri, x2Imag, realContext);
-  realSubtract(x3Real, (real_t *)&rr, x3Real, realContext); 
-  realSubtract(x3Imag, (real_t *)&ri, x3Imag, realContext);
+// roots
+  // x2 = c2 / 3
+  // x1 = x2 - (s1 + s2)
+  // x3 = x2 + (s1 - s2)/2 - (s1 + s2)/2
+  // s1 = cbrt(r + sqrt(q^3 + r^2))
+  // s2 = cbrt(r - sqrt(q^3 + r^2))
+  // x2 = c2 / 3; x1 = x2 - (s1 + s2); x3 = x2 + (s1 - s2)/2 - (s1 + s2)/2
+
+  divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext); // x2 = c2/3
+  realSubtract((real_t *)&qr, x2Real, x1Real, realContext); // x1Real = qr - x2Real
+  realSubtract((real_t *)&qi, x2Imag, x1Imag, realContext); // x1Imag = qi - x2Imag
+  mulComplexReal((real_t *)&qr, (real_t *)&qi, const_1on2, x3Real, x3Imag, realContext); // x3 = (qr + i*qi)*1/2
+  realAdd(x3Real, x2Real, x3Real, realContext);            // x3Real += x2Real
+  realAdd(x3Imag, x2Imag, x3Imag, realContext);            // x3Imag += x2Imag
+  chsComplex(x3Real, x3Imag);                              // x3 = -x3 (flip sign)
+  realAdd(x3Real, (real_t *)&rr, x2Real, realContext);     // x2Real = x3Real + rr
+  realAdd(x3Imag, (real_t *)&ri, x2Imag, realContext);     // x2Imag = x3Imag + ri
+  realSubtract(x3Real, (real_t *)&rr, x3Real, realContext);// x3Real -= rr
+  realSubtract(x3Imag, (real_t *)&ri, x3Imag, realContext);// x3Imag -= ri
 
   // Force real outputs when the roots are known to be real
   if(realIn) {
