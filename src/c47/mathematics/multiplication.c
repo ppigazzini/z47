@@ -70,11 +70,7 @@ void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal
 }
 
 
-
-
-
-
-void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
+void mulComplexComplex75(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
   real_t a, b, c, d, p, t;
   bool_t aIsZero, bIsZero, cIsZero, dIsZero, aIsInfinite, bIsInfinite, cIsInfinite, dIsInfinite;
 
@@ -133,6 +129,7 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
 }
 
 
+#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
 // This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). 
 // The 159 series is needed for 39 digit precision in cuberoots and the cubic formula solver
 void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
@@ -156,6 +153,24 @@ void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, 
   realMultiply((real_t *)&a, (real_t *)&d, (real_t *)&p, realContext);
   realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, productImag, realContext);
 }
+#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
+
+
+void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
+  if(realContext->digits <= 75) {
+    mulComplexComplex75(factor1Real, factor1Imag, factor2Real, factor2Imag, productReal, productImag, realContext);
+#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
+  } else
+  if(realContext->digits <= 159) {
+    mulComplexComplex159(factor1Real, factor1Imag, factor2Real, factor2Imag, productReal, productImag, realContext);
+#endif //OPTION_CUBIC_159) || OPTION_SQUARE_159 || OPTION_EIGEN_159
+  } else {
+    sprintf(errorMessage, "Exceed digits :mulComplexComplex: %d", (int)(realContext->digits));
+    displayBugScreen(errorMessage);
+  }
+}
+
+
 
 
 // Compensated for precision. This is tested and it works, but removed as I don't know the negative impact it may have.

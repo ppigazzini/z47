@@ -123,7 +123,7 @@ static void sqrtCplx(void) {
 
 
 
-void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   if(realIsZero(imag) && realIsNegative(real)) {
     realMinus(real, resImag, realContext);
     realSquareRoot(resImag, resImag, realContext);
@@ -142,7 +142,7 @@ void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
 }
 
 
-#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+#if defined(OPTION_SQUARE_159) || defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 // This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex().
 // The two complex root functions are written without trig as the current WP34 Taylor method cannot handle the 159 series is needed.
@@ -222,7 +222,22 @@ void sqrtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy((real_t *)&xr, resReal);
   realCopy((real_t *)&xi, resImag);
 }
-#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
+#endif //OPTION_SQUARE_159 || OPTION_CUBIC_159 || OPTION_EIGEN_159
+
+
+void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  if(realContext->digits <= 75) {
+    sqrtComplex75(real, imag, resReal, resImag, realContext);
+#if defined(OPTION_SQUARE_159) ||defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+  } else
+  if(realContext->digits <= 159) {
+    sqrtComplex159(real, imag, resReal, resImag, realContext);
+#endif //OPTION_SQUARE_159 || OPTION_CUBIC_159) || OPTION_EIGEN_159
+  } else {
+    sprintf(errorMessage, "Exceed digits :sqrtComplex: %d", (int)(realContext->digits));
+    displayBugScreen(errorMessage);
+  }
+}
 
 
 

@@ -4724,8 +4724,8 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
       realZero((real_t *)&detI);
   }
   else {
-      mulComplexComplex159(ar, ai, dr, di, (real_t *)&detR, (real_t *)&detI, &ctx159);
-      mulComplexComplex159(br, bi, cr, ci, (real_t *)&trR, (real_t *)&trI, &ctx159);
+      mulComplexComplex(ar, ai, dr, di, (real_t *)&detR, (real_t *)&detI, &ctx159);
+      mulComplexComplex(br, bi, cr, ci, (real_t *)&trR, (real_t *)&trI, &ctx159);
       realSubtract((real_t *)&detR, (real_t *)&trR, (real_t *)&detR, &ctx159);
       realSubtract((real_t *)&detI, (real_t *)&trI, (real_t *)&detI, &ctx159);
   }
@@ -4832,12 +4832,12 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
     realChangeSign((real_t *)&bi);
 
     // linear coefficient: sum of determinant of principal minors
-    mulComplexComplex159(mr[0], mi[0], mr[4], mi[4], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
-    mulComplexComplex159(mr[1], mi[1], mr[3], mi[3], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
-    mulComplexComplex159(mr[0], mi[0], mr[8], mi[8], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
-    mulComplexComplex159(mr[2], mi[2], mr[6], mi[6], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
-    mulComplexComplex159(mr[4], mi[4], mr[8], mi[8], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
-    mulComplexComplex159(mr[5], mi[5], mr[7], mi[7], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
+    mulComplexComplex(mr[0], mi[0], mr[4], mi[4], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
+    mulComplexComplex(mr[1], mi[1], mr[3], mi[3], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
+    mulComplexComplex(mr[0], mi[0], mr[8], mi[8], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex(mr[2], mi[2], mr[6], mi[6], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
+    mulComplexComplex(mr[4], mi[4], mr[8], mi[8], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex(mr[5], mi[5], mr[7], mi[7], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
     realAdd((real_t *)&aekr, (real_t *)&cdhr, (real_t *)&cr, &ctx159); 
     realAdd((real_t *)&aeki, (real_t *)&cdhi, (real_t *)&ci, &ctx159);
     realAdd((real_t *)&cr, (real_t *)&bfgr, (real_t *)&cr, &ctx159); 
@@ -4850,14 +4850,14 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
     realSubtract((real_t *)&ci, (real_t *)&afhi, (real_t *)&ci, &ctx159);
 
     // constant term: determinant
-    mulComplexComplex159((real_t *)&aekr, (real_t *)&aeki, mr[8], mi[8], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
-    mulComplexComplex159(mr[1], mi[1], mr[5], mi[5], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
-    mulComplexComplex159((real_t *)&bfgr, (real_t *)&bfgi, mr[6], mi[6], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
-    mulComplexComplex159(mr[2], mi[2], mr[3], mi[3], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
-    mulComplexComplex159((real_t *)&cdhr, (real_t *)&cdhi, mr[7], mi[7], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
-    mulComplexComplex159((real_t *)&cegr, (real_t *)&cegi, mr[4], mi[4], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
-    mulComplexComplex159((real_t *)&bdkr, (real_t *)&bdki, mr[8], mi[8], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
-    mulComplexComplex159((real_t *)&afhr, (real_t *)&afhi, mr[0], mi[0], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
+    mulComplexComplex((real_t *)&aekr, (real_t *)&aeki, mr[8], mi[8], (real_t *)&aekr, (real_t *)&aeki, &ctx159);
+    mulComplexComplex(mr[1], mi[1], mr[5], mi[5], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex((real_t *)&bfgr, (real_t *)&bfgi, mr[6], mi[6], (real_t *)&bfgr, (real_t *)&bfgi, &ctx159);
+    mulComplexComplex(mr[2], mi[2], mr[3], mi[3], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex((real_t *)&cdhr, (real_t *)&cdhi, mr[7], mi[7], (real_t *)&cdhr, (real_t *)&cdhi, &ctx159);
+    mulComplexComplex((real_t *)&cegr, (real_t *)&cegi, mr[4], mi[4], (real_t *)&cegr, (real_t *)&cegi, &ctx159);
+    mulComplexComplex((real_t *)&bdkr, (real_t *)&bdki, mr[8], mi[8], (real_t *)&bdkr, (real_t *)&bdki, &ctx159);
+    mulComplexComplex((real_t *)&afhr, (real_t *)&afhi, mr[0], mi[0], (real_t *)&afhr, (real_t *)&afhi, &ctx159);
     realAdd((real_t *)&aekr, (real_t *)&bfgr, (real_t *)&dr, &ctx159); 
     realAdd((real_t *)&aeki, (real_t *)&bfgi, (real_t *)&di, &ctx159);
     realAdd((real_t *)&dr, (real_t *)&cdhr, (real_t *)&dr, &ctx159); 
@@ -4896,13 +4896,13 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
     realPlus((real_t*)&t3rH, t3r, realContext);
     realPlus((real_t*)&t3iH, t3i, realContext);
   #else //OPTION_EIGEN_159
-    solveCubicEquation(    &br, &bi, 
-                           &cr, &ci,
-                           &dr, &di,
-                           &discrR, &discrI,
-                           t1r, t1i,
-                           t2r, t2i,
-                           t3r, t3i,
+    solveCubicEquation( &br, &bi, 
+                        &cr, &ci,
+                        &dr, &di,
+                        &discrR, &discrI,
+                        t1r, t1i,
+                        t2r, t2i,
+                        t3r, t3i,
                         &ctx159);
   #endif //OPTION_EIGEN_159
   blockMonitoring = false;

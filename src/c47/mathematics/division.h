@@ -19,7 +19,7 @@
   void divRealComplex   (const real_t *numer,                               const real_t *denomReal, const real_t *denomImag,   real_t *quotientReal, real_t *quotientImag, realContext_t *realContext);
   void divComplexReal   (const real_t *numerReal, const real_t *numerImag,  const real_t *denom,                                real_t *quotientReal, real_t *quotientImag, realContext_t *realContext);
 
-  void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext);
+//  void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext);
 
   //      RegYRegX
   void divLonILonI(void);

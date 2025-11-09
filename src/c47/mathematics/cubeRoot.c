@@ -74,7 +74,7 @@ void curtCplx(void) {
 
 
 
-void curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   real_t a, b;
 
   realCopy(real, &a);
@@ -298,13 +298,13 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   //realToString((real_t *)&omega_i, dbg); printf("DEBUG curtComplex159: omega_i = %s\n", dbg);
   
   // w2 = w1 * omega
-  mulComplexComplex159((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w2r, (real_t *)&w2i, realContext);
+  mulComplexComplex((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w2r, (real_t *)&w2i, realContext);
   //realToString((real_t *)&w2r, dbg); printf("DEBUG curtComplex159: w2r = %s\n", dbg);
   //realToString((real_t *)&w2i, dbg); printf("DEBUG curtComplex159: w2i = %s\n", dbg);
   
   // w3 = w1 * omega^2 = w1 * conj(omega)
   realChangeSign((real_t *)&omega_i);
-  mulComplexComplex159((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w3r, (real_t *)&w3i, realContext);
+  mulComplexComplex((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w3r, (real_t *)&w3i, realContext);
   //realToString((real_t *)&w3r, dbg); printf("DEBUG curtComplex159: w3r = %s\n", dbg);
   //realToString((real_t *)&w3i, dbg); printf("DEBUG curtComplex159: w3i = %s\n", dbg);
   
@@ -329,6 +329,22 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy((real_t *)&xi, resImag);
 }
 #endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
+
+
+void curtComplex(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  if(realContext->digits <= 75) {
+    curtComplex75(zReal, zImag, resReal, resImag, realContext);
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+  } else
+  if(realContext->digits <= 159) {
+    curtComplex159(zReal, zImag, resReal, resImag, realContext);
+#endif //OPTION_CUBIC_159) || OPTION_EIGEN_159
+  } else {
+    sprintf(errorMessage, "Exceed digits :curtComplex: %d", (int)(realContext->digits));
+    displayBugScreen(errorMessage);
+  }
+}
+
 
 
 
