@@ -64,7 +64,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     realZero((real_t*)&x1i);
     realZero((real_t*)&x2r);
     realZero((real_t*)&x2i);
-    solveQuadraticEquation((real_t*)&aRealH, (real_t*)&aImagH, (real_t*)&bRealH, (real_t*)&bImagH, (real_t*)&cRealH, (real_t*)&cImagH, (real_t*)&r0r, (real_t*)&r0i, (real_t*)&x1r, (real_t*)&x1i, (real_t*)&x2r, (real_t*)&x2i, &c);
+    solveQuadraticEquation159((real_t*)&aRealH, (real_t*)&aImagH, (real_t*)&bRealH, (real_t*)&bImagH, (real_t*)&cRealH, (real_t*)&cImagH, (real_t*)&r0r, (real_t*)&r0i, (real_t*)&x1r, (real_t*)&x1i, (real_t*)&x2r, (real_t*)&x2i, &c);
     realPlus((real_t *)&r0r, &rReal,  &ctxtReal39);
     realPlus((real_t *)&r0i, &rImag,  &ctxtReal39);
     realPlus((real_t *)&x1r, &x1Real, &ctxtReal39);
@@ -286,7 +286,7 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
 }
 
 
-#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+#if defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
 void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, realContext_t *realContext) {
   
   bool_t realCoefs = realIsZero(aImag) && realIsZero(bImag) && realIsZero(cImag);
@@ -427,10 +427,10 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
         // bx + c = 0 => x = -c/b
         
         // r = b²
-        mulComplexComplex159((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, rReal, rImag, realContext);
+        mulComplexComplex((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, rReal, rImag, realContext);
         
         // x1 = -c/b, x2 = NaN
-        divComplexComplex159((real_t *)&c_h, (real_t *)&cI_h, (real_t *)&b_h, (real_t *)&bI_h, x1Real, x1Imag, realContext);
+        divComplexComplex((real_t *)&c_h, (real_t *)&cI_h, (real_t *)&b_h, (real_t *)&bI_h, x1Real, x1Imag, realContext);
         realChangeSign(x1Real);
         realChangeSign(x1Imag);
         realCopy(const_NaN, x2Real);
@@ -438,8 +438,8 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       }
       else {
         // Discriminant: r = b² - 4ac
-        mulComplexComplex159((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, (real_t *)&rR, (real_t *)&rI, realContext);
-        mulComplexComplex159((real_t *)&a_h, (real_t *)&aI_h, (real_t *)&c_h, (real_t *)&cI_h, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
+        mulComplexComplex((real_t *)&b_h, (real_t *)&bI_h, (real_t *)&b_h, (real_t *)&bI_h, (real_t *)&rR, (real_t *)&rI, realContext);
+        mulComplexComplex((real_t *)&a_h, (real_t *)&aI_h, (real_t *)&c_h, (real_t *)&cI_h, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
         mulComplexReal((real_t *)&temp1R, (real_t *)&temp1I, const_4, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
         realSubtract((real_t *)&rR, (real_t *)&temp1R, (real_t *)&rR, realContext);
         realSubtract((real_t *)&rI, (real_t *)&temp1I, (real_t *)&rI, realContext);
@@ -448,20 +448,20 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
         realCopy((real_t *)&rI, rImag);
         
         // sqrt(r) using 159-digit precision
-        sqrtComplex159((real_t *)&rR, (real_t *)&rI, (real_t *)&sqrtR, (real_t *)&sqrtI, realContext);
+        sqrtComplex((real_t *)&rR, (real_t *)&rI, (real_t *)&sqrtR, (real_t *)&sqrtI, realContext);
         
         // x1 = (-b + sqrt(r)) / (2a)
         realMinus((real_t *)&b_h, (real_t *)&temp1R, realContext);
         realMinus((real_t *)&bI_h, (real_t *)&temp1I, realContext);
         addComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&sqrtR, (real_t *)&sqrtI, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
         mulComplexReal((real_t *)&a_h, (real_t *)&aI_h, const_2, (real_t *)&temp2R, (real_t *)&temp2I, realContext);
-        divComplexComplex159((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x1Real, x1Imag, realContext);
+        divComplexComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x1Real, x1Imag, realContext);
         
         // x2 = (-b - sqrt(r)) / (2a)
         realMinus((real_t *)&b_h, (real_t *)&temp1R, realContext);
         realMinus((real_t *)&bI_h, (real_t *)&temp1I, realContext);
         subComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&sqrtR, (real_t *)&sqrtI, (real_t *)&temp1R, (real_t *)&temp1I, realContext);
-        divComplexComplex159((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x2Real, x2Imag, realContext);
+        divComplexComplex((real_t *)&temp1R, (real_t *)&temp1I, (real_t *)&temp2R, (real_t *)&temp2I, x2Real, x2Imag, realContext);
       }
   }
 
@@ -476,4 +476,4 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
     realZero(x2Imag);
   }
 }
-#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
+#endif //OPTION_SQUARE_159 || OPTION_EIGEN_159
