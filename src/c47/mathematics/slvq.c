@@ -339,7 +339,7 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       // r = b² - 4ac (using FMA for better precision)
       realMultiply(const_4, (real_t *)&a_h, (real_t *)&temp, realContext);
       realMultiply((real_t *)&c_h, (real_t *)&temp, (real_t *)&temp, realContext);
-      realSetNegativeSign((real_t *)&temp);
+      realMinus((real_t *)&temp, (real_t *)&temp, realContext);
       realFMA((real_t *)&b_h, (real_t *)&b_h, (real_t *)&temp, (real_t *)&rR, realContext);
       
       realCopy((real_t *)&rR, rReal);
