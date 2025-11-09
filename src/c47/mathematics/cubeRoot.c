@@ -100,7 +100,7 @@ void curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
 }
 
 
-
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
 // Complex cube root using Halley's method: x_{n+1} = x_n * (x_n³ + 2z) / (2x_n³ + z)
 //   The point of using this is we cannot use complex trig without a 159 digit precision Taylor et al.
 void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
@@ -328,7 +328,7 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy((real_t *)&xr, resReal);
   realCopy((real_t *)&xi, resImag);
 }
-
+#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
 
 
 

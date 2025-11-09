@@ -124,7 +124,40 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
     divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal75);
     divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal75);
+
+#if defined(OPTION_CUBIC_159)
+    realContext_t c = ctxtReal75;
+    c.digits = 159;
+    real159_t x1r, x1i, x2r, x2i, x3r, x3i, r0r, r0i;
+    real159_t bRealH, bImagH, cRealH, cImagH, dRealH, dImagH;
+
+    realPlus(&bReal, (real_t *)&bRealH, &c);
+    realPlus(&bImag, (real_t *)&bImagH, &c);
+    realPlus(&cReal, (real_t *)&cRealH, &c);
+    realPlus(&cImag, (real_t *)&cImagH, &c);
+    realPlus(&dReal, (real_t *)&dRealH, &c);
+    realPlus(&dImag, (real_t *)&dImagH, &c);
+    realZero((real_t*)&r0r);
+    realZero((real_t*)&r0i);
+    realZero((real_t*)&x1r);
+    realZero((real_t*)&x1i);
+    realZero((real_t*)&x2r);
+    realZero((real_t*)&x2i);
+    realZero((real_t*)&x3r);
+    realZero((real_t*)&x3i);
+    solveCubicEquation159((real_t*)&bRealH, (real_t*)&bImagH, (real_t*)&cRealH, (real_t*)&cImagH, (real_t*)&dRealH, (real_t*)&dImagH, (real_t*)&r0r, (real_t*)&r0i, (real_t*)&x1r, (real_t*)&x1i, (real_t*)&x2r, (real_t*)&x2i, (real_t*)&x3r, (real_t*)&x3i, &c);
+    realPlus((real_t *)&r0r, &rReal,  &ctxtReal39);
+    realPlus((real_t *)&r0i, &rImag,  &ctxtReal39);
+    realPlus((real_t *)&x1r, &x[0].r, &ctxtReal39);
+    realPlus((real_t *)&x1i, &x[0].i, &ctxtReal39);
+    realPlus((real_t *)&x2r, &x[1].r, &ctxtReal39);
+    realPlus((real_t *)&x2i, &x[1].i, &ctxtReal39);
+    realPlus((real_t *)&x3r, &x[2].r, &ctxtReal39);
+    realPlus((real_t *)&x3i, &x[2].i, &ctxtReal39);
+#else // OPTION_CUBIC_159
     solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &x[2].r, &x[2].i, &ctxtReal75);
+#endif //OPTION_CUBIC_159
+
   }
 
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
@@ -302,7 +335,8 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
 
 
 
-// Calculate eigenvalues of cubic equation using 159-digit precision
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+// Calculate of cubic equation using 159-digit precision
 // Standard form: x³ + c2·x² + c1·x + c0 = 0
 // Abramowitz & Stegun §3.8.2
 void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
@@ -349,7 +383,6 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   mulComplexComplex159(c2Real, c2Imag, c1Real, c1Imag, (real_t *)&rr, (real_t *)&ri, realContext);
   mulComplexReal(c0Real, c0Imag, const_3, (real_t *)&ar, (real_t *)&ai, realContext);
   subComplex((real_t *)&rr, (real_t *)&ri, (real_t *)&ar, (real_t *)&ai, (real_t *)&rr, (real_t *)&ri, realContext);
-  char dbg[2000];
   mulComplexReal((real_t *)&rr, (real_t *)&ri, const_9, (real_t *)&rr, (real_t *)&ri, realContext);
 
   mulComplexComplex159(c2Real, c2Imag, c2Real, c2Imag, (real_t *)&ar, (real_t *)&ai, realContext);
@@ -463,6 +496,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   mulComplexReal(rReal, rImag, const__108, rReal, rImag, realContext);
 #endif
 }
+#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------

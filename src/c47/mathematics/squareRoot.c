@@ -142,6 +142,7 @@ void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
 }
 
 
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 // This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex().
 // The two complex root functions are written without trig as the current WP34 Taylor method cannot handle the 159 series is needed.
@@ -221,6 +222,8 @@ void sqrtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy((real_t *)&xr, resReal);
   realCopy((real_t *)&xi, resImag);
 }
+#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
+
 
 
 /********************************************//**
