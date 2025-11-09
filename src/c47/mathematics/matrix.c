@@ -4694,18 +4694,20 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
     printf("== calculateEigenvalues22\n");
   #endif //EIGENDEBUGMINIMAL) || defined(EIGENDEBUG)
   realContext_t ctx159 = ctxtReal75;
-  ctx159.digits = 159;
-  
-  // Use real159_t for all intermediate calculations
-  real159_t trR, trI, detR, detI, discrR, discrI;
-  real159_t t1rH, t1iH, t2rH, t2iH;
+
+  #if defined(OPTION_EIGEN_159)
+    ctx159.digits = 159;
+    real159_t trR, trI, detR, detI, discrR, discrI;
+  #else
+    ctx159.digits = 75;
+    real_t trR, trI, detR, detI, discrR, discrI;
+  #endif //OPTION_EIGEN_159
+
   
   // Initialize all
   realZero((real_t *)&trR); realZero((real_t *)&trI);
   realZero((real_t *)&detR); realZero((real_t *)&detI);
   realZero((real_t *)&discrR); realZero((real_t *)&discrI);
-  realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
-  realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
   
   const real_t *ar, *ai, *br, *bi, *cr, *ci, *dr, *di;
   ar = mat + ((size - 2) * size + (size - 2)) * 2; ai = ar + 1;
@@ -4735,18 +4737,29 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
   realChangeSign((real_t *)&trI);
   
   blockMonitoring = true;
-  solveQuadraticEquation159(const_1, const_0, (real_t *)&trR, (real_t *)&trI, (real_t *)&detR, (real_t *)&detI, 
-                         (real_t *)&discrR, (real_t *)&discrI, 
-                         (real_t *)&t1rH, (real_t *)&t1iH, 
-                         (real_t *)&t2rH, (real_t *)&t2iH, 
-                         &ctx159);
+  #if defined(OPTION_EIGEN_159)
+    real159_t t1rH, t1iH, t2rH, t2iH;
+    realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
+    realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
+    solveQuadraticEquation159(const_1, const_0, (real_t *)&trR, (real_t *)&trI, (real_t *)&detR, (real_t *)&detI, 
+                           (real_t *)&discrR, (real_t *)&discrI, 
+                           (real_t *)&t1rH, (real_t *)&t1iH, 
+                           (real_t *)&t2rH, (real_t *)&t2iH, 
+                           &ctx159);
+    // Convert back to 75-digit precision
+    realPlus((real_t*)&t1rH, t1r, realContext);
+    realPlus((real_t*)&t1iH, t1i, realContext);
+    realPlus((real_t*)&t2rH, t2r, realContext);
+    realPlus((real_t*)&t2iH, t2i, realContext);
+  #else //OPTION_EIGEN_159
+    solveQuadraticEquation(const_1, const_0, &trR, &trI, &detR, &detI, 
+                           &discrR, &discrI, 
+                           t1r, t1i, 
+                           t2r, t2i, 
+                           &ctx159);
+  #endif //OPTION_EIGEN_159
   blockMonitoring = false;
   
-  // Convert back to 75-digit precision
-  decNumberPlus(t1r, (decNumber *)&t1rH, realContext);
-  decNumberPlus(t1i, (decNumber *)&t1iH, realContext);
-  decNumberPlus(t2r, (decNumber *)&t2rH, realContext);
-  decNumberPlus(t2i, (decNumber *)&t2iH, realContext);
   
   if (is_real_symmetric) {
     #if defined(EIGENDEBUG)
@@ -4778,13 +4791,19 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
     printf("== calculateEigenvalues33\n");
   #endif //EIGENDEBUGMINIMAL) || defined(EIGENDEBUG)
   const real_t *mr[9], *mi[9];
-  real159_t br, bi, cr, ci, dr, di, discrR, discrI;
   realContext_t ctx159 = ctxtReal75;
-  ctx159.digits = 159;
+
+  #if defined(OPTION_EIGEN_159)
+    real159_t aekr, aeki, bfgr, bfgi, cdhr, cdhi, cegr, cegi, bdkr, bdki, afhr, afhi;
+    real159_t br, bi, cr, ci, dr, di, discrR, discrI;
+    ctx159.digits = 159;
+  #else
+    real_t aekr, aeki, bfgr, bfgi, cdhr, cdhi, cegr, cegi, bdkr, bdki, afhr, afhi;
+    real_t br, bi, cr, ci, dr, di, discrR, discrI;
+    ctx159.digits = 75;
+  #endif //OPTION_EIGEN_159
   
   {
-    real159_t aekr, aeki, bfgr, bfgi, cdhr, cdhi, cegr, cegi, bdkr, bdki, afhr, afhi;
-
     mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2; mr[2] = mr[1] + 2;
     mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2; mr[5] = mr[4] + 2;
     mr[6] = mat + ((size - 1) * size + (size - 3)) * 2; mr[7] = mr[6] + 2; mr[8] = mr[7] + 2;
@@ -4854,28 +4873,39 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
   }
 
   blockMonitoring = true;
-  real159_t t1rH, t1iH, t2rH, t2iH, t3rH, t3iH;
-  realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
-  realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
-  realZero((real_t *)&t3rH); realZero((real_t *)&t3iH);
-  
-  solveCubicEquation159((real_t *)&br, (real_t *)&bi, 
-                      (real_t *)&cr, (real_t *)&ci,
-                      (real_t *)&dr, (real_t *)&di,
-                      (real_t *)&discrR, (real_t *)&discrI,
-                      (real_t *)&t1rH, (real_t *)&t1iH,
-                      (real_t *)&t2rH, (real_t *)&t2iH,
-                      (real_t *)&t3rH, (real_t *)&t3iH,
-                      &ctx159);
+  #if defined(OPTION_EIGEN_159)
+    real159_t t1rH, t1iH, t2rH, t2iH, t3rH, t3iH;
+    realZero((real_t *)&t1rH); realZero((real_t *)&t1iH);
+    realZero((real_t *)&t2rH); realZero((real_t *)&t2iH);
+    realZero((real_t *)&t3rH); realZero((real_t *)&t3iH);
+    
+    solveCubicEquation159((real_t *)&br, (real_t *)&bi, 
+                        (real_t *)&cr, (real_t *)&ci,
+                        (real_t *)&dr, (real_t *)&di,
+                        (real_t *)&discrR, (real_t *)&discrI,
+                        (real_t *)&t1rH, (real_t *)&t1iH,
+                        (real_t *)&t2rH, (real_t *)&t2iH,
+                        (real_t *)&t3rH, (real_t *)&t3iH,
+                        &ctx159);
+   
+    // Convert back to real_t
+    realPlus((real_t*)&t1rH, t1r, realContext);
+    realPlus((real_t*)&t1iH, t1i, realContext);
+    realPlus((real_t*)&t2rH, t2r, realContext);
+    realPlus((real_t*)&t2iH, t2i, realContext);
+    realPlus((real_t*)&t3rH, t3r, realContext);
+    realPlus((real_t*)&t3iH, t3i, realContext);
+  #else //OPTION_EIGEN_159
+    solveCubicEquation(    &br, &bi, 
+                           &cr, &ci,
+                           &dr, &di,
+                           &discrR, &discrI,
+                           t1r, t1i,
+                           t2r, t2i,
+                           t3r, t3i,
+                        &ctx159);
+  #endif //OPTION_EIGEN_159
   blockMonitoring = false;
- 
-  // Convert back to real_t
-  decNumberPlus(t1r, (decNumber *)&t1rH, realContext);
-  decNumberPlus(t1i, (decNumber *)&t1iH, realContext);
-  decNumberPlus(t2r, (decNumber *)&t2rH, realContext);
-  decNumberPlus(t2i, (decNumber *)&t2iH, realContext);
-  decNumberPlus(t3r, (decNumber *)&t3rH, realContext);
-  decNumberPlus(t3i, (decNumber *)&t3iH, realContext);
   
   if (is_real_symmetric) {
     realZero(t1i);

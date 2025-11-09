@@ -100,9 +100,18 @@ void curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
 }
 
 
-
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
 // Complex cube root using Halley's method: x_{n+1} = x_n * (x_n³ + 2z) / (2x_n³ + z)
+//   The point of using this is we cannot use complex trig without a 159 digit precision Taylor et al.
 void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  #define HALLEY_ITER_MAX 15 //8
+  //printf("DEBUG curtComplex159: realContext->digits = %d\n", realContext->digits);
+  #if defined(PC_BUILD)
+    if(realContext->digits != 159) {
+      debugf("==============\nPRECISION ISSUE IN curtComplex159==============\\n");
+    }
+  #endif //PC_BUILD
+
   // create 159 constants
   real159_t const159_1on3, const159_root3on2;
   realZero((real_t *)&const159_1on3);
@@ -187,17 +196,21 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realMultiply((real_t *)&zr, (real_t *)&zr, (real_t *)&temp, realContext);
   realMultiply((real_t *)&zi, (real_t *)&zi, (real_t *)&denom_mag, realContext);
   realAdd((real_t *)&temp, (real_t *)&denom_mag, (real_t *)&temp, realContext);
+  realSquareRoot((real_t *)&temp, (real_t *)&temp, realContext); // |z| = sqrt(zr² + zi²)
   realPower((real_t *)&temp, (real_t *)&const159_1on3, (real_t *)&denom_mag, realContext); // |z|^(1/3)
   
   // Normalize z and scale by |z|^(1/3)
-  realSquareRoot((real_t *)&temp, (real_t *)&temp, realContext); // |z|
   realDivide((real_t *)&zr, (real_t *)&temp, (real_t *)&xr, realContext);
   realDivide((real_t *)&zi, (real_t *)&temp, (real_t *)&xi, realContext);
   realMultiply((real_t *)&xr, (real_t *)&denom_mag, (real_t *)&xr, realContext);
   realMultiply((real_t *)&xi, (real_t *)&denom_mag, (real_t *)&xi, realContext);
+
+  //char dbg[2000];
+  //realToString((real_t *)&xr, dbg); printf("DEBUG curtComplex159: Initial guess xr = %s\n", dbg);
+  //realToString((real_t *)&xi, dbg); printf("DEBUG curtComplex159: Initial guess xi = %s\n", dbg);
   
   // Halley's method iterations: x_{n+1} = x_n * (x_n³ + 2z) / (2x_n³ + z)
-  for(int iter = 0; iter < 8; iter++) {
+  for(int iter = 0; iter < HALLEY_ITER_MAX; iter++) {                                // not optimal to have fixed iterations. Add a convergence check: if |x_n³ - z| / |z| < 10^-160
     // Compute x³ = x * x²
     // First x² = (xr+xi*i)²
     realMultiply((real_t *)&xr, (real_t *)&xr, (real_t *)&temp1r, realContext);
@@ -256,10 +269,66 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
     realCopy((real_t *)&temp1i, (real_t *)&xi);
   }
   
+
+  // After Halley we have one cube root in (xr, xi), and we do not know which one. To select the principal cube root from the three possibilities: Choose the one with the largest real part, and if competing real parts, use the positive imag part as guid to bring us to the first quadrant
+  //char dbg[2000];
+  //realToString((real_t *)&xr, dbg); printf("DEBUG curtComplex159: Initial root xr = %s\n", dbg);
+  //realToString((real_t *)&xi, dbg); printf("DEBUG curtComplex159: Initial root xi = %s\n", dbg);
+  
+  // The three cube roots are: w, w*omega, w*omega^2
+  // where omega = -1/2 + i*sqrt(3)/2
+  real159_t w1r, w1i, w2r, w2i, w3r, w3i;
+  realZero((real_t *)&w1r); realZero((real_t *)&w1i);
+  realZero((real_t *)&w2r); realZero((real_t *)&w2i);
+  realZero((real_t *)&w3r); realZero((real_t *)&w3i);
+  
+  // w1 = current root
+  realCopy((real_t *)&xr, (real_t *)&w1r);
+  realCopy((real_t *)&xi, (real_t *)&w1i);
+  
+  // omega = -1/2 + i*sqrt(3)/2
+  real159_t omega_r, omega_i;
+  realZero((real_t *)&omega_r);
+  realZero((real_t *)&omega_i);
+  realCopy(const_1on2, (real_t *)&omega_r);
+  realChangeSign((real_t *)&omega_r); // -1/2
+  realSquareRoot(const_3, (real_t *)&omega_i, realContext);
+  realDivide((real_t *)&omega_i, const_2, (real_t *)&omega_i, realContext); // sqrt(3)/2
+  //realToString((real_t *)&omega_r, dbg); printf("DEBUG curtComplex159: omega_r = %s\n", dbg);
+  //realToString((real_t *)&omega_i, dbg); printf("DEBUG curtComplex159: omega_i = %s\n", dbg);
+  
+  // w2 = w1 * omega
+  mulComplexComplex159((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w2r, (real_t *)&w2i, realContext);
+  //realToString((real_t *)&w2r, dbg); printf("DEBUG curtComplex159: w2r = %s\n", dbg);
+  //realToString((real_t *)&w2i, dbg); printf("DEBUG curtComplex159: w2i = %s\n", dbg);
+  
+  // w3 = w1 * omega^2 = w1 * conj(omega)
+  realChangeSign((real_t *)&omega_i);
+  mulComplexComplex159((real_t *)&w1r, (real_t *)&w1i, (real_t *)&omega_r, (real_t *)&omega_i, (real_t *)&w3r, (real_t *)&w3i, realContext);
+  //realToString((real_t *)&w3r, dbg); printf("DEBUG curtComplex159: w3r = %s\n", dbg);
+  //realToString((real_t *)&w3i, dbg); printf("DEBUG curtComplex159: w3i = %s\n", dbg);
+  
+  // Select root with largest real part
+  realCopy((real_t *)&w1r, (real_t *)&xr);
+  realCopy((real_t *)&w1i, (real_t *)&xi);
+  //printf("DEBUG curtComplex159: Starting with w1 as candidate\n");
+  
+  if(realCompareLessThan((real_t *)&xr, (real_t *)&w2r)) {
+    //printf("DEBUG curtComplex159: w2 has larger real part than current, selecting w2\n");
+    realCopy((real_t *)&w2r, (real_t *)&xr);
+    realCopy((real_t *)&w2i, (real_t *)&xi);
+  }
+  if(realCompareLessThan((real_t *)&xr, (real_t *)&w3r)) {
+    //printf("DEBUG curtComplex159: w3 has larger real part than current, selecting w3\n");
+    realCopy((real_t *)&w3r, (real_t *)&xr);
+    realCopy((real_t *)&w3i, (real_t *)&xi);
+  }
+  //realToString((real_t *)&xr, dbg); printf("DEBUG curtComplex159: Final selected root xr = %s\n", dbg);
+  //realToString((real_t *)&xi, dbg); printf("DEBUG curtComplex159: Final selected root xi = %s\n", dbg);
   realCopy((real_t *)&xr, resReal);
   realCopy((real_t *)&xi, resImag);
 }
-
+#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
 
 
 
