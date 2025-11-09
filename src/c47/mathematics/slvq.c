@@ -46,7 +46,34 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     realRoots = false;
   }
 
+#if defined(OPTION_SQUARE_159)
+    realContext_t c = ctxtReal75;
+    c.digits = 159;
+    real159_t x1r, x1i, x2r, x2i, r0r, r0i;
+    real159_t aRealH, aImagH, bRealH, bImagH, cRealH, cImagH;
+
+    realPlus(&aReal, (real_t *)&aRealH, &c);
+    realPlus(&aImag, (real_t *)&aImagH, &c);
+    realPlus(&bReal, (real_t *)&bRealH, &c);
+    realPlus(&bImag, (real_t *)&bImagH, &c);
+    realPlus(&cReal, (real_t *)&cRealH, &c);
+    realPlus(&cImag, (real_t *)&cImagH, &c);
+    realZero((real_t*)&r0r);
+    realZero((real_t*)&r0i);
+    realZero((real_t*)&x1r);
+    realZero((real_t*)&x1i);
+    realZero((real_t*)&x2r);
+    realZero((real_t*)&x2i);
+    solveQuadraticEquation((real_t*)&aRealH, (real_t*)&aImagH, (real_t*)&bRealH, (real_t*)&bImagH, (real_t*)&cRealH, (real_t*)&cImagH, (real_t*)&r0r, (real_t*)&r0i, (real_t*)&x1r, (real_t*)&x1i, (real_t*)&x2r, (real_t*)&x2i, &c);
+    realPlus((real_t *)&r0r, &rReal,  &ctxtReal39);
+    realPlus((real_t *)&r0i, &rImag,  &ctxtReal39);
+    realPlus((real_t *)&x1r, &x1Real, &ctxtReal39);
+    realPlus((real_t *)&x1i, &x1Imag, &ctxtReal39);
+    realPlus((real_t *)&x2r, &x2Real, &ctxtReal39);
+    realPlus((real_t *)&x2i, &x2Imag, &ctxtReal39);
+#else // OPTION_SQUARE_159
   solveQuadraticEquation(&aReal, &aImag, &bReal, &bImag, &cReal, &cImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &ctxtReal75);
+#endif // OPTION_SQUARE_159
 
   realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag);
 
@@ -259,7 +286,7 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
 }
 
 
-
+#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
 void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, realContext_t *realContext) {
   
   bool_t realCoefs = realIsZero(aImag) && realIsZero(bImag) && realIsZero(cImag);
@@ -449,3 +476,4 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
     realZero(x2Imag);
   }
 }
+#endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
