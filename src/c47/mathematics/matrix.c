@@ -6056,9 +6056,11 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
           realCopy(&ev2_re, eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2);
           realCopy(&ev2_im, eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2 + 1);
           
-          // Zero off-diagonals
+          // Zero off-diagonals (both upper and lower)
           realZero(eig + ((scan_first_unconverged + 1) * size + scan_first_unconverged) * 2);
           realZero(eig + ((scan_first_unconverged + 1) * size + scan_first_unconverged) * 2 + 1);
+          realZero(eig + (scan_first_unconverged * size + (scan_first_unconverged + 1)) * 2);
+          realZero(eig + (scan_first_unconverged * size + (scan_first_unconverged + 1)) * 2 + 1);
         }
       }
     }
@@ -6162,7 +6164,21 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
       solve3x3Block(a, eig, size, is_real_symmetric, realContext);
     }
     else if(activeSize == 2) {
-      solve2x2Block(a, eig, size, is_real_symmetric, realContext);
+      // Check if already solved by 2×2 scan (off-diagonals should be zero)
+      real_t offdiag_01, offdiag_10;
+      complexMagnitude(eig + (1 * size + 0) * 2, eig + (1 * size + 0) * 2 + 1, &offdiag_01, realContext);
+      complexMagnitude(eig + (0 * size + 1) * 2, eig + (0 * size + 1) * 2 + 1, &offdiag_10, realContext);
+      if(!realCompareLessThan(&offdiag_01, &tol) || !realCompareLessThan(&offdiag_10, &tol)) {
+        #if defined(EIGENDEBUG)
+        printf("solve2x2Block called for unconverged activeSize=2\n");
+        #endif
+        solve2x2Block(a, eig, size, is_real_symmetric, realContext);
+      }
+      #if defined(EIGENDEBUG)
+      else {
+        printf("activeSize=2 but block already solved - skipping solve2x2Block\n");
+      }
+      #endif
     }
     else if(activeSize == 1) {
       realCopy(a, eig);
