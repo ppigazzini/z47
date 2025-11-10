@@ -9,7 +9,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07a12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07a13"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
 // Version 7b6 is a quick bugfix version
@@ -24,6 +24,8 @@
 // Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
 // Version 7a12 temporary test for longpress alpha keys
 // cont.        with generic EDIT; XFN3 1000-digit precision; EigenValue fixl Delete Program fix, and more
+// Version 7b12 is the R47 Test1, delivery firmware
+// Version 7a13 continues with eigenvalue improvements
 
 #if !defined(CALCMODEL)
   #define CALCMODEL USER_C47               // USER_C47 or USER_R47
@@ -53,10 +55,14 @@
 #undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
+#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
+#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+
 
 #if defined(DMCP_BUILD)
 
-  #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
+  #define TWO_FILE_PGM                 // Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
   #define HWM_DM42        1
   #define HWM_DM32        2
@@ -99,6 +105,11 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+      #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+      #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+      #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -127,6 +138,9 @@
     #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
+      #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -1365,7 +1379,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1394,7 +1408,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_VALUE_MAX                           10015
 #define TM_VALUE_TRK                           10016
 #define TM_MENU                                10017
-#define TM_CMP                                 10018 // TM_CMP must be the last in this list
+#define TM_LBLONLY                             10018
+#define TM_VARONLY                             10019
+#define TM_CMP                                 10020 // TM_CMP must be the last in this list
 
 // gamma function type
 #define GAMMA_XYLOWER                              0
