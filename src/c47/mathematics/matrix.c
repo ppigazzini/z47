@@ -5835,38 +5835,36 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
         sumOfSubSupDiagonalAll("Off-diagonal stability test 2: allow convergence if off-diagonals are stable", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &ctxtReal75);
         realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &ctxtReal75);
-        #if defined(EIGENDEBUG)
-          printRealToConsole(&changeOffDiagonalSum,"=== changeOffDiagonalSum: ","\n");
-        #endif
-
+                                        #if defined(EIGENDEBUG)
+                                          printRealToConsole(&changeOffDiagonalSum,"=== changeOffDiagonalSum: ","\n");
+                                        #endif
         // Check if off-diagonal sum is small enough
-        #if defined(EIGENDEBUG)
-          printf("___ Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponentComp(&currentOffDiagonalSum), -(toleranceDigits-1));
-        #endif
-//note temporary 3x
-        if(realGetExponentComp(&currentOffDiagonalSum) <= -(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
-          #if defined(EIGENDEBUG)
-            printf("___  → Off-diagonals sufficiently small - accepting current state\n");
-          #endif                                                                              // Continue without changing converged flag
+                                        #if defined(EIGENDEBUG)
+                                          printf("___ Checking: exp(currentOffDiagonalSum)=%d <= -toleranceDigits=%d\n", realGetExponentComp(&currentOffDiagonalSum), -(toleranceDigits-1));
+                                        #endif
+        if(realGetExponentComp(&currentOffDiagonalSum) <=  -eigenTolerance){ //-(toleranceDigits-1)) {               // Off-diagonals are tiny - accept converged status as-is
+                                        #if defined(EIGENDEBUG)
+                                          printf("___  → Off-diagonals sufficiently small - accepting current state\n");
+                                        #endif                                                                              // Continue without changing converged flag
         }
         // Check if off-diagonal sum is decreasing
         else if(realIsNegative(&changeOffDiagonalSum)) {
-          #if defined(EIGENDEBUG)
-            printf("___  → Off-diagonals decreasing, checking step size:\n     exp(changeOffDiagonalSum)=%d > -(eigenTolerance-extraDigits)=%d\n", realGetExponentComp(&changeOffDiagonalSum), -(eigenTolerance - extraDigits));
-          #endif
+                                        #if defined(EIGENDEBUG)
+                                          printf("___  → Off-diagonals decreasing, checking step size:\n     exp(changeOffDiagonalSum)=%d > -(eigenTolerance-extraDigits)=%d\n", realGetExponentComp(&changeOffDiagonalSum), -(eigenTolerance - extraDigits));
+                                        #endif
           
           // Decreasing - check if change is large enough
           if(realGetExponentComp(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {     // Change is large - good progress
-            #if defined(EIGENDEBUG)
-              printf("___    → Large steps - clearing converged, resetting counter\n");
-            #endif
+                                        #if defined(EIGENDEBUG)
+                                          printf("___    → Large steps - clearing converged, resetting counter\n");
+                                        #endif
             converged = false;
             offdiag_no_improvement_count = 0;                                                // Continue without further action
           }
           else {                                                                             // Change is too small - stagnating
-            #if defined(EIGENDEBUG)
-              printf("___    → Steps too small - stagnation detected, counter=%d\n", offdiag_no_improvement_count + 1);
-            #endif
+                                        #if defined(EIGENDEBUG)
+                                          printf("___    → Steps too small - stagnation detected, counter=%d\n", offdiag_no_improvement_count + 1);
+                                        #endif
             converged = false;
             offdiag_no_improvement_count++;
           }
@@ -5874,17 +5872,17 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         // Off-diagonal sum increased or stayed same
         else {
           // No progress or diverging
-          #if defined(EIGENDEBUG)
-            printf("___ → Off-diagonals not decreasing (changeOffDiagonalSum >= 0), counter=%d\n", offdiag_no_improvement_count + 1);
-          #endif
+                                        #if defined(EIGENDEBUG)
+                                          printf("___ → Off-diagonals not decreasing (changeOffDiagonalSum >= 0), counter=%d\n", offdiag_no_improvement_count + 1);
+                                        #endif
           converged = false;
           offdiag_no_improvement_count++;
         }
         // Check if stagnation threshold reached
         if(offdiag_no_improvement_count >= (is_sym_tridiag ? 7 : 5)) {
-          #if defined(EIGENDEBUG)
-            printf("___ OFF-DIAGONAL STAGNATION: counter=%d >= threshold=%d - BREAKING\n", offdiag_no_improvement_count, (is_sym_tridiag ? 7 : 5));
-          #endif
+                                        #if defined(EIGENDEBUG)
+                                          printf("___ OFF-DIAGONAL STAGNATION: counter=%d >= threshold=%d - BREAKING\n", offdiag_no_improvement_count, (is_sym_tridiag ? 7 : 5));
+                                        #endif
           break;
         }
       }
@@ -6242,7 +6240,8 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   } // size > 3
 
                                                                 #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-                                                                  printComplexMatrix("eig end of 2, 3, >3:",eig, size, size, &ctxtReal4);
+                                                                  printEigenvaluesComparison("eig end of 2, 3, >3:", a, eig, size, iteration, converged);
+                                                            //      printComplexMatrix("eig end of 2, 3, >3:",eig, size, size, &ctxtReal4);
                                                                 #endif
 
                                                                 #if defined(EIGENDEBUG)
