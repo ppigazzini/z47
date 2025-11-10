@@ -268,9 +268,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if(tam.mode == TM_LABEL && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+    if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
-        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL\n");
+        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL/TM_LBLONLY\n");
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
@@ -360,7 +360,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     }
 
     if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
+    if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -818,7 +818,7 @@ returnKeyReleasedFalse:
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
-     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (!(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
@@ -1003,7 +1003,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
         {}
       #endif
     }
-    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
@@ -1052,7 +1052,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-//        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+//        ||((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
         ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )

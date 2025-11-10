@@ -2276,8 +2276,8 @@
 #define MNU_CONVYMMV                2222
 #define ITM_XEQP1                   2223
 #define ITM_RCLP1                   2224
-#define ITM_2225                    2225
-#define ITM_2226                    2226
+#define MNU_TAMVARONLY              2225
+#define MNU_TAMLBLONLY              2226
 #define MNU_EIMCATALOG              2227
 #define MNU_FCNS_EIM                2228
 #define MNU_PREFIX                  2229

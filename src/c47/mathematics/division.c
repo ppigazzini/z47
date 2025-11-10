@@ -58,7 +58,7 @@ void fnDivide(uint16_t unusedButMandatoryParameter) {
 
 
 
-void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
+void divComplexComplex75(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
   real_t realNumer, realDenom, a, b, c, d;
 
   realCopy(numerReal, &a);
@@ -110,7 +110,7 @@ void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const r
 
 }
 
-
+#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
 void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
   real159_t realNumer, realDenom, a, b, c, d;
   
@@ -163,6 +163,23 @@ void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, cons
   realFMA((real_t *)&a, (real_t *)&d, (real_t *)&realNumer, (real_t *)&realNumer, realContext);
   realDivide((real_t *)&realNumer, (real_t *)&realDenom, quotientImag, realContext);
 }
+#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
+
+
+void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
+  if(realContext->digits <= 75) {
+    divComplexComplex75(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
+#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
+  } else
+  if(realContext->digits <= 159) {
+    divComplexComplex159(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
+#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
+  } else {
+    sprintf(errorMessage, "Exceed digits :divComplexComplex: %d", (int)realContext->digits);
+    displayBugScreen(errorMessage);
+  }
+}
+
 
 
 

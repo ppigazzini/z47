@@ -20,7 +20,7 @@
   void mulComplexReal(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2, real_t *productReal, real_t *productImag, realContext_t *realContext);
 
   // This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). The 159 series is needed for 39 digit precision in cuberoots and the cubic formula solver
-  void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext);
+//  void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext);
 
   //      RegYRegX
   void mulLonILonI(void);

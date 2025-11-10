@@ -789,6 +789,9 @@ void debugNIM(void) {
       case TM_SHUFFLE: {
         return "Shuffle ";
       }
+      case TM_LBLONLY:
+        return "LblOnly "
+      }
       case TM_LABEL: {
         return "Label   ";
       }

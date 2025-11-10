@@ -1789,8 +1789,8 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       real34Matrix_t mat;
       linkToRealMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
-        printf("%s", before);
-        printf("Matrix Row %3i: ",r);
+        printf("ReMa %s", before);
+        printf("Row %3i: ",r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real34ToString(&mat.matrixElements[r * mat.header.matrixColumns + c], str);
           printf("%s ", str);
@@ -1798,6 +1798,42 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         printf("\n");
       }
     }
+
+    else if(getRegisterDataType(regist) == dtComplex34Matrix) {
+      uint16_t r, c;
+      complex34Matrix_t mat;
+      linkToComplexMatrixRegister(regist, &mat);
+      for(r = 0; r < mat.header.matrixRows; ++r) {
+        printf("(compact CxMa): %s", before);
+        printf("Row %3i: ",r);
+        for(c = 0; c < mat.header.matrixColumns; ++c) {
+          real_t tmpr;
+          char str[100];
+          uint32_t offset = (r * mat.header.matrixRows + c) * 2;
+          real34ToReal(&mat.matrixElements + offset, &tmpr);
+          realPlus(&tmpr, &tmpr, &ctxtReal4);       // Real part
+          if (realGetExponent(&tmpr) < -50)
+            printf("[≈0 ");
+          else {
+            realToString(&tmpr, str);
+            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            printf("[%s", str);
+          }
+          real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
+          realPlus(&tmpr, &tmpr, &ctxtReal4);       // Imag part
+          if (realGetExponent(&tmpr) < -50)
+            printf(" i≈0] ");
+          else {
+            realToString(&tmpr, str);
+            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            printf(" i%s] ", str);
+          }
+        }
+        printf("\n");
+      }
+    }
+
+
 
 
     else {

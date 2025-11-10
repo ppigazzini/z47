@@ -57,6 +57,7 @@
 
 //****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
 //       will be replaced once the new realtype macros are merged
+#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
   typedef struct {
     int32_t digits;      // Count of digits in the coefficient; >0
     int32_t exponent;    // Unadjusted exponent, unbiased, in
@@ -67,6 +68,7 @@
   } real159_t; // used for cube root and calculateeigenvalues3x3
   #define REAL159_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real159_t))
   #define REAL159_SIZE_IN_BYTES     TO_BYTES(REAL159_SIZE_IN_BLOCKS)
+#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
 //****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
 
 
