@@ -752,7 +752,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
 
 //LAYOUT and KEYS menus different for C47hw, R47hw and SIM
 TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
-#if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
+#if (CALCMODEL != USER_R47)
                                               ITM_NULL,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              -MNU_LAYOUTS,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
 #else
@@ -760,7 +760,7 @@ TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIB
 #endif
 
 
-#if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
+#if (CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
                                              ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL          };
 #else
