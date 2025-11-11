@@ -639,6 +639,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
+    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                       "uint8");   //JM
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
@@ -1221,6 +1222,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     dispBase = 0;
     restoreStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
+    calcModel = USER_C47;
+    restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
 
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if (getSystemFlag(FLAG_FRACT)) {

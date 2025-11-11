@@ -35,6 +35,8 @@
   #endif // (SHOW_MEMORY_STATUS == 1)
   calcKeyboard_t       calcKeyboard[43];
   int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
+  bool_t               resetKeys = false;
+  uint8_t              calcModelNew = 255;
 
   #if defined(EXPORT_ITEMS)
     int sortItems(void const *a, void const *b) {
@@ -108,46 +110,50 @@
         printf("Activated: %s\n",argv[arg]);
       }
 
+      if(strcmp(argv[arg], "--c47") == 0) {
+        calcModelNew = USER_C47;
+        printf("Activated: %s\n",argv[arg]);
+      }
       if(strcmp(argv[arg], "--r47") == 0) {
-        calcModel = USER_R47f_g;
+        calcModelNew = USER_R47f_g;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v0") == 0) {
-        calcModel = USER_R47f_g;
+        calcModelNew = USER_R47f_g;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v1") == 0) {
-        calcModel = USER_R47fg_bk;
+        calcModelNew = USER_R47fg_bk;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v2") == 0) {
-        calcModel = USER_R47fg_g;
+        calcModelNew = USER_R47fg_g;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v3") == 0) {
-        calcModel = USER_R47bk_fg;
+        calcModelNew = USER_R47bk_fg;
         printf("Activated: %s\n",argv[arg]);
       }
 
 
       if(strcmp(argv[arg], "--e47") == 0) {
-        calcModel = USER_E47;
+        calcModelNew = USER_E47;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--n47") == 0) {
-        calcModel = USER_N47;
+        calcModelNew = USER_N47;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--v47") == 0) {
-        calcModel = USER_V47;
+        calcModelNew = USER_V47;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--d47") == 0) {
-        calcModel = USER_D47;
+        calcModelNew = USER_D47;
         printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--dm42") == 0) {
-        calcModel = USER_DM42;
+        calcModelNew = USER_DM42;
         printf("Activated: %s\n",argv[arg]);
       }
 
@@ -189,11 +195,15 @@
         dumpMenus = 2;
       }
 
-      if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
+      if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0 || strcmp(argv[arg], "-h") == 0) {
+        char cc[2];
+        cc[1]=0;
         #if (CALCMODEL == USER_R47)
           #define MODELTEXT "R47"
+          cc[0]='r';
         #else
           #define MODELTEXT "C47"
+          cc[0]='c';
         #endif
         char ss[100];
         char sss[1000];
@@ -204,32 +214,33 @@
         printf("C47/R47 license GPL3, details on 47calc.com\n");
         printf("\n%s",sss);
         printf("Activated: %s\n\n",argv[arg]);
-        printf("c47 --background     : specify background picture\n");
-        printf("c47 --functionkeys   : display function key labels\n\n");
-        printf("c47 --landscape      : landscape orientation\n");
-        printf("c47 --portrait       : portrait orientation\n");
-        printf("c47 --auto           : automatic orientation\n\n");
-        printf("c47 --r47            : R47v0 layout (f g)\n");
-        printf("c47 --r47v0          : R47v0 layout (f g)\n");
-        printf("c47 --r47v1          : R47v1 layout (fg bk)\n");
-        printf("c47 --r47v2          : R47v2 layout (fg g)\n");
-        printf("c47 --r47v3          : R47v3 layout (bk fg) \n");
-        printf("c47 --dm42           : DM42 layout\n");
-        printf("c47 --e47            : E47 layout (SIM only) (sunsetting)\n");
-        printf("c47 --n47            : N47 layout (SIM only) (sunsetting)\n");
-        printf("c47 --v47            : V47 layout (SIM only) (sunsetting)\n");
-        printf("c47 --d47            : D47 layout (SIM only) (sunsetting)\n\n");
-        printf("c47 --jm             : Setting profile: Jaco preferences\n");
-        printf("c47 --rj             : Setting profile: RJvM preferences\n");
-        printf("c47 --hp35           : Setting profile: HP-35 tribute\n\n");
-        printf("c47 --deadkeys       : typewriter style dead keys\n");
-        printf("c47 --swapctrlcode   : ctrl fix for Swiss keyboards\n");
-        printf("c47 --mockup         : output demo status bar layout\n");
-        printf("c47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n");
-        printf("c47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n");
-        printf("c47 --writeexportall : output all PROGs (internal use)\n");
-        printf("c47 --help           : list all SIM switches\n");
-        printf("c47 --h              : see --help\n");
+        printf("%s47 --background     : specify background picture\n", cc);
+        printf("%s47 --functionkeys   : display function key labels\n\n", cc);
+        printf("%s47 --landscape      : landscape orientation\n", cc);
+        printf("%s47 --portrait       : portrait orientation\n", cc);
+        printf("%s47 --auto           : automatic orientation\n\n", cc);
+        printf("%s47 --c47            : C47\n", cc);
+        printf("%s47 --r47            : R47v0 layout (f g)\n", cc);
+        printf("%s47 --r47v0          : R47v0 layout (f g)\n", cc);
+        printf("%s47 --r47v1          : R47v1 layout (fg bk)\n", cc);
+        printf("%s47 --r47v2          : R47v2 layout (fg g)\n", cc);
+        printf("%s47 --r47v3          : R47v3 layout (bk fg) \n", cc);
+        printf("%s47 --dm42           : DM42 layout\n", cc);
+        printf("%s47 --e47            : E47 layout (SIM only) (sunsetting)\n", cc);
+        printf("%s47 --n47            : N47 layout (SIM only) (sunsetting)\n", cc);
+        printf("%s47 --v47            : V47 layout (SIM only) (sunsetting)\n", cc);
+        printf("%s47 --d47            : D47 layout (SIM only) (sunsetting)\n\n", cc);
+        printf("%s47 --jm             : Setting profile: Jaco preferences\n", cc);
+        printf("%s47 --rj             : Setting profile: RJvM preferences\n", cc);
+        printf("%s47 --hp35           : Setting profile: HP-35 tribute\n\n", cc);
+        printf("%s47 --deadkeys       : typewriter style dead keys\n", cc);
+        printf("%s47 --swapctrlcode   : ctrl fix for Swiss keyboards\n", cc);
+        printf("%s47 --mockup         : output demo status bar layout\n", cc);
+        printf("%s47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n", cc);
+        printf("%s47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n", cc);
+        printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
+        printf("%s47 --help           : list all SIM switches\n", cc);
+        printf("%s47 --h              : see --help\n", cc);
         return 0;
       }
     }
@@ -258,6 +269,14 @@
       exit(0);
     #endif // EXPORT_ITEMS
 
+   //set the R47/C47 mode for initial startup, and bear in mind a manual override
+   if(calcModel == USER_R47) {
+      calcModel = USER_R47f_g;  //set the initial mode per sim starting exe file 
+    }
+    if(calcModelNew != 255) {
+      calcModel = calcModelNew; //set the initial mode if forced, override the default name from above
+    }
+
     gtk_init(&argc, &argv);
     setupUI();
 
@@ -275,6 +294,35 @@
 
     restoreCalc();
 
+
+    //set the calculator type again if it changes after loading the backup file
+    if(calcModelNew != 255) {
+      calcModel = calcModelNew;
+      resetKeys = true;
+    }
+    if(CALCMODEL == USER_R47) {
+      if(!isR47FAM) {
+        fnRESET_MyM(ITM_RIBBON_R47);            // Reset Menu MyMenu
+        calcModel = USER_R47f_g;
+        resetKeys = true;
+      }
+    }
+    if(CALCMODEL == USER_C47) {
+      if(calcModel != USER_C47) {
+        fnRESET_MyM(ITM_RIBBON_C47);            // Reset Menu MyMenu
+        calcModel = USER_C47;
+        resetKeys = true;
+      }
+    }
+    if(resetKeys) {
+      printf("Resetting keys\n");
+      fnKeysManagement(calcModel);
+      fnRefreshState();
+      calcModeNormal();
+    }
+
+
+    //set the special user profule
     switch(config) {
       case 1: fnSetJM(0);   break;
       case 2: fnSetRJ(0);   break;
