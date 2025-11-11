@@ -269,8 +269,8 @@
       exit(0);
     #endif // EXPORT_ITEMS
 
-   //set the R47/C47 mode for initial startup, and bear in mind a manual override
-   if(calcModel == USER_R47) {
+    //set the R47/C47 mode for initial startup, and bear in mind a command line override
+    if(calcModel == USER_R47) {
       calcModel = USER_R47f_g;  //set the initial mode per sim starting exe file 
     }
     if(calcModelNew != 255) {
@@ -301,6 +301,10 @@
       resetKeys = true;
     }
     if(CALCMODEL == USER_R47) {
+      if(calcModelNew == USER_C47) {
+        calcModel = calcModelNew;
+        resetKeys = true;
+      } else
       if(!isR47FAM) {
         fnRESET_MyM(ITM_RIBBON_R47);            // Reset Menu MyMenu
         calcModel = USER_R47f_g;
@@ -308,6 +312,10 @@
       }
     }
     if(CALCMODEL == USER_C47) {
+      if(calcModelNew == USER_R47f_g || calcModelNew == USER_R47fg_g || calcModelNew == USER_R47fg_bk || calcModelNew == USER_R47bk_fg) {
+        calcModel = calcModelNew;
+        resetKeys = true;        
+      } else
       if(calcModel != USER_C47) {
         fnRESET_MyM(ITM_RIBBON_C47);            // Reset Menu MyMenu
         calcModel = USER_C47;
