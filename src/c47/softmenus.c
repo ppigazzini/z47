@@ -750,24 +750,13 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
                                              ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
 
 
-//LAYOUT and KEYS menus different for C47hw, R47hw and SIM
+//KEYS menu different for C47, R47
 TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
 #if (CALCMODEL != USER_R47)
-                                              ITM_NULL,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
-                                             -MNU_LAYOUTS,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
+                                             ITM_USER_C47,              ITM_USER_DM42,             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL         };
 #else
-                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL,         };
+                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL         };
 #endif
-
-
-#if (CALCMODEL != USER_R47)
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
-                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL          };
-#else
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  };
-#endif
-
-
 
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,
@@ -1002,7 +991,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 135 */  {.menuItem = -MNU_GAP_RX,      .numItems = sizeof(menu_GAP_RX        )/sizeof(int16_t), .softkeyItem = menu_GAP_RX         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 136 */  {.menuItem = -MNU_GAP_R,       .numItems = sizeof(menu_GAP_R         )/sizeof(int16_t), .softkeyItem = menu_GAP_R          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 137 */  {.menuItem = -MNU_PREFIX,      .numItems = sizeof(menu_PREFIX        )/sizeof(int16_t), .softkeyItem = menu_PREFIX         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 138 */  {.menuItem = -MNU_LAYOUTS,     .numItems = sizeof(menu_LAYOUTS       )/sizeof(int16_t), .softkeyItem = menu_LAYOUTS        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 138 */  {.menuItem = -MNU_2233,        .numItems = 0,                                           .softkeyItem = NULL        },       // NOTE Next menu to use!
 /* 139 */  {.menuItem = -MNU_RESETS,      .numItems = sizeof(menu_RESETS        )/sizeof(int16_t), .softkeyItem = menu_RESETS         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 140 */  {.menuItem = -MNU_RIBBONS,     .numItems = sizeof(menu_RIBBONS       )/sizeof(int16_t), .softkeyItem = menu_RIBBONS        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 141 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
