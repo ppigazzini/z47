@@ -332,7 +332,7 @@ void Sett(int16_t grp) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
+    #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": HP35 defaults");
       fnKeyExit(0);                            //Clear pending key input
@@ -353,6 +353,7 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     fnDrop(NOPARAM);
     fnSquare(0);
     resetOtherConfigurationStuff();
@@ -380,10 +381,12 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(161);
-    }
+  #endif //#!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     resetOtherConfigurationStuff();
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": RJvM defaults");
@@ -396,7 +399,8 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(165);
-    }
+  #endif //!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
@@ -1217,7 +1221,7 @@ void restoreStats(void){
 
 
     TO_QSPI const numberstr indexOfMsgs[] = {
-      {0,USER_C47,      "C47: Classic single shift (DM42 base"  },
+      {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
       {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
       {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
