@@ -106,7 +106,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       return FILE_OK;
 
     case ioPathBackup:
-      strcpy(filename, "backup.cfg");
+      strcpy(filename, CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg");
       return FILE_OK;
 
     case ioPathRegDump:

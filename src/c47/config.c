@@ -1217,7 +1217,7 @@ void restoreStats(void){
 
 
     TO_QSPI const numberstr indexOfMsgs[] = {
-      {0,USER_C47,      "C47: Classic single shift (DM42 base"  },
+      {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
       {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
       {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},

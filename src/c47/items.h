@@ -2284,7 +2284,7 @@
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
 #define MNU_ALLVARS                 2232
-#define MNU_LAYOUTS                 2233
+#define MNU_2233                    2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
 #define ITM_YY_DFLT_OLD             2236
