@@ -229,7 +229,6 @@
 
 
   extern uint8_t calcModel;
-  //TODO calModel resets, it must still be saved in backup.cfg and in the state files
 
 
   // Variables stored in FLASH
