@@ -584,101 +584,42 @@ static void decodeLiteral(uint8_t *literalAddress) {
       char *sourceStringPtr = tmpStringLabelOrVariableName;
       getStringLabelOrVariableName(literalAddress);
       _decodeNumeral(dispStringPtr, sourceStringPtr, false, &dispStringPtr, (const char **)&sourceStringPtr);
-
       if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0 && tmpString[0] == '0' && tmpString[1] == '.' && tmpString[2] == 0) {
         // remove "0." (not "0.0", "0.00" etc.)
         tmpString[0] = 0;
         dispStringPtr = tmpString;
       }
-
-      //printStringToConsole(sourceStringPtr,"sourceStringPtr:","\n");
-      if(getSystemFlag(FLAG_CPXMULT)) {
-
-//FLAG_CPXMULT (WP43)
-        if(*sourceStringPtr == 'i' || *sourceStringPtr == 'j') {
+      if(*sourceStringPtr == 'i' || *sourceStringPtr == 'j') { // unlikely
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0 || tmpString[0] != 0) {
           *(dispStringPtr++) = '+';
-        //*(dispStringPtr++) = '+';                  //This seemingly 'duplicated' + is from WP43 code. I do not know why it is here. Also not handled below. Seems wrong. This branch seems not to be used.
+        }
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
           *(dispStringPtr++) = COMPLEX_UNIT[0];
           *(dispStringPtr++) = COMPLEX_UNIT[1];
-          ++sourceStringPtr;
         }
-        else
-        if(*sourceStringPtr == '+' || *sourceStringPtr == '-') {
-          *(dispStringPtr++) = *(sourceStringPtr++);
+        ++sourceStringPtr;
+      }
+      else if(*sourceStringPtr == '+' || *sourceStringPtr == '-') {
+        *(dispStringPtr++) = *(sourceStringPtr++);
+        if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0 && dispStringPtr - tmpString == 1 && *(sourceStringPtr - 1) == '+') {
+          --dispStringPtr;
+        }
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
           *(dispStringPtr++) = COMPLEX_UNIT[0];
           *(dispStringPtr++) = COMPLEX_UNIT[1];
-          ++sourceStringPtr;
         }
+        ++sourceStringPtr;
+      }
+      if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
         *(dispStringPtr++) = PRODUCT_SIGN[0];
         *(dispStringPtr++) = PRODUCT_SIGN[1];
-        //printStringToConsole(tmpString,"tmpString:","\n");
-        _decodeNumeral(dispStringPtr, sourceStringPtr, calcMode == CM_PEM && aimBuffer[0] != 0 && (currentStep + 2 == literalAddress), &dispStringPtr, NULL);
-
-      } else {
-
-//!FLAG_CPXMULT
-        if(*sourceStringPtr == 'i' || *sourceStringPtr == 'j') {
-          *(dispStringPtr++) = '+';
-        //*(dispStringPtr++) = '+';                  //This seemingly 'duplicated' + is from WP43 code. I do not know why it is here. Also not handled below. Seems wrong. This branch seems not to be used.
-          *(dispStringPtr++) = COMPLEX_UNIT[0];
-          *(dispStringPtr++) = COMPLEX_UNIT[1];
-          *(dispStringPtr++) = PRODUCT_SIGN[0];
-          *(dispStringPtr++) = PRODUCT_SIGN[1];
-          ++sourceStringPtr;
-        }
-        else {
-
-          char sign = *sourceStringPtr;
-          char unit_char = *(sourceStringPtr + 1);
-          if ((sign == '+' || sign == '-') && (unit_char == 'i' || unit_char == 'j')) {
-            sourceStringPtr += 2;  // Skip sign and unit
-            char* number_start = (char*)sourceStringPtr;
-            int has_decimal = 0;
-            
-            // Find end of number and validate
-            while ((*sourceStringPtr >= '0' && *sourceStringPtr <= '9') || 
-                   (*sourceStringPtr == '.' && !has_decimal)) {
-              if (*sourceStringPtr == '.') has_decimal = 1;
-              sourceStringPtr++;
-            }
-            char* number_end = (char*)sourceStringPtr;
-            int number_len = number_end - number_start;
-            
-            // Build output string
-            *(dispStringPtr++) = sign;
-            
-            if (number_len == 0) {
-              *(dispStringPtr++) = '1';
-              *(dispStringPtr++) = '.';
-            } else {
-              memcpy(dispStringPtr, number_start, number_len);
-              dispStringPtr += number_len;
-              
-              // Add trailing dot if it's an integer (no decimal found)
-              if (!has_decimal) {
-                *(dispStringPtr++) = '.';
-              }
-            }
-            
-            // Add product sign and complex unit
-            *(dispStringPtr++) = PRODUCT_SIGN[0];
-            *(dispStringPtr++) = PRODUCT_SIGN[1];
-            *(dispStringPtr++) = COMPLEX_UNIT[0];
-            *(dispStringPtr++) = COMPLEX_UNIT[1];
-          } else {
-            // fallback if not as expected +j
-            *(dispStringPtr++) = sign;
-            *(dispStringPtr++) = COMPLEX_UNIT[0];
-            *(dispStringPtr++) = COMPLEX_UNIT[1];
-            *(dispStringPtr++) = PRODUCT_SIGN[0];
-            *(dispStringPtr++) = PRODUCT_SIGN[1];
-            sourceStringPtr += 2;
-          }
-        }
-        _decodeNumeral(dispStringPtr, sourceStringPtr, true /*pretending it is longit, to supress trailing dot*/, &dispStringPtr, NULL);
-
       }
-      //printStringToConsole(tmpString,"tmpString:","\n");
+      _decodeNumeral(dispStringPtr, sourceStringPtr, calcMode == CM_PEM && aimBuffer[0] != 0 && (currentStep + 2 == literalAddress), &dispStringPtr, NULL);
+      if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0) {
+        *(dispStringPtr++) = COMPLEX_UNIT[0];
+        *(dispStringPtr++) = COMPLEX_UNIT[1];
+        *dispStringPtr = 0;
+      }
       break;
     }
 
