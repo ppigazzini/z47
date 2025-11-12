@@ -155,13 +155,13 @@ DIST_DIR_DM = $(DMCP_DIST_DIR)
 dist_install_DM: build.rel/wiki
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
-	cp -r res/offimg/Egypt/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Norway/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Netherlands/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/From\ WP43/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/General/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/HP\ related/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/C47/ $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Egypt/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Norway/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Netherlands/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/From\ WP43/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/General/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/HP\ related/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/C47/. $(DIST_DIR_DM)/offimg
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
 	cp -r res/STATE $(DIST_DIR_DM)
 	cp res/keymaps/keymap_DM42.bin $(DIST_DIR_DM)/resources
