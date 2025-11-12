@@ -1716,7 +1716,7 @@ int16_t lastItem = 0;
   }
 
 
-
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     typedef struct {
       uint8_t itm0;
       uint8_t itm1;
@@ -1864,6 +1864,7 @@ int16_t lastItem = 0;
       return false;
       }
 
+#endif //SAVE_SPACE_DM42_24_PROFILES
 
 
 
@@ -1921,10 +1922,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
-      if(checkNumber((uint8_t)keyCode)) {
-        item = ITM_CLRMOD;
-      }
 
+      #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+        if(checkNumber((uint8_t)keyCode)) {
+          item = ITM_CLRMOD;
+        }
+      #endif //SAVE_SPACE_DM42_24_PROFILES
       asnKey[0] = ((uint8_t *)data)[0];
       asnKey[1] = ((uint8_t *)data)[1];
       asnKey[2] = 0;
