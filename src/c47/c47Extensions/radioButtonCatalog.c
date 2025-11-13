@@ -197,7 +197,9 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
   
   {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
-  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM}
+  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM},
+  {ITM_PRINTERON,        true,                   RB_PRON},
+  {ITM_PRINTEROFF,       false,                  RB_PRON}
   
 };
 
@@ -313,6 +315,9 @@ int8_t fnCbIsSet(int16_t item) {
                      break;
 
         case RB_PRM: rb_param = printerState.printer_model;
+                     break;
+
+        case RB_PRON: rb_param = printerState.print_on;
                      break;
 
         case CB_JC:  is_cb = true;

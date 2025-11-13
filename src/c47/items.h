@@ -2332,7 +2332,7 @@
 #define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_PCURVE                  2277 // The SFL item names are not used
 #define SFL_CLX_DROP                2278 // The SFL item names are not used
-#define SFL_2279                    2279 // The SFL item names are not used
+#define SFL_PRTEN                   2279 // The SFL item names are not used
 #define SFL_2280                    2280 // The SFL item names are not used
 #define SFL_2281                    2281 // The SFL item names are not used
 #define SFL_2282                    2282 // The SFL item names are not used
@@ -2638,8 +2638,10 @@
 #define ITM_PRINTEROTHER            2557
 #define ITM_TRACE                   2558
 #define ITM_PRINTERDLAYQ            2559
+#define ITM_PRINTERON               2560
+#define ITM_PRINTEROFF              2561
 
-#define LAST_ITEM                   2560
+#define LAST_ITEM                   2562
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -622,7 +622,7 @@
 #define FLAG_GROW                             0x801d
 #define FLAG_AUTOFF                           0x801e
 #define FLAG_AUTXEQ                           0x801f
-#define FLAG_PRTACT                           0x8020
+#define FLAG_PRTACT                           0xc020
 #define FLAG_NUMIN                            0x8021
 #define FLAG_ALPIN                            0x8022
 #define FLAG_ASLIFT                           0xc023
@@ -682,8 +682,9 @@
 #define FLAG_BCD                              0x8059 //26
 #define FLAG_PCURVE                           0x805A //27
 #define FLAG_CLX_DROP                         0x805B //28
+#define FLAG_PRTEN                            0x805C //29
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+29 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -713,7 +714,8 @@ typedef enum {
   LI_POSITIVE = 2  // Long integer sign +
 } longIntegerSign_t;
 
-
+#define PROFF   0
+#define PRON    1
 
 typedef enum {
   PRINT_BYTE, 

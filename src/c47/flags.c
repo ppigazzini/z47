@@ -686,6 +686,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_2TO10:
     case FLAG_PROPFR:
     case FLAG_PRTACT:
+    case FLAG_PRTEN:
     case FLAG_TRACE:
     case FLAG_LEAD0:
     case FLAG_CPXRES:
