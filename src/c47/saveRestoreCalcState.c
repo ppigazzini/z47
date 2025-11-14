@@ -41,6 +41,7 @@
 Current version defaults all non-loaded settings from previous version files correctly
 */
 
+#define backupFileName (CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg")
 
 #define LOADDEBUG
 #undef LOADDEBUG
@@ -445,6 +446,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
+    saveStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
     saveStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     saveStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
@@ -639,6 +642,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
+    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                       "uint8");   //JM
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
@@ -721,7 +725,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     if(paramCurrent == NULL) {
-      printf("Parameter %s of type %s not found in file backup.cfg\n", valueName, valueType);
+      printf("Parameter %s of type %s not found in file %s\n", valueName, valueType, backupFileName);
       printf("Using default value for %s\n", valueName);
       return;
     }
@@ -867,7 +871,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         return;
       }
       else {
-        printf("Cannot restore calc's memory from file backup.cfg! Performing RESET\n");
+        printf("Cannot restore calc's memory from file %s! Performing RESET\n", backupFileName);
         refreshScreen(91);
         return;
       }
@@ -897,7 +901,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
     if(ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
       refreshScreen(92);
-      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg is from incompatible RAM size.\n");
+      printf("Cannot restore calc's memory from file %s! File %s is from incompatible RAM size.\n", backupFileName, backupFileName);
       printf("       Backup file      Program\n");
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
@@ -906,7 +910,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     else if(backupVersion == 0 || backupVersion < 1011) {
       refreshScreen(92);
       printf("\n");
-      userAbort("Cannot restore calc's memory from file backup.cfg! File backup.cfg has a too low version number.");
+      char ss[150];
+      sprintf(ss, "Cannot restore calc's memory from file %s! File %s has a too low version number.", backupFileName, backupFileName);
+      userAbort(ss);
       userAbort("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
       return;
     }
@@ -992,6 +998,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    lastI = 0;
+    lastJ = 0;
+    restoreStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
+    restoreStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     restoreStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
     restoreStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     restoreStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
@@ -1221,6 +1231,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     dispBase = 0;
     restoreStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
+    calcModel = USER_C47;
+    restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
 
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if (getSystemFlag(FLAG_FRACT)) {

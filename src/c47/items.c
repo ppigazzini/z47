@@ -288,6 +288,18 @@ bool_t isFunctionOldParam16(uint16_t func) {
       LastOpTimerLap(func);
     }
 
+#if !defined(TESTSUITE_BUILD)
+    // mark the previous I and J, when STOSEQ and RCLSEQ are being used
+    real_t iir,jjr;
+    if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
+      lastI=realToUint32C47(&iir);
+      lastJ=realToUint32C47(&jjr);
+    } else {
+      lastI = 0xFFFF;
+      lastJ = 0xFFFF;
+    }
+#endif //TESTSUITE_BUILD
+
 
     //**RunFunction
     if(!itemNotAvail(func)) {
@@ -399,9 +411,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
       bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
       bool_t inLocalRegisters =     (param >= FIRST_LOCAL_REGISTER && param < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
       bool_t isMatrix = (func == ITM_RCL || func == ITM_STO) ? ((inRegisterRange || inReservedRange || inNameRegisterRange || inLocalRegisters) ? (getRegisterDataType(param) == dtReal34Matrix || getRegisterDataType(param) == dtComplex34Matrix) : false) : false;
-      bool_t matrixIndexed = ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
       uint16_t rr;
-      calcRegister_t regStats;
+      calcRegister_t regStats = FAILED_INDIRECTION;
       if(inNameRegisterRange) regStats = findNamedVariable("STATS");
 
       switch(func) {
@@ -420,8 +431,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = \
-                               (param == REGISTER_I) && matrixIndexed ? TI_I : \
-                               (param == REGISTER_J) && matrixIndexed ? TI_J : \
+                               (param == REGISTER_I) && isMatrixIndexed() ? TI_I : \
+                               (param == REGISTER_J) && isMatrixIndexed() ? TI_J : \
                                (inNameRegisterRange) ? ((isStatsMatrixN(&rr, regStats) && param == regStats) ? TI_STATISTIC_SUMS : TI_STORCL) : \
                                (isMatrix) ? TI_STORCL : \
                                (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : \
@@ -429,14 +440,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
-        case ITM_INDEX:
+        case ITM_STOEL       : if(isMatrixIndexed()) temporaryInformation = TI_MIJEQ;   break;
+
+        case ITM_INDEX       :
         case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
-        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
+        case ITM_JMINUS      : if(isMatrixIndexed()) temporaryInformation = TI_MIJ;   break;
+
         case ITM_RCLIJ       :
-        case ITM_STOIJ       : if(matrixIndexed) temporaryInformation = TI_IJ;    break;
+        case ITM_STOIJ       : if(isMatrixIndexed()) temporaryInformation = TI_IJ;    break;
         default:;
       }
 
@@ -3858,7 +3871,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2230 */  { itemToBeCoded,                NOPARAM,                     "NUMBRS",                                      "NUMBRS",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2231 */  { itemToBeCoded,                NOPARAM,                     "CONFIGS",                                     "CONFIGS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2232 */  { itemToBeCoded,                NOPARAM,                     "ALLVARS",                                     "ALL",                                         (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2233 */  { itemToBeCoded,                NOPARAM,                     "LAYOUTS",                                     "LAYOUTS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2233 */  { itemToBeCoded,                NOPARAM,                     "2233",                                        "2233",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2234 */  { itemToBeCoded,                NOPARAM,                     "RESETS",                                      "RESETS",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2235 */  { itemToBeCoded,                NOPARAM,                     "RIBBONS",                                     "RIBBONS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 

@@ -139,33 +139,25 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
   static bool_t storeIjReal(real34Matrix_t *matrix) {
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger && getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-      longInteger_t i, j;
-      convertLongIntegerRegisterToLongInteger(REGISTER_Y, i);
-      convertLongIntegerRegisterToLongInteger(REGISTER_X, j);
-      if(longIntegerCompareInt(i, 0) > 0 && longIntegerCompareUInt(i, matrix->header.matrixRows) <= 0 && longIntegerCompareInt(j, 0) > 0 && longIntegerCompareUInt(j, matrix->header.matrixColumns) <= 0) {
+    uint32_t rows, cols;
+    if(getDimensionArg(&rows, &cols)) {
+      if(rows > 0 && rows <= matrix->header.matrixRows && cols > 0 && cols <= matrix->header.matrixColumns) {
         copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_I);
         copySourceRegisterToDestRegister(REGISTER_X, REGISTER_J);
+        return true;
       }
       else {
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          uint16_t row, col;
-          longIntegerToUInt32(i, row);
-          longIntegerToUInt32(j, col);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", row, col);
+          sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
           moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
-      longIntegerFree(i);
-      longIntegerFree(j);
     }
-    else {
+    else if(lastErrorCode == ERROR_NONE){
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Cannot store %s in a matrix", getRegisterDataTypeName(REGISTER_X, true, false));
+        sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
