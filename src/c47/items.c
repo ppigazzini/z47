@@ -291,7 +291,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 #if !defined(TESTSUITE_BUILD)
     // mark the previous I and J, when STOSEQ and RCLSEQ are being used
     real_t iir,jjr;
-    if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && matrixIndexed && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
+    if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
       lastI=realToUint32C47(&iir);
       lastJ=realToUint32C47(&jjr);
     } else {
@@ -431,8 +431,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = \
-                               (param == REGISTER_I) && matrixIndexed ? TI_I : \
-                               (param == REGISTER_J) && matrixIndexed ? TI_J : \
+                               (param == REGISTER_I) && isMatrixIndexed() ? TI_I : \
+                               (param == REGISTER_J) && isMatrixIndexed() ? TI_J : \
                                (inNameRegisterRange) ? ((isStatsMatrixN(&rr, regStats) && param == regStats) ? TI_STATISTIC_SUMS : TI_STORCL) : \
                                (isMatrix) ? TI_STORCL : \
                                (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : \
@@ -440,16 +440,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
+        case ITM_STOEL       : if(isMatrixIndexed()) temporaryInformation = TI_MIJEQ;   break;
 
         case ITM_INDEX       :
         case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
-        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
+        case ITM_JMINUS      : if(isMatrixIndexed()) temporaryInformation = TI_MIJ;   break;
 
         case ITM_RCLIJ       :
-        case ITM_STOIJ       : if(matrixIndexed) temporaryInformation = TI_IJ;    break;
+        case ITM_STOIJ       : if(isMatrixIndexed()) temporaryInformation = TI_IJ;    break;
         default:;
       }
 

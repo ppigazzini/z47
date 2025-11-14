@@ -2065,9 +2065,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 
 
-#define matrixIndexed                        ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix))
-
-
 
 #if defined(DMCP_BUILD)
   #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
