@@ -193,6 +193,8 @@
 
   // Variables for the simulator
   #if !defined(GENERATE_CATALOGS)
+    extern uint16_t lastI;
+    extern uint16_t lastJ;
     extern int16_t lastFunc;
     extern int16_t lastParam;
     extern char    lastTemp[16];

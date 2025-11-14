@@ -1229,7 +1229,7 @@ void restoreStats(void){
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
       {0,USER_PRESET,  "P.FN menu reset to default"                      },
-      {0,USER_KRESET,  "USER keys cleaned"                               },
+      {0,USER_KRESET,  "Key assignments cleaned"                         },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
@@ -1314,6 +1314,8 @@ void resetOtherConfigurationStuff(void) {
   dispBase = 0;
 
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastI = 0;
+    lastI = 0;
     lastFunc    = 0;
     lastParam   = 0;
     lastTemp[0] = 0;
