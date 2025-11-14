@@ -1106,6 +1106,11 @@ void fnVectorAngle(uint16_t unusedParamButMandatory) {
 }
 
 
+bool_t isMatrixIndexed(void) {
+  return ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
+}
+
+
 void fnIndexMatrix(uint16_t regist) {
   #if !defined(TESTSUITE_BUILD)
   if((getRegisterDataType(regist) == dtReal34Matrix) || (getRegisterDataType(regist) == dtComplex34Matrix)) {

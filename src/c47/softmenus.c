@@ -2146,7 +2146,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
       case ITM_IPLUS   :
       case ITM_IMINUS  :
-                      if(matrixIndexed && getRegisterAsRealQuiet(REGISTER_I, &tmpR)) {
+                      if(isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &tmpR)) {
                         sprintf(tmpS, STD_SPACE_3_PER_EM STD_SPACE_3_PER_EM "%u",(uint16_t)realToUint32C47(&tmpR));
                         stringCopy(showText + stringByteLength(showText), tmpS);
                         *showValue = NOVAL;
@@ -2155,7 +2155,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
       case ITM_JPLUS   :
       case ITM_JMINUS  :
-                      if(matrixIndexed && getRegisterAsRealQuiet(REGISTER_J, &tmpR)) {
+                      if(isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_J, &tmpR)) {
                         sprintf(tmpS, STD_SPACE_3_PER_EM STD_SPACE_3_PER_EM "%u",(uint16_t)realToUint32C47(&tmpR));
                         stringCopy(showText + stringByteLength(showText), tmpS);
                         *showValue = NOVAL;
