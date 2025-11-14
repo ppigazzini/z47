@@ -18,6 +18,8 @@
 #endif
 
 #if !defined(GENERATE_CATALOGS)
+  uint16_t lastI = 0;
+  uint16_t lastJ = 0;
   int16_t lastFunc = 0;
   int16_t lastParam = 0;
   char    lastTemp[16];
