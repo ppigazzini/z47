@@ -19,6 +19,7 @@
    *
    * \param[in] regist
    */
+  bool_t     getDimensionArg                (uint32_t *rows, uint32_t *cols);
   void       fnSetMatrixDimensions          (uint16_t regist);
   void       fnSetMatrixDimensionsGr        (uint16_t regist);
 
