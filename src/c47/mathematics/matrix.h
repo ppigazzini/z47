@@ -93,6 +93,7 @@
    *
    * \param[in] regist
    */
+  bool_t     isMatrixIndexed                (void);
   void       fnIndexMatrix                  (uint16_t regist);
 
   /**
