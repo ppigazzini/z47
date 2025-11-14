@@ -446,6 +446,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
+    saveStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
     saveStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     saveStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
@@ -996,6 +998,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    lastI = 0;
+    lastJ = 0;
+    restoreStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
+    restoreStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     restoreStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
     restoreStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     restoreStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");

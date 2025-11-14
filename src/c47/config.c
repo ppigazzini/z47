@@ -1314,6 +1314,8 @@ void resetOtherConfigurationStuff(void) {
   dispBase = 0;
 
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastI = 0;
+    lastI = 0;
     lastFunc    = 0;
     lastParam   = 0;
     lastTemp[0] = 0;
