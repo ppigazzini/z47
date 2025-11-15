@@ -356,7 +356,7 @@ void Sett(int16_t grp) {
   #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     fnDrop(NOPARAM);
     fnSquare(0);
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": Jaco defaults");
 
@@ -387,7 +387,7 @@ void Sett(int16_t grp) {
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
   #if !defined(SAVE_SPACE_DM42_24_PROFILES)
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": RJvM defaults");
 
@@ -1276,7 +1276,7 @@ void defaultStatusBar(void) {
 }
 
 
-void resetOtherConfigurationStuff(void) {
+void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   cancelFilename = true;
   lastStateFileOpened[0]=0;
 
@@ -1295,9 +1295,11 @@ void resetOtherConfigurationStuff(void) {
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
   IrFractionsCurrentStatus = CF_NORMAL;
-  Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
-  Norm_Key_00.funcParam[0] = 0;
-  Norm_Key_00.used = false;
+  if(allowUserKeys) {
+    Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
+    Norm_Key_00.funcParam[0] = 0;
+    Norm_Key_00.used = false;
+  }
   Input_Default =  ID_43S;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplaySign = BCDu;
@@ -1499,7 +1501,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
 
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
 
     statisticalSumsPointer = NULL;
     savedStatisticalSumsPointer = NULL;
