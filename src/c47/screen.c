@@ -426,7 +426,7 @@ char letteredRegisterName(calcRegister_t regist) {
       for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS; sum++) {
         ptr += strlen(ptr);
         strcpy(sumName, StatSumNames[sum]);
-  
+
         sprintf(ptr, LINEBREAK "SR%02d = ", sum);
         ptr += strlen(ptr);
         stringToUtf8(sumName, (uint8_t *)ptr);
@@ -2371,18 +2371,33 @@ void createSubstrings(uint8_t number) {
     }
     real_t iir,jjr;
 
-    if(getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
-      int32_t iii, jji;
+    int32_t iii, jji;
+    bool_t bb;
+    // uses errorMessage string to store old I & J
+    iii = lastI;
+    jji = lastJ;
+    if(iii == 0xFFFF || jji == 0xFFFF) {
+      bb = getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr);
       iii=realToUint32C47(&iir);
       jji=realToUint32C47(&jjr);
+    } else {
+      bb = true;      
+    }
+
+
+    if(bb) {
       if(0 <= iii && iii < 200 && 0 <= jji && jji < 200) {
         prefix[0] = 0;
         *prefixWidth = 0;
         char tmp[16];
         nameRegis(matrixIndex, tmp);
-//[Ir Jc]=INDEXname[1, 2]=
-        if(regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) {
+// M[Ir Jc]=INDEXname[1, 2]=
+        if(regist == REGISTER_X && temporaryInformation == TI_MIJEQ) {
           sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]%s",tmp, (uint8_t)iii,(uint8_t)jji,(temporaryInformation == TI_MIJEQ ? "=" : ""));
+        }
+// M[Ir Jc]=INDEXname[1, 2]
+        else if(regist == REGISTER_X && temporaryInformation == TI_MIJ) {
+          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]",tmp, (uint8_t)iii,(uint8_t)jji);
         }
 //R00 [Ir=1 Jc=1]: Jc=
         else if(regist == REGISTER_X && ((iii != 0 && temporaryInformation == TI_I) || (jji != 0 && temporaryInformation == TI_J))) {
@@ -2392,9 +2407,9 @@ void createSubstrings(uint8_t number) {
 //R00: Jr=
         else if(iii != 0 && jji != 0) {
           if(regist == REGISTER_Y) {
-            sprintf(prefix,"%s:I" STD_SUB_r "=",tmp);
+            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:I" STD_SUB_r "=",tmp);
           } else if(regist == REGISTER_X) {
-            sprintf(prefix,"%s:J" STD_SUB_c "=",tmp);
+            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:J" STD_SUB_c "=",tmp);
           }
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -2684,7 +2699,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
     } else {
       if(XXFNMODEACTIVE) {
-        fnDisplayStack(3);        
+        fnDisplayStack(3);
       }
     }
 
@@ -4505,11 +4520,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {
               int day;
-              if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
-                day = (int)tmpString[4] - '0';
-              } else {
-                day = (int)tmpString[0] - '0';
-              }
+              longInteger_t li;
+              getRegisterAsLongInt(REGISTER_X, li, NULL); // Cannot fail as REGISTER_X is a dtLongInteger
+              longIntegerToInt32(li, day);
+              longIntegerFree(li);
               if(day < 1 || day > 7) {
                 day = 0;
               }
