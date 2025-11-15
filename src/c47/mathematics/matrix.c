@@ -20,9 +20,9 @@
     #define EIGENDEBUGMINIMAL
     #define EIGEN_TESTOUT
     #define EIGENDEBUG_QR
-    //#undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
-    //#undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
-    //#undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
+    #undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
+    #undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
+    #undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
     #undef EIGENDEBUG_QR
   #else
     #define maxEigenIter 10000
@@ -42,6 +42,7 @@
   #endif
 
   #define eigenTolerance          (min(70,toleranceDigits*2))
+  #define blockDetectionTolerance 40
   #define symmetricTolerance      30
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
   #define eigenContext            &ctxtReal75
@@ -5174,7 +5175,7 @@ typedef enum {
 } diagMode_t;
 
 
-static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, real_t *previousDiagonal, uint16_t size, uint16_t activeSize, diagMode_t mode, real_t *sum, bool_t firstCall, realContext_t *realContext) {
+static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, real_t *previousDiagonal /*only CHDIAG*/, uint16_t size, uint16_t activeSize, diagMode_t mode, real_t *sum, bool_t firstCall /*only CHDIAG*/, realContext_t *realContext) {
   #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
     printf("%s\n", heading);                 // print heading for debug
   #endif //EIGENDEBUG
@@ -5401,15 +5402,74 @@ static void printEigenvaluesComparison(const char *heading, const real_t *a, con
 // Helper to make the exponent -99999 when the input is 0
 // This is used where the exponent is used to determine convergence close to 0, hence 0 is seen as 10^-99999
 int32_t realGetExponentComp(const real_t *val) {
-
-//OPTIONS
-#undef NEW_CONVERGE
-#if defined(NEW_CONVERGE)
-  if(realIsZero(val)) return -99999;
-#endif
-
+  if(realIsZero(val)) {
+    return -999999;
+  }
   return realGetExponent(val);
 }
+
+
+static void solveEigenBlock(real_t *a,real_t *eig,uint16_t size,int first_unconverged,int last_unconverged,bool_t is_real_symmetric,realContext_t *realContext) {
+    int n = last_unconverged - first_unconverged + 1;
+    if(n < 2 || n > 3) return;
+
+    #if defined(EIGENDEBUG)
+        printf("Solving %dx%d block from position %d to %d\n", n, n, first_unconverged, last_unconverged);
+    #endif
+    // Allocate enough for max size 3x3
+    real_t block[18];   // 9 complex numbers = 18 reals
+    // Copy block from eig into local block
+    for(int row = 0; row < n; row++) {
+        for(int col = 0; col < n; col++) {
+            int src_row = first_unconverged + row;
+            int src_col = first_unconverged + col;
+            realCopy(eig + (src_row * size + src_col) * 2,     block + (row * n + col) * 2);
+            realCopy(eig + (src_row * size + src_col) * 2 + 1, block + (row * n + col) * 2 + 1);
+        }
+    }
+    #if defined(EIGENDEBUG)
+        printf("%dx%d block contents before solving:\n", n, n);
+        for(int row = 0; row < n; row++) {
+            for(int col = 0; col < n; col++) {
+                printf("  [%d][%d] = ", row, col);
+                printRealToConsole(block + (row * n + col) * 2, "", " + ");
+                printRealToConsole(block + (row * n + col) * 2 + 1, "", "i\n");
+            }
+        }
+    #endif
+
+    // Storage for eigenvalues
+    real_t ev_re[3];
+    real_t ev_im[3];
+    // Dispatch correct solver
+    if(n == 2) {
+        calculateEigenvalues22(block, 2,&ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],is_real_symmetric,realContext);
+        #if defined(EIGENDEBUG)
+           printf("Eigenvalues from 2x2 solver:\n");
+           printf("  ev1 = "); printRealToConsole(&ev_re[0], "", " + ");
+           printRealToConsole(&ev_im[0], "", "i\n");
+           printf("  ev2 = "); printRealToConsole(&ev_re[1], "", " + ");
+           printRealToConsole(&ev_im[1], "", "i\n");
+        #endif
+    } else if(n == 3) {
+        calculateEigenvalues33(block, 3,&ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],&ev_re[2], &ev_im[2],is_real_symmetric,realContext);
+        #if defined(EIGENDEBUG)
+           printf("Eigenvalues from 3x3 solver:\n");
+           for(int i = 0; i < 3; i++) {
+               printf("  ev%d = ", i+1);
+               printRealToConsole(&ev_re[i], "", " + ");
+               printRealToConsole(&ev_im[i], "", "i\n");
+           }
+        #endif
+    }
+    // Write results back to diagonal of a
+    for(int i = 0; i < n; i++) {
+        int pos = first_unconverged + i;
+        realCopy(&ev_re[i], a + (pos * size + pos) * 2);
+        realCopy(&ev_im[i], a + (pos * size + pos) * 2 + 1);
+    }
+}
+
 
 
 static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
@@ -5584,6 +5644,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
       #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
         if(iteration <= 10 || iteration % 20 == 0) {
+          debugf("Main QR Loop Start");
           printf("IterA %d: size=%d, activeSize=%d, converged=%d shifted=%d\n", iteration, size, activeSize, converged, shifted);
         }
       #endif
@@ -5703,9 +5764,10 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
           for(i = activeSize - 1; i >= 1; i--) {
             real_t subdiag_mag, threshold;
             complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);     // magnitude of subdiagonal element eig[i][i-1]
-            realMultiply(&tol, const_10000, &threshold, realContext);                                                        // Check if small enough to deflate
+            realCopy(const_1, &threshold);                                                                                   // Check if small enough to deflate; was tol / 100000
+            threshold.exponent -= blockDetectionTolerance;
 
-            if(realCompareLessThan(&subdiag_mag, &threshold)) {
+            if(realCompareLessThan(&subdiag_mag, &threshold)){
               realZero(eig + (i * size + (i-1)) * 2);
               realZero(eig + (i * size + (i-1)) * 2 + 1);
 
@@ -5727,34 +5789,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                     realCopy(eig + (pos_row * size + pos_col) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
                   }
                 }
-
-                #if defined(EIGENDEBUG)
-                printf("2x2 block contents before solving:\n");
-                for(int row = 0; row < 2; row++) {
-                  for(int col = 0; col < 2; col++) {
-                    printf("  [%d][%d] = ", row, col);
-                    printRealToConsole(temp_2x2 + (row * 2 + col) * 2, "", " + ");
-                    printRealToConsole(temp_2x2 + (row * 2 + col) * 2 + 1, "", "i\n");
-                  }
-                }
-                #endif
-
-                real_t ev1_re, ev1_im, ev2_re, ev2_im;
-                calculateEigenvalues22(temp_2x2, 2, &ev1_re, &ev1_im, &ev2_re, &ev2_im, is_real_symmetric, realContext);
-
-                #if defined(EIGENDEBUG)
-                printf("Eigenvalues from 2x2 solver:\n  ev1 = ");
-                printRealToConsole(&ev1_re, "", " + ");
-                printRealToConsole(&ev1_im, "", "i\n  ev2 = ");
-                printRealToConsole(&ev2_re, "", " + ");
-                printRealToConsole(&ev2_im, "", "i\n");
-                #endif
-
-                // Put eigenvalues back
-                realCopy(&ev1_re, eig + ((i+0) * size + (i+0)) * 2);
-                realCopy(&ev1_im, eig + ((i+0) * size + (i+0)) * 2 + 1);
-                realCopy(&ev2_re, eig + ((i+1) * size + (i+1)) * 2);
-                realCopy(&ev2_im, eig + ((i+1) * size + (i+1)) * 2 + 1);
+                solveEigenBlock(a,eig,size,i,i + 1,is_real_symmetric,realContext);
               }
 
               activeSize = i;
@@ -5786,6 +5821,28 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                                                                     #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
                                                                       printRealToConsole(&changeDiagonalSum, "\n=== Diagonal change: ", "\n");
                                                                     #endif
+
+
+     // Convergence override: If diagonal changes less then 1E-37 and off diagonals also < 1E-37, then no use iterating further, and converge 
+        if(realGetExponentComp(&changeDiagonalSum) < -blockDetectionTolerance && iteration > 5) {
+                                                                    #if defined(EIGENDEBUG)
+                                                                      printf("  §§§§ Diagonal Changes Overall Check Exponents =%d\n", realGetExponent(&changeDiagonalSum));
+                                                                    #endif
+          // !!!!!!!!! TO OPTIMISE THIS - WE ARE REDOING SUMS ALBEIT OF A DIFFERENT SUBSET
+          sumOfSubSupDiagonalAll("Off-diagonal stability test 3: check overall diagonal for convergence part1", eig, previousDiagonal, size, activeSize, NONDIAG, &currentOffDiagonalSum, false, &ctxtReal75);
+                                                                    #if defined(EIGENDEBUG)
+                                                                      printf("  §§§§ Off-Diagonal Overall Check Exponents =%d\n", realGetExponent(&currentOffDiagonalSum));
+                                                                    #endif
+          if(realGetExponentComp(&currentOffDiagonalSum) < -blockDetectionTolerance && iteration > 5) {
+                                                                    #if defined(EIGENDEBUG)
+                                                                      printf("  §§§§ BREAK\n");
+                                                                    #endif
+            converged = true;
+            break;
+          }
+        }
+
+
 
         converged = false;
         if(realGetExponentComp(&changeDiagonalSum) < -toleranceDigits && iteration != 1) {                                  // changed presumably faster:        if(realCompareLessThan(&changeDiagonalSum, &SumTolerance) && iteration != 1) {
@@ -5952,6 +6009,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
                                                                     #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
+                                                                    debugf("Exiting Main QR Loop");
                                                                     printf("\n=== EXITED MAIN LOOP ===\n");
                                                                     printf("converged = %d\n", converged);
                                                                     printf("iteration = %d (max = %d)\n", iteration, maxEigenIter);
@@ -5983,27 +6041,31 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
     #endif
 
     // Find the span of ALL unconverged regions
-    int scan_first_unconverged = -1;
-    int scan_last_unconverged = -1;
+    int first_unconverged = -1;
+    int last_unconverged = -1;
 
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag;
+      real_t offdiag_mag, threshold;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
-      
-      if(!realCompareLessThan(&offdiag_mag, &tol)) {
-        if(scan_first_unconverged == -1) {
-          scan_first_unconverged = i;
+      realCopy(const_1, &threshold);
+      threshold.exponent -= blockDetectionTolerance;
+
+      if(!realCompareLessThan(&offdiag_mag, &threshold)) {
+        if(first_unconverged == -1) {
+          first_unconverged = i;
         }
-        scan_last_unconverged = i + 1;
+        last_unconverged = i + 1;
       }
     }
-
-    if(scan_first_unconverged != -1) {
-      int block_size = scan_last_unconverged - scan_first_unconverged + 1;
+                                                                        #if defined(EIGENDEBUG)
+                                                                        printf("Dedicated 2x2 scan detection: check block from %d to %d\n", first_unconverged, last_unconverged);
+                                                                        #endif
+    if(first_unconverged != -1) {
+      int block_size = last_unconverged - first_unconverged + 1;
       
       #if defined(EIGENDEBUG)
       printf("Found unconverged block spanning positions %d to %d (size %d)\n", 
-             scan_first_unconverged, scan_last_unconverged, block_size);
+             first_unconverged, last_unconverged, block_size);
       #endif
       
       // If block size is 3 or larger, skip 2x2 solving - let the 3x3 solver handle it
@@ -6016,15 +6078,15 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         // Single 2×2 block - safe to solve
         #if defined(EIGENDEBUG)
         printf("Solving single 2x2 block at positions [%d,%d]\n", 
-               scan_first_unconverged, scan_first_unconverged + 1);
+               first_unconverged, first_unconverged + 1);
         #endif
         
         // Extract 2×2 block
         real_t temp_2x2[8];
         for(int row = 0; row < 2; row++) {
           for(int col = 0; col < 2; col++) {
-            int idx_row = scan_first_unconverged + row;
-            int idx_col = scan_first_unconverged + col;
+            int idx_row = first_unconverged + row;
+            int idx_col = first_unconverged + col;
             realCopy(eig + (idx_row * size + idx_col) * 2, temp_2x2 + (row * 2 + col) * 2);
             realCopy(eig + (idx_row * size + idx_col) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
           }
@@ -6032,44 +6094,38 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         
         // Check for conjugate pair before solving (must have non-zero imaginary parts!)
         real_t re_diff, im_sum, im1, im2;
-        realCopy(eig + (scan_first_unconverged * size + scan_first_unconverged) * 2 + 1, &im1);
-        realCopy(eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2 + 1, &im2);
+        realCopy(eig + (first_unconverged * size + first_unconverged) * 2 + 1, &im1);
+        realCopy(eig + ((first_unconverged + 1) * size + (first_unconverged + 1)) * 2 + 1, &im2);
 
         bool_t is_conjugate_pair = false;
         // Only check for conjugates if both have non-zero imaginary part
         if(!realIsZero(&im1) && !realIsZero(&im2)) {
-          realSubtract(eig + (scan_first_unconverged * size + scan_first_unconverged) * 2, eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2, &re_diff, realContext);
+          realSubtract(eig + (first_unconverged * size + first_unconverged) * 2, eig + ((first_unconverged + 1) * size + (first_unconverged + 1)) * 2, &re_diff, realContext);
           realAdd(&im1, &im2, &im_sum, realContext);
         
           if(realCompareAbsLessThan(&re_diff, tolerance_complex_noise_removal_except_conjugate) &&  realCompareAbsLessThan(&im_sum, tolerance_complex_noise_removal_except_conjugate)) {
             is_conjugate_pair = true;
                                                                          #if defined(EIGENDEBUG)
-                                                                         printf("Diagonal elements are conjugates - keeping them!\n");
+                                                                         printf("Diagonal elements are conjugates - keeping them\n");
                                                                          #endif
           }
         }
 
         if(!is_conjugate_pair) {                                     //prevent destroying complex pairs
-          // Solve the 2×2 block
-          real_t ev1_re, ev1_im, ev2_re, ev2_im;
-          calculateEigenvalues22(temp_2x2, 2, &ev1_re, &ev1_im, &ev2_re, &ev2_im, is_real_symmetric, realContext);
-          
-          // Put eigenvalues back
-          realCopy(&ev1_re, a + ((scan_first_unconverged + 0) * size + (scan_first_unconverged + 0)) * 2);
-          realCopy(&ev1_im, a + ((scan_first_unconverged + 0) * size + (scan_first_unconverged + 0)) * 2 + 1);
-          realCopy(&ev2_re, a + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2);
-          realCopy(&ev2_im, a + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2 + 1);
-          
-          realCopy(&ev1_re, eig + ((scan_first_unconverged + 0) * size + (scan_first_unconverged + 0)) * 2);
-          realCopy(&ev1_im, eig + ((scan_first_unconverged + 0) * size + (scan_first_unconverged + 0)) * 2 + 1);
-          realCopy(&ev2_re, eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2);
-          realCopy(&ev2_im, eig + ((scan_first_unconverged + 1) * size + (scan_first_unconverged + 1)) * 2 + 1);
-          
-          // Zero off-diagonals (both upper and lower)
-          realZero(eig + ((scan_first_unconverged + 1) * size + scan_first_unconverged) * 2);
-          realZero(eig + ((scan_first_unconverged + 1) * size + scan_first_unconverged) * 2 + 1);
-          realZero(eig + (scan_first_unconverged * size + (scan_first_unconverged + 1)) * 2);
-          realZero(eig + (scan_first_unconverged * size + (scan_first_unconverged + 1)) * 2 + 1);
+            // Solve using the unified block solver (writes into A only)
+            solveEigenBlock(a, eig, size,first_unconverged,first_unconverged + 1,is_real_symmetric,realContext);
+
+            // After solveEigenBlock(), copy eigenvalues from A to EIG
+            for(int i = 0; i < 2; i++) {
+              int pos = first_unconverged + i;
+              realCopy(a + (pos * size + pos) * 2, eig + (pos * size + pos) * 2);
+              realCopy(a + (pos * size + pos) * 2 + 1, eig + (pos * size + pos) * 2 + 1);
+            }
+            // Zero off-diagonals (both upper and lower)
+            realZero(eig + ((first_unconverged + 1) * size + first_unconverged) * 2);
+            realZero(eig + ((first_unconverged + 1) * size + first_unconverged) * 2 + 1);
+            realZero(eig + (first_unconverged * size + (first_unconverged + 1)) * 2);
+            realZero(eig + (first_unconverged * size + (first_unconverged + 1)) * 2 + 1);
         }
       }
     }
@@ -6080,68 +6136,48 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
     // Smart remaining block detection - check what actually needs solving
-    int first_unconverged = -1;
-    int last_unconverged = -1;
+    first_unconverged = -1;
+    last_unconverged = -1;
 
     // Scan for any remaining unconverged positions
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag;
+      real_t offdiag_mag, threshold;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
-      
-      if(!realCompareLessThan(&offdiag_mag, &tol)) {
+      realCopy(const_1, &threshold);
+      threshold.exponent -= blockDetectionTolerance;
+
+      if(!realCompareLessThan(&offdiag_mag, &threshold)) {
         if(first_unconverged == -1) {
           first_unconverged = i;
         }
         last_unconverged = i + 1;
       }
     }
-
+                                                                        #if defined(EIGENDEBUG)
+                                                                        printf("Smart detection: check block from %d to %d\n", first_unconverged, last_unconverged);
+                                                                        #endif
     // Determine what block (if any) needs solving
     if(first_unconverged != -1) {
-      int block_size = last_unconverged - first_unconverged + 1;
-      
-      #if defined(EIGENDEBUG)
-      printf("Smart detection: unconverged block from %d to %d (size=%d)\n", 
-             first_unconverged, last_unconverged, block_size);
-      #endif
-      
+      int block_size = last_unconverged - first_unconverged + 1;      
+                                                                        #if defined(EIGENDEBUG)
+                                                                        debugf("WARNING:  Unconverged blocks");
+                                                                        printf("Smart detection: unconverged block from %d to %d (size=%d)\n", first_unconverged, last_unconverged, block_size);
+                                                                        #endif
       if(block_size == 3) {
-        // Solve 3×3 block using high-precision solver
         #if defined(EIGENDEBUG)
-        printf("Solving 3x3 block from position %d to %d\n", first_unconverged, last_unconverged);
+          printf("  !!!! Found unconverged 3x3 block that scan missed, solving...\n");
         #endif
-        
-        real_t block[18];
-        for(int row = 0; row < 3; row++) {
-          for(int col = 0; col < 3; col++) {
-            int src_row = first_unconverged + row;
-            int src_col = first_unconverged + col;
-            realCopy(eig + (src_row * size + src_col) * 2, block + (row * 3 + col) * 2);
-            realCopy(eig + (src_row * size + src_col) * 2 + 1, block + (row * 3 + col) * 2 + 1);
-          }
-        }
-        
-        real_t ev1_re, ev1_im, ev2_re, ev2_im, ev3_re, ev3_im;
-        calculateEigenvalues33(block, 3, &ev1_re, &ev1_im, &ev2_re, &ev2_im, &ev3_re, &ev3_im, is_real_symmetric, realContext);
-        
-        // Put eigenvalues back
-        realCopy(&ev1_re, a + ((first_unconverged + 0) * size + (first_unconverged + 0)) * 2);
-        realCopy(&ev1_im, a + ((first_unconverged + 0) * size + (first_unconverged + 0)) * 2 + 1);
-        realCopy(&ev2_re, a + ((first_unconverged + 1) * size + (first_unconverged + 1)) * 2);
-        realCopy(&ev2_im, a + ((first_unconverged + 1) * size + (first_unconverged + 1)) * 2 + 1);
-        realCopy(&ev3_re, a + ((first_unconverged + 2) * size + (first_unconverged + 2)) * 2);
-        realCopy(&ev3_im, a + ((first_unconverged + 2) * size + (first_unconverged + 2)) * 2 + 1);
+        solveEigenBlock(a, eig, size,first_unconverged, last_unconverged,is_real_symmetric, realContext);
       }
       else if(block_size == 2) {
-        // This shouldn't happen - 2×2 scan should have caught it
         #if defined(EIGENDEBUG)
-        printf("WARNING: Found unconverged 2x2 block that scan missed!\n");
+          printf("  !!!! Found unconverged 2x2 block that scan missed, This shouldn't happen - 2×2 scan should have caught it, solving...\n");
         #endif
+        solveEigenBlock(a, eig, size, first_unconverged, last_unconverged, is_real_symmetric, realContext);
       }
       else if(block_size > 3) {
-        // Large unconverged block - shouldn't happen, but report it
         #if defined(EIGENDEBUG)
-        printf("WARNING: Large unconverged block size=%d - QR didn't converge properly!\n", block_size);
+          printf("   !!!! Large unconverged block size=%d - QR didn't converge properly!\n", block_size);
         #endif
       }
     }
