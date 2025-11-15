@@ -43,6 +43,7 @@
 
   #define eigenTolerance          (min(70,toleranceDigits*2))
   #define blockDetectionTolerance 40
+  #define POST_QR_RELATIVE_BLOCK_CHECK
   #define symmetricTolerance      30
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
   #define eigenContext            &ctxtReal75
@@ -6035,6 +6036,24 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
 
+    #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      // Compute relative threshold based on average diagonal magnitude
+      real_t diag_sum, avg_diag, rel_threshold;
+      sumOfSubSupDiagonalAll("", eig, NULL, size, size, DIAG, &diag_sum, true, realContext);
+      // avg_diag = diag_sum / size
+      realCopy(&diag_sum, &avg_diag);
+      for(int i = 0; i < size; i++) {
+        realDivide(&avg_diag, const_10, &avg_diag, realContext);  // Divide by size (~14 ≈ 10)
+      }
+      // rel_threshold = avg_diag * 1e-10 (10 digits of relative convergence)
+      realCopy(&avg_diag, &rel_threshold);
+      for(int i = 0; i < 10; i++) {
+        realDivide(&rel_threshold, const_10, &rel_threshold, realContext);
+      }
+    #endif //POST_QR_RELATIVE_BLOCK_CHECK
+
+
+
     #if defined(EIGENDEBUG)
     printf("DEBUG: Starting 2x2 block scan, size=%d\n", size);
     fflush(stdout);
@@ -6045,12 +6064,16 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
     int last_unconverged = -1;
 
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag, threshold;
+      real_t offdiag_mag;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
+      #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      if(!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+      #else
+      real_t threshold;
       realCopy(const_1, &threshold);
       threshold.exponent -= blockDetectionTolerance;
-
       if(!realCompareLessThan(&offdiag_mag, &threshold)) {
+      #endif
         if(first_unconverged == -1) {
           first_unconverged = i;
         }
@@ -6141,12 +6164,16 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
     // Scan for any remaining unconverged positions
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag, threshold;
+      real_t offdiag_mag;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
+      #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      if(!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+      #else
+      real_t threshold;
       realCopy(const_1, &threshold);
       threshold.exponent -= blockDetectionTolerance;
-
       if(!realCompareLessThan(&offdiag_mag, &threshold)) {
+      #endif
         if(first_unconverged == -1) {
           first_unconverged = i;
         }
@@ -6343,6 +6370,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_SOLVING);
   }
+  #if defined(PC_BUILD)
+    printf("End of EIGEN, %d iterations\n",iteration);
+  #endif
 
 }
 
