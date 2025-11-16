@@ -1903,7 +1903,8 @@ void doSave(uint16_t saveType) {
   // Other configuration stuff
         sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n00\n");
         save(tmpString, strlen(tmpString));
-        save(tmpString, strlen(tmpString));
+        save(tmpString, strlen(tmpString));     //this extra content line + 00 line, is a repeat, is historical, is not used.
+                                                //keep here, this line is now used since 2025-11-16 to short circuit the configuration reset, if END_OTHER_PARAM detected here.
 
         sprintf(tmpString, "firstGregorianDay\n%"          PRIu32 "\n",     firstGregorianDay);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
@@ -2810,21 +2811,26 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "EQUATIONS") == 0) {
-      uint16_t formulae;
+      uint16_t formulae = 0;
 
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(15, "A", tmpString);
         #endif //LOADDEBUG
-        for(i = numberOfFormulae; i > 0; --i) {
-          deleteEquation(i - 1);
-        }
       }
 
       readLine(tmpString); // Number of formulae
       formulae = toUint16(tmpString);
-      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+      if(formulae > 0 && (loadMode == LM_ALL || loadMode == LM_PROGRAMS)) {
+        #if defined(LOADDEBUG)
+          sprintf(line,", loadMode:%d, %s; formulae = %d\n",loadMode,tmpString, formulae);
+          debugPrintf(15, "AA", "Resetting equations");
+        #endif //LOADDEBUG
+        for(i = numberOfFormulae; i > 0; --i) {
+          deleteEquation(i - 1);
+        }
+
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(15, "B", tmpString);
@@ -2836,21 +2842,21 @@ int64_t stringToInt64(const char *str) {
           allFormulae[i].pointerToFormulaData = C47_NULL;
           allFormulae[i].sizeInBlocks = 0;
         }
-      }
 
-      for(i = 0; i < formulae; i++) {
-        readLine(tmpString); // One formula
-        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
-          #if defined(LOADDEBUG)
-            sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-            debugPrintf(15, "C", tmpString);
-          #endif //LOADDEBUG
-          utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
-          setEquation(i, tmpString + TMP_STR_LENGTH / 2);
+        for(i = 0; i < formulae; i++) {
+          readLine(tmpString); // One formula
+          if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+            #if defined(LOADDEBUG)
+              sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
+              debugPrintf(15, "C", tmpString);
+            #endif //LOADDEBUG
+            utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
+            setEquation(i, tmpString + TMP_STR_LENGTH / 2);
+          }
         }
-      }
-      if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
-        _updateConstantsInEquations();
+        if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
+          _updateConstantsInEquations();
+        }
       }
     }
 
@@ -2860,15 +2866,25 @@ int64_t stringToInt64(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(16, "A", tmpString);
         #endif //LOADDEBUG
-        resetOtherConfigurationStuff(allowUserKeys); //Ensure all the configuration stuff below is reset prior to loading.
-                                                     //That ensures if missing settings, that the proper defaults are set.
       }
-      readLine(tmpString); // Number params not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
-      numberOfRegs = toInt16(tmpString);
+      readLine(tmpString);                           // Read number params is not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
+      //numberOfRegs = toInt16(tmpString);           // Number of regs or params is not used anymore
+
+      readLine(aimBuffer); //param                   // Reading duplicated OTHER_CONFIGURATION_STUFF
+      if(strcmp(aimBuffer,"END_OTHER_PARAM") == 0) { // This is used for short form key-only state files, which specify that a setting reset is not to occur
+        #if defined(LOADDEBUG)
+          debugPrintf(16, "A", "Ending OTHER_CONFIGURATION_STUFF prior to RESET");
+        #endif //LOADDEBUG
+        goto END_CONFIG;                             // If this is END_OTHER_PARAM, loading is aborted before the config RESET, got break
+      } else {
+        resetOtherConfigurationStuff(allowUserKeys); // Ensure all the configuration stuff below is reset prior to loading. That ensures if missing settings, that the proper defaults are set.
+      }
+      readLine(tmpString); //value 00                // Reading second (duplicated 00)
+
       i = 0;
       while(i < 255) {                                                           //adjust for absolute maximum number of OTHER CONFIGUARTION SETTINGS
         readLine(aimBuffer); // param
-        if(strcmp(aimBuffer,"END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) break; //break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
+        if(strcmp(aimBuffer,"END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) break; //to END_CONFIG break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
         readLine(tmpString); // value
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
@@ -3062,6 +3078,7 @@ int64_t stringToInt64(const char *str) {
         }
       i++;
       }
+END_CONFIG:
       hourGlassIconEnabled = false;
       return false; //Signal that this was the last section loaded and no more sections to follow
       #if defined(LOADDEBUG)
