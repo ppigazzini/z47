@@ -1377,7 +1377,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       else {
         clearSystemFlag(FLAG_BASE_HOME);
       }
-    } 
+    }
     if(backupVersion < 1013) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "BASE_MYM",                 "bool");    //JM
       printf("Version number of configfile < 1003, transferring BASE_MYM.");
@@ -1710,7 +1710,11 @@ void doSave(uint16_t saveType) {
 
   sprintf(tmpString, "SAVE_FILE_REVISION\n%" PRIu8 "\n", (uint8_t)0);
   save(tmpString, strlen(tmpString));
-  sprintf(tmpString, "C47_save_file_00\n%" PRIu32 "\n", (uint32_t)configFileVersion);
+  #if CALCMODEL ==  USER_R47               // Identify which model is creating the save file
+    sprintf(tmpString, "R47_save_file_00\n%" PRIu32 "\n", (uint32_t)configFileVersion);
+  #else
+    sprintf(tmpString, "C47_save_file_00\n%" PRIu32 "\n", (uint32_t)configFileVersion);
+  #endif // !CALCMODEL
   save(tmpString, strlen(tmpString));
 
 
@@ -2292,7 +2296,7 @@ int64_t stringToInt64(const char *str) {
   }
 
 
-  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {
+  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, bool_t allowUserKeys) {
     int16_t i, numberOfRegs;
     calcRegister_t regist;
     char *str;
@@ -2516,7 +2520,7 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // key
-        if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+        if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) { // Restore Keyboard Assignments only if they were save on the same calc model (C47->C47 or R47->R47)
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(8, "-", tmpString);
@@ -2537,7 +2541,7 @@ int64_t stringToInt64(const char *str) {
     else if(strcmp(tmpString, "KEYBOARD_ARGUMENTS") == 0) {
       readLine(tmpString); // Number of keys
       numberOfRegs = toInt16(tmpString);
-      if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+      if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(9, "A", tmpString);
@@ -2547,9 +2551,11 @@ int64_t stringToInt64(const char *str) {
         userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
         memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
       }
+
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString); // key
-        if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+        // Restore Keyboard Arguments only if they were save on the same calc model (C47->C47 or R47->R47)
+        if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(9, "B", tmpString);
@@ -2854,8 +2860,8 @@ int64_t stringToInt64(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(16, "A", tmpString);
         #endif //LOADDEBUG
-        resetOtherConfigurationStuff(); //Ensure all the configuration stuff below is reset prior to loading.
-                                        //That ensures if missing settings, that the proper defaults are set.
+        resetOtherConfigurationStuff(allowUserKeys); //Ensure all the configuration stuff below is reset prior to loading.
+                                                     //That ensures if missing settings, that the proper defaults are set.
       }
       readLine(tmpString); // Number params not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
       numberOfRegs = toInt16(tmpString);
@@ -2947,7 +2953,7 @@ int64_t stringToInt64(const char *str) {
               forceSystemFlag(FLAG_BASE_HOME, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
+          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0)) {
             // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
             if(Norm_Key_00_key != -1) {
               Norm_Key_00.func  = toUint16(tmpString);   // only the function is restored, assuming no param
@@ -2956,19 +2962,22 @@ int64_t stringToInt64(const char *str) {
               Norm_Key_00.used = false;
             }
           }
-          else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = toUint16(tmpString); }
+          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0)) { Norm_Key_00.func      = toUint16(tmpString); }
           else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {      //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
               if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                     //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
-                  Norm_Key_00.funcParam[0]=0;                                      //  - old file compatibility: If next setting name is found as data, clear it.
-                  Norm_Key_00.used = 0;                                            //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+                  if(allowUserKeys) {
+                    Norm_Key_00.funcParam[0]=0;                                    //  - old file compatibility: If next setting name is found as data, clear it.
+                    Norm_Key_00.used = 0;                                          //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+                  }
                   readLine(tmpString);                                             //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
-              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
+              } else if(allowUserKeys &&
+                      (strcmp(tmpString, "NoNormKeyParamDef") == 0)) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
                   Norm_Key_00.funcParam[0]=0;                                      //  - if the code word for a blank string, blank the string.
-              } else {                                                             //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
+              } else if(allowUserKeys) {                                           //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
                   strcpy(Norm_Key_00.funcParam,tmpString);                         //Otherwise proceed and use the data as normal
               }
           }
-          else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
+          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0)) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) {        //Keep compatible by repeating
             if(loadedVersion < 10000022) {
@@ -3072,6 +3081,8 @@ int64_t stringToInt64(const char *str) {
 
 
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
+  uint16_t savedCalcModel = 0;
+
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
@@ -3118,7 +3129,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
   // SAVE_FILE_REVISION
   // 0
-  // C47_save_file_00
+  // C47_save_file_00 or R47_save_file_00
   // 10000003
 
   // Allow older versions for autoloaded sav file
@@ -3130,7 +3141,16 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       readLine(aimBuffer); // internal rev number (ignore now)
       readLine(aimBuffer); // param
       readLine(tmpString); // value
-      if(strcmp(aimBuffer, "C47_save_file_00") == 0 || strcmp(aimBuffer, "C43_save_file_00") == 0) {
+
+      // Determine on which calculator the file was saved
+      if(strcmp(aimBuffer, "C47_save_file_00") == 0) {
+        savedCalcModel = USER_C47;
+      }
+      else if(strcmp(aimBuffer, "R47_save_file_00") == 0) {
+        savedCalcModel = USER_R47;
+      }
+
+      if(savedCalcModel == USER_C47 || savedCalcModel == USER_R47) {
         loadedVersion = toUint32(tmpString);
         if(loadedVersion < 10000000 || loadedVersion > 20000000) {
           loadedVersion = 0;
@@ -3174,7 +3194,13 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     default:break;
   }
   if(enableLoad) {
-    while(restoreOneSection(loadMode, s, n, d)) {
+    bool_t allowUserKeys = false;
+    #if CALCMODEL == USER_C47
+      allowUserKeys = (savedCalcModel == USER_C47);
+    #elif CALCMODEL == USER_R47
+      allowUserKeys = (savedCalcModel == USER_R47);
+    #endif  // CALCMODEL
+    while(restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
     }
   }
 
