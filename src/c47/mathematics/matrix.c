@@ -17,18 +17,20 @@
   #if defined PC_BUILD
     #define maxEigenIter 10000
     #define EIGENDEBUG
-#define EIGENDEBUG1
-#undef EIGENDEBUG2
+    #undef  EIGENDEBUG1
+    #undef  EIGENDEBUG2
     #define EIGENDEBUGMINIMAL
     #define EIGEN_TESTOUT
-    #define EIGENDEBUG_QR
+    #undef  EIGENDEBUG_QR
+    //
     #undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
     #undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
     #undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
-    #undef EIGENDEBUG_QR
   #else
     #define maxEigenIter 10000
     #undef EIGENDEBUG
+    #undef EIGENDEBUG1
+    #undef EIGENDEBUG2
     #undef EIGENDEBUGMINIMAL
     #undef EIGEN_TESTOUT
     #undef EIGENDEBUG_QR
