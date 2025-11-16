@@ -17,16 +17,20 @@
   #if defined PC_BUILD
     #define maxEigenIter 10000
     #define EIGENDEBUG
+    #undef  EIGENDEBUG1
+    #undef  EIGENDEBUG2
     #define EIGENDEBUGMINIMAL
     #define EIGEN_TESTOUT
-    #define EIGENDEBUG_QR
+    #undef  EIGENDEBUG_QR
+    //
     #undef EIGENDEBUG         //comment this undef to switch eigenvalue debug on
     #undef EIGENDEBUGMINIMAL  //comment this undef to switch eigenvalue debug on
     #undef EIGEN_TESTOUT      //comment this undef to switch eigenvalue debug on
-    #undef EIGENDEBUG_QR
   #else
     #define maxEigenIter 10000
     #undef EIGENDEBUG
+    #undef EIGENDEBUG1
+    #undef EIGENDEBUG2
     #undef EIGENDEBUGMINIMAL
     #undef EIGEN_TESTOUT
     #undef EIGENDEBUG_QR
@@ -43,6 +47,7 @@
 
   #define eigenTolerance          (min(70,toleranceDigits*2))
   #define blockDetectionTolerance 40
+  #define POST_QR_RELATIVE_BLOCK_CHECK
   #define symmetricTolerance      30
   #define eigenNoiseThreshold     70                                              // clamp rediculously small numbers to zero if smaller than 10^-eigenZeroing
   #define eigenContext            &ctxtReal75
@@ -5490,9 +5495,14 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   uint16_t activeSize = size;
   bool_t converged = false;
 
+  #define SIZE size         // do not change to activeSize, RCL00, 01, case 14, case 16 breaks
 
- 
-//shifted = false; // Can disable shifts here - they cause instability in minimal cases.
+
+  #if defined(EIGENDEBUG1)
+  printf("Before start: size=%d, activeSize=%d\n", size, activeSize);
+  #endif
+
+ // shifted = false;       //Can disable shifts here - they cause instability in minimal cases.
 
                                                           #if defined(EIGENDEBUG)
                                                           printf("Input matrix verification:\n");
@@ -5637,18 +5647,26 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
 
+
+
     // =========================
     // ==== MAIN LOOP START ====
     // =========================
     while(!converged && iteration++ < maxEigenIter && activeSize > 1 && lastErrorCode == ERROR_NONE) {
 
-      #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
-        if(iteration <= 10 || iteration % 20 == 0) {
-          debugf("Main QR Loop Start");
+      #if defined(EIGENDEBUG) || defined(EIGENDEBUG1) || defined(EIGENDEBUGMINIMAL)
+        if(iteration <= 10 || (iteration <= 1001 && iteration >= 999) || (iteration <= 1021 && iteration >= 1019) || (iteration % 20 == 0 && iteration < 100)) {
+          if(iteration == 1) debugf("Main QR Loop Start, first time");
+          else debugf("Main QR Loop");
           printf("IterA %d: size=%d, activeSize=%d, converged=%d shifted=%d\n", iteration, size, activeSize, converged, shifted);
         }
       #endif
 
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== UI Display and EXIT check\n");
+}
+#endif
 
       #if !defined(TESTSUITE_BUILD)
         if(checkHalfSec()) {
@@ -5686,18 +5704,65 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
         }
       #endif //TESTSUITE_BUILD
 
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Shift: Calculate shift from a\n");
+}
+#endif
       if(shifted) {
-        calculateQrShift(a, size, &shiftRe, &shiftIm, is_real_symmetric, realContext);
+        calculateQrShift(a, SIZE, &shiftRe, &shiftIm, is_real_symmetric, realContext);
+
+  
+  #if defined(EIGENDEBUG1)
+  if(iteration % 1000 == 0) {
+    printf("Iter %d: shift = ", iteration);
+    printRealToConsole(&shiftRe, "", " + ");
+    printRealToConsole(&shiftIm, "", "i, diag[4][4] = ");
+    printRealToConsole(a + (4 * size + 4) * 2, "", "\n");
+  }
+  #endif
+  #if defined(EIGENDEBUG1)
+if((iteration == 1000 || iteration == 1020)) {
+  printf("Bottom 2x2 block at iter %d:\n", iteration);
+  printf("  [3][3] = "); printRealToConsole(a + (3*size+3)*2, "", " + ");
+  printRealToConsole(a + (3*size+3)*2+1, "", "i\n");
+  printf("  [3][4] = "); printRealToConsole(a + (3*size+4)*2, "", " + ");
+  printRealToConsole(a + (3*size+4)*2+1, "", "i\n");
+  printf("  [4][3] = "); printRealToConsole(a + (4*size+3)*2, "", " + ");
+  printRealToConsole(a + (4*size+3)*2+1, "", "i\n");
+  printf("  [4][4] = "); printRealToConsole(a + (4*size+4)*2, "", " + ");
+  printRealToConsole(a + (4*size+4)*2+1, "", "i\n");
+}
+#endif
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Shift: Subtract shift from a diagonal\n");
+}
+#endif
         if((realIsZero(&shiftRe) && realIsZero(&shiftIm)) || realIsSpecial(&shiftRe) || realIsSpecial(&shiftIm)) {
           shifted = false;
         }
         else {
-          for(i = 0; i < size; i++) {
+          for(i = 0; i < SIZE; i++) {
             realSubtract(a + (i * size + i) * 2,     &shiftRe, a + (i * size + i) * 2,     realContext);
             realSubtract(a + (i * size + i) * 2 + 1, &shiftIm, a + (i * size + i) * 2 + 1, realContext);
           }
         }
       }
+
+
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== QR: QR decomposition of a to Q, R\n");
+}
+#endif
       QR_decomposition_householder(a, size, q, r, realContext);
                                                                                               #if defined(EIGENDEBUG)
                                                                                               if (iteration % 100 == 0 || iteration < 2) {
@@ -5709,107 +5774,82 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                                                                                                 #endif
                                                                                               }
                                                                                               #endif
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Multiply Matrix: Multiply R×Q to eig\n");
+}
+#endif
       mulCpxMat(r, q, size, size, size, eig, realContext);
 
 
 
-      // Zero the imag parts if confirmed to be a symmetrical matrix
-      if (is_real_symmetric) {
-        for (uint16_t i = 0; i < size; i++) {
-          realZero(eig + (i * size + i) * 2 + 1);
-        }
-      }
-
-      for(i = 0; i < size; i++) {
-        for(uint16_t j = 0; j < size; j++) {
-          uint16_t idx = i * size + j;
-          realPlus(eig + idx * 2,     eig + idx * 2,     ctxtTruncate);
-          realPlus(eig + idx * 2 + 1, eig + idx * 2 + 1, ctxtTruncate);
-
-          // Zero out values below threshold (numerical noise)
-          if(is_sym_tridiag && i == j) { // For symmetric tridiagonal, preserve diagonal elements from being zeroed
-            continue;  // Skip zeroing diagonal elements
-          }
-
-          // Check and zero real part
-          if(!realIsSpecial(eig + idx * 2)) {
-            if(realGetExponent(eig + idx * 2) < -eigenNoiseThreshold) {
-              realZero(eig + idx * 2);
-            }
-          } else {
-            realZero(eig + idx * 2);  // Zero out special values
-          }
-
-          // Check and zero imaginary part
-          if(!realIsSpecial(eig + idx * 2 + 1)) {
-            if(realGetExponent(eig + idx * 2 + 1) < -eigenNoiseThreshold) {
-              realZero(eig + idx * 2 + 1);
-            }
-          } else {
-            realZero(eig + idx * 2 + 1);  // Zero out special values
-          }
-        }
-      }
 
 
-      // Deflation and 2x2 block detection
-      if(iteration > 2 && (iteration % 5) == 0) {
-        bool_t deflated = true;
-        while(deflated && activeSize > 2) {
-          deflated = false;
-          #if defined(EIGENDEBUG)
-            printf("\n");
-          #endif
-
-          for(i = activeSize - 1; i >= 1; i--) {
-            real_t subdiag_mag, threshold;
-            complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);     // magnitude of subdiagonal element eig[i][i-1]
-            realCopy(const_1, &threshold);                                                                                   // Check if small enough to deflate; was tol / 100000
-            threshold.exponent -= blockDetectionTolerance;
-
-            if(realCompareLessThan(&subdiag_mag, &threshold)){
-              realZero(eig + (i * size + (i-1)) * 2);
-              realZero(eig + (i * size + (i-1)) * 2 + 1);
-
-              #if defined(EIGENDEBUG)
-              printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
-              #endif
-
-              if(activeSize == 3 && i == 1) {
-                #if defined(EIGENDEBUG)
-                printf("After deflating [1][0], positions [1][2] form a 2x2 block, solving immediately\n");
-                #endif
-
-                real_t temp_2x2[8];
-                for(int row = 0; row < 2; row++) {
-                  for(int col = 0; col < 2; col++) {
-                    int pos_row = i + row;  // positions 1, 2
-                    int pos_col = i + col;
-                    realCopy(eig + (pos_row * size + pos_col) * 2, temp_2x2 + (row * 2 + col) * 2);
-                    realCopy(eig + (pos_row * size + pos_col) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
-                  }
-                }
-                solveEigenBlock(a,eig,size,i,i + 1,is_real_symmetric,realContext);
-              }
-
-              activeSize = i;
-              deflated = true;
-              break;
-            }
-
-          }
-        } // end of while
-      } // end of deflation
 
 
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Unshift: Add shift back to both a and eig diagonals\n");
+}
+#endif
       if(shifted) {
-        for(i = 0; i < size; i++) {
+        // unshift
+        for(i = 0; i < SIZE; i++) {
           realAdd(a   + (i * size + i) * 2,     &shiftRe, a   + (i * size + i) * 2,     realContext);
           realAdd(a   + (i * size + i) * 2 + 1, &shiftIm, a   + (i * size + i) * 2 + 1, realContext);
           realAdd(eig + (i * size + i) * 2,     &shiftRe, eig + (i * size + i) * 2,     realContext);
           realAdd(eig + (i * size + i) * 2 + 1, &shiftIm, eig + (i * size + i) * 2 + 1, realContext);
         }
       }
+
+
+
+
+
+//-----   //what is the old tol? it is likely less!
+//-----   
+//-----   #if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+//-----   if(iteration % 20 == 0) {
+//-----     printf("==== Simplistic old convergence check\n");
+//-----   }
+//-----   #endif
+//-----   // Simple per-element convergence check (old method)
+//-----   converged = true;
+//-----   for(i = 0; i < activeSize; i++) {
+//-----     bool_t re_conv = WP34S_RelativeError(a + (i * size + i) * 2, eig + (i * size + i) * 2, &tol, realContext);
+//-----     bool_t im_conv = WP34S_RelativeError(a + (i * size + i) * 2 + 1, eig + (i * size + i) * 2 + 1, &tol, realContext);
+//-----     
+//-----     #if defined(EIGENDEBUG1)
+//-----     if((iteration == 1000 || iteration == 1020) && i < 2) {
+//-----       printf("Element [%d]: re_conv=%d, im_conv=%d @ iter=%d\n", i, re_conv, im_conv, iteration);
+//-----       printf("  a[%d][%d] = ", i, i); printRealToConsole(a + (i*size+i)*2, "", "\n");
+//-----       printf("  eig[%d][%d] = ", i, i); printRealToConsole(eig + (i*size+i)*2, "", "\n");
+//-----     }
+//-----     #endif  
+//-----     if(!re_conv || !im_conv) {
+//-----       converged = false;
+//-----       break;
+//-----     }
+//-----   }
+//-----   #if defined(EIGENDEBUG1)
+//-----   if(iteration % 1000 == 0) {
+//-----     printf("Iter %d: After simple convergence check result = %d\n", iteration, converged);
+//-----   }
+//-----   #endif
+
+
+
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Complex convergence and divergence checks\n");
+}
+#endif
+
+// Continue with complex convergence checks...
 
       if(iteration - last_check_iter >= 20 || iteration == 1) {
 
@@ -5973,6 +6013,149 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
 
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Deflate on copied matrix\n");
+}
+#endif
+// NOW do deflation on the copied matrix
+
+      // Deflation and 2x2 block detection
+      if(iteration > 2 && (iteration % 5) == 0) {
+        bool_t deflated = true;
+        while(deflated && activeSize > 2) {
+          deflated = false;
+          #if defined(EIGENDEBUG)
+            printf("\n");
+          #endif
+
+          for(i = activeSize - 1; i >= 1; i--) {                //do not change this to the comments below, RCL00 breaks
+          //i = activeSize - 1;                                 //do not use: Only check bottom position
+          //if(i >= 1) {
+
+            real_t subdiag_mag, threshold;
+            complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);     // magnitude of subdiagonal element eig[i][i-1]
+            realCopy(const_1, &threshold);                                                                                   // Check if small enough to deflate; was tol / 100000
+            threshold.exponent -= blockDetectionTolerance;
+
+      #if defined(EIGENDEBUG1)
+      if((iteration == 1000 || iteration == 1020)) {
+        printf("Deflation check at iter %d: position [%d][%d], mag=",iteration, i, i-1);
+        printRealToConsole(&subdiag_mag, "", ", threshold=");
+        printRealToConsole(&threshold, "", ", deflate?");
+        printf(" %d\n", realCompareLessThan(&subdiag_mag, &threshold));
+      }
+      #endif
+
+
+            if(realCompareLessThan(&subdiag_mag, &threshold)){
+              realZero(eig + (i * size + (i-1)) * 2);
+              realZero(eig + (i * size + (i-1)) * 2 + 1);
+
+              #if defined(EIGENDEBUG)
+              printf("Deflated at position [%d][%d], reducing activeSize from %d to %d\n", i, i-1, activeSize, i);
+              #endif
+
+              if(activeSize == 3 && i == 1) {
+                #if defined(EIGENDEBUG)
+                printf("After deflating [1][0], positions [1][2] form a 2x2 block, solving immediately\n");
+                #endif
+
+                real_t temp_2x2[8];
+                for(int row = 0; row < 2; row++) {
+                  for(int col = 0; col < 2; col++) {
+                    int pos_row = i + row;  // positions 1, 2
+                    int pos_col = i + col;
+                    realCopy(eig + (pos_row * size + pos_col) * 2, temp_2x2 + (row * 2 + col) * 2);
+                    realCopy(eig + (pos_row * size + pos_col) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
+                  }
+                }
+                solveEigenBlock(a,eig,size,i,i + 1,is_real_symmetric,realContext);
+              }
+
+              activeSize = i;
+              deflated = true;
+              break;
+            }
+
+          }
+        } // end of while
+      } // end of deflation
+
+
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Copy eig to a\n");
+}
+#endif
+// Copy eig to a
+for(i = 0; i < size * size * 2; i++) {
+  realCopy(eig + i, a + i);
+}
+
+
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Zero minute imag parts, truncation\n");
+}
+#endif
+
+// Zero the imag parts if confirmed to be a symmetrical matrix  
+if (is_real_symmetric) {
+  for (uint16_t i = 0; i < size; i++) {
+    realZero(a + (i * size + i) * 2 + 1);
+  }
+}
+
+for(i = 0; i < size; i++) {
+  for(uint16_t j = 0; j < size; j++) {
+    uint16_t idx = i * size + j;
+    realPlus(a + idx * 2,     a + idx * 2,     ctxtTruncate);
+    realPlus(a + idx * 2 + 1, a + idx * 2 + 1, ctxtTruncate);
+    
+    if(is_sym_tridiag && i == j) {
+      continue;
+    }
+    
+    if(!realIsSpecial(a + idx * 2)) {
+      if(realGetExponent(a + idx * 2) < -eigenNoiseThreshold) {
+        realZero(a + idx * 2);
+      }
+    } else {
+      realZero(a + idx * 2);
+    }
+    
+    if(!realIsSpecial(a + idx * 2 + 1)) {
+      if(realGetExponent(a + idx * 2 + 1) < -eigenNoiseThreshold) {
+        realZero(a + idx * 2 + 1);
+      }
+    } else {
+      realZero(a + idx * 2 + 1);
+    }
+  }
+}
+
+
+
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Progress metric \n");
+}
+#endif
+
+
       // Progress metric for user display: subdiagonal magnitude - indicates remaining work
       realCopy(const_1, &progress_indicator);
       progress_indicator.exponent += 10;
@@ -5993,6 +6176,13 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
       #endif //EIGENDEBUG
 
 
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Handle converged / or copy eig to a \n");
+}
+#endif
+
+
       if(converged) {
         #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
           printf("CONVERGED: BREAKING = %d, end of main  loop\n", converged);
@@ -6006,6 +6196,13 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
       }
 
     } // End of while loop
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== End QR loop and start post processing after QR loop exit \n");
+}
+#endif
+
 
 
                                                                     #if defined(EIGENDEBUG) || defined(EIGENDEBUGMINIMAL)
@@ -6035,6 +6232,31 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
 
+    #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      // Compute relative threshold based on average diagonal magnitude
+      real_t diag_sum, avg_diag, rel_threshold;
+      sumOfSubSupDiagonalAll("", eig, NULL, size, size, DIAG, &diag_sum, true, realContext);
+      // avg_diag = diag_sum / size
+      realCopy(&diag_sum, &avg_diag);
+      for(int i = 0; i < size; i++) {
+        realDivide(&avg_diag, const_10, &avg_diag, realContext);  // Divide by size (~14 ≈ 10)
+      }
+      // rel_threshold = avg_diag * 1e-10 (10 digits of relative convergence)
+      realCopy(&avg_diag, &rel_threshold);
+      for(int i = 0; i < 10; i++) {
+        realDivide(&rel_threshold, const_10, &rel_threshold, realContext);
+      }
+    #endif //POST_QR_RELATIVE_BLOCK_CHECK
+
+
+
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== 2x2 block scan and solve \n");
+}
+#endif
+
+
     #if defined(EIGENDEBUG)
     printf("DEBUG: Starting 2x2 block scan, size=%d\n", size);
     fflush(stdout);
@@ -6045,12 +6267,16 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
     int last_unconverged = -1;
 
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag, threshold;
+      real_t offdiag_mag;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
+      #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      if(!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+      #else
+      real_t threshold;
       realCopy(const_1, &threshold);
       threshold.exponent -= blockDetectionTolerance;
-
       if(!realCompareLessThan(&offdiag_mag, &threshold)) {
+      #endif
         if(first_unconverged == -1) {
           first_unconverged = i;
         }
@@ -6134,6 +6360,12 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
                                                                         printEigenvaluesComparison("After the 2×2 scanning loop completes... before smart checking", a, eig, size, iteration, converged);
                                                                         #endif
 
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== Smart scan for 2x2 and 3x3 \n");
+}
+#endif
+
 
     // Smart remaining block detection - check what actually needs solving
     first_unconverged = -1;
@@ -6141,12 +6373,16 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
     // Scan for any remaining unconverged positions
     for(int i = 0; i < size - 1; i++) {
-      real_t offdiag_mag, threshold;
+      real_t offdiag_mag;
       complexMagnitude(eig + ((i+1) * size + i) * 2, eig + ((i+1) * size + i) * 2 + 1, &offdiag_mag, realContext);
+      #if defined(POST_QR_RELATIVE_BLOCK_CHECK)
+      if(!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+      #else
+      real_t threshold;
       realCopy(const_1, &threshold);
       threshold.exponent -= blockDetectionTolerance;
-
       if(!realCompareLessThan(&offdiag_mag, &threshold)) {
+      #endif
         if(first_unconverged == -1) {
           first_unconverged = i;
         }
@@ -6184,7 +6420,11 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
 
 
 
-
+#if defined(EIGENDEBUG) || defined(EIGENDEBUG2) || defined(EIGENDEBUGMINIMAL)
+if(iteration % 20 == 0) {
+  printf("==== activeSize handling (single eigenvalue at position activeSize-1) and copying converged eigenvalues from a to eig \n");
+}
+#endif
 
 
     // activeSize handling (single eigenvalue at position activeSize-1)
@@ -6343,6 +6583,9 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_SOLVING);
   }
+  #if defined(PC_BUILD)
+    printf("End of EIGEN, %d iterations\n",iteration);
+  #endif
 
 }
 
