@@ -4,7 +4,7 @@ C47_save_file_00
 10000022
 
 =============================================
-C47 XFN to USER KEY PARTIAL STATE FILE Rev 0c
+C47 XFN to USER KEY PARTIAL STATE FILE Rev 0d
 =============================================
 
 KEYBOARD_ASSIGNMENTS
@@ -52,6 +52,5 @@ EQUATIONS
 0
 OTHER_CONFIGURATION_STUFF
 00
-OTHER_CONFIGURATION_STUFF
-00
 END_OTHER_PARAM
+00
