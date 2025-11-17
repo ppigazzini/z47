@@ -2191,7 +2191,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         refreshModeGui();
         screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       }
-      if(temporaryInformation == TI_SHOWNOTHING || SHOWMODE) return;
+      if(temporaryInformation == TI_SHOWNOTHING) return;
 
 
       int16_t item;
