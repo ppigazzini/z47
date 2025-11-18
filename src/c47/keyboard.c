@@ -1466,6 +1466,14 @@ int16_t lastItem = 0;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary2: %d:",key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
+
+    if(SHOWMODE && (key->primary == KEY_fg || key->primary == ITM_SHIFTf)) { //before going into shift handling, send EXIT over to the key release
+      shiftF = true;
+      shiftG = false;
+      lastItem = key->primary;
+      return ITM_NOP;
+    }
+
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
@@ -1974,6 +1982,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       item = determineItem((char *)data);
       lastKeyItemDetermined = item;
+            
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -2168,7 +2177,22 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #endif // DMCP_BUILD
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
 
+      if(SHOWMODE && (lastItem == KEY_fg || lastItem == ITM_SHIFTf)) {
+        //f is delayed in SHOW to release. fg and f both will perform the f-function. F-DISP will be screen dump.
+        fg_processing_jm();
+        shiftF = true;
+        shiftG = false;
+        lastshiftF = shiftF;
+        lastshiftG = shiftG;
+        if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+          closeShowMenu();
+        }
+        showShiftState();
+        refreshModeGui();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
+      }
       if(temporaryInformation == TI_SHOWNOTHING) return;
+
 
       int16_t item;
       Shft_timeouts = false;                         //JM SHIFT NEW
