@@ -210,10 +210,12 @@ dist_dmcpr47: dmcpr47 $(DIST_TESTPGMS_DM)
 
 dist_dmcp5r47: DIST_DIR_DM = $(DMCP5R47_DIST_DIR)
 dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
+	mkdir -p $(DMCP5R47_DIST_DIR)/resources/
 	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
-	cp res/keymaps/keymap_R47.bin $(DMCP5R47_DIST_DIR)
-	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
+	cp res/keymaps/keymap_R47.bin $(DMCP5R47_DIST_DIR)/resources
+	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)/resources
 	zip -r $(DMCP5R47_DIST_DIR)/resources/R47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
-	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)/resources
+	cp res/dmcp5/update_R47.txt $(DMCP5R47_DIST_DIR)
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)
