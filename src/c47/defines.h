@@ -128,14 +128,14 @@
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+//    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+//    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+//    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
       #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
