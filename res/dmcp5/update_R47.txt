@@ -1,0 +1,70 @@
+------------------------------------
+2025-11-18 Update R47
+------------------------------------
+
+
+
+Go to PREF using keys g 1
+
+
+Recommended: Activate USB Disk (PREF, DMCP, then item 6) and backup contents of your work and original R47 FAT disk to computer. 
+Exit when finished backing up.
+
+
+Sometimes you may want to clear the complete disk. Format it like this:
+  7. System Menu
+  5. Format
+  2. Format FAT Disk
+  EXIT
+  4. Reset to DMCP menu
+  6. Activate USB Disk
+  Observe the disk name is now DMCP
+  You can change this from your PC/Mac: Just rename form your file manager.
+
+
+UPDATE R47:
+
+
+Option 1: Procedure to update the pg5 file:
+
+  First create a state backup:
+  g[0](I/O), F3(SAVE). (Also includes the DMPC5 update.)
+
+  Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
+  f[1](PREF), F2(ActUSB).
+
+  f[1] PREF, DMCP, then item 6
+  Transfer the firmware file, R47.pg5 from the computer to the root of the flash drive.
+  Safely Remove Hardware and Eject Media (Eject STM32 USB Device)
+
+  Press item 3. Load program
+  Navigate with the arrows to R47.pg5
+  Press Enter to select
+  Press Enter to continue
+  Press any key to start
+  Press EXIT to continue
+
+
+
+Option 2: Update procedure for the R47 with the DMPC5+R47.bin combo file.
+
+  First create a state backup:
+  g[0](I/O), F3(SAVE). (Also includes the DMPC5 update.)
+
+  Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
+  f[1](PREF), F2(ActUSB).
+
+  f[1] PREF, DMCP, then item 6
+  Transfer DMCP5_flash_3.55_R47-00.109.02.07b13.bin to the root directory
+
+  Rename the C47.sav file under SAVFILES to R47.sav (if you did SAVE) or rename C47auto.sav to R47auto.sav (if you did SAVEAUT). 
+    (This is a one time action needed by the new firmware.)
+
+  Safely Remove Hardware and Eject Media (Eject STM32 USB Device)
+  Press EXIT
+  Press ENTER
+  Press [ENTER] to continue anyway
+  Press EXIT key to continue
+
+  g[0](I/O), f[F3](LOAD). (Not necessary if you did SAVEAUT.)
+  g[EXIT](Info) shows the version information.
