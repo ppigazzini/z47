@@ -4554,6 +4554,23 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, getSystemFlag(FLAG_LARGELI));
             tmpString[TMP_STR_LENGTH-1] = tmpString[0];
+
+            {
+              //This section to display too long integers as reals, re-doing the above string in Real. The wastage is minor compared to the Real processing that will follow
+              uint16_t pos;
+              if(findTwoChars(tmpString, (uint8_t)PRODUCT_SIGN[0], (uint8_t)PRODUCT_SIGN[1], &pos)) {
+                strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+                w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
+                int16_t tlen =stringByteLength(tmpString);
+                uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+                displayFormatDigits = 20;
+                displayFormat = DF_SCI;
+                longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
+                displayFormat = savedDisplayFormat; displayFormatDigits = savedDisplayFormatDigits;
+                tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
+              }
+            }
+
           }
 
 
