@@ -2682,6 +2682,7 @@
 
 #define LAST_ITEM                   2598
 
+#define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
