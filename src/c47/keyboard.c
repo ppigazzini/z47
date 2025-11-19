@@ -2187,6 +2187,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         shiftG = false;
         lastshiftF = shiftF;
         lastshiftG = shiftG;
+        lastItem = 0;
         if(SHOWMODE || currentMenu() == -MNU_SHOW) {
           closeShowMenu();
         }
@@ -2194,12 +2195,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         refreshModeGui();
         screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       }
-      else if(SHOWMODE && lastItem == SCREENDUMP) {
-        //commands during SHOW directly after screen dump:
-        lastItem = 0;
-      }
-      else if(SHOWMODE) {
-        //commands during SHOW:
+      if(SHOWMODE) {
         lastItem = 0;
       }
 
