@@ -285,7 +285,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex, irfracOption_t limitIrfrac) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
-  #define exponentUNlimit1024max 5 //1024^5 is the maximum UNIT_1024^n before skipping over to standard unit presentation
+  #define exponentUNlimit1024max (getSystemFlag(FLAG_PFX_ALL) ? 7 : 5) //1024^7 is the maximum UNIT_1024^n before skipping over to standard unit presentation
 
   uint8_t charIndex, valueIndex;
   int16_t digitToRound=0;
