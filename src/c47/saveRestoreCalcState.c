@@ -3098,9 +3098,8 @@ END_CONFIG:
 
 
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
-  uint16_t savedCalcModel = 0;
-
   #if !defined(TESTSUITE_BUILD)
+  uint16_t savedCalcModel = 0;
   ioFilePath_t path;
   int ret;
   #if defined(LOADDEBUG)
