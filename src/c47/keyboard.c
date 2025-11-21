@@ -971,7 +971,18 @@ int16_t lastItem = 0;
                     #endif //VERBOSEKEYS
                     #if defined(PC_BUILD)
                       printf(">>>Function selected: executeFunction data=|%s| f=%d g=%d tam.mode=%i\n",(char *)data, shiftF, shiftG, tam.mode);
-                      if(item<0)  printf("    item<0: calcMode=%u item=%d=%s f=%d g=%d\n",calcMode, item,indexOfItems[-item].itemCatalogName, shiftF, shiftG);
+
+                      char ss[100];
+                      ss[0] = '\0';
+                      if(abs(item) > LAST_ITEM) {
+                        debugf("Trapped would-be-error in debug code, which wants to print out of range of the items Catalog, for presumable a user menu. The correct way would be to display the user menu name here.");
+                        sprintf(ss, "<bad_string> from out of range item = %d", item);
+                        fflush(stdout);
+                      } else {
+                        strcpy(ss, indexOfItems[-item].itemCatalogName);
+                      }
+                      if(item < 0)  printf("    item<0: calcMode=%u item=%d=%s f=%d g=%d\n",calcMode, item, ss, shiftF, shiftG);
+                      fflush(stdout);
                       //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
