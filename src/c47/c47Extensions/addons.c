@@ -2345,7 +2345,6 @@ void dms34ToReal34(uint16_t dms) {
   real34_t value34, d34, m34, s34, fs34;
   real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
 
-  //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
 

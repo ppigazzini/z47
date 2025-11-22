@@ -1698,7 +1698,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 
 void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   if(mode == amDMS) {
-    char degStr[27];
+    char degStr[100];
     uint32_t m, s, fs;
     int16_t sign;
     real34_t angle34Dms;
