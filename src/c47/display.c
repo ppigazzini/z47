@@ -1866,7 +1866,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
   }
   else {
     fontForShortInteger = &tinyFont;
-    #define lastTinyCharIfTooLong 258
+    #define lastTinyCharIfTooLong 256
     if( stringWidth(displayString, &tinyFont, true, true) + 
         stringWidth(STD_SUB_0 STD_SUB_0, &tinyFont, true, true) //+
         //stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &tinyFont, false, true)
