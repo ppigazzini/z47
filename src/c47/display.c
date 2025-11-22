@@ -1808,7 +1808,7 @@ void addBaseNumber(char *displayString, int16_t base) {
 }
 
 
-void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
+void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride, int32_t width) {
   uint16_t i = TMP_STR_LENGTH / 2;
   displayString[0] = 0;
   if(dispBase < 2) {
@@ -1852,7 +1852,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
   if( stringWidth(displayString, &numericFont, false, true) + 
       stringWidth(STD_SUB_0 STD_SUB_0, &numericFont, false, true) +
       stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
-      <= SCREEN_WIDTH) {
+      <= width) {
     fontForShortInteger = &numericFont;
     addBaseNumber(displayString, dispBase);
   }
@@ -1860,19 +1860,20 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
   if( stringWidth(displayString, &standardFont, false, true) + 
       stringWidth(STD_SUB_0 STD_SUB_0, &standardFont, false, true) +
       stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
-      <= SCREEN_WIDTH) {
+      <= width) {
     fontForShortInteger = &standardFont;
     addBaseNumber(displayString, dispBase);
   }
   else {
     fontForShortInteger = &tinyFont;
+    #define lastTinyCharIfTooLong 256
     if( stringWidth(displayString, &tinyFont, true, true) + 
-        stringWidth(STD_SUB_0 STD_SUB_0, &tinyFont, true, true) +
-        stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &tinyFont, false, true)
-        >= SCREEN_WIDTH * 4) {
-      displayString[256+5] = STD_ELLIPSIS[0];
-      displayString[257+5] = STD_ELLIPSIS[1];
-      displayString[258+5] = 0;
+        stringWidth(STD_SUB_0 STD_SUB_0, &tinyFont, true, true) //+
+        //stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &tinyFont, false, true)
+        >= width * 4) {
+      displayString[lastTinyCharIfTooLong + 0] = STD_ELLIPSIS[0];
+      displayString[lastTinyCharIfTooLong + 1] = STD_ELLIPSIS[1];
+      displayString[lastTinyCharIfTooLong + 2] = 0;
     }
     addBaseNumber(displayString, dispBase);
   }
