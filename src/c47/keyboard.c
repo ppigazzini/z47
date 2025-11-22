@@ -933,7 +933,7 @@ int16_t lastItem = 0;
    ***********************************************/
   static void executeFunction(const char *data, int16_t item_) {
     int16_t item = ITM_NOP;
-    printf("**[DL]** executeFunction item_ %d\n",item_);fflush(stdout);
+
                     #if defined(VERBOSEKEYS)
                       printf("keyboard.c: executeFunction %i (beginning of executeFunction): %i, %s tam.mode=%i calcMode=%u aimBuffer=%s\n", item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode, calcMode, aimBuffer);
                     #endif //VERBOSEKEYS
@@ -951,7 +951,6 @@ int16_t lastItem = 0;
         lastKeyItemDetermined = item;
       }
 
-      printf("**[DL]** executeFunction item %d\n",item);fflush(stdout);
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
@@ -1077,8 +1076,6 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-
-          //if(abs(item) > LAST_ITEM) goto noMoreToDo;  // No other processing for User menus, programs or variables
 
           if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
             // disabled
