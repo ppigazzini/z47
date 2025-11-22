@@ -933,7 +933,7 @@ int16_t lastItem = 0;
    ***********************************************/
   static void executeFunction(const char *data, int16_t item_) {
     int16_t item = ITM_NOP;
-
+    printf("**[DL]** executeFunction item_ %d\n",item_);fflush(stdout);
                     #if defined(VERBOSEKEYS)
                       printf("keyboard.c: executeFunction %i (beginning of executeFunction): %i, %s tam.mode=%i calcMode=%u aimBuffer=%s\n", item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode, calcMode, aimBuffer);
                     #endif //VERBOSEKEYS
@@ -951,6 +951,7 @@ int16_t lastItem = 0;
         lastKeyItemDetermined = item;
       }
 
+      printf("**[DL]** executeFunction item %d\n",item);fflush(stdout);
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
@@ -971,19 +972,8 @@ int16_t lastItem = 0;
                     #endif //VERBOSEKEYS
                     #if defined(PC_BUILD)
                       printf(">>>Function selected: executeFunction data=|%s| f=%d g=%d tam.mode=%i\n",(char *)data, shiftF, shiftG, tam.mode);
-
-                      char ss[100];
-                      ss[0] = '\0';
-                      if(abs(item) > LAST_ITEM) {
-                        debugf("Trapped would-be-error in debug code, which wants to print out of range of the items Catalog, for presumable a user menu. The correct way would be to display the user menu name here.");
-                        sprintf(ss, "<bad_string> from out of range item = %d", item);
-                        fflush(stdout);
-                      } else {
-                        strcpy(ss, indexOfItems[-item].itemCatalogName);
-                      }
-                      if(item < 0)  printf("    item<0: calcMode=%u item=%d=%s f=%d g=%d\n",calcMode, item, ss, shiftF, shiftG);
+                      printf("    item %s 0: calcMode=%u item=%d=%s f=%d g=%d\n",(item < 0 ? "< " : ">="),calcMode, item, getItemCatalogName(item), shiftF, shiftG);
                       fflush(stdout);
-                      //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
       resetShiftState();                               //shift cancelling delayed to this point after state machine
@@ -1087,6 +1077,9 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
+
+          //if(abs(item) > LAST_ITEM) goto noMoreToDo;  // No other processing for User menus, programs or variables
+
           if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
             // disabled
           }
@@ -1100,7 +1093,7 @@ int16_t lastItem = 0;
             return;
           }
 
-          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+          else if((tam.mode || getItemFunc(item) != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && !catalog &&        //allow only in case of PEM, and a CAT
                    (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
@@ -1113,7 +1106,7 @@ int16_t lastItem = 0;
             }
           }
 
-          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+          else if((tam.mode || getItemFunc(item) != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
 
