@@ -2697,6 +2697,12 @@ int16_t  lastSTORCL             (void);
 int16_t  lastFuncNo             (void);
 uint16_t indirectionType        (uint16_t func);
 bool_t   isFunctionOldParam16   (uint16_t func);
+char     *getItemCatalogName    (int16_t itemNr);
+
+
+typedef void (*function_t)(uint16_t);
+typedef function_t (*param)();
+function_t  getItemFunc           (int16_t itemNr);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

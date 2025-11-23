@@ -175,6 +175,53 @@ bool_t isFunctionOldParam16(uint16_t func) {
     return lastFunc;
   }
 
+  char *getItemCatalogName(int16_t itemNr) {
+    char *itemName;
+    
+    if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
+      itemName = (char *)indexOfItems[abs(itemNr)].itemCatalogName;
+    }
+    else if(itemNr >= ASSIGN_LABELS) {                     // User program
+      uint8_t *lblPtr = labelList[itemNr - ASSIGN_LABELS].labelPointer;
+      uint32_t count = *(lblPtr++);
+      char    *tbPtr = tmpStringLabelOrVariableName;
+      for(uint32_t i=0; i<count; ++i) {
+        *(tbPtr++) = *(lblPtr++);
+      }
+      *(tbPtr) = 0;
+      itemName = tmpStringLabelOrVariableName;
+    }
+    else if(itemNr >= ASSIGN_RESERVED_VARIABLES) {         // Reserved variable
+      itemName = (char *)(allReservedVariables[itemNr - ASSIGN_RESERVED_VARIABLES].reservedVariableName + 1);
+    }
+    else if(itemNr >= ASSIGN_NAMED_VARIABLES) {            // User variable
+      itemName = (char *)(allNamedVariables[itemNr - ASSIGN_NAMED_VARIABLES].variableName + 1);
+    }
+    else if(itemNr <= ASSIGN_USER_MENU) {                  // User menu
+      itemName = (char *)userMenus[ASSIGN_USER_MENU - itemNr].menuName;
+    }
+    else {                                                 // unknown item, return empty string
+      tmpStringLabelOrVariableName[0] = 0;
+      itemName = tmpStringLabelOrVariableName; 
+    }
+    
+    return itemName;
+  }
+  
+  function_t getItemFunc(int16_t itemNr) {
+    void     (*func)(uint16_t);
+    
+    if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
+      func = indexOfItems[itemNr].func;
+    }
+    else {                                                 // Any other user or reserved item
+      func = addItemToBuffer;
+    }
+    
+    return func;
+  }
+  
+  
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
