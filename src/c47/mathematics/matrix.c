@@ -46,12 +46,10 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
     return false;
   }
 
-  if(longIntegerIsNegativeOrZero(tmp)) {
+  if(longIntegerIsNegativeOrZero(tmp) || longIntegerCompareInt(tmp, 4096) > 0) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp, strbuf, 32);
         sprintf(errorMessage, "invalid number of %s", reg == REGISTER_X ? "columns" : "rows");
         moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

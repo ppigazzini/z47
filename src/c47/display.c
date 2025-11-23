@@ -1698,7 +1698,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 
 void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
   if(mode == amDMS) {
-    char degStr[27];
+    char degStr[100];
     uint32_t m, s, fs;
     int16_t sign;
     real34_t angle34Dms;
@@ -1746,13 +1746,12 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
       realAdd(&degrees, const_1, &degrees, &ctxtReal39);
     }
 
-    realToString(&degrees, degStr);
-    for(int32_t i=0; degStr[i]!=0; i++) {
-      if(degStr[i] == '.') {
-        degStr[i] = 0;
-        break;
-      }
-    }
+    //Change to make proper real number before the °
+    real34_t tmp;
+    realToReal34(&degrees, &tmp);
+    real34ToDisplayString2(&tmp, degStr, displayHasNDigits, limitExponent, false, frontSpace, true, limitIrfrac);
+
+
     char tt[4];
     if(RADIX34_MARK_STRING[1]!=1) {strcpy(tt,RADIX34_MARK_STRING);}
     else {tt[0] = RADIX34_MARK_STRING[0]; tt[1] = 0;}
@@ -2962,6 +2961,8 @@ static void printXSHOW(int16_t am, int16_t d, int16_t df, int16_t dfd, int16_t d
   else if(dt == dtComplex34) {
     complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont,SCREEN_WIDTH - ww - 8*2, 34 ,!LIMITEXP, !FRONTSPACE, NOIRFRAC, getComplexRegisterAngularMode(showRegis), tagPolar);
   }
+
+  if(stringWidth(tmpString + 2100, &numericFont, true, true) > SCREEN_WIDTH) tmpString[2100] = 0; //clear the line if it comes out too long by some fluke
 
 
   last = 2100 + stringByteLength(tmpString + 2100);
