@@ -3598,12 +3598,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          else if(temporaryInformation == TI_MEANX_MEANY) {
+          else if(temporaryInformation == TI_MEANX_MEANY || temporaryInformation == TI_MEANX) {
             if(regist == REGISTER_X) {
               strcpy(prefix, STD_x_BAR " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            else if(regist == REGISTER_Y) {
+            else if(regist == REGISTER_Y && temporaryInformation != TI_MEANX) {
               strcpy(prefix, STD_y_BAR " =");
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
