@@ -1746,15 +1746,6 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
       realAdd(&degrees, const_1, &degrees, &ctxtReal39);
     }
 
-    //Original WP43, not spacer separators, no exponents
-    //    realToString(&degrees, degStr);
-    //    for(int32_t i=0; degStr[i]!=0; i++) {
-    //      if(degStr[i] == '.') {
-    //        degStr[i] = 0;
-    //        break;
-    //      }
-    //    }
-
     //Change to make proper real number before the °
     real34_t tmp;
     realToReal34(&degrees, &tmp);
