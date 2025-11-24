@@ -1224,7 +1224,7 @@ void restoreStats(void){
       {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
       {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
-      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
+      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_fg  ", R.Shift is " STD_BOX},
       {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
@@ -1607,6 +1607,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentMvarLabel = INVALID_VARIABLE;
     lastKeyCode = 0;
     entryStatus = 0;
+    lastUserMode = false;   //used in btnReleased and btnFnReleased
+    lastItem = 0;           //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 
     memset(userMenuItems,  0, sizeof(userMenuItem_t) * 18);
     memset(userAlphaItems, 0, sizeof(userMenuItem_t) * 18);
