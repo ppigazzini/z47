@@ -3024,7 +3024,14 @@ static void dispM(uint16_t regist, char * prefix) {
 #undef MONITOR_SHOW
 
 static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t numberOfLines, int16_t *startingLine) {
-#define checktmpStringSep(SEP, a) (!((SEP[1] != 1 && tmpString[a-2] == SEP[0] && tmpString[a-1] == SEP[1]) || (SEP[1] == 1 && tmpString[a-1] == SEP[0])))
+        /* checktmpStringSep macro:           */
+        /* previous 2 bytes = double byte sep */
+        /* previous byte = single byte sep    */
+        /* previous 2 bytes are STD_SPACE_FIGURE used in XFN to compact the display */
+#define checktmpStringSep(SEP, a) ( !(   (SEP[1] != 1 && tmpString[a-2] == SEP[0] &&              tmpString[a-1] == SEP[1]             ) \
+                                      || (SEP[1] == 1 && tmpString[a-1] == SEP[0]                                                      ) \
+                                      || (               tmpString[a-2] == STD_SPACE_FIGURE[0] && tmpString[a-1] == STD_SPACE_FIGURE[1]) \
+                                    ))
   char *SEP = SEPARATOR_LEFT;
   int8_t GRPWID = GROUPWIDTH_LEFT;
   bool_t GRP_DISABLED = GROUPLEFT_DISABLED;
@@ -3095,26 +3102,26 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     #endif
     uint8_t cnt = GRPWID+1;
     while(cnt-- != 0 && *source < *last && !GRP_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
-      if(checktmpStringSep(SEP, *dest) && !(tmpString[*dest-2] & 0x80)) { //try the actual sep char, or any other double byte unicode character to split it there. That excludes all ligit digits
-        (*dest)--;    //line does not end on separator, so reduce the characters until it does
+      if(checktmpStringSep(SEP, *dest)) {                    //try the actual sep char, or any other double byte unicode character to split it there. That excludes all ligit digits
+        (*dest)--;                                           //line does not end on separator, so reduce the characters until it does
         (*source)--;
       }
       else {
-        (*dest)--;    //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
+        (*dest)--;                                           //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
         (*source)--;
-        if(SEP[0] & 0x80 && SEP[1] != 1) { //line ends on a double byte seperator
+        if(SEP[0] & 0x80 && SEP[1] != 1) {                   //line ends on a double byte seperator
           (*dest)--;
           (*source)--;
         }
         break;
       }
     }
-    //source sits on the next, not yet printed digit
+                                                             //source sits on the next, not yet printed digit
 
 
     #if defined(MONITOR_SHOW)
-      printf("AAA: source=%d %d %d [%d] %d %d\n", *source, errorMessage[*source-2], errorMessage[*source-1], errorMessage[*source], errorMessage[*source+1], errorMessage[*source+2]);
-      printf("AAA: dest  =%d %d %d [%d] %d %d\n", *dest  , tmpString[*dest  -2], tmpString[*dest  -1], tmpString[*dest  ], tmpString[*dest  +1], tmpString[*dest  +2]);
+      printf("AAA: source=%d %d %d [%d] %d %d\n", (uint8_t)*source, (uint8_t)errorMessage[*source-2], (uint8_t)errorMessage[*source-1], (uint8_t)errorMessage[*source], (uint8_t)errorMessage[*source+1], (uint8_t)errorMessage[*source+2]);
+      printf("AAA: dest  =%d %d %d [%d] %d %d\n", (uint8_t)*dest  , (uint8_t)tmpString[*dest  -2],    (uint8_t)tmpString[*dest  -1],    (uint8_t)tmpString[*dest  ],    (uint8_t)tmpString[*dest  +1],    (uint8_t)tmpString[*dest  +2]);
       printf("---: d=%d (*startingLine + (numberOfLines-1))*SHOWLineSize=%d\n", d, (*startingLine + (numberOfLines-1))*SHOWLineSize);
     #endif //MONITOR_SHOW
 
@@ -3130,8 +3137,8 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
   #if defined(MONITOR_SHOW)
     printf("###%s###\n",errorMessage + *dest);
-    printf("BBB: source=%d %d %d [%d] %d %d\n", *source, errorMessage[*source-2], errorMessage[*source-1], errorMessage[*source], errorMessage[*source+1], errorMessage[*source+2]);
-    printf("BBB: dest  =%d %d %d [%d] %d %d\n", *dest  , tmpString[*dest  -2], tmpString[*dest  -1], tmpString[*dest  ], tmpString[*dest  +1], tmpString[*dest  +2]);
+    printf("BBB: source=%d %d %d [%d] %d %d\n", (uint8_t)*source, (uint8_t)errorMessage[*source-2], (uint8_t)errorMessage[*source-1], (uint8_t)errorMessage[*source], (uint8_t)errorMessage[*source+1], (uint8_t)errorMessage[*source+2]);
+    printf("BBB: dest  =%d %d %d [%d] %d %d\n", (uint8_t)*dest  , (uint8_t)tmpString[*dest  -2],    (uint8_t)tmpString[*dest  -1],    (uint8_t)tmpString[*dest  ],    (uint8_t)tmpString[*dest  +1],    (uint8_t)tmpString[*dest  +2]);
   #endif //MONITOR_SHOW
 }
 
