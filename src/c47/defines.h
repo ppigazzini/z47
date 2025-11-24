@@ -42,7 +42,6 @@
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
 #undef SAVE_SPACE_DM42_17
-#undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 #undef SAVE_SPACE_DM42_22_EDIT1
@@ -51,6 +50,7 @@
 #define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
 #undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
 #define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+#define OPTION_XFN_1000
 
 #if defined(DMCP_BUILD)
 
@@ -103,6 +103,7 @@
       #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
+      #undef  OPTION_XFN_1000          //             //  3872 byte  // Without XFN extended 1000 digit math Functionality
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -125,16 +126,16 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
 //    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+    #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
-      #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
-      #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
-      #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
+      #define  OPTION_CUBIC_159         //   // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally
+      #undef  OPTION_XFN_1000          //  4850 bytes // Without XFN extended 1000 digit math Functionality
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
