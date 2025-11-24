@@ -82,8 +82,8 @@ TO_QSPI const int16_t menu_TRG_C47_MORE[]= { ITM_DEG2,                      ITM_
                                              ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };    //JM re-arranged menu TRIG menu
 //R47 vv
 TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_DMS,               ITM_MULPI,                   ITM_atan2,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_msTo,
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_NULL,              ITM_sinc,                    ITM_sincpi,                   };
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_NULL,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_ms,                   ITM_msTo,              ITM_sinc,                    ITM_sincpi,                   };
 //D47 ^^
 
 TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_PCT    ,                ITM_PC         ,          ITM_DELTAPC,            ITM_PCPMG,                   ITM_PCMRR,
