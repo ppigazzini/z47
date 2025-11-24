@@ -9,24 +9,13 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b13.1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00b0"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-// Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
-// Version 7b6 is a quick bugfix version
-// Version 7c6 fixes a gitlab compile issue, no other changes.
-// Version 7a7 internal alpha test
-// Version 7b7 bugfix version, supplementing nano with float libraries
-// Version 7b8 bugfix version, supplementing nano with float libraries
-// Version 7a9 internal alphs
-// Version 7b9 test for FACTORS
-// Version 7b10 bugfixes for FACTORS
-// Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
-// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
-// Version 7a12 temporary test for longpress alpha keys
-// cont.        with generic EDIT; XFN3 1000-digit precision; EigenValue fixl Delete Program fix, and more
-// Version 7b12 is the R47 Test1, delivery firmware
-// Version 7a13 continues with eigenvalue improvements
-// Version 7b13 Simulator split into C47 R47, XFN, etc., EIGEN
+// Version 0.109.02.07b11   Public Release C47 & R47
+// Version 0.109.02.07b12   Public Release C47 & R47 launch
+// Version 0.109.02.07b13.1 Public Release C47 & R47
+// Version 0.109.03.00b0    Public Release C47 & R47
+
 
 #if !defined(CALCMODEL)
   #define CALCMODEL USER_C47               // USER_C47 or USER_R47
