@@ -91,14 +91,12 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
     return false;
   }
 
-  if(longIntegerIsNegativeOrZero(tmp)) {
+  if(longIntegerIsNegativeOrZero(tmp) || longIntegerCompareInt(tmp, 4096) > 0) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        char strbuf[32];
-        longIntegerToAllocatedString(tmp, strbuf, 32);
         sprintf(errorMessage, "invalid number of %s", reg == REGISTER_X ? "columns" : "rows");
-        moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
   } else {
@@ -110,8 +108,8 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   return res;
 }
 
-static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
-  //Get Size from REGISTER_X and REGISTER_Y
+bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
+  //Get Size or I&J for STOIJ from REGISTER_X and REGISTER_Y
   return getSingleDimension(REGISTER_X, cols) &&
          getSingleDimension(REGISTER_Y, rows);
 }
@@ -1148,6 +1146,15 @@ void fnVectorAngle(uint16_t unusedParamButMandatory) {
   }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
+
+
+bool_t isMatrixIndexed(void) {
+  #if !defined(TESTSUITE_BUILD)
+    return ((matrixIndex != INVALID_VARIABLE) && (isRegInRange(matrixIndex)) && (getRegisterDataType(matrixIndex) == dtReal34Matrix || getRegisterDataType(matrixIndex) == dtComplex34Matrix));
+  #else
+    return false;
+  #endif
 }
 
 

@@ -25,8 +25,11 @@ static void calculateMean(int displayInfo, real_t *sumX, real_t *numberX, real_t
     real_t tempReal1, tempReal2;
 
     liftStack();
-    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
+
+    if(sumY != NULL) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+    }
 
     realDivide(sumX, numberX, &tempReal1, &ctxtReal39);
     if(transform != NULL) {
@@ -35,11 +38,13 @@ static void calculateMean(int displayInfo, real_t *sumX, real_t *numberX, real_t
     real_t *mean = transform == NULL ? &tempReal1 : &tempReal2;
     convertRealToReal34ResultRegister(mean, REGISTER_X);
 
-    realDivide(sumY, numberY, &tempReal1, &ctxtReal39);
-    if(transform != NULL) {
-      (*transform)(&tempReal1, &tempReal2);
+    if(sumY != NULL) {
+      realDivide(sumY, numberY, &tempReal1, &ctxtReal39);
+      if(transform != NULL) {
+        (*transform)(&tempReal1, &tempReal2);
+      }
+      convertRealToReal34ResultRegister(mean, REGISTER_Y);
     }
-    convertRealToReal34ResultRegister(mean, REGISTER_Y);
 
     temporaryInformation = displayInfo;
   }
@@ -56,6 +61,11 @@ static void calculateMean(int displayInfo, real_t *sumX, real_t *numberX, real_t
 void fnMeanXY(uint16_t unusedButMandatoryParameter) {
   calculateMean(TI_MEANX_MEANY, SIGMA_X, SIGMA_N, SIGMA_Y, SIGMA_N, NULL);
 }
+
+void fnMeanX(uint16_t unusedButMandatoryParameter) {
+  calculateMean(TI_MEANX, SIGMA_X, SIGMA_N, NULL, NULL, NULL);
+}
+
 
 static void geometricMeanTransform(const real_t *operand, real_t *result) {
   realExp(operand, result, &ctxtReal39);

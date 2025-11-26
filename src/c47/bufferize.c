@@ -2356,7 +2356,7 @@ typedef struct {
       subNumberToDisplayString(lastDenominator, displayBuffer + stringByteLength(displayBuffer), NULL);
     }
     else if (buffer[index] != 0) {
-      int16_t denominator = toInt32(buffer + index);
+      int32_t denominator = toInt32(buffer + index);
       subNumberToDisplayString(denominator, displayBuffer + stringByteLength(displayBuffer), NULL);
       for(; buffer[index] >= '0' && buffer[index] <= '9'; index++) {
       }

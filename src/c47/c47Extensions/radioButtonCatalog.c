@@ -197,6 +197,64 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 };
 
 
+TO_QSPI const struct {                         // CB_JC: CHECK BOX Curve fitting parameters: {JC_param, CF_flag}
+  uint16_t jcParam;
+  uint16_t cfFlag;
+} fittingParams[] = {
+  {JC_LINEAR_FITTING,      CF_LINEAR_FITTING},
+  {JC_EXPONENTIAL_FITTING, CF_EXPONENTIAL_FITTING},
+  {JC_LOGARITHMIC_FITTING, CF_LOGARITHMIC_FITTING},
+  {JC_POWER_FITTING,       CF_POWER_FITTING},
+  {JC_ROOT_FITTING,        CF_ROOT_FITTING},
+  {JC_HYPERBOLIC_FITTING,  CF_HYPERBOLIC_FITTING},
+  {JC_PARABOLIC_FITTING,   CF_PARABOLIC_FITTING},
+  {JC_CAUCHY_FITTING,      CF_CAUCHY_FITTING},
+  {JC_GAUSS_FITTING,       CF_GAUSS_FITTING}
+};
+
+TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags checked with getSystemFlag()
+  FLAG_CPXRES,
+  FLAG_SPCRES,
+  FLAG_LEAD0,
+  FLAG_HPRP,
+  FLAG_MNUp1,
+  FLAG_HPBASE,
+  FLAG_2TO10,
+  FLAG_DENANY,
+  FLAG_DENFIX,
+  FLAG_PROPFR,
+  FLAG_FRACT,
+  FLAG_PRTACT,
+  FLAG_ERPN,
+  FLAG_CARRY,
+  FLAG_OVERFLOW,
+  FLAG_FRCYC,
+  FLAG_LARGELI,
+  FLAG_IRFRAC,
+  FLAG_CPXPLOT,
+  FLAG_SHOWX,
+  FLAG_SHOWY,
+  FLAG_PBOX,
+  FLAG_PCURVE,
+  FLAG_PCROS,
+  FLAG_PPLUS,
+  FLAG_PLINE,
+  FLAG_SCALE,
+  FLAG_VECT,
+  FLAG_NVECT,
+  FLAG_NUMLOCK,
+  FLAG_USER,
+  FLAG_SH_LONGPRESS,
+  FLAG_DREAL,
+  FLAG_CPXMULT,
+  FLAG_TOPHEX,
+  FLAG_BCD,
+  FLAG_G_DOUBLETAP,
+  FLAG_SHFT_4s
+};
+
+
+
 int8_t fnCbIsSet(int16_t item) {
   int8_t result = NOVAL;
   int16_t itemNr = max(item, -item);
@@ -308,85 +366,69 @@ int8_t fnCbIsSet(int16_t item) {
                      break;
 
         case CB_JC:  is_cb = true;
-          switch(indexOfRadioCbEepromItems[i].param) {
 
-            case USER_R47f_g:
-            case USER_R47bk_fg:
-            case USER_R47fg_bk:
-            case USER_R47fg_g:           cb_param = calcModel == indexOfRadioCbEepromItems[i].param; break;
 
-            case JC_LINEAR_FITTING:      cb_param = ((lrSelection & CF_LINEAR_FITTING)      == CF_LINEAR_FITTING     ); break;
-            case JC_EXPONENTIAL_FITTING: cb_param = ((lrSelection & CF_EXPONENTIAL_FITTING) == CF_EXPONENTIAL_FITTING); break;
-            case JC_LOGARITHMIC_FITTING: cb_param = ((lrSelection & CF_LOGARITHMIC_FITTING) == CF_LOGARITHMIC_FITTING); break;
-            case JC_POWER_FITTING:       cb_param = ((lrSelection & CF_POWER_FITTING)       == CF_POWER_FITTING      ); break;
-            case JC_ROOT_FITTING:        cb_param = ((lrSelection & CF_ROOT_FITTING)        == CF_ROOT_FITTING       ); break;
-            case JC_HYPERBOLIC_FITTING:  cb_param = ((lrSelection & CF_HYPERBOLIC_FITTING)  == CF_HYPERBOLIC_FITTING ); break;
-            case JC_PARABOLIC_FITTING:   cb_param = ((lrSelection & CF_PARABOLIC_FITTING)   == CF_PARABOLIC_FITTING  ); break;
-            case JC_CAUCHY_FITTING:      cb_param = ((lrSelection & CF_CAUCHY_FITTING)      == CF_CAUCHY_FITTING     ); break;
-            case JC_GAUSS_FITTING:       cb_param = ((lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING      ); break;
-            case JC_ORTHOGONAL_FITTING:  cb_param = (orOrtho(lrSelection)                   == CF_ORTHOGONAL_FITTING ); break;
+                      uint16_t param = indexOfRadioCbEepromItems[i].param;
+                      bool_t param_found = false;
 
-            case JC_DIFF:                cb_param = PLOT_DIFF;                                                        break;
-            case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
-            case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
-            case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
 
-            case FLAG_CPXRES :
-            case FLAG_SPCRES :
-            case FLAG_LEAD0  :
-            case FLAG_HPRP   :
-            case FLAG_MNUp1  :
-            case FLAG_HPBASE :
-            case FLAG_2TO10  :
-            case FLAG_DENANY :
-            case FLAG_DENFIX :
-            case FLAG_PROPFR :
-            case FLAG_FRACT  :
-            case FLAG_PRTACT :
-            case FLAG_ERPN   :
-            case FLAG_CARRY  :
-            case FLAG_OVERFLOW:
-            case FLAG_FRCYC  :
-            case FLAG_LARGELI:
-            case FLAG_IRFRAC :
-            case FLAG_CPXPLOT:
-            case FLAG_SHOWX  :
-            case FLAG_SHOWY  :
-            case FLAG_PBOX   :
-            case FLAG_PCURVE :
-            case FLAG_PCROS  :
-            case FLAG_PPLUS  :
-            case FLAG_PLINE  :
-            case FLAG_SCALE  :
-            case FLAG_VECT   :
-            case FLAG_NVECT  :
-            case FLAG_NUMLOCK     :
-            case FLAG_USER        :
-            case FLAG_SH_LONGPRESS:
-            case FLAG_DREAL       :
-            case FLAG_CPXMULT     :
-            case FLAG_TOPHEX      :
-            case FLAG_BCD         :
-            case FLAG_G_DOUBLETAP :
-            case FLAG_SHFT_4s :
-                       cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
+                      for(uint_fast16_t j = 0; j < nbrOfElements(fittingParams); j++) {                                         // Check fitting parameters
+                        if(param == fittingParams[j].jcParam) {
+                          cb_param = ((lrSelection & fittingParams[j].cfFlag) == fittingParams[j].cfFlag);
+                          param_found = true;
+                          break;
+                        }
+                      }
 
-            case JC_UC:                  cb_param = !alphaCase;                                                       break;
-            case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
-            case FLAG_MYM_TRIPLE: 
-            case FLAG_HOME_TRIPLE:       cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);
-                                         if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) clearSystemFlag(FLAG_MYM_TRIPLE);
-                                         break;
-            case FLAG_BASE_HOME:
-            case FLAG_BASE_MYM:          cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);
-                                         if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) clearSystemFlag(FLAG_BASE_HOME);
-                                         break;
-            #if defined(INLINE_TEST)
-              case JC_ITM_TST:           cb_param = testEnabled;                                                      break;
-            #endif // INLINE_TEST
+                      if(!param_found) {
+                        for(uint_fast16_t j = 0; j < nbrOfElements(systemFlagParams); j++) {                                    // Check system flag parameters only if not found yet
+                          if(param == systemFlagParams[j]) {
+                            cb_param = getSystemFlag(param);
+                            param_found = true;
+                            break;
+                          }
+                        }
+                      }
 
-            default: ;
-          }
+
+                      if(!param_found) {
+                        switch(param) {                                                                                         // Handle remaining cases only if not found yet
+                          case USER_R47f_g:
+                          case USER_R47bk_fg:
+                          case USER_R47fg_bk:
+                          case USER_R47fg_g:       cb_param = calcModel == param;                     break;
+
+                          case JC_ORTHOGONAL_FITTING: cb_param = (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING); break;
+
+                          case JC_DIFF:            cb_param = PLOT_DIFF;                              break;
+                          case JC_INTG:            cb_param = PLOT_INTG;                              break;
+                          case JC_RMS:             cb_param = PLOT_RMS;                               break;
+                          case JC_SHADE:           cb_param = PLOT_SHADE;                             break;
+
+                          case JC_UC:              cb_param = !alphaCase;                             break;
+                          case JC_SS:              cb_param = scrLock != NC_NORMAL;                   break;
+                          
+                          case FLAG_MYM_TRIPLE: 
+                          case FLAG_HOME_TRIPLE:
+                            cb_param = getSystemFlag(param);
+                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) 
+                              clearSystemFlag(FLAG_MYM_TRIPLE);
+                            break;
+                            
+                          case FLAG_BASE_HOME:
+                          case FLAG_BASE_MYM:
+                            cb_param = getSystemFlag(param);
+                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) 
+                              clearSystemFlag(FLAG_BASE_HOME);
+                            break;
+                            
+                          #if defined(INLINE_TEST)
+                            case JC_ITM_TST:       cb_param = testEnabled;                            break;
+                          #endif
+                          
+                          default: ;
+                        }
+                      }
 
           default: ;
       }

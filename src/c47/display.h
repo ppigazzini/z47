@@ -44,7 +44,7 @@ void shortIntegerToDisplayString       (calcRegister_t regist, char *displayStri
 #define toRemoveTrailingRadix true
 void longIntegerRegisterToRealDisplayString     (calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int32_t minimum, bool_t removeTrailingRadix);
 void longIntegerToDisplayString        (longInteger_t lgInt, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI);     //JM mod max_Width;   //JM added last parameter: Allow LARGELI
-void longIntegerToHexDisplayString     (calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride);
+void longIntegerToHexDisplayString     (calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride, int32_t width);
 void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int16_t maxExp, bool_t allowLARGELI);    //JM added last parameter: Allow LARGELI
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void timeToDisplayString               (calcRegister_t regist, char *displayString, bool_t ignoreTDisp);

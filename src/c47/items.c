@@ -175,6 +175,53 @@ bool_t isFunctionOldParam16(uint16_t func) {
     return lastFunc;
   }
 
+  char *getItemCatalogName(int16_t itemNr) {
+    char *itemName;
+    
+    if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
+      itemName = (char *)indexOfItems[abs(itemNr)].itemCatalogName;
+    }
+    else if(itemNr >= ASSIGN_LABELS) {                     // User program
+      uint8_t *lblPtr = labelList[itemNr - ASSIGN_LABELS].labelPointer;
+      uint32_t count = *(lblPtr++);
+      char    *tbPtr = tmpStringLabelOrVariableName;
+      for(uint32_t i=0; i<count; ++i) {
+        *(tbPtr++) = *(lblPtr++);
+      }
+      *(tbPtr) = 0;
+      itemName = tmpStringLabelOrVariableName;
+    }
+    else if(itemNr >= ASSIGN_RESERVED_VARIABLES) {         // Reserved variable
+      itemName = (char *)(allReservedVariables[itemNr - ASSIGN_RESERVED_VARIABLES].reservedVariableName + 1);
+    }
+    else if(itemNr >= ASSIGN_NAMED_VARIABLES) {            // User variable
+      itemName = (char *)(allNamedVariables[itemNr - ASSIGN_NAMED_VARIABLES].variableName + 1);
+    }
+    else if(itemNr <= ASSIGN_USER_MENU) {                  // User menu
+      itemName = (char *)userMenus[ASSIGN_USER_MENU - itemNr].menuName;
+    }
+    else {                                                 // unknown item, return empty string
+      tmpStringLabelOrVariableName[0] = 0;
+      itemName = tmpStringLabelOrVariableName; 
+    }
+    
+    return itemName;
+  }
+  
+  function_t getItemFunc(int16_t itemNr) {
+    void     (*func)(uint16_t);
+    
+    if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
+      func = indexOfItems[itemNr].func;
+    }
+    else {                                                 // Any other user or reserved item
+      func = addItemToBuffer;
+    }
+    
+    return func;
+  }
+  
+  
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -291,7 +338,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 #if !defined(TESTSUITE_BUILD)
     // mark the previous I and J, when STOSEQ and RCLSEQ are being used
     real_t iir,jjr;
-    if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && matrixIndexed && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
+    if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
       lastI=realToUint32C47(&iir);
       lastJ=realToUint32C47(&jjr);
     } else {
@@ -431,8 +478,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = \
-                               (param == REGISTER_I) && matrixIndexed ? TI_I : \
-                               (param == REGISTER_J) && matrixIndexed ? TI_J : \
+                               (param == REGISTER_I) && isMatrixIndexed() ? TI_I : \
+                               (param == REGISTER_J) && isMatrixIndexed() ? TI_J : \
                                (inNameRegisterRange) ? ((isStatsMatrixN(&rr, regStats) && param == regStats) ? TI_STATISTIC_SUMS : TI_STORCL) : \
                                (isMatrix) ? TI_STORCL : \
                                (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : \
@@ -440,16 +487,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
+        case ITM_STOEL       : if(isMatrixIndexed()) temporaryInformation = TI_MIJEQ;   break;
 
         case ITM_INDEX       :
         case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
-        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
+        case ITM_JMINUS      : if(isMatrixIndexed()) temporaryInformation = TI_MIJ;   break;
 
         case ITM_RCLIJ       :
-        case ITM_STOIJ       : if(matrixIndexed) temporaryInformation = TI_IJ;    break;
+        case ITM_STOIJ       : if(isMatrixIndexed()) temporaryInformation = TI_IJ;    break;
         default:;
       }
 
@@ -1000,6 +1047,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnPlotStat                  (uint16_t unusedButMandatoryParameter) {}
   void fnSumXY                     (uint16_t unusedButMandatoryParameter) {}
   void fnMeanXY                    (uint16_t unusedButMandatoryParameter) {}
+  void fnMeanX                     (uint16_t unusedButMandatoryParameter) {}
   void fnGeometricMeanXY           (uint16_t unusedButMandatoryParameter) {}
   void fnWeightedMeanX             (uint16_t unusedButMandatoryParameter) {}
   void fnHarmonicMeanXY            (uint16_t unusedButMandatoryParameter) {}
@@ -3086,7 +3134,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1448 */  { itemToBeCoded,                NOPARAM,                     "BLUE47",                                      "BLUE47",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1449 */  { fnDot,                        NOPARAM,                     "DOT",                                         "dot",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1450 */  { fnDisplayStack,               TM_VALUE,                    "dSTACK",                                      "dSTACK",                                      (1 << TAM_MAX_BITS) |     4, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
-/* 1451 */  { fnAngularMode,                amDMS,                       "D.MS",                                        "d.ms",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1451 */  { fnAngularMode,                amDMS,                       "D.MS",                                        "D.MS",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1452 */  { fnResetTVM,                   NOPARAM,                     "CLTVM",                                       "CLTVM",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1453 */  { fnSetDateFormat,              ITM_DMY,                     "DMY",                                         "DMY",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1454 */  { fnDateToJulian,               NOPARAM,                     DT STD_RIGHT_ARROW "J",                        DT STD_RIGHT_ARROW "J",                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3327,8 +3375,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1689 */  { fnSetBaseNr,                  TM_VALUE,                    "dBASE",                                       "dBASE",                                       (0 << TAM_MAX_BITS) |    62, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 /* 1690 */  { fnIntegrateYX,                TM_REGISTER,                 STD_INTEGRAL STD_YX, /*A*/                     STD_INTEGRAL STD_YX, /*B*/                     (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 1691 */  { fnToReal,                     NOPARAM,                     STD_RIGHT_ARROW "REAL",                        ".d",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1692 */  { fnPcSigmaDeltaPcXmean,        NOPARAM,                     "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR,     "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1693 */  { fnDeltaPercentXmean,          NOPARAM,                     STD_DELTA "%" STD_x_BAR,                       STD_DELTA "%" STD_x_BAR,                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1692 */  { fnPcSigmaDeltaPcXmean,        NOPARAM,                     "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR STD_SUB_1, "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR STD_SUB_1, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1693 */  { fnDeltaPercentXmean,          NOPARAM,                     STD_DELTA "%" STD_x_BAR STD_SUB_1,             STD_DELTA "%" STD_x_BAR STD_SUB_1,             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1694 */  { fnShuffle,                    TM_SHUFFLE,                  STD_RIGHT_OVER_LEFT_ARROW,                     STD_RIGHT_OVER_LEFT_ARROW,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_SHUFFLE      | HG_ENABLED         },
 /* 1695 */  { fnPercent,                    NOPARAM,                     "%",                                           "%",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1696 */  { fnPercentMRR,                 NOPARAM,                     "%MRR",                                        "%MRR",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3378,7 +3426,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1740 */  { fnAim,                        NOPARAM,                     STD_alpha,                                     STD_alpha,                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_DISABLED        },
 /* 1741 */  { fnKeyDotD,                    NOPARAM,                     ".d",                                          ".d",                                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1742 */  { fnC47Show,                    NOPARAM,                     "SHOW",                                        "SHOW",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1743 */  { itemToBeCoded,                NOPARAM,                     "1743",                                        "1743",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1743 */  { fnMeanX,                      NOPARAM,                     STD_x_BAR STD_SUB_1,                           STD_x_BAR STD_SUB_1,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1744 */  { SetSetting,                   FLAG_FRACT,                  "FRACT",                                       "FRACT",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1745 */  { fnVectorAngle,                NOPARAM,                     STD_MEASURED_ANGLE STD_SPACE_6_PER_EM STD_v_BAR "," STD_SPACE_6_PER_EM STD_v_BAR, STD_MEASURED_ANGLE STD_SPACE_6_PER_EM STD_v_BAR "," STD_SPACE_6_PER_EM STD_v_BAR, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1746 */  { fnHarmonicMeanXY,             NOPARAM,                     STD_x_BAR STD_SUB_H,                           STD_x_BAR STD_SUB_H,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

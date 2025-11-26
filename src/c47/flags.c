@@ -55,84 +55,50 @@ static void _flipSystemFlag(unsigned int sf) {
 
 bool_t getSystemFlag(int32_t sf);
 
+TO_QSPI const uint16_t refreshStateFlags[] = {       //these flags need to update the corresponding softkey status
+  FLAG_YMD, FLAG_DMY, FLAG_MDY, FLAG_TDM24, FLAG_CPXRES, FLAG_SPCRES,
+  FLAG_CPXj, FLAG_POLAR, FLAG_LEAD0, FLAG_DENANY, FLAG_DENFIX, FLAG_SSIZE8,
+  FLAG_MULTx, FLAG_ENGOVR, FLAG_ENDPMT, FLAG_HPRP, FLAG_MNUp1, FLAG_HPBASE,
+  FLAG_NUMLOCK, FLAG_CPXMULT, FLAG_ERPN, FLAG_CARRY, FLAG_OVERFLOW, FLAG_FRCYC,
+  FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
+  FLAG_PBOX, FLAG_PCURVE, FLAG_PCROS, FLAG_PPLUS, FLAG_PLINE, FLAG_SCALE,
+  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX
+};
+
+TO_QSPI const uint16_t clearStatusBarFlags[] = {       //these flags need to clear the statusbar and start SB again
+  FLAG_SBdate, FLAG_SBcr, FLAG_SBcpx, FLAG_SBang, FLAG_SBint, FLAG_SBmx,
+  FLAG_SBtvm, FLAG_SBoc, FLAG_SBss, FLAG_SBstpw, FLAG_SBser, FLAG_SBprn,
+  FLAG_SBbatV, FLAG_SBshfR, FLAG_SBfrac, FLAG_SBwoy, FLAG_SBtime, FLAG_FRACT,
+  FLAG_IRFRAC, FLAG_IRFRQ
+};
+
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
+  // Check refreshStateFlags:        //these flags need to update the corresponding softkey status
+  for(uint_fast16_t i = 0; i < nbrOfElements(refreshStateFlags); i++) {
+    if(systemFlag == refreshStateFlags[i]) {
+      fnRefreshState();
+      return;
+    }
+  }
+  
+  // Check clearStatusBarFlags       //these flags need to clear the statusbar and start SB again
+  for(uint_fast16_t i = 0; i < nbrOfElements(clearStatusBarFlags); i++) {
+    if(systemFlag == clearStatusBarFlags[i]) {
+      #if defined(DMCP_BUILD)
+        reallyClearStatusBar(201);
+      #endif
+      fnRefreshState();
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+      return;
+    }
+  }
+  
   switch(systemFlag) {
-    case FLAG_YMD:       //these flags need to update the corresponding softkey status
-    case FLAG_DMY:
-    case FLAG_MDY:
-    case FLAG_TDM24:
-    case FLAG_CPXRES:
-    case FLAG_SPCRES:
-    case FLAG_CPXj:
-    case FLAG_POLAR:
-    case FLAG_LEAD0:
-    case FLAG_DENANY:
-    case FLAG_DENFIX:
-    case FLAG_SSIZE8:
-    case FLAG_MULTx:
-    case FLAG_ENGOVR:
-    case FLAG_ENDPMT:
-    case FLAG_HPRP:
-    case FLAG_MNUp1:
-    case FLAG_HPBASE:
-    case FLAG_NUMLOCK:
-    case FLAG_CPXMULT:
-    case FLAG_ERPN:
-    case FLAG_CARRY:
-    case FLAG_OVERFLOW:
-    case FLAG_FRCYC:
-    case FLAG_LARGELI:
-    case FLAG_alphaCAP:
-    case FLAG_2TO10:
-    case FLAG_CPXPLOT:
-    case FLAG_SHOWX   :
-    case FLAG_SHOWY   :
-    case FLAG_PBOX   :
-    case FLAG_PCURVE :
-    case FLAG_PCROS  :
-    case FLAG_PPLUS  :
-    case FLAG_PLINE  :
-    case FLAG_SCALE  :
-    case FLAG_VECT   :
-    case FLAG_NVECT  :
-    case FLAG_TOPHEX :
-              fnRefreshState();
-              break;
-
-    case FLAG_SBdate:       //these flags need to clear the statusbar and start SB again
-    case FLAG_SBcr  :
-    case FLAG_SBcpx :
-    case FLAG_SBang :
-    case FLAG_SBint :
-    case FLAG_SBmx  :
-    case FLAG_SBtvm :
-    case FLAG_SBoc  :
-    case FLAG_SBss  :
-    case FLAG_SBstpw:
-    case FLAG_SBser :
-    case FLAG_SBprn :
-    case FLAG_SBbatV:
-    case FLAG_SBshfR:
-    case FLAG_SBfrac:
-    case FLAG_SBwoy :
-    case FLAG_SBtime:
-    case FLAG_FRACT:
-    case FLAG_IRFRAC:
-    case FLAG_IRFRQ:
-            #if defined(DMCP_BUILD)
-              reallyClearStatusBar(201);
-            #endif
-            fnRefreshState();
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-            break;
-
     case FLAG_BCD    :
             if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
               fnChangeBaseJM(10);
             }
             break;
-
-
     default: break;
   }
 
@@ -655,65 +621,89 @@ void fnIsFlagSetFlip(uint16_t flag) {
  * \param[in] jmConfig uint16_t
  * \return void
  ***********************************************/
+
+TO_QSPI const struct {
+  uint16_t clearConfig;
+  uint16_t setConfig;
+  uint16_t flag;
+} clearSetPairs[] = {                                    // Clear/Set flag pairs: {config_clear, config_set, flag}
+  {TF_H12,         TF_H24,         FLAG_TDM24},
+  {CU_I,           CU_J,           FLAG_CPXj},
+  {PS_DOT,         PS_CROSS,       FLAG_MULTx},
+  {SS_4,           SS_8,           FLAG_SSIZE8},
+  {CM_RECTANGULAR, CM_POLAR,       FLAG_POLAR},
+  {DO_SCI,         DO_ENG,         FLAG_ENGOVR}
+};
+
+TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42 compatible menu set buttons operating the underlying flags
+  FLAG_HPRP,
+  FLAG_MNUp1,
+  FLAG_HPBASE,
+  FLAG_2TO10,
+  FLAG_PROPFR,
+  FLAG_PRTACT,
+  FLAG_LEAD0,
+  FLAG_CPXRES,
+  FLAG_SPCRES,
+  FLAG_ERPN,
+  FLAG_CARRY,
+  FLAG_OVERFLOW,
+  FLAG_FRCYC,
+  FLAG_CPXMULT,
+  FLAG_CPXPLOT,
+  FLAG_SHOWX,
+  FLAG_SHOWY,
+  FLAG_PBOX,
+  FLAG_PCURVE,
+  FLAG_PCROS,
+  FLAG_PPLUS,
+  FLAG_PLINE,
+  FLAG_SCALE,
+  FLAG_VECT,
+  FLAG_NVECT,
+  FLAG_TOPHEX,
+  FLAG_BCD,
+  FLAG_LARGELI,
+  FLAG_FRACT,
+  FLAG_IRFRAC,
+  FLAG_G_DOUBLETAP,
+  FLAG_SHFT_4s
+};
+
+
 void SetSetting(uint16_t jmConfig) {
+
+  for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: {config_clear, config_set, flag}
+    if(jmConfig == clearSetPairs[i].clearConfig) {
+      fnClearFlag(clearSetPairs[i].flag);
+      fnRefreshState();
+      return;
+    }
+    if(jmConfig == clearSetPairs[i].setConfig) {
+      fnSetFlag(clearSetPairs[i].flag);
+      fnRefreshState();
+      return;
+    }
+  }
+  
+  for(uint_fast16_t i = 0; i < nbrOfElements(flipFlags); i++) {       // Check simple flip flags - this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
+    if(jmConfig == flipFlags[i]) {
+      fnFlipFlag(jmConfig);
+      fnRefreshState();
+      return;
+    }
+  }
+  
+  // Handle special cases
   switch(jmConfig) {
-    case TF_H12:         fnClearFlag(FLAG_TDM24);                               break;
-    case TF_H24:         fnSetFlag(FLAG_TDM24);                                 break;
-    case CU_I:           fnClearFlag(FLAG_CPXj);                                break;
-    case CU_J:           fnSetFlag(FLAG_CPXj);                                  break;
-    case PS_DOT:         fnClearFlag(FLAG_MULTx);                               break;
-    case PS_CROSS:       fnSetFlag(FLAG_MULTx);                                 break;
-    case SS_4:           fnClearFlag(FLAG_SSIZE8);                              break;
-    case SS_8:           fnSetFlag(FLAG_SSIZE8);                                break;
-    case CM_RECTANGULAR: fnClearFlag(FLAG_POLAR);                               break;
-    case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
-    case DO_SCI:         fnClearFlag(FLAG_ENGOVR);                              break;
-    case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
-
-    case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
-
-    case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
-    case FLAG_MNUp1:
-    case FLAG_HPBASE:
-    case FLAG_2TO10:
-    case FLAG_PROPFR:
-    case FLAG_PRTACT:
-    case FLAG_LEAD0:
-    case FLAG_CPXRES:
-    case FLAG_SPCRES:
-    case FLAG_ERPN:
-    case FLAG_CARRY:
-    case FLAG_OVERFLOW:
-    case FLAG_FRCYC:
-    case FLAG_CPXMULT:
-    case FLAG_CPXPLOT:
-    case FLAG_SHOWX   :
-    case FLAG_SHOWY   :
-    case FLAG_PBOX   :
-    case FLAG_PCURVE :
-    case FLAG_PCROS  :
-    case FLAG_PPLUS  :
-    case FLAG_PLINE  :
-    case FLAG_SCALE  :
-    case FLAG_VECT   :
-    case FLAG_NVECT  :
-    case FLAG_TOPHEX :
-    case FLAG_BCD    :
-    case FLAG_LARGELI:
-    case FLAG_FRACT:
-    case FLAG_IRFRAC:
-    case FLAG_G_DOUBLETAP:
-    case FLAG_SHFT_4s:
-                           fnFlipFlag(jmConfig);                               break;
-    case FLAG_DENANY:      fnFlipFlag(jmConfig); clearSystemFlag(FLAG_DENFIX); break;
-    case FLAG_DENFIX:      fnFlipFlag(jmConfig); clearSystemFlag(FLAG_DENANY); break;
-    case FLAG_HOME_TRIPLE: fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_HOME_TRIPLE)) {clearSystemFlag(FLAG_MYM_TRIPLE );}; break;
-    case FLAG_MYM_TRIPLE:  fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_MYM_TRIPLE )) {clearSystemFlag(FLAG_HOME_TRIPLE);}; break;
-    case FLAG_BASE_MYM:    fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
-    case FLAG_BASE_HOME:   fnFlipFlag(jmConfig); if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
-
-    case ITM_DREAL:        fnFlipFlag(FLAG_DREAL); break;
-
+    case JC_NL:            fnFlipFlag(FLAG_NUMLOCK);                                      showAlphaModeonGui();           break;
+    case FLAG_DENANY:      fnFlipFlag(jmConfig);                                          clearSystemFlag(FLAG_DENFIX);   break;
+    case FLAG_DENFIX:      fnFlipFlag(jmConfig);                                          clearSystemFlag(FLAG_DENANY);   break;
+    case FLAG_HOME_TRIPLE: fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_HOME_TRIPLE)) {clearSystemFlag(FLAG_MYM_TRIPLE );}; break;
+    case FLAG_MYM_TRIPLE:  fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_MYM_TRIPLE )) {clearSystemFlag(FLAG_HOME_TRIPLE);}; break;
+    case FLAG_BASE_MYM:    fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
+    case FLAG_BASE_HOME:   fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
+    case ITM_DREAL:        fnFlipFlag(FLAG_DREAL);   break;
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;
@@ -722,7 +712,7 @@ void SetSetting(uint16_t jmConfig) {
         alphaCase = AC_LOWER;
       }
       break;
-    case JC_SS:     //call sub/sup script
+    case JC_SS:                                      //call sub/sup script
       if(scrLock == NC_NORMAL) {
         scrLock = NC_SUBSCRIPT;
       }
@@ -738,8 +728,8 @@ void SetSetting(uint16_t jmConfig) {
       nextChar = scrLock;
       showAlphaModeonGui();
       break;
-
     default: break;
   }
   fnRefreshState();
 }
+
