@@ -1565,7 +1565,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 #else
   #define conditionalPCURVE itemToBeCoded
 #endif
-#if !defined(SAVE_SPACE_DM42_18_XFN)
+#if defined(OPTION_XFN_1000)
   #define S18_fnEdit         fnEdit         
   #define S18_fnXXfn         fnXXfn         
   #define S18_fnXXfn_sin     fnXXfn_sin     
@@ -1599,7 +1599,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_DRG     fnXXfn_DRG
   #define S18_fnXXfn_SQR     fnXXfn_SQR
   #define S18_fnXXfn_YRTX    fnXXfn_YRTX
-#else
+#else //OPTION_XFN_1000
   #define S18_fnEdit         itemToBeCoded
   #define S18_fnXXfn         itemToBeCoded
   #define S18_fnXXfn_sin     itemToBeCoded
@@ -1633,7 +1633,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_DRG     itemToBeCoded
   #define S18_fnXXfn_SQR     itemToBeCoded
   #define S18_fnXXfn_YRTX    itemToBeCoded
-#endif
+#endif //OPTION_XFN_1000
 
 
 

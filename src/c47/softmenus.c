@@ -338,7 +338,7 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_EVEN,                      ITM_ODD,                    ITM_ISREQ,                ITM_ISIMQ,             ITM_ISVECT2DQ,               ITM_ISVECT3DQ,
                                              ITM_NUMBRQ,                    ITM_ANGLEQ,                 ITM_NANQ,                 ITM_INFQ,              ITM_SPECQ,                                                  };
 
-#if !defined(SAVE_SPACE_DM42_18_XFN)
+#if defined(OPTION_XFN_1000)
   #define XFN_M MNU_XXFCNS
 #else
   #define XFN_M ITM_NULL
