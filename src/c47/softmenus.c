@@ -2101,6 +2101,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
   * vm = (itemNr < 0) || (isFunctionItemAMenu(itemNr%10000)) ? vmReverse : vmNormal;
   * showCb = NOVAL;
   * showValue = NOVAL;
+  showText[0] = 0;
   stringCopy(itemName, NOTEXT);
   showText[0]=0;
 
@@ -2604,6 +2605,7 @@ void showSoftmenuCurrentPart(void) {
     videoMode_t vm = vmNormal;
     int8_t showCb = NOVAL;
     int16_t showValue = NOVAL;
+    showText[0] = 0;
 
     if(m < NUMBER_OF_DYNAMIC_SOFTMENUS) { // Dynamic softmenu
       #if defined(PC_BUILD)
@@ -2624,6 +2626,7 @@ void showSoftmenuCurrentPart(void) {
             if(x + 6*y + currentFirstItem < numberOfItems) {
               if(*ptr != 0) {
                 vm = vmNormal;
+                showText[0] = 0;
                 showCb = NOVAL;
                 showValue = NOVAL;
                 int16_t itemNr = userMenuItems[x + 6*y].item;
