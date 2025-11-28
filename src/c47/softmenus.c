@@ -1663,7 +1663,66 @@ bool_t maxfgLines(int16_t y) {
   }
 }
 
-#define greyout true
+
+  /********************************************//**
+   * \brief Displays one softkey: helpers
+   ***********************************************/ 
+  #define greyout true
+  static bool_t initSoftkeyCoordinates(const char *label, int16_t xSoftkey, int16_t ySoftKey, int16_t *x1, int16_t *x2, int16_t *y1, int16_t *y2) {
+    if(label[0] !=0 ) {
+      if(ySoftKey==1) {
+        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
+      }
+      if(ySoftKey == 2) {
+        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
+        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g
+      }
+    }
+    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+      return false;
+    }
+    if(0 <= xSoftkey && xSoftkey <= 5) {
+      *x1 = xS1(xSoftkey);
+      *x2 = *x1 + xS2(xSoftkey);
+    }
+    else {
+      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
+      displayBugScreen(errorMessage);
+      return false;
+    }
+    if(0 <= ySoftKey && ySoftKey <= 2) {
+      *y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
+      *y2 = *y1 + SOFTMENU_HEIGHT;
+    }
+    else {
+      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
+      displayBugScreen(errorMessage);
+      return false;
+    }
+    return true;
+  }
+
+  static void truncateAtString(char *label, const char *search) {
+    int16_t i = 0;
+    while(label[i+1] != 0) {
+      if(search[0] == label[i] && search[1] == label[i+1]) {
+        label[i] = 0;
+        break;
+      }
+      i++;
+    }
+  }
+
+  static void truncateAtArrow(char *label) {
+    char sample[4];
+    
+    stringCopy(sample, STD_RIGHT_ARROW);
+    truncateAtString(label, sample);
+    
+    stringCopy(sample, STD_LEFT_ARROW);
+    truncateAtString(label, sample);
+  }
+
   /********************************************//**
    * \brief Displays one softkey
    *
@@ -1676,153 +1735,37 @@ bool_t maxfgLines(int16_t y) {
    * \param[in] bottomLine bool_t     Draw a bottom line
    * \return void
    ***********************************************/
-  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t greyoutBox) {     //dr
-    int16_t x1, y1;
-    int16_t x2, y2;
-
-    if(label[0] !=0 ) {
-      if(ySoftKey==1) {
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
-      }
-      if(ySoftKey == 2) {
-        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g cannot be reached)
-      }
-    }
-
-    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t greyoutBox) {
+    int16_t x1, y1, x2, y2;
+    if(!initSoftkeyCoordinates(label, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
-
-    if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = xS1(xSoftkey);
-      x2 = x1 + xS2(xSoftkey);
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-    if(0 <= ySoftKey && ySoftKey <= 2) {
-      y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
-      y2 = y1 + SOFTMENU_HEIGHT;
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
     showKey(label, x1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
     if(greyoutBox) {
       greyOutBox(x1, x2, y1, y2);
     }
   }
 
-
-  static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
-    int16_t x1, y1;
-    int16_t x2, y2;
-
-    if(labelSM1[0] !=0 ) {
-      if(ySoftKey==1) {
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
-      }
-      if(ySoftKey == 2) {
-        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g cannot be reached)
-      }
-    }
-
-    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+  static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+    int16_t x1, y1, x2, y2;
+    if(!initSoftkeyCoordinates(labelSM1, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
-
-    if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = xS1(xSoftkey);
-      x2 = x1 + xS2(xSoftkey);
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-    if(0 <= ySoftKey && ySoftKey <= 2) {
-      y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
-      y2 = y1 + SOFTMENU_HEIGHT;
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-//    showKey(label, x1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
-
-
-
-char label1[30];
-
-if(xSoftkey == 0 || xSoftkey == 2 || xSoftkey == 4) {
-  xx1 = x1;
-  label0[0]=0;
-  stringCopy(label0 + stringByteLength(label0), labelSM1);
-  compressConversionName(label0);
-
-}
-  char sample[4];
-  stringCopy(sample, STD_RIGHT_ARROW);
-  int16_t i = 0;
-  while(label0[i+1] != 0) {
-    if(sample[0] == label0[i] && sample[1] == label0[i+1]) {
-      label0[i] = 0;
-      break;
-    }
-    i++;
+  char label1[30];
+  if(xSoftkey == 0 || xSoftkey == 2 || xSoftkey == 4) {
+    xx1 = x1;
+    label0[0]=0;
+    stringCopy(label0 + stringByteLength(label0), labelSM1);
+    compressConversionName(label0);
   }
+  truncateAtArrow(label0);
 
-  stringCopy(sample, STD_LEFT_ARROW);
-  i = 0;
-  while(label0[i+1] != 0) {
-    if(sample[0] == label0[i] && sample[1] == label0[i+1]) {
-      label0[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-
-if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
-  label1[0]=0;
-  stringCopy(label1 + stringByteLength(label1), labelSM1);
-  compressConversionName(label1);
-
-
-  stringCopy(sample, STD_RIGHT_ARROW);
-  i = 0;
-  while(label1[i+1] != 0) {
-    if(sample[0] == label1[i] && sample[1] == label1[i+1]) {
-      label1[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-
-  stringCopy(sample, STD_LEFT_ARROW);
-  i = 0;
-  while(label1[i+1] != 0) {
-    if(sample[0] == label1[i] && sample[1] == label1[i+1]) {
-      label1[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-  showKey2(label0, label1, xx1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
-
+  if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
+    label1[0]=0;
+    stringCopy(label1 + stringByteLength(label1), labelSM1);
+    compressConversionName(label1);
+    truncateAtArrow(label1);
+    showKey2(label0, label1, xx1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
   }
 }
 
@@ -1848,20 +1791,20 @@ static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t 
       lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
     }
 
-    //   Left line
+    //   Left line, only drawn if x1 is not on the corner, use 10 as an arbitrary border
     if(x1 >= 10) {
       lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
     }
 
-    //   Right line
-    if(x2 < SCREEN_WIDTH-10) {
+    //   Right line, only drawn if x2 is not on the corner, use 10 as an arbitrary border
+    if(x2 < SCREEN_WIDTH - 10) {
       lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
     }
 }
 
 
 
-void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
   #define YY -100
   int16_t Text0   ;
   int16_t Arr0    ;
@@ -1937,7 +1880,7 @@ void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, in
   drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
   // Mid vertical line, unchanged
-  if(x1 >= 10) {
+  if(x1 >= 0) {
     lcd_fill_rect(x1 + midpoint + (rightMostSlot ? 0 : 1), y1 + 5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
   }
 
