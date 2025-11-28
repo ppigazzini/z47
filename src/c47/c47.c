@@ -18,6 +18,8 @@
 #endif
 
 #if !defined(GENERATE_CATALOGS)
+  uint16_t lastI = 0;
+  uint16_t lastJ = 0;
   int16_t lastFunc = 0;
   int16_t lastParam = 0;
   char    lastTemp[16];
@@ -61,6 +63,7 @@ bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
 bool_t                 iterations = false;
+bool_t                 explicitTaylorIterVisibilitySelection = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
@@ -192,6 +195,8 @@ int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
 int16_t                lastKeyItemDetermined = 0;
+bool_t                 lastUserMode = false;         //used in btnReleased and btnFnReleased
+int16_t                lastItem = 0;                 //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 int16_t                showFunctionNameItem;
 char *                 showFunctionNameArg;
 
@@ -1070,6 +1075,7 @@ int convertKeyCode(int key) {
         while (!emptyKeyBuffer()) {
           outKeyBuffer(&outKey);
         }
+        lastItem = SCREENDUMP;
       }
 
                                                   #if defined(JMSHOWCODES)

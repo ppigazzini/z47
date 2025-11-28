@@ -618,7 +618,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
       #if !defined(TESTSUITE_BUILD)
-        char tmps[64];
+        char tmps[100];
         exitSignalled |= exitKeyWaiting();
         loop++;
         if(checkHalfSec()) {

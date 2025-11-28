@@ -332,7 +332,7 @@ void Sett(int16_t grp) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
+    #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": HP35 defaults");
       fnKeyExit(0);                            //Clear pending key input
@@ -353,9 +353,10 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     fnDrop(NOPARAM);
     fnSquare(0);
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": Jaco defaults");
 
@@ -380,11 +381,13 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(161);
-    }
+  #endif //#!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
-    resetOtherConfigurationStuff();
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": RJvM defaults");
 
@@ -396,7 +399,8 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(165);
-    }
+  #endif //!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
@@ -1217,15 +1221,15 @@ void restoreStats(void){
 
 
     TO_QSPI const numberstr indexOfMsgs[] = {
-      {0,USER_C47,      "C47: Classic single shift (DM42 base"  },
+      {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
       {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
-      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
+      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_fg  ", R.Shift is " STD_BOX},
       {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
       {0,USER_PRESET,  "P.FN menu reset to default"                      },
-      {0,USER_KRESET,  "USER keys cleaned"                               },
+      {0,USER_KRESET,  "Key assignments cleaned"                         },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
@@ -1272,7 +1276,7 @@ void defaultStatusBar(void) {
 }
 
 
-void resetOtherConfigurationStuff(void) {
+void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   cancelFilename = true;
   lastStateFileOpened[0]=0;
 
@@ -1291,9 +1295,11 @@ void resetOtherConfigurationStuff(void) {
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
   IrFractionsCurrentStatus = CF_NORMAL;
-  Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
-  Norm_Key_00.funcParam[0] = 0;
-  Norm_Key_00.used = false;
+  if(allowUserKeys) {
+    Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
+    Norm_Key_00.funcParam[0] = 0;
+    Norm_Key_00.used = false;
+  }
   Input_Default =  ID_43S;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplaySign = BCDu;
@@ -1310,6 +1316,8 @@ void resetOtherConfigurationStuff(void) {
   dispBase = 0;
 
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastI = 0;
+    lastI = 0;
     lastFunc    = 0;
     lastParam   = 0;
     lastTemp[0] = 0;
@@ -1495,7 +1503,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
 
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
 
     statisticalSumsPointer = NULL;
     savedStatisticalSumsPointer = NULL;
@@ -1548,6 +1556,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     iterations = false;
+    explicitTaylorIterVisibilitySelection = false;
     updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
@@ -1598,6 +1607,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentMvarLabel = INVALID_VARIABLE;
     lastKeyCode = 0;
     entryStatus = 0;
+    lastUserMode = false;   //used in btnReleased and btnFnReleased
+    lastItem = 0;           //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 
     memset(userMenuItems,  0, sizeof(userMenuItem_t) * 18);
     memset(userAlphaItems, 0, sizeof(userMenuItem_t) * 18);

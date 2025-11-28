@@ -1855,7 +1855,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
 
 TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
-TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
 
   displayString[0] = ' ';
   displayString[1] = 0;
@@ -1872,8 +1872,8 @@ TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
       }
   }
   else if(flag2To10) {                            //exponent of 2^(10/3)
-
-      if((3 <= exponent && exponent <= 15)) {
+      if((3 <= exponent && exponent <= 15) ||
+         (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = ITSIprefixes[exponent - 3];
         displayString[2] = 'i';
       }
@@ -2484,7 +2484,6 @@ void dms34ToReal34(uint16_t dms) {
   real34_t value34, d34, m34, s34, fs34;
   real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
 
-  //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
 
@@ -3213,25 +3212,6 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   }
 
 
-void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
-  uint16_t constant =constantAddr;
-  *constNr = constant;
-  //printf(">>> %u\n",constant);
-  if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
-  }
-  else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), rVal);
-  }
-}
-
-
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
   if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
     fgLN            = RBX_FGLNFUL;  //not in conditional clear
@@ -3278,6 +3258,7 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #define ITM_RIBBON_ENG_R47  32001
 
 // Ribbon mappings: [param, fn1, fn2, fn3, fn4, fn5, fn6]
+#if !defined(TESTSUITE_BUILD)
 TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_ENG_C47,  -MNU_CPX,      -MNU_MATX,     ITM_CONSTpi,   ITM_op_j,      ITM_EXP,       -MNU_TRG_C47},
   {ITM_RIBBON_ENG_R47,  ITM_op_j,      -MNU_CPX,      ITM_CONSTpi,   -MNU_MATX,     -MNU_TRG_R47,  ITM_EXP},
@@ -3292,6 +3273,7 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
   {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
 };
+#endif //!TESTSUITE_BUILD
 
 
 void fnRESET_MyM(uint16_t param) {

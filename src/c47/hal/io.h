@@ -19,8 +19,13 @@
 #define RTF_EXT        ".rtf"
 
 #define SAVE_DIR       "SAVFILES"
-#define SAVE_FILE      "C47.sav"
-#define AUTO_SAVE_FILE "C47auto.sav"
+#if (CALCMODEL == USER_R47)
+  #define SAVE_FILE      "R47.sav"
+  #define AUTO_SAVE_FILE "R47auto.sav"
+#else
+  #define SAVE_FILE      "C47.sav"
+  #define AUTO_SAVE_FILE "C47auto.sav"
+#endif // CALCMODEL
 
 #define LIB_DIR        "LIBRARY"
 #define LIB_FILE       "C47.dat"

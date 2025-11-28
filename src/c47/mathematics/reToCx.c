@@ -69,7 +69,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
           realAdd(&theta, const_pi, &theta, &ctxtReal39);
-          WP34S_Mod(&theta, const1071_2pi, &theta, &ctxtReal39);
+          mod2Pi(&theta, &theta, &ctxtReal39);
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
         convertRealToReal34ResultRegister(&magnitude, REGISTER_X);
@@ -117,7 +117,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
               if(realCompareLessThan(&magnitude, const_0)) {
                 realSetPositiveSign(&magnitude);
                 realAdd(&theta, const_pi, &theta, &ctxtReal39);
-                WP34S_Mod(&theta, const1071_2pi, &theta, &ctxtReal39);
+                mod2Pi(&theta, &theta, &ctxtReal39);
               }
               realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
               realToReal34(&magnitude, VARIABLE_REAL34_DATA(&cMat.matrixElements[i]));

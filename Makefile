@@ -1,6 +1,7 @@
 .PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
 
 all: sim
+both: sim simr47
 
 EXE =
 ifeq ($(OS),Windows_NT)
@@ -10,7 +11,7 @@ endif
 BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
-FORCENEW_TESTPGMS = 
+FORCENEW_TESTPGMS =
 
 clean:
 	rm -f wp43$(EXE)
@@ -40,6 +41,13 @@ build.dmcp5:
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
+	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
+	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+
+simr47: $(BUILD_PC)
+	cd $(BUILD_PC) && ninja simr47
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
 	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
 	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
 	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
@@ -79,6 +87,7 @@ ifeq ($(CI_COMMIT_TAG),)
   DMCPR47_DIST_DIR = r47-dmcp
   DMCP5_DIST_DIR = c47-dmcp5
   DMCP5R47_DIST_DIR = r47-dmcp5
+  VERSION = $(shell git describe --match=NeVeRmAtCh --always --abbrev=8 --dirty=-mod)
 else
   WIN_DIST_DIR = c47-windows-$(CI_COMMIT_TAG)
   MAC_DIST_DIR = c47-macos-$(CI_COMMIT_TAG)
@@ -87,14 +96,17 @@ else
   DMCPR47_DIST_DIR = r47-dmcp-$(CI_COMMIT_TAG)
   DMCP5_DIST_DIR = c47-dmcp5-$(CI_COMMIT_TAG)
   DMCP5R47_DIST_DIR = r47-dmcp5-$(CI_COMMIT_TAG)
+  VERSION = $(CI_COMMIT_TAG)
   #
   FORCENEW_TESTPGMS = 1
 endif
 
-dist_install_PC: sim
+dist_install_PC: sim simr47
 	mkdir -p $(DIST_DIR_PC)/res/
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) $(DIST_DIR_PC)/
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) $(DIST_DIR_PC)/
 	cp -r res/PROGRAMS $(DIST_DIR_PC)/res/
+	cp -r res/STATE $(DIST_DIR_PC)/res/
 	cp res/c47_pre.css $(DIST_DIR_PC)/res/
 	cp res/C47.png $(DIST_DIR_PC)/res/
 	cp res/C47short.png $(DIST_DIR_PC)/res/
@@ -145,15 +157,16 @@ DIST_DIR_DM = $(DMCP_DIST_DIR)
 dist_install_DM: build.rel/wiki
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
-	cp -r res/offimg/Egypt/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Norway/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Netherlands/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/From\ WP43/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/General/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/HP\ related/ $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/C47/ $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Egypt/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Norway/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/Netherlands/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/From\ WP43/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/General/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/HP\ related/. $(DIST_DIR_DM)/offimg
+	cp -r res/offimg/C47/. $(DIST_DIR_DM)/offimg
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
-	cp res/keymaps/DM42_keymap.bin $(DIST_DIR_DM)/resources
+	cp -r res/STATE $(DIST_DIR_DM)
+	cp res/keymaps/keymap_DM42.bin $(DIST_DIR_DM)/resources
 
 ifeq ($(FORCENEW_TESTPGMS),)
   DIST_TESTPGMS_DM = dist_testPgms_DM
@@ -191,7 +204,7 @@ dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 dist_dmcpr47: DIST_DIR_DM = $(DMCPR47_DIST_DIR)
 dist_dmcpr47: dmcpr47 $(DIST_TESTPGMS_DM)
 	cp build.dmcp/src/c47-dmcp/R47.pgm build.dmcp/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
-	cp res/keymaps/R47_keymap.bin $(DMCPR47_DIST_DIR)
+	cp res/keymaps/keymap_R47.bin $(DMCPR47_DIST_DIR)
 	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
@@ -199,10 +212,17 @@ dist_dmcpr47: dmcpr47 $(DIST_TESTPGMS_DM)
 
 dist_dmcp5r47: DIST_DIR_DM = $(DMCP5R47_DIST_DIR)
 dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
+	mkdir -p $(DMCP5R47_DIST_DIR)/resources/
 	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
-	cp res/keymaps/R47_keymap.bin $(DMCP5R47_DIST_DIR)
-	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
+	cp res/keymaps/keymap_R47.bin $(DMCP5R47_DIST_DIR)/resources
+	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)/resources
 	zip -r $(DMCP5R47_DIST_DIR)/resources/R47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
-	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)/resources
+	cp res/dmcp5/update_R47.txt $(DMCP5R47_DIST_DIR)
+	cp res/combo/R47_combo.py $(DMCP5R47_DIST_DIR)/
+	cp res/combo/DMCP5_flash_3.55.bin $(DMCP5R47_DIST_DIR)/
+	cd $(DMCP5R47_DIST_DIR) && python3 R47_combo.py $(VERSION)
+	rm $(DMCP5R47_DIST_DIR)/R47_combo.py
+	rm $(DMCP5R47_DIST_DIR)/DMCP5_flash_3.55.bin
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)

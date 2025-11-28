@@ -268,9 +268,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if(tam.mode == TM_LABEL && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+    if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
-        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL\n");
+        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL/TM_LBLONLY\n");
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
@@ -360,7 +360,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     }
 
     if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
+    if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -818,7 +818,7 @@ returnKeyReleasedFalse:
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
-     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (!(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
@@ -1003,7 +1003,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
         {}
       #endif
     }
-    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
@@ -1052,7 +1052,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-//        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+//        ||((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
         ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )
@@ -1234,7 +1234,7 @@ continueWithOldDetections:
   //          softmenuStack[0].firstItem = jj;
   //          showSoftmenuCurrentPart();
   //        }
-  //        else 
+  //        else
           {
             btnFnClicked(w, "6");  //F6
           }
@@ -2632,7 +2632,7 @@ returnKeyPressedFalse:
 // Function to get button name from widget pointer
 const char* get_button_name(GtkWidget* widget) {
     if(!widget) return "NULL";
-    
+
     // Row 1 buttons
     if(widget == btn11) return "btn11";
     if(widget == btn12) return "btn12";
@@ -2640,7 +2640,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == btn14) return "btn14";
     if(widget == btn15) return "btn15";
     if(widget == btn16) return "btn16";
-    
+
     // Row 2 buttons and labels
     if(widget == btn21) return "btn21";
     if(widget == btn22) return "btn22";
@@ -2684,7 +2684,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl24Fa) return "lbl24Fa";
     if(widget == lbl25Fa) return "lbl25Fa";
     if(widget == lbl26Fa) return "lbl26Fa";
-    
+
     // Row 3 buttons and labels
     if(widget == btn31) return "btn31";
     if(widget == btn32) return "btn32";
@@ -2728,7 +2728,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl34Fa) return "lbl34Fa";
     if(widget == lbl35Fa) return "lbl35Fa";
     if(widget == lbl36Fa) return "lbl36Fa";
-    
+
     // Row 4 buttons and labels
     if(widget == btn41) return "btn41";
     if(widget == btn42) return "btn42";
@@ -2763,7 +2763,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl43Fa) return "lbl43Fa";
     if(widget == lbl44Fa) return "lbl44Fa";
     if(widget == lbl45Fa) return "lbl45Fa";
-    
+
     // Row 5 buttons and labels
     if(widget == btn51) return "btn51";
     if(widget == btn52) return "btn52";
@@ -2799,7 +2799,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl53Fa) return "lbl53Fa";
     if(widget == lbl54Fa) return "lbl54Fa";
     if(widget == lbl55Fa) return "lbl55Fa";
-    
+
     // Row 6 buttons and labels
     if(widget == btn61) return "btn61";
     if(widget == btn62) return "btn62";
@@ -2835,7 +2835,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl63Fa) return "lbl63Fa";
     if(widget == lbl64Fa) return "lbl64Fa";
     if(widget == lbl65Fa) return "lbl65Fa";
-    
+
     // Row 7 buttons and labels
     if(widget == btn71) return "btn71";
     if(widget == btn72) return "btn72";
@@ -2872,7 +2872,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl73Fa) return "lbl73Fa";
     if(widget == lbl74Fa) return "lbl74Fa";
     if(widget == lbl75Fa) return "lbl75Fa";
-    
+
     // Row 8 buttons and labels
     if(widget == btn81) return "btn81";
     if(widget == btn82) return "btn82";
@@ -2907,7 +2907,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl83Fa) return "lbl83Fa";
     if(widget == lbl84Fa) return "lbl84Fa";
     if(widget == lbl85Fa) return "lbl85Fa";
-    
+
     return "UNKNOWN_WIDGET";
 }
 
@@ -4952,7 +4952,7 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
 
 void check_all_btn_widgets_for_consistency(void) {
     printf("Checking all btn widgets for consistency...\n");
-    
+
     // Row 1 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn11, "btn11");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn12, "btn12");
@@ -4960,7 +4960,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn14, "btn14");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn15, "btn15");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn16, "btn16");
-    
+
     // Row 2 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn21, "btn21");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn22, "btn22");
@@ -4974,7 +4974,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn24A, "btn24A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn25A, "btn25A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn26A, "btn26A");
-    
+
     // Row 3 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn31, "btn31");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn32, "btn32");
@@ -4988,7 +4988,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn34A, "btn34A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn35A, "btn35A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn36A, "btn36A");
-    
+
     // Row 4 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn41, "btn41");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn42, "btn42");
@@ -4998,7 +4998,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn42A, "btn42A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn43A, "btn43A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn44A, "btn44A");
-    
+
     // Row 5 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn51, "btn51");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn52, "btn52");
@@ -5009,7 +5009,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn53A, "btn53A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn54A, "btn54A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn55A, "btn55A");
-    
+
     // Row 6 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn61, "btn61");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn62, "btn62");
@@ -5020,7 +5020,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn63A, "btn63A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn64A, "btn64A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn65A, "btn65A");
-    
+
     // Row 7 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn71, "btn71");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn72, "btn72");
@@ -5032,7 +5032,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn73A, "btn73A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn74A, "btn74A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn75A, "btn75A");
-    
+
     // Row 8 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn81, "btn81");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn82, "btn82");
@@ -5043,7 +5043,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn83A, "btn83A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn84A, "btn84A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn85A, "btn85A");
-    
+
     printf("Consistency check complete - none found.\n");
 }
 
@@ -5116,7 +5116,11 @@ void check_all_btn_widgets_for_consistency(void) {
 
       gtk_widget_set_name(frmCalc, "mainWindow");
       gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
-      gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
+      #if CALCMODEL == USER_R47
+        gtk_window_set_title(GTK_WINDOW(frmCalc), "R47");                   //JM NAME
+      #else
+        gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
+      #endif // CALCMODEL == USER_R47
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
@@ -5226,7 +5230,7 @@ void check_all_btn_widgets_for_consistency(void) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s: SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
