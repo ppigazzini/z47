@@ -425,7 +425,7 @@ char letteredRegisterName(calcRegister_t regist) {
       for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS; sum++) {
         ptr += strlen(ptr);
         strcpy(sumName, StatSumNames[sum]);
-  
+
         sprintf(ptr, LINEBREAK "SR%02d = ", sum);
         ptr += strlen(ptr);
         stringToUtf8(sumName, (uint8_t *)ptr);
@@ -2369,18 +2369,33 @@ void createSubstrings(uint8_t number) {
     }
     real_t iir,jjr;
 
-    if(getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
-      int32_t iii, jji;
+    int32_t iii, jji;
+    bool_t bb;
+    // uses errorMessage string to store old I & J
+    iii = lastI;
+    jji = lastJ;
+    if(iii == 0xFFFF || jji == 0xFFFF) {
+      bb = getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr);
       iii=realToUint32C47(&iir);
       jji=realToUint32C47(&jjr);
+    } else {
+      bb = true;      
+    }
+
+
+    if(bb) {
       if(0 <= iii && iii < 200 && 0 <= jji && jji < 200) {
         prefix[0] = 0;
         *prefixWidth = 0;
         char tmp[16];
         nameRegis(matrixIndex, tmp);
-//[Ir Jc]=INDEXname[1, 2]=
-        if(regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) {
+// M[Ir Jc]=INDEXname[1, 2]=
+        if(regist == REGISTER_X && temporaryInformation == TI_MIJEQ) {
           sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]%s",tmp, (uint8_t)iii,(uint8_t)jji,(temporaryInformation == TI_MIJEQ ? "=" : ""));
+        }
+// M[Ir Jc]=INDEXname[1, 2]
+        else if(regist == REGISTER_X && temporaryInformation == TI_MIJ) {
+          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]",tmp, (uint8_t)iii,(uint8_t)jji);
         }
 //R00 [Ir=1 Jc=1]: Jc=
         else if(regist == REGISTER_X && ((iii != 0 && temporaryInformation == TI_I) || (jji != 0 && temporaryInformation == TI_J))) {
@@ -2390,9 +2405,9 @@ void createSubstrings(uint8_t number) {
 //R00: Jr=
         else if(iii != 0 && jji != 0) {
           if(regist == REGISTER_Y) {
-            sprintf(prefix,"%s:I" STD_SUB_r "=",tmp);
+            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:I" STD_SUB_r "=",tmp);
           } else if(regist == REGISTER_X) {
-            sprintf(prefix,"%s:J" STD_SUB_c "=",tmp);
+            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:J" STD_SUB_c "=",tmp);
           }
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -2618,10 +2633,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
        else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !solverEstimatesUsed) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase); // base 1 is BCD, #10
+           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase, SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0)); // base 1 is BCD, #10
            bool_t   printFirstCol = fontForShortInteger == &tinyFont;
-           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH;
-           uint32_t xoff = printWillFit ? SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : 0;
+           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0);
+           uint32_t xoff = printWillFit ? SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0) - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : (SBARUPD_Time ? 10 : 0);
            if(lastErrorCode == 0 && printWillFit) {
              showString("  X:" STD_INTEGER_Z ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
@@ -2642,6 +2657,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
+  // Calculates a shortened real, using only reaal34
   bool_t registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c) {
     if(getRegisterDataType(regist) == dtShortInteger || getRegisterDataType(regist+1) == dtShortInteger || getRegisterDataType(regist+2) == dtShortInteger) {  //check for SI, because getRegisterAsRealQuiet will accept SI as leagl number.
       return false;
@@ -2714,7 +2730,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
     } else {
       if(XXFNMODEACTIVE) {
-        fnDisplayStack(3);        
+        fnDisplayStack(3);
       }
     }
 
@@ -3238,22 +3254,38 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           real34_t tmp3;
           #define FMA_X 19-3
           #define FMA_T -1-3
-          if(registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-            sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
-            showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
-            real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
-            showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_X, vmNormal, false, true);
+          uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+          displayFormat = DF_ALL;
+          displayFormatDigits = 19;
 
-            if(getSystemFlag(FLAG_SSIZE8) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
-              sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
-              showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
-              real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - stringWidth(tmpString, &standardFont, false, true), 34, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
-              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
-            }
-            drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
-            fnDisplayStack(3);
+          {
+            sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+              if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+              } else {
+                sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
+              }
+              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_X, vmNormal, false, true);
           }
+          if(getSystemFlag(FLAG_SSIZE8)) {
+            sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
+            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+              if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+                tmpString[0] = 0;
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+              } else {
+                sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
+              }
+              showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), tmpY + FMA_T , vmNormal, false, true);
+          }
+          displayFormat = savedDisplayFormat;
+          displayFormatDigits = savedDisplayFormatDigits;
+          drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
+          fnDisplayStack(3);
         }
+
 
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
@@ -3596,12 +3628,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          else if(temporaryInformation == TI_MEANX_MEANY) {
+          else if(temporaryInformation == TI_MEANX_MEANY || temporaryInformation == TI_MEANX) {
             if(regist == REGISTER_X) {
               strcpy(prefix, STD_x_BAR " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            else if(regist == REGISTER_Y) {
+            else if(regist == REGISTER_Y && temporaryInformation != TI_MEANX) {
               strcpy(prefix, STD_y_BAR " =");
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
@@ -4485,6 +4517,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 /*Main type dtLongInteger*/
         else if(getRegisterDataType(regist) == dtLongInteger) {
+          prefix[0] = 0;
 
           if(DBASEMODE) displayBaseMode(regist);
 
@@ -4519,11 +4552,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {
               int day;
-              if(tmpString[0] == STD_INTEGER_Z_SMALL[0] && tmpString[1] == STD_INTEGER_Z_SMALL[1]) {
-                day = (int)tmpString[4] - '0';
-              } else {
-                day = (int)tmpString[0] - '0';
-              }
+              longInteger_t li;
+              getRegisterAsLongInt(REGISTER_X, li, NULL); // Cannot fail as REGISTER_X is a dtLongInteger
+              longIntegerToInt32(li, day);
+              longIntegerFree(li);
               if(day < 1 || day > 7) {
                 day = 0;
               }
@@ -4533,6 +4565,24 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
+
+          //shift longinter prefix on by two space if interfering with the shift indicator, when SB_TIME is selected
+          if(regist == REGISTER_T && SBARUPD_Time) {
+           int len = strlen(prefix);
+           if(len + 2 < 200) {
+             if(prefix[0] == 0) {
+               strcpy(prefix,"  ");
+               prefixWidth += 20; //stringWidth("  ", &standardFont, true, true) - 2;
+             } else {
+               for(int i = len; i >= 0; i--) {
+                 prefix[i + 2] = prefix[i];
+               }
+               prefix[0] = ' ';
+               prefix[1] = ' ';
+               prefixWidth += 20; //stringWidth("  ", &standardFont, true, true) - 2;
+              }
+            }
+          }
 
         //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
@@ -4556,6 +4606,23 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, getSystemFlag(FLAG_LARGELI));
             tmpString[TMP_STR_LENGTH-1] = tmpString[0];
+
+            {
+              //This section to display too long integers as reals, re-doing the above string in Real. The wastage is minor compared to the Real processing that will follow
+              uint16_t pos;
+              if(findTwoChars(tmpString, (uint8_t)PRODUCT_SIGN[0], (uint8_t)PRODUCT_SIGN[1], &pos)) {
+                strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+                w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
+                int16_t tlen =stringByteLength(tmpString);
+                uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+                displayFormatDigits = 20;
+                displayFormat = DF_SCI;
+                longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
+                displayFormat = savedDisplayFormat; displayFormatDigits = savedDisplayFormatDigits;
+                tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
+              }
+            }
+
           }
 
 
@@ -4566,7 +4633,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(prefixWidth > 0) {
             showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
           }
-
           if(w <= SCREEN_WIDTH) {
             showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
           }
@@ -4609,14 +4675,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
-          else if(temporaryInformation == TI_DAY_OF_WEEK) {
-            if(regist == REGISTER_X) {
-              strcpy(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+          else if(temporaryInformation != TI_VIEW_REGISTER /*== TI_DAY_OF_WEEK*/) { // Change to ignore TI_DAY_OF_WEEK as TI, and permanently display the weekday on registers X, Y & Z
+            if(regist >= REGISTER_X && regist <= REGISTER_T) {
+              prefix[0] = 0;
+              if(SBARUPD_Time && regist == REGISTER_T){
+                strcpy(prefix,"  ");
+              }
+              strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
+            strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
+            strcat(prefix," ");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
           else if(temporaryInformation == TI_VIEW_REGISTER) {          //X, Y, & Z, not T
             userTI(currentViewRegister, regist, prefix, &prefixWidth);
@@ -4898,20 +4971,27 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     }
   }
 
+  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
+  #define useSmallShifts (SBARUPD_Time && ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+                                              ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\
+                                              (getRegisterDataType(REGISTER_T) == dtString)\
+                                           ) )
+  #define displayF (useSmallShifts ? STD_f : STD_MODE_F)
+  #define displayG (useSmallShifts ? STD_g : STD_MODE_G)
 
   void clearShiftState(void) {
     uint32_t fcol, frow, gcol, grow;
-    getGlyphBounds(STD_MODE_F, 0, &standardFont, &fcol, &frow);
-    getGlyphBounds(STD_MODE_G, 0, &standardFont, &gcol, &grow);
+    getGlyphBounds(displayF, 0, &standardFont, &fcol, &frow);
+    getGlyphBounds(displayG, 0, &standardFont, &gcol, &grow);
     lcd_fill_rect(X_SHIFT, Y_SHIFT, (fcol > gcol ? fcol : gcol), (frow > grow ? frow : grow), LCD_SET_VALUE);
   }
 
   void showShiftStateF(void) {
-        showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // f is pixel 4+8+3 wide
+        showGlyph(displayF, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // f is pixel 4+8+3 wide
   }
 
   void showShiftStateG(void) {
-        showGlyph(STD_MODE_G, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // g is pixel 4+10+1 wide
+        showGlyph(displayG, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // g is pixel 4+10+1 wide
   }
 
 

@@ -2356,7 +2356,7 @@ typedef struct {
       subNumberToDisplayString(lastDenominator, displayBuffer + stringByteLength(displayBuffer), NULL);
     }
     else if (buffer[index] != 0) {
-      int16_t denominator = toInt32(buffer + index);
+      int32_t denominator = toInt32(buffer + index);
       subNumberToDisplayString(denominator, displayBuffer + stringByteLength(displayBuffer), NULL);
       for(; buffer[index] >= '0' && buffer[index] <= '9'; index++) {
       }
@@ -2510,7 +2510,6 @@ typedef struct {
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
           realAdd(&theta, const_pi, &theta, &ctxtReal39);
-          //WP34S_Mod(&theta, const1071_2pi, &theta, &c);   // this is not needed here, it is done in realPolarToRectangular() below
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
         realToReal34(&magnitude, dest_r);

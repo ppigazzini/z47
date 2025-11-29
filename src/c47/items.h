@@ -1790,7 +1790,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_1743                    1743
+#define ITM_XMEAN                   1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
@@ -2276,15 +2276,15 @@
 #define MNU_CONVYMMV                2222
 #define ITM_XEQP1                   2223
 #define ITM_RCLP1                   2224
-#define ITM_2225                    2225
-#define ITM_2226                    2226
+#define MNU_TAMVARONLY              2225
+#define MNU_TAMLBLONLY              2226
 #define MNU_EIMCATALOG              2227
 #define MNU_FCNS_EIM                2228
 #define MNU_PREFIX                  2229
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
 #define MNU_ALLVARS                 2232
-#define MNU_LAYOUTS                 2233
+#define MNU_2233                    2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
 #define ITM_YY_DFLT_OLD             2236
@@ -2534,7 +2534,7 @@
 #define ITM_JtoEV                   2465
 #define ITM_BANANAtoINCH            2466
 #define ITM_INCHtoBANANA            2467
-#define ITM_BANANAtoMM              2468
+#define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
 #define ITM_V3toCYL                 2470
@@ -2619,7 +2619,6 @@
 #define ITM_ALPHARIGHT              2542
 #define ITM_ALPHALOWER              2543
 #define ITM_ALPHAUPPER              2544
-
 #define VAR_UEST                    2545
 #define VAR_LEST                    2546
 #define VAR_UY                      2547
@@ -2630,8 +2629,60 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define LAST_ITEM                   2553
+#define ITM_2553                    2553
+#define ITM_DEG2_XFN                2554
+#define ITM_RAD2_XFN                2555
+#define ITM_2556                    2556
 
+#define MNU_2557                    2557
+#define ITM_sin_XFN                 2558
+#define ITM_cos_XFN                 2559
+#define ITM_tan_XFN                 2560
+#define ITM_pi_XFN                  2561
+#define ITM_1ONX_XFN                2562
+#define ITM_atan2_XFN               2563
+#define ITM_arcsin_XFN              2564
+#define ITM_arccos_XFN              2565
+#define ITM_arctan_XFN              2566
+#define ITM_LN_XFN                  2567
+#define ITM_LOG_XFN                 2568
+#define ITM_EXP_XFN                 2569
+#define ITM_10X_XFN                 2570
+#define ITM_POWER_XFN               2571
+#define ITM_SQRT_XFN                2572
+#define ITM_ADD_XFN                 2573
+#define ITM_SUB_XFN                 2574
+#define ITM_MULT_XFN                2575
+#define ITM_DIV_XFN                 2576
+#define ITM_MOD_XFN                 2577
+#define ITM_MODANG_XFN              2578
+#define ITM_TO_XFN                  2579
+#define ITM_2580                    2580
+#define ITM_2581                    2581
+#define ITM_DRG_XFN                 2582
+#define ITM_SQR_XFN                 2583
+#define ITM_XTHROOT_XFN             2584
+
+#define ITM_3DUP                    2585
+#define ITM_3SWAP                   2586
+#define ITM_3DROP                   2587
+#define ITM_3STO                    2588
+#define ITM_3RCL                    2589
+
+#define ITM_NDUP                    2590
+#define ITM_NSWAP                   2591
+#define ITM_NDROP                   2592
+#define ITM_2STO                    2593
+#define ITM_2RCL                    2594
+#define ITM_4SWAP                   2595
+
+
+#define MNU_XXFCNS                  2596
+#define MNU_MULTSTK                 2597
+
+#define LAST_ITEM                   2598
+
+#define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
@@ -2646,6 +2697,12 @@ int16_t  lastSTORCL             (void);
 int16_t  lastFuncNo             (void);
 uint16_t indirectionType        (uint16_t func);
 bool_t   isFunctionOldParam16   (uint16_t func);
+char     *getItemCatalogName    (int16_t itemNr);
+
+
+typedef void (*function_t)(uint16_t);
+typedef function_t (*param)();
+function_t  getItemFunc           (int16_t itemNr);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

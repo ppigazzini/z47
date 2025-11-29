@@ -193,6 +193,8 @@
 
   // Variables for the simulator
   #if !defined(GENERATE_CATALOGS)
+    extern uint16_t lastI;
+    extern uint16_t lastJ;
     extern int16_t lastFunc;
     extern int16_t lastParam;
     extern char    lastTemp[16];
@@ -229,7 +231,6 @@
 
 
   extern uint8_t calcModel;
-  //TODO calModel resets, it must still be saved in backup.cfg and in the state files
 
 
   // Variables stored in FLASH
@@ -300,6 +301,7 @@
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
   extern bool_t                 iterations;
+  extern bool_t                 explicitTaylorIterVisibilitySelection;
 
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
@@ -442,6 +444,8 @@
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
   extern int16_t                lastKeyItemDetermined;
+  extern bool_t                 lastUserMode;                 //used in btnReleased and btnFnReleased
+  extern int16_t                lastItem;                     //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;

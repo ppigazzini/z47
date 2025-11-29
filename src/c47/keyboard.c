@@ -445,6 +445,7 @@ static void executeFunction(const char *data, int16_t item_);
       if(inCatalog || currentMenu() == -MNU_CONST) {
         switch(-currentMenu()) {
           case MNU_TAM:
+          case MNU_TAMVARONLY:
           case MNU_TAMNONREG:
           case MNU_TAMCMP:
           case MNU_TAMSTO:
@@ -452,6 +453,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_TAMFLAG:
           case MNU_TAMSHUFFLE:
           case MNU_TAMLABEL:
+          case MNU_TAMLBLONLY:
           case ITM_DELITM: {
             // TAM menus are processed elsewhere
             break;
@@ -808,8 +810,6 @@ endReturnTrue:
     }
   }
 
-bool_t lastUserMode = false;
-int16_t lastItem = 0;
 
   #if defined(PC_BUILD)
     void btnFnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
@@ -969,8 +969,8 @@ int16_t lastItem = 0;
                     #endif //VERBOSEKEYS
                     #if defined(PC_BUILD)
                       printf(">>>Function selected: executeFunction data=|%s| f=%d g=%d tam.mode=%i\n",(char *)data, shiftF, shiftG, tam.mode);
-                      if(item<0)  printf("    item<0: calcMode=%u item=%d=%s f=%d g=%d\n",calcMode, item,indexOfItems[-item].itemCatalogName, shiftF, shiftG);
-                      //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
+                      printf("    item %s 0: calcMode=%u item=%d=%s f=%d g=%d\n",(item < 0 ? "< " : ">="),calcMode, item, getItemCatalogName(item), shiftF, shiftG);
+                      fflush(stdout);
                     #endif //PC_BUILD
 
       resetShiftState();                               //shift cancelling delayed to this point after state machine
@@ -1074,6 +1074,7 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
+
           if(tam.mode && catalog && (tam.digitsSoFar || isFunctionOldParam16(tam.function) || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB || (tam.mode == TM_KEY && !tam.keyInputFinished))))) {
             // disabled
           }
@@ -1087,7 +1088,7 @@ int16_t lastItem = 0;
             return;
           }
 
-          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+          else if((tam.mode || getItemFunc(item) != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && !catalog &&        //allow only in case of PEM, and a CAT
                    (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) &&
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
@@ -1100,7 +1101,7 @@ int16_t lastItem = 0;
             }
           }
 
-          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+          else if((tam.mode || getItemFunc(item) != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
                    && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
                    !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
 
@@ -1258,7 +1259,7 @@ int16_t lastItem = 0;
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
@@ -1438,7 +1439,7 @@ int16_t lastItem = 0;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-    if( (key->primary != ITM_SHIFTf) && ( !SHOWMODE || !(
+    if( (key->primary != ITM_SHIFTf) && (key->primary != KEY_fg) && ( !SHOWMODE || !(
                            key->primary == ITM_RCL
                            || key->primary == ITM_RS
                            || key->primary == ITM_UP1
@@ -1463,6 +1464,18 @@ int16_t lastItem = 0;
                     #if defined(PC_BUILD)
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary2: %d:",key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
+
+
+    if(SHOWMODE && (key->primary == KEY_fg || key->primary == ITM_SHIFTf)) { //before going into shift handling, send EXIT over to the key release
+      shiftF = true;
+      shiftG = false;
+      lastItem = key->primary;
+      resetKeytimers();
+      screenUpdatingMode = SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+      return ITM_NOP;
+    }
+
+
 
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
@@ -1714,7 +1727,7 @@ int16_t lastItem = 0;
   }
 
 
-
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     typedef struct {
       uint8_t itm0;
       uint8_t itm1;
@@ -1862,6 +1875,7 @@ int16_t lastItem = 0;
       return false;
       }
 
+#endif //SAVE_SPACE_DM42_24_PROFILES
 
 
 
@@ -1919,10 +1933,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
-      if(checkNumber((uint8_t)keyCode)) {
-        item = ITM_CLRMOD;
-      }
 
+      #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+        if(checkNumber((uint8_t)keyCode)) {
+          item = ITM_CLRMOD;
+        }
+      #endif //SAVE_SPACE_DM42_24_PROFILES
       asnKey[0] = ((uint8_t *)data)[0];
       asnKey[1] = ((uint8_t *)data)[1];
       asnKey[2] = 0;
@@ -1969,6 +1985,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       item = determineItem((char *)data);
       lastKeyItemDetermined = item;
+            
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -2076,7 +2093,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       for(int i=0; i<43; i++) {
         xMin = calcKeyboard[i].x;
         yMin = calcKeyboard[i].y;
-        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
+        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
           xMax = xMin + calcKeyboard[10].width[3];
           yMax = yMin + calcKeyboard[10].height[3];
         }
@@ -2162,6 +2179,29 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+
+
+      if(SHOWMODE && (lastItem == KEY_fg || lastItem == ITM_SHIFTf) && lastItem != SCREENDUMP) {
+        //f is delayed in SHOW to release. fg and f both will perform the f-function. F-DISP will be screen dump.
+        fg_processing_jm();
+        shiftF = true;
+        shiftG = false;
+        lastshiftF = shiftF;
+        lastshiftG = shiftG;
+        lastItem = 0;
+        if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+          closeShowMenu();
+        }
+        showShiftState();
+        refreshModeGui();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
+      }
+      if(SHOWMODE) {
+        lastItem = 0;
+      }
+
+
+
 
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
@@ -3727,12 +3767,12 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
     if(tam.mode) {                               //if in TAM mode
       // [DL] : TM_LABEL specific Alpha Exit logic below replaced by TM generic exit logic, so it should not be needed anymore
-        /*if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
+        /*if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
             popSoftmenu();
             keyActionProcessed = true;
             return;
           }
-          if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
+          if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
             if(menu(0) == -MNU_TAMALPHA) {
               popSoftmenu();
               if(isAlphaSubmenu(0)) {

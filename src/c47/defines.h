@@ -49,12 +49,16 @@
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
 #undef SAVE_SPACE_DM42_17
+#undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
+#undef SAVE_SPACE_DM42_22_EDIT1
+#undef SAVE_SPACE_DM42_23_EDIT2
+#undef SAVE_SPACE_DM42_24_PROFILES
 
 #if defined(DMCP_BUILD)
 
-  #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
+  #define TWO_FILE_PGM                 // Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
   #define HWM_DM42        1
   #define HWM_DM32        2
@@ -97,6 +101,9 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+      #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+      #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+      #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -112,17 +119,19 @@
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
     #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-  //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
-    #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
-    #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+    #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
+    #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+    #define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -499,7 +508,8 @@
 #define ERROR_UNDEF_MENU                          59
 #define ERROR_SOLVER_ABORT                        60
 #define ERROR_RESERVED_VARIABLE_NAME              61
-#define LAST_ERROR_MESSAGE                        61
+#define ERROR_INVALID_TYPE_XFN                    62
+#define LAST_ERROR_MESSAGE                        62
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -1361,7 +1371,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1390,7 +1400,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_VALUE_MAX                           10015
 #define TM_VALUE_TRK                           10016
 #define TM_MENU                                10017
-#define TM_CMP                                 10018 // TM_CMP must be the last in this list
+#define TM_LBLONLY                             10018
+#define TM_VARONLY                             10019
+#define TM_CMP                                 10020 // TM_CMP must be the last in this list
 
 // gamma function type
 #define GAMMA_XYLOWER                              0
@@ -1433,111 +1445,112 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_VIEW_REGISTER                          15
 #define TI_SUMX_SUMY                              16
 #define TI_MEANX_MEANY                            17
-#define TI_GEOMMEANX_GEOMMEANY                    18
-#define TI_WEIGHTEDMEANX                          19
-#define TI_HARMMEANX_HARMMEANY                    20
-#define TI_RMSMEANX_RMSMEANY                      21
-#define TI_WEIGHTEDSAMPLSTDDEV                    22
-#define TI_WEIGHTEDPOPLSTDDEV                     23
-#define TI_WEIGHTEDSTDERR                         24
-#define TI_SAMPLSTDDEV                            25
-#define TI_POPLSTDDEV                             26
-#define TI_STDERR                                 27
-#define TI_GEOMSAMPLSTDDEV                        28
-#define TI_GEOMPOPLSTDDEV                         29
-#define TI_GEOMSTDERR                             30
-#define TI_SAVED                                  31
-#define TI_BACKUP_RESTORED                        32
-#define TI_XMIN_YMIN                              33
-#define TI_XMAX_YMAX                              34
-#define TI_DAY_OF_WEEK                            35
-#define TI_SXY                                    36
-#define TI_COV                                    37
-#define TI_CORR                                   38
-#define TI_SMI                                    39
-#define TI_LR                                     40
-#define TI_CALCX                                  41
-#define TI_CALCY                                  42
-#define TI_CALCX2                                 43
-#define TI_STATISTIC_LR                           44
-#define TI_STATISTIC_HISTO                        45
-#define TI_SA                                     46
-#define TI_INACCURATE                             47
-#define TI_UNDO_DISABLED                          48
-//#define TI_VIEW                                   49
-#define TI_SOLVER_VARIABLE                        50
-#define TI_SOLVER_FAILED                          51
-#define TI_ACC                                    52
-#define TI_ULIM                                   53
-#define TI_LLIM                                   54
-#define TI_INTEGRAL                               55
-#define TI_1ST_DERIVATIVE                         56
-#define TI_2ND_DERIVATIVE                         57
-#define TI_KEYS                                   58
-#define TI_MEDIANX_MEDIANY                        59
-#define TI_Q1X_Q1Y                                60
-#define TI_Q3X_Q3Y                                61
-#define TI_MADX_MADY                              62
-#define TI_IQRX_IQRY                              63
-#define TI_RANGEX_RANGEY                          64
-#define TI_PCTILEX_PCTILEY                        65
-#define TI_CONV_MENU_STR                          66
-#define TI_PERC                                   67
-#define TI_PERCD                                  68
-#define TI_PERCD2                                 69
-#define TI_STATEFILE_RESTORED                     70
-#define TI_ABC                                    71    //JM EE
-#define TI_ABBCCA                                 72    //JM EE
-#define TI_012                                    73    //JM EE
-#define TI_SHOW_REGISTER_BIG                      74    //JM_SHOW
-#define TI_SHOW_REGISTER_SMALL                    75
-#define TI_SHOW_REGISTER_TINY                     76
-#define TI_BATTV                                  77
-#define TI_FROM_DMS                               78
-#define TI_FROM_MS_TIME                           79
-#define TI_FROM_MS_DEG                            80
-#define TI_FROM_HMS                               81
-#define TI_DISP_JULIAN                            82
-#define TI_FROM_DATEX                             83
-#define TI_LAST_CONST_CATNAME                     84
-#define TI_PROGRAM_LOADED                         85    //DL
-#define TI_PROGRAMS_RESTORED                      86    //DL
-#define TI_REGISTERS_RESTORED                     87    //DL
-#define TI_SETTINGS_RESTORED                      88    //DL
-#define TI_SUMS_RESTORED                          89    //DL
-#define TI_VARIABLES_RESTORED                     90    //DL
-#define TI_SCATTER_SMI                            91
-#define TI_SHOWNOTHING                            92
-#define TI_COPY_FROM_SHOW                         93
-#define TI_DATA_LOSS                              94
-#define TI_CLEAR_ALL_FLAGS                        95
-#define TI_CLEAR_ALL_MENUS                        96    //DL
-#define TI_CLEAR_ALL_VARIABLES                    97    //DL
-#define TI_DEL_ALL_PRGMS                          98
-#define TI_DEL_ALL_MENUS                          99    //DL
-#define TI_DEL_ALL_VARIABLES                     100    //DL
-#define TI_ROOTS2                                101
-#define TI_ROOTS3                                102
-#define TI_IJ                                    103
-#define TI_I                                     104
-#define TI_J                                     105
-#define TI_MIJ                                   106
-#define TI_BYTES                                 107
-#define TI_BITS                                  108
-#define TI_SOLVER_VARIABLE_RESULT                109
-#define TI_DATA_NEG_OVRFL                        110
-#define TI_LASTSTATEFILE                         111
-#define TI_FUNCTION                              112
-#define TI_STORCL                                113
-#define TI_TVM_EFF                               114
-#define TI_TVM_IA                                115
-#define TI_NOT_AVAILABLE                         116
-#define TI_DISP_WOY                              117
-#define TI_DISP_JULIAN_WOY                       118
-#define TI_WOY                                   119
-#define TI_WOY_RULE                              120
-#define TI_MIJEQ                                 121
-#define TI_REGTYPE                               122
+#define TI_MEANX                                  18
+#define TI_GEOMMEANX_GEOMMEANY                    19
+#define TI_WEIGHTEDMEANX                          20
+#define TI_HARMMEANX_HARMMEANY                    21
+#define TI_RMSMEANX_RMSMEANY                      22
+#define TI_WEIGHTEDSAMPLSTDDEV                    23
+#define TI_WEIGHTEDPOPLSTDDEV                     24
+#define TI_WEIGHTEDSTDERR                         25
+#define TI_SAMPLSTDDEV                            26
+#define TI_POPLSTDDEV                             27
+#define TI_STDERR                                 28
+#define TI_GEOMSAMPLSTDDEV                        29
+#define TI_GEOMPOPLSTDDEV                         30
+#define TI_GEOMSTDERR                             31
+#define TI_SAVED                                  32
+#define TI_BACKUP_RESTORED                        33
+#define TI_XMIN_YMIN                              34
+#define TI_XMAX_YMAX                              35
+#define TI_DAY_OF_WEEK                            36
+#define TI_SXY                                    37
+#define TI_COV                                    38
+#define TI_CORR                                   39
+#define TI_SMI                                    40
+#define TI_LR                                     41
+#define TI_CALCX                                  42
+#define TI_CALCY                                  43
+#define TI_CALCX2                                 44
+#define TI_STATISTIC_LR                           45
+#define TI_STATISTIC_HISTO                        46
+#define TI_SA                                     47
+#define TI_INACCURATE                             48
+#define TI_UNDO_DISABLED                          49
+//#define TI_VIEW                                 50
+#define TI_SOLVER_VARIABLE                        51
+#define TI_SOLVER_FAILED                          52
+#define TI_ACC                                    53
+#define TI_ULIM                                   54
+#define TI_LLIM                                   55
+#define TI_INTEGRAL                               56
+#define TI_1ST_DERIVATIVE                         57
+#define TI_2ND_DERIVATIVE                         58
+#define TI_KEYS                                   59
+#define TI_MEDIANX_MEDIANY                        60
+#define TI_Q1X_Q1Y                                61
+#define TI_Q3X_Q3Y                                62
+#define TI_MADX_MADY                              63
+#define TI_IQRX_IQRY                              64
+#define TI_RANGEX_RANGEY                          65
+#define TI_PCTILEX_PCTILEY                        66
+#define TI_CONV_MENU_STR                          67
+#define TI_PERC                                   68
+#define TI_PERCD                                  69
+#define TI_PERCD2                                 70
+#define TI_STATEFILE_RESTORED                     71
+#define TI_ABC                                    72  //JM EE
+#define TI_ABBCCA                                 73  //JM EE
+#define TI_012                                    74  //JM EE
+#define TI_SHOW_REGISTER_BIG                      75  //JM_SHOW
+#define TI_SHOW_REGISTER_SMALL                    76
+#define TI_SHOW_REGISTER_TINY                     77
+#define TI_BATTV                                  78
+#define TI_FROM_DMS                               79
+#define TI_FROM_MS_TIME                           80
+#define TI_FROM_MS_DEG                            81
+#define TI_FROM_HMS                               82
+#define TI_DISP_JULIAN                            83
+#define TI_FROM_DATEX                             84
+#define TI_LAST_CONST_CATNAME                     85
+#define TI_PROGRAM_LOADED                         86  //DL
+#define TI_PROGRAMS_RESTORED                      87  //DL
+#define TI_REGISTERS_RESTORED                     88  //DL
+#define TI_SETTINGS_RESTORED                      89  //DL
+#define TI_SUMS_RESTORED                          90  //DL
+#define TI_VARIABLES_RESTORED                     91  //DL
+#define TI_SCATTER_SMI                            92
+#define TI_SHOWNOTHING                            93
+#define TI_COPY_FROM_SHOW                         94
+#define TI_DATA_LOSS                              95
+#define TI_CLEAR_ALL_FLAGS                        96
+#define TI_CLEAR_ALL_MENUS                        97  //DL
+#define TI_CLEAR_ALL_VARIABLES                    98  //DL
+#define TI_DEL_ALL_PRGMS                          99
+#define TI_DEL_ALL_MENUS                         100  //DL
+#define TI_DEL_ALL_VARIABLES                     101  //DL
+#define TI_ROOTS2                                102
+#define TI_ROOTS3                                103
+#define TI_IJ                                    104
+#define TI_I                                     105
+#define TI_J                                     106
+#define TI_MIJ                                   107
+#define TI_BYTES                                 108
+#define TI_BITS                                  109
+#define TI_SOLVER_VARIABLE_RESULT                110
+#define TI_DATA_NEG_OVRFL                        111
+#define TI_LASTSTATEFILE                         112
+#define TI_FUNCTION                              113
+#define TI_STORCL                                114
+#define TI_TVM_EFF                               115
+#define TI_TVM_IA                                116
+#define TI_NOT_AVAILABLE                         117
+#define TI_DISP_WOY                              118
+#define TI_DISP_JULIAN_WOY                       119
+#define TI_WOY                                   120
+#define TI_WOY_RULE                              121
+#define TI_MIJEQ                                 122
+#define TI_REGTYPE                               123
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1698,7 +1711,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1895,7 +1908,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
 
-#define XXFNMODEACTIVE false //temporary until merged with XFN
+#define XXFNMODEACTIVE                       (!SHOWMODE && !GRAPHMODE && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_XXFCNS && calcMode != CM_NIM &&\
+                                             ( (getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) ||\
+                                               (getRegisterDataType(REGISTER_T) == dtReal34 || getRegisterDataType(REGISTER_T) == dtLongInteger)) )
+                                               //PROBMENU not needed, as a specific menu is required for XXFN
 
 #define DBASEMODE                            (!SHOWMODE && !GRAPHMODE && !PROBMENU && !XXFNMODEACTIVE && dispBase >= 2)
 
@@ -1906,6 +1922,17 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
+#define inputAngleMode3r(r)                  ((registerIsNoAngle(r+1) && registerIsNoAngle(r+2)) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
+#define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+#define inputIsNoAngle3r(r)                  ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
+#define inputAngleError3r(r)                 (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
+#define isXFNregisterValid3r(r)              ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
+                                              (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
+                                              !inputAngleError3r(r))
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))  
+
+
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
@@ -2011,6 +2038,21 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
+#define VECT_CR_xyz 1
+#define VECT_CR_zyx 2
+#define VECT_CR_100 3
+#define VECT_CR_010 4
+#define VECT_CR_001 5
+#define VECT_CR_yx  6
+#define VECT_CR_10  7
+#define VECT_CR_01  8
+#define VECT_yx_zyx 0x62
+
+#define V_D0        0
+#define V_D1        1
+#define V_COPY      2
+#define V_NANA      3
+
 #define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
 #define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
 #define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
@@ -2023,6 +2065,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
 #define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
 #define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+
+
+
 
 #if defined(DMCP_BUILD)
   #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
