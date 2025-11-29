@@ -1339,7 +1339,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
 
-        if(allElementsInColAreIntegers[j] && !(maxRows == 1 && (maxCols == 2 || maxCols == 3)) {  //no integers needed in vector
+        if(allElementsInColAreIntegers[j] && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
         } else {
