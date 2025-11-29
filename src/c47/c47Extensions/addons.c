@@ -1691,7 +1691,7 @@ void fnConvertStkToMx(uint16_t constVector) {
       matrixRegisterLoaded = true;
     } else
     if(ang3Dx != amNone && ang3Dy != amNone && constVector == VECT_CR_zyx) {
-      convertSPHto3D(&x[2].r, &x[0].r, &x[1].r, amRadian, &matrix, &ctxtReal39);
+      convertSPHto3D(&x[2].r, &x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
       matrixRegisterLoaded = true;
     } else
     if(ang3Dx == amNone && ang3Dy != amNone && constVector == VECT_CR_zyx) {
@@ -1819,19 +1819,19 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     realToReal34(&magnitude, &matrix.matrixElements[0]);
     realToReal34(&theta    , &matrix.matrixElements[1]);
   } else
-  if(param == VECT_CR_zyx && (ang3Dy != amNone && ang3Dx == amNone)) {
+  if(param == VECT_CR_zyx && (ang3Dy != amNone && ang3Dx == amNone)) {           // CYL
     real_t theta, magnitude, zz;
     convert3DtoCYL(&matrix, &magnitude, &theta, &zz, ang3Dy, &ctxtReal39);
     realToReal34(&magnitude, &matrix.matrixElements[0]);
     realToReal34(&theta    , &matrix.matrixElements[1]);
     realToReal34(&zz       , &matrix.matrixElements[2]);
   } else
-  if(param == VECT_CR_zyx && (ang3Dy != amNone && ang3Dx != amNone)) {
+  if(param == VECT_CR_zyx && (ang3Dy != amNone && ang3Dx != amNone)) {           // SPH
     real_t theta, theta2, magnitude;
     convert3DtoSPH(&matrix, &magnitude, &theta, &theta2, ang3Dx, &ctxtReal39);
     realToReal34(&magnitude, &matrix.matrixElements[0]);
-    realToReal34(&theta    , &matrix.matrixElements[2]);
-    realToReal34(&theta2   , &matrix.matrixElements[1]);
+    realToReal34(&theta2    , &matrix.matrixElements[2]);
+    realToReal34(&theta    , &matrix.matrixElements[1]);
   }
 
   for (int i = 0; i < elements; i++) {
