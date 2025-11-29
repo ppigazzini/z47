@@ -7843,6 +7843,31 @@ SPH_ret1:
 }
 
 
+void convertSPHto3D(real_t *r, real_t *th1, real_t *th2, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
+  real_t x, y, z, theta1, theta2, sinTh2;
+  
+  realCopy(th1, &theta1);
+  realCopy(th2, &theta2);
+  convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
+  convertAngleFromTo(&theta2, am, amRadian, ctxtRealDisplay);
+  
+  WP34S_Cvt2RadSinCosTan(&theta2, amRadian, NULL,    &z,   NULL, ctxtRealDisplay);
+  realMultiply(r, &z, &z, ctxtRealDisplay);
+  WP34S_Cvt2RadSinCosTan(&theta2, amRadian, &sinTh2, NULL, NULL, ctxtRealDisplay);
+  WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL,    &x,   NULL, ctxtRealDisplay);
+  realMultiply(r, &x, &x, ctxtRealDisplay);
+  realMultiply(&x, &sinTh2, &x, ctxtRealDisplay);
+  
+  WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y,      NULL, NULL, ctxtRealDisplay);
+  realMultiply(r, &y, &y, ctxtRealDisplay);
+  realMultiply(&y, &sinTh2, &y, ctxtRealDisplay);
+  
+  realToReal34(&x, &matrix->matrixElements[0]);
+  realToReal34(&y, &matrix->matrixElements[1]);
+  realToReal34(&z, &matrix->matrixElements[2]);
+}
+
+
 void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y, t;
     real34ToReal(&matrix->matrixElements[0], &x);
@@ -7861,6 +7886,24 @@ void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
 }
 
 
+void convertCYLto3D(real_t *r, real_t *th1, real_t *z, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
+  real_t x, y, theta1;
+  
+  realCopy(th1, &theta1);
+  convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
+  
+  WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL, &x, NULL, ctxtRealDisplay);
+  realMultiply(r, &x, &x, ctxtRealDisplay);
+  
+  WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y, NULL, NULL, ctxtRealDisplay);
+  realMultiply(r, &y, &y, ctxtRealDisplay);
+  
+  realToReal34(&x, &matrix->matrixElements[0]);
+  realToReal34(&y, &matrix->matrixElements[1]);
+  realToReal34(z, &matrix->matrixElements[2]);
+}
+
+
 void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y;
     _euclideanNormRealMatrix(matrix, r, ctxtRealDisplay);
@@ -7871,6 +7914,15 @@ void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_
     WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
     convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th1)) {realZero(th1);}
+}
+
+void convertPOLto2D(real_t *r, real_t *th1, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
+  real_t x, y, theta1;
+  realCopy(th1, &theta1);
+  convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
+  realPolarToRectangular(r, &theta1, &x, &y, ctxtRealDisplay);
+  realToReal34(&x, &matrix->matrixElements[0]);
+  realToReal34(&y, &matrix->matrixElements[1]);
 }
 
 
