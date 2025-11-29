@@ -1001,8 +1001,8 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
     switch(j) {
       case 0: realToReal34(&aa,element); break;
-      case 1: realToReal34(&cc,element); break;
-      case 2: realToReal34(&bb,element); break;
+      case 1: realToReal34(&bb,element); break;
+      case 2: realToReal34(&cc,element); break;
       default:;
     }
     //printRealToConsole(&aa,"SPH aa=","\n");
@@ -1339,7 +1339,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
 
-        if(allElementsInColAreIntegers[j]) {
+        if(allElementsInColAreIntegers[j] && !(maxRows == 1 && (maxCols == 2 || maxCols == 3)) {  //no integers needed in vector
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
         } else {
