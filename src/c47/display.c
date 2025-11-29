@@ -1765,7 +1765,7 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t modeIn, char *disp
                                                                                     fs);
   }
   else if(mode == amMultPi) {
-    IrFractionsCurrentStatus = CF_OFF;        //JM
+//    IrFractionsCurrentStatus = CF_OFF;        //JM
     real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal, limitIrfrac);
     strcat(displayString, STD_SUP_pir);
   }
