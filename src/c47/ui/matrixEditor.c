@@ -995,7 +995,7 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
   real_t aa,bb,cc;
   decContext c = ctxtReal39;
-  c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
+  c.digits = 26; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
 
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
