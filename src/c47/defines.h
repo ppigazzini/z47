@@ -744,6 +744,13 @@ typedef enum  {
 } print_modes_t;
 
 
+typedef enum  {
+	LINE_FULL = 0,
+	LINE_LEFT = 1,
+	LINE_RIGHT = 2
+} print_area_t;
+
+
 
 // PC GUI
 #if NARROW_SCREEN == 1

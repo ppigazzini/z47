@@ -1,0 +1,2372 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
+#include "c47.h"
+
+
+#ifdef INFRARED
+
+  #define RETURN_IF_PRINT_OFF if (!getSystemFlag(FLAG_PRTACT)) return
+  #define BREAK_IF_EXIT  if (key_pop() == KEY_EXIT) break
+
+
+  //
+  // HP-82240 Roman-8 to Unicode table
+  //
+  TO_QSPI const uint16_t hp82240CharMap[256] = {
+  /* 0x00, */ 0x0000, // #NULL
+  /* 0x01, */ 0x0000, // #UNDEFINED
+  /* 0x02, */ 0x0000, // #UNDEFINED
+  /* 0x03, */ 0x0000, // #UNDEFINED
+  /* 0x04, */ 0x0004, // #PRINT LINE AND LEAVE PRINT HEAD AT RIGHT
+  /* 0x05, */ 0x0000, // #UNDEFINED
+  /* 0x06, */ 0x0000, // #UNDEFINED
+  /* 0x07, */ 0x0000, // #UNDEFINED
+  /* 0x08, */ 0x0000, // #UNDEFINED
+  /* 0x09, */ 0x0000, // #UNDEFINED
+  /* 0x0A, */ 0x000A, // #LINE FEED
+  /* 0x0B, */ 0x0000, // #UNDEFINED
+  /* 0x0C, */ 0x0000, // #UNDEFINED
+  /* 0x0D, */ 0x0000, // #UNDEFINED
+  /* 0x0E, */ 0x0000, // #UNDEFINED
+  /* 0x0F, */ 0x0000, // #UNDEFINED
+
+  /* 0x10, */ 0x0000, // #UNDEFINED
+  /* 0x11, */ 0x0000, // #UNDEFINED
+  /* 0x12, */ 0x0000, // #UNDEFINED
+  /* 0x13, */ 0x0000, // #UNDEFINED
+  /* 0x14, */ 0x0000, // #UNDEFINED
+  /* 0x15, */ 0x0000, // #UNDEFINED
+  /* 0x16, */ 0x0000, // #UNDEFINED
+  /* 0x17, */ 0x0000, // #UNDEFINED
+  /* 0x18, */ 0x0000, // #UNDEFINED
+  /* 0x19, */ 0x0000, // #UNDEFINED
+  /* 0x1A, */ 0x0000, // #UNDEFINED
+  /* 0x1B, */ 0x001B, // #ESCAPE
+  /* 0x1C, */ 0x0000, // #UNDEFINED
+  /* 0x1D, */ 0x0000, // #UNDEFINED
+  /* 0x1E, */ 0x0000, // #UNDEFINED
+  /* 0x1F, */ 0x0000, // #UNDEFINED
+
+  /* 0x20, */ 0x0020, // #SPACE
+  /* 0x21, */ 0x0021, // #EXCLAMATION MARK
+  /* 0x22, */ 0x0022, // #QUOTATION MARK
+  /* 0x23, */ 0x0023, // #NUMBER SIGN
+  /* 0x24, */ 0x0024, // #DOLLAR SIGN
+  /* 0x25, */ 0x0025, // #PERCENT SIGN
+  /* 0x26, */ 0x0026, // #AMPERSAND
+  /* 0x27, */ 0x0027, // #APOSTROPHE
+  /* 0x28, */ 0x0028, // #LEFT PARENTHESIS
+  /* 0x29, */ 0x0029, // #RIGHT PARENTHESIS
+  /* 0x2A, */ 0x002A, // #ASTERISK
+  /* 0x2B, */ 0x002B, // #PLUS SIGN
+  /* 0x2C, */ 0x002C, // #COMMA
+  /* 0x2D, */ 0x002D, // #HYPHEN-MINUS
+  /* 0x2E, */ 0x002E, // #FULL STOP
+  /* 0x2F, */ 0x002F, // #SOLIDUS
+
+  /* 0x30, */ 0x0030, // #DIGIT ZERO
+  /* 0x31, */ 0x0031, // #DIGIT ONE
+  /* 0x32, */ 0x0032, // #DIGIT TWO
+  /* 0x33, */ 0x0033, // #DIGIT THREE
+  /* 0x34, */ 0x0034, // #DIGIT FOUR
+  /* 0x35, */ 0x0035, // #DIGIT FIVE
+  /* 0x36, */ 0x0036, // #DIGIT SIX
+  /* 0x37, */ 0x0037, // #DIGIT SEVEN
+  /* 0x38, */ 0x0038, // #DIGIT EIGHT
+  /* 0x39, */ 0x0039, // #DIGIT NINE
+  /* 0x3A, */ 0x003A, // #COLON
+  /* 0x3B, */ 0x003B, // #SEMICOLON
+  /* 0x3C, */ 0x003C, // #LESS-THAN SIGN
+  /* 0x3D, */ 0x003D, // #EQUALS SIGN
+  /* 0x3E, */ 0x003E, // #GREATER-THAN SIGN
+  /* 0x3F, */ 0x003F, // #QUESTION MARK
+
+  /* 0x40, */ 0x0040, // #COMMERCIAL AT
+  /* 0x41, */ 0x0041, // #LATIN CAPITAL LETTER A
+  /* 0x42, */ 0x0042, // #LATIN CAPITAL LETTER B
+  /* 0x43, */ 0x0043, // #LATIN CAPITAL LETTER C
+  /* 0x44, */ 0x0044, // #LATIN CAPITAL LETTER D
+  /* 0x45, */ 0x0045, // #LATIN CAPITAL LETTER E
+  /* 0x46, */ 0x0046, // #LATIN CAPITAL LETTER F
+  /* 0x47, */ 0x0047, // #LATIN CAPITAL LETTER G
+  /* 0x48, */ 0x0048, // #LATIN CAPITAL LETTER H
+  /* 0x49, */ 0x0049, // #LATIN CAPITAL LETTER I
+  /* 0x4A, */ 0x004A, // #LATIN CAPITAL LETTER J
+  /* 0x4B, */ 0x004B, // #LATIN CAPITAL LETTER K
+  /* 0x4C, */ 0x004C, // #LATIN CAPITAL LETTER L
+  /* 0x4D, */ 0x004D, // #LATIN CAPITAL LETTER M
+  /* 0x4E, */ 0x004E, // #LATIN CAPITAL LETTER N
+  /* 0x4F, */ 0x004F, // #LATIN CAPITAL LETTER O
+
+  /* 0x50, */ 0x0050, // #LATIN CAPITAL LETTER P
+  /* 0x51, */ 0x0051, // #LATIN CAPITAL LETTER Q
+  /* 0x52, */ 0x0052, // #LATIN CAPITAL LETTER R
+  /* 0x53, */ 0x0053, // #LATIN CAPITAL LETTER S
+  /* 0x54, */ 0x0054, // #LATIN CAPITAL LETTER T
+  /* 0x55, */ 0x0055, // #LATIN CAPITAL LETTER U
+  /* 0x56, */ 0x0056, // #LATIN CAPITAL LETTER V
+  /* 0x57, */ 0x0057, // #LATIN CAPITAL LETTER W
+  /* 0x58, */ 0x0058, // #LATIN CAPITAL LETTER X
+  /* 0x59, */ 0x0059, // #LATIN CAPITAL LETTER Y
+  /* 0x5A, */ 0x005A, // #LATIN CAPITAL LETTER Z
+  /* 0x5B, */ 0x005B, // #LEFT SQUARE BRACKET
+  /* 0x5C, */ 0x005C, // #REVERSE SOLIDUS
+  /* 0x5D, */ 0x005D, // #RIGHT SQUARE BRACKET
+  /* 0x5E, */ 0x005E, // #CIRCUMFLEX ACCENT
+  /* 0x5F, */ 0x005F, // #LOW LINE
+
+  /* 0x60, */ 0x2019, // #RIGHT SINGLE QUOTATION MARK                  *
+  /* 0x61, */ 0x0061, // #LATIN SMALL LETTER A
+  /* 0x62, */ 0x0062, // #LATIN SMALL LETTER B
+  /* 0x63, */ 0x0063, // #LATIN SMALL LETTER C
+  /* 0x64, */ 0x0064, // #LATIN SMALL LETTER D
+  /* 0x65, */ 0x0065, // #LATIN SMALL LETTER E
+  /* 0x66, */ 0x0066, // #LATIN SMALL LETTER F
+  /* 0x67, */ 0x0067, // #LATIN SMALL LETTER G
+  /* 0x68, */ 0x0068, // #LATIN SMALL LETTER H
+  /* 0x69, */ 0x0069, // #LATIN SMALL LETTER I
+  /* 0x6A, */ 0x006A, // #LATIN SMALL LETTER J
+  /* 0x6B, */ 0x006B, // #LATIN SMALL LETTER K
+  /* 0x6C, */ 0x006C, // #LATIN SMALL LETTER L
+  /* 0x6D, */ 0x006D, // #LATIN SMALL LETTER M
+  /* 0x6E, */ 0x006E, // #LATIN SMALL LETTER N
+  /* 0x6F, */ 0x006F, // #LATIN SMALL LETTER O
+
+  /* 0x70, */ 0x0070, // #LATIN SMALL LETTER P
+  /* 0x71, */ 0x0071, // #LATIN SMALL LETTER Q
+  /* 0x72, */ 0x0072, // #LATIN SMALL LETTER R
+  /* 0x73, */ 0x0073, // #LATIN SMALL LETTER S
+  /* 0x74, */ 0x0074, // #LATIN SMALL LETTER T
+  /* 0x75, */ 0x0075, // #LATIN SMALL LETTER U
+  /* 0x76, */ 0x0076, // #LATIN SMALL LETTER V
+  /* 0x77, */ 0x0077, // #LATIN SMALL LETTER W
+  /* 0x78, */ 0x0078, // #LATIN SMALL LETTER X
+  /* 0x79, */ 0x0079, // #LATIN SMALL LETTER Y
+  /* 0x7A, */ 0x007A, // #LATIN SMALL LETTER Z
+  /* 0x7B, */ 0x007B, // #LEFT CURLY BRACKET
+  /* 0x7C, */ 0x007C, // #VERTICAL LINE
+  /* 0x7D, */ 0x007D, // #RIGHT CURLY BRACKET
+  /* 0x7E, */ 0x007E, // #TILDE
+  /* 0x7F, */ 0x0000, // semi-solid rectangle                          *
+
+  /* 0x80, */ 0X00A0, // #NO-BREAK SPACE
+  /* 0x81, */ 0x00F7, // #DIVISION SIGN
+  /* 0x82, */ 0x00D7, // #MULTIPLICATION SIGN
+  /* 0x83, */ 0x221A, // #SQUARE ROOT
+  /* 0x84, */ 0x222B, // #INTEGRAL
+  /* 0x85, */ 0x2211, // #N-ARY SUMMATION
+  /* 0x86, */ 0x25B6, // #BLACK RIGHT-POINTING TRIANGLE                *
+  /* 0x87, */ 0x03C0, // #GREEK SMALL LETTER PI
+  /* 0x88, */ 0x2202, // #PARTIAL DIFFERENTIAL
+  /* 0x89, */ 0x2264, // #LESS-THAN OR EQUAL TO
+  /* 0x8A, */ 0x2265, // #GREATER-THAN OR EQUAL TO
+  /* 0x8B, */ 0x2260, // #NOT EQUAL TO
+  /* 0x8C, */ 0x03B1, // #GREEK SMALL LETTER ALPHA
+  /* 0x8D, */ 0x2192, // #RIGHTWARDS ARROW
+  /* 0x8E, */ 0x2190, // #LEFTWARDS ARROW
+  /* 0x8F, */ 0x03BC, // #GREEK SMALL LETTER MU
+
+  /* 0x90, */ 0x21B5, // #DOWNWARDS ARROW WITH CORNER LEFTWARDS
+  /* 0x91, */ 0x00B0, // #DEGREE SIGN
+  /* 0x92, */ 0x00AB, // #LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+  /* 0x93, */ 0x00BB, // #RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+  /* 0x94, */ 0x22A2, // #RIGHT TACK
+  /* 0x95, */ 0x2081, // #SUBSCRIPT ONE
+  /* 0x96, */ 0x2082, // #SUBSCRIPT TWO
+  /* 0x97, */ 0x2162, // #SUPERSCRIPT TWO (REDEFINED)
+  /* 0x98, */ 0x2163, // #SUPERSCRIPT THREE (REDEFINED)
+  /* 0x99, */ 0x24A4, // #SUBSCRIPT LATIN SMALL LETTER I (REDEFINED)
+  /* 0x9A, */ 0x24A5, // #SUBSCRIPT LATIN SMALL LETTER J (REDEFINED)
+  /* 0x9B, */ 0x0000, // &two dots                                     *
+  /* 0x9C, */ 0x248A, // #SUPERSCRIPT LATIN SMALL LETTER I (REDEFINED)
+  /* 0x9D, */ 0x248B, // #SUPERSCRIPT LATIN SMALL LETTER J (REDEFINED)
+  /* 0x9E, */ 0x248C, // #SUPERSCRIPT LATIN SMALL LETTER K (REDEFINED)
+  /* 0x9F, */ 0x248F, // #SUPERSCRIPT LATIN SMALL LETTER N (REDEFINED)
+
+  /* 0xA0, */ 0x2221, // #MEASURED ANGLE
+  /* 0xA1, */ 0x00C0, // #LATIN CAPITAL LETTER A WITH GRAVE
+  /* 0xA2, */ 0x00C2, // #LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+  /* 0xA3, */ 0x00C8, // #LATIN CAPITAL LETTER E WITH GRAVE
+  /* 0xA4, */ 0x00CA, // #LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+  /* 0xA5, */ 0x00CB, // #LATIN CAPITAL LETTER E WITH DIAERESIS
+  /* 0xA6, */ 0x00CE, // #LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+  /* 0xA7, */ 0x00CF, // #LATIN CAPITAL LETTER I WITH DIAERESIS
+  /* 0xA8, */ 0x00B4, // #ACUTE ACCENT                                 *
+  /* 0xA9, */ 0x0060, // #GRAVE ACCENT                                 *
+  /* 0xAA, */ 0x005E, // #CIRCUMFLEX ACCENT                            *
+  /* 0xAB, */ 0x00A8, // #DIAERESIS                                    *
+  /* 0xAC, */ 0x02DC, // #SMALL TILDE                                  *
+  /* 0xAD, */ 0x00D9, // #LATIN CAPITAL LETTER U WITH GRAVE
+  /* 0xAE, */ 0x00FB, // #LATIN SMALL LETTER U WITH CIRCUMFLEX
+  /* 0xAF, */ 0X20A4, // #LIRA SIGN                                    *
+
+  /* 0xB0, */ 0x00AF, // #MACRON                                       *
+  /* 0xB1, */ 0x00DD, // #LATIN CAPITAL LETTER Y WITH ACUTE            *
+  /* 0xB2, */ 0x00FD, // #LATIN SMALL LETTER Y WITH ACUTE              *
+  /* 0xB3, */ 0x00B0, // #DEGREE SIGN
+  /* 0xB4, */ 0x00C7, // #LATIN CAPITAL LETTER C WITH CEDILLA
+  /* 0xB5, */ 0x00E7, // #LATIN SMALL LETTER C WITH CEDILLA
+  /* 0xB6, */ 0x00D1, // #LATIN CAPITAL LETTER N WITH TILDE
+  /* 0xB7, */ 0x00F1, // #LATIN SMALL LETTER N WITH TILDE
+  /* 0xB8, */ 0x00A1, // #INVERTED EXCLAMATION MARK                    *
+  /* 0xB9, */ 0x00BF, // #INVERTED QUESTION MARK
+  /* 0xBA, */ 0x00A4, // #CURRENCY SIGN                                *
+  /* 0xBB, */ 0x00A3, // #POUND SIGN
+  /* 0xBC, */ 0x00A5, // #YEN SIGN
+  /* 0xBD, */ 0x00A7, // #SECTION SIGN
+  /* 0xBE, */ 0x0192, // #LATIN SMALL LETTER F WITH HOOK               *
+  /* 0xBF, */ 0x00A2, // #CENT SIGN
+
+  /* 0xC0, */ 0x00E2, // #LATIN SMALL LETTER A WITH CIRCUMFLEX
+  /* 0xC1, */ 0x00EA, // #LATIN SMALL LETTER E WITH CIRCUMFLEX
+  /* 0xC2, */ 0x00F4, // #LATIN SMALL LETTER O WITH CIRCUMFLEX
+  /* 0xC3, */ 0x00FB, // #LATIN SMALL LETTER U WITH CIRCUMFLEX
+  /* 0xC4, */ 0x00E1, // #LATIN SMALL LETTER A WITH ACUTE
+  /* 0xC5, */ 0x00E9, // #LATIN SMALL LETTER E WITH ACUTE
+  /* 0xC6, */ 0x00F3, // #LATIN SMALL LETTER O WITH ACUTE
+  /* 0xC7, */ 0x00FA, // #LATIN SMALL LETTER U WITH ACUTE
+  /* 0xC8, */ 0x00E0, // #LATIN SMALL LETTER A WITH GRAVE
+  /* 0xC9, */ 0x00E8, // #LATIN SMALL LETTER E WITH GRAVE
+  /* 0xCA, */ 0x00F2, // #LATIN SMALL LETTER O WITH GRAVE
+  /* 0xCB, */ 0x00F9, // #LATIN SMALL LETTER U WITH GRAVE
+  /* 0xCC, */ 0x00E4, // #LATIN SMALL LETTER A WITH DIAERESIS
+  /* 0xCD, */ 0x00EB, // #LATIN SMALL LETTER E WITH DIAERESIS
+  /* 0xCE, */ 0x00F6, // #LATIN SMALL LETTER O WITH DIAERESIS
+  /* 0xCF, */ 0x00FC, // #LATIN SMALL LETTER U WITH DIAERESIS
+
+  /* 0xD0, */ 0x00C5, // #LATIN CAPITAL LETTER A WITH RING ABOVE
+  /* 0xD1, */ 0x00EE, // #LATIN SMALL LETTER I WITH CIRCUMFLEX
+  /* 0xD2, */ 0x00D8, // #LATIN CAPITAL LETTER O WITH STROKE
+  /* 0xD3, */ 0x00C6, // #LATIN CAPITAL LETTER AE
+  /* 0xD4, */ 0x00E5, // #LATIN SMALL LETTER A WITH RING ABOVE
+  /* 0xD5, */ 0x00ED, // #LATIN SMALL LETTER I WITH ACUTE
+  /* 0xD6, */ 0x00F8, // #LATIN SMALL LETTER O WITH STROKE
+  /* 0xD7, */ 0x00E6, // #LATIN SMALL LETTER AE
+  /* 0xD8, */ 0x00C4, // #LATIN CAPITAL LETTER A WITH DIAERESIS
+  /* 0xD9, */ 0x00EC, // #LATIN SMALL LETTER I WITH GRAVE
+  /* 0xDA, */ 0x00D6, // #LATIN CAPITAL LETTER O WITH DIAERESIS
+  /* 0xDB, */ 0x00DC, // #LATIN CAPITAL LETTER U WITH DIAERESIS
+  /* 0xDC, */ 0x00C9, // #LATIN CAPITAL LETTER E WITH ACUTE
+  /* 0xDD, */ 0x00EF, // #LATIN SMALL LETTER I WITH DIAERESIS
+  /* 0xDE, */ 0x00DF, // #LATIN SMALL LETTER SHARP S (GERMAN)          *
+  /* 0xDF, */ 0x00D4, // #LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+
+  /* 0xE0, */ 0x00C1, // #LATIN CAPITAL LETTER A WITH ACUTE
+  /* 0xE1, */ 0x00C3, // #LATIN CAPITAL LETTER A WITH TILDE
+  /* 0xE2, */ 0x00E3, // #LATIN SMALL LETTER A WITH TILDE
+  /* 0xE3, */ 0x00D0, // #LATIN CAPITAL LETTER ETH (ICELANDIC)         *
+  /* 0xE4, */ 0x00F0, // #LATIN SMALL LETTER ETH (ICELANDIC)           *
+  /* 0xE5, */ 0x00CD, // #LATIN CAPITAL LETTER I WITH ACUTE
+  /* 0xE6, */ 0x00CC, // #LATIN CAPITAL LETTER I WITH GRAVE
+  /* 0xE7, */ 0x00D3, // #LATIN CAPITAL LETTER O WITH ACUTE
+  /* 0xE8, */ 0x00D2, // #LATIN CAPITAL LETTER O WITH GRAVE
+  /* 0xE9, */ 0x00D5, // #LATIN CAPITAL LETTER O WITH TILDE
+  /* 0xEA, */ 0x00F5, // #LATIN SMALL LETTER O WITH TILDE
+  /* 0xEB, */ 0x0160, // #LATIN CAPITAL LETTER S WITH CARON
+  /* 0xEC, */ 0x0161, // #LATIN SMALL LETTER S WITH CARON
+  /* 0xED, */ 0x00DA, // #LATIN CAPITAL LETTER U WITH ACUTE
+  /* 0xEE, */ 0x0178, // #LATIN CAPITAL LETTER Y WITH DIAERESIS
+  /* 0xEF, */ 0x00FF, // #LATIN SMALL LETTER Y WITH DIAERESIS
+
+  /* 0xF0, */ 0x00DE, // #LATIN CAPITAL LETTER THORN (ICELANDIC)       *
+  /* 0xF1, */ 0x00FE, // #LATIN SMALL LETTER THORN (ICELANDIC)         *
+  /* 0xF2, */ 0x00B7, // #MIDDLE DOT                                   *
+  /* 0xF3, */ 0x00B5, // #MICRO SIGN
+  /* 0xF4, */ 0x00B6, // #PILCROW SIGN                                 *
+  /* 0xF5, */ 0x00BE, // #VULGAR FRACTION THREE QUARTERS               *
+  /* 0xF6, */ 0x00AD, // #SOFT HYPHEN                                  *
+  /* 0xF7, */ 0x00BC, // #VULGAR FRACTION ONE QUARTER
+  /* 0xF8, */ 0x00BD, // #VULGAR FRACTION ONE HALF
+  /* 0xF9, */ 0x00AA, // #FEMININE ORDINAL INDICATOR                   *
+  /* 0xFA, */ 0x00BA, // #MASCULINE ORDINAL INDICATOR                  *
+  /* 0xFB, */ 0x00AB, // #LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+  /* 0xFC, */ 0x25AE, // #BLACK VERTICAL RECTANGLE                     *
+  /* 0xFD, */ 0x00BB, // #RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+  /* 0xFE, */ 0x00B1, // #PLUS-MINUS SIGN
+  /* 0xFF, */ 0x0000  // #UNDEFINED
+  };
+
+
+  uint8_t charMap(uint16_t charCode) {
+    uint8_t i;
+    for(i=128; i<255; i++) {
+      if(hp82240CharMap[i] == (charCode & ~0x8000)) return (i);
+    }
+    return 0;
+  }
+
+
+  int16_t findPrinterGlyph(const printerFont_t *font, uint16_t charCode) {
+    int16_t first, middle, last;
+
+    first = 0;
+    last = font->numberOfGlyphs - 1;
+
+    middle = (first + last) / 2;
+    while(last > first + 1) {
+      if(charCode < font->glyphs[middle].charCode) {
+        last = middle;
+      }
+      else {
+        first = middle;
+      }
+      middle = (first + last) / 2;
+    }
+
+    if(font->glyphs[first].charCode == charCode) {
+      return first;
+    }
+
+    if(font->glyphs[last].charCode == charCode) {
+      return last;
+    }
+
+    return font->numberOfGlyphs - 1;  // Last character of the font is for charCodes not supported by the font
+  }
+
+
+/*
+// Some utilities to replace the various string and mem functions.
+// Return the length of a string
+int slen(const char *s) {
+        const char *p;
+
+        for (p=s; *p != '\0'; p++);
+        return p-s;
+}
+
+// And a little something to set memory to a value.
+void *xset(void *d, const char c, int n) {
+        char *dp = d;
+        while (n--)
+                *dp++ = c;
+        return d;
+}
+*/
+
+
+  static bool_t _exitKeyPressed() {
+    #if defined(DMCP_BUILD)
+    int key = C47PopKeyNoBuffer(!DISPLAY_WAIT_FOR_RELEASE) + 1;
+      if(key == 36 || key == 33 ) {  // R/S or EXIT
+        key_pop();
+        clearKeyBuffer();
+        return(true);
+      }
+      else {
+        key_pop_all();
+        clearKeyBuffer();
+        return(false);
+      }
+    #elif defined(PC_BUILD) // !DMCP_BUILD
+      //printf("KeyWaiting keyCode=%u",currentKeyCode);
+      return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
+    #endif // PC_BUILD
+  }
+
+  static void setPrinterSBI(bool_t status) {
+    printerIconEnabled = status;
+    setSystemFlagChanged(SETTING_PRINTERICON);
+    refreshStatusBar();
+  }
+
+unsigned int charlengths(unsigned int c) {
+	static const unsigned char widths[171] = {
+		162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,
+		215,  85, 107, 123, 160, 172, 172,  88, 178, 177, 208, 208,
+		166, 208, 179, 173, 209, 215, 130, 165, 170, 172, 172, 165,
+		177, 172, 172, 214, 171, 117, 131, 209, 143, 215, 131, 178,
+		215, 213, 143, 201, 213, 179, 172, 214, 170, 172, 215, 209,
+		215,  95, 129, 129, 172, 172, 172, 172, 129, 207, 215, 136,
+		172, 208, 173, 172, 172, 172, 136, 129, 172, 172, 166, 172,
+		172, 112, 135, 147, 129, 171, 130, 129, 176, 131, 141, 208,
+		115, 143,  82, 140,  50,  93, 129, 129,  57, 128, 165, 129,
+		129,  57, 135, 137, 171, 129, 135,  93, 123, 123, 129, 129,
+		 87, 195, 129, 129, 129, 131,  57, 135, 141, 172, 171, 131,
+		207, 165, 202, 177,  93, 167, 178, 135, 165, 124, 129, 177,
+		136, 142, 143,  86, 129, 129, 129, 129, 129,  87, 165, 129,
+		129, 129, 129, 129, 129, 129, 129, 129, 123, 129, 129, 129,
+		129, 129,  21
+	};
+	static const unsigned char divs[3] = { 1, 6, 36 };
+	return (widths[c/3] / divs[c%3]) % 6 + 1;
+}
+
+void findlengths(unsigned short int posns[257], int smallp) {
+	const int mask = smallp ? 256 : 0;
+	int i;
+
+	posns[0] = 0;
+	for(i=0; i<256; i++)
+		posns[i+1] = posns[i] + charlengths(i + mask) - 1;
+}
+
+/*
+void unpackchar(unsigned int c, unsigned char d[6], int smallp, const unsigned short int posns[257]) {
+	static const unsigned char bm_large[6][127] = {
+		{
+			127, 142, 238,   0,   6, 224,   0,   0, 192,  44, 123,  16,
+			 38,   1,   0,  69,  88,  64, 128, 105,  10,   0, 104, 218,
+			215, 219, 155,   1,   0, 152, 179, 179, 247, 239, 242, 152,
+			 17, 163,  59, 119, 246,  51, 198,  24, 255, 185,  32,   8,
+			 64,  96,   8,  49,   6,   0,   0,   0,   4,   0,   0, 128,
+			 15, 104, 224, 201,  67, 112,  30,  16, 224, 193, 215, 239,
+			 64,   0, 113, 192,  65, 161,   0,  64, 128, 224, 129,   1,
+			  2, 224,   1,   0,   0,   0,   0,   0,   0,   0,   0, 134,
+			 63, 141, 223, 134,  63, 231, 247,   7, 118, 234,  31, 195,
+			159, 134, 212,  15, 191,  18,  63,  12, 127, 205, 239,  15,
+			127, 190,  99, 248, 147,  56,  15,
+		},
+		{
+			  0,  66,  27,   8,   9,  18, 132,  16,  66,  42, 101, 248,
+			217,   2, 168,  42,  88, 229, 103, 154, 132,   0, 152,  39,
+			 86,   4, 102,  62, 130,  96, 204,  76,  25,  17,  83,  88,
+			177, 103, 204, 152,  73,  50,  70, 165,  48,  97,  65,   8,
+			 64,  16,  15,  32,   4,   0,   0,   0,   4,   0,   0, 128,
+			 74,  92,  32, 137, 228, 136,   5,  16,   0,  92,  58, 161,
+			224,  64, 141,   0, 129, 240,   3, 160,  84,  12,  65,   2,
+			  4, 128,  28,   0,   0, 128, 179,   0,   0,   0,   0,   0,
+			  0,   0,  32,   1,   0,   0,   0,   0,   0,   0,   0,   0,
+			  0,  64,   0,   0,   0,   0, 128,   1,   0,   0,   0,   0,
+			  0,   0,   0,   0,   0,   0,   0,
+		},
+		{
+			 77,  66, 222, 190, 208, 119,  72,  16, 231, 238,  87,  23,
+			  7, 128, 150,  56, 136,  95, 150, 145, 159,   0, 212,  34,
+			213,  29,  89,  14, 125,  97, 205,  11, 121,  23,  94,  56,
+			 81, 107, 204, 152,  66,  82,  85,  66,  40,  34,   0,  63,
+			115, 147, 188,  57, 245, 206, 206, 219,  63,  99, 108,  94,
+			178, 130,  32, 212,  69, 136, 221,  43, 192,  98,  86, 178,
+			 81,  65, 141, 128,  64, 167,  80, 246, 138, 130,  90, 170,
+			 41, 211, 235, 231, 254, 103, 101,  85, 193,   3,   0, 204,
+			204, 204,  61, 254, 255, 255,  63, 157, 115, 238,  28, 153,
+			153,  25, 227, 187, 187, 187,  89, 152, 153, 109, 219, 153,
+			153, 181,  35,  51,  51,  51,  15,
+		},
+		{
+			210,  66, 144, 200,  63,  57, 255, 215,  74, 168, 212,  70,
+			217,   2, 193,  17,   8, 229,  72, 150, 228, 127, 180,  18,
+			 62,  38, 165, 179,   0,  82, 255,  12,  25, 145,  83,  56,
+			 81, 115, 188, 122,  68,  82,  85,  66,  36,  34, 128, 204,
+			200,  62,  79, 241,  84,  51,  51,  71,  36,  99, 149,  82,
+			 18, 225,  32, 148, 116, 252, 167, 170,  22, 106,   2, 242,
+			 95, 191, 139, 235,  21, 160, 171,  41, 201,  69, 164, 111,
+			 40, 147, 190, 146,  73, 100,  37,  53, 126, 254,  56,  50,
+			 51,  51,  34, 238, 238,  36, 105,  99, 140,  49,  71, 153,
+			153, 169,  20, 101, 102, 102,  68, 116, 119,  75,  82, 102,
+			102, 142,  52,  51,  51,  85,   9,
+		},
+		{
+			 34,  83, 224,   0, 192,  23,  72,  56,  66,   6, 204, 253,
+			 47, 189, 170,  56, 128,  79, 117, 146, 138, 136, 147,  74,
+			 18, 166,  36, 238, 255,  71, 200,  76,  25,  17,  83,  89,
+			 17,  99, 140,  84,  73, 146, 108,  69,  34,  36, 128, 204,
+			200,  17,  76, 177,  84,  51, 207, 131,  36,  85,  21, 137,
+			 10,  28,  53, 162,  76, 143, 165,  69,   9,  98,   2,  17,
+			239,  32,  81,  63,  42, 128, 172, 233,  40, 211, 101, 170,
+			244, 203, 171, 114,  73, 164,  51, 174,  86, 101, 127, 255,
+			255,  63, 194,  35,  34,  36, 169,  99, 140, 241, 248, 153,
+			153,  73, 136, 100, 102, 102, 132, 207, 204,  72,  82, 102,
+			102,   6,  45,  51,  51, 137,   4,
+		},
+		{
+			 29,  34,   0, 254, 191, 224, 132,  16,   2,   0, 188,  67,
+			 81,  85, 212,  19,   8, 245, 178, 101, 128, 132,  99, 190,
+			209, 153, 152,  29,   0, 144, 203, 179, 247, 225, 242, 150,
+			 31, 163,  11, 155,  70, 140, 196,  72, 254,  60,  30,  63,
+			119, 147, 203,  47,  95, 211,   2, 227, 216, 137, 234, 184,
+			 15,   8,  42, 254, 115, 119, 221, 199, 234,  93, 130, 255,
+			 73,   0, 217,  15,  20, 128,  84,  54, 200,  12, 161,  57,
+			 51,   6, 157,  30, 198,  28, 105,  68, 221, 223, 205,  51,
+			 51, 211, 125, 254, 255, 255,  63, 157, 115,  46, 175, 102,
+			102,  70, 200, 187, 187, 187, 251, 152, 153, 253, 127, 154,
+			153, 197, 213, 221, 221, 103,  28,
+		},
+	};
+	static const unsigned char bm_small[6][101] = {
+		{
+			191, 251,  46,  70,  46,  36, 217, 217, 131, 152,   4, 160,
+			 22, 173, 242, 185, 166,   0, 104, 255, 222, 255,  65, 228,
+			166, 121, 191, 155, 153, 152, 191, 157, 223, 102, 251, 179,
+			 16,   2, 194,  72,  38,   0,   0, 128,   0,   0, 192,   7,
+			 26,  56,  26, 193,  28,   8, 120, 112, 189, 193, 161,  26,
+			 48,  40,  10,   0, 129, 124,  56,  48, 224,   0,   0,   0,
+			  0,   0,   0,   0, 128, 249, 149, 239, 249, 253, 247, 231,
+			247, 199, 252, 202, 253, 252, 202, 199, 252, 238, 247, 243,
+			251,  99, 126, 229,  30,
+		},
+		{
+			128, 168, 113, 233,  65, 162, 235,  47, 251, 111,  11,  90,
+			226, 236,  47, 172,  73,   4, 216, 201,  38, 108, 161, 139,
+			217, 166,  73, 154, 149, 189, 109,  86, 212, 102, 203,  98,
+			161,  99,  90,  14, 180, 183, 253, 254, 219, 216,  94, 165,
+			 23,   8, 171,  35, 203,  11,   0, 215, 138, 161, 162,  38,
+			 32, 208, 158, 210, 106, 194, 171, 202,  86, 238, 217, 191,
+			174,  85,   1,   0,   0,   0,   0,  16,   0,   0,   0,   0,
+			  0,   0,   0,   0,   0,   0,   0,  48,   0,   0,   0,   0,
+			  0,   0,   0,   0,   0,
+		},
+		{
+			173, 232, 173,  95, 247,  47, 157, 189, 182,  24,   0,   4,
+			 71, 132, 114,  18, 249, 207,  84, 237, 255, 252,  27, 208,
+			253, 165,  91, 159, 147, 218, 125, 142, 212, 166, 164,  36,
+			 64, 159, 247, 125, 174, 218, 182, 153, 218, 170, 122,  93,
+			 32, 136, 110, 225, 191,  22, 176,  88, 209, 163, 222,  37,
+			 16,  40,  74, 173, 149,  44, 245, 198, 246, 181, 180, 164,
+			181,  53, 194,  49,   0,  73, 210, 159, 255,  55, 105, 255,
+			127,  70, 219, 182, 157, 109, 251, 207, 255,  43, 105, 219,
+			102, 163, 109, 219,  14,
+		},
+		{
+			250,   8,   9, 224,  65, 114, 105,  96,  46, 106, 251, 170,
+			226, 192, 167, 105,  73,   4,  84,  67, 178,  42, 161,  11,
+			209, 166,  73, 187, 149, 152,  77,  21,  85, 125, 149,  36,
+			 64, 155,  78, 111, 182, 218, 254, 161, 250,  42,  71,   5,
+			120,  77, 106,  49, 171, 181, 133,  90,  72, 222, 145, 216,
+			186,   2, 120, 173,  82,  19, 173, 234,  78, 191, 188, 164,
+			 85, 174, 126, 239, 222, 255, 127, 146, 109,  51, 169, 219,
+			118,  82, 219,  86,  82, 219,  54, 201, 182,  41, 169, 109,
+			 27, 181, 109, 251,  11,
+		},
+		{
+			165,   8, 254,  95,  46,  36,   1, 224, 221, 191,  84,  81,
+			 79, 132, 122,  60, 166,  32,  51, 127, 254, 250,  74,  68,
+			222, 121, 207, 251, 249, 152, 143, 230, 116, 101, 245,  57,
+			128, 239,  91, 236, 246,  90, 135, 185,  45,  85, 222,   7,
+			 71, 205, 155, 221, 218,  87, 250,  88, 252, 159, 128, 252,
+			 79,   5, 168, 210, 209, 125, 188, 219, 239, 181,  69, 108,
+			174,  68, 213,  90, 223, 182, 237, 239, 255,  55,  41, 255,
+			191, 251, 255,  95, 242, 255, 223, 182, 109, 123, 187, 182,
+			157, 205, 182,  77,  26,
+		},
+		{
+			 24,  12,   0,   0,   0,   0,   0,   0,   0,  74,  85,   1,
+			  0,   0,   0,  64,   0,  16,   2,   0,   0,   0,   4,   0,
+			  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   8,
+			 14,   0,   0,   3,   3,   0, 132,   0,   0, 128,   1,   1,
+			130,   2,   0,  28,   0, 160,   2,   7,   0,  16,   0, 192,
+			131,   2,   0, 128,  16,  64,   4, 128, 128,  14,   6,   0,
+			164,   4, 220, 119,  99,   0,   0,  48,   0,   0,   0,   0,
+			  0,  40,   0,   0,   0,   0,   0,  24,   0,   0,   0,   0,
+			  0,  20,   0, 176,   1,
+		},
+	};
+	unsigned int n = posns[c&255];
+	const unsigned int fin = posns[(c&255)+1];
+	unsigned int i, j;
+
+	for(i=0; i<6; i++) d[i] = 0;
+	for (i=0; n < fin; i++,n++) {
+		for (j=0; j<6; j++) {
+			const unsigned char z = smallp ? (bm_small[j][n>>3]) : (bm_large[j][n>>3]);
+			if (z & (1 << (n&7)))
+				d[j] |= 1 << i;
+		}
+	}
+}
+*/
+
+
+/* Determine the pixel length of the string if it were displayed
+*/
+  int pixel_length(const char *s, int smallp)
+  {
+	int len = 0;
+	const int offset = smallp ? 256 : 0;
+	while (*s != '\0') {
+#ifdef INCLUDE_FONT_ESCAPE
+	  if (s[0] == '\007') {
+	    len += s[1] & 0x1F;
+	    s += 3;
+	    continue;
+	  }
+#endif
+	  len += charlengths( (unsigned char) *s++ + offset );
+	}
+	return len;
+  }
+
+
+void prepare_new_line(void) {
+#if defined(DMCP_BUILD)
+  int i = 0;
+  clearSystemFlag(FLAG_PRTACT);
+  //finish_PRT(); // redraws the PRT annunciator
+  printer_advance_buf(PRINT_GRA_LN);
+  while ( printer_busy_for (PRINT_GRA_LN) && i<50 ) { // return after 5.0s anyway
+    sys_timer_start(0, 100);  // Timer 0: wake up for heartbeat
+    sys_sleep();
+    sys_timer_disable(0); // stop timer
+    i++;
+  }
+  setSystemFlag(FLAG_PRTACT);
+  //finish_PRT();
+#endif // !DMCP_BUILD
+}
+
+
+/*
+ *  Print to IR
+ */
+void print( uint8_t c ) { // prints a single character
+  const print_modes_t mode = printerState.print_mode;
+  // Serial mode code removed for DM42
+  if ( c == '\n' && ( mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS ) ) {
+    // better LF for graphics printing
+    sendByteIR( 0x04 );
+    return;
+  }
+  sendByteIR( c );
+}
+
+
+/*
+ *  New line
+ *  Input: nlMode - define the type of new line sent to the printer
+ *                 0: \n    - standard LF
+ *                 1: 0x04  - HP 82240 custom LF
+ */
+void print_advance( uint8_t nlMode ) {
+  printerColumn = 0;
+  print( nlMode ? 0x04 : '\n' );
+  if (printerState.print_blank_line) print( nlMode ? 0x04 : '\n' );
+  prepare_new_line();
+}
+
+
+/*
+ *  New line if tracing is active
+ */
+static void advance_if_trace()
+{
+  if ( printerColumn != 0 && getSystemFlag(FLAG_TRACE) ) {
+    print_advance( 0 );
+  }
+}
+
+//
+//  Move to column
+//
+void print_tab( uint16_t col ) // pixel-aligned column
+{
+  if ( printerColumn > col ) {
+    print_advance( 0 );
+  }
+  if ( printerColumn < col ) {
+    uint16_t i = col - printerColumn;
+    uint16_t j = i / 7;
+    i %= 7;
+    printerColumn = col;
+    if ( i ) {
+      sendByteIR( 27 );
+      sendByteIR( i );
+      while ( i-- )
+	    sendByteIR( 0 );
+    }
+    while ( j-- )
+      sendByteIR( ' ' );
+  }
+}
+
+
+/*
+// Print a buffer from the given tab position and add a new line
+//
+static void print_string_from_tab(const char *s, int tab)
+{
+  print_tab(tab);
+  print_line(s, 1);
+}
+*/
+
+
+//
+//  Print a graphic sequence
+//
+void print_graphic( uint8_t glen, const unsigned char *graphic ) {
+  if ( glen > 0 ) {
+    sendByteIR( 27 );
+    sendByteIR( glen );
+    while ( glen-- ) {
+      sendByteIR( *graphic++ );
+    }
+  }
+}
+
+//
+//  Print a 8-bit graphic sequence
+//
+void print_graphic_8( uint8_t glen, const unsigned char *graphic ) {
+  uint8_t len = glen + ((printerColumn == 0) || (printerColumn >= 160)? 1 : 2);
+  if ( glen > 0 ) {
+    sendByteIR( 27);    // Set bit image (82240 graphic character printing : ESC Xchar [Ci]
+    sendByteIR( len);
+    if(printerColumn != 0) sendByteIR(0);              // start with a blank columns
+    while ( glen-- ) {
+      sendByteIR( *graphic++ );
+    }
+    if(printerColumn < 160) sendByteIR(0);             // end with a blank columns
+    printerColumn += len;
+  }
+}
+
+//
+//  Print a 24-bit graphic sequence
+//
+void print_graphic_24( uint8_t glen, const unsigned char *graphic ) {
+  if ( glen > 0 ) {
+    printerColumn += glen;
+    sendByteIR( 27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
+    sendByteIR(  0);
+    sendByteIR( 42);
+    sendByteIR( 33);
+    sendByteIR( 14);
+    sendByteIR(  0);
+    while ( glen-- ) {
+      sendByteIR( *graphic++ );
+    }
+  }
+}
+
+
+//
+//  Print a glyph (HP-82240 8-bit graphic)
+//
+void print_glyph8(uint16_t charCode, const printerFont_t *font) {
+  int32_t  glyphId;
+  uint8_t  *data;
+  const glyphPrinter_t *glyph;
+
+    glyphId = findPrinterGlyph(font, charCode);
+    glyph = (font->glyphs) + glyphId;
+    data = (uint8_t *)glyph->data;
+    print_graphic_8(5, data);   // Print the glyph columns
+}
+
+//
+//  Print a glyph (Martel 24-bit graphic)
+//
+void print_glyph24(uint16_t charCode, const font_t *font) {
+    uint32_t col, row, row_scaled;
+    uint32_t graphic_byte;
+    int32_t  glyphId;
+    uint8_t   byte, *data;
+    const glyph_t *glyph;
+    unsigned char graphic[42];  // 3 bytes per column (20 rows) x 14 columns
+
+    memset(graphic, 0, 42);
+    glyphId = findGlyph(font, charCode);
+
+    if(glyphId >= 0) {
+      glyph = (font->glyphs) + glyphId;
+    }
+    else if(glyphId == -1) {
+      generateNotFoundGlyph(-1, charCode);
+      glyph = &glyphNotFound;
+    }
+    else if(glyphId == -2) {
+      generateNotFoundGlyph(-2, charCode);
+      glyph = &glyphNotFound;
+    }
+    else {
+      glyph = NULL;
+    }
+    data = (uint8_t *)glyph->data;
+
+    // Drawing the glyph on 24 rows
+    for(row=glyph->rowsGlyph + glyph->rowsBelowGlyph; row>glyph->rowsBelowGlyph; row--) {
+      // Drawing the columns of the glyph
+      int32_t bit = 7;
+      //row_scaled = (row + (row >> 1)) % 25;      // Scale 1.5
+      row_scaled = ((row >> 1) + (row >> 2));      // Scale  .75
+      //row_scaled = row;                          // Scale 1
+      for(col=0; col<glyph->colsGlyph; col++) {
+        if(bit == 7) {
+          byte = *(data++);
+        }
+        graphic_byte = col*3 + (24-row_scaled)/8 ;
+        if(byte & 0x80) { // MSB set
+          graphic[graphic_byte] = graphic[graphic_byte] | (1 << ((row_scaled-1) % 8));  // Set graphic pixel
+        }
+        else {
+          graphic[graphic_byte] = graphic[graphic_byte] & ~(1 << ((row_scaled-1) % 8));  // Clear graphic pixel
+        }
+
+        byte <<= 1;
+
+        if(--bit == -1) {
+          bit = 7;
+        }
+      }
+    }
+    print_graphic_24(42, graphic);
+    printerColumn += 14;
+}
+
+/*
+//
+//  Determine the length of a string in printer pixels based on the current mode.
+//
+static int buffer_width(const char *buff)
+{
+  const int mode = printerState.print_mode;
+  unsigned int c;
+  int l = 0;
+
+  while ((c = 0xff & *buff++) != '\0') {
+    switch (mode) {
+    default:
+      l += 7;
+      break;
+
+    case PMODE_SMALLGRAPHICS:
+      c += 256;
+    case PMODE_GRAPHICS:
+      l += charlengths(c);
+      break;
+    }
+  }
+  return l;
+}
+*/
+
+
+//
+//  Wrap if line is full
+//
+static void wrap( int width ) {
+  if ( printerColumn + width > PAPER_WIDTH ) {
+    print_advance (0);
+    if ( width == 7 ) width = 5;
+  }
+  printerColumn += width;
+}
+
+//
+//  Print a complete line using character set translation
+//
+void print_line( const char *buff, int with_lf )
+{
+  const int mode = printerState.print_mode;
+  uint8_t c;
+//  unsigned short int posns[ 257 ];
+  unsigned char pattern[ 6 ];	// Rows
+  unsigned char graphic[ PAPER_WIDTH ];	// Columns
+  unsigned char glen = 0;
+  unsigned char i, j, m, w = 0;
+
+  // Show Print SBI
+  setPrinterSBI(true);
+
+  // Print line
+  while ( ( c = *( (const unsigned char *) buff++ ) ) != '\0') {
+
+    w= 0;
+    switch ( mode ) {
+
+      case PMODE_DEFAULT:			// Mixed character and graphic printing
+        if ( c == 006 && *buff == 006 ) {
+	    // merge small spaces
+	     continue;
+        }
+        if( c & 0x80 ) {
+          uint16_t charCode = c << 8 | *( (const unsigned char *) buff++ );
+          c = charMap(charCode);
+          if(c == 0) {  // Not in the 82240 roman character set, need to print graphic
+            if(printerState.printer_model == PRINTER_HP) {
+              print_glyph8(charCode, &printerFont8);
+            }
+            else if(printerState.printer_model == PRINTER_MARTEL) {
+              print_glyph24(charCode, &standardFont);
+            }
+          }
+          else {       // Character is in the 82240 roman character set
+            w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
+	        wrap( w );
+	        sendByteIR( c );
+          }
+        }
+        else {
+	    // Use printer character set
+	      w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
+	      print_graphic( glen, graphic );
+	      glen = 0;
+	      wrap( w );
+	      sendByteIR( c );
+        }
+/*
+        i = c < ' ' ? printer_chars[ c - 1 ]
+	      : c > 126 ? printer_chars[ c - 127 + 31 ]
+	      : c;
+#ifdef INCLUDE_C_LOCK
+        if (C_LOCKED && POLAR_DISPLAY && c == 160) { // pass angle char through untranslated
+	    i = c;
+        }
+#endif
+        if ( i != 0 ) {
+	    // Use printer character set
+	      w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
+	      print_graphic( glen, graphic );
+	      glen = 0;
+	      wrap( w );
+	      sendByteIR( i );
+        }
+        else {
+	    // graphic printing of characters unknown to the printer
+	      w = 6;
+	      if ( printerColumn > 0 && printerColumn < PAPER_WIDTH ) {
+	      // Add horizontal spacing
+	        graphic[ glen++ ] = 0;
+	        ++printerColumn;
+	        if ( printerColumn == 161 ) {
+	          w = 5;
+	        }
+	      }
+	      goto graphic_print;
+        }
+*/
+        break;
+
+      case PMODE_SMALLGRAPHICS:		// Small font
+        c += 256;
+        /* fallthrough */
+
+      case PMODE_GRAPHICS:			// Standard font
+        //graphic_print:
+        // Spit out the character as a graphic
+#ifdef INCLUDE_C_LOCK
+/*
+        if ( ((C_LOCKED) && (POLAR_DISPLAY)) && c == (256+'<') ) {
+	      w = 4;
+	      pattern[0] = 8;
+	      pattern[1] = 4;
+	      pattern[2] = 2;
+	      pattern[3] = 15;
+	      pattern[4] = 0;
+	      pattern[5] = 0;
+        }
+        else {
+	      unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
+        }
+*/
+#else
+        //unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
+#endif
+        if ( w == 0 ) {
+	      w = charlengths( c );
+	      if ( printerColumn + w == 167 ) {
+	      // drop last column on last character in line
+	        --w;
+	      }
+        }
+        if ( printerColumn + w > PAPER_WIDTH ) {
+	      print_graphic( glen, graphic );
+	      glen = 0;
+        }
+        wrap( w );
+        // Transpose the pattern
+        m = 1;
+        for ( i = 0; i < w; ++i ) {
+	      c = 0;
+	      for ( j = 0; j < 6; ++j ) {
+	        if ( pattern[ j ] & m ) {
+	          c |= ( 2 << j );
+	        }
+          }
+	      graphic[ glen++ ] = c;
+	      m <<= 1;
+        }
+        break;
+    }
+  }
+  print_graphic( glen, graphic );
+  if ( with_lf ) {
+    print_advance( 0 );
+  }
+
+  // Hide Print SBI
+  setPrinterSBI(false);
+
+}
+
+//
+//  Print buffer right justified
+//
+void print_justified( const char *buff )
+{
+  print_modes_t pmode = printerState.print_mode;
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
+    : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+  uint16_t paperWidth = PAPER_WIDTH;
+
+  if ( len >= paperWidth - printerColumn ) {
+    len = paperWidth - printerColumn;
+  }
+  if ( len > 0 ) {
+    print_tab( paperWidth - len );
+  }
+  print_line( buff, 1 );
+}
+
+//
+//  Print buffer justified on the left half of the paper line
+//
+void print_justified_left( const char *buff )
+{
+  print_modes_t pmode = printerState.print_mode;
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
+                                        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+  uint16_t paperWidth = (PAPER_WIDTH / 2) - 7;
+
+  if ( len >= paperWidth - printerColumn ) {
+    len = paperWidth - printerColumn;
+  }
+  if ( len > 0 ) {
+    print_tab( paperWidth - len );
+  }
+  print_line( buff, 0 );
+}
+
+//
+// Fit a real string in a 16-character printer compatible string
+//
+
+static void _realStringToPrint(char *realString, int16_t max_len) {
+  uint16_t i, j, pos, expLen;
+  uint16_t len = strlen(realString);
+  char *from, *to;
+
+  if(stringGlyphLength(realString) > max_len){        // if string too long for printer
+    for(i = 0; i < len; i++) {
+      if((realString[i] == 'e') || (realString[i] == 'E')) {
+        expLen = len - i;
+        from   = &realString[i];
+        to     = realString;
+        pos    = 1;
+        for(j = 0; j < max_len - expLen; j++) {             // Find the location to move the exponent to fit within max_len characters
+          pos = stringNextGlyph(realString, pos);
+        }
+        to = &realString[pos];
+        memmove(to, from, expLen+1);                     // Move exponent within the first max_len characters
+        break;
+      }
+      else if(realString[i] & 0x80) { // Two-byte unicode character
+        i++;
+      }
+    }
+  }
+}
+
+//
+// Fit a real in a string for printing
+//
+
+static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realString) {
+  uint8_t grpGroupingLeftOld  = grpGroupingLeft;
+  uint8_t grpGroupingRightOld = grpGroupingRight;
+
+  grpGroupingLeft  = 0;
+  grpGroupingRight = 0;
+  real34ToDisplayString(real34, amMode, realString, &standardFont, PAPER_WIDTH-printerColumn, 16, true, false, true);
+  grpGroupingRight = grpGroupingRightOld;
+  grpGroupingLeft  = grpGroupingLeftOld;
+  uint16_t i, j;
+  uint16_t len = strlen(realString);
+
+  j =0;
+  for(i = 0; i < len; i++) {
+    switch ((uint8_t) realString[i]) {
+      case 0x80:
+        if(realString[i+1] == STD_CROSS[1]) {  // Exponent found
+          realString[j++] = 'E';    // replace by E
+          i += 3; // Skip x10
+          if(realString[i+1] == '+') i++;  // Skip the + sign in the exponent
+        }
+        else if(realString[i+1] == STD_DEGREE[1]) {  // Degree found
+          realString[j++] = 0X80;          // #DEGREE SIGN
+          realString[j++] = 0XB0;          // #DEGREE SIGN
+          i++;
+        }
+        else {
+          i++;
+        }
+        break;
+
+      case 0xa0:
+        if(realString[i+1] <= 0x0f) {      // Special space codes
+          i++;                            // ignore them
+        }
+        else {  // Just pass all other unicode characters starting with 0xa0
+          realString[j++] = realString[i];
+          realString[j++] = realString[i+1];
+          i++;
+        }
+        break;
+
+      case 0xa1:
+        if(realString[i+1] == STD_SUP_MINUS[1]) {  // Exponent sign found
+          realString[j] = '-';    // replace by normal minus
+          j++;
+          i++;
+        }
+        else if((realString[i+1] >= STD_SUP_0[1]) && (realString[i+1] <= STD_SUP_9[1])) {
+          realString[j] = realString[i+1]- 0x30;  // replace superscript digits by normal digits
+          j++;
+          i++;
+        }
+        else {
+          i++;
+        }
+        break;
+
+      case 0xac:
+        if(realString[i+1] == STD_SUP_pir[1]) {
+          realString[j++] = STD_SUP_pi[0];       // replace sup pi r by sup pi
+          realString[j++] = STD_SUP_pi[1];
+          i++;
+        }
+        else {
+          i++;
+        }
+        break;
+
+      case 0x81:
+      case 0x82:
+      case 0x83:
+      case 0x9d:
+      case 0x9e:
+      case 0xa2:
+      case 0xa3:
+      case 0xa4:
+      case 0xa5:
+      case 0xa6:
+      case 0xa7:
+      case 0xa9:
+      case 0xab:
+        realString[j++] = realString[i];
+        realString[j++] = realString[i+1];
+        i++;     // Just pass all other unicode characters
+        break;
+
+      default:
+        realString[j] = realString[i];
+        j++;
+        break;
+    }
+  }
+  realString[j] = 0;
+}
+
+//
+// Fit a complex in a string for printing
+//
+
+static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag34, uint16_t tagAngle, uint16_t tagPolar, char *realString) {
+  int16_t max_len = 16;
+  real_t real, imagIc;
+  real34_t real34, imag34;
+
+  if(tagPolar) {  // polar mode
+    temporaryFlagPolar = true;
+    real34ToReal(registReal34, &real);
+    real34ToReal(registImag34, &imagIc);
+
+    decContext c = ctxtReal39;
+    int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
+    c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
+    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
+    convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
+
+    realToReal34(&real, &real34);
+    realToReal34(&imagIc, &imag34);
+  }
+  else { // rectangular mode
+    real34Copy(registReal34, &real34);
+    real34Copy(registImag34, &imag34);
+  }
+
+  // Real part
+  _real34ToPrintString(&real34, amNone, tmpString);
+  _realStringToPrint(tmpString,max_len);                 // Adjust the real part lenght (same as a standard real)
+
+  // Separator
+  if(tagPolar) {
+    strcat(tmpString, STD_MEASURED_ANGLE);
+    tagAngle = (tagAngle == amNone ? currentAngularMode : tagAngle);
+  }
+  else {
+    strcat(tmpString, "+i");
+    strcat(tmpString, PRODUCT_SIGN);
+    tagAngle = amNone;
+  }
+
+  // Imaginary part
+  char * imaginaryPart = tmpString + strlen(tmpString);
+  _real34ToPrintString(&imag34, tagAngle, imaginaryPart);
+  _realStringToPrint(imaginaryPart,max_len);             // Adjust the imaginary part lenght (same as a standard real)
+}
+
+//
+//  Print a single register
+//
+void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where ) {
+  int16_t max_len = (where == LINE_FULL ? 16 : 10);
+
+  if ( label != NULL ) {
+    print_line( label, 0 );
+    if ( eq ) print_line( "=", 0 );
+  }
+
+//  dtLongInteger     =  0,  ///< Z arbitrary precision integer                    DONE
+//  dtReal34          =  1,  ///< R double precision real (128 bits)               DONE (fractions are printed as reals, not as fractions)
+//  dtComplex34       =  2,  ///< C double precision complex (2x 128 bits)         DONE
+//  dtTime            =  3,  ///< Time                                             DONE
+//  dtDate            =  4,  ///< Date in various formats                          DONE
+//  dtString          =  5,  ///< Alphanumeric string                              Need to complete the printerFont8
+//  dtReal34Matrix    =  6,  ///< Double precision vector or matrix                DONE
+//  dtComplex34Matrix =  7,  ///< Double precision complex vector or matrix        DONE
+//  dtShortInteger    =  8,  ///< Short integer (64 bit)                           DONE
+//  dtConfig          =  9,  ///< Configuration                                    DONE, print "Config. data"
+
+  switch(getRegisterDataType((calcRegister_t) regist)) {
+    case dtString:
+      copyRegisterToClipboardString(regist, tmpString, true);
+      if (where == LINE_FULL) {
+        addChrBothSides(34,tmpString);   //Add quotes only for standard print reg, not for print XY
+      }
+      break;
+
+    case dtReal34:
+      _real34ToPrintString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString);
+      _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
+      break;
+
+    case dtComplex34:
+      uint16_t tagAngle = getComplexRegisterAngularMode(regist);
+      uint16_t tagPolar = getComplexRegisterPolarMode(regist);
+      real34_t *real34 = REGISTER_REAL34_DATA(regist);
+      real34_t *imag34 = REGISTER_IMAG34_DATA(regist);
+
+      _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
+      break;
+
+    case dtReal34Matrix: {
+      matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      real34_t *real34 = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
+      real34_t reduced;
+      uint16_t rows, columns;
+      uint16_t i, j;
+
+      rows = matrixHeader->matrixRows;
+      columns = matrixHeader->matrixColumns;
+      sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Matrix ]", rows, columns);  //Matrix header
+      print_justified( tmpString );
+      for(i = 1; i <= rows; i++) {
+        for(j = 1; j <= columns; j++) {
+          sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i, j);  //Matrix element
+          print_line( tmpString, 0 );
+          real34Reduce(real34++, &reduced);
+          _real34ToPrintString(&reduced, amNone, tmpString);
+          _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
+          print_justified( tmpString );
+        }
+      }
+      return;
+    }
+
+    case dtComplex34Matrix: {
+      complex34Matrix_t cpxMatrix;
+      complex34Matrix_t *matrix = &cpxMatrix;
+      real34_t *real34, *imag34;
+      uint16_t rows, cols;
+      uint16_t i, j;
+      uint16_t tagAngle = getComplexRegisterAngularMode(regist);
+      uint16_t tagPolar = getComplexRegisterPolarMode(regist);
+
+      linkToComplexMatrixRegister(regist, matrix);
+      rows = matrix->header.matrixRows;
+      cols = matrix->header.matrixColumns;
+      sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Cpx Matrix ]", rows, cols);  //Matrix header
+      print_justified( tmpString );
+      for(i = 0; i < rows; i++) {
+        for(j = 0; j < cols; j++) {
+          sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i+1, j+1);  //Matrix element
+          print_line( tmpString, 0 );
+          real34 = VARIABLE_REAL34_DATA(&matrix->matrixElements[i*cols+j]);
+          imag34 = VARIABLE_IMAG34_DATA(&matrix->matrixElements[i*cols+j]);
+          _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
+          print_justified( tmpString );
+        }
+      }
+      return;
+    }
+
+    default:
+      copyRegisterToClipboardString(regist, tmpString, true);
+
+      break;
+  }
+
+  if (( label == NULL ) && (where == LINE_FULL)) {     // for PRX
+    uint16_t i, padding;
+    uint16_t glen = stringGlyphLength(tmpString);
+    if(glen > 18) {
+      padding = (glen <= 24 ? 18 + 24 - glen : 18 - (glen % 24));
+      for(i=0; i < padding; i++) {
+        strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
+      }
+    }
+    strcpy(tmpString + strlen(tmpString), "   ***");   // End line with "   ***" as on the HP-41 and 42
+  }
+
+  switch (where) {
+    case LINE_FULL:
+    case LINE_RIGHT:
+      print_justified( tmpString );
+      break;
+    case LINE_LEFT:
+      print_justified_left( tmpString );
+      break;
+    default:
+      print_justified( tmpString );
+  }
+}
+
+
+//
+//  Print the contents of an Alpha register, terminated by a LF
+//
+void print_alpha( const char *Alpha, printArgument_t arg )
+{
+  RETURN_IF_PRINT_OFF;
+  advance_if_trace();
+  if ( arg == PRINT_ALPHA_JUST ) {
+    print_justified( Alpha );
+  }
+  else {
+    print_line( Alpha, arg == PRINT_ALPHA );
+  }
+}
+
+//
+//  Send a LF to the printer
+//
+void print_lf() {
+  RETURN_IF_PRINT_OFF;
+  advance_if_trace();
+  print_advance( 0 );
+}
+
+
+//
+//  Print a single character or control code
+//
+void cmdprint( uint16_t arg, printArgument_t op )
+{
+  char buff[ 4 ];
+  RETURN_IF_PRINT_OFF;
+
+  switch ( op ) {
+
+  case PRINT_BYTE:
+    // Transparent printing of bytes
+    print( arg ); // might be a line feed, so...
+    if (arg == '\n' || arg == 0x04)
+      prepare_new_line();
+    break;
+
+  case PRINT_CHAR:
+/*
+    if(arg & 0x8000) {
+      //arg &= ~0x8000;
+      if(printerState.printer_model == PRINTER_HP) {
+        print_glyph8(arg, &printerFont8);
+      }
+      else if(printerState.printer_model == PRINTER_MARTEL) {
+        print_glyph24(arg, &standardFont);
+      }
+      break;
+    }
+*/
+    // Character printing, depending on mode
+    buff[ 0 ] = (arg | 0x8000) >> 8;
+    buff[ 1 ] = arg & 0xff;
+    buff[ 2 ] = '\0';
+    print_line( buff, 0 );
+    break;
+
+  case PRINT_TAB:
+    // Move to specific column
+    print_tab( arg );
+    break;
+
+  default:
+    break;
+  }
+}
+
+//
+//  Set print mode
+//
+void set_print_mode(uint8_t mode)
+{
+  // Set print mode: ESC NULL  !  n
+  //                 27   0   33  n
+  sendByteIR( 27 );
+  sendByteIR(  0 );
+  sendByteIR( 33 );
+  sendByteIR( mode );
+}
+
+uint8_t reverse(uint8_t b) {
+   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+   return b;
+}
+
+//
+//  Print LCD screen
+//
+void print_lcd()
+{
+  int32_t x, y;
+  uint8_t * line_addr = 0;
+  uint8_t data;
+  int16_t i;
+  int32_t offset;
+
+  //set_print_mode(0x01);  // 48 chars/line
+  sendByteIR('\n');
+  //for(x=0; x<SCREEN_WIDTH/8; x++) {
+  for(x=16; x>=0; x--) {
+    //New graphic line
+    printerColumn = 0;
+    print_tab(30);  // Center screen shot
+    sendByteIR( 27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
+    sendByteIR(  0);
+    sendByteIR( 42);
+    sendByteIR( 33);
+    sendByteIR(242);
+    sendByteIR(  0);
+    // print bottom line
+    sendByteIR((x == 16 ? 0x1f : 0xff));
+    sendByteIR(0xff);
+    sendByteIR((x == 0 ? 0xf1 : 0xff));
+    // print screen line
+    for(y= SCREEN_HEIGHT-1; y>=0; y--) {
+        #if defined(DMCP_BUILD)
+          line_addr = lcd_line_addr(y);
+        #elif defined(PC_BUILD) // !DMCP_BUILD
+          // To be coded
+        #endif // DMCP_BUILD
+
+      for(i=2; i>= 0; i--) {
+        offset = 3*x + i;
+        if((offset > 0) && (offset < 50 )) {
+          data =  ((((~*(line_addr + offset)) << 4) & 0xf0) | (((~*(line_addr + offset -1)) >> 4) & 0x0f));
+        }
+        else if(offset == 0) {
+          data =  (((~*(line_addr + offset)) << 4) & 0xf0)  | 0x08;    // Print with right vertical line
+        }
+        else {
+          data =  0x10 | (((~*(line_addr + offset -1)) >> 4) & 0x0f);  // Print with left vertical line
+        }
+        sendByteIR(data);
+      }
+    }
+    // print top line
+    sendByteIR((x == 16 ? 0x1f : 0xff));
+    sendByteIR(0xff);
+    sendByteIR((x == 0 ? 0xf1 : 0xff));
+    sendByteIR('\n');
+    //print_lf();
+  }
+
+  set_print_mode(0x00);  // Default 24 chars/line
+  print_lf();
+}
+
+/*
+//
+//  Return the width of alpha to x
+//
+void cmdprintwidth(enum nilop op)
+{
+  setX_int_sgn(buffer_width(Alpha), 0);
+}
+
+//
+//  Turn printing on or off
+//
+void print_on_off (enum nilop op) {
+  if (op == OP_PRINT_ON) {
+    printerState.print_on = 1;
+  }
+  else if (op == OP_PRINT_OFF) {
+    printerState.print_on = 0;
+  }
+}
+
+//
+//  Set printing modes
+//
+void cmdprintmode( unsigned int arg, enum rarg op )
+{
+  if ( op == RARG_PMODE ) {
+    printerState.print_mode = arg;
+  }
+  else if ( op == RARG_PDELAY ) { // DM42 replacement
+    printer_set_delay(arg*100); // arg is still in ticks, so convert to ms.
+  }
+  else if ( op == RARG_DBLSP ) {
+    printerState.print_blank_line = arg;
+  }
+}
+*/
+
+/*
+//
+//  Trace an instruction
+//
+void print_trace( opcode op, int phase )
+{
+  char buffer[ 16 ];
+  const char *p;
+
+  if ( (Tracing || op == RARG( RARG_SF, T_FLAG )) && getSystemFlag(FLAG_PRTACT)) {
+    //
+    //  We trace when flag T has been set and printing is on
+    //
+    if (op == (OP_SPEC | OP_CHS)) {
+      if (CmdLineLength > 0)
+	return;
+    }
+    else if (op >= (OP_SPEC | OP_EEX) && op <= (OP_SPEC | OP_F))
+      return;
+    else if (op == (OP_SPEC | OP_CLX)) {
+      if (CmdLineLength || (phase==1 && printerColumn==0))
+	return;
+      op = OP_NIL | OP_rCLX;
+    }
+    else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
+      return;
+
+    // Format the command
+    p = prt( op, buffer );
+
+    if ( phase == 0 ) {
+      // Left part of print
+      if ( CmdLineLength ) {
+	process_cmdline();
+      }
+      print_tab( 0 );
+      print_line( prt( op, buffer ), 0 );
+      print_line( " ", 0 );
+    }
+    else {
+      // right part of print
+      print_reg( regX_idx,
+		 op == TRACE_DATA_ENTRY ? ">>>" :
+		 printerColumn == 0     ? ( !Tracing ? p : "***"  ) :
+		 CNULL,
+		 0 );
+      if ( State2.wascomplex ) {
+	print_reg( regY_idx, "cpx", 0 );
+      }
+    }
+  }
+}
+
+//
+//  Print a program listing
+//  Start at the PC location
+//
+*/
+void printProgram(void) {
+  #if !defined(TESTSUITE_BUILD)
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // For details, see fnPem(). This is a modified copy.
+    //
+    uint16_t line, firstLine;
+    uint8_t *step, *nextStep;
+//    uint16_t numberOfSteps = getNumberOfSteps();
+//    char asciiString[448];           //cannot use errorMessage buffer in disk write operations
+//                                     //solution is to use a local variable of sufficient length to contain a step string.
+
+    RETURN_IF_PRINT_OFF;
+    advance_if_trace();
+
+    firstDisplayedLocalStepNumber = 0;
+    defineFirstDisplayedStep();
+
+    step                     = firstDisplayedStep;
+    programListEnd           = false;
+    lastProgramListEnd       = false;
+
+    // Time and date header line
+    if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+       print_line( " ", 0 );          // add a space before the header
+    }
+    getTimeString(tmpString);
+    print_line( tmpString, 0 );
+    print_line( " ", 0 );
+    getDateString(tmpString);
+    print_line( tmpString, 1 );
+    print_lf();
+
+    if(firstDisplayedLocalStepNumber == 0) {
+      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+         print_line( " ", 0 );          // add a space before the first line
+      }
+      //sprintf(tmpString, "0000: { Prgm #%" PRIu16 "/%" PRIu16 ": %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, numberOfPrograms, _getProgramSize(), numberOfSteps, numberOfSteps == 1 ? "" : "s");
+      sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
+      //stringCopy(tmpString + stringByteLength(tmpString), " \\par");
+      //stringCopy(tmpString + stringByteLength(tmpString), "\n");
+      //ioFileWrite(tmpString, strlen(tmpString));
+      print_line( tmpString, 1 );
+      firstLine = 1;
+    }
+    else {
+      firstLine = 0;
+    }
+
+    int lineOffset = 0, lineOffsetTam = 0;
+/*
+    int8_t  indent;
+    bool_t  newLine;
+    int8_t  addnextLineIndent = 0;
+    int16_t lastCommandFound = 0;
+*/
+    bool_t  isLabel;
+    bool_t  startOfLine = true;
+
+    for(line=firstLine; line<9999; line++) {
+      nextStep = findNextStep(step);
+      isLabel = (*step == ITM_LBL);
+
+      //Line Number
+      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+        if(isLabel) {
+          if(line != 01) {
+            print_advance( 0 ); // Print pending line
+          }
+          print_advance( 0 ); // Skip one line before printing the label
+          sprintf(tmpString, " %02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+          strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
+          print_line( tmpString, 0 );
+        }
+        else if(!startOfLine) {
+          if( printerColumn + 14 <= PAPER_WIDTH ) {
+            print_line( "  ", 0 );
+          }
+          else {
+            print_advance (0);
+          }
+        }
+      }
+      else {
+        sprintf(tmpString, "%02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+        strcat(tmpString, (isLabel ? STD_BLACK_RIGHT_TRIANGLE : " "));
+        print_line( tmpString, 0 );
+      }
+
+      //Decode instruction
+      if(printerState.print_mode == PMODE_DEFAULT) {
+        decodeOneStep_PRINT42S(step);
+      }
+      else {
+        decodeOneStep(step);
+      }
+      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+        if ( printerColumn + stringGlyphLength(tmpString)*7 > PAPER_WIDTH + 2 ) {
+          print_advance (0);
+        }
+        print_line( tmpString, isLabel );
+        startOfLine = isLabel;
+      }
+      else {
+        print_line( tmpString, 1 );
+      }
+
+      if(isAtEndOfProgram(step)) {
+        programListEnd = true;
+        if(*nextStep == 255 && *(nextStep + 1) == 255) {
+          lastProgramListEnd = true;
+        }
+        break;
+      }
+      if((*step == 255) && (*(step + 1) == 255)) {
+        programListEnd = true;
+        lastProgramListEnd = true;
+        break;
+      }
+      step = nextStep;
+      if(_exitKeyPressed()) break;
+    }
+    if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+       print_advance( 0 );            // print remaining buffer content
+    }
+  #endif // !TESTSUITE_BUILD
+}
+#endif // INFRARED
+
+
+//********************************************************
+// PRINTER FUNCTIONS
+//********************************************************
+
+// Printer On
+void fnP_PrinterOnOff(uint16_t op) {
+  #if !defined(TESTSUITE_BUILD)
+    //#if defined(INFRARED)
+      if(op == PRON) {
+        printerState.print_on    = true;
+        setSystemFlag(FLAG_PRTACT);
+        fnSetFlag(FLAG_PRTEN);
+      }
+      else if(op == PROFF) {
+        printerState.print_on    = false;
+        clearSystemFlag(FLAG_PRTACT);
+        fnClearFlag(FLAG_PRTEN);
+      }
+    //#endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Printer model selection
+void fnSetPrinter(uint16_t model) {
+  #if !defined(TESTSUITE_BUILD)
+    //#if defined(INFRARED)
+      printerState.printer_model    = model;
+    //#endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Get printer line delay
+void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      longInteger_t delay;
+
+      liftStack();
+
+      longIntegerInit(delay);
+      int32ToLongInteger(getLineDelay(), delay);
+      convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
+      longIntegerFree(delay);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Set printer line delay
+void fnP_SetDelay(uint16_t delay) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      printerState.delay = delay;
+      setLineDelay(delay);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Printer paper advance
+void fnP_Advance(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)  // Show Print SBI
+      setPrinterSBI(true);
+      print_lf();
+      setPrinterSBI(false);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+
+// Print byte
+void fnP_Byte(uint16_t byte) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      setPrinterSBI(true);
+      cmdprint( byte, PRINT_BYTE );
+      setPrinterSBI(false);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+static uint16_t _getUnicodeValue(calcRegister_t regist) {
+    int32_t value;
+
+    if(getRegisterDataType(regist) == dtReal34) {
+      real34_t maxValue34;
+
+      int32ToReal34(0x8000, &maxValue34);
+      if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        #if defined(PC_BUILD)
+          real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
+          sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
+          moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
+        #endif // PC_BUILD
+        return -1;
+      }
+      value = real34ToInt32(REGISTER_REAL34_DATA(regist));
+    }
+
+    else if(getRegisterDataType(regist) == dtLongInteger) {
+      longInteger_t lgInt;
+
+      convertLongIntegerRegisterToLongInteger(regist, lgInt);
+      if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, 0x8000) >= 0) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        #if defined(PC_BUILD)
+          longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
+          sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
+          moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
+        #endif // PC_BUILD
+        longIntegerFree(lgInt);
+        return -1;
+      }
+      longIntegerToUInt32(lgInt, value);
+      longIntegerFree(lgInt);
+    }
+
+    else if(getRegisterDataType(regist) == dtShortInteger) {
+      longInteger_t lgInt;
+
+      longIntegerInit(lgInt);
+      convertShortIntegerRegisterToLongInteger(regist, lgInt);
+      longIntegerToUInt32(lgInt, value);
+      longIntegerFree(lgInt);
+    }
+
+    else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
+        moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
+      #endif // PC_BUILD
+      return -1;
+    }
+
+    return value;
+}
+
+// Print a character using character set translation
+void fnP_Char(uint16_t registerNo) {
+  uint16_t character;
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      setPrinterSBI(true);
+      character = _getUnicodeValue(registerNo);
+      cmdprint( character, PRINT_CHAR );
+      setPrinterSBI(false);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+
+// Print Tab
+void fnP_Tab(uint16_t column) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      setPrinterSBI(true);
+      cmdprint( column, PRINT_TAB );
+      setPrinterSBI(false);
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+/*
+#if !defined(TESTSUITE_BUILD)
+  static int sortMenu(void const *a, void const *b) {
+    return compareString(a, b, CMP_EXTENSIVE);
+  }
+#endif //TESTSUITE_BUILD
+*/
+
+// Print User
+void fnP_User(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    #if defined(INFRARED)
+      char label[16];
+
+      // Print User variables
+      calcRegister_t variable;
+      bool_t userVariableFound = false;
+      for(int i=0; i<numberOfNamedVariables; i++) {
+        xcopy(label, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
+        label[allNamedVariables[i].variableName[0]] = 0;
+        if((compareString(label, "STATS", CMP_NAME) == 0) || (compareString(label, "HISTO", CMP_NAME) == 0) || (compareString(label, "Mat_A", CMP_NAME) == 0) ||
+           (compareString(label, "Mat_B", CMP_NAME) == 0) || (compareString(label, "Mat_X", CMP_NAME) == 0)) { // Don't include "STATS", "HISTO", "Mat_A", "Mat_B" and "Mat_X"
+          continue;
+        }
+        else {
+          variable =  findNamedVariable(label);
+          print_reg(variable, label, true, LINE_FULL );
+          userVariableFound = true;
+          if(_exitKeyPressed()) {
+            return;
+          }
+        }
+        if(_exitKeyPressed()) {
+          return;
+        }
+      }
+
+      if(userVariableFound) print_lf();
+
+      // Print User Program Labels
+      uint8_t *nextStep, *step = beginOfProgramMemory;
+      uint16_t programNumber = 1;
+      bool_t firstProgramLabel = true;
+      while(!isAtEndOfPrograms(step)) { // .END.
+        nextStep = findNextStep(step);
+        if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
+          if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
+            xcopy(label, step + 3, *(step+2));
+            label[*(step+2)] = 0;
+            print_line("LBL " STD_LEFT_SINGLE_QUOTE,0);
+            print_line(label, 0);
+            print_line(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
+            if(firstProgramLabel) {
+              sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
+              print_justified( tmpString );
+              firstProgramLabel = false;
+            }
+          }
+        }
+
+        if(isAtEndOfProgram(step)) { // END
+          print_line("END", !firstProgramLabel);
+          if(firstProgramLabel) {
+            sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
+            print_justified( tmpString );
+          }
+          programNumber++;
+          firstProgramLabel = true;
+        }
+
+        step = nextStep;
+
+        if(_exitKeyPressed()) {
+          return;
+        }
+      }
+
+      print_line(".END.", 1);
+
+    #endif //INFRARED
+  #endif //TESTSUITE_BUILD
+}
+
+// Print LCD
+void fnP_LCD(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+    #if defined(INFRARED)
+      setPrinterSBI(true);
+      resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+      refreshScreen(80);
+      print_lcd();
+      setPrinterSBI(false);
+    #endif //INFRARED
+    }
+    else {                             // SNAP
+      fnSNAP(NOPARAM);
+    }
+  #endif //TESTSUITE_BUILD
+}
+
+
+// Print Alpha string
+void fnP_Alpha(uint16_t registerNo) {
+  #if !defined(TESTSUITE_BUILD)
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+    #if defined(INFRARED)
+      if (getRegisterDataType(registerNo) == dtString) {
+        print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
+      }
+    #endif //INFRARED
+    }
+    else {                             // Print to file
+      if(calcMode != CM_AIM) {
+        #if defined(DMCP_BUILD)
+          beep(440, 50);
+          beep(4400, 50);
+          beep(440, 50);
+        #endif // DMCP_BUILD
+        return;
+      }
+      xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
+      create_filename(".REGS.TSV");
+
+      #if (VERBOSE_LEVEL >= 1)
+        clearScreen(2);
+        print_linestr("Output Aim Buffer to drive:", true);
+        print_linestr(filename_csv, false);
+      #endif // VERBOSE_LEVEL >= 1
+
+      tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
+      xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+      //print_linestr(aimBuffer,false);
+    #endif
+    }
+}
+
+
+
+void fnP_Regs (uint16_t registerNo) {
+  #if !defined(TESTSUITE_BUILD)
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    #if defined(INFRARED)
+      char label[16];
+      label[0] = 0;
+      if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
+        label[0] = letteredRegisterName((calcRegister_t)registerNo);
+        label[1] = 0;
+        }
+      else if(registerNo < REGISTER_X) {
+        sprintf(label, "R%02d", registerNo);
+      }
+      else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
+        sprintf(label, "R.%03d", registerNo-100);
+      }
+      else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
+        sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
+      }
+      else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
+        sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+      }
+      print_reg(registerNo, label, true, LINE_FULL );
+    #endif //INFRARED
+    }
+    else {                             // Print to file
+      if(calcMode != CM_NORMAL) {
+        #if defined(DMCP_BUILD)
+          beep(440, 50);
+          beep(4400, 50);
+          beep(440, 50);
+        #endif // DMCP_BUILD
+        return;
+      }
+
+      create_filename(".REGS.TSV");
+
+      #if (VERBOSE_LEVEL >= 1)
+        clearScreen(3);
+        print_linestr("Output regs to drive:", true);
+        print_linestr(filename_csv, false);
+      #endif // VERBOSE_LEVEL >= 1
+
+      stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICAL_SUMS] = {
+          { "n"                             },
+          { STD_SIGMA "X"                   },
+          { STD_SIGMA "Y"                   },
+          { STD_SIGMA "X" STD_SUP_2         },
+          { STD_SIGMA "X" STD_SUP_2 "Y"     },
+          { STD_SIGMA "Y" STD_SUP_2         },
+          { STD_SIGMA "XY"                  },
+          { STD_SIGMA "lnXlnY"              },
+          { STD_SIGMA "lnX"                 },
+          { STD_SIGMA "ln" STD_SUP_2 "X"    },
+          { STD_SIGMA "Y"  STD_DOT  "lnX"   },
+          { STD_SIGMA "lnY"                 },
+          { STD_SIGMA "ln" STD_SUP_2 "Y"    },
+          { STD_SIGMA "X"  STD_DOT  "lnY"   },
+          { STD_SIGMA "X" STD_SUP_2 "lnY"   },
+          { STD_SIGMA "lnY/X"               },
+          { STD_SIGMA "X" STD_SUP_2 "/Y"    },
+          { STD_SIGMA "1/X"                 },
+          { STD_SIGMA "1/X" STD_SUP_2       },
+          { STD_SIGMA "X/Y"                 },
+          { STD_SIGMA "1/Y"                 },
+          { STD_SIGMA "1/Y" STD_SUP_2       },
+          { STD_SIGMA "X" STD_SUP_3         },
+          { STD_SIGMA "X" STD_SUP_4         },
+          { STD_SIGMA "Xmin"                },
+          { STD_SIGMA "Xmax"                },
+          { STD_SIGMA "Ymin"                },
+          { STD_SIGMA "Ymax"                }
+};
+
+void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    if(statisticalSumsPointer != NULL) {
+      if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+      #if defined(INFRARED)
+        uint16_t regist;
+        for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
+          convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
+          print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL );
+        }
+      #endif //INFRARED
+      }
+      else {                             // Print to file
+      }
+    }
+    else {
+      displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnP_Sigma:", "There is no statistical data available!", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
+  uint16_t regist;
+  if(firstRegisterNo <= lastRegisterNo) {
+    for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
+      fnP_Regs (regist);
+      #if !defined(TESTSUITE_BUILD)
+        if(_exitKeyPressed()) {
+          return true;
+        }
+      #endif //!TESTSUITE_BUILD
+    }
+  }
+  else {
+    for(regist = firstRegisterNo; regist >= lastRegisterNo; regist--) {
+      fnP_Regs (regist);
+      #if !defined(TESTSUITE_BUILD)
+        if(_exitKeyPressed()) {
+          return true;
+        }
+      #endif //!TESTSUITE_BUILD
+    }
+  }
+  return false;
+}
+
+
+void fnP_All_Regs(uint16_t option) {
+  bool_t exited;
+  #if !defined(TESTSUITE_BUILD)
+    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    #if defined(INFRARED)
+      switch(option) {
+        case PRN_ALL:
+          exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
+          if(exited) return;
+          exited = _printRegRange(0, 99);                   // Global registers
+          if(exited) return;
+          if(currentNumberOfLocalRegisters > 0){
+            exited = _printRegRange(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1);  // Local registers
+            if(exited) return;
+          }
+          if(numberOfNamedVariables > 0) {
+            exited = _printRegRange(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);  // Named Variablewss
+            if(exited) return;
+          }
+          break;
+
+        case PRN_REGS:
+          uint16_t s, n;
+          if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
+            _printRegRange(s, (s + n) -1);
+          }
+          else {
+            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          }
+          break;
+
+        case PRN_Xr:
+          print_reg(REGISTER_X, NULL, false, LINE_FULL );  // Print register X without name header
+          break;
+
+        case PRN_STK:
+          _printRegRange(getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T, REGISTER_X);
+          break;
+
+        case PRN_XYr:
+          switch(getRegisterDataType(REGISTER_X)) {
+            case dtLongInteger:
+            case dtReal34:
+            case dtShortInteger:
+            case dtString:
+            case dtDate:
+            case dtTime: {
+              switch(getRegisterDataType(REGISTER_Y)) {
+                case dtLongInteger:
+                case dtReal34:
+                case dtShortInteger:
+                case dtString:
+                case dtDate:
+                case dtTime: {
+                  print_reg(REGISTER_X, NULL, false, LINE_LEFT );   // Print register X on the left half of the line
+                  print_reg(REGISTER_Y, NULL, false, LINE_RIGHT );  // Print register Y on the right half of the line
+                  return;
+                }
+                default: {
+                  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+                  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    sprintf(errorMessage, "invalid data type %s for register Y", getRegisterDataTypeName(REGISTER_Y, true, false));
+                    moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+                  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  return;
+                }
+              }
+              return;
+            }
+
+
+            case dtReal34Matrix: {
+              real34Matrix_t    x;
+              convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+
+              if(x.header.matrixColumns == 2) {
+                for(int i = 0; i < x.header.matrixRows; ++i) {
+                  reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+                  real34Copy(&x.matrixElements[i*2], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );    // Print row i col 1 on the left half of the line
+                  real34Copy(&x.matrixElements[i*2+1], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );   // Print row i col 2 on the right half of the line
+                }
+              }
+              else if(x.header.matrixRows == 2) {
+                for(int i = 0; i < x.header.matrixColumns; ++i) {
+                  reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+                  real34Copy(&x.matrixElements[i], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );   // Print row 1 col i on the left half of the line
+                  real34Copy(&x.matrixElements[i + x.header.matrixColumns], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );    // Print row 2 col i on the right half of the line
+                }
+              }
+              else {
+                displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", x.header.matrixRows, x.header.matrixColumns);
+                  moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              }
+              return;
+            }
+
+            case dtComplex34Matrix: {
+              complex34Matrix_t    xc;
+              convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &xc);
+
+              if(xc.header.matrixColumns == 2) {
+                for(int i = 0; i < xc.header.matrixRows; ++i) {
+                  reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+                  complex34Copy(&xc.matrixElements[i*2], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );    // Print row i col 1 on the left half of the line
+                  complex34Copy(&xc.matrixElements[i*2+1], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );   // Print row i col 2 on the right half of the line
+                }
+              }
+              else if(xc.header.matrixRows == 2) {
+                for(int i = 0; i < xc.header.matrixColumns; ++i) {
+                  reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+                  complex34Copy(&xc.matrixElements[i], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );   // Print row 1 col i on the left half of the line
+                  complex34Copy(&xc.matrixElements[i + xc.header.matrixColumns], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );    // Print row 2 col i on the right half of the line
+                }
+              }
+              else {
+                displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", xc.header.matrixRows, xc.header.matrixColumns);
+                  moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              }
+              return;
+            }
+
+            default: {
+              displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "invalid data type %s for register X", getRegisterDataTypeName(REGISTER_X, true, false));
+                moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              return;
+            }
+          }
+          break;
+
+        default: ;
+      }
+    #endif //INFRARED
+    }
+    else {                             // Print to file
+      if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
+        #if defined(DMCP_BUILD)
+          beep(440, 50);
+          beep(4400, 50);
+          beep(440, 50);
+        #endif // DMCP_BUILD
+        return;
+      }
+
+      create_filename(".REGS.TSV");
+
+      #if (VERBOSE_LEVEL >= 1)
+        clearScreen(4);
+        print_linestr("Output regs to drive:", true);
+        print_linestr(filename_csv, false);
+      #endif // VERBOSE_LEVEL >= 1
+
+      switch(option) {
+        case PRN_ALL:
+          stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
+          stackregister_csv_out(0, 99, !ONELINE);
+          if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+          if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+          break;
+
+        case PRN_REGS:
+          uint16_t s, n;
+          if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
+            stackregister_csv_out(s, (s + n) -1 , !ONELINE);
+          }
+          else {
+            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          }
+          break;
+
+        case PRN_STK:
+          if(getSystemFlag(FLAG_SSIZE8)) {
+            stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
+          }
+          else {
+            stackregister_csv_out(REGISTER_X, REGISTER_T, !ONELINE);
+          }
+          break;
+
+        case PRN_GLOBALr:
+          stackregister_csv_out(0, 99, !ONELINE);
+          break;
+
+        case PRN_LOCALr:
+          if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+          break;
+
+        case PRN_NAMEDr:
+          if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+          break;
+
+        case PRN_Xr:
+          stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
+          break;
+
+        case PRN_TMP:
+          stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
+          break;
+
+        case PRN_XYr:
+          stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
+          break;
+
+        default: ;
+      }
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
