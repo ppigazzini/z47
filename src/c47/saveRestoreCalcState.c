@@ -405,6 +405,15 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     uint32_t ramPtr, backupVersion = BACKUP_VERSION;
     int ret;
 
+    //prevent demo profiles from being saved
+    if(!(    (CALCMODEL == USER_R47 && (calcModel == USER_R47f_g || calcModel == USER_R47fg_g || calcModel == USER_R47fg_bk || calcModel == USER_R47bk_fg))  //this is to prevent any test layout to store the the layount name in the backup file
+          || (CALCMODEL == USER_C47 && (calcModel == USER_C47    || calcModel == USER_DM42 ))
+        ) )  {
+      printf("Not saving the backup cfg file due to a non-permanent layout being selected\n");
+      return;
+    }
+
+
     ret = ioFileOpen(ioPathBackup, ioModeWrite);
 
     if(ret != FILE_OK) {
