@@ -1136,10 +1136,10 @@ void assignGetName1(void) {
   else if(compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
     itemToBeAssigned = ITM_EXIT1;
   }
-  /*else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
+  else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
     itemToBeAssigned = ITM_USERMODE;
   }
-  else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
+  /*else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
     itemToBeAssigned = ITM_AIM;
   }
   else if(compareString(aimBuffer, "f", CMP_NAME) == 0) {
@@ -1214,11 +1214,13 @@ static bool_t _assignToKey(int16_t keyFunc) {
         case 1: kf = key->fShifted;    break;
         case 0: kf = key->primary;     break;
       }
-      if(keyFunc == kf && (!getSystemFlag(FLAG_USER) || getNthString((uint8_t *)userKeyLabel, j * 6 + keyStateCode + i) == 0)) {
+      if(keyFunc == kf && (!getSystemFlag(FLAG_USER) || *getNthString((uint8_t *)userKeyLabel, j * 6 + keyStateCode + i) == 0)) {
         char kc[4] = {};
         kc[0] = (j / 10) + '0';
         kc[1] = (j % 10) + '0';
         kc[2] = 0;
+        shiftF = (i == 1);
+        shiftG = (i == 2);
         assignToKey(kc);
         return true;
       }
@@ -1236,10 +1238,10 @@ void assignGetName2(void) {
   else if(compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
     result = _assignToKey(ITM_EXIT1);
   }
-  /*else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
+  else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
     result = _assignToKey(ITM_USERMODE);
   }
-  else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
+  /*else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
     result = _assignToKey(ITM_AIM);
   }
   else if(compareString(aimBuffer, "f", CMP_NAME) == 0) {
