@@ -275,6 +275,7 @@
     }
     if(calcModelNew != 255) {
       calcModel = calcModelNew; //set the initial mode if forced, override the default name from above
+      printf("calcModel A re-set to %d\n",calcModelNew);
     }
 
     gtk_init(&argc, &argv);
@@ -294,36 +295,34 @@
 
     restoreCalc();
 
-
     //set the calculator type again if it changes after loading the backup file
     if(calcModelNew != 255) {
       calcModel = calcModelNew;
+      printf("calcModel B re-set to %d\n",calcModelNew);
       resetKeys = true;
     }
     if(CALCMODEL == USER_R47) {
-      if(calcModelNew == USER_C47) {
-        calcModel = calcModelNew;
-        resetKeys = true;
-      } else
       if(!isR47FAM) {
         fnRESET_MyM(ITM_RIBBON_R47);            // Reset Menu MyMenu
-        calcModel = USER_R47f_g;
+        printf("Restoring ribbon to R47 due to calculator model change.\n");
         resetKeys = true;
       }
     }
     if(CALCMODEL == USER_C47) {
-      if(calcModelNew == USER_R47f_g || calcModelNew == USER_R47fg_g || calcModelNew == USER_R47fg_bk || calcModelNew == USER_R47bk_fg) {
-        calcModel = calcModelNew;
-        resetKeys = true;        
-      } else
       if(calcModel != USER_C47) {
         fnRESET_MyM(ITM_RIBBON_C47);            // Reset Menu MyMenu
-        calcModel = USER_C47;
+        printf("Restoring ribbon to C47 due to calculator model change.\n");
         resetKeys = true;
       }
     }
+    if(calcModelNew != 255) {
+      printf("ClrMod due to calculator model change.\n");
+      clearSystemFlag(FLAG_USER);
+      fnClrMod(NOPARAM);
+      calcModeNormal();
+    }
     if(resetKeys) {
-      printf("Resetting keys\n");
+      printf("Resetting keys due to incompatible layout.\n");
       fnKeysManagement(calcModel);
       fnRefreshState();
       calcModeNormal();
