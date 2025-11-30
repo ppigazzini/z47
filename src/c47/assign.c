@@ -1139,6 +1139,15 @@ void assignGetName1(void) {
   else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
     itemToBeAssigned = ITM_USERMODE;
   }
+  else if(compareString(aimBuffer, "UP", CMP_NAME) == 0) {
+    itemToBeAssigned = ITM_UP1;
+  }
+  else if(compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
+    itemToBeAssigned = ITM_DOWN1;
+  }
+  else if(compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
+    itemToBeAssigned = ITM_BACKSPACE;
+  }
   /*else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
     itemToBeAssigned = ITM_AIM;
   }
@@ -1148,9 +1157,6 @@ void assignGetName1(void) {
   else if(compareString(aimBuffer, "g", CMP_NAME) == 0) {
     itemToBeAssigned = ITM_SHIFTg;
   }*/
-  else if(aimBuffer[0] == 0 && alphaCase == AC_LOWER) {
-    itemToBeAssigned = ITM_DOWN1;
-  }
   else if(aimBuffer[0] == 0) {
     itemToBeAssigned = ITM_NULL;
   }
@@ -1241,6 +1247,15 @@ void assignGetName2(void) {
   else if(compareString(aimBuffer, "USER", CMP_NAME) == 0) {
     result = _assignToKey(ITM_USERMODE);
   }
+  else if(compareString(aimBuffer, "UP", CMP_NAME) == 0) {
+    result = _assignToKey(ITM_UP1);
+  }
+  else if(compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
+    result = _assignToKey(ITM_DOWN1);
+  }
+  else if(compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
+    result = _assignToKey(ITM_BACKSPACE);
+  }
   /*else if(compareString(aimBuffer, STD_alpha, CMP_NAME) == 0) {
     result = _assignToKey(ITM_AIM);
   }
@@ -1250,9 +1265,6 @@ void assignGetName2(void) {
   else if(compareString(aimBuffer, "g", CMP_NAME) == 0) {
     result = _assignToKey(ITM_SHIFTg);
   }*/
-  else if(aimBuffer[0] == 0 && alphaCase == AC_LOWER) {
-    result = _assignToKey(ITM_DOWN1);
-  }
 
   calcMode = previousCalcMode;
   shiftF = shiftG = false;
