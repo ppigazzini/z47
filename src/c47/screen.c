@@ -27,6 +27,7 @@ void setLastintegerBasetoZero(void) {
   fnRefreshState();                                                //JMNIM
 }
 
+bool_t blockMonitoring = false;
 
 uint8_t multiEdLines = 0;            // lines   0
 uint8_t yMultiLineEdOffset = 0;      // pixels
@@ -1689,16 +1690,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1715,6 +1716,7 @@ return res;
     }
     return _printHalfSecUpdate_Integer(mode, txt, loop, clearZ, clearT, disp);
   }
+
 
 
   bool_t checkHalfSec(void) {
