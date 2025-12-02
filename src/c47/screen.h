@@ -4,6 +4,7 @@
 #if !defined(SCREEN_H)
 #define SCREEN_H
 
+  extern bool_t blockMonitoring;
   bool_t   registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c);
 
   void     setLastintegerBasetoZero           (void);
