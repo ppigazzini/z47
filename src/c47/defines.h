@@ -55,10 +55,13 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
+#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
+#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
 
 #if defined(DMCP_BUILD)
 
-  #define TWO_FILE_PGM                 // Normally TWO_FILE. TWO_FILE means that QSPI is used.
+  #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
   #define HWM_DM42        1
   #define HWM_DM32        2
@@ -104,6 +107,9 @@
       #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -133,6 +139,9 @@
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
+      #undef  OPTION_CUBIC_159         //             // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //             // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //             // C47 EINEN function is 159 digits internally
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -2065,9 +2074,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
 #define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
 #define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
-
-
-
 
 #if defined(DMCP_BUILD)
   #define runningOnSimOrUSB getSystemFlag(FLAG_USB)    // used to compromise on complexity to increase speed
