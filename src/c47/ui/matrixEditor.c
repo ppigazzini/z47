@@ -75,8 +75,8 @@ void fnEditMatrix(uint16_t regist) {
   if(isRegisterMatrixVector((regist == NOPARAM) ? REGISTER_X : regist) && getVectorRegisterPolarMode((regist == NOPARAM) ? REGISTER_X : regist) != 0) {  //refuse editing a polar vector in the matrix editor
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if defined(PC_BUILD)
-      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
-      moreInfoOnError("In function fnEditMatrix:", errorMessage, "cannot edit a 2D or 3D vector in a polar format as a matrix. Convert to Rectangualar first.", "");
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType((regist == NOPARAM) ? REGISTER_X : regist));
+      moreInfoOnError("In function fnEditMatrix:", errorMessage, "Cannot edit polar format as a matrix.", "");
     #endif // PC_BUILD
     return;
   }
