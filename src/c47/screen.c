@@ -27,6 +27,7 @@ void setLastintegerBasetoZero(void) {
   fnRefreshState();                                                //JMNIM
 }
 
+bool_t blockMonitoring = false;
 
 uint8_t multiEdLines = 0;            // lines   0
 uint8_t yMultiLineEdOffset = 0;      // pixels
@@ -1689,16 +1690,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1715,6 +1716,7 @@ return res;
     }
     return _printHalfSecUpdate_Integer(mode, txt, loop, clearZ, clearT, disp);
   }
+
 
 
   bool_t checkHalfSec(void) {
@@ -4973,7 +4975,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
-  #define useSmallShifts (SBARUPD_Time && ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+  #define useSmallShifts (SBARUPD_Time && calcMode == CM_NORMAL\
+                                       &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
                                               ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\
                                               (getRegisterDataType(REGISTER_T) == dtString)\
                                            ) )

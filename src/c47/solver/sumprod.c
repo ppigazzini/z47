@@ -198,7 +198,7 @@
       else {
         displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Error while calculating");
+          sprintf(errorMessage, "Error or exit while calculating");
           moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
