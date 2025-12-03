@@ -72,6 +72,15 @@
 
 void fnEditMatrix(uint16_t regist) {
   #if !defined(TESTSUITE_BUILD)
+  if(isRegisterMatrixVector((regist == NOPARAM) ? REGISTER_X : regist) && getVectorRegisterPolarMode((regist == NOPARAM) ? REGISTER_X : regist) != 0) {  //refuse editing a polar vector in the matrix editor
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if defined(PC_BUILD)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
+      moreInfoOnError("In function fnEditMatrix:", errorMessage, "cannot edit a 2D or 3D vector in a polar format as a matrix. Convert to Rectangualar first.", "");
+    #endif // PC_BUILD
+    return;
+  }
+
   saveStatsMatrix();
   const uint16_t reg = (regist == NOPARAM) ? REGISTER_X : regist;
   if((getRegisterDataType(reg) == dtReal34Matrix) || (getRegisterDataType(reg) == dtComplex34Matrix)) {
@@ -89,10 +98,10 @@ void fnEditMatrix(uint16_t regist) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
-    moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
-      #endif // PC_BUILD
+    #if defined(PC_BUILD)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
+      moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
+    #endif // PC_BUILD
     }
   #endif // !TESTSUITE_BUILD
 }
