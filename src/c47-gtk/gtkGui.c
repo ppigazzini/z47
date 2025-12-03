@@ -840,8 +840,10 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
 //}
 
 
+  //list of special case keys, server non-CM_xxx modes
   switch(event_keyval) {
     case GDK_KEY_backslash:
+    case GDK_KEY_z:
       if(SHOWMODE){// || currentMenu() == -MNU_TIMERF) {
         btnClicked(w, "35");  //R/S
         goto returnKeyPressedFalse;
