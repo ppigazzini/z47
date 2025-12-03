@@ -161,6 +161,7 @@ char       letteredRegisterName(calcRegister_t regist);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
+
   void     refreshScreen                      (uint16_t source);
 
   /**

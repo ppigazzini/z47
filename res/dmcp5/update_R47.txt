@@ -19,7 +19,7 @@ Sometimes you may want to clear the complete disk. Format it like this:
   4. Reset to DMCP menu
   6. Activate USB Disk
   Observe the disk name is now DMCP
-  You can change this from your PC/Mac: Just rename form your file manager.
+  You can change this from your PC/Mac: Just rename from your file manager.
 
 
 UPDATE R47:
@@ -28,7 +28,7 @@ UPDATE R47:
 Option 1: Procedure to update the pg5 file:
 
   First create a state backup:
-  g[0](I/O), F3(SAVE). (Also includes the DMPC5 update.)
+  g[0](I/O), F3(SAVE). (Also includes the DMCP5 update.)
 
   Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
   f[1](PREF), F2(ActUSB).
@@ -46,10 +46,10 @@ Option 1: Procedure to update the pg5 file:
 
 
 
-Option 2: Update procedure for the R47 with the DMPC5+R47.bin combo file.
+Option 2: Update procedure for the R47 with the DMCP5+R47.bin combo file.
 
   First create a state backup:
-  g[0](I/O), F3(SAVE). (Also includes the DMPC5 update.)
+  g[0](I/O), F3(SAVE). (Also includes the DMCP5 update.)
 
   Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
   f[1](PREF), F2(ActUSB).
