@@ -1830,6 +1830,13 @@ return res;
     }
   }
 
+  bool_t showingProbMenu(void) {
+    int cur = -softmenu[softmenuStack[0].softmenuId].menuItem;
+
+    return (cur >= PROBMENUSTART1 && cur <= PROBMENUEND1) ||
+           (cur >= PROBMENUSTART2 && cur <= PROBMENUEND2);
+  }
+
 //#define DEBUG_SHOWNAME
   void showFunctionName(int16_t itm, int16_t delayInMs, const char *arg) {
     int16_t item = (int16_t)itm;
@@ -3179,6 +3186,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             case -MNU_NORML:
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_i = STD_mu;                 register_i = REGISTER_M;
+              break;
+            case -MNU_UNIFORM:
+            case -MNU_DISUNIFORM:
+              r_i = STD_a;                  register_i = REGISTER_M;
+              r_j = STD_b;                  register_j = REGISTER_N;
               break;
             default: ;
           }
