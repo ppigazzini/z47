@@ -30,6 +30,7 @@ c47_src = files(
   'distributions/pareto.c',
   'distributions/poisson.c',
   'distributions/t.c',
+  'distributions/uniform.c',
   'distributions/weibull.c',
   'error.c',
   'flags.c',

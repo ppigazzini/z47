@@ -1907,7 +1907,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= PROBMENUSTART && -softmenu[softmenuStack[0].softmenuId].menuItem <= PROBMENUEND)
+#define PROBMENU                             showingProbMenu()
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
 

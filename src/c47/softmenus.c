@@ -209,8 +209,8 @@ TO_QSPI const int16_t menu_PROB[]        = {
 TO_QSPI const int16_t menu_DISTR[]       = {
 #if !defined(SAVE_SPACE_DM42_15)
                                              -MNU_NORML,                    -MNU_CHI2,                  -MNU_T,                   -MNU_F,                -MNU_EXPON,                  -MNU_WEIBL,
-                                             -MNU_STDNORML,                 ITM_NULL,                   -MNU_CAUCH,               -MNU_PARETO,           -MNU_LOGIS,                  -MNU_GEV,
-                                             ITM_NULL,                      -MNU_BINOM,                 -MNU_GEOM,                -MNU_HYPER,            -MNU_POISS,                  ITM_NULL
+                                             -MNU_STDNORML,                 -MNU_UNIFORM,               -MNU_CAUCH,               -MNU_PARETO,           -MNU_LOGIS,                  -MNU_GEV,
+                                             ITM_NULL,                      ITM_NULL,                   -MNU_BINOM,               -MNU_GEOM,             -MNU_HYPER,                  -MNU_POISS
 #endif // !SAVE_SPACE_DM42_15
                                            };
 
@@ -236,6 +236,8 @@ DISTNMENU(menu_Geom,        ITM_GEOMP,      ITM_GEOM,       ITM_GEOMU,      ITM_
 DISTNMENU(menu_Hyper,       ITM_HYPERP,     ITM_HYPER,      ITM_HYPERU,     ITM_HYPERM1,        ITM_STO_M_N,     ITM_STO_N1,      ITM_STO_Q_K);
 DISTNMENU(menu_Poiss,       ITM_POISSP,     ITM_POISS,      ITM_POISSU,     ITM_POISSM1,        ITM_STO_R_lambda,ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_GEV,         ITM_GEVP,       ITM_GEV,        ITM_GEVU,       ITM_GEVM1,          ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_xi);
+DISTNMENU(menu_Uniform,     ITM_UNIFORMP,   ITM_UNIFORML,   ITM_UNIFORMU,   ITM_UNIFORMI,       ITM_STO_M_a,     ITM_STO_N_b,     ITM_NULL);
+DISTNMENU(menu_DisUniform,  ITM_DISUNIFORMP,ITM_DISUNIFORML,ITM_DISUNIFORMU,ITM_DISUNIFORMI,    ITM_STO_M_a,     ITM_STO_N_b,     ITM_NULL);
 
 DISTNMENU2(menu_Pareto,     ITM_PARETOP,    ITM_PARETOL,    ITM_PARETOU,    ITM_PARETOM1,
                             ITM_PARETO2P,   ITM_PARETO2L,   ITM_PARETO2U,   ITM_PARETO2M1,      ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_alpha);
@@ -1022,7 +1024,10 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 166 */  {.menuItem = -MNU_MULTSTK,     .numItems = sizeof(menu_MULTSTK       )/sizeof(int16_t), .softkeyItem = menu_MULTSTK        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 167 */  {.menuItem = -MNU_TAMLBLONLY,  .numItems = sizeof(menu_TamLabelOnly  )/sizeof(int16_t), .softkeyItem = menu_TamLabelOnly   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 168 */  {.menuItem = -MNU_TAMVARONLY,  .numItems = sizeof(menu_TamVarOnly    )/sizeof(int16_t), .softkeyItem = menu_TamVarOnly     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 169 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 169 */  {.menuItem = -MNU_UNIFORM,     .numItems = sizeof(menu_Uniform       )/sizeof(int16_t), .softkeyItem = menu_Uniform        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 170 */  {.menuItem = -MNU_DISUNIFORM,  .numItems = sizeof(menu_DisUniform    )/sizeof(int16_t), .softkeyItem = menu_DisUniform     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+
+/* 171 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

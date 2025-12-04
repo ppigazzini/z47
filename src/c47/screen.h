@@ -163,6 +163,7 @@ char       letteredRegisterName(calcRegister_t regist);
   bool_t   checkHalfSec                       (void);
 
   void     refreshScreen                      (uint16_t source);
+  bool_t   showingProbMenu                    (void);
 
   /**
    * Displays a 0 terminated string.

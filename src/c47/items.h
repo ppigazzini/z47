@@ -1332,8 +1332,8 @@
 #define ITM_1295                    1295
 #define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
 
-#define PROBMENUSTART MNU_BINOM
-#define PROBMENUEND   ITM_1296
+#define PROBMENUSTART1 MNU_BINOM
+#define PROBMENUEND1   ITM_1296
 
 
 // Curve fitting
@@ -2388,8 +2388,8 @@
 #define ITM_STO_Q_xi                2330
 #define ITM_STO_Q_k                 2331
 #define ITM_STO_S_lambda            2332
-#define ITM_2333                    2333
-#define ITM_2334                    2334
+#define ITM_STO_M_a                 2333
+#define ITM_STO_N_b                 2334
 #define ITM_2335                    2335
 #define ITM_REG_M                   2336
 #define ITM_REG_N                   2337
@@ -2679,8 +2679,37 @@
 
 #define MNU_XXFCNS                  2596
 #define MNU_MULTSTK                 2597
+#define ITM_2598                    2598
+#define ITM_2599                    2599
 
-#define LAST_ITEM                   2598
+#define MNU_UNIFORM                 2600    // Uniform distributions
+#define ITM_UNIFORMP                2601
+#define ITM_UNIFORML                2602
+#define ITM_UNIFORMU                2603
+#define ITM_UNIFORMI                2604
+#define MNU_DISUNIFORM              2605
+#define ITM_DISUNIFORMP             2606
+#define ITM_DISUNIFORML             2607
+#define ITM_DISUNIFORMU             2608
+#define ITM_DISUNIFORMI             2609
+#define ITM_2610                    2610
+#define ITM_2611                    2611
+#define ITM_2612                    2612
+#define ITM_2613                    2613
+#define ITM_2614                    2614
+#define ITM_2615                    2615
+#define ITM_2616                    2616
+#define ITM_2617                    2617
+#define ITM_2618                    2618
+#define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
+
+// Before adding more, leave a gap in case we add additional distributions
+// Each distribution consumes five items
+
+#define PROBMENUSTART2 MNU_UNIFORM
+#define PROBMENUEND2   ITM_2619
+
+#define LAST_ITEM                   2620
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
