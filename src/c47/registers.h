@@ -253,7 +253,7 @@
   void           printRegisterDescriptorToConsole(calcRegister_t regist);
 
 
-  #define getRegisterAngularMode(reg)            getRegisterTag(reg)
+  #define getRegisterAngularMode(reg)            (getRegisterTag(reg) & amAngleMask)
   #define setRegisterAngularMode(reg, am)        setRegisterTag(reg, am)
   #define getRegisterShortIntegerBase(reg)       getRegisterTag(reg)
   #define setRegisterShortIntegerBase(reg, base) setRegisterTag(reg, base)
