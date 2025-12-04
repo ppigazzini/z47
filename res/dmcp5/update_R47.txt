@@ -1,17 +1,44 @@
-------------------------------------
-2025-11-18 Update R47
-------------------------------------
+--------------------------------------
+R47 Firmware Update Guide (2025-12-04)
+======================================
+
+
+--------------------------------------
+BEFORE YOU START - BACKUP YOUR DATA
+--------------------------------------
+Step 1: Create a State Backup
+Access: g1 or use keys g 1
+Choose ONE of these backup methods:
+
+Method A (Minimum): g0, F3(SAVE)
+→ Creates backup file in SAVFILES folder
+Method B (Auto-restore): gF3(SAVEAUT)
+→ Creates backup in SAVFILES folder that auto-loads after restart/update
+Method C (Named backup): SAVEST
+→ Creates named backup in STATE folder (e.g., MYNAME, BU001)
+
+Step 2: Backup FAT Disk Contents to Computer
+
+Activate USB Disk: f1, F2(ActUSB) OR f[1] PREF, DMCP, then item 6
+On your computer, copy ALL folders from the R47 drive, including:
+
+SAVFILES folder (contains your SAVE file)
+SAVFILES folder (contains SAVEAUT file)
+STATE folder (if using SAVEST)
+All your work files
+
+Important: Eject/safely remove the drive on your computer FIRST
+Only after the OS releases the drive, disconnect the USB cable
 
 
 
-Go to PREF using keys g 1
+----------------------------------------
+Not part of the minimum update procedure
+----------------------------------------
+Sometimes you may want to clear the complete disk after you have all your needed backup copies on PC. Format it like this:
+  OPTIONAL: FORMAT FAT DISK (After backing up to PC)
+  When to do this: Only if you need to completely clear the disk
 
-
-Recommended: Activate USB Disk (PREF, DMCP, then item 6) and backup contents of your work and original R47 FAT disk to computer. 
-Exit when finished backing up.
-
-
-Sometimes you may want to clear the complete disk. Format it like this:
   7. System Menu
   5. Format
   2. Format FAT Disk
@@ -21,50 +48,54 @@ Sometimes you may want to clear the complete disk. Format it like this:
   Observe the disk name is now DMCP
   You can change this from your PC/Mac: Just rename from your file manager.
 
-
-UPDATE R47:
-
-
-Option 1: Procedure to update the pg5 file:
-
-  First create a state backup:
-  g[0](I/O), F3(SAVE). (Also includes the DMCP5 update.)
-
-  Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
-  f[1](PREF), F2(ActUSB).
-
-  f[1] PREF, DMCP, then item 6
-  Transfer the firmware file, R47.pg5 from the computer to the root of the flash drive.
-  Safely Remove Hardware and Eject Media (Eject STM32 USB Device)
-
-  Press item 3. Load program
-  Navigate with the arrows to R47.pg5
-  Press Enter to select
-  Press Enter to continue
-  Press any key to start
-  Press EXIT to continue
+At this point you may want to re-instate the STATES and the SAVFILES folders and copy your previously save states back.
+  1. After the disk format, or firmware update has been completed and your calculator is running, retrieve the SAVE file or SAVEST file from your FAT drive into your calculator.
+  2. From the backed up SAVEFILES folder and/or from the STATE folder on your computer, store all files in your backup in the ame foldders oin the R47 FAT drive.
+  3. Go back into the I/O menu of the R47 and select either
+  3a. LOAD your backup, or
+  3b. LOADST and select the SAVEST file that was created above.
 
 
 
-Option 2: Update procedure for the R47 with the DMCP5+R47.bin combo file.
+----------------------------------------
+FIRMWARE UPDATE PROCEDURES
+----------------------------------------
 
-  First create a state backup:
-  g[0](I/O), F3(SAVE). (Also includes the DMCP5 update.)
+Option 1: Update R47.pg5 File Only
+----------------------------------------
+f[1] PREF, DMCP, then item 6
+With USB activated, transfer R47.pg5 to the root of the flash drive
+Safely Remove Hardware and Eject Media (Eject R47 USB Device)
+Press item 3 (Load program)
+Navigate with arrows to R47.pg5
+Press Enter to select
+Press Enter to continue
+Press any key to start
+Press EXIT to continue
+Restore your state: g0, fF3 (Skip if you used SAVEAUT)
+Verify: gEXIT(INFO) shows version information
 
-  Those who know what they are doing can also press g[F3](SAVEAUT). (Check in the documentation if needed).
-  f[1](PREF), F2(ActUSB).
 
-  f[1] PREF, DMCP, then item 6
-  Transfer DMCP5_flash_3.55_R47-00.109.02.07b13.bin to the root directory
+Option 2: Update DMCP5+R47 Combined Firmware (.bin file)
+--------------------------------------------------------
+f[1] PREF, DMCP, then item 6
+With USB activated, transfer DMCP5_flash_3.55_R47-00.109.02.07b13.bin to root directory
 
-  Rename the C47.sav file under SAVFILES to R47.sav (if you did SAVE) or rename C47auto.sav to R47auto.sav (if you did SAVEAUT). 
-    (This is a one time action needed by the new firmware.)
+One-time action: Rename backup files in SAVFILES folder if this is your first update since version 00.109.02.07b13.1.
+  (This is not needed if you already did this for the 00.109.02.00b0 update)
+  If you previously used SAVE: Rename C47.sav → R47.sav
+  If you previously used SAVEAUT: Rename C47auto.sav → R47auto.sav
 
-  Safely Remove Hardware and Eject Media (Eject STM32 USB Device)
-  Press EXIT
-  Press ENTER
-  Press [ENTER] to continue anyway
-  Press EXIT key to continue
+Safely Remove Hardware and Eject Media (Eject R47 USB Device)
+Press EXIT
+Press ENTER
+Press [ENTER] to continue anyway
+Press EXIT key to continue
+Restore your state: g0, fF3 (Skip if you used SAVEAUT)
+Verify: gEXIT(INFO) shows version information
 
-  g[0](I/O), f[F3](LOAD). (Not necessary if you did SAVEAUT.)
-  g[EXIT](Info) shows the version information.
+
+
+
+
+
