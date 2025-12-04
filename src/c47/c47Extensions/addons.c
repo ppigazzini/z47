@@ -1729,7 +1729,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
 
 TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
-TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
 
   displayString[0] = ' ';
   displayString[1] = 0;
@@ -1746,8 +1746,8 @@ TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
       }
   }
   else if(flag2To10) {                            //exponent of 2^(10/3)
-
-      if((3 <= exponent && exponent <= 15)) {
+      if((3 <= exponent && exponent <= 15) ||
+         (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = ITSIprefixes[exponent - 3];
         displayString[2] = 'i';
       }
@@ -2345,7 +2345,6 @@ void dms34ToReal34(uint16_t dms) {
   real34_t value34, d34, m34, s34, fs34;
   real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
 
-  //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
 

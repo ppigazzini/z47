@@ -468,6 +468,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
+    dispBase = 0;
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
@@ -1607,6 +1608,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentMvarLabel = INVALID_VARIABLE;
     lastKeyCode = 0;
     entryStatus = 0;
+    lastUserMode = false;   //used in btnReleased and btnFnReleased
+    lastItem = 0;           //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 
     memset(userMenuItems,  0, sizeof(userMenuItem_t) * 18);
     memset(userAlphaItems, 0, sizeof(userMenuItem_t) * 18);
