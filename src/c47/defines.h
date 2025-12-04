@@ -6,16 +6,17 @@
 
 
 //*********************************
-// JM VARIOUS OPTIONS
+// VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
 // Version 0.109.02.07b13.1 Public Release C47 & R47
 // Version 0.109.03.00b0    Public Release C47 & R47
 // Version 0.109.03.00a1    Internal C47 & R47
+// Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 
 
 #if !defined(CALCMODEL)
