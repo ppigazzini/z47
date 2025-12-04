@@ -1404,7 +1404,7 @@ void setParameter(char *p) {
       }
     }
     else {
-      printf("\nMalformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nmalformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
 
@@ -2852,7 +2852,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMalformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nmalformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
   }
