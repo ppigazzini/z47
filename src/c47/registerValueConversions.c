@@ -853,7 +853,7 @@ void realToFloat(const real_t *vv, float *v) {
 
 
 static double fnRealToDouble(const real_t *r) {
-    char buffer[64];
+    char buffer[100];
         if (realIsSpecial(r)) {
         if (realIsNaN(r)) return 0.0 / 0.0;
         return realIsPositive(r) ? 1.0 / 0.0 : -1.0 / 0.0;

@@ -1790,7 +1790,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_1743                    1743
+#define ITM_XMEAN                   1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
@@ -2682,6 +2682,7 @@
 
 #define LAST_ITEM                   2598
 
+#define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
@@ -2696,6 +2697,12 @@ int16_t  lastSTORCL             (void);
 int16_t  lastFuncNo             (void);
 uint16_t indirectionType        (uint16_t func);
 bool_t   isFunctionOldParam16   (uint16_t func);
+char     *getItemCatalogName    (int16_t itemNr);
+
+
+typedef void (*function_t)(uint16_t);
+typedef function_t (*param)();
+function_t  getItemFunc           (int16_t itemNr);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

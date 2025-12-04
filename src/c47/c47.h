@@ -444,6 +444,8 @@
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
   extern int16_t                lastKeyItemDetermined;
+  extern bool_t                 lastUserMode;                 //used in btnReleased and btnFnReleased
+  extern int16_t                lastItem;                     //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
