@@ -3092,26 +3092,37 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
-    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
-  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
-    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+  else if(isR47FAM && key->primary == ITM_SHIFTg) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
   else if(key->fShifted == 0) {
-      lbl[0] = 0;
+      sstmp[0] = 0;
   }
   else {
     strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-    stringToUtf8(sstmp, lbl);
-    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-      }
+  }
+
+  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  stringToUtf8(sstmp, lbl);
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
     }
   }
 
