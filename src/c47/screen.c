@@ -853,7 +853,7 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.alpha || !tam.mode){
             calcKey_t *key = kbd_usr + keyCode;
             item = key->fShifted;
-            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) {
+            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
               delayCloseNim = false;
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;

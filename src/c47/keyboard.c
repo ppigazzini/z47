@@ -2248,7 +2248,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                       char tmp[200]; sprintf(tmp,"^^^^btnReleased %d:\'%s\'",item,(char *)data); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-        if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) {
+        if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
                     #if defined(PC_BUILD)
