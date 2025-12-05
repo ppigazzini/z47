@@ -27,6 +27,7 @@ void setLastintegerBasetoZero(void) {
   fnRefreshState();                                                //JMNIM
 }
 
+bool_t blockMonitoring = false;
 
 uint8_t multiEdLines = 0;            // lines   0
 uint8_t yMultiLineEdOffset = 0;      // pixels
@@ -967,6 +968,7 @@ void execTimerApp(uint16_t timerType) {
             refreshScreen(131);
           }
           return;
+
         }
         else if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
@@ -1787,16 +1789,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1813,6 +1815,7 @@ return res;
     }
     return _printHalfSecUpdate_Integer(mode, txt, loop, clearZ, clearT, disp);
   }
+
 
 
   bool_t checkHalfSec(void) {
@@ -1923,6 +1926,13 @@ return res;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
     }
+  }
+
+  bool_t showingProbMenu(void) {
+    int cur = -softmenu[softmenuStack[0].softmenuId].menuItem;
+
+    return (cur >= PROBMENUSTART1 && cur <= PROBMENUEND1) ||
+           (cur >= PROBMENUSTART2 && cur <= PROBMENUEND2);
   }
 
 //#define DEBUG_SHOWNAME
@@ -3274,6 +3284,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             case -MNU_NORML:
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_i = STD_mu;                 register_i = REGISTER_M;
+              break;
+            case -MNU_UNIFORM:
+            case -MNU_DISUNIFORM:
+              r_i = STD_a;                  register_i = REGISTER_M;
+              r_j = STD_b;                  register_j = REGISTER_N;
               break;
             default: ;
           }
@@ -5031,8 +5046,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     }
   }
 
-  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator
-  #define useSmallShifts (SBARUPD_Time && ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
+  #define useSmallShifts (SBARUPD_Time && calcMode == CM_NORMAL\
+                                       &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
                                               ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\
                                               (getRegisterDataType(REGISTER_T) == dtString)\
                                            ) )
