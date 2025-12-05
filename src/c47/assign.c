@@ -812,6 +812,7 @@ void _assignItem(userMenuItem_t *menuItem) {
   else if(itemToBeAssigned >= ASSIGN_LABELS) {
     lblPtr                    = labelList[itemToBeAssigned - ASSIGN_LABELS].labelPointer;
     menuItem->item            = ITM_XEQ;
+    printf("**[DL]** menuItem->item %d lblPtr %s\n",menuItem->item,lblPtr);fflush(stdout);
   }
   else if(itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
     lblPtr                    = allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName;
@@ -1265,7 +1266,6 @@ void assignGetName2(void) {
   else if(compareString(aimBuffer, "g", CMP_NAME) == 0) {
     result = _assignToKey(ITM_SHIFTg);
   }*/
-
   calcMode = previousCalcMode;
   shiftF = shiftG = false;
   refreshScreen(23);
