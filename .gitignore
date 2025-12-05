@@ -9,11 +9,13 @@
 /ttf2RasterFonts
 /wp43.exe
 /c47.exe
+/r47.exe
 /testSuite.exe
 /generate*.exe
 /ttf2RasterFonts.exe
 backup.bin
 backup.cfg
+backupR47.cfg
 wp43.sav
 wp43.dat
 c47.sav
@@ -23,6 +25,7 @@ c47.dat
 !xfnToR47user.s47
 tags
 /PROGRAMS
+/SAVFILES
 /src/generated
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
