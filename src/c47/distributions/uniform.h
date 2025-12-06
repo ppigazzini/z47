@@ -7,12 +7,8 @@
 #if !defined(UNIFORM_H)
   #define UNIFORM_H
 
-  void fnUniformP           (uint16_t unusedButMandatoryParameter);
-  void fnUniformL           (uint16_t unusedButMandatoryParameter);
-  void fnUniformU           (uint16_t unusedButMandatoryParameter);
-  void fnUniformI           (uint16_t unusedButMandatoryParameter);
-  void fnDiscreteUniformP   (uint16_t unusedButMandatoryParameter);
-  void fnDiscreteUniformL   (uint16_t unusedButMandatoryParameter);
-  void fnDiscreteUniformU   (uint16_t unusedButMandatoryParameter);
-  void fnDiscreteUniformI   (uint16_t unusedButMandatoryParameter);
+  void fnUniformP           (uint16_t discrete);
+  void fnUniformL           (uint16_t discrete);
+  void fnUniformU           (uint16_t discrete);
+  void fnUniformI           (uint16_t discrete);
 #endif // !UNIFORM_H
