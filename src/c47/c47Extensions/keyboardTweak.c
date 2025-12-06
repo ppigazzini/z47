@@ -183,14 +183,6 @@ void resetKeytimers(void) {
 //
 int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
 if(keyCode != 9999) {
-
-  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        //this line is temporary and to test without the ASSIGN, always pre-populating DRG into the f/g slot, to test.
-  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        calcKey_t *key_assign_test = kbd_usr + keyCode;
-  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        key_assign_test->fShifted = ITM_DRG; // -MNU_HOME; // ITM_DRG;
-
-  //calcKey_t *key_assign_test = kbd_usr + keyCode;
-  //printf("The set action is: %d (HOME=%d)\n",key_assign_test->fShifted, key_assign_test->fShifted == -MNU_HOME);
-
   calcKey_t *key = kbd_usr + keyCode;
   int16_t item = key->fShifted;
   /* This part only calls _executeItem(); maybe _executeItem() can be modified to also include the logic for item < 0 to call menus. */
@@ -199,14 +191,14 @@ if(keyCode != 9999) {
     _executeItem(item,keyCode);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(1000);
-  } 
-  else if(item < 0) {
+  }
+  else if(item <= 0) {
     switch(calcMode) {
       case CM_PEM: target_HOME = -MNU_PFN; break;
       case CM_AIM: target_HOME = -MNU_ALPHA; break;
       case CM_NIM:
       case CM_EIM:
-      case CM_NORMAL: target_HOME = item; break;
+      case CM_NORMAL: target_HOME = (item = 0 ? target_HOME : item); break;
       default:;
     }
     showSoftmenu(target_HOME); // The original target_HOME is the fallback; this can be changed of course - I just left it as minimum changes
@@ -1349,7 +1341,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-      
+
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);
