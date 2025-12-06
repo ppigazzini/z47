@@ -1326,6 +1326,36 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
 }
 
 
+void setLongPressFg(int calcModel0, int16_t menuItem) {
+  int16_t keyCode = 9999;
+  switch(calcModel0) {
+    case USER_R47f_g:
+           keyCode = 9999;
+           break;
+    case USER_R47bk_fg:
+           keyCode = 11;
+           break;
+    case USER_R47fg_bk:
+           keyCode = 10;
+           break;
+    case USER_R47fg_g:
+           keyCode = 10;
+           break;
+    case USER_C47:
+           keyCode = 27;
+           break;
+    case USER_DM42:
+           keyCode = 27;
+           break;
+    default:;
+  }
+  if(keyCode != 9999) {
+    calcKey_t *key_assign_test = kbd_usr + keyCode;
+    key_assign_test->fShifted = menuItem;
+  }
+}
+
+
 
 typedef struct {
   char str2[180];
@@ -1418,7 +1448,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-
+    setLongPressFg(calcModel, -MNU_HOME);
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
       real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
@@ -1985,6 +2015,7 @@ void fnKeysManagement(uint16_t choice) {
       Norm_Key_00.func = Norm_Key_00_item_in_layout;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = false;
+      setLongPressFg(calcModel, -MNU_HOME);
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

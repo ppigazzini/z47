@@ -221,6 +221,7 @@ void     fnFractionType        (uint16_t unusedButMandatoryParameter);
 #define  doNotLoadAutoSav      false
 void     defaultStatusBar      (void);
 void     resetOtherConfigurationStuff(bool_t allowUserKeys);
+void     setLongPressFg        (int calcModel0, int16_t menuItem);
 void     fnReset               (uint16_t confirmation);
 void     doFnReset             (uint16_t confirmation, bool_t autoSav);
 

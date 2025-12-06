@@ -783,7 +783,7 @@ void execTimerApp(uint16_t timerType) {
     shiftF = shiftG = false;
   }
 
-  static void _executeItem(int16_t item, int keyCode) {
+  void _executeItem(int16_t item, int keyCode) {
     char *funcParam = "";
 
     keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;

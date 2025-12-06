@@ -167,29 +167,60 @@ void resetKeytimers(void) {
 
       int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
 
-      if((getSystemFlag(FLAG_HOME_TRIPLE) && currentMenu() == target_HOME)) {
-        if(situation == keypress_fff) {
-          popSoftmenu();
-        }
-      }
-      else {
         if(getSystemFlag(FLAG_ALPHA)) {
           leaveTamModeIfEnabled();
           showSoftmenu(-MNU_MyAlpha);
         }
         else {
-          if(getSystemFlag(FLAG_HOME_TRIPLE)) {
             leaveTamModeIfEnabled();
-            showSoftmenu(target_HOME);
-          }
-            leaveTamModeIfEnabled();
+
+/***************************************************************************************************/
+//
+// This piece of code is a demo, to show the concept of execution at the end of triple fff or very long press f/g, for C47 and R47.
+//   MyM.3 is removed and the function of HOME.3 changes to fg.3, fg.3 deciding whether the triple fff execute is active, or not.
+// This demo code is only to show where longpress f/g and triple fff arrives and executes a dummy assign.
+// For the demo dummy-assigns as ASSIGN is not done here yet. It must still be done.
+//
+int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+if(keyCode != 9999) {
+
+  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        //this line is temporary and to test without the ASSIGN, always pre-populating DRG into the f/g slot, to test.
+  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        calcKey_t *key_assign_test = kbd_usr + keyCode;
+  /* temporary, replace with code to ASSSIGN at the end of this very long press :*/        key_assign_test->fShifted = ITM_DRG; // -MNU_HOME; // ITM_DRG;
+
+  //calcKey_t *key_assign_test = kbd_usr + keyCode;
+  //printf("The set action is: %d (HOME=%d)\n",key_assign_test->fShifted, key_assign_test->fShifted == -MNU_HOME);
+
+  calcKey_t *key = kbd_usr + keyCode;
+  int16_t item = key->fShifted;
+  /* This part only calls _executeItem(); maybe _executeItem() can be modified to also include the logic for item < 0 to call menus. */
+  /* Maybe also extract the common code to do the PEM differentiation*/
+  if(calcMode == CM_NORMAL && item > 0) {
+    _executeItem(item,keyCode);
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen(1000);
+  } 
+  else if(item < 0) {
+    switch(calcMode) {
+      case CM_PEM: target_HOME = -MNU_PFN; break;
+      case CM_AIM: target_HOME = -MNU_ALPHA; break;
+      case CM_NIM:
+      case CM_EIM:
+      case CM_NORMAL: target_HOME = item; break;
+      default:;
+    }
+    showSoftmenu(target_HOME); // The original target_HOME is the fallback; this can be changed of course - I just left it as minimum changes
+  }
+}
+/***************************************************************************************************/
+
         }
-      }
       showSoftmenuCurrentPart();
     }
   }
 
   void fg_processing_jm(void) {
+    bool_t toExecute = false;
     if(getSystemFlag(FLAG_SHFT_4s) || getSystemFlag(FLAG_HOME_TRIPLE)) {
       if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
@@ -200,7 +231,7 @@ void resetKeytimers(void) {
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
             leaveTamModeIfEnabled();
-            openHOMEorMyM(keypress_fff);
+            toExecute = true;
           }
         }
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_STOPPED) {
@@ -226,6 +257,9 @@ void resetKeytimers(void) {
       shiftF = false;                                                             //JM shifts
       shiftG = false;                                                             //JM shifts
     }                                                                             //JM shifts
+    if(toExecute) {
+      openHOMEorMyM(keypress_fff);
+    }
   }
 
 
