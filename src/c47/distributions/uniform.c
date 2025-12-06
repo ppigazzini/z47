@@ -87,11 +87,11 @@ void fnUniformL(uint16_t discrete) {
     } else if (cmp > 0 || realIsZero(&range)) {
       res = const_1;
     } else {
-      realSubtract(&x, &low, &h, &ctxtReal39);
       if (discrete) {
-        realToIntegralValue(&h, &low, DEC_ROUND_FLOOR, &ctxtReal39);
-        realAdd(&low, const_1, &h, &ctxtReal39);
+        realToIntegralValue(&x, &h, DEC_ROUND_FLOOR, &ctxtReal39);
+        realAdd(&h, const_1, &x, &ctxtReal39);
       }
+      realSubtract(&x, &low, &h, &ctxtReal39);
       realDivide(&h, &range, &x, &ctxtReal39);
     }
     convertRealToResultRegister(res, REGISTER_X, amNone);
@@ -109,11 +109,11 @@ void fnUniformU(uint16_t discrete) {
     } else if (cmp > 0) {
       res = const_0;
     } else {
-      realSubtract(&high, &x, &l, &ctxtReal39);
       if (discrete) {
-        realToIntegralValue(&l, &high, DEC_ROUND_CEILING, &ctxtReal39);
-        realAdd(&high, const_1, &l, &ctxtReal39);
+        realToIntegralValue(&x, &l, DEC_ROUND_CEILING, &ctxtReal39);
+        realSubtract(&l, const_1, &x, &ctxtReal39);
       }
+      realSubtract(&high, &x, &l, &ctxtReal39);
       realDivide(&l, &range, &x, &ctxtReal39);
     }
     convertRealToResultRegister(res, REGISTER_X, amNone);
