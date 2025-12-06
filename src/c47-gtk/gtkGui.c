@@ -3110,6 +3110,17 @@ char sstmp[16];
     }
     R47LongpressColour = true;
   }
+  else if(isR47FAM && key->primary == KEY_fg) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+      if(key->fShifted == ITM_NULL) {
+        strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+      }
+      else {
+        strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+      }
+      R47LongpressColour = true;
+    }
+  }
   else if(key->fShifted == 0) {
       sstmp[0] = 0;
   }
