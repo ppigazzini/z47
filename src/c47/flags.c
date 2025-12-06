@@ -667,7 +667,8 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_FRACT,
   FLAG_IRFRAC,
   FLAG_G_DOUBLETAP,
-  FLAG_SHFT_4s
+  FLAG_SHFT_4s,
+  FLAG_HOME_TRIPLE
 };
 
 
@@ -699,8 +700,6 @@ void SetSetting(uint16_t jmConfig) {
     case JC_NL:            fnFlipFlag(FLAG_NUMLOCK);                                      showAlphaModeonGui();           break;
     case FLAG_DENANY:      fnFlipFlag(jmConfig);                                          clearSystemFlag(FLAG_DENFIX);   break;
     case FLAG_DENFIX:      fnFlipFlag(jmConfig);                                          clearSystemFlag(FLAG_DENANY);   break;
-    case FLAG_HOME_TRIPLE: fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_HOME_TRIPLE)) {clearSystemFlag(FLAG_MYM_TRIPLE );}; break;
-    case FLAG_MYM_TRIPLE:  fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_MYM_TRIPLE )) {clearSystemFlag(FLAG_HOME_TRIPLE);}; break;
     case FLAG_BASE_MYM:    fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
     case FLAG_BASE_HOME:   fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
     case ITM_DREAL:        fnFlipFlag(FLAG_DREAL);   break;
