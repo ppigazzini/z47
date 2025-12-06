@@ -210,7 +210,7 @@ TO_QSPI const int16_t menu_DISTR[]       = {
 #if !defined(SAVE_SPACE_DM42_15)
                                              -MNU_NORML,                    -MNU_CHI2,                  -MNU_T,                   -MNU_F,                -MNU_EXPON,                  -MNU_WEIBL,
                                              -MNU_STDNORML,                 -MNU_UNIFORM,               -MNU_CAUCH,               -MNU_PARETO,           -MNU_LOGIS,                  -MNU_GEV,
-                                             ITM_NULL,                      ITM_NULL,                   -MNU_BINOM,               -MNU_GEOM,             -MNU_HYPER,                  -MNU_POISS
+                                             ITM_NULL,                      -MNU_DISUNIFORM,            -MNU_GEOM,                -MNU_HYPER,            -MNU_POISS,                  -MNU_BINOM
 #endif // !SAVE_SPACE_DM42_15
                                            };
 
