@@ -1234,6 +1234,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     calcModel = USER_C47;
     restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
 
+    if(backupVersion < 1014) {
+      setLongPressFg(calcModel, -MNU_HOME);
+    }
+
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if (getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);
@@ -1343,6 +1347,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("Version number of configfile < 1003, transferring FLAG_MYM_TRIPLE.");
       if(tmp1) {
         setSystemFlag(FLAG_HOME_TRIPLE);
+        setLongPressFg(calcModel, -MNU_MyMenu);
       }
       else {
         ; //nothing
@@ -1801,6 +1806,9 @@ void doSave(uint16_t saveType) {
                                                                                                              kbd_usr[i].gShiftedAim,
                                                                                                                          kbd_usr[i].primaryTam);
     save(tmpString, strlen(tmpString));
+  }
+  if(loadedVersion < 10000023) {
+    setLongPressFg(calcModel, -MNU_HOME); // This setting wil be overridden if loadedVersion < 1000022, by backwar old setting HOME3 and MYM3 settings in OTHER_CONFIGURATION_STUFF
   }
 
   // Keyboard arguments
@@ -2946,11 +2954,13 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+              setLongPressFg(calcModel, -MNU_HOME);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+              setLongPressFg(calcModel, -MNU_MyMenu);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "dispBase"                    ) == 0) { dispBase              = toUint8(tmpString); }
