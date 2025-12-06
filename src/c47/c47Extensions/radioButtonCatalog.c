@@ -156,7 +156,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_2HEX,             16,                     RB_HX},  //fnChangeBaseJM
 
   {ITM_HOMEx3,           FLAG_HOME_TRIPLE,       CB_JC},  //SetSetting
-  {ITM_MYMx3,            FLAG_MYM_TRIPLE,        CB_JC},  //SetSetting
 
   {ITM_BASE_HOME,        FLAG_BASE_HOME,         CB_JC},  //SetSetting
   {ITM_BASE_MYM,         FLAG_BASE_MYM,          CB_JC},  //SetSetting
@@ -408,11 +407,8 @@ int8_t fnCbIsSet(int16_t item) {
                           case JC_UC:              cb_param = !alphaCase;                             break;
                           case JC_SS:              cb_param = scrLock != NC_NORMAL;                   break;
                           
-                          case FLAG_MYM_TRIPLE: 
                           case FLAG_HOME_TRIPLE:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) 
-                              clearSystemFlag(FLAG_MYM_TRIPLE);
                             break;
                             
                           case FLAG_BASE_HOME:

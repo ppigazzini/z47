@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1013     // Converted flags
+#define BACKUP_VERSION                     1014     // long press f/g
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -19,7 +19,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000022 // Converted flags
+#define configFileVersion                  10000023 // long press f/g
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -1342,10 +1342,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "MYM3",                 "bool");    //JM
       printf("Version number of configfile < 1003, transferring FLAG_MYM_TRIPLE.");
       if(tmp1) {
-        setSystemFlag(FLAG_MYM_TRIPLE);
+        setSystemFlag(FLAG_HOME_TRIPLE);
       }
       else {
-        clearSystemFlag(FLAG_MYM_TRIPLE);
+        ; //nothing
       }
     }
     if(backupVersion < 1013) {
@@ -2950,7 +2950,7 @@ int64_t stringToInt64(const char *str) {
           }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
             if(loadedVersion < 10000022) {
-              forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "dispBase"                    ) == 0) { dispBase              = toUint8(tmpString); }

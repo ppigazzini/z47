@@ -1912,7 +1912,7 @@
 #define CHR_case                    1858
 #define ITM_BASE_HOME               1859
 #define MNU_MISC                    1860
-#define ITM_MYMx3                   1861
+#define ITM_1861                    1861
 #define ITM_DTtoJ                   1862
 #define ITM_JtoDT                   1863
 #define ITM_DSPCYCLE                1864
@@ -2335,7 +2335,7 @@
 #define SFL_BASE_MYM                2279 // The SFL item names are not used
 #define SFL_G_DOUBLETAP             2280 // The SFL item names are not used
 #define SFL_BASE_HOME               2281 // The SFL item names are not used
-#define SFL_MYM_TRIPLE              2282 // The SFL item names are not used
+#define SFL_not_used                2282 // can be replaced
 #define SFL_HOME_TRIPLE             2283 // The SFL item names are not used
 #define SFL_SHFT_4s                 2284 // The SFL item names are not used
 #define SFL_2285                    2285 // The SFL item names are not used

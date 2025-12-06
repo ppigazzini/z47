@@ -3074,12 +3074,11 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
-  if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
+  if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE)) {
     fgLN            = RBX_FGLNFUL;  //not in conditional clear
     setSystemFlag  (FLAG_G_DOUBLETAP);
     setSystemFlag  (FLAG_SHFT_4s);
     setSystemFlag  (FLAG_HOME_TRIPLE);
-    clearSystemFlag(FLAG_MYM_TRIPLE);
     clearSystemFlag(FLAG_BASE_HOME);
     setSystemFlag  (FLAG_BASE_MYM);
   }
@@ -3088,7 +3087,6 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
     clearSystemFlag(FLAG_G_DOUBLETAP);
     clearSystemFlag(FLAG_SHFT_4s);
     clearSystemFlag(FLAG_HOME_TRIPLE);
-    clearSystemFlag(FLAG_MYM_TRIPLE);
     clearSystemFlag(FLAG_BASE_HOME);
     setSystemFlag  (FLAG_BASE_MYM);
   }

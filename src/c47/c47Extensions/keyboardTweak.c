@@ -156,7 +156,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
@@ -166,7 +166,6 @@ void resetKeytimers(void) {
       #endif // PC_BUILD
 
       int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
-      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
 
       if((getSystemFlag(FLAG_HOME_TRIPLE) && currentMenu() == target_HOME)) {
         if(situation == keypress_fff) {
@@ -183,13 +182,7 @@ void resetKeytimers(void) {
             leaveTamModeIfEnabled();
             showSoftmenu(target_HOME);
           }
-          else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
             leaveTamModeIfEnabled();
-            if(situation == keypress_fff) {
-              BASE_OVERRIDEONCE = true;
-            }
-            showSoftmenu(target_MYM);
-          } //If none selected, do not display any menu, keep the screen blank
         }
       }
       showSoftmenuCurrentPart();
@@ -197,8 +190,8 @@ void resetKeytimers(void) {
   }
 
   void fg_processing_jm(void) {
-    if(getSystemFlag(FLAG_SHFT_4s) || (getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE))) {
-      if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
+    if(getSystemFlag(FLAG_SHFT_4s) || getSystemFlag(FLAG_HOME_TRIPLE)) {
+      if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
