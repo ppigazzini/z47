@@ -1448,7 +1448,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-    setLongPressFg(calcModel, -MNU_HOME);
+    setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
       real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
@@ -2015,7 +2015,7 @@ void fnKeysManagement(uint16_t choice) {
       Norm_Key_00.func = Norm_Key_00_item_in_layout;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = false;
-      setLongPressFg(calcModel, -MNU_HOME);
+      setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

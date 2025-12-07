@@ -853,7 +853,7 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.alpha || !tam.mode){
             calcKey_t *key = kbd_usr + keyCode;
             item = key->fShifted;
-            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
+            if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
               delayCloseNim = false;
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
@@ -911,11 +911,13 @@ void execTimerApp(uint16_t timerType) {
           Shft_timeouts = false;
           resetShiftState();                                       //force into no shift state, i.e. to wait
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
-            int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
-            shiftF = 1;
-            if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
-              _assignLongPressKey(keyCode);
-            }
+            #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+              int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+              shiftF = 1;
+              if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
+                _assignLongPressKey(keyCode);
+              }
+            #endif // PC_BUILD || NEW_HW
             shiftF = 0;
             shiftG = 0;
             screenUpdatingMode = SCRUPD_AUTO;

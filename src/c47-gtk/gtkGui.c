@@ -3113,7 +3113,12 @@ char sstmp[16];
   else if(isR47FAM && key->primary == KEY_fg) {
     if(getSystemFlag(FLAG_HOME_TRIPLE)) {
       if(key->fShifted == ITM_NULL) {
-        strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+        if(calcModel == USER_R47bk_fg) {
+          strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+        }
+        else {
+          strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+        }
       }
       else {
         strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
@@ -3219,6 +3224,17 @@ char sstmp[16];
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
         stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
         R47LongpressColour = true;
+      }
+      else if(isR47FAM && key->primaryAim == KEY_fg) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if(calcModel == USER_R47bk_fg) {
+            stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+          }
+          else {
+            stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+          }
+          R47LongpressColour = true;
+        }
       }
       else {
           stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
