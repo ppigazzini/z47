@@ -156,57 +156,49 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM)
       #if defined(PC_BUILD)
-      if(situation == keypress_fff) {
-        jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
-      } else if(situation == keypress_long_f) {
-        jm_show_calc_state("screen.c: Shft_handler: openHOMEorMyM");
-      }
+        if(situation == keypress_fff) {
+          jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
+        } else if(situation == keypress_long_f) {
+          jm_show_calc_state("screen.c: Shft_handler: openHOMEorMyM");
+        }
       #endif // PC_BUILD
 
-      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
+      int16_t target_HOME = (calcModel == USER_R47bk_fg ? -MNU_MyMenu : (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME));
 
-        if(getSystemFlag(FLAG_ALPHA)) {
-          leaveTamModeIfEnabled();
-          showSoftmenu(-MNU_MyAlpha);
+      if(getSystemFlag(FLAG_ALPHA)) {
+        leaveTamModeIfEnabled();
+        showSoftmenu(-MNU_MyAlpha);
+      }
+      else {
+        leaveTamModeIfEnabled();
+
+        int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+        if(keyCode != 9999) {
+          calcKey_t *key = kbd_usr + keyCode;
+          int16_t item = key->fShifted;
+          if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
+            delayCloseNim = false;
+            closeNim();
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          }
+          if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
+            #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+              _executeItem(item,keyCode);
+            #endif // PC_BUILD || NEW_HW
+
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(1000);
+          }
+          else {
+            if(getSystemFlag(FLAG_USER) && item < 0) {
+              target_HOME = item;
+            }
+            showSoftmenu(target_HOME); // The original target_HOME is the fallback; this can be changed of course - I just left it as minimum changes
+          }
         }
-        else {
-            leaveTamModeIfEnabled();
-
-/***************************************************************************************************/
-//
-// This piece of code is a demo, to show the concept of execution at the end of triple fff or very long press f/g, for C47 and R47.
-//   MyM.3 is removed and the function of HOME.3 changes to fg.3, fg.3 deciding whether the triple fff execute is active, or not.
-// This demo code is only to show where longpress f/g and triple fff arrives and executes a dummy assign.
-// For the demo dummy-assigns as ASSIGN is not done here yet. It must still be done.
-//
-int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
-if(keyCode != 9999) {
-  calcKey_t *key = kbd_usr + keyCode;
-  int16_t item = key->fShifted;
-  /* This part only calls _executeItem(); maybe _executeItem() can be modified to also include the logic for item < 0 to call menus. */
-  /* Maybe also extract the common code to do the PEM differentiation*/
-  if(calcMode == CM_NORMAL && item > 0) {
-    _executeItem(item,keyCode);
-    screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(1000);
-  }
-  else if(item <= 0) {
-    switch(calcMode) {
-      case CM_PEM: target_HOME = -MNU_PFN; break;
-      case CM_AIM: target_HOME = -MNU_ALPHA; break;
-      case CM_NIM:
-      case CM_EIM:
-      case CM_NORMAL: target_HOME = (item = 0 ? target_HOME : item); break;
-      default:;
-    }
-    showSoftmenu(target_HOME); // The original target_HOME is the fallback; this can be changed of course - I just left it as minimum changes
-  }
-}
-/***************************************************************************************************/
-
-        }
+      }
       showSoftmenuCurrentPart();
     }
   }
