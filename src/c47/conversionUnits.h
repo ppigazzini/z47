@@ -75,10 +75,11 @@
     constFactorRpmDegps,
     constFactorMphmps,
     constFactorRpmRadps,
+    constFactorInchCm,
     constFactorNmiMi,
     constFactorFurtom,
-    constFactorFtntos,
-    constFactorFpftomps,        /*  70 */
+    constFactorFtntos,          /*  70 */
+    constFactorFpftomps,
     constFactorBrdstom,
     constFactorFirtokg,
     constFactorFpftokph,
@@ -87,8 +88,8 @@
     constFactorFpftomph,
     constFactorFpstokph,
     constFactorFpstomps,
-    constFactorL100Tokml,
-    constFactorKmletok100K,     /*  80 */
+    constFactorL100Tokml,       /*  80 */
+    constFactorKmletok100K,
     constFactorK100Ktokmk,
     constFactorL100Tomgus,
     constFactorMgeustok100M,
