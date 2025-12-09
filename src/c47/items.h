@@ -2214,8 +2214,8 @@
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
 #define ITM_PPLUS                   2162
-#define ITM_2163                    2163
-#define ITM_2164                    2164
+#define ITM_INCHtoCM                2163
+#define ITM_CMtoINCH                2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
