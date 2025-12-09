@@ -715,8 +715,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
           printf("$$ PEM:    func=%d  showFunctionNameItem1=%d doNotAddStep=%d tam.mode=%d getSystemFlag(FLAG_ALPHA)=%d tam.alpha=%d\n", func, showFunctionNameItem, doNotAddStep, tam.mode, getSystemFlag(FLAG_ALPHA), tam.alpha);
           fflush(stdout);
         #endif // VERBOSEKEYS
-
-        if(( !tam.mode && func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) ){
+        
+        if( !tam.mode && ((func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) || func == ITM_ENTER )){
           #if defined(VERBOSEKEYS)
             printf("$$         items.c: runfunction: add step (before addStepInProgram) func=%i\n",func);
             fflush(stdout);
