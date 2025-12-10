@@ -771,6 +771,8 @@ void execTimerApp(uint16_t timerType) {
     shiftF = true;
     shiftG = false;
     assignToKey(kc);
+    itemToBeAssigned = 0;
+    leaveTamModeIfEnabled();
     keyActionProcessed = true;
     calcMode = previousCalcMode;
     shiftF = shiftG = false;
@@ -847,13 +849,19 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.alpha || !tam.mode){
             calcKey_t *key = kbd_usr + keyCode;
             item = key->fShifted;
-            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
+            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD && item != ITM_HASH_JM && item != ITM_toINT && indexOfItems[item].func != addItemToBuffer) {
               delayCloseNim = false;
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             }
             if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
-              _executeItem(item,keyCode);
+
+              if(calcMode == CM_NIM && ((item == ITM_HASH_JM || item == ITM_toINT || indexOfItems[item].func == addItemToBuffer))) {
+                addItemToNimBuffer(item);
+              } else {
+                _executeItem(item,keyCode);
+              }
+
             }
             else {
               char *funcParam = "";

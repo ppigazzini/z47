@@ -1026,7 +1026,23 @@
     }
 
     if(calcMode == CM_NIM) {
-      closeNim();
+      if(func == ITM_toINT || func == ITM_HASH_JM) {
+
+//DL, could this be integrated with the portion that changes Real to SI, starting in kayboard.c:2990 ?
+        lastIntegerBase = 0;
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        resetShiftState();
+        leaveTamModeIfEnabled();
+        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer,'#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
+          addItemToNimBuffer(ITM_BACKSPACE);
+        }
+        addItemToNimBuffer(func);
+        refreshRegisterLine(REGISTER_X);
+        return;
+      }
+      else {
+        closeNim();
+      }
     }
     else if(calcMode == CM_PEM && aimBuffer[0] != 0) {
       if(getSystemFlag(FLAG_ALPHA)) {
@@ -1191,6 +1207,7 @@
 
 
   void leaveTamModeIfEnabled(void) {
+    tamBuffer[0] = 0;
     if(!tam.mode) return;
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
@@ -1201,8 +1218,10 @@
     catalog = CATALOG_NONE;
     clearSystemFlag(FLAG_ALPHA);
 
-    while(numberOfTamMenusToPop--) {
-      popSoftmenu();
+    if(numberOfTamMenusToPop > 0) {
+      while(numberOfTamMenusToPop--) {
+        popSoftmenu();
+      }
     }
 
     #if defined(PC_BUILD)
