@@ -4,6 +4,7 @@
 /dep/gmp-6.2.1
 /wp43
 /c47
+/r47
 /testSuite
 /generate*
 /ttf2RasterFonts
@@ -21,12 +22,15 @@ wp43.dat
 c47.sav
 c47.dat
 *.s47
+*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
+20*.REGS.TSV
+20*.bmp
 tags
 /PROGRAMS
 /SAVFILES
-/src/generated
+/src/
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode
