@@ -4,6 +4,7 @@
 /dep/gmp-6.2.1
 /wp43
 /c47
+/r47
 /testSuite
 /generate*
 /ttf2RasterFonts
@@ -16,13 +17,16 @@
 backup.bin
 backup.cfg
 backupR47.cfg
-wp43.sav
+wp43.sav    
 wp43.dat
 c47.sav
 c47.dat
 *.s47
+*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
+20*.REGS.TSV
+20*.bmp
 tags
 /PROGRAMS
 /SAVFILES
