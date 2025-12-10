@@ -122,10 +122,10 @@ void fnUniformU(uint16_t discrete) {
 }
 
 void fnUniformI(uint16_t discrete) {
-  real_t x, low, high, res;
+  real_t x, low, high, t;
 
   if (checkParamUniform(&x, &low, &high, NULL, NULL, discrete)) {
-    if (realCompareLessEqual(&x, const_0) || realCompareGreaterEqual(&x, const_1)) {
+    if (realCompareLessThan(&x, const_0) || realCompareGreaterThan(&x, const_1)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnUniformI:", "the argument must be 0 < x < 1", NULL, NULL);
@@ -135,9 +135,15 @@ void fnUniformI(uint16_t discrete) {
       }
       return;
     }
-    linpol(&low, &high, &x, &res);
-    convertRealToResultRegister(&res, REGISTER_X, amNone);
+    // Adjust an exact unity input to not go out of range
+    if (realCompareEqual(&x, const_1))
+      realCopy(&high, &x);
+    else {
+      realAdd(&high, const_1, &high, &ctxtReal39);
+      linpol(&low, &high, &x, &t);
+      realToIntegralValue(&t, &x, DEC_ROUND_FLOOR, &ctxtReal39);
+    }
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 }
-
