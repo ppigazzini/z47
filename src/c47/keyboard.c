@@ -956,7 +956,6 @@ endReturnTrue:
                     #endif //VERBOSEKEYS
 
       if(calcMode == CM_NIM && (item == ITM_HASH_JM || item == ITM_toINT)) {
-        // delayCloseNim = true;
         addItemToNimBuffer(item);
         item = ITM_NOP;
       }

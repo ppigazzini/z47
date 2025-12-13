@@ -1027,8 +1027,6 @@
 
     if(calcMode == CM_NIM) {
       if(func == ITM_toINT || func == ITM_HASH_JM) {
-
-//DL, could this be integrated with the portion that changes Real to SI, starting in kayboard.c:2990 ?
         lastIntegerBase = 0;
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         resetShiftState();
