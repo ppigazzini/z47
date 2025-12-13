@@ -653,6 +653,10 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
 
 
 static void _insertInProgram(const uint8_t *dat, uint16_t size) {
+  //#define printarr(fmt, dat, len) for (uint16_t i = 0; i < len; i++) printf(fmt, dat[i])
+  //printf("**[DL]** _insertInProgram: ");
+  //printarr("%d ", dat, size);
+  //printf("\n");fflush(stdout);
   int16_t _dynamicMenuItem = dynamicMenuItem;
   uint16_t globalStepNumber;
 

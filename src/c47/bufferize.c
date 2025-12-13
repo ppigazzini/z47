@@ -525,6 +525,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_GRADtoDEG   },
     {ITM_GRADtoRAD   },
     {ITM_RADtoGRAD   },
+    {ITM_INCHtoCM    },
     {ITM_NMItoMI     },
     {ITM_MItoNMI     },
     {ITM_FURtoM      },
