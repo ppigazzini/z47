@@ -1324,7 +1324,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-      
+
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);
