@@ -812,7 +812,7 @@ void _assignItem(userMenuItem_t *menuItem) {
   else if(itemToBeAssigned >= ASSIGN_LABELS) {
     lblPtr                    = labelList[itemToBeAssigned - ASSIGN_LABELS].labelPointer;
     menuItem->item            = ITM_XEQ;
-    printf("**[DL]** menuItem->item %d lblPtr %s\n",menuItem->item,lblPtr);fflush(stdout);
+    //printf("**[DL]** menuItem->item %d lblPtr %s\n",menuItem->item,lblPtr);fflush(stdout);
   }
   else if(itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
     lblPtr                    = allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName;
