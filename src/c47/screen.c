@@ -839,6 +839,8 @@ void execTimerApp(uint16_t timerType) {
             && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM
           //leaveTamModeIfEnabled();
           keyCode = (shiftF ? 10 : 11);  // R47 'f' or 'g' keyCode
+          calcKey_t *key = kbd_usr + keyCode;
+          item = key->fShifted;
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
             if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
               _assignLongPressKey(keyCode);
@@ -847,18 +849,22 @@ void execTimerApp(uint16_t timerType) {
             shiftG = 0;
           }
           else if(tam.alpha || !tam.mode){
-            calcKey_t *key = kbd_usr + keyCode;
-            item = key->fShifted;
-            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD && item != ITM_HASH_JM && item != ITM_toINT && indexOfItems[item].func != addItemToBuffer) {
+            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
               delayCloseNim = false;
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             }
-            if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
+            if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && !getSystemFlag(FLAG_ALPHA) && (item > 0)) {
 
-              if(calcMode == CM_NIM && ((item == ITM_HASH_JM || item == ITM_toINT || indexOfItems[item].func == addItemToBuffer))) {
+              if((calcMode == CM_NIM  || (calcMode == CM_PEM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)))
+                  && (item == ITM_HASH_JM || item == ITM_toINT )) {
+                  processKeyAction(item);
+              }
+              else if(calcMode != CM_PEM && indexOfItems[item].func == addItemToBuffer) {
                 addItemToNimBuffer(item);
-              } else {
+              }
+              else {
                 _executeItem(item,keyCode);
               }
 
@@ -875,13 +881,16 @@ void execTimerApp(uint16_t timerType) {
               }
               else {
                 BASE_OVERRIDEONCE = true;
-                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_MyAlpha :
+                showSoftmenu((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_MyAlpha :
                              (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_MyMenu));
                 BASE_OVERRIDEONCE = true;
                 showSoftmenuCurrentPart();
                 BASE_OVERRIDEONCE = true;            //for upcoming refresh*
               }
             }
+          }
+          else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
+            addItemToBuffer(item);
           }
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(23);
@@ -5081,7 +5090,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     }
   }
 
-  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
+  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator
   #define useSmallShifts (SBARUPD_Time && calcMode == CM_NORMAL\
                                        &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
                                               ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\

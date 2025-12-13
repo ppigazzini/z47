@@ -2002,7 +2002,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       item = determineItem((char *)data);
       lastKeyItemDetermined = item;
-            
+
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -2196,7 +2196,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
     void btnReleased(void *data) {
   #endif // DMCP_BUILD
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-
 
       if(SHOWMODE && (lastItem == KEY_fg || lastItem == ITM_SHIFTf) && lastItem != SCREENDUMP) {
         //f is delayed in SHOW to release. fg and f both will perform the f-function. F-DISP will be screen dump.
@@ -4547,7 +4546,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           }
           else {
             assignLeaveAlpha();
-            if(asnKey[1] != 0) {
+            if(asnKey[1] != 0) {;
               assignToKey((char *)asnKey);
             }
             else {

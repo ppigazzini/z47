@@ -921,7 +921,7 @@
         value = findOrAllocateNamedVariable(buffer);
         //printf("findOrAllocateNamedVariable value=%d lastErrorCode=%d\n",value, lastErrorCode);
       }
-      else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
+      else if((tam.mode == TM_MENU) && !tam.indirect /*&& (calcMode != CM_PEM)*/) {
         value = findMenu(buffer);
         tam.value = value;
         if(value == INVALID_MENU && calcMode != CM_PEM) {
@@ -1207,7 +1207,7 @@
 
 
   void leaveTamModeIfEnabled(void) {
-    tamBuffer[0] = 0;
+    //tamBuffer[0] = 0;
     if(!tam.mode) return;
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
