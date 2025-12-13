@@ -6,22 +6,17 @@
 
 
 //*********************************
-// JM VARIOUS OPTIONS
+// VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-// Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
-// Version 7b6 is a quick bugfix version
-// Version 7c6 fixes a gitlab compile issue, no other changes.
-// Version 7a7 internal alpha test
-// Version 7b7 bugfix version, supplementing nano with float libraries
-// Version 7b8 bugfix version, supplementing nano with float libraries
-// Version 7a9 internal alphs
-// Version 7b9 test for FACTORS
-// Version 7b10 bugfixes for FACTORS
-// Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
-// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
+// Version 0.109.02.07b11   Public Release C47 & R47
+// Version 0.109.02.07b12   Public Release C47 & R47 launch
+// Version 0.109.02.07b13.1 Public Release C47 & R47
+// Version 0.109.03.00b0    Public Release C47 & R47
+// Version 0.109.03.00a1    Internal C47 & R47
+// Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 
 
 #if !defined(CALCMODEL)
@@ -49,12 +44,15 @@
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
 #undef SAVE_SPACE_DM42_17
-#undef SAVE_SPACE_DM42_18_XFN
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
+#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
+#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+#define OPTION_XFN_1000
 
 #if defined(DMCP_BUILD)
 
@@ -104,8 +102,16 @@
       #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
+
+
+#define PACKAGE1_NOBESSEL_NOORTHO
+#define PACKAGE2_NODISTR
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
@@ -118,20 +124,27 @@
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)
     #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+  #endif
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
-  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
+  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+  #if defined(PACKAGE2_NODISTR)
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+  #endif
+    //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+    //#define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
-    #define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
+      #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -1904,7 +1917,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= PROBMENUSTART && -softmenu[softmenuStack[0].softmenuId].menuItem <= PROBMENUEND)
+#define PROBMENU                             showingProbMenu()
 
 #define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE || dispBase > 0))
 

@@ -981,6 +981,18 @@ endReturnTrue:
         setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
       }
 
+
+      // If specific pseudo menus are accessed in PEM, the special function code won't run and instead the associated menu must opne
+      if(calcMode == CM_PEM && isFunctionItemAMenu(item)) {
+        switch(item) {
+          case ITM_GAP_R : item = -MNU_GAP_R;  break;
+          case ITM_GAP_L : item = -MNU_GAP_L;  break;
+          case ITM_GAP_RX: item = -MNU_GAP_RX; break;
+          default:;
+        }
+      }
+
+
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
@@ -1767,11 +1779,14 @@ endReturnTrue:
                   {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
                   {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
                   {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
-                  {28, 28, 33, 33, 0,  0 },   //5    1  1  0  0
-                  {20, 20, 29, 29, 0 , 0 },   //6    9  9  2  2
-                  {18, 18, 30, 30, 0 , 0 },   //7    7  7  3  3
-                  {29, 29, 0 , 0 , 0 , 0 },   //8    2  2
-                  {0 , 0 , 0 , 0 , 0 , 0 },   //9
+                  {28, 28, 33, 33, 32, 32},   //5    1  1  0  0  EX EX
+                  {20, 20, 29, 29, 12, 12},   //6    9  9  2  2  EN EN
+                  {18, 18, 30, 30, 32, 32},   //7    7  7  3  3  EX EX
+                  {29, 29, 32, 32, 0 , 0 },   //8    2  2  EX EX
+                  {32, 32, 12, 12, 0 , 0 },   //9    EX EX EN EN
+                  {12, 12, 32, 32, 0 , 0 },   //10   EN EN EX EX
+                  {32, 32, 0 , 0 , 0 , 0 },   //11   EX EX
+                  {0 , 0 , 0 , 0 , 0 , 0 },   //end
                 };
 
     #if defined(DMCP_BUILD)

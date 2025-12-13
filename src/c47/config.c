@@ -468,6 +468,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
+    dispBase = 0;
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
@@ -1323,7 +1324,7 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
     lastTemp[0] = 0;
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
 
-
+  blockMonitoring = false;
 }
 
 
