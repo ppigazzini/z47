@@ -320,8 +320,8 @@ static void executeFunction(const char *data, int16_t item_);
                     printf(">>>>  0088 item=%d \n",item);
                     #endif //VERBOSEKEYS
           return item;
+        }
       }
-    }
     }
     else {
                     #if defined(VERBOSEKEYS)
@@ -709,6 +709,9 @@ bool_t lastshiftG = false;
 
         lastErrorCode = 0;
         btnFnPressed_StateMachine(NULL, data);    //never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine, to pick up longpress or double press conditions
+                    #if defined(VERBOSEKEYS)
+                    printf(">>>>Z 0013 btnFnPressed >>btnFnPressed_StateMachine; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
+                    #endif //VERBOSEKEYS
 
 /*
           if(calcMode != CM_ASSIGN && indexOfItems[item].func == addItemToBuffer) {
@@ -943,9 +946,23 @@ endReturnTrue:
       }
       else {
                     #if defined(VERBOSEKEYS)
-                    printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
+                    printf(">>>> R000AA >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
+
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
+
+                    #if defined(VERBOSEKEYS)
+                    printf(">>>> R000AB >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
+                    #endif //VERBOSEKEYS
+
+      if(calcMode == CM_NIM && (item == ITM_HASH_JM || item == ITM_toINT)) {
+        // delayCloseNim = true;
+        addItemToNimBuffer(item);
+        item = ITM_NOP;
+      }
+
+
+
         lastKeyItemDetermined = item;
       }
 
@@ -1240,7 +1257,7 @@ endReturnTrue:
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
               goto noMoreToDo;
             }
-            if(calcMode == CM_NIM && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) && item!=ITM_HASH_JM && item!=ITM_ms) {  //JMNIM Allow NIM not closed, so that JMNIM can change the bases without ierrors thrown
+            if(calcMode == CM_NIM && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_ms) {  //JMNIM Allow NIM not closed, so that JMNIM can change the bases without ierrors thrown; also change from # to i
               closeNim();
               if(calcMode != CM_NIM) {
                 if(indexOfItems[item].func == fnConstant) {
@@ -2000,7 +2017,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       item = determineItem((char *)data);
       lastKeyItemDetermined = item;
-            
+
       #if defined(DMCP_BUILD)
         //  previousItem = item;
         //}
@@ -2195,7 +2212,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #endif // DMCP_BUILD
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
 
-
       if(SHOWMODE && (lastItem == KEY_fg || lastItem == ITM_SHIFTf) && lastItem != SCREENDUMP) {
         //f is delayed in SHOW to release. fg and f both will perform the f-function. F-DISP will be screen dump.
         fg_processing_jm();
@@ -2263,7 +2279,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                       char tmp[200]; sprintf(tmp,"^^^^btnReleased %d:\'%s\'",item,(char *)data); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-        if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) {
+        if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD && item != ITM_HASH_JM && item != ITM_toINT) {
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
                     #if defined(PC_BUILD)
@@ -2985,6 +3001,7 @@ RELEASE_END:
                 else {
                   keyActionProcessed = true;
                   if(item == ITM_toINT || item == ITM_HASH_JM) {
+                    //printf("0. NIM Resetstate\n");
                     resetShiftState();
                   }
 
@@ -3037,10 +3054,12 @@ RELEASE_END:
                   }
 
                   else {
+                    //printf("6. NIM Addtobuffer\n");
                     addItemToNimBuffer(item);
                   }
 
                   if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && getSystemFlag(FLAG_TOPHEX)) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
+                    //printf("7. NIM Refresh\n");
                     refreshRegisterLine(REGISTER_X);
                   }                                                                                   //JM^^
                 }
@@ -4542,7 +4561,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           }
           else {
             assignLeaveAlpha();
-            if(asnKey[1] != 0) {
+            if(asnKey[1] != 0) {;
               assignToKey((char *)asnKey);
             }
             else {
