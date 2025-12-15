@@ -1367,12 +1367,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CM_ERROR_MESSAGE                           9 // Error message in one of the register lines
 #define CM_BUG_ON_SCREEN                          10 // Bug message on screen
 #define CM_CONFIRMATION                           11 // Waiting for confirmation or canceling
-#define CM_MIM                                    12 // Matrix imput mode tbd reorder
-#define CM_EIM                                    13 // Equation imput mode
+#define CM_MIM                                    12 // Matrix input mode tbd reorder
+#define CM_EIM                                    13 // Equation input mode
 #define CM_TIMER                                  14 // Timer application
 #define CM_GRAPH                                  15 // Plot graph mode
 #define CM_NO_UNDO                                16 // Running functions without undo affected
-#define CM_ASN_BROWSER                            17 // Display stat list   //JM
+#define CM_ASN_BROWSER                            17 // Assignments browser   //JM
 #define CM_LISTXY                                 18 // Display stat list   //JM
 
 // Next character in AIM 2 bits
