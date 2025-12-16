@@ -663,7 +663,7 @@ void _fnEvPFacts     (uint16_t param) {
     int32_t pwr = param;
     real_t x;
     longInteger_t currentNumber;
-    if(param == M_EULER_SIGMA_k) {
+    if(param == M_SIGMA_k) {
       if(getRegisterDataType(REGISTER_X) == dtReal34) { //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
         if(!getRegisterAsReal(REGISTER_X, &x)) {
           goto abort;
@@ -712,9 +712,9 @@ void _fnEvPFacts     (uint16_t param) {
             //printLongIntegerToConsole(k_li,"exp:","\n");
             switch(param){
               case M_FACTORS:        longIntegerPower(p_li, k_li, factor); break;
-              case M_EULER_SIGMA_0:
-              case M_EULER_SIGMA_1:
-              case M_EULER_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
+              case M_SIGMA_0:
+              case M_SIGMA_1:
+              case M_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
               default:;
             }
             longIntegerFree(p_li);
@@ -818,7 +818,7 @@ void fnEvPFacts (uint16_t param) {
     goto return10;
   }
   saveForUndo();
-  if(param == M_EULER_SIGMA_pk) {
+  if(param == M_SIGMA_pk) {
     if(!getIntArg(xx)) {
       goto end;
     }
@@ -828,7 +828,7 @@ end:
     longIntegerFree(xx);
   }
 
-  if(param == M_EULER_SIGMA_p1 || param == M_EULER_SIGMA_pk) {
+  if(param == M_SIGMA_p1 || param == M_SIGMA_pk) {
     longInteger_t y, x, z, tmp;
     _fnEvPFacts(M_FACTORS);                                      //longinteger register output
     convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
@@ -842,8 +842,8 @@ end:
     copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
     copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
     switch(param) {
-      case M_EULER_SIGMA_p1: _fnEvPFacts(M_EULER_SIGMA_1); break;      //longintger register output
-      case M_EULER_SIGMA_pk: _fnEvPFacts(M_EULER_SIGMA_k); break;      //longintger register output
+      case M_SIGMA_p1: _fnEvPFacts(M_SIGMA_1); break;      //longintger register output
+      case M_SIGMA_pk: _fnEvPFacts(M_SIGMA_k); break;      //longintger register output
       default:;
     }
     convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
