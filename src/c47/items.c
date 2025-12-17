@@ -1098,7 +1098,6 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnNextPrime                 (uint16_t unusedButMandatoryParameter) {}
   void fnPrimeFactors              (uint16_t unusedButMandatoryParameter) {}
   void fnEvPFacts                  (uint16_t unusedButMandatoryParameter) {}
-  void fnEulPhi                    (uint16_t unusedButMandatoryParameter) {}
   void fnArg                       (uint16_t unusedButMandatoryParameter) {}
   void fnRange                     (uint16_t unusedButMandatoryParameter) {}
   void fnGetRange                  (uint16_t unusedButMandatoryParameter) {}
@@ -4079,7 +4078,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2383 */  { addItemToBuffer,              ITM_x_SIGN,                  "",                                            STD_x,                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2384 */  { fnComplexPlot,                NOPARAM,                     "CXPLT",                                       "CXPLT",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//GRAPH
 /* 2385 */  { fnEvPFacts,                   M_FACTORS,                   "M.FACT",                                      "M.FACT",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2386 */  { fnEulPhi,                     NOPARAM,                     STD_phi_m STD_SUB_E,                           STD_phi_m STD_SUB_E,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2386 */  { fnEvPFacts,                   M_PHI_EUL,                   STD_phi_m STD_SUB_E,                           STD_phi_m STD_SUB_E,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2387 */  { fnSave,                       SM_STATE_SAVE,               "SAVEST",                                      "SAVEST",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2388 */  { fnLoad,                       LM_STATE_LOAD,               "LOADST",                                      "LOADST",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2389 */  { fnSaveAuto,                   NOPARAM,                     "SAVEAUT",                                     "SAVEAUT",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

@@ -18,7 +18,7 @@
   #define M_SIGMA_p1 3  // k = 1 proper
   #define M_SIGMA_pk 4  // k > 1 proper genereralized
   #define M_FACTORS  5
+  #define M_PHI_EUL  6
   void fnEvPFacts     (uint16_t unusedButMandatoryParameter);
 
-  void fnEulPhi       (uint16_t unusedButMandatoryParameter);
 #endif // !PRIME_H

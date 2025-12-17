@@ -864,15 +864,38 @@ static void doFnEvPFacts (uint16_t param) {
 
 
 #define isRegisterMatrixFactors(reg)  ((getRegisterDataType(reg) == dtReal34Matrix) && REGISTER_MATRIX_HEADER(reg)->matrixRows == 2 && REGISTER_MATRIX_HEADER(reg)->matrixColumns > 1)
+static void fnEulPhi(uint16_t unusedButMandatoryParameter);
 
 
 void fnEvPFacts (uint16_t param) {
+  if(!isRegisterMatrixFactors(REGISTER_X)) {
+    longInteger_t x;
+    if(!getIntArg(x)) {
+      longIntegerFree(x);
+      goto return10;
+    }
+    if(longIntegerIsNegative(x)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is negative and therefore out of the domain!");
+        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(x);
+      goto return10;
+    }
+    longIntegerFree(x);
+  }
+
   if(!saveLastX()) {
     goto return10;
   }
   saveForUndo();
 
+  //pre-processing
   switch(param) {
+    case M_PHI_EUL  :
+      ; //nothing
+      break;
     case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
     case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
     case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
@@ -892,15 +915,34 @@ void fnEvPFacts (uint16_t param) {
         fnSwapXY(NOPARAM);
       }
       break;
+    case M_FACTORS  :
+      ; //nothing
+      break;
     default:;
   }
-  if(lastErrorCode == 0) {
-    doFnEvPFacts(param);
-  } else {
-    #if defined(PC_BUILD)
-      printf("fnEvPFacts: Error passed trhrough: lastErrorCode=%d\n",lastErrorCode);    
-    #endif
+
+  //processing
+  switch(param) {
+    case M_PHI_EUL  :
+        fnEulPhi(NOPARAM);
+      break;
+    case M_SIGMA_0  :
+    case M_SIGMA_1  :
+    case M_SIGMA_p1 :
+    case M_SIGMA_k  :
+    case M_SIGMA_pk :
+    case M_FACTORS  :
+      if(lastErrorCode == 0) {
+        doFnEvPFacts(param);
+      } else {
+        #if defined(PC_BUILD)
+          printf("fnEvPFacts: Error passed trhrough: lastErrorCode=%d\n",lastErrorCode);    
+        #endif
+      }
+      break;
+    default:;
   }
+
   return10:
   screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   refreshScreen(254);
@@ -926,16 +968,26 @@ void fnEvPFacts (uint16_t param) {
  * The prime factors are extracted from this matrix and used to complete
  * the calculation.
  */
-void fnEulPhi(uint16_t unusedButMandatoryParameter) {
+static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     longInteger_t x;
+    bool_t useMatrix = isRegisterMatrixFactors(REGISTER_X);
+    real34Matrix_t xx;
+
+    if(useMatrix) {
+      convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);
+      doFnEvPFacts(M_FACTORS);
+    }
 
     if(!getIntArg(x)) {
+      if(useMatrix) {
+        convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix after matrix element operations
+      }
       goto return1;
     }
 
-    if(!saveLastX()) {
-      goto return1;
+    if(useMatrix) {
+      convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
     }
 
     longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
@@ -954,9 +1006,11 @@ void fnEulPhi(uint16_t unusedButMandatoryParameter) {
       longIntegerCopy(x, phi_x);
       goto returnValue;
     }
-    if(longIntegerIsPositive(phi_x_tmp)) {
-      // Only operate if input long integer to fnPrimeFactors in register x is greater than 1 (***)
-      fnPrimeFactors(unusedButMandatoryParameter);
+
+    {
+      if(!useMatrix) {
+        fnPrimeFactors(unusedButMandatoryParameter);
+      }
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
         linkToRealMatrixRegister(REGISTER_X, &matrix);
@@ -996,14 +1050,7 @@ void fnEulPhi(uint16_t unusedButMandatoryParameter) {
       goto return2;
       }
     }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "The input value is negative and therefore out of the domain for Euler's Phi function!");
-        moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      goto return2;
-    }
+
     returnValue:
     convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
