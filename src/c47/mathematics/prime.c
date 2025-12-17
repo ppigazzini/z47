@@ -655,7 +655,7 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
  * all the prime factors with their exponents, and returns in the X register
  * the result as a long integer.
  */
-void _fnEvPFacts     (uint16_t param) {
+static void _doFnEvPFacts     (uint16_t param) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     real_t factorR, factorI, baseR, expR, prodR, prodI;
 
@@ -747,7 +747,7 @@ void _fnEvPFacts     (uint16_t param) {
             else {
               displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+                moreInfoOnError("In function _doFnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               longIntegerFree(prod);
               longIntegerFree(factor);
@@ -781,7 +781,7 @@ void _fnEvPFacts     (uint16_t param) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Only 2" STD_CROSS "n matrix supported: %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-          moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function _doFnEvPFacts:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         goto return10;
       }
@@ -790,7 +790,7 @@ void _fnEvPFacts     (uint16_t param) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
-        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _doFnEvPFacts:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto return10;
     }
@@ -801,7 +801,7 @@ void _fnEvPFacts     (uint16_t param) {
     abort:
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnEvPFacts:", "cannot do Euler sigma function due to parameter issue", NULL, NULL);
+      moreInfoOnError("In function _doFnEvPFacts:", "cannot do Euler sigma function due to parameter issue", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto return10;
 
@@ -810,60 +810,99 @@ void _fnEvPFacts     (uint16_t param) {
 
 
 
-void fnEvPFacts (uint16_t param) {
+static void doFnEvPFacts (uint16_t param) {
   longInteger_t xx;
   int32_t k = 1;
 
-  if(!saveLastX()) {
-    goto return10;
-  }
-  saveForUndo();
-  if(param == M_SIGMA_pk) {
-    if(!getIntArg(xx)) {
-      goto end;
-    }
-    longIntegerToInt32(xx, k);
-    fnSwapXY(NOPARAM);
-end:
-    longIntegerFree(xx);
-  }
-
+  /* process M_SIGMA_p1 as M_SIGMA_1; process M_SIGMA_pk as M_SIGMA_k*/  
   if(param == M_SIGMA_p1 || param == M_SIGMA_pk) {
+    if(param == M_SIGMA_pk) {
+      if(!getIntArg(xx)) {
+        goto end;
+      }
+      longIntegerToInt32(xx, k);
+      fnSwapXY(NOPARAM);                                           // get matrix to X
+      end:
+      longIntegerFree(xx);
+    }
+
+    //expect matrix in X
+    real34Matrix_t xx;
+    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);
     longInteger_t y, x, z, tmp;
-    _fnEvPFacts(M_FACTORS);                                      //longinteger register output
+    _doFnEvPFacts(M_FACTORS);                                      // longinteger register output
     convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
-    //printLongIntegerToConsole(y,"Y:","\n");
     longIntegerInit(z);
     longIntegerInit(tmp);
     int32ToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
-    longIntegerCopy(tmp,y);                                      //y is the number to be subtracted
-    //printLongIntegerToConsole(y,"Y:","\n");
-    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
-    copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+    longIntegerCopy(tmp,y);                                        // y is the number to be subtracted
+    convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
+
     switch(param) {
-      case M_SIGMA_p1: _fnEvPFacts(M_SIGMA_1); break;      //longintger register output
-      case M_SIGMA_pk: _fnEvPFacts(M_SIGMA_k); break;      //longintger register output
+      case M_SIGMA_p1:
+        _doFnEvPFacts(M_SIGMA_1);                                  // longinteger register output
+        break;
+      case M_SIGMA_pk: 
+        fnSwapXY(NOPARAM);                                         // restore matrix to y
+        _doFnEvPFacts(M_SIGMA_k);                                  // longinteger register output
+        break;
       default:;
     }
     convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-    //printLongIntegerToConsole(x,"x:","  ");
-    //printLongIntegerToConsole(y,"y:","\n");
     longIntegerSubtract(x, y, x);
-    //printLongIntegerToConsole(x,"x:","\n");
     convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
     longIntegerFree(tmp);
     longIntegerFree(z);
     longIntegerFree(y);
     longIntegerFree(x);
   } else {
-    _fnEvPFacts(param);
+  /* process M_SIGMA_0, M_SIGMA_1, M_SIGMA_k */
+    _doFnEvPFacts(param);
   }
+}
 
 
+#define isRegisterMatrixFactors(reg)  ((getRegisterDataType(reg) == dtReal34Matrix) && REGISTER_MATRIX_HEADER(reg)->matrixRows == 2 && REGISTER_MATRIX_HEADER(reg)->matrixColumns > 1)
 
+
+void fnEvPFacts (uint16_t param) {
+  if(!saveLastX()) {
+    goto return10;
+  }
+  saveForUndo();
+
+  switch(param) {
+    case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
+    case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
+    case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
+      if(isRegisterMatrixFactors(REGISTER_X)) {
+        ; // nothing
+      } else {
+        fnPrimeFactors(NOPARAM);
+      }
+      break;
+    case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
+    case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
+      if(isRegisterMatrixFactors(REGISTER_Y)) {
+        ; // nothing
+      } else {
+        fnSwapXY(NOPARAM);
+        fnPrimeFactors(NOPARAM);
+        fnSwapXY(NOPARAM);
+      }
+      break;
+    default:;
+  }
+  if(lastErrorCode == 0) {
+    doFnEvPFacts(param);
+  } else {
+    #if defined(PC_BUILD)
+      printf("fnEvPFacts: Error passed trhrough: lastErrorCode=%d\n",lastErrorCode);    
+    #endif
+  }
   return10:
-
+  screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   refreshScreen(254);
 }
 
@@ -1486,7 +1525,7 @@ typedef struct FactorAdder
                                               fflush(stdout);
                                             #endif //MONITOR_FACTORS
 
-        if(errorMessage != 0) goto returnFalse;
+        if(lastErrorCode != 0) goto returnFalse;
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           uint16_t cols_ = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
@@ -1526,7 +1565,7 @@ typedef struct FactorAdder
                                               fflush(stdout);
                                             #endif //MONITOR_FACTORS
     if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
-      if(errorMessage != 0) goto returnFalse;
+      if(lastErrorCode != 0) goto returnFalse;
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1586,7 +1625,7 @@ typedef struct FactorAdder
         ++wkgCols;
         faddr->expons[faddr->nExpons-1] = 1;
         if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
-          if(errorMessage != 0) goto returnFalse;
+          if(lastErrorCode != 0) goto returnFalse;
           #if !defined(TESTSUITE_BUILD)
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1935,7 +1974,7 @@ void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
       queue_end = next_next_end;
     }
     else {
-      if(errorMessage != 0) break;
+      if(lastErrorCode != 0) break;
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
