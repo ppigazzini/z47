@@ -4939,7 +4939,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
-  #define useSmallShifts (Y_SHIFT &&      ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+  #define useSmallShifts (Y_SHIFT      && calcMode == CM_NORMAL\
+                                       &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
                                               ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger))   \
                                            ) )
   #define displayF (useSmallShifts ? STD_f : STD_MODE_F)
