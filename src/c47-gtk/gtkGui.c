@@ -840,8 +840,10 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
 //}
 
 
+  //list of special case keys, server non-CM_xxx modes
   switch(event_keyval) {
     case GDK_KEY_backslash:
+    case GDK_KEY_z:
       if(SHOWMODE){// || currentMenu() == -MNU_TIMERF) {
         btnClicked(w, "35");  //R/S
         goto returnKeyPressedFalse;
@@ -944,7 +946,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} else        //                      [m]emory
   if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} else        //                         [r]cl
   if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} else        //                        [d]own
-  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
+  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
   if(shortCutCommand(w, event_key_command, GDK_KEY_f           /* f 102   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {goto returnKeyPressedFalse;} else        //                             f
   if(shortCutCommand(w, event_key_command, GDK_KEY_g           /* g 103   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {goto returnKeyPressedFalse;} else        //                             g
   if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69 EE */    ,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} else        //                           key
@@ -3092,26 +3094,37 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
-    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
-  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
-    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+  else if(isR47FAM && key->primary == ITM_SHIFTg) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
   else if(key->fShifted == 0) {
-      lbl[0] = 0;
+      sstmp[0] = 0;
   }
   else {
     strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-    stringToUtf8(sstmp, lbl);
-    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-      }
+  }
+
+  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  stringToUtf8(sstmp, lbl);
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
     }
   }
 

@@ -23,3 +23,11 @@ Demonstration programs included in C47 distro
                                    Complete setting example related to forum post on 'engineering settings'
                                    https://forum.swissmicros.com/viewtopic.php?p=33113#p33113
 
+7.   HP35fun.rtf   HP35fun.p47     Replacement for this (development) function, being a fun HP35 mode. No emulation, no simulation. Just a bit of fun.
+                                   Recommend to save your settings into register 35: STO Config 35
+                                   https://47calc.com/doc/R47/Reference/R47v0_HP35.pdf
+                                   https://47calc.com/doc/C47/Reference/C47_HP35.pdf        
+
+8.   47DFLT.rtf    47DFLT.p47      Restore typical settings on C47, R47, after HP35fun.rtf
+                                   Recommend load your prior settings: RCL Config 35
+                                   

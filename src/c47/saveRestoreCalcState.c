@@ -405,6 +405,15 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     uint32_t ramPtr, backupVersion = BACKUP_VERSION;
     int ret;
 
+    //prevent demo profiles from being saved
+    if(!(    (CALCMODEL == USER_R47 && (calcModel == USER_R47f_g || calcModel == USER_R47fg_g || calcModel == USER_R47fg_bk || calcModel == USER_R47bk_fg))  //this is to prevent any test layout to store the the layount name in the backup file
+          || (CALCMODEL == USER_C47 && (calcModel == USER_C47    || calcModel == USER_DM42 ))
+        ) )  {
+      printf("Not saving the backup cfg file due to a non-permanent layout being selected\n");
+      return;
+    }
+
+
     ret = ioFileOpen(ioPathBackup, ioModeWrite);
 
     if(ret != FILE_OK) {
@@ -1935,6 +1944,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "dispBase\n%"                   PRIu8  "\n",     (uint8_t)dispBase);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "calcModel\n%"                  PRId16  "\n",    calcModel);                    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
         //prevent empty string from being written to config file.
         sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     (Norm_Key_00.funcParam[0]==0) ? "NoNormKeyParamDef" : Norm_Key_00.funcParam); save(tmpString, strlen(tmpString));
@@ -2296,7 +2306,7 @@ int64_t stringToInt64(const char *str) {
     return 1;
   }
 
-
+  uint16_t savedCalcModel = 0;
   static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, bool_t allowUserKeys) {
     int16_t i, numberOfRegs;
     calcRegister_t regist;
@@ -2994,6 +3004,17 @@ int64_t stringToInt64(const char *str) {
               }
           }
           else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0)) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
+
+          else if(allowUserKeys && (strcmp(aimBuffer, "calcModel"                   ) == 0)) {
+            uint16_t calcModelRead = toUint16(tmpString);
+            if(savedCalcModel == USER_R47 && (calcModelRead == USER_R47f_g || calcModelRead == USER_R47fg_g || calcModelRead == USER_R47fg_bk || calcModelRead == USER_R47bk_fg)) {
+              calcModel = calcModelRead;
+            } else
+            if(savedCalcModel == USER_C47 && (calcModelRead == USER_C47    || calcModelRead == USER_DM42 )) {
+              calcModel = calcModelRead;
+            }
+          }
+
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) {        //Keep compatible by repeating
             if(loadedVersion < 10000022) {
@@ -3098,9 +3119,8 @@ END_CONFIG:
 
 
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
-  uint16_t savedCalcModel = 0;
-
   #if !defined(TESTSUITE_BUILD)
+  savedCalcModel = 0;
   ioFilePath_t path;
   int ret;
   #if defined(LOADDEBUG)
