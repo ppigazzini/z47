@@ -27,6 +27,7 @@ void setLastintegerBasetoZero(void) {
   fnRefreshState();                                                //JMNIM
 }
 
+bool_t blockMonitoring = false;
 
 uint8_t multiEdLines = 0;            // lines   0
 uint8_t yMultiLineEdOffset = 0;      // pixels
@@ -66,8 +67,8 @@ uint16_t current_cursor_y = 0;
    TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
    TO_QSPI static const char versionStr[]        = "  " MODELTEXT " " VERSION_STRING ".";
-
   #if defined(PC_BUILD)
+
     TO_QSPI static const char versionStr2[]     = "  " MODELTEXT " Sim " VERSION1 ", dated " __DATE__ ".";
   #else // !PC_BUILD
     #if defined(TWO_FILE_PGM)
@@ -769,31 +770,147 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
+#if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+  static void _assignLongPressKey(int keyCode) {
+    char kc[4] = {};
+    kc[0] = (keyCode / 10) + '0';
+    kc[1] = (keyCode % 10) + '0';
+    kc[2] = 0;
+    shiftF = true;
+    shiftG = false;
+    assignToKey(kc);
+    itemToBeAssigned = 0;
+    leaveTamModeIfEnabled();
+    keyActionProcessed = true;
+    calcMode = previousCalcMode;
+    shiftF = shiftG = false;
+  }
+
+  static void _executeItem(int16_t item, int keyCode) {
+    char *funcParam = "";
+
+    keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+    funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+    if(item == ITM_RCL && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
+      calcRegister_t var = findNamedVariable(funcParam);
+      if(var != INVALID_VARIABLE) {
+        if(calcMode == CM_PEM) {  // Insert user variable recall in program
+          insertUserItemInProgram(item, funcParam);
+        }
+        else {                    // Execute item
+          reallyRunFunction(item, var);
+        }
+      }
+      else {
+        displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+           sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
+           moreInfoOnError("In function Shft_handler:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      }
+    }
+    else if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
+      calcRegister_t label = findNamedLabel(funcParam);
+      if(label != INVALID_VARIABLE) {
+        if(calcMode == CM_PEM) {  // Insert user program call in program
+          insertUserItemInProgram(item, funcParam);
+        }
+        else {                    // Execute item
+          reallyRunFunction(item, label);
+        }
+      }
+      else {
+        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "string '%s' is not a named label", funcParam);
+            moreInfoOnError("In function Shft_handler:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      }
+    }
+    else {
+      runFunction(item);
+    }
+  }
+#endif // PC_BUILD || NEW_HW
+
   void Shft_handler() {
     if(Shft_LongPress_f_g) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         Shft_LongPress_f_g = false;
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
-        if(shiftF) {                           //this is for R47 ShiftF
-          leaveTamModeIfEnabled();
-          showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
-          showSoftmenuCurrentPart();
+      #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+        int keyCode;
+
+        int16_t item;
+        if((shiftF || shiftG)                                                           // this is for R47 ShiftF or shiftG, adding long press assignments - DL 2025/12/03
+            && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM
+          //leaveTamModeIfEnabled();
+          keyCode = (shiftF ? 10 : 11);  // R47 'f' or 'g' keyCode
+          calcKey_t *key = kbd_usr + keyCode;
+          item = key->fShifted;
+          if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
+            if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
+              _assignLongPressKey(keyCode);
+            }
+            shiftF = 0;
+            shiftG = 0;
+          }
+          else if(tam.alpha || !tam.mode){
+            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
+              delayCloseNim = false;
+              closeNim();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+            }
+            if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && !getSystemFlag(FLAG_ALPHA) && (item > 0)) {
+
+              if((calcMode == CM_NIM  || (calcMode == CM_PEM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)))
+                  && (item == ITM_HASH_JM || item == ITM_toINT )) {
+                  processKeyAction(item);
+              }
+              else if(calcMode != CM_PEM && indexOfItems[item].func == addItemToBuffer) {
+                addItemToNimBuffer(item);
+              }
+              else {
+                _executeItem(item,keyCode);
+              }
+
+            }
+            else {
+              char *funcParam = "";
+              keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+              funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+              setCurrentUserMenu(item, funcParam);
+              if(shiftF) {
+                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
+                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                showSoftmenuCurrentPart();
+              }
+              else {
+                BASE_OVERRIDEONCE = true;
+                showSoftmenu((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_MyAlpha :
+                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_MyMenu));
+                BASE_OVERRIDEONCE = true;
+                showSoftmenuCurrentPart();
+                BASE_OVERRIDEONCE = true;            //for upcoming refresh*
+              }
+            }
+          }
+          else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
+            addItemToBuffer(item);
+          }
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(23);
         }
-        else if(shiftG) {                      //this is for R47 ShiftG
-          leaveTamModeIfEnabled();
-          BASE_OVERRIDEONCE = true;
-          showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
-          BASE_OVERRIDEONCE = true;
-          showSoftmenuCurrentPart();
-          BASE_OVERRIDEONCE = true;            //for upcoming refresh
-        }
+      #endif // PC_BUILD || NEW_HW
         shiftF = 0;
         shiftG = 0;
         showShiftState();
+        if((calcMode == CM_AIM) || (calcMode == CM_EIM)) {
+          calcModeAimGui();
         }
-
-
+      }
     }
     else if(Shft_timeouts) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
@@ -1689,16 +1806,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1825,6 +1942,13 @@ return res;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
     }
+  }
+
+  bool_t showingProbMenu(void) {
+    int cur = -softmenu[softmenuStack[0].softmenuId].menuItem;
+
+    return (cur >= PROBMENUSTART1 && cur <= PROBMENUEND1) ||
+           (cur >= PROBMENUSTART2 && cur <= PROBMENUEND2);
   }
 
 //#define DEBUG_SHOWNAME
@@ -3177,6 +3301,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_i = STD_mu;                 register_i = REGISTER_M;
               break;
+            case -MNU_UNIFORM:
+            case -MNU_DISUNIFORM:
+              r_i = STD_a;                  register_i = REGISTER_M;
+              r_j = STD_b;                  register_j = REGISTER_N;
+              break;
             default: ;
           }
 
@@ -3595,12 +3724,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          else if(temporaryInformation == TI_MEANX_MEANY) {
+          else if(temporaryInformation == TI_MEANX_MEANY || temporaryInformation == TI_MEANX) {
             if(regist == REGISTER_X) {
               strcpy(prefix, STD_x_BAR " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            else if(regist == REGISTER_Y) {
+            else if(regist == REGISTER_Y && temporaryInformation != TI_MEANX) {
               strcpy(prefix, STD_y_BAR " =");
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }

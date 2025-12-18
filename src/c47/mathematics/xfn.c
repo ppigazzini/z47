@@ -16,7 +16,7 @@
 #endif
 
 
-#if defined(SAVE_SPACE_DM42_18_XFN)
+#if !defined(OPTION_XFN_1000)
   void fnXfnIndirect(uint16_t registerNo, uint16_t function) {
   }
   void fnXXfn(uint16_t function) {
@@ -80,11 +80,9 @@
   }
 
 
-#endif //SAVE_SPACE_DM42_18_XFN
+#else //OPTION_XFN_1000
 
 
-
-#if !defined(SAVE_SPACE_DM42_18_XFN)
   #define debugLongNumberLimit       100
   #define modulus(a)                 (a == amRadian ? const2139_2pi : a == amDegree ? const_360 : a == amGrad ? const_400 : a == amMultPi ? const_2 : const_1)
 
@@ -1008,6 +1006,6 @@ noFunction:
     return;
 }
 
-#endif //SAVE_SPACE_DM42_18_XFN
+#endif //OPTION_XFN_1000
 
 

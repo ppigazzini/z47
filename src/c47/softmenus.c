@@ -44,7 +44,7 @@ TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_
 
 TO_QSPI const int16_t menu_CLR[]         = { ITM_CF,                        ITM_CLMENU,                 ITM_CLCVAR,               ITM_CLREGS,            ITM_CLX,                     ITM_CLSTK,
                                              ITM_CLFALL,                    ITM_CLMALL,                 ITM_CLVALL,               ITM_CLSIGMA,           ITM_CLGRF,                   ITM_CLLCD,
-                                             ITM_RESET,                     ITM_NULL,                   ITM_CLTVM,                ITM_NULL,              ITM_NULL,                   -MNU_DELETE                    };
+                                             ITM_RESET,                     ITM_NULL,                   ITM_CLTVM,                ITM_NULL,              ITM_CLRMOD,                  -MNU_DELETE                    };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -74,20 +74,20 @@ TO_QSPI const int16_t menu_TRI[]         = { ITM_DEG2,                      ITM_
                                              ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };    //JM re-arranged menu TRIG menu
 
 TO_QSPI const int16_t menu_TRG_C47[]     = { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_DRG,
-                                             ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_ms,                ITM_dotD,                    ITM_msTo,
-                                             ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
+                                             ITM_sinc,                      ITM_sincpi,                 ITM_ms,                   ITM_msTo,              ITM_toREC2,                  ITM_toPOL2,
+                                             ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_DMS,               ITM_MULPI,                   ITM_atan2,                    };
 
 TO_QSPI const int16_t menu_TRG_C47_MORE[]= { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_sin,               ITM_cos,                     ITM_tan,
                                              ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_arcsin,            ITM_arccos,                  ITM_arctan,                         //JM re-arranged menu TRIG menu
                                              ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };    //JM re-arranged menu TRIG menu
 //R47 vv
-TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_sinc,              ITM_sincpi,                  ITM_atan2,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_msTo,
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_DMS,               ITM_MULPI,                   ITM_atan2,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_NULL,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_ms,                   ITM_msTo,              ITM_sinc,                    ITM_sincpi,                   };
 //D47 ^^
 
 TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_PCT    ,                ITM_PC         ,          ITM_DELTAPC,            ITM_PCPMG,                   ITM_PCMRR,
-                                             ITM_SIGMAMINUS,                ITM_SIGMAx ,                ITM_NSIGMA     ,          ITM_XBAR   ,            ITM_NULL,                    ITM_NULL,
+                                             ITM_SIGMAMINUS,                ITM_SIGMAx ,                ITM_NSIGMA     ,          ITM_XMEAN,              ITM_NULL,                    ITM_NULL,
                                              ITM_CLSIGMA   ,                ITM_PCSIGMA,                ITM_PCSGM_DPCMN,          ITM_DPCMEAN,            ITM_NULL  ,                  -MNU_TVM                     };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
@@ -209,8 +209,8 @@ TO_QSPI const int16_t menu_PROB[]        = {
 TO_QSPI const int16_t menu_DISTR[]       = {
 #if !defined(SAVE_SPACE_DM42_15)
                                              -MNU_NORML,                    -MNU_CHI2,                  -MNU_T,                   -MNU_F,                -MNU_EXPON,                  -MNU_WEIBL,
-                                             -MNU_STDNORML,                 ITM_NULL,                   -MNU_CAUCH,               -MNU_PARETO,           -MNU_LOGIS,                  -MNU_GEV,
-                                             ITM_NULL,                      -MNU_BINOM,                 -MNU_GEOM,                -MNU_HYPER,            -MNU_POISS,                  ITM_NULL
+                                             -MNU_STDNORML,                 -MNU_UNIFORM,               -MNU_CAUCH,               -MNU_PARETO,           -MNU_LOGIS,                  -MNU_GEV,
+                                             ITM_NULL,                      -MNU_DISUNIFORM,            -MNU_GEOM,                -MNU_HYPER,            -MNU_POISS,                  -MNU_BINOM
 #endif // !SAVE_SPACE_DM42_15
                                            };
 
@@ -236,6 +236,8 @@ DISTNMENU(menu_Geom,        ITM_GEOMP,      ITM_GEOM,       ITM_GEOMU,      ITM_
 DISTNMENU(menu_Hyper,       ITM_HYPERP,     ITM_HYPER,      ITM_HYPERU,     ITM_HYPERM1,        ITM_STO_M_N,     ITM_STO_N1,      ITM_STO_Q_K);
 DISTNMENU(menu_Poiss,       ITM_POISSP,     ITM_POISS,      ITM_POISSU,     ITM_POISSM1,        ITM_STO_R_lambda,ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_GEV,         ITM_GEVP,       ITM_GEV,        ITM_GEVU,       ITM_GEVM1,          ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_xi);
+DISTNMENU(menu_Uniform,     ITM_UNIFORMP,   ITM_UNIFORML,   ITM_UNIFORMU,   ITM_UNIFORMI,       ITM_STO_M_a,     ITM_STO_N_b,     ITM_NULL);
+DISTNMENU(menu_DisUniform,  ITM_DISUNIFORMP,ITM_DISUNIFORML,ITM_DISUNIFORMU,ITM_DISUNIFORMI,    ITM_STO_M_a,     ITM_STO_N_b,     ITM_NULL);
 
 DISTNMENU2(menu_Pareto,     ITM_PARETOP,    ITM_PARETOL,    ITM_PARETOU,    ITM_PARETOM1,
                             ITM_PARETO2P,   ITM_PARETO2L,   ITM_PARETO2U,   ITM_PARETO2M1,      ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_alpha);
@@ -338,7 +340,7 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_EVEN,                      ITM_ODD,                    ITM_ISREQ,                ITM_ISIMQ,             ITM_ISVECT2DQ,               ITM_ISVECT3DQ,
                                              ITM_NUMBRQ,                    ITM_ANGLEQ,                 ITM_NANQ,                 ITM_INFQ,              ITM_SPECQ,                                                  };
 
-#if !defined(SAVE_SPACE_DM42_18_XFN)
+#if defined(OPTION_XFN_1000)
   #define XFN_M MNU_XXFCNS
 #else
   #define XFN_M ITM_NULL
@@ -484,7 +486,7 @@ TO_QSPI const int16_t menu_ConvX[]        = {
 
                                                     ITM_MILEtoM,              ITM_MtoMILE,              ITM_FTUStoM,              ITM_MtoFTUS,              ITM_POINTtoMM,            ITM_MMtoPOINT,
                                                     ITM_NMItoM,               ITM_MtoNMI,               ITM_FATHOMtoM,            ITM_MtoFATHOM,            ITM_NULL,                 ITM_NULL,
-                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
+                                                    ITM_NULL,                 ITM_NULL,                 ITM_INCHtoCM,             ITM_CMtoINCH,             ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvV[]        = {
                                                    ITM_IN3toML,               ITM_MLtoIN3,              ITM_FZUKtoIN3,            ITM_IN3toFZUK,            ITM_FT3toL,               ITM_LtoFT3,
                                                    ITM_FZUKtoML,              ITM_MLtoFZUK,             ITM_GLUKtoFT3,            ITM_FT3toGLUK,            ITM_GLUKtoL,              ITM_LtoGLUK,
@@ -1022,7 +1024,10 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 166 */  {.menuItem = -MNU_MULTSTK,     .numItems = sizeof(menu_MULTSTK       )/sizeof(int16_t), .softkeyItem = menu_MULTSTK        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 167 */  {.menuItem = -MNU_TAMLBLONLY,  .numItems = sizeof(menu_TamLabelOnly  )/sizeof(int16_t), .softkeyItem = menu_TamLabelOnly   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 168 */  {.menuItem = -MNU_TAMVARONLY,  .numItems = sizeof(menu_TamVarOnly    )/sizeof(int16_t), .softkeyItem = menu_TamVarOnly     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 169 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 169 */  {.menuItem = -MNU_UNIFORM,     .numItems = sizeof(menu_Uniform       )/sizeof(int16_t), .softkeyItem = menu_Uniform        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 170 */  {.menuItem = -MNU_DISUNIFORM,  .numItems = sizeof(menu_DisUniform    )/sizeof(int16_t), .softkeyItem = menu_DisUniform     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+
+/* 171 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1663,7 +1668,66 @@ bool_t maxfgLines(int16_t y) {
   }
 }
 
-#define greyout true
+
+  /********************************************//**
+   * \brief Displays one softkey: helpers
+   ***********************************************/ 
+  #define greyout true
+  static bool_t initSoftkeyCoordinates(const char *label, int16_t xSoftkey, int16_t ySoftKey, int16_t *x1, int16_t *x2, int16_t *y1, int16_t *y2) {
+    if(label[0] !=0 ) {
+      if(ySoftKey==1) {
+        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
+      }
+      if(ySoftKey == 2) {
+        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
+        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g
+      }
+    }
+    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+      return false;
+    }
+    if(0 <= xSoftkey && xSoftkey <= 5) {
+      *x1 = xS1(xSoftkey);
+      *x2 = *x1 + xS2(xSoftkey);
+    }
+    else {
+      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
+      displayBugScreen(errorMessage);
+      return false;
+    }
+    if(0 <= ySoftKey && ySoftKey <= 2) {
+      *y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
+      *y2 = *y1 + SOFTMENU_HEIGHT;
+    }
+    else {
+      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
+      displayBugScreen(errorMessage);
+      return false;
+    }
+    return true;
+  }
+
+  static void truncateAtString(char *label, const char *search) {
+    int16_t i = 0;
+    while(label[i+1] != 0) {
+      if(search[0] == label[i] && search[1] == label[i+1]) {
+        label[i] = 0;
+        break;
+      }
+      i++;
+    }
+  }
+
+  static void truncateAtArrow(char *label) {
+    char sample[4];
+    
+    stringCopy(sample, STD_RIGHT_ARROW);
+    truncateAtString(label, sample);
+    
+    stringCopy(sample, STD_LEFT_ARROW);
+    truncateAtString(label, sample);
+  }
+
   /********************************************//**
    * \brief Displays one softkey
    *
@@ -1676,158 +1740,76 @@ bool_t maxfgLines(int16_t y) {
    * \param[in] bottomLine bool_t     Draw a bottom line
    * \return void
    ***********************************************/
-  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t greyoutBox) {     //dr
-    int16_t x1, y1;
-    int16_t x2, y2;
-
-    if(label[0] !=0 ) {
-      if(ySoftKey==1) {
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
-      }
-      if(ySoftKey == 2) {
-        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g cannot be reached)
-      }
-    }
-
-    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t greyoutBox) {
+    int16_t x1, y1, x2, y2;
+    if(!initSoftkeyCoordinates(label, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
-
-    if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = xS1(xSoftkey);
-      x2 = x1 + xS2(xSoftkey);
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-    if(0 <= ySoftKey && ySoftKey <= 2) {
-      y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
-      y2 = y1 + SOFTMENU_HEIGHT;
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
     showKey(label, x1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
     if(greyoutBox) {
       greyOutBox(x1, x2, y1, y2);
     }
   }
 
-
-  static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
-    int16_t x1, y1;
-    int16_t x2, y2;
-
-    if(labelSM1[0] !=0 ) {
-      if(ySoftKey==1) {
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in f
-      }
-      if(ySoftKey == 2) {
-        maxgLines |= 1; //set bit 0 for any non-blank softkey in g
-        maxfLines |= 1; //set bit 0 for any non-blank softkey in g (add f, for a g softkey otherwise g cannot be reached)
-      }
-    }
-
-    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+  static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+    int16_t x1, y1, x2, y2;
+    if(!initSoftkeyCoordinates(labelSM1, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
-
-    if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = xS1(xSoftkey);
-      x2 = x1 + xS2(xSoftkey);
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-    if(0 <= ySoftKey && ySoftKey <= 2) {
-      y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
-      y2 = y1 + SOFTMENU_HEIGHT;
-    }
-    else {
-      sprintf(errorMessage, "In function showSoftkey: ySoftKey=%" PRId16 " but must be from 0 to 2!" , ySoftKey);
-      displayBugScreen(errorMessage);
-      return;
-    }
-
-//    showKey(label, x1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
-
-
-
-char label1[30];
-
-if(xSoftkey == 0 || xSoftkey == 2 || xSoftkey == 4) {
-  xx1 = x1;
-  label0[0]=0;
-  stringCopy(label0 + stringByteLength(label0), labelSM1);
-  compressConversionName(label0);
-
-}
-  char sample[4];
-  stringCopy(sample, STD_RIGHT_ARROW);
-  int16_t i = 0;
-  while(label0[i+1] != 0) {
-    if(sample[0] == label0[i] && sample[1] == label0[i+1]) {
-      label0[i] = 0;
-      break;
-    }
-    i++;
+  char label1[30];
+  if(xSoftkey == 0 || xSoftkey == 2 || xSoftkey == 4) {
+    xx1 = x1;
+    label0[0]=0;
+    stringCopy(label0 + stringByteLength(label0), labelSM1);
+    compressConversionName(label0);
   }
+  truncateAtArrow(label0);
 
-  stringCopy(sample, STD_LEFT_ARROW);
-  i = 0;
-  while(label0[i+1] != 0) {
-    if(sample[0] == label0[i] && sample[1] == label0[i+1]) {
-      label0[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-
-if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
-  label1[0]=0;
-  stringCopy(label1 + stringByteLength(label1), labelSM1);
-  compressConversionName(label1);
-
-
-  stringCopy(sample, STD_RIGHT_ARROW);
-  i = 0;
-  while(label1[i+1] != 0) {
-    if(sample[0] == label1[i] && sample[1] == label1[i+1]) {
-      label1[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-
-  stringCopy(sample, STD_LEFT_ARROW);
-  i = 0;
-  while(label1[i+1] != 0) {
-    if(sample[0] == label1[i] && sample[1] == label1[i+1]) {
-      label1[i] = 0;
-      break;
-    }
-    i++;
-  }
-
-  showKey2(label0, label1, xx1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
-
+  if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
+    label1[0]=0;
+    stringCopy(label1 + stringByteLength(label1), labelSM1);
+    compressConversionName(label1);
+    truncateAtArrow(label1);
+    showKey2(label0, label1, xx1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
   }
 }
 
 
-void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+
+#define clear true
+static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
+
+    if(toClear) {
+      // Clear inside the frame
+      lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
+      return;
+    }
+
+    // Draw the frame
+    //   Top line
+    if(topLine) {
+      lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
+
+    //   Bottom line
+    if(y1 + SOFTMENU_HEIGHT <= min(y2, SCREEN_HEIGHT - 1) && bottomLine) {
+      lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
+
+    //   Left line, only drawn if x1 is not on the corner, use 10 as an arbitrary border
+    if(x1 >= 10) {
+      lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
+
+    //   Right line, only drawn if x2 is not on the corner, use 10 as an arbitrary border
+    if(x2 < SCREEN_WIDTH - 10) {
+      lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
+}
+
+
+
+static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
   #define YY -100
   int16_t Text0   ;
   int16_t Arr0    ;
@@ -1838,97 +1820,77 @@ void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, in
   float   space0=0;
   float   space1=0;
 
-int16_t w1;
-int16_t w2;
-int16_t w3;
-int16_t w4;
-int16_t arrowSpace;
+  // Compute widths and strings once based on HPCONV, without changing math
+  const char *t[4];
+  int16_t widths[4];
+  int16_t arrowSpace; 
+  const char *w[4];
 
-if(getSystemFlag(FLAG_HPCONV)) {
-  w1 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w2 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w3 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w4 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  arrowSpace = 2;
-}
-else {
-  w1 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w2 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w3 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  w4 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-  arrowSpace = 10;
-}
+  if(getSystemFlag(FLAG_HPCONV)) {
+    t[0] = label1;         w[0] = label1;
+    t[1] = STD_LEFT_ARROW; w[1] = STD_LEFT_ARROW;
+    t[2] = label0;         w[2] = STD_RIGHT_ARROW;
+    t[3] = STD_RIGHT_ARROW;w[3] = label0;
+    arrowSpace = 2;
+  } else {
+    t[0] = label0;         w[0] = label0;
+    t[1] = STD_RIGHT_ARROW;w[1] = STD_RIGHT_ARROW;
+    t[2] = label1;         w[2] = STD_LEFT_ARROW;
+    t[3] = STD_LEFT_ARROW; w[3] = label1;
+    arrowSpace = 10;
+  }
+  for(int i=0; i<4; i++) {
+    widths[i] = showStringEnhanced(w[i], &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+  }
 
   midpoint = (x2 - x1) / 2;
-  space0   = ((x2 - x1)/2.0f - w1 - w2 - arrowSpace) / 2.0f;   //###
-  Text0    = x1 + midpoint - arrowSpace - w2 - space0 - w1;
-  Arr0     = x1 + midpoint - arrowSpace - w2;
-  space1   = ((x2 - x1)/2.0f - w3 - w4 - arrowSpace) / 2.0f;   //###
+  space0   = ((x2 - x1)/2.0f - widths[0] - widths[1] - arrowSpace) / 2.0f;
+  Text0    = x1 + midpoint - arrowSpace - widths[1] - space0 - widths[0];
+  Arr0     = x1 + midpoint - arrowSpace - widths[1];
+  space1   = ((x2 - x1)/2.0f - widths[2] - widths[3] - arrowSpace) / 2.0f;
   Arr1     = x1 + midpoint + arrowSpace;
-  Text1    = x1 + midpoint + arrowSpace + w3 + space1;
-  // s w1 s w2 arrowSpace | arrowSpace w3 s w4 s
+  Text1    = x1 + midpoint + arrowSpace + widths[2] + space1;
+  // s widths[0] s widths[1] arrowSpace | arrowSpace widths[2] s widths[3] s
 
   //printf("@@@@ %f %f\n",space0, space1);
 
   if(space0 < arrowSpace || space1 < arrowSpace) {
-    space    = ((x2 - x1) - w1 - w2 - w3 - w4) / 7.0f;   //###
+    space    = ((x2 - x1) - widths[0] - widths[1] - widths[2] - widths[3]) / 7.0f;
     Text0    = x1 + space;
-    midpoint = 3.5 * space + w1 + w2;
+    midpoint = 3.5 * space + widths[0] + widths[1];
     if(getSystemFlag(FLAG_HPCONV)) {
-      Arr0     = x1 + midpoint - arrowSpace - w2;
-      Arr1     = x1 + midpoint + arrowSpace;
+      Arr0     = x1 + midpoint - arrowSpace - widths[1];
+      Arr1   = x1 + midpoint + arrowSpace;
     }
     else {
-      Arr0     = x1 + space + w1 + space;
-      Arr1     = x2 - space - w3 - w4 - space;
+      Arr0     = x1 + space + widths[0] + space;
+      Arr1     = x2 - space - widths[2] - widths[3] - space;
     }
-    Text1    = x2 - space - w4;
-    // s w1 s w2 s. | .s w3 s w4 s
+    Text1    = x2 - space - widths[3];
+    // s widths[0] s widths[1] s | s widths[2] s widths[3] s
 
   }
   //printf(">>>> |%s|%s| Space %f, w1 %d, w2 %d, w3 %d, w4 %d\n", label0, label1, space, w1, w2, w3, w4);
 
   // Clear inside the frame
-  lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
+  drawKeyFrame(clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
-  if(getSystemFlag(FLAG_HPCONV)) {
-    showStringEnhanced(label1,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(label0,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-  }
-  else {
-    showStringEnhanced(label0,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(label1,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
-    showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
+  // Display strings once using the precomputed positions and sequence
+  int16_t x[4] = {Text0, Arr0, Text1, Arr1};
+  for(int i=0; i<4; i++) {
+    showStringEnhanced(t[i], &standardFont, x[i] + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
   }
 
-  // Draw the frame
-  //   Top line
-  if(topLine) {
-    lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-  }
+  // Draw frame again if needed
+  drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
-  //   Bottom line
-  if(y1 + SOFTMENU_HEIGHT <= min(y2, 239) && bottomLine) {
-    lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-  }
-
-  //   Left line
+  // Mid vertical line, unchanged
   if(x1 >= 0) {
-    lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    lcd_fill_rect(x1 + midpoint + (rightMostSlot ? 0 : 1), y1 + 5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
   }
 
-  //   Right line
-  if(x2 < SCREEN_WIDTH) {
-    lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-  }
 
-  //   Mid line
-  if(x1 >= 0) {
-    lcd_fill_rect(x1 + midpoint + (rightMostSlot ? 0 : 1), y1+5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-  }
+
 }
 
 
@@ -1936,30 +1898,9 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
     int16_t w;
     char l[16];
 
-    // Draw the frame
-    //   Top line
-    if(topLine) {
-      lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Bottom line
-    if(y1 + SOFTMENU_HEIGHT <= min(y2, 239) && bottomLine) {
-      lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Left line
-    if(x1 >= 0) {
-      lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Right line
-    if(x2 < SCREEN_WIDTH) {
-      lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    // Clear inside the frame
-    lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
-
+    drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
+    drawKeyFrame( clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
+    
     xcopy(l, label, stringByteLength(label) + 1);
     //    char *lw = stringAfterPixels(l, &standardFont, (rightMostSlot ? 65 : 66), false, false);
     //    *lw = 0;
@@ -1987,7 +1928,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
   }
 #endif // JM_LINE2_DRAW
 
-  //vv EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX
+  //EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX
   if(showCb >= 0) {
     if(videoMode == vmNormal) {
       if(showCb == RB_FALSE) {
@@ -2005,32 +1946,34 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
     }
   }
 
+
 //Show a 'panelled' view of softkeys if a menu is assignable
 //printf("currentMenu()=%d\n",currentMenu());
   #define _off 1 // function parameter: +1 is favoured
   if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 &&
-      (currentMenu() == -MNU_HOME ||
-       currentMenu() == -MNU_MyMenu ||
-       currentMenu() == -MNU_MyAlpha ||
-       currentMenu() == -MNU_PFN ||
-       currentMenu() == -MNU_DYNAMIC
-       )) {
-    if(_off == 2) { //inner doubling of softkey box
-      lcd_fill_rect(max(0, x1)+1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(       x2 -1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(max(0, x1)+1, y1+1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(max(0, x1)+1, y1+SOFTMENU_HEIGHT-1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+     (currentMenu() == -MNU_HOME ||
+      currentMenu() == -MNU_MyMenu ||
+      currentMenu() == -MNU_MyAlpha ||
+      currentMenu() == -MNU_PFN ||
+      currentMenu() == -MNU_DYNAMIC)) {
 
+    int16_t xs[4], ys[4], ws[4], hs[4];
+    if(_off == 2) { //inner doubling of softkey box
+      xs[0] = max(0, x1)+1;         ys[0] = y1;                         ws[0] = 1; hs[0] = SOFTMENU_HEIGHT;
+      xs[1] = x2-1;                 ys[1] = y1;                         ws[1] = 1; hs[1] = SOFTMENU_HEIGHT;
+      xs[2] = max(0, x1)+1;         ys[2] = y1+1;                       ws[2] = min(x2, SCREEN_WIDTH)-max(0, x1)-2; hs[2] = 1;
+      xs[3] = max(0, x1)+1;         ys[3] = y1+SOFTMENU_HEIGHT-1;       ws[3] = min(x2, SCREEN_WIDTH)-max(0, x1)-2; hs[3] = 1;
     }
-    else { //positioning of nails or rivits, _off from the norm: -1, 0, +1 tried. +1 is best.
-      lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-      lcd_fill_rect(        x2-1-3 - _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    else { //positioning of nails or rivets
+      xs[0] = max(0, x1)+2+_off;    ys[0] = y1+1+_off;                  ws[0] = 3; hs[0] = 2;
+      xs[1] = max(0, x1)+2+_off;    ys[1] = y1+SOFTMENU_HEIGHT-2-_off;  ws[1] = 3; hs[1] = 2;
+      xs[2] = x2-1-3-_off;          ys[2] = y1+1+_off;                  ws[2] = 3; hs[2] = 2;
+      xs[3] = x2-1-3-_off;          ys[3] = y1+SOFTMENU_HEIGHT-2-_off;  ws[3] = 3; hs[3] = 2;
+    }
+    for(int i=0; i<4; i++) {
+      lcd_fill_rect(xs[i], ys[i], ws[i], hs[i], (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
     }
   }
-
-  //^^
 }
 
 
@@ -2101,6 +2044,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
   * vm = (itemNr < 0) || (isFunctionItemAMenu(itemNr%10000)) ? vmReverse : vmNormal;
   * showCb = NOVAL;
   * showValue = NOVAL;
+  showText[0] = 0;
   stringCopy(itemName, NOTEXT);
   showText[0]=0;
 
@@ -2604,6 +2548,7 @@ void showSoftmenuCurrentPart(void) {
     videoMode_t vm = vmNormal;
     int8_t showCb = NOVAL;
     int16_t showValue = NOVAL;
+    showText[0] = 0;
 
     if(m < NUMBER_OF_DYNAMIC_SOFTMENUS) { // Dynamic softmenu
       #if defined(PC_BUILD)
@@ -2624,6 +2569,7 @@ void showSoftmenuCurrentPart(void) {
             if(x + 6*y + currentFirstItem < numberOfItems) {
               if(*ptr != 0) {
                 vm = vmNormal;
+                showText[0] = 0;
                 showCb = NOVAL;
                 showValue = NOVAL;
                 int16_t itemNr = userMenuItems[x + 6*y].item;
