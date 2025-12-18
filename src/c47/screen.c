@@ -2516,7 +2516,7 @@ void createSubstrings(uint8_t number) {
       iii=realToUint32C47(&iir);
       jji=realToUint32C47(&jjr);
     } else {
-      bb = true;      
+      bb = true;
     }
 
 
@@ -4584,7 +4584,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          prefixWidth = 0;
+          if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE)) {
+            prefix[0] = 0;
+          }
           tmpString[0]=0;
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
             // show Overflow indication for current X register operation
@@ -4631,7 +4633,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 /*Main type dtLongInteger*/
         else if(getRegisterDataType(regist) == dtLongInteger) {
-          prefix[0] = 0;
+          if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE)) {
+            prefix[0] = 0;
+          }
 
           if(DBASEMODE) displayBaseMode(regist);
 
@@ -4791,7 +4795,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           else if(temporaryInformation != TI_VIEW_REGISTER /*== TI_DAY_OF_WEEK*/) { // Change to ignore TI_DAY_OF_WEEK as TI, and permanently display the weekday on registers X, Y & Z
             if(regist >= REGISTER_X && regist <= REGISTER_T) {
-              prefix[0] = 0;
+              if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) || regist != REGISTER_X) {
+                prefix[0] = 0;
+              }
               if(Y_SHIFT && regist == REGISTER_T){
                 strcpy(prefix,"  ");
               }
@@ -4862,6 +4868,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             else if(temporaryInformation == TI_STATISTIC_SUMS) {
               _displaySigmaPlus(regist, prefix, &prefixWidth, noLine);
             }
+            else if(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) {
+              inputRegName(prefix, &prefixWidth);
+            }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
@@ -4926,6 +4935,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             else if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_X) {          //X, not T
               userTI(currentViewRegister, regist, prefix, &prefixWidth);
+            }
+            else if(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) {
+              inputRegName(prefix, &prefixWidth);
             }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
@@ -5080,7 +5092,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     }
   }
 
-  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
+  //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator
   #define useSmallShifts (Y_SHIFT      && calcMode == CM_NORMAL\
                                        &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
                                               ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger))   \
