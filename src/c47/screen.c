@@ -888,12 +888,25 @@ void execTimerApp(uint16_t timerType) {
                 showSoftmenuCurrentPart();
               }
               else {
-                BASE_OVERRIDEONCE = true;
-                showSoftmenu((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_MyAlpha :
-                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_MyMenu));
-                BASE_OVERRIDEONCE = true;
+                bool_t baseOverrideOnce = true;
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha) {
+                  showSoftmenu(-MNU_MyAlpha);
+                }
+                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
+                  showSoftmenu(key->fShifted);
+                }
+                else if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
+                  showSoftmenu(-MNU_MyMenu);
+                }
+                else {
+                  baseOverrideOnce = false;
+                  BASE_OVERRIDEONCE = baseOverrideOnce;
+                  fnExitAllMenus(0);               // If MyMb and HOMEb are both clear, return to the blank base menu display
+                }
+                BASE_OVERRIDEONCE = baseOverrideOnce;
                 showSoftmenuCurrentPart();
-                BASE_OVERRIDEONCE = true;            //for upcoming refresh*
+                BASE_OVERRIDEONCE = baseOverrideOnce;            //for upcoming refresh*
               }
             }
           }
