@@ -865,6 +865,7 @@ static void doFnEvPFacts (uint16_t param) {
 
 #define isRegisterMatrixFactors(reg)  ((getRegisterDataType(reg) == dtReal34Matrix) && REGISTER_MATRIX_HEADER(reg)->matrixRows == 2 && REGISTER_MATRIX_HEADER(reg)->matrixColumns > 1)
 static void fnEulPhi(uint16_t unusedButMandatoryParameter);
+static bool_t performPrimeFactorization(bool_t doSaveLastX);
 
 
 void fnEvPFacts (uint16_t param) {
@@ -902,7 +903,7 @@ void fnEvPFacts (uint16_t param) {
       if(isRegisterMatrixFactors(REGISTER_X)) {
         ; // nothing
       } else {
-        fnPrimeFactors(NOPARAM);
+        performPrimeFactorization(false);  // Call with saveLastX disabled
       }
       break;
     case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
@@ -911,7 +912,7 @@ void fnEvPFacts (uint16_t param) {
         ; // nothing
       } else {
         fnSwapXY(NOPARAM);
-        fnPrimeFactors(NOPARAM);
+        performPrimeFactorization(false);  // Call with saveLastX disabled
         fnSwapXY(NOPARAM);
       }
       break;
@@ -1726,7 +1727,11 @@ static void printTitles(longInteger_t input) {
 }
 
 
-void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
+// Helper that extracts from REGISTER_X, validates, and performs factorization
+// Parameter doSaveLastX: if true, calls saveLastX() before proceeding
+// Returns true on success, false on failure
+// All error reporting happens inside this function
+static bool_t performPrimeFactorization(bool_t doSaveLastX) {
   iterations = true;
   addFactorsToTSV = false;
   loopp = 0;
@@ -1738,14 +1743,6 @@ void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
   longIntegerInit(tmp);
   longIntegerInit(temp1);
 
-  //bool_t continueWithMatrix = false;
-  //if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 2 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 0) {
-  //  continueWithMatrix = true;
-  //  convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns-1, temp1, RM_HALF_UP);
-  //  convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns*2-1, tmp, RM_HALF_UP);
-  //  longIntegerPower(temp1, tmp, currentNumber);
-  //}
-  //else
   if(!getIntArg(currentNumber)) {
     goto abort;
   }
@@ -1767,17 +1764,15 @@ void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
     goto abort;
   }
 
-  if(!saveLastX()) {
-    goto abort;
+  if(doSaveLastX) {
+    if(!saveLastX()) {
+      goto abort;
+    }
   }
 
   int32ToReal34(0,&lastAdded);
   FactorAdder_t faddr;
   initFactorAdder(&faddr);
-
-  //if(continueWithMatrix) {
-  //  initFactorCreateFromMatrix(&faddr);
-  //}
 
   //determine if the TSV file is to be written
   longInteger_t lgInt;
@@ -2054,9 +2049,13 @@ abort:
   longIntegerFree(currentNumber);
   cancelFilename = true;
   iterations = false;
+  return false;
 }
 
 
+void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
+  performPrimeFactorization(true);  // Call with saveLastX enabled
+}
 
 //-------------------------------------------------------------------
 /*
