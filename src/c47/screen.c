@@ -1970,7 +1970,7 @@ return res;
   static void do_viewRegName(calcRegister_t regist,  char *prefix, int16_t *prefixWidth, char* endChar) { //using "=" for VIEW
     //printf("========================== %i %s regist=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), regist, prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
@@ -1981,29 +1981,29 @@ return res;
       return;
     }
     if(regist < REGISTER_X) {
-      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), regist, endChar);
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), regist, endChar);
     }
     else if(regist <= LAST_SPARE_REGISTER) {
-      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(regist), endChar);
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), letteredRegisterName(regist), endChar);
     }
     else if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
     }
     else if(FIRST_NAMED_VARIABLE <= regist && regist <= LAST_NAMED_VARIABLE) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
-      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (Y_SHIFT ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (Y_SHIFT ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
+      sprintf(prefix + (Y_SHIFT ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (Y_SHIFT ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (Y_SHIFT ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      sprintf(prefix + (Y_SHIFT ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
@@ -2600,10 +2600,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
        else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !solverEstimatesUsed) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase, SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0)); // base 1 is BCD, #10
+           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase, SCREEN_WIDTH - (Y_SHIFT ? 10 : 0)); // base 1 is BCD, #10
            bool_t   printFirstCol = fontForShortInteger == &tinyFont;
-           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0);
-           uint32_t xoff = printWillFit ? SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0) - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : (SBARUPD_Time ? 10 : 0);
+           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH - (Y_SHIFT ? 10 : 0);
+           uint32_t xoff = printWillFit ? SCREEN_WIDTH - (Y_SHIFT ? 10 : 0) - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : (Y_SHIFT ? 10 : 0);
            if(lastErrorCode == 0 && printWillFit) {
              showString("  X:" STD_INTEGER_Z ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
@@ -2655,7 +2655,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   #define RESTORE_T true
 
   static void _refreshRegisterLine(calcRegister_t regist, bool_t restoreRegisterT) {
-    int32_t w;
+    int32_t w = 0;
     int16_t wLastBaseNumeric, wLastBaseStandard, prefixWidth = 0, lineWidth = 0;
     bool_t prefixPre = true;
     bool_t prefixPost = true;
@@ -3227,10 +3227,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           {
             sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
-            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (Y_SHIFT ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (Y_SHIFT ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
@@ -3238,10 +3238,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(getSystemFlag(FLAG_SSIZE8)) {
             sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
-            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (Y_SHIFT ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (Y_SHIFT ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
@@ -4318,6 +4318,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                strcpy(prefix,"Last full state file loaded:");
                showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE, vmNormal, prefixPre, prefixPost);
                prefix[0]=0;
+               prefixWidth = 0;
+          }
+          else if(Y_SHIFT && regist == REGISTER_T) {
+             strcpy(prefix,"  ");
+             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
 
@@ -4347,7 +4352,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           #if defined(STACK_STR_MED_FONT)
             //This is for Y, Z & T
-            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
+            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
             }
@@ -4534,7 +4539,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
           //shift longinter prefix on by two space if interfering with the shift indicator, when SB_TIME is selected
-          if(regist == REGISTER_T && SBARUPD_Time) {
+          if(regist == REGISTER_T && Y_SHIFT) {
            int len = strlen(prefix);
            if(len + 2 < 200) {
              if(prefix[0] == 0) {
@@ -4645,7 +4650,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation != TI_VIEW_REGISTER /*== TI_DAY_OF_WEEK*/) { // Change to ignore TI_DAY_OF_WEEK as TI, and permanently display the weekday on registers X, Y & Z
             if(regist >= REGISTER_X && regist <= REGISTER_T) {
               prefix[0] = 0;
-              if(SBARUPD_Time && regist == REGISTER_T){
+              if(Y_SHIFT && regist == REGISTER_T){
                 strcpy(prefix,"  ");
               }
               strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
@@ -4934,9 +4939,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator 
-  #define useSmallShifts (SBARUPD_Time && ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
-                                              ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\
-                                              (getRegisterDataType(REGISTER_T) == dtString)\
+  #define useSmallShifts (Y_SHIFT &&      ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+                                              ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger))   \
                                            ) )
   #define displayF (useSmallShifts ? STD_f : STD_MODE_F)
   #define displayG (useSmallShifts ? STD_g : STD_MODE_G)
