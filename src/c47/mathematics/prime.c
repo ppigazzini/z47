@@ -862,8 +862,16 @@ static void doFnEvPFacts (uint16_t param) {
   }
 }
 
+static bool_t isRegisterMatrixFactors(calcRegister_t reg) {
+  if (getRegisterDataType(reg) != dtReal34Matrix)
+    return false;
 
-#define isRegisterMatrixFactors(reg)  ((getRegisterDataType(reg) == dtReal34Matrix) && REGISTER_MATRIX_HEADER(reg)->matrixRows == 2 && REGISTER_MATRIX_HEADER(reg)->matrixColumns > 1)
+  const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
+  if (head->matrixRows != 2 || head->matrixColumns <= 1)
+    return false;
+  return true;
+}
+
 static void fnEulPhi(uint16_t unusedButMandatoryParameter);
 static bool_t performPrimeFactorization(bool_t doSaveLastX);
 
