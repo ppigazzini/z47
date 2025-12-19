@@ -1749,7 +1749,21 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     //Change to make proper real number before the °
     real34_t tmp;
     realToReal34(&degrees, &tmp);
+    uint8_t savedDisplayFormatDigits = displayFormatDigits;
+    uint8_t savedDisplayFormat       = displayFormat;
+    //format without decimals
+    displayFormatDigits = 0;
+    displayFormat = DF_ALL;
     real34ToDisplayString2(&tmp, degStr, displayHasNDigits, limitExponent, false, frontSpace, true, limitIrfrac);
+    displayFormatDigits = savedDisplayFormatDigits;
+    displayFormat       = savedDisplayFormat;
+    //remove the '.' radix indicating it is a real
+    int32_t slen = (int32_t)strlen(degStr);
+    int32_t mlen = (Rx[0] & 0x80) ? (int32_t)strlen(RADIX34_MARK_STRING) : (int32_t)strlen(Rx);
+    const char *marker = (Rx[0] & 0x80) ? RADIX34_MARK_STRING : Rx;
+    if(slen >= mlen && strcmp(degStr + slen - mlen, marker) == 0) {
+      degStr[slen - mlen] = '\0';
+    }
 
 
     char tt[4];
@@ -3107,16 +3121,16 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
         (*source)--;
       }
       else {
-        (*dest)--;                                           //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
+        (*dest)--;    //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
         (*source)--;
-        if(SEP[0] & 0x80 && SEP[1] != 1) {                   //line ends on a double byte seperator
+        if(SEP[0] & 0x80 && SEP[1] != 1) { //line ends on a double byte seperator
           (*dest)--;
           (*source)--;
         }
         break;
       }
     }
-                                                             //source sits on the next, not yet printed digit
+    //source sits on the next, not yet printed digit
 
 
     #if defined(MONITOR_SHOW)
