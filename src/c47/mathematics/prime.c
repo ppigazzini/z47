@@ -186,15 +186,26 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
   return true;
 } */
 
-static bool_t getIntArg(longInteger_t x) {
+static bool_t getIntArg(longInteger_t x, calcRegister_t regist) {
   bool_t fractional;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, &fractional)) {
+  if(!getRegisterAsLongInt(regist, x, &fractional)) {
+    if(getRegisterDataType(regist) != dtReal34Matrix) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is invalid for storage into a longinteger!");
+        moreInfoOnError("In function getIntArg:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
     return false;
   }
 
   if(fractional) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The input value is fractional and invalid for storage into a longinteger!");
+      moreInfoOnError("In function getIntArg:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   return true;
@@ -205,7 +216,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     longInteger_t tmp, primeCandidate;
 
-    if(!getIntArg(primeCandidate)) {
+    if(!getIntArg(primeCandidate, REGISTER_X)) {
       goto abort1;
     }
 
@@ -244,7 +255,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
       convertRealToLongInteger(&x, currentNumber, DEC_ROUND_DOWN);
     }
     else {
-      if(!getIntArg(currentNumber)) {
+      if(!getIntArg(currentNumber, REGISTER_X)) {
         goto abort1;
       }
     }
@@ -672,7 +683,7 @@ static void _doFnEvPFacts     (uint16_t param) {
         fnDrop(NOPARAM);
       }
       else {
-        if(!getIntArg(currentNumber)) {
+        if(!getIntArg(currentNumber, REGISTER_X)) {
           longIntegerFree(currentNumber);
           goto abort;
         }
@@ -711,10 +722,10 @@ static void _doFnEvPFacts     (uint16_t param) {
             //printLongIntegerToConsole(p_li,"base:","  ");
             //printLongIntegerToConsole(k_li,"exp:","\n");
             switch(param){
-              case M_FACTORS:        longIntegerPower(p_li, k_li, factor); break;
+              case M_FACTORS: longIntegerPower(p_li, k_li, factor); break;
               case M_SIGMA_0:
               case M_SIGMA_1:
-              case M_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
+              case M_SIGMA_k: longIntegerSumPowers(p_li, k_li, pwr, factor); break;
               default:;
             }
             longIntegerFree(p_li);
@@ -817,7 +828,7 @@ static void doFnEvPFacts (uint16_t param) {
   /* process M_SIGMA_p1 as M_SIGMA_1; process M_SIGMA_pk as M_SIGMA_k*/  
   if(param == M_SIGMA_p1 || param == M_SIGMA_pk) {
     if(param == M_SIGMA_pk) {
-      if(!getIntArg(xx)) {
+      if(!getIntArg(xx, REGISTER_X)) {
         goto end;
       }
       longIntegerToInt32(xx, k);
@@ -828,7 +839,7 @@ static void doFnEvPFacts (uint16_t param) {
 
     //expect matrix in X
     real34Matrix_t xx;
-    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);
+    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);    // temporary store matrix, as the temp register is being used already
     longInteger_t y, x, z, tmp;
     _doFnEvPFacts(M_FACTORS);                                      // longinteger register output
     convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
@@ -862,8 +873,19 @@ static void doFnEvPFacts (uint16_t param) {
   }
 }
 
-static bool_t isRegisterMatrixFactors(calcRegister_t reg) {
+/******************************************************************************
+ * isRegisterMatrixFactors
+ * 
+ * Validates 2 rows, >= 11 cols matrix as likely prime factors for use in the phi and sigma functions
+ *   Row 1: [p1, p2, ..., pn]  factors >= 1 (or -1 for optional sign column)
+ *   Row 2: [e1, e2, ..., en]  exponents >= 0
+ * 
+ * Parameters: reg - register to validate, isNegative output is true if [-1,1] sign column is present
+ * Returns: true if valid factorization matrix
+ ******************************************************************************/
+static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
   const uint32_t type = getRegisterDataType(reg);
+  *isNegative = false;
 
   if (type == dtReal34Matrix) {
     const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
@@ -873,13 +895,13 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg) {
     bool_t mustBeOne = false;
     unsigned int i;
 
-    if (head->matrixRows != 2 || cols <= 1)
+    if (head->matrixRows != 2 || cols < 1)  // changed to allow single column, -1^1 or m^n
       return false;
-    for (i = 0; i < head->matrixColumns; i++) {
-      real34ToReal(elems + i * cols, &x);
+    for (i = 0; i < cols; i++) {
+      real34ToReal(elems + i + 0 * cols, &x);
       if (!realIsAnInteger(&x))
         return false;
-      if (realCompareLessEqual(&x, const_1)) {
+      if (realCompareLessEqual(&x, const_0)) {// changed to allow any factor >= 1, to include 1^n
         if (i != 0)
           return false;
         if (!realCompareEqual(&x, const__1))
@@ -887,14 +909,15 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg) {
         mustBeOne = true;
       }
 
-      real34ToReal(elems + i * cols + 1, &x);
+      real34ToReal(elems + i + 1 * cols, &x);
       if (!realIsAnInteger(&x))
         return false;
-      if (realCompareLessThan(&x, const_1))
+      if (realCompareLessThan(&x, const_0))  // change to const_0 to allow n^0 (exponents ≥ 0). (0^0 per definition will not occur as 0 factor is not allowed).
         return false;
       if (mustBeOne) {
         if (!realCompareEqual(&x, const_1))
           return false;
+        *isNegative = true;
         mustBeOne = false;
       }
     }
@@ -908,23 +931,74 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter);
 static bool_t performPrimeFactorization(bool_t doSaveLastX);
 
 
-void fnEvPFacts (uint16_t param) {
-  if(!isRegisterMatrixFactors(REGISTER_X)) {
-    longInteger_t x;
-    if(!getIntArg(x)) {
-      longIntegerFree(x);
-      goto return10;
-    }
-    if(longIntegerIsNegative(x)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+/******************************************************************************
+ * validateNonNegativeIntegerOrMatrix
+ * 
+ * Validates register contains either:
+ *   - A valid non-negative factorization matrix, or
+ *   - A non-negative long integer
+ * 
+ * Parameters:
+ *   reg - register to validate
+ *   isMatrix - output: true if validated as matrix
+ *   isNegative - output: true if matrix has sign column
+ * 
+ * Returns: true if valid and non-negative, false otherwise (displays errors)
+ ******************************************************************************/
+static bool_t validateNonNegativeIntegerOrMatrix(calcRegister_t reg, bool_t *isMatrix) {//, bool_t *isNegative) {
+  bool_t isNegative;
+  *isMatrix = isRegisterMatrixFactors(reg, &isNegative);
+  if(!*isMatrix) {
+    if(getRegisterDataType(reg) == dtReal34Matrix) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "The input value is negative and therefore out of the domain!");
-        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "The input value is not a valid matrix!");
+        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 01:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+    //check long integer for validity and positive
+    longInteger_t x;
+      if(!getIntArg(x, reg)) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is neither a longinteger nor a valid matrix!");
+        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 02:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerFree(x);
-      goto return10;
+      return false;
+    }
+    if(longIntegerIsNegative(x)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is negative and therefore out of the domain!");
+        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 03:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(x);
+      return false;
     }
     longIntegerFree(x);
+  }
+  if(*isMatrix && isNegative) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The matrix input value is negative and therefore out of the domain!");
+      moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 04:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+  return true;
+}
+
+
+
+void fnEvPFacts(uint16_t param) {
+  bool_t isValidMxX    = false;
+  bool_t isValidMxY    = false;
+  if(param != M_FACTORS) {
+    if(!validateNonNegativeIntegerOrMatrix(REGISTER_X, &isValidMxX)) {
+      goto return10;
+    }
   }
 
   if(!saveLastX()) {
@@ -940,17 +1014,16 @@ void fnEvPFacts (uint16_t param) {
     case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
     case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
     case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
-      if(isRegisterMatrixFactors(REGISTER_X)) {
-        ; // nothing
-      } else {
+      if(!isValidMxX) {
         performPrimeFactorization(false);  // Call with saveLastX disabled
       }
       break;
     case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
     case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
-      if(isRegisterMatrixFactors(REGISTER_Y)) {
-        ; // nothing
-      } else {
+      if(!validateNonNegativeIntegerOrMatrix(REGISTER_Y, &isValidMxY)) {
+        goto return10;
+      }
+      if(!isValidMxY) {
         fnSwapXY(NOPARAM);
         performPrimeFactorization(false);  // Call with saveLastX disabled
         fnSwapXY(NOPARAM);
@@ -977,7 +1050,7 @@ void fnEvPFacts (uint16_t param) {
         doFnEvPFacts(param);
       } else {
         #if defined(PC_BUILD)
-          printf("fnEvPFacts: Error passed trhrough: lastErrorCode=%d\n",lastErrorCode);    
+          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);    
         #endif
       }
       break;
@@ -1011,8 +1084,9 @@ void fnEvPFacts (uint16_t param) {
  */
 static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
+    bool_t isMxXNegative = false;
     longInteger_t x;
-    bool_t useMatrix = isRegisterMatrixFactors(REGISTER_X);
+    bool_t useMatrix = isRegisterMatrixFactors(REGISTER_X, &isMxXNegative);
     real34Matrix_t xx;
 
     if(useMatrix) {
@@ -1020,7 +1094,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
       doFnEvPFacts(M_FACTORS);
     }
 
-    if(!getIntArg(x)) {
+    if(!getIntArg(x, REGISTER_X)) {
       if(useMatrix) {
         convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix after matrix element operations
       }
@@ -1783,7 +1857,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
   longIntegerInit(tmp);
   longIntegerInit(temp1);
 
-  if(!getIntArg(currentNumber)) {
+  if(!getIntArg(currentNumber, REGISTER_X)) {
     goto abort;
   }
 

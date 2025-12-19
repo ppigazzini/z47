@@ -61,7 +61,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5424563354566542698521412502251020304
 
 Func: fnEvPFacts(0)
 ;=======================================
-; M_EULER_SIGMA_0(Matrix, k) --> Longinteger
+; M_EULER_SIGMA_0(Matrix) --> Longinteger
 ;=======================================
 In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,6[2,5,17,67,42649,2233377850600168337585874373171,1,2,1,1,1,1]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,6[2,5,17,67,42649,2233377850600168337585874373171,1,2,1,1,1,1]" RX=LonI:"96"
@@ -69,7 +69,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,6[2,5,17,67,42649,2233377850600168
 
 Func: fnEvPFacts(1)
 ;=======================================
-; M_EULER_SIGMA_1(Matrix, k) --> Longinteger
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
 ;=======================================
 In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,6[2,5,17,67,42649,2233377850600168337585874373171,1,2,1,1,1,1]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,6[2,5,17,67,42649,2233377850600168337585874373171,1,2,1,1,1,1]" RX=LonI:"10842903848427958148003809482740929185600"
@@ -109,7 +109,216 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,6[2,5,17,67,42649,2233377850600168
 
 
 
-;INTEGER INPUT
+;MATRIX INPUT FIRST FACTOR NEGATIVE
+
+Func: fnEvPFacts(0)
+;=======================================
+; M_EULER_SIGMA_0(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(1)
+;=======================================
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(2)
+;=======================================
+; M_EULER_SIGMA_k(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(3)
+;=======================================
+; M_EULER_SIGMA_p1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(4)
+;=======================================
+; M_EULER_SIGMA_pk(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(5)
+;=======================================
+; M_FACTORS(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[-1,2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]" RX=LonI:"-5424563354566542698521412502251020304050"
+
+
+
+
+;MATRIX INPUT FACTORS NEGATIVE
+
+Func: fnEvPFacts(0)
+;=======================================
+; M_EULER_SIGMA_0(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(1)
+;=======================================
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(2)
+;=======================================
+; M_EULER_SIGMA_k(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(3)
+;=======================================
+; M_EULER_SIGMA_p1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(4)
+;=======================================
+; M_EULER_SIGMA_pk(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+
+
+Func: fnEvPFacts(5)
+;=======================================
+; M_FACTORS(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[1,-2,5,17,67,42649,2233377850600168337585874373171,1,1,2,1,1,1,1]" RX=LonI:"-5424563354566542698521412502251020304050"
+
+
+
+
+;MATRIX INPUT FACTORS 1 : 1^n
+
+Func: fnEvPFacts(0)
+;=======================================
+; M_EULER_SIGMA_0(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+
+
+Func: fnEvPFacts(1)
+;=======================================
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+
+
+Func: fnEvPFacts(2)
+;=======================================
+; M_EULER_SIGMA_k(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+
+
+Func: fnEvPFacts(3)
+;=======================================
+; M_EULER_SIGMA_p1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+
+
+Func: fnEvPFacts(4)
+;=======================================
+; M_EULER_SIGMA_pk(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+
+
+Func: fnEvPFacts(5)
+;=======================================
+; M_FACTORS(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[-1, 1,1,1,1,1,1, 1, 2,3,4,5,6,7]" RX=LonI:"-1"
+
+
+
+
+;MATRIX INPUT EXPONENTS 0 : n^0
+
+Func: fnEvPFacts(0)
+;=======================================
+; M_EULER_SIGMA_0(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]" RX=LonI:"2"
+
+
+Func: fnEvPFacts(1)
+;=======================================
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]" RX=LonI:"2"
+
+
+Func: fnEvPFacts(2)
+;=======================================
+; M_EULER_SIGMA_k(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RX=LonI:"3" RY=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"2"
+
+
+Func: fnEvPFacts(3)
+;=======================================
+; M_EULER_SIGMA_p1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]" RX=LonI:"1"
+
+
+Func: fnEvPFacts(4)
+;=======================================
+; M_EULER_SIGMA_pk(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RX=LonI:"3" RY=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"1"
+
+
+Func: fnEvPFacts(5)
+;=======================================
+; M_FACTORS(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,7[1, 1,1,1,1,1,1, 1, 0,0,0,0,0,0]" RX=LonI:"1"
+
+
+
+
+
+;INTEGER INPUT POSITIVE
 
 Func: fnEvPFacts(0)
 ;=======================================
@@ -121,7 +330,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5424563354566542698521412502251020304
 
 Func: fnEvPFacts(1)
 ;=======================================
-; M_EULER_SIGMA_1(Matrix, k) --> Longinteger
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
 ;=======================================
 In:  FL_ASLIFT=0 RY=LonI:"3" RX=LonI:"5424563354566542698521412502251020304050"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5424563354566542698521412502251020304050" RX=LonI:"10842903848427958148003809482740929185600"
@@ -146,5 +355,46 @@ Func: fnEvPFacts(4)
 ;=======================================
 In:  FL_ASLIFT=0 RX=LonI:"3" RY=LonI:"5424563354566542698521412502251020304050"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"21438367908430865402382484064774680693176611117636486030203706023517586425147544295373643611475781319013278056598900600"
+
+
+
+
+;INTEGER INPUT NEGATIVE
+
+Func: fnEvPFacts(0)
+;=======================================
+; M_EULER_SIGMA_0(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=LonI:"-5424563354566542698521412502251020304050"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5424563354566542698521412502251020304050"
+
+
+Func: fnEvPFacts(1)
+;=======================================
+; M_EULER_SIGMA_1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=LonI:"-5424563354566542698521412502251020304050"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5424563354566542698521412502251020304050"
+
+Func: fnEvPFacts(2)
+;=======================================
+; M_EULER_SIGMA_k(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RX=LonI:"3" RY=LonI:"-5424563354566542698521412502251020304050"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"3"
+
+Func: fnEvPFacts(3)
+;=======================================
+; M_EULER_SIGMA_p1(Matrix) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"3" RX=LonI:"-5424563354566542698521412502251020304050"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5424563354566542698521412502251020304050"
+
+Func: fnEvPFacts(4)
+;=======================================
+; M_EULER_SIGMA_pk(Matrix, k) --> Longinteger
+;=======================================
+In:  FL_ASLIFT=0 RX=LonI:"3" RY=LonI:"-5424563354566542698521412502251020304050"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"3"
 
 
