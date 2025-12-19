@@ -1750,10 +1750,13 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     real34_t tmp;
     realToReal34(&degrees, &tmp);
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
+    uint8_t savedDisplayFormat       = displayFormat;
     //format without decimals
     displayFormatDigits = 0;
+    displayFormat = DF_ALL;
     real34ToDisplayString2(&tmp, degStr, displayHasNDigits, limitExponent, false, frontSpace, true, limitIrfrac);
     displayFormatDigits = savedDisplayFormatDigits;
+    displayFormat       = savedDisplayFormat;
     //remove the '.' radix indicating it is a real
     int32_t slen = (int32_t)strlen(degStr);
     int32_t mlen = (Rx[0] & 0x80) ? (int32_t)strlen(RADIX34_MARK_STRING) : (int32_t)strlen(Rx);
