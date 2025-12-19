@@ -863,13 +863,45 @@ static void doFnEvPFacts (uint16_t param) {
 }
 
 static bool_t isRegisterMatrixFactors(calcRegister_t reg) {
-  if (getRegisterDataType(reg) != dtReal34Matrix)
-    return false;
+  const uint32_t type = getRegisterDataType(reg);
 
-  const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
-  if (head->matrixRows != 2 || head->matrixColumns <= 1)
-    return false;
-  return true;
+  if (type == dtReal34Matrix) {
+    const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
+    const uint16_t cols = head->matrixColumns;
+    real34_t *elems = REGISTER_REAL34_MATRIX_ELEMENTS(reg);
+    real_t x;
+    bool_t mustBeOne = false;
+    unsigned int i;
+
+    if (head->matrixRows != 2 || cols <= 1)
+      return false;
+    for (i = 0; i < head->matrixColumns; i++) {
+      real34ToReal(elems + i * cols, &x);
+      if (!realIsAnInteger(&x))
+        return false;
+      if (realCompareLessEqual(&x, const_1)) {
+        if (i != 0)
+          return false;
+        if (!realCompareEqual(&x, const__1))
+          return false;
+        mustBeOne = true;
+      }
+
+      real34ToReal(elems + i * cols + 1, &x);
+      if (!realIsAnInteger(&x))
+        return false;
+      if (realCompareLessThan(&x, const_1))
+        return false;
+      if (mustBeOne) {
+        if (!realCompareEqual(&x, const_1))
+          return false;
+        mustBeOne = false;
+      }
+    }
+    return true;
+  }
+
+  return false;
 }
 
 static void fnEulPhi(uint16_t unusedButMandatoryParameter);
@@ -1772,11 +1804,8 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     goto abort;
   }
 
-  if(doSaveLastX) {
-    if(!saveLastX()) {
-      goto abort;
-    }
-  }
+  if(doSaveLastX && !saveLastX())
+    goto abort;
 
   int32ToReal34(0,&lastAdded);
   FactorAdder_t faddr;
