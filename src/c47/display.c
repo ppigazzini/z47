@@ -834,17 +834,17 @@ overRange:
 #undef SIG_VARIABLE_JUMP
 
   if((displayFormat == DF_FIX || displayFormat == DF_SF || flag2To10_baseunit_integer)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
-    if(noFix || exponent >= displayHasNDigits ||
+    if(noFix || exponent >= (checkHP ? 10+1 : displayHasNDigits) ||
          #if defined(SIG_VARIABLE_JUMP)
            exponent < -(int32_t)displayFormatDigits ||                                           //allow zero digits .00...1 to track n
          #else
            ((displayFormat == DF_SF) && (exponent < (getSystemFlag(FLAG_ENGOVR) ? -2 : -3))) ||  //in SIG & ENGOVR,  allow 2 zero digits .001 then jump, in SIG & !ENGOVR, allow 3 zero digits .0001 then jump
-           ((displayFormat != DF_SF) && (exponent < -(int32_t)displayFormatDigits)) ||
+           ((displayFormat != DF_SF) && (exponent < -(int32_t)(checkHP ? 10+1 : displayHasNDigits))) ||
          #endif //SIG_VARIABLE_JUMP
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
       ) { // Display in SCI or ENG format
-      digitsToDisplay = min(displayFormatDigits, displayHasNDigits - 1);
+      digitsToDisplay = min(displayFormatDigits, (checkHP ? 10+1 : displayHasNDigits) - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
