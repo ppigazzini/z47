@@ -825,7 +825,7 @@ static void doFnEvPFacts (uint16_t param) {
   longInteger_t xx;
   int32_t k = 1;
 
-  /* process M_SIGMA_p1 as M_SIGMA_1; process M_SIGMA_pk as M_SIGMA_k*/  
+  /* process M_SIGMA_p1 as M_SIGMA_1; process M_SIGMA_pk as M_SIGMA_k*/
   if(param == M_SIGMA_p1 || param == M_SIGMA_pk) {
     if(param == M_SIGMA_pk) {
       if(!getIntArg(xx, REGISTER_X)) {
@@ -854,7 +854,7 @@ static void doFnEvPFacts (uint16_t param) {
       case M_SIGMA_p1:
         _doFnEvPFacts(M_SIGMA_1);                                  // longinteger register output
         break;
-      case M_SIGMA_pk: 
+      case M_SIGMA_pk:
         fnSwapXY(NOPARAM);                                         // restore matrix to y
         _doFnEvPFacts(M_SIGMA_k);                                  // longinteger register output
         break;
@@ -875,11 +875,9 @@ static void doFnEvPFacts (uint16_t param) {
 
 /******************************************************************************
  * isRegisterMatrixFactors
- * 
- * Validates 2 rows, >= 11 cols matrix as likely prime factors for use in the phi and sigma functions
+ * Validates 2 rows, >= 1 cols matrix as likely prime factors for use in the phi and sigma functions
  *   Row 1: [p1, p2, ..., pn]  factors >= 1 (or -1 for optional sign column)
  *   Row 2: [e1, e2, ..., en]  exponents >= 0
- * 
  * Parameters: reg - register to validate, isNegative output is true if [-1,1] sign column is present
  * Returns: true if valid factorization matrix
  ******************************************************************************/
@@ -932,28 +930,27 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX);
 
 
 /******************************************************************************
- * validateNonNegativeIntegerOrMatrix
- * 
+ * ensureFactorizationMatrix
  * Validates register contains either:
- *   - A valid non-negative factorization matrix, or
+ *   - A valid factorization matrix, or
  *   - A non-negative long integer
- * 
+ * Optionally factorizes the integer into a matrix.
  * Parameters:
  *   reg - register to validate
- *   isMatrix - output: true if validated as matrix
- *   isNegative - output: true if matrix has sign column
- * 
+ *   allowNegative - if false, rejects negative matrices
+ *   doFactorizeNow - if true, factorizes integer; if false, only validates
+ *   wasAlreadyMatrix - output: true if was already a matrix
  * Returns: true if valid and non-negative, false otherwise (displays errors)
  ******************************************************************************/
-static bool_t validateNonNegativeIntegerOrMatrix(calcRegister_t reg, bool_t *isMatrix) {//, bool_t *isNegative) {
+static bool_t ensureFactorizationMatrix(calcRegister_t reg, bool_t allowNegative, bool_t doFactorizeNow, bool_t *wasAlreadyMatrix) {
   bool_t isNegative;
-  *isMatrix = isRegisterMatrixFactors(reg, &isNegative);
-  if(!*isMatrix) {
+  *wasAlreadyMatrix = isRegisterMatrixFactors(reg, &isNegative);
+  if(!*wasAlreadyMatrix) {
     if(getRegisterDataType(reg) == dtReal34Matrix) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "The input value is not a valid matrix!");
-        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 01:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function ensureFactorizationMatrix 01:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
@@ -963,7 +960,7 @@ static bool_t validateNonNegativeIntegerOrMatrix(calcRegister_t reg, bool_t *isM
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "The input value is neither a longinteger nor a valid matrix!");
-        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 02:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function ensureFactorizationMatrix 02:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerFree(x);
       return false;
@@ -972,20 +969,31 @@ static bool_t validateNonNegativeIntegerOrMatrix(calcRegister_t reg, bool_t *isM
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "The input value is negative and therefore out of the domain!");
-        moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 03:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function ensureFactorizationMatrix 03:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerFree(x);
       return false;
     }
     longIntegerFree(x);
   }
-  if(*isMatrix && isNegative) {
+  if(*wasAlreadyMatrix && !allowNegative && isNegative) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "The matrix input value is negative and therefore out of the domain!");
-      moreInfoOnError("In function validateNonNegativeIntegerOrMatrix 04:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function ensureFactorizationMatrix 04:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
+  }
+  // Factorize the integer if requested
+  if(doFactorizeNow && !*wasAlreadyMatrix) {
+    if(reg == REGISTER_Y) {
+      fnSwapXY(NOPARAM);
+      performPrimeFactorization(false);
+      fnSwapXY(NOPARAM);
+    }
+    else {
+      performPrimeFactorization(false);
+    }
   }
   return true;
 }
@@ -993,12 +1001,16 @@ static bool_t validateNonNegativeIntegerOrMatrix(calcRegister_t reg, bool_t *isM
 
 
 void fnEvPFacts(uint16_t param) {
-  bool_t isValidMxX    = false;
-  bool_t isValidMxY    = false;
+  bool_t isValidMxX      = false;
+  bool_t isValidMxY      = false;
+  bool_t needsFactorizeX = false;
+
+  // Validate (before saveLastX)
   if(param != M_FACTORS) {
-    if(!validateNonNegativeIntegerOrMatrix(REGISTER_X, &isValidMxX)) {
+    if(!ensureFactorizationMatrix(REGISTER_X, false, false, &isValidMxX)) {
       goto return10;
     }
+    needsFactorizeX = !isValidMxX && (param == M_SIGMA_0 || param == M_SIGMA_1 || param == M_SIGMA_p1);
   }
 
   if(!saveLastX()) {
@@ -1006,30 +1018,35 @@ void fnEvPFacts(uint16_t param) {
   }
   saveForUndo();
 
+  // Factorize X if needed (after saveLastX)
+  if(needsFactorizeX) {
+    if(!ensureFactorizationMatrix(REGISTER_X, false, true, &isValidMxX)) {
+      goto return10;
+    }
+  }
+
   //pre-processing
   switch(param) {
-    case M_PHI_EUL  :
-      ; //nothing
-      break;
     case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
     case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
     case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
-      if(!isValidMxX) {
-        performPrimeFactorization(false);  // Call with saveLastX disabled
-      }
+      ; //nothing - X already ensured to be factorization matrix
       break;
     case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
     case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
-      if(!validateNonNegativeIntegerOrMatrix(REGISTER_Y, &isValidMxY)) {
+      if(!ensureFactorizationMatrix(REGISTER_Y, false, false, &isValidMxY)) {
         goto return10;
       }
       if(!isValidMxY) {
-        fnSwapXY(NOPARAM);
-        performPrimeFactorization(false);  // Call with saveLastX disabled
-        fnSwapXY(NOPARAM);
+        if(!ensureFactorizationMatrix(REGISTER_Y, false, true, &isValidMxY)) {
+          goto return10;
+        }
       }
       break;
-    case M_FACTORS  :
+    case M_FACTORS  :  // 5
+      ; //nothing
+      break;
+    case M_PHI_EUL  :  // 6
       ; //nothing
       break;
     default:;
@@ -1037,22 +1054,22 @@ void fnEvPFacts(uint16_t param) {
 
   //processing
   switch(param) {
-    case M_PHI_EUL  :
-        fnEulPhi(NOPARAM);
-      break;
-    case M_SIGMA_0  :
-    case M_SIGMA_1  :
-    case M_SIGMA_p1 :
-    case M_SIGMA_k  :
-    case M_SIGMA_pk :
-    case M_FACTORS  :
+    case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
+    case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
+    case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
+    case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
+    case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
+    case M_FACTORS  :  // 5
       if(lastErrorCode == 0) {
         doFnEvPFacts(param);
       } else {
         #if defined(PC_BUILD)
-          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);    
+          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);
         #endif
       }
+      break;
+    case M_PHI_EUL  :  // 6
+        fnEulPhi(NOPARAM);
       break;
     default:;
   }
