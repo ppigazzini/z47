@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -17,6 +17,7 @@
 // Version 0.109.03.00b0    Public Release C47 & R47
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
+// Version 0.109.03.00a2    Internal C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -137,7 +138,7 @@
     #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   #endif
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    //#define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
