@@ -12,6 +12,7 @@
 #define RB_TRUE     1
 #define CB_FALSE    2
 #define CB_TRUE     3
+#define MB_FALSE    4
 
 #define NOVAL              -126
 #define ITEM_NOT_CODED     -127
@@ -113,6 +114,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define DO_ENG                 241
 #define FN_BEG                 242 // FIN BEGIN END
 #define FN_END                 243
+#define MB_MAC                 244
 
 
 typedef struct {
