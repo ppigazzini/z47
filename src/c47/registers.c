@@ -1477,7 +1477,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_ISM) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uInt32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
+    int32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
