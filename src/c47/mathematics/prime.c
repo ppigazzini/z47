@@ -876,7 +876,7 @@ static void doFnEvPFacts (uint16_t param) {
 /******************************************************************************
  * isRegisterMatrixFactors
  * Validates 2 rows, >= 1 cols matrix as likely prime factors for use in the phi and sigma functions
- *   Row 1: [p1, p2, ..., pn]  factors >= 1 (or -1 for optional sign column)
+ *   Row 1: [p1, p2, ..., pn]  factors >= 1 (or -1 in first column for optional sign)
  *   Row 2: [e1, e2, ..., en]  exponents >= 0
  * Parameters: reg - register to validate, isNegative output is true if [-1,1] sign column is present
  * Returns: true if valid factorization matrix
