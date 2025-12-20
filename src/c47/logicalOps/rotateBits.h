@@ -11,6 +11,8 @@ void fnSl_1  (uint16_t unusedButMandatoryParameter);
 void fnSr_1  (uint16_t unusedButMandatoryParameter);
 void fnRl_1  (uint16_t unusedButMandatoryParameter);
 void fnRr_1  (uint16_t unusedButMandatoryParameter);
+void fnRlc_1 (uint16_t unusedButMandatoryParameter);
+void fnRrc_1 (uint16_t unusedButMandatoryParameter);
 void fnAsr   (uint16_t numberOfShifts);
 void fnSl    (uint16_t numberOfShifts);
 void fnSr    (uint16_t numberOfShifts);

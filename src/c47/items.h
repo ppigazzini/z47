@@ -2007,8 +2007,8 @@
 #define ITM_T_RIGHT_ARROW           1953
 #define ITM_T_LLEFT_ARROW           1954
 #define ITM_T_RRIGHT_ARROW          1955
-#define ITM_1956                    1956
-#define ITM_1957                    1957
+#define ITM_RLC1                    1956
+#define ITM_RRC1                    1957
 #define ITM_KEYMAP                  1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
