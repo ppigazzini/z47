@@ -193,7 +193,24 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPPER_RX,        ITM_PERIOD,             RB_RX},
   {ITM_GAPWIDPER_RX,     ITM_WPERIOD,            RB_RX},
   {ITM_GAPCOM_RX,        ITM_COMMA,              RB_RX},
-  {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX}
+  {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
+
+  {ITM_S08,              ITM_NULL,              MB_MAC},
+  {ITM_U08,              ITM_NULL,              MB_MAC},
+  {ITM_S16,              ITM_NULL,              MB_MAC},
+  {ITM_U16,              ITM_NULL,              MB_MAC},
+  {ITM_S32,              ITM_NULL,              MB_MAC},
+  {ITM_U32,              ITM_NULL,              MB_MAC},
+  {ITM_S64,              ITM_NULL,              MB_MAC},
+  {ITM_U64,              ITM_NULL,              MB_MAC},
+  {ITM_SETCHN,           ITM_NULL,              MB_MAC},
+  {ITM_SETEUR,           ITM_NULL,              MB_MAC},
+  {ITM_SETIND,           ITM_NULL,              MB_MAC},
+  {ITM_SETJPN,           ITM_NULL,              MB_MAC},
+  {ITM_SETUK,            ITM_NULL,              MB_MAC},
+  {ITM_SETUSA,           ITM_NULL,              MB_MAC},
+  {ITM_SETDFLT,          ITM_NULL,              MB_MAC}
+
 };
 
 
@@ -365,6 +382,9 @@ int8_t fnCbIsSet(int16_t item) {
                      }
                      break;
 
+        case MB_MAC: result = MB_FALSE;
+                     break;
+
         case CB_JC:  is_cb = true;
 
 
@@ -433,7 +453,10 @@ int8_t fnCbIsSet(int16_t item) {
           default: ;
       }
 
-      if(is_cb) {
+      if(result == MB_FALSE) {
+        ; //nothing
+      }
+      else if(is_cb) {
         //printf("^^^^*** %d %d\n", indexOfRadioCbEepromItems[i].param, cb_param);
         result = cb_param ? CB_TRUE : CB_FALSE;
       }
@@ -443,7 +466,6 @@ int8_t fnCbIsSet(int16_t item) {
       }
     }
   }
-
   return result;
 }
 
