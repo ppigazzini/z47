@@ -347,19 +347,19 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
 #endif
 
 TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_PRIME,                  ITM_FACTORS,              ITM_FIB,               ITM_AGM,                     ITM_LINPOL,
-                                             ITM_zetaX,                     ITM_EULPHI,                 ITM_PFACTORSMULT,         ITM_EE_EXP_TH,         ITM_M1X,                     ITM_XFACT,
-                                             ITM_GD,                        ITM_GDM1,                  -MNU_E_SIGMA,              ITM_PARALLEL,          ITM_BN,                      ITM_BNS,
+                                             ITM_zetaX,                     ITM_PARALLEL,               ITM_PFACTORSMULT,         ITM_EE_EXP_TH,         ITM_M1X,                     ITM_XFACT,
+                                             ITM_GD,                        ITM_GDM1,                  -MNU_NUMTHEORY,           -XFN_M,                 ITM_BN,                      ITM_BNS,
 
                                              ITM_gammaXY,                   ITM_GAMMAXY,                ITM_IGAMMAP,              ITM_IGAMMAQ,           ITM_GAMMAX,                  ITM_LNGAMMA,
                                              ITM_WM,                        ITM_WP,                     ITM_WM1,                  ITM_IXYZ,              ITM_BETAXY,                  ITM_LNBETA,
                                             -MNU_ELLIPT,                   -MNU_ORTHOG,                 ITM_JYX,                  ITM_YYX,               ITM_ERF,                     ITM_ERFC,
 
-                                             ITM_MIN,                       ITM_MAX,                   -XFN_M,                    ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_MIN,                       ITM_MAX,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
-TO_QSPI const int16_t menu_EULERs[]      = { ITM_FACTORS,                   ITM_E_SIGMA0,               ITM_E_SIGMA1,             ITM_E_SIGMAk,          ITM_E_SIGMAp1,               ITM_E_SIGMApk,
-                                             ITM_PFACTORSMULT,              ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_NUMTHEORY[]   = { ITM_FACTORS,                   ITM_SIGMA0,                 ITM_SIGMA1,               ITM_SIGMAk,            ITM_SIGMAp1,                 ITM_SIGMApk,
+                                             ITM_PFACTORSMULT,              ITM_EULPHI,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_Lm,                     ITM_LmALPHA,              ITM_Pn,                ITM_Tn,                      ITM_Un,
                                              ITM_HNP,                       ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
@@ -1010,7 +1010,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 153 */  {.menuItem = -MNU_TAMNONREGMAX,.numItems = sizeof(menu_TamNonRegMax  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegMax   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 154 */  {.menuItem = -MNU_PFN_3,       .numItems = sizeof(menu_PFN_3         )/sizeof(int16_t), .softkeyItem = menu_PFN_3          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 155 */  {.menuItem = -MNU_TAMMENU,     .numItems = sizeof(menu_TamMenu       )/sizeof(int16_t), .softkeyItem = menu_TamMenu        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 156 */  {.menuItem = -MNU_E_SIGMA,     .numItems = sizeof(menu_EULERs        )/sizeof(int16_t), .softkeyItem = menu_EULERs         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 156 */  {.menuItem = -MNU_NUMTHEORY,   .numItems = sizeof(menu_NUMTHEORY     )/sizeof(int16_t), .softkeyItem = menu_NUMTHEORY      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 157 */  {.menuItem = -MNU_PLOT_STAT,   .numItems = sizeof(menu_PLOT_STAT     )/sizeof(int16_t), .softkeyItem = menu_PLOT_STAT      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 158 */  {.menuItem = -MNU_TAMNONREGTRK,.numItems = sizeof(menu_TamNonRegTrk  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegTrk   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 159 */  {.menuItem = -MNU_PARETO,      .numItems = sizeof(menu_Pareto        )/sizeof(int16_t), .softkeyItem = menu_Pareto         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
@@ -2331,6 +2331,19 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_JYX    :
       case ITM_YYX    :
     #endif //SAVE_SPACE_DM42_12BESSEL
+
+    #ifdef SAVE_SPACE_DM42_12PRIME
+      case ITM_NEXTP  :
+      case ITM_PRIME  :
+      case ITM_FACTORS:
+      case ITM_PFACTORSMULT:  
+      case ITM_EULPHI :
+      case ITM_SIGMA0 :
+      case ITM_SIGMA1 :
+      case ITM_SIGMAk :
+      case ITM_SIGMAp1:
+      case ITM_SIGMApk:
+    #endif //SAVE_SPACE_DM42_12PRIME
 
     #ifdef SAVE_SPACE_DM42_16
       case -MNU_NORML :
