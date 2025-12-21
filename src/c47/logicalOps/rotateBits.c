@@ -7,29 +7,6 @@
 
 #include "c47.h"
 
-void fnSl_1(uint16_t unusedButMandatoryParameter) {
-    fnSl(1);
-}
-
-void fnSr_1(uint16_t unusedButMandatoryParameter) {
-    fnSr(1);
-}
-
-void fnRl_1(uint16_t unusedButMandatoryParameter) {
-    fnRl(1);
-}
-
-void fnRr_1(uint16_t unusedButMandatoryParameter) {
-    fnRr(1);
-}
-void fnRlc_1(uint16_t unusedButMandatoryParameter) {
-    fnRlc(1);
-}
-
-void fnRrc_1(uint16_t unusedButMandatoryParameter) {
-    fnRrc(1);
-}
-
 static bool_t getShiftInput(uint64_t *w, uint32_t *base) {
   if (!getRegisterAsRawShortInt(REGISTER_X, w, base)) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
