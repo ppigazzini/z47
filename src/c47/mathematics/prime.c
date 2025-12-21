@@ -7,6 +7,14 @@
 
 #include "c47.h"
 
+#if defined(SAVE_SPACE_DM42_12PRIME)  
+  void fnIsPrime      (uint16_t unusedButMandatoryParameter){;}
+  void fnNextPrime    (uint16_t unusedButMandatoryParameter){;}
+  void fnPrimeFactors (uint16_t unusedButMandatoryParameter){;}
+  void fnEvPFacts     (uint16_t unusedButMandatoryParameter){;}
+#else
+
+
 #define maximumPrime 308   //10^308
 
 
@@ -2357,3 +2365,4 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
   return result;
 }
 
+#endif // SAVE_SPACE_DM42_12PRIME

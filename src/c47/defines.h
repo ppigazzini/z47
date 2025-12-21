@@ -37,6 +37,7 @@
 #undef SAVE_SPACE_DM42_10
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12PRIME
 #undef SAVE_SPACE_DM42_12BESSEL
 #undef SAVE_SPACE_DM42_12ORTHO
 #undef SAVE_SPACE_DM42_13GRF
@@ -124,7 +125,7 @@
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
-  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)
     #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
