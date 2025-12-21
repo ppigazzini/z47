@@ -3533,6 +3533,23 @@ int16_t mm(int16_t id) {
     }
   }
 
+  void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy) {
+    MB_MACRO(xx,yy);
+    // Diamond filled interior: {x_offset, y_offset}
+    TO_QSPI static const uint8_t diamond[][2] = {
+      {5, 3},
+      {4, 4}, {5, 4}, {6, 4},
+      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, 
+      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6}, 
+      {4, 7}, {5, 7}, {6, 7}, 
+      {5, 8}
+    };
+    for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
+      placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);
+    }
+  }    
+
+
 
   void MB_MACRO2(uint32_t xx, uint32_t yy) {
 // Assuming starting position (0,0) as top-left of diamond

@@ -195,21 +195,21 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPCOM_RX,        ITM_COMMA,              RB_RX},
   {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
 
-  {ITM_S08,              ITM_NULL,              MB_MAC},
-  {ITM_U08,              ITM_NULL,              MB_MAC},
-  {ITM_S16,              ITM_NULL,              MB_MAC},
-  {ITM_U16,              ITM_NULL,              MB_MAC},
-  {ITM_S32,              ITM_NULL,              MB_MAC},
-  {ITM_U32,              ITM_NULL,              MB_MAC},
-  {ITM_S64,              ITM_NULL,              MB_MAC},
-  {ITM_U64,              ITM_NULL,              MB_MAC},
-  {ITM_SETCHN,           ITM_NULL,              MB_MAC},
-  {ITM_SETEUR,           ITM_NULL,              MB_MAC},
-  {ITM_SETIND,           ITM_NULL,              MB_MAC},
-  {ITM_SETJPN,           ITM_NULL,              MB_MAC},
-  {ITM_SETUK,            ITM_NULL,              MB_MAC},
-  {ITM_SETUSA,           ITM_NULL,              MB_MAC},
-  {ITM_SETDFLT,          ITM_NULL,              MB_MAC}
+  {ITM_S08,              ITM_S08,                MB_MAC},
+  {ITM_U08,              ITM_U08,                MB_MAC},
+  {ITM_S16,              ITM_S16,                MB_MAC},
+  {ITM_U16,              ITM_U16,                MB_MAC},
+  {ITM_S32,              ITM_S32,                MB_MAC},
+  {ITM_U32,              ITM_U32,                MB_MAC},
+  {ITM_S64,              ITM_S64,                MB_MAC},
+  {ITM_U64,              ITM_U64,                MB_MAC},
+  {ITM_SETCHN,           ITM_SETCHN,             MB_MAC},
+  {ITM_SETEUR,           ITM_SETEUR,             MB_MAC},
+  {ITM_SETIND,           ITM_SETIND,             MB_MAC},
+  {ITM_SETJPN,           ITM_SETJPN,             MB_MAC},
+  {ITM_SETUK,            ITM_SETUK,              MB_MAC},
+  {ITM_SETUSA,           ITM_SETUSA,             MB_MAC},
+  {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC}
 
 };
 
@@ -285,8 +285,10 @@ int8_t fnCbIsSet(int16_t item) {
     if(indexOfRadioCbEepromItems[i].itemNr == itemNr) {
       //printf("^^^^**** item found %d\n", itemNr);
       bool_t is_cb = false;
+      bool_t is_mb = false;
       int32_t rb_param = 0;
       bool_t cb_param = false;
+      uint16_t param = indexOfRadioCbEepromItems[i].param;
 
       switch(indexOfRadioCbEepromItems[i].radioButton) {
         case RB_AM:  rb_param = currentAngularMode;
@@ -382,7 +384,25 @@ int8_t fnCbIsSet(int16_t item) {
                      }
                      break;
 
-        case MB_MAC: result = MB_FALSE;
+        case MB_MAC: is_mb = true;
+                     switch(param){
+                       case ITM_S08     :  cb_param = shortIntegerWordSize == 8  && shortIntegerMode==SIM_2COMPL; break;
+                       case ITM_U08     :  cb_param = shortIntegerWordSize == 8  && shortIntegerMode==SIM_UNSIGN; break;
+                       case ITM_S16     :  cb_param = shortIntegerWordSize == 16 && shortIntegerMode==SIM_2COMPL; break;
+                       case ITM_U16     :  cb_param = shortIntegerWordSize == 16 && shortIntegerMode==SIM_UNSIGN; break;
+                       case ITM_S32     :  cb_param = shortIntegerWordSize == 32 && shortIntegerMode==SIM_2COMPL; break;
+                       case ITM_U32     :  cb_param = shortIntegerWordSize == 32 && shortIntegerMode==SIM_UNSIGN; break;
+                       case ITM_S64     :  cb_param = shortIntegerWordSize == 64 && shortIntegerMode==SIM_2COMPL; break;
+                       case ITM_U64     :  cb_param = shortIntegerWordSize == 64 && shortIntegerMode==SIM_UNSIGN; break;
+                       case ITM_SETCHN  :
+                       case ITM_SETEUR  :
+                       case ITM_SETIND  :
+                       case ITM_SETJPN  :
+                       case ITM_SETUK   :  
+                       case ITM_SETUSA  : 
+                       case ITM_SETDFLT :  cb_param = isConfigCommon(param); break;
+                       default:;
+                     }
                      break;
 
         case CB_JC:  is_cb = true;
@@ -453,8 +473,9 @@ int8_t fnCbIsSet(int16_t item) {
           default: ;
       }
 
-      if(result == MB_FALSE) {
-        ; //nothing
+      if(is_mb) {
+        //printf("^^^^*** %d %d\n", indexOfRadioCbEepromItems[i].param, cb_param);
+        result = cb_param ? MB_TRUE : MB_FALSE;
       }
       else if(is_cb) {
         //printf("^^^^*** %d %d\n", indexOfRadioCbEepromItems[i].param, cb_param);

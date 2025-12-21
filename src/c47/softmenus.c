@@ -1945,6 +1945,9 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       else if(showCb == MB_FALSE) {
         MB_MACRO(x2-11, y2-16);
       }
+      else if(showCb == MB_TRUE) {
+        MB_MACRO_CHECKED(x2-11, y2-16);
+      }
     }
   }
 
