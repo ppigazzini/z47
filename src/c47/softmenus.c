@@ -24,7 +24,7 @@
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_BITS[]        = { ITM_SL1,                       ITM_SR1,                    ITM_RL1,                  ITM_RR1,               ITM_RLC1,                    ITM_RRC1,
                                              ITM_SL,                        ITM_SR,                     ITM_RL,                   ITM_RR,                ITM_RLC,                     ITM_RRC,
-                                             ITM_LJ,                        ITM_RJ,                     ITM_ASR,                  ITM_MIRROR,           -MNU_BITSET,                  ITM_FF,
+                                             ITM_MIRROR,                    ITM_ASR,                    ITM_LJ,                   ITM_RJ,               -MNU_BITSET,                  ITM_FF,
 
                                              ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_MASKL,                   ITM_MASKR,
                                              ITM_LOGICALNAND,               ITM_LOGICALNOR,             ITM_LOGICALXNOR,          ITM_NUMB,              ITM_ZIP,                     ITM_UNZIP,
@@ -721,11 +721,11 @@ TO_QSPI const int16_t menu_Timer[]       = { ITM_TIMER_SIGMA_T,             ITM_
 
 
 TO_QSPI const int16_t menu_BASE[]        = { ITM_2HEX,                      ITM_2DEC,                   ITM_2OCT,                 ITM_2BIN,              ITM_HASH_JM,                 ITM_LINT,
-                                             ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_NULL,                    ITM_NULL,
+                                             ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_FBYTE,                   ITM_FWORD,
                                              ITM_WS64,                      ITM_WS32,                   ITM_WS16,                 ITM_WS8,              -MNU_BITSET,                  ITM_FF,
 
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
-                                             ITM_S64,                       ITM_S32,                    ITM_S16,                  ITM_S08,               ITM_FBYTE,                   ITM_FWORD,
+                                             ITM_S64,                       ITM_S32,                    ITM_S16,                  ITM_S08,               ITM_NULL,                    ITM_NULL,
                                              ITM_U64,                       ITM_U32,                    ITM_U16,                  ITM_U08,              -MNU_BITSET,                  ITM_FF                        };
 
 
