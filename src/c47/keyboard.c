@@ -1394,7 +1394,7 @@ endReturnTrue:
                       }
                   }
                 }
-                else if((calcMode == CM_PEM || calcMode == CM_AIM) && indexOfItems[item].func == addItemToBuffer) {
+                else if(((calcMode == CM_PEM && !tam.mode && getSystemFlag(FLAG_ALPHA)) || calcMode == CM_AIM) && indexOfItems[item].func == addItemToBuffer) {
                   popSoftmenu();
                 }
                     #if defined(VERBOSEKEYS)
