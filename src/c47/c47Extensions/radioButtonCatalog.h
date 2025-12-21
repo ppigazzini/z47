@@ -13,6 +13,7 @@
 #define CB_FALSE    2
 #define CB_TRUE     3
 #define MB_FALSE    4
+#define MB_TRUE     5
 
 #define NOVAL              -126
 #define ITEM_NOT_CODED     -127
