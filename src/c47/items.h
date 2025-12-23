@@ -2007,8 +2007,8 @@
 #define ITM_T_RIGHT_ARROW           1953
 #define ITM_T_LLEFT_ARROW           1954
 #define ITM_T_RRIGHT_ARROW          1955
-#define ITM_1956                    1956
-#define ITM_1957                    1957
+#define ITM_RLC1                    1956
+#define ITM_RRC1                    1957
 #define ITM_KEYMAP                  1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
@@ -2629,7 +2629,7 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define ITM_2553                    2553
+#define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
 #define ITM_2556                    2556
