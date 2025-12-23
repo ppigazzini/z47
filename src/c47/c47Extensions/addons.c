@@ -3163,7 +3163,7 @@ void fnRESET_MyM(uint16_t param) {
       if(i >= nbrOfElements(ribbonMappings)) {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
-    
+
 
 
       if(itemToBeAssigned == -MNU_PFN) {
@@ -3209,7 +3209,6 @@ void fnRESET_Mya(void){
 
 //Softmenus:
 //--------------------------------------------------------------------------------------------
-//JM To determine the menu number for a given menuId          //JMvv
 int16_t mm(int16_t id) {
   int16_t m;
   m = 0;
@@ -3224,7 +3223,7 @@ int16_t mm(int16_t id) {
     }
   }
   return m;
-}                                                             //JM^^
+}
 
 #if !defined(TESTSUITE_BUILD)
   //vv EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX
@@ -3503,8 +3502,6 @@ int16_t mm(int16_t id) {
     //  cbColumnCcccccccccc(xx+10, yy);
     //#endif // RB_EXTRA_BORDER
   }
-  //^^
-
 
 
 // ◇
@@ -3533,61 +3530,22 @@ int16_t mm(int16_t id) {
     }
   }
 
+// ◇ checked
   void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy) {
     MB_MACRO(xx,yy);
     // Diamond filled interior: {x_offset, y_offset}
     TO_QSPI static const uint8_t diamond[][2] = {
       {5, 3},
       {4, 4}, {5, 4}, {6, 4},
-      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, 
-      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6}, 
-      {4, 7}, {5, 7}, {6, 7}, 
+      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5},
+      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6},
+      {4, 7}, {5, 7}, {6, 7},
       {5, 8}
     };
     for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);
     }
-  }    
-
-
-
-  void MB_MACRO2(uint32_t xx, uint32_t yy) {
-// Assuming starting position (0,0) as top-left of diamond
-  // Diamond shape: {x_offset, y_offset, width}
- TO_QSPI static const uint8_t diamond[][3] = {
-    {4, 0,  1},  //     #
-    {3, 1,  3},  //    ###
-    {2, 2,  5},  //   #####
-    {1, 3,  2},  //  ##   ##
-    {6, 3,  2},  //
-    {0, 4,  2},  // ##     ##
-    {7, 4,  2},  //
-    {0, 5,  2},  // ##     ##
-    {7, 5,  2},  //
-    {0, 6,  2},  // ##     ##
-    {7, 6,  2},  //
-    {1, 7,  2},  //  ##   ##
-    {6, 7,  2},  //
-    {2, 8,  5},  //   #####
-    {3, 9,  3},  //    ###
-    {4, 10, 1}   //     #
-  };
-  for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
-    lcd_fill_rect(xx + diamond[i][0], yy + diamond[i][1], diamond[i][2], 1, 0xFF);
   }
-  // Diagonal lines from corner to corner
-  plotline2(xx+0, yy+0, xx+8, yy+10);  // Top-left to bottom-right
-  plotline2(xx+8, yy+0, xx+0, yy+10);  // Top-right to bottom-left
-}
-
-
-// >
-  void MB_MACRO3(uint32_t xx, uint32_t yy) {
-  // Right-angled "<" chevron
-    plotline2(xx+8, yy+0, xx+0, yy+5);   // Top-right to middle-left
-    plotline2(xx+0, yy+5, xx+8, yy+10);  // Middle-left to bottom-right
-  }
-
 
 #endif // !TESTSUITE_BUILD
 
