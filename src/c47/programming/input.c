@@ -184,6 +184,9 @@ void fnKey(uint16_t regist) {
   // no key was pressed
   if(lastKeyCode == 0) {
     temporaryInformation = TI_TRUE;
+    while(gtk_events_pending()) {
+      gtk_main_iteration();
+    }
   }
 
   // a key was pressed
