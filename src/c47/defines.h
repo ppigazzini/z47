@@ -195,6 +195,8 @@
 #undef    FN_TIME_DEBUG1
 
 //Verbose options
+  #define    VERBOSE_MINIMUM              //Minimal simulator key selections, program commands, refresh modes
+//#undef     VERBOSE_MINIMUM
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim

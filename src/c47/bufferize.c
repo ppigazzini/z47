@@ -2158,8 +2158,9 @@ typedef struct {
     }
 
     else if(item != ITM_NOP) {
-      #if defined (PC_BUILD)
+      #if defined (PC_BUILD) && defined(VERBOSE_MINIMUM)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
+        fflush(stdout);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
