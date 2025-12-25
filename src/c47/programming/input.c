@@ -184,9 +184,11 @@ void fnKey(uint16_t regist) {
   // no key was pressed
   if(lastKeyCode == 0) {
     temporaryInformation = TI_TRUE;
-    while(gtk_events_pending()) {
-      gtk_main_iteration();
-    }
+    #if defined(PC_BUILD)
+      while(gtk_events_pending()) {
+        gtk_main_iteration();
+      }
+    #endif //PC_BUILD
   }
 
   // a key was pressed
