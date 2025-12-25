@@ -5599,7 +5599,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                jm_show_calc_state("refreshScreen");
                              #endif // PC_BUILD
 
-                             #if defined(PC_BUILD)
+                             #if defined(PC_BUILD) && defined(VERBOSE_MINIMUM)
                                char ttt[500] = "";
                                char sss[500] = "";
                                strcpy(sss,get_binary_bits(screenUpdatingMode,8));
@@ -5629,6 +5629,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                   (alphaCase == AC_LOWER)?"LO":"UP",
                                   tam.mode,
                                   m, currentMenu(), uuu);
+                               fflush(stdout);
                              #endif // PC_BUILD
 
 

@@ -550,10 +550,11 @@ Jacos Mac, Control works
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State,shiftF,shiftG,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
 
@@ -706,10 +707,11 @@ returnKeyReleasedFalse:
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
@@ -805,9 +807,10 @@ returnKeyReleasedFalse:
 // 17 CM_ASN_BROWSER
 // 18 CM_LISTXY
 
-//#if defined(VERBOSEKEYS)
+#if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
   printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%5i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
-//#endif //VERBOSEKEYS
+  fflush(stdout);
+#endif //VERBOSEKEYS
 
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
@@ -1131,9 +1134,10 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 
 continueWithOldDetections:
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
-    //#endif
+      fflush(stdout);
+    #endif
 
       switch(event_keyval) {
         case GDK_KEY_H+65536: // Ctrl H
