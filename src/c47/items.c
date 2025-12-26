@@ -319,11 +319,12 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
 
 
-    #if defined(PC_BUILD)// || defined(DEBUG_EXECUTE)
+    #if defined(PC_BUILD) && defined(VERBOSE_MINIMUM)// || defined(DEBUG_EXECUTE)
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
       printf("   >>    reallyRunFunction: %5i%8s§%8s  %5i  SBI:%s\n",func, ss1, ss2, param, programRunStop == PGM_WAITING ? "W" : programRunStop == PGM_RUNNING ? "P" : hourGlassIconEnabled ? "HG" : "??");
+      fflush(stdout);
     #endif // PC_BUILD
 
 
