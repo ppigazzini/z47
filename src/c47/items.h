@@ -1332,8 +1332,8 @@
 #define ITM_1295                    1295
 #define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
 
-#define PROBMENUSTART MNU_BINOM
-#define PROBMENUEND   ITM_1296
+#define PROBMENUSTART1 MNU_BINOM
+#define PROBMENUEND1   ITM_1296
 
 
 // Curve fitting
@@ -2007,8 +2007,8 @@
 #define ITM_T_RIGHT_ARROW           1953
 #define ITM_T_LLEFT_ARROW           1954
 #define ITM_T_RRIGHT_ARROW          1955
-#define ITM_1956                    1956
-#define ITM_1957                    1957
+#define ITM_RLC1                    1956
+#define ITM_RRC1                    1957
 #define ITM_KEYMAP                  1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
@@ -2214,8 +2214,8 @@
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
 #define ITM_PPLUS                   2162
-#define ITM_2163                    2163
-#define ITM_2164                    2164
+#define ITM_INCHtoCM                2163
+#define ITM_CMtoINCH                2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2388,8 +2388,8 @@
 #define ITM_STO_Q_xi                2330
 #define ITM_STO_Q_k                 2331
 #define ITM_STO_S_lambda            2332
-#define ITM_2333                    2333
-#define ITM_2334                    2334
+#define ITM_STO_M_a                 2333
+#define ITM_STO_N_b                 2334
 #define ITM_2335                    2335
 #define ITM_REG_M                   2336
 #define ITM_REG_N                   2337
@@ -2471,12 +2471,12 @@
 #define MNU_TAMMENU                 2406
 #define MNU_MENU                    2407
 #define ITM_MENUQ                   2408
-#define ITM_E_SIGMA0                2409
-#define ITM_E_SIGMA1                2410
-#define ITM_E_SIGMAk                2411
-#define ITM_E_SIGMAp1               2412
-#define ITM_E_SIGMApk               2413
-#define MNU_E_SIGMA                 2414
+#define ITM_SIGMA0                  2409
+#define ITM_SIGMA1                  2410
+#define ITM_SIGMAk                  2411
+#define ITM_SIGMAp1                 2412
+#define ITM_SIGMApk                 2413
+#define MNU_NUMTHEORY               2414
 #define ITM_INDIRECT_X              2415
 #define ITM_INDIRECT_Y              2416
 #define ITM_INDIRECT_Z              2417
@@ -2629,7 +2629,7 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-#define ITM_2553                    2553
+#define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
 #define ITM_2556                    2556
@@ -2679,8 +2679,37 @@
 
 #define MNU_XXFCNS                  2596
 #define MNU_MULTSTK                 2597
+#define ITM_2598                    2598
+#define ITM_2599                    2599
 
-#define LAST_ITEM                   2598
+#define MNU_UNIFORM                 2600    // Uniform distributions
+#define ITM_UNIFORMP                2601
+#define ITM_UNIFORML                2602
+#define ITM_UNIFORMU                2603
+#define ITM_UNIFORMI                2604
+#define MNU_DISUNIFORM              2605
+#define ITM_DISUNIFORMP             2606
+#define ITM_DISUNIFORML             2607
+#define ITM_DISUNIFORMU             2608
+#define ITM_DISUNIFORMI             2609
+#define ITM_2610                    2610
+#define ITM_2611                    2611
+#define ITM_2612                    2612
+#define ITM_2613                    2613
+#define ITM_2614                    2614
+#define ITM_2615                    2615
+#define ITM_2616                    2616
+#define ITM_2617                    2617
+#define ITM_2618                    2618
+#define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
+
+// Before adding more, leave a gap in case we add additional distributions
+// Each distribution consumes five items
+
+#define PROBMENUSTART2 MNU_UNIFORM
+#define PROBMENUEND2   ITM_2619
+
+#define LAST_ITEM                   2620
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

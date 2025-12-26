@@ -27,6 +27,7 @@ void setLastintegerBasetoZero(void) {
   fnRefreshState();                                                //JMNIM
 }
 
+bool_t blockMonitoring = false;
 
 uint8_t multiEdLines = 0;            // lines   0
 uint8_t yMultiLineEdOffset = 0;      // pixels
@@ -66,8 +67,8 @@ uint16_t current_cursor_y = 0;
    TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
    TO_QSPI static const char versionStr[]        = "  " MODELTEXT " " VERSION_STRING ".";
-
   #if defined(PC_BUILD)
+
     TO_QSPI static const char versionStr2[]     = "  " MODELTEXT " Sim " VERSION1 ", dated " __DATE__ ".";
   #else // !PC_BUILD
     #if defined(TWO_FILE_PGM)
@@ -778,6 +779,8 @@ void execTimerApp(uint16_t timerType) {
     shiftF = true;
     shiftG = false;
     assignToKey(kc);
+    itemToBeAssigned = 0;
+    leaveTamModeIfEnabled();
     keyActionProcessed = true;
     calcMode = previousCalcMode;
     shiftF = shiftG = false;
@@ -838,11 +841,14 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_FG_LONG);
       #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
         int keyCode;
+
         int16_t item;
         if((shiftF || shiftG)                                                           // this is for R47 ShiftF or shiftG, adding long press assignments - DL 2025/12/03
             && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM
           //leaveTamModeIfEnabled();
           keyCode = (shiftF ? 10 : 11);  // R47 'f' or 'g' keyCode
+          calcKey_t *key = kbd_usr + keyCode;
+          item = key->fShifted;
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
             if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
               _assignLongPressKey(keyCode);
@@ -851,15 +857,25 @@ void execTimerApp(uint16_t timerType) {
             shiftG = 0;
           }
           else if(tam.alpha || !tam.mode){
-            calcKey_t *key = kbd_usr + keyCode;
-            item = key->fShifted;
-            if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
+            if(calcMode == CM_NIM && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
               delayCloseNim = false;
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             }
-            if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
-              _executeItem(item,keyCode);
+            if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && !getSystemFlag(FLAG_ALPHA) && (item > 0)) {
+
+              if((calcMode == CM_NIM  || (calcMode == CM_PEM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)))
+                  && (item == ITM_HASH_JM || item == ITM_toINT )) {
+                  processKeyAction(item);
+              }
+              else if(calcMode != CM_PEM && indexOfItems[item].func == addItemToBuffer) {
+                addItemToNimBuffer(item);
+              }
+              else {
+                _executeItem(item,keyCode);
+              }
+
             }
             else {
               char *funcParam = "";
@@ -872,14 +888,30 @@ void execTimerApp(uint16_t timerType) {
                 showSoftmenuCurrentPart();
               }
               else {
-                BASE_OVERRIDEONCE = true;
-                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_MyAlpha :
-                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_MyMenu));
-                BASE_OVERRIDEONCE = true;
+                bool_t baseOverrideOnce = true;
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha) {
+                  showSoftmenu(-MNU_MyAlpha);
+                }
+                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
+                  showSoftmenu(key->fShifted);
+                }
+                else if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
+                  showSoftmenu(-MNU_MyMenu);
+                }
+                else {
+                  baseOverrideOnce = false;
+                  BASE_OVERRIDEONCE = baseOverrideOnce;
+                  fnExitAllMenus(0);               // If MyMb and HOMEb are both clear, return to the blank base menu display
+                }
+                BASE_OVERRIDEONCE = baseOverrideOnce;
                 showSoftmenuCurrentPart();
-                BASE_OVERRIDEONCE = true;            //for upcoming refresh*
+                BASE_OVERRIDEONCE = baseOverrideOnce;            //for upcoming refresh*
               }
             }
+          }
+          else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
+            addItemToBuffer(item);
           }
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(23);
@@ -1802,16 +1834,16 @@ return res;
       #endif //DMCP_BUILD
 
       //refreshScreen();   //to update stack
-      if(clearT) {
+      if(clearT && !blockMonitoring) {
         clearRegisterLine(REGISTER_T, true, true);
       }
-      if(clearZ && mode > force) {   //force = 1
+      if(clearZ && !blockMonitoring && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
-      if(disp) {
+      if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
@@ -1938,6 +1970,13 @@ return res;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
     }
+  }
+
+  bool_t showingProbMenu(void) {
+    int cur = -softmenu[softmenuStack[0].softmenuId].menuItem;
+
+    return (cur >= PROBMENUSTART1 && cur <= PROBMENUEND1) ||
+           (cur >= PROBMENUSTART2 && cur <= PROBMENUEND2);
   }
 
 //#define DEBUG_SHOWNAME
@@ -2083,7 +2122,7 @@ return res;
   static void do_viewRegName(calcRegister_t regist,  char *prefix, int16_t *prefixWidth, char* endChar) { //using "=" for VIEW
     //printf("========================== %i %s regist=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), regist, prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
@@ -2094,29 +2133,29 @@ return res;
       return;
     }
     if(regist < REGISTER_X) {
-      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), regist, endChar);
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), regist, endChar);
     }
     else if(regist <= LAST_SPARE_REGISTER) {
-      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(regist), endChar);
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), letteredRegisterName(regist), endChar);
     }
     else if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, (Y_SHIFT ? "  " : ""), (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
     }
     else if(FIRST_NAMED_VARIABLE <= regist && regist <= LAST_NAMED_VARIABLE) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
-      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (Y_SHIFT ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (Y_SHIFT ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
+      sprintf(prefix + (Y_SHIFT ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
-      if(SBARUPD_Time) {
+      if(Y_SHIFT) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (SBARUPD_Time ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (SBARUPD_Time ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      sprintf(prefix + (SBARUPD_Time ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (Y_SHIFT ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (Y_SHIFT ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      sprintf(prefix + (Y_SHIFT ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
@@ -2713,10 +2752,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
        else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !solverEstimatesUsed) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase, SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0)); // base 1 is BCD, #10
+           longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!getSystemFlag(FLAG_BCD) ? 16 : 1) : dispBase, SCREEN_WIDTH - (Y_SHIFT ? 10 : 0)); // base 1 is BCD, #10
            bool_t   printFirstCol = fontForShortInteger == &tinyFont;
-           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0);
-           uint32_t xoff = printWillFit ? SCREEN_WIDTH - (SBARUPD_Time ? 10 : 0) - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : (SBARUPD_Time ? 10 : 0);
+           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z ": ", &standardFont, false, true) <= SCREEN_WIDTH - (Y_SHIFT ? 10 : 0);
+           uint32_t xoff = printWillFit ? SCREEN_WIDTH - (Y_SHIFT ? 10 : 0) - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : (Y_SHIFT ? 10 : 0);
            if(lastErrorCode == 0 && printWillFit) {
              showString("  X:" STD_INTEGER_Z ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
@@ -2768,7 +2807,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   #define RESTORE_T true
 
   static void _refreshRegisterLine(calcRegister_t regist, bool_t restoreRegisterT) {
-    int32_t w;
+    int32_t w = 0;
     int16_t wLastBaseNumeric, wLastBaseStandard, prefixWidth = 0, lineWidth = 0;
     bool_t prefixPre = true;
     bool_t prefixPost = true;
@@ -3290,6 +3329,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_i = STD_mu;                 register_i = REGISTER_M;
               break;
+            case -MNU_UNIFORM:
+            case -MNU_DISUNIFORM:
+              r_i = STD_a;                  register_i = REGISTER_M;
+              r_j = STD_b;                  register_j = REGISTER_N;
+              break;
             default: ;
           }
 
@@ -3340,10 +3384,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           {
             sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
-            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (Y_SHIFT ? 20 : 0), tmpY + FMA_X, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (Y_SHIFT ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
@@ -3351,10 +3395,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           if(getSystemFlag(FLAG_SSIZE8)) {
             sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
-            int xx = showString(tmpString, &standardFont, (SBARUPD_Time ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
+            int xx = showString(tmpString, &standardFont, (Y_SHIFT ? 20 : 0), tmpY + FMA_T, vmNormal, false, true);
               if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (SBARUPD_Time ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - (Y_SHIFT ? 20 : 0) - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
                 sprintf(tmpString, "%s ", errorMessages[ERROR_INVALID_TYPE_XFN]);
               }
@@ -4431,6 +4475,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                strcpy(prefix,"Last full state file loaded:");
                showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE, vmNormal, prefixPre, prefixPost);
                prefix[0]=0;
+               prefixWidth = 0;
+          }
+          else if(Y_SHIFT && regist == REGISTER_T) {
+             strcpy(prefix,"  ");
+             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
 
@@ -4460,7 +4509,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           #if defined(STACK_STR_MED_FONT)
             //This is for Y, Z & T
-            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
+            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
             }
@@ -4550,7 +4599,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
           }
 
-          prefixWidth = 0;
+          if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE)) {
+            prefix[0] = 0;
+          }
           tmpString[0]=0;
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
             // show Overflow indication for current X register operation
@@ -4597,7 +4648,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 /*Main type dtLongInteger*/
         else if(getRegisterDataType(regist) == dtLongInteger) {
-          prefix[0] = 0;
+          if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE)) {
+            prefix[0] = 0;
+          }
 
           if(DBASEMODE) displayBaseMode(regist);
 
@@ -4647,7 +4700,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
           //shift longinter prefix on by two space if interfering with the shift indicator, when SB_TIME is selected
-          if(regist == REGISTER_T && SBARUPD_Time) {
+          if(regist == REGISTER_T && Y_SHIFT) {
            int len = strlen(prefix);
            if(len + 2 < 200) {
              if(prefix[0] == 0) {
@@ -4757,8 +4810,10 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           else if(temporaryInformation != TI_VIEW_REGISTER /*== TI_DAY_OF_WEEK*/) { // Change to ignore TI_DAY_OF_WEEK as TI, and permanently display the weekday on registers X, Y & Z
             if(regist >= REGISTER_X && regist <= REGISTER_T) {
-              prefix[0] = 0;
-              if(SBARUPD_Time && regist == REGISTER_T){
+              if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) || regist != REGISTER_X) {
+                prefix[0] = 0;
+              }
+              if(Y_SHIFT && regist == REGISTER_T){
                 strcpy(prefix,"  ");
               }
               strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
@@ -4828,6 +4883,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             else if(temporaryInformation == TI_STATISTIC_SUMS) {
               _displaySigmaPlus(regist, prefix, &prefixWidth, noLine);
             }
+            else if(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) {
+              inputRegName(prefix, &prefixWidth);
+            }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
@@ -4892,6 +4950,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             else if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_X) {          //X, not T
               userTI(currentViewRegister, regist, prefix, &prefixWidth);
+            }
+            else if(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) {
+              inputRegName(prefix, &prefixWidth);
             }
 
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
@@ -5047,9 +5108,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
   //conditions where an extra space in T register display is not possible, to prevent for the f/g indicator to clash, we reduce the size of the f/g indicator
-  #define useSmallShifts (SBARUPD_Time && ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
-                                              ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger)) ||\
-                                              (getRegisterDataType(REGISTER_T) == dtString)\
+  #define useSmallShifts (Y_SHIFT      && calcMode == CM_NORMAL\
+                                       &&  ( ((!BASEMODEACTIVE || displayStackSHOIDISP == 0) &&  getRegisterDataType(REGISTER_T) == dtShortInteger && getRegisterShortIntegerBase(REGISTER_T) < 4)       ||\
+                                              ((dispBase > 0)                               && (getRegisterDataType(REGISTER_X) == dtShortInteger || getRegisterDataType(REGISTER_X) == dtLongInteger))   \
                                            ) )
   #define displayF (useSmallShifts ? STD_f : STD_MODE_F)
   #define displayG (useSmallShifts ? STD_g : STD_MODE_G)

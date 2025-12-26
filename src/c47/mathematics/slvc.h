@@ -35,4 +35,13 @@
                                 real_t *x1Real,       real_t *x1Imag,
                                 real_t *x2Real,       real_t *x2Imag,
                                 real_t *x3Real,       real_t *x3Imag, realContext_t *realContext);
+
+  void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, 
+                                const real_t *c1Real, const real_t *c1Imag, 
+                                const real_t *c0Real, const real_t *c0Imag, 
+                                real_t *rReal, real_t *rImag, 
+                                real_t *x1Real, real_t *x1Imag, 
+                                real_t *x2Real, real_t *x2Imag, 
+                                real_t *x3Real, real_t *x3Imag, realContext_t *realContext);
+  
 #endif // !SLVC_H

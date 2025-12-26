@@ -96,6 +96,8 @@ void RB_CHECKED(uint32_t xx, uint32_t yy);
 void RB_UNCHECKED(uint32_t xx, uint32_t yy);
 void CB_CHECKED(uint32_t xx, uint32_t yy);
 void CB_UNCHECKED(uint32_t xx, uint32_t yy);
+void MB_MACRO(uint32_t tt, uint32_t yy);
+void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy);
 
 
 void fnSetBCD (uint16_t bcd);

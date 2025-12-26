@@ -834,17 +834,17 @@ overRange:
 #undef SIG_VARIABLE_JUMP
 
   if((displayFormat == DF_FIX || displayFormat == DF_SF || flag2To10_baseunit_integer)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
-    if(noFix || exponent >= displayHasNDigits ||
+    if(noFix || exponent >= (checkHP ? 10+1 : displayHasNDigits) ||
          #if defined(SIG_VARIABLE_JUMP)
            exponent < -(int32_t)displayFormatDigits ||                                           //allow zero digits .00...1 to track n
          #else
            ((displayFormat == DF_SF) && (exponent < (getSystemFlag(FLAG_ENGOVR) ? -2 : -3))) ||  //in SIG & ENGOVR,  allow 2 zero digits .001 then jump, in SIG & !ENGOVR, allow 3 zero digits .0001 then jump
-           ((displayFormat != DF_SF) && (exponent < -(int32_t)displayFormatDigits)) ||
+           ((displayFormat != DF_SF) && (exponent < -(int32_t)(checkHP ? 10+1 : displayHasNDigits))) ||
          #endif //SIG_VARIABLE_JUMP
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
       ) { // Display in SCI or ENG format
-      digitsToDisplay = min(displayFormatDigits, displayHasNDigits - 1);
+      digitsToDisplay = min(displayFormatDigits, (checkHP ? 10+1 : displayHasNDigits) - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
@@ -1749,7 +1749,21 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     //Change to make proper real number before the °
     real34_t tmp;
     realToReal34(&degrees, &tmp);
+    uint8_t savedDisplayFormatDigits = displayFormatDigits;
+    uint8_t savedDisplayFormat       = displayFormat;
+    //format without decimals
+    displayFormatDigits = 0;
+    displayFormat = DF_ALL;
     real34ToDisplayString2(&tmp, degStr, displayHasNDigits, limitExponent, false, frontSpace, true, limitIrfrac);
+    displayFormatDigits = savedDisplayFormatDigits;
+    displayFormat       = savedDisplayFormat;
+    //remove the '.' radix indicating it is a real
+    int32_t slen = (int32_t)strlen(degStr);
+    int32_t mlen = (Rx[0] & 0x80) ? (int32_t)strlen(RADIX34_MARK_STRING) : (int32_t)strlen(Rx);
+    const char *marker = (Rx[0] & 0x80) ? RADIX34_MARK_STRING : Rx;
+    if(slen >= mlen && strcmp(degStr + slen - mlen, marker) == 0) {
+      degStr[slen - mlen] = '\0';
+    }
 
 
     char tt[4];
@@ -3107,16 +3121,16 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
         (*source)--;
       }
       else {
-        (*dest)--;                                           //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
+        (*dest)--;    //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
         (*source)--;
-        if(SEP[0] & 0x80 && SEP[1] != 1) {                   //line ends on a double byte seperator
+        if(SEP[0] & 0x80 && SEP[1] != 1) { //line ends on a double byte seperator
           (*dest)--;
           (*source)--;
         }
         break;
       }
     }
-                                                             //source sits on the next, not yet printed digit
+    //source sits on the next, not yet printed digit
 
 
     #if defined(MONITOR_SHOW)
