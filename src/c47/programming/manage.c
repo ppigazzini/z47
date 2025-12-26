@@ -812,14 +812,14 @@ void pemAlpha(int16_t item) {
     if(indexOfItems[item].func == addItemToBuffer) {
       int32_t len = stringByteLength(aimBuffer);
       item = numlockReplacements(0, item, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG);
-//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
       if(alphaCase == AC_LOWER) {
           if(ITM_A <= item && item <= ITM_Z) {
             item += (ITM_a - ITM_A);
           }
-          else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
-            item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);
-          }
+//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
+//          else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
+//            item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);
+//          }
       }
 
       if((nextChar == NC_NORMAL) || ((item != ITM_DOWN_ARROW) && (item != ITM_UP_ARROW))) {
