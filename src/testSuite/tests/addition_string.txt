@@ -83,7 +83,7 @@ In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.34":DEG
 Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.34":DEG RX=Stri:"String test -12.34\x80\xb0"
 
 In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":DMS
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":DMS RX=Stri:"String test - 12.\x80\xb020\xa0\x1944.44\xa0\x1d"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":DMS RX=Stri:"String test - 12\x80\xb020\xa0\x1944.44\xa0\x1d"
 
 In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":GRAD
 Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":GRAD RX=Stri:"String test -12.345\xa0\x08678\x9d\x4d"

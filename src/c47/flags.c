@@ -77,10 +77,10 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   for(uint_fast16_t i = 0; i < nbrOfElements(refreshStateFlags); i++) {
     if(systemFlag == refreshStateFlags[i]) {
       fnRefreshState();
-      return;
+      goto doInteractionFlags;
     }
   }
-  
+
   // Check clearStatusBarFlags       //these flags need to clear the statusbar and start SB again
   for(uint_fast16_t i = 0; i < nbrOfElements(clearStatusBarFlags); i++) {
     if(systemFlag == clearStatusBarFlags[i]) {
@@ -89,20 +89,17 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
       #endif
       fnRefreshState();
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      return;
+      goto doInteractionFlags;
     }
   }
-  
-  switch(systemFlag) {
-    case FLAG_BCD    :
-            if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
-              fnChangeBaseJM(10);
-            }
-            break;
-    default: break;
+
+  if(systemFlag == FLAG_BCD) {
+    if(getSystemFlag(systemFlag) && action != FLAG_CLEAR && lastIntegerBase == 0) {
+      fnChangeBaseJM(10);
+    }
   }
 
-
+doInteractionFlags:
   switch(systemFlag) {
     case FLAG_SBfrac:
               lastIntegerBase = 0; //needed to reset the annunciator
@@ -116,8 +113,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
                 _clearSystemFlag(FLAG_SBtime);
               }
-              break; 
-          
+              break;
+
     case FLAG_FRACT:
               if(getSystemFlag(FLAG_FRACT)) {
                 _clearSystemFlag(FLAG_IRFRAC);
@@ -686,7 +683,7 @@ void SetSetting(uint16_t jmConfig) {
       return;
     }
   }
-  
+
   for(uint_fast16_t i = 0; i < nbrOfElements(flipFlags); i++) {       // Check simple flip flags - this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
     if(jmConfig == flipFlags[i]) {
       fnFlipFlag(jmConfig);
@@ -694,7 +691,7 @@ void SetSetting(uint16_t jmConfig) {
       return;
     }
   }
-  
+
   // Handle special cases
   switch(jmConfig) {
     case JC_NL:            fnFlipFlag(FLAG_NUMLOCK);                                      showAlphaModeonGui();           break;

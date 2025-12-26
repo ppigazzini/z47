@@ -535,6 +535,8 @@ void resetKeytimers(void) {
       if( (*result == ITM_ms       || longpressDelayedkey1 == ITM_ms       || longpressDelayedkey2 == ITM_ms       || longpressDelayedkey3 == ITM_ms   )   || //.ms needs NIM mode to be open if the user intends it to be open.
           (*result == ITM_CC       || longpressDelayedkey1 == ITM_CC       || longpressDelayedkey2 == ITM_CC       || longpressDelayedkey3 == ITM_CC   )   ||
           (*result == ITM_dotD     || longpressDelayedkey1 == ITM_dotD     || longpressDelayedkey2 == ITM_dotD     || longpressDelayedkey3 == ITM_dotD )   ||
+          (*result == ITM_HASH_JM  || longpressDelayedkey1 == ITM_HASH_JM  || longpressDelayedkey2 == ITM_HASH_JM  || longpressDelayedkey3 == ITM_HASH_JM )||
+          (*result == ITM_toINT    || longpressDelayedkey1 == ITM_toINT    || longpressDelayedkey2 == ITM_toINT    || longpressDelayedkey3 == ITM_toINT   )||
           (*result == ITM_op_j     || longpressDelayedkey1 == ITM_op_j     || longpressDelayedkey2 == ITM_op_j     || longpressDelayedkey3 == ITM_op_j )   ||
           (*result == ITM_op_j_pol || longpressDelayedkey1 == ITM_op_j_pol || longpressDelayedkey2 == ITM_op_j_pol || longpressDelayedkey3 == ITM_op_j_pol )) {
         delayCloseNim = true;

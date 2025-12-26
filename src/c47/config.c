@@ -41,6 +41,64 @@ TO_QSPI static const struct {
     [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
 };
 
+
+bool_t isConfigCommon(uint16_t id) {
+  uint16_t idx = 99;
+  switch(id) {
+    case ITM_SETDFLT: idx = CFG_DFLT  ; break;
+    case ITM_SETCHN : idx = CFG_CHINA ; break;
+    case ITM_SETEUR : idx = CFG_EUROPE; break;
+    case ITM_SETIND : idx = CFG_INDIA ; break;
+    case ITM_SETJPN : idx = CFG_JAPAN ; break;
+    case ITM_SETUK  : idx = CFG_UK    ; break;
+    case ITM_SETUSA : idx = CFG_USA   ; break;
+    default:;
+  }
+  bool_t cmp1  = (int32_t)getSystemFlag(FLAG_TDM24) == (int32_t)configSettings[idx].tdm24;
+  bool_t cmp2  = (int32_t)getSystemFlag(FLAG_DMY)   == (int32_t)configSettings[idx].dmy;
+  bool_t cmp3  = (int32_t)getSystemFlag(FLAG_MDY)   == (int32_t)configSettings[idx].mdy;
+  bool_t cmp4  = (int32_t)getSystemFlag(FLAG_YMD)   == (int32_t)configSettings[idx].ymd;
+  bool_t cmp5  = (int32_t)firstGregorianDay == (int32_t)configSettings[idx].gregorianDay;
+  bool_t cmp6a = ((int32_t)configSettings[idx].woy == ITM_WOY_ISO && (int32_t)firstDayOfWeek == 1 && (int32_t)firstWeekOfYearDay == 4);
+  bool_t cmp6b = ((int32_t)configSettings[idx].woy == ITM_WOY_US  && (int32_t)firstDayOfWeek == 7 && (int32_t)firstWeekOfYearDay == 6);
+  bool_t cmp6c = ((int32_t)configSettings[idx].woy == ITM_WOY_ME  && (int32_t)firstDayOfWeek == 6 && (int32_t)firstWeekOfYearDay == 5);
+  bool_t cmp6  = (cmp6a || cmp6b || cmp6c);
+  bool_t cmp7  = (0x3FFF & (uint32_t)gapItemLeft) == (0x3FFF & (int32_t)configSettings[idx].gapl);
+  bool_t cmp8  = (int32_t)grpGroupingLeft == (int32_t)configSettings[idx].gprl;
+  bool_t cmp9  = (int32_t)grpGroupingGr1LeftOverflow == (int32_t)configSettings[idx].gpr1x;
+  bool_t cmp10 = (int32_t)grpGroupingGr1Left == (int32_t)configSettings[idx].gpr1;
+  bool_t cmp11 = (int32_t)grpGroupingRight == (int32_t)configSettings[idx].gprr;
+  bool_t cmp12 = (0x3FFF & (uint32_t)gapItemRight) == (0x3FFF & (uint32_t)configSettings[idx].gapr);
+  bool_t cmp13 = (0x3FFF & (uint32_t)gapItemRadix) == (0x3FFF & (uint32_t)configSettings[idx].gaprx);
+  bool_t cmp14 = (int32_t)getSystemFlag(FLAG_US) == (int32_t)configSettings[idx].us;
+
+  //printf("DEBUG: Boolean comparison breakdown (idx=%d)\n", (int32_t)idx);
+  //printf("  FLAG_TDM24:               %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_TDM24), (int32_t)configSettings[idx].tdm24, cmp1 ? "TRUE" : "FALSE");
+  //printf("  FLAG_DMY:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_DMY), (int32_t)configSettings[idx].dmy, cmp2 ? "TRUE" : "FALSE");
+  //printf("  FLAG_MDY:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_MDY), (int32_t)configSettings[idx].mdy, cmp3 ? "TRUE" : "FALSE");
+  //printf("  FLAG_YMD:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_YMD), (int32_t)configSettings[idx].ymd, cmp4 ? "TRUE" : "FALSE");
+  //printf("  firstGregorianDay:        %d == %d → %s\n", (int32_t)firstGregorianDay, (int32_t)configSettings[idx].gregorianDay, cmp5 ? "TRUE" : "FALSE");
+  //printf("  WOY (compound):\n");
+  //printf("    ISO (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6a ? "TRUE" : "FALSE");
+  //printf("    US  (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6b ? "TRUE" : "FALSE");
+  //printf("    ME  (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6c ? "TRUE" : "FALSE");
+  //printf("    Combined WOY:           → %s\n", cmp6 ? "TRUE" : "FALSE");
+  //printf("  gapItemLeft:              %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemLeft), (0x3FFF & (uint32_t)configSettings[idx].gapl), cmp7 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingLeft:          %d == %d → %s\n", (int32_t)grpGroupingLeft, (int32_t)configSettings[idx].gprl, cmp8 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingGr1LeftOvrflw: %d == %d → %s\n", (int32_t)grpGroupingGr1LeftOverflow, (int32_t)configSettings[idx].gpr1x, cmp9 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingGr1Left:       %d == %d → %s\n", (int32_t)grpGroupingGr1Left, (int32_t)configSettings[idx].gpr1, cmp10 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingRight:         %d == %d → %s\n", (int32_t)grpGroupingRight, (int32_t)configSettings[idx].gprr, cmp11 ? "TRUE" : "FALSE");
+  //printf("  gapItemRight:             %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemRight), (0x3FFF & (uint32_t)configSettings[idx].gapr), cmp12 ? "TRUE" : "FALSE");
+  //printf("  gapItemRadix:             %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemRadix), (0x3FFF & (uint32_t)configSettings[idx].gaprx), cmp13 ? "TRUE" : "FALSE");
+  //printf("  FLAG_US:                  %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_US), (int32_t)configSettings[idx].us, cmp14 ? "TRUE" : "FALSE");
+
+  bool_t finalResult = cmp1 && (cmp2 || cmp3 || cmp4) && cmp5 && cmp6 && cmp7 && cmp8 && cmp9 && cmp10 && cmp11 && cmp12 && cmp13 && cmp14;
+  //printf("  ═══════════════════════════════════════════\n");
+  //printf("  FINAL RESULT:             → %s\n", finalResult ? "TRUE" : "FALSE");
+
+  return finalResult;
+}
+
 void configCommon(uint16_t idx) {
   #if !defined(TESTSUITE_BUILD)
     if(checkHP) {
@@ -467,6 +525,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
+    dispBase = 0;
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
@@ -1322,7 +1381,7 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
     lastTemp[0] = 0;
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
 
-
+  blockMonitoring = false;
 }
 
 
