@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+#include "reservedRegisterLookup.h"
+
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 
@@ -764,34 +766,20 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  uint8_t len = stringGlyphLength(variableName);
-
-  if(len < 1 || len > 7) {
-    return INVALID_VARIABLE;
-  }
-
-  int i;
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
-  //printf("|%20s|%20s|\n",(char *)(allReservedVariables[0].reservedVariableName + 1), variableName);
-  for(/*int*/ i = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
-    if(compareString((char *)(allReservedVariables[i].reservedVariableName + 1), variableName, CMP_NAME) == 0) {
-      //return i + FIRST_RESERVED_VARIABLE;
-      goto found;
-    }
-  }
+
+  uint8_t len = stringGlyphLength(variableName);
+  const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
+
+  if (reg != NULL)
+    return reg->reg;
 
   #if defined VERBOSE_REGISTERS
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
-
-found:
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
-  #endif //VERBOSE_REGISTERS
-  return i + FIRST_RESERVED_VARIABLE;
 }
 
 
