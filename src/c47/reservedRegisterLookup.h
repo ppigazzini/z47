@@ -31,7 +31,7 @@
 
 struct reservedRegister {
     char name[6];
-    register_t reg;
+    calcRegister_t reg;
 };
 enum
   {
