@@ -766,12 +766,12 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  uint8_t len = stringGlyphLength(variableName);
-  const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
-
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
+
+  uint8_t len = stringGlyphLength(variableName);
+  const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
 
   if (reg != NULL)
     return reg->reg;
