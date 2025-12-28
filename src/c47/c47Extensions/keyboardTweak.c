@@ -178,7 +178,8 @@ void resetKeytimers(void) {
         if(keyCode != 9999) {
           calcKey_t *key = kbd_usr + keyCode;
           int16_t item = key->fShifted;
-          if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD) {
+          if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
             delayCloseNim = false;
             closeNim();
             screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
