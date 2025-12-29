@@ -687,7 +687,7 @@
 #define FLAG_BASE_MYM                         0x805C
 #define FLAG_G_DOUBLETAP                      0x805D
 #define FLAG_BASE_HOME                        0x805E
-#define NotUsed1                              0x805F //to re-use!
+#define FLAG_MYM_TRIPLE                       0x805F
 #define FLAG_HOME_TRIPLE                      0x8060
 #define FLAG_SHFT_4s                          0x8061
 
