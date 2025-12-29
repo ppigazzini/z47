@@ -3297,25 +3297,7 @@ char sstmp[16];
         /*}*/       //dr - new AIM
       }
 
-
-//TOREMOVEGREEKKEY vv
-//      //Convert Greek CAPITAL and LOWER case to UTF !
-//      if((ITM_ALPHA <= key->gShiftedAim && key->gShiftedAim <= ITM_OMEGA) || (ITM_QOPPA <= key->gShiftedAim && key->gShiftedAim <= ITM_SAMPI)) {   //JM GREEK. Add extra 36 char greek range
-//        /*stringToUtf8(indexOfItems[key->gShiftedAim].itemSoftmenuName, lbl);  //vv dr - new AIM
-//        lbl[2] = ' ';
-//        lbl[3] = 0;
-//        stringToUtf8(indexOfItems[key->gShiftedAim + (ITM_alpha - ITM_ALPHA)].itemSoftmenuName, lbl + 3);*/
-//        if(alphaCase == AC_LOWER) {
-//          stringToUtf8(indexOfItems[numlockReplacements(8,key->gShiftedAim + (ITM_alpha - ITM_ALPHA), getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-//        }
-//        else {
-//          stringToUtf8(indexOfItems[numlockReplacements(9,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-//        }                                                               //^^
-//      }
-//      else {
-        stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-//      }
-//TOREMOVEGREEKKEY ^^
+      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
 
       //GShift set label
       if(key->gShiftedAim == 0) {

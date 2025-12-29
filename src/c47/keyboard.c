@@ -514,25 +514,6 @@ bool_t lastshiftG = false;
                     #endif //PAIMDEBUG
       keyActionProcessed = true;
     }
-
-//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
-//    else if(lowercaseselected && ((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI))) {  //JM GREEK
-//      addItemToBuffer(item /* +(ITM_alpha - ITM_ALPHA) */); //JM Remove the ability to shift to lower cap greek for the reason that the limited greek on the keyboard are defined per case, not generic
-//                    #if defined(PAIMDEBUG)
-//                      printf("---#E %d\n",keyActionProcessed);
-//                    #endif //PAIMDEBUG
-//      keyActionProcessed = true;
-//    }
-//
-//    else if(!lowercaseselected && ((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI))) {  //JM GREEK
-//      addItemToBuffer(item);
-//                    #if defined(PAIMDEBUG)
-//                      printf("---#D %d\n",keyActionProcessed);
-//                    #endif //PAIMDEBUG
-//      keyActionProcessed = true;
-//    }
-//TOREMOVEGREEKKEY ^^
-
     else if(item == ITM_DOWN_ARROW) {
       if(nextChar == NC_NORMAL) nextChar = NC_SUBSCRIPT; else if(nextChar == NC_SUPERSCRIPT) nextChar = NC_NORMAL; //JM stack the SUP/NORMAL/SUB
                     #if defined(PAIMDEBUG)
@@ -2861,15 +2842,6 @@ RELEASE_END:
               addItemToBuffer(item + (ITM_a - ITM_A));
               keyActionProcessed = true;
             }
-
-//TOREMOVEGREEKKEY vv
-//although case change is not needed, the actual add to buffer is probably required
-//            else if(((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI)) && lowercaseselected) {  //JM GREEK
-//              addItemToBuffer(item +  ((ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA)));
-//              keyActionProcessed = true;
-//            }
-//TOREMOVEGREEKKEY ^^
-
             else if(item == ITM_DOWN_ARROW || item == ITM_UP_ARROW) {
               addItemToBuffer(item);
               keyActionProcessed = true;
