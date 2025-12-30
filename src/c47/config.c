@@ -279,6 +279,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 
 3,                                   1,          FLAG_G_DOUBLETAP,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_HOME_TRIPLE,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_MYM_TRIPLE,                xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_SHFT_4s,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_BASE_MYM,                  xxx,             FLAG_BASE_MYM,        FLAG_BASE_MYM,          FLAG_BASE_MYM,   xxx,             xxx,
 3,                                   0,          xxx,                            FLAG_BASE_MYM,   xxx,                  xxx,                    xxx,             xxx,             xxx,

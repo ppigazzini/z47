@@ -171,7 +171,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
-                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_NULL,                    ITM_HOMEx3         };
+                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
 TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_SETSIG2,              ITM_ERPN,              ITM_HPRP,                    ITM_CFG,
@@ -191,7 +191,7 @@ TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
-                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_NULL,                    ITM_HOMEx3         };
+                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
 
 
