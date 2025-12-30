@@ -1355,11 +1355,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "MYM3",                 "bool");    //JM
       printf("Version number of configfile < 1003, transferring FLAG_MYM_TRIPLE.");
       if(tmp1) {
-        setSystemFlag(FLAG_HOME_TRIPLE);
-        setLongPressFg(calcModel, -MNU_MyMenu);
+        setSystemFlag(FLAG_MYM_TRIPLE);
       }
       else {
-        ; //nothing
+        clearSystemFlag(FLAG_MYM_TRIPLE);
       }
     }
     if(backupVersion < 1013) {
@@ -2969,7 +2968,7 @@ int64_t stringToInt64(const char *str) {
           }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
             if(loadedVersion < 10000022) {
-              forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0);
               setLongPressFg(calcModel, -MNU_MyMenu);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
