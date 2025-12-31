@@ -46,7 +46,12 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_N_KEY_USER,       16384+ITM_USERMODE,     RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_SIGMA,      16384+ITM_SIGMAPLUS,    RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_NIL,        16384+ITM_NULL,         RB_SA},  //fnSigmaAssign
-
+  {ITM_N_KEY_XFACT   ,   16384+ITM_XFACT,        RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_DRG     ,   16384+ITM_DRG,          RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_Rup     ,   16384+ITM_Rup,          RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_op_j_pol,   16384+ITM_op_j_pol,     RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_SNAP    ,   16384+ITM_SNAP,         RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_STOPW   ,   16384+ITM_TIMER,        RB_SA},  //fnSigmaAssign
 
   {ITM_F1234,            RBX_F1234,              RB_F },   //
   {ITM_M1234,            RBX_M1234,              RB_M },   //
