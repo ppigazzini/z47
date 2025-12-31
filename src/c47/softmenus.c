@@ -747,8 +747,14 @@ TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_
 //#endif // INLINE_TEST
 
 
+//ASN_N menu different for C47, R47
+#if (CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_N_KEY_USER,             ITM_N_KEY_ALPHA,          ITM_N_KEY_FGSH,        ITM_N_KEY_GSH,               ITM_FROM_USER,
-                                             ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
+                                             ITM_N_KEY_DRG,                 ITM_N_KEY_op_j_pol,         ITM_N_KEY_Rup,            ITM_N_KEY_XFACT,       ITM_NULL,                    ITM_TO_USER    };
+#else
+TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_N_KEY_USER,             ITM_N_KEY_ALPHA,          ITM_N_KEY_SNAP,        ITM_N_KEY_STOPW,             ITM_FROM_USER,
+                                             ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER    };
+#endif
 
 
 //KEYS menu different for C47, R47
