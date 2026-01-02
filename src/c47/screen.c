@@ -601,9 +601,9 @@ void execTimerApp(uint16_t timerType) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
       for (xIndex = 0; xIndex < 6; xIndex++) {
         if (xSoftkeyMask>>xIndex & 1u) {
-          j = KEY_X[xIndex] + 2;
+          j = KEY_X[xIndex] + 1;
           j += fdUnderline ? mod(j+line,2) : mod(j+2*line,5);
-          for (; j < KEY_X[xIndex + 1] - 1; j += colIncrease) {
+          for (; j < KEY_X[xIndex + 1]; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
             if (xBg[xIndex]){
