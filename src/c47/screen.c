@@ -541,7 +541,7 @@ void execTimerApp(uint16_t timerType) {
 
 
   void toggle6UnderLines(int16_t y) {
-      if((maxfgLines(y) || (fgLN == RBX_FGLNFUL))) {
+      if((maxfgLines(y) || (getSystemFlag(FLAG_FGLNFUL)))) {
         underline_softkey(0b111111u, y);
       }
   }
@@ -566,20 +566,20 @@ void execTimerApp(uint16_t timerType) {
       underline_softkey(0, 3);
     }
   }
-  
+
   static inline uint16_t getLine_buffer_bit(int x) {
     return 415-x;
   }
-  
+
   uint16_t yUnderlined = 3;
   void underline_softkey(uint16_t xSoftkeyMask, uint16_t ySoftkey) {
-    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || fgLN == RBX_FGLNOFF) {
+    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || (!getSystemFlag(FLAG_FGLNFUL) && !getSystemFlag(FLAG_FGLNLIM))  ) {
       return;
     }
     xSoftkeyMask = xSoftkeyMask & (GRAPHMODE?0b000011u:0b111111u);
     uint8_t lineCount, maxLine;
     maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
-    lineCount = fdUnderline ? 3 : SOFTMENU_HEIGHT - 3;
+    lineCount = getSystemFlag(FLAG_FGUL) ? 3 : SOFTMENU_HEIGHT - 3;
     if (yUnderlined <= 2) {
       // reset display to the buffer without shade
       lcd_refresh_lines (maxLine-lineCount, lineCount);
@@ -589,7 +589,7 @@ void execTimerApp(uint16_t timerType) {
       return;
     }
     uint8_t temp_line[LCD_LINE_BUF_SIZE], tempByte, xBg[6], xIndex, line;
-    uint16_t j, buff_bit, colIncrease = fdUnderline ? 2 : 5;
+    uint16_t j, buff_bit, colIncrease = getSystemFlag(FLAG_FGUL) ? 2 : 5;
     maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
     for (xIndex = 0;xIndex < 6; xIndex++) {
@@ -602,7 +602,7 @@ void execTimerApp(uint16_t timerType) {
       for (xIndex = 0; xIndex < 6; xIndex++) {
         if (xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 2;
-          j += fdUnderline ? mod(j+line,2) : mod(j+2*line,5);
+          j += getSystemFlag(FLAG_FGUL) ? mod(j+line,2) : mod(j+2*line,5);
           for (; j < KEY_X[xIndex + 1] - 1; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];

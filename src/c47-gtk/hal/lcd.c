@@ -70,7 +70,7 @@ void lcd_refresh_lines (uint ln, uint cnt){
   // no dirty line check
   for (uint8_t row = ln; row < ln + cnt; row++) {
     LCD_write_line(&lcd_buffer[52 * row]);
-  }  
+  }
 }
 
 
