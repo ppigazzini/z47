@@ -111,8 +111,6 @@ typedef struct {
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
-    screenChange = false;
-
     return FALSE;
   }
 
@@ -477,19 +475,8 @@ char letteredRegisterName(calcRegister_t regist) {
     // Update date and time
     showDateTime();
 
-    // If LCD has changed: update the GTK screen
-    if(screenChange) {
-      #if defined(LINUX) && (DEBUG_PANEL == 1)
-        if(programRunStop != PGM_RUNNING) {
-          refreshDebugPanel();
-        }
-      #endif // defined(LINUX) && (DEBUG_PANEL == 1)
-
-      gtk_widget_queue_draw(screen);
-      while(gtk_events_pending()) {
-        gtk_main_iteration();
-      }
-    }
+    lcd_refresh();
+    refresh_gui();
 
     return TRUE;
   }
@@ -554,128 +541,84 @@ void execTimerApp(uint16_t timerType) {
 
 
   void toggle6UnderLines(int16_t y) {
-    int16_t i;
-    for(i=0; i<6; i++ ) {
-      if((maxfgLines(y) || (fgLN == RBX_FGLNFUL)) && ( !GRAPHMODE || (GRAPHMODE && (i <= 1)) )) {
-        underline_softkey(i, y, true);
+      if((maxfgLines(y) || (fgLN == RBX_FGLNFUL))) {
+        underline_softkey(0b111111u, y);
       }
-    }
-  }
-
-
-  uint32_t underLineMask;
-  void clear_ul(void) {
-    ULGL = false;
-    ULFL = false;
-    underLineMask = 0;                                       //JM Set all bits 00-23 to zero
   }
 
 
   void show_f_jm(void) {
     if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(!ULFL) {
         toggle6UnderLines(1);
-        ULFL = true;
-      }
-      if(ULGL) {
-        toggle6UnderLines(2);
-        ULGL = false;
-      }
-      doRefreshSoftMenu = true;
     }
   }
 
 
   void show_g_jm(void) {
     if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(ULFL) {
-        toggle6UnderLines(1);
-        ULFL = false;
-      }
-      if(!ULGL) {
         toggle6UnderLines(2);
-        ULGL = true;
-      }
-      doRefreshSoftMenu = true;
     }
   }
 
 
   void clear_fg_jm(void) {
     if(!FN_timeouts_in_progress) {        //Cancel lines
-      if(ULFL) {
-        toggle6UnderLines(1);
-        ULFL = false;
-      }
-      if(ULGL) {
-        toggle6UnderLines(2);
-        ULGL = false;
-      }
-      doRefreshSoftMenu = true;
+      underline_softkey(0, 3);
     }
   }
-
-
-                                                //JM vv LONGPRESS.   false auto clears
-  void underline_softkey(int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear) {
-    int16_t x, y, x1, y1, x2, y2;
-
-    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER) {
+  
+  static inline uint16_t getLine_buffer_bit(int x) {
+    return 415-x;
+  }
+  
+  uint16_t yUnderlined = 3;
+  void underline_softkey(uint16_t xSoftkeyMask, uint16_t ySoftkey) {
+    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || fgLN == RBX_FGLNOFF) {
       return;
     }
-
-    if(GRAPHMODE && xSoftkey >= 2) {
+    xSoftkeyMask = xSoftkeyMask & (GRAPHMODE?0b000011u:0b111111u);
+    uint8_t minLine, maxLine;
+    if (yUnderlined <= 2) {
+      // reset display to the buffer without shade
+      minLine = 242 - SOFTMENU_HEIGHT * (yUnderlined+1);
+      lcd_refresh_lines (minLine, SOFTMENU_HEIGHT-3);
+    }
+    yUnderlined = ySoftkey;
+    if(ySoftkey > 2) {
       return;
     }
-
-    if(xSoftkey < 0 || xSoftkey > 5) {
-      return;
+    uint8_t temp_line[LCD_LINE_BUF_SIZE], tempByte, xBg[6], xIndex, line;
+    uint16_t j, buff_bit;
+    minLine = 242 - SOFTMENU_HEIGHT * (ySoftkey+1);
+    maxLine = minLine + SOFTMENU_HEIGHT - 4;
+    // Get current background from corner pixels
+    for (xIndex = 0;xIndex < 6; xIndex++) {
+      buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
+      xBg[xIndex] = (lcd_buffer[52 * (minLine-1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
     }
-
-    if(fgLN != RBX_FGLNOFF) {
-      //JMUL all changed  vv
-      if(!dontclear) {                            //JM Recursively call the same routine up to 2 times for y=0 and y=1, to clear the previous line
-        for(y=0; y<ySoftKey; y++) {
-          if( ((underLineMask >> (y*6+xSoftkey)) & 1U)) {    // To check a bit, shift the number n to the right, then bitwise AND, then check for true/false
-            underline_softkey(xSoftkey,y,true);
+    // Draw shade pattern without changing lcd_buffer
+    for (line = minLine; line <= maxLine; line++) {
+      memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
+      for (xIndex = 0; xIndex < 6; xIndex++) {
+        if (xSoftkeyMask>>xIndex & 1u) {
+          j = KEY_X[xIndex] + 2;
+          j += mod(j+2*line,5);
+          for (; j < KEY_X[xIndex + 1] - 1; j += 5) {
+            buff_bit = getLine_buffer_bit(j);
+            tempByte = temp_line[buff_bit / 8];
+            if (xBg[xIndex]){
+              tempByte = tempByte & ~(1u<<mod(buff_bit,8));
+            } else {
+              tempByte = tempByte | (1u<<mod(buff_bit,8));
+            }
+            temp_line[buff_bit/8] = tempByte;
           }
         }
       }
-      underLineMask ^= 1UL << (ySoftKey*6+xSoftkey);         // The XOR operator (^) used to toggle a bit in the last 18 bits of the word to reflect the current underlined cells 000000 000000 000001, eg. indicates gF6 is underlined.
-      //JMUL all changed  ^^
-
-      if(0 <= xSoftkey && xSoftkey <= 5) {
-        x1 = 67 * xSoftkey - 1;
-        x2 = x1 + 67;
-      }
-      else {
-        x1 = 0;
-        x2 = 0;
-      }
-
-      if(0 <= ySoftKey && ySoftKey <= 2) {
-        y1 = 217 - SOFTMENU_HEIGHT * ySoftKey;
-        y2 = y1 + SOFTMENU_HEIGHT;
-      }
-      else {
-        y1 = 0;
-        y2 = 0;
-      }
-
-      y = y2-3-1;
-      if(y>=0) {                                  //JM Make provision for out of range parameter, used to not plot the line and only for the recursive line removal
-        for(x=x2-66+1; x<min(x2-1,SCREEN_WIDTH); x++) {
-          if(mod(x, 2) == 0) {
-            flipPixel  ((uint32_t) x, (uint32_t) y);
-            flipPixel  ((uint32_t) x, (uint32_t) (y+2));
-          }
-          else {
-            flipPixel  (x, y+1);
-          }
-        }
-      }
+      temp_line[0] = 0;
+      LCD_write_line (temp_line);
     }
-  }                                            //JM ^^
+  }
 
 
   void FN_handler_StepToF(uint32_t time) {
@@ -692,7 +635,7 @@ void execTimerApp(uint16_t timerType) {
     }
     showFunctionName(Dyn,0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = true;
-    underline_softkey(FN_key_pressed-38, 1, false);
+    underline_softkey(1<<(FN_key_pressed-38), 1);
     fnTimerStart(TO_FN_LONG, TO_FN_LONG, time);          //dr
   }
 
@@ -711,7 +654,7 @@ void execTimerApp(uint16_t timerType) {
     }
     showFunctionName(Dyn,0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = true;
-    underline_softkey(FN_key_pressed-38, 2, false);
+    underline_softkey(1<<(FN_key_pressed-38), 2);
     fnTimerStart(TO_FN_LONG, TO_FN_LONG, time);          //dr
   }
 
@@ -722,7 +665,7 @@ void execTimerApp(uint16_t timerType) {
     }
     showFunctionName(ITM_NOP, 0, "SF:N");
     FN_timed_out_to_NOP = true;
-    underline_softkey(FN_key_pressed-38, 3, false);   //  Purposely select row 3 which does not exist, just to activate the 'clear previous line'
+    underline_softkey(1<<(FN_key_pressed-38), 3);   //  Purposely select row 3 which does not exist, just to activate the 'clear previous line'
     FN_timeouts_in_progress = false;
     fnTimerStop(TO_FN_LONG);                                      //dr
   }
@@ -1144,6 +1087,8 @@ return res;
     }        //JM REDUCE and DOUBLE
     //x += xGlyph; //JM
 
+    // Choose pencil
+    void (*setPixel)(uint32_t,uint32_t) = (videoMode == vmNormal)?&setBlackPixel:&setWhitePixel;
     // Drawing the glyph
     for(row=0; row<glyph->rowsGlyph; row++, y++) {
       if(displaymode == numHalf) {
@@ -1152,9 +1097,8 @@ return res;
         }
       }                           //JM REDUCE
       // Drawing the columns of the glyph
-      int32_t bit = 7;
       for(col=0; col<glyph->colsGlyph; col++) {
-        if(bit == 7) {
+        if (!(col%8)) {
           byte = *(data++);
           if(miniC!=0) {
             byte = (uint8_t)byte | (((uint8_t)byte) << 1);           //JMmini
@@ -1169,43 +1113,22 @@ return res;
           if(x2 > 0) {
             x2--;
           }
-          if(videoMode == vmNormal) { // Black pixel for white background
-            setBlackPixel(x1,y1);
-            if(boldString == 1) {
-              setBlackPixel(x1+1,y1);
-            }
-            if(numDouble) {
-              setBlackPixel(x2,y1);
-            }
-            if(rep_enlarge) {
-              setBlackPixel(x1,y2);
-              if(numDouble) {
-                setBlackPixel(x2,y2);
-              }
-            }
+          setPixel(x1,y1);
+          if(boldString == 1) {
+            setPixel(x1+1,y1);
           }
-          else { // White pixel for black background
-            setWhitePixel(x1,y1);
-            if(boldString == 1) {
-              setWhitePixel(x1+1,y1);
-            }
+          if(numDouble) {
+            setPixel(x2,y1);
+          }
+          if(rep_enlarge) {
+            setPixel(x1,y2);
             if(numDouble) {
-              setWhitePixel(x2,y1);
-            }
-            if(rep_enlarge) {
-              setWhitePixel(x1,y2);
-              if(numDouble) {
-                setWhitePixel(x2,y2);
-              }
+              setPixel(x2,y2);
             }
           }
         }
 
         byte <<= 1;
-
-        if(--bit == -1) {
-          bit = 7;
-        }
       }
       if(rep_enlarge && row!=3 && row!=6 && row!=9 && row!=12) {
         y++; //JM ENLARGE vv do not advance the row counter for four rows, to match the row height of the enlarge font
@@ -5204,7 +5127,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(  LeftGraphInfoX,    topLeftMenuInclBorderY,     widthGraphInfoBox,    menuHeightInclBorder, LCD_SET_VALUE);
-        clear_ul();
         if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) {                                                                                      // not in GRAPHMODE, clear the little triangle area indicating more menus
           lcd_fill_rect(LeftGraphInfoX,    topLeftMenuInclBorderY - 3, 20,                   6,                    LCD_SET_VALUE);
         }

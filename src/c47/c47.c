@@ -37,6 +37,7 @@ const font_t          *cursorFont;
 TO_QSPI const char     baseDigits[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
+const int              KEY_X[7] = {-1, 66, 133, 200, 267, 333, 400}; // Softkey border positions
 
 uint8_t calcModel = (CALCMODEL == USER_R47 ? USER_R47f_g : CALCMODEL);          //Default set by compiler is "USER_R47" and the profile is changed to USER_R47f_g
 
@@ -140,6 +141,7 @@ uint16_t               gapItemRight;
 uint16_t               gapItemRadix;
 uint16_t               lastCenturyHighUsed = 0;
 
+uint8_t               *lcd_buffer;
 uint8_t                numScreensStandardFont;
 uint8_t                numScreensNumericFont;
 uint8_t                numScreensTinyFont;
@@ -594,7 +596,7 @@ int convertKeyCode(int key) {
       key_to_alpha_table = alpha_upper_transl; //Remap the alpha keyboard layout for DMCP dialogs
       //SET_ST(STAT_ALPHA_TAB_Fn);             // Alpha key table includes F keys - This doesn't apply to the R47
     #endif // CALCMODEL == USER_R47
-
+    lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();

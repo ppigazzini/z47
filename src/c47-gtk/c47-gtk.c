@@ -25,6 +25,7 @@
   int16_t             debugWindow;
   uint32_t            *screenData;
   bool_t              screenChange;
+  uint8_t             *lcd_buffer;
   char                debugString[10000];
   #if (DEBUG_REGISTER_L == 1)
     GtkWidget         *lblRegisterL1;

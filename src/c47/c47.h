@@ -232,6 +232,8 @@
 
   extern uint8_t calcModel;
 
+  extern uint8_t             *lcd_buffer;
+  extern const int           KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
