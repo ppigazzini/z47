@@ -709,7 +709,7 @@
 #define FLAG_SHFT_4s                          0x8061
 #define FLAG_FGLNLIM                          0x8062
 #define FLAG_FGLNFUL                          0x8063
-#define FLAG_FGUL                             0x8064
+#define FLAG_FGGR                             0x8064
 
 #define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
 

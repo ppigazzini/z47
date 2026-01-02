@@ -287,8 +287,8 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            FLAG_FGLNFUL,    xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          xxx,                            FLAG_FGLNLIM,    xxx,                  xxx,                    xxx,             xxx,             xxx,
 
-3,                                   1,          FLAG_FGUL,                      xxx,             xxx,                  FLAG_FGUL,              FLAG_FGUL,       xxx,             xxx,
-3,                                   0,          xxx,                            xxx,             FLAG_FGLNFUL,         xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_FGGR,                      xxx,             xxx,                  FLAG_FGGR,              FLAG_FGGR,       xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_FGGR,            xxx,                    xxx,             xxx,             xxx,
 
 
 
