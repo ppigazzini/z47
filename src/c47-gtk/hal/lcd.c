@@ -24,6 +24,7 @@ uint8_t * lcd_line_addr (int row) {
 
 
 void 	LCD_write_line (uint8_t *line_buf) {
+  // adapting data in lcd_buffer for GTK and write to the LCD widget
   int i, j, row=line_buf[1];
   uint8_t tmpChar;
   uint32_t *lineStart = screenData + (SCREEN_HEIGHT - row) * screenStride - 1;
@@ -35,7 +36,6 @@ void 	LCD_write_line (uint8_t *line_buf) {
   }
   line_buf[0] = 0u; // Mark updated
   gtk_widget_queue_draw_area(screen, 0, SCREEN_HEIGHT - row - 1, 400, 1);
-  // screenChange = true;
 }
 
 
@@ -52,12 +52,9 @@ void 	lcd_clear_buf () {
 }
 
 void lcd_refresh () {
-  // printf("lcd_refresh\n" );
   bool_t changed = false;
   for (uint8_t row = 0; row < SCREEN_HEIGHT; row++) {
-    // lcd_buffer[52 * row + 1] = SCREEN_HEIGHT - row;
-    // if (row<10) printf("lcd_refresh: row=%u -2=%u -1=%u 0=%u\n", row, lcd_buffer[52 * row - 2],lcd_buffer[52 * row - 1],lcd_buffer[52 * row] );
-    if (lcd_buffer[52 * row]) {
+    if (lcd_buffer[52 * row]) { // check dirty flag byte for line
       changed = true;
       LCD_write_line(&lcd_buffer[52 * row]);
     }
@@ -70,6 +67,7 @@ void lcd_refresh () {
 }
 
 void lcd_refresh_lines (uint ln, uint cnt){
+  // no dirty line check
   for (uint8_t row = ln; row < ln + cnt; row++) {
     LCD_write_line(&lcd_buffer[52 * row]);
   }  

@@ -491,6 +491,7 @@
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
   extern uint8_t                fgLN;
+  extern bool_t                 fdUnderline;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
   extern uint8_t                editingLiteralType;
