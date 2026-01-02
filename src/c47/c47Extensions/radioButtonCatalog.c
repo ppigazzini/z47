@@ -166,7 +166,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_FGLNLIM,          FLAG_FGLNLIM,           CB_JC},  //SetSetting
   {ITM_FGLNFUL,          FLAG_FGLNFUL,           CB_JC},  //SetSetting
 
-  {ITM_FGUL,             FLAG_FGUL,              CB_JC},
+  {ITM_FGGR,             FLAG_FGGR,              CB_JC},
 
 
   {ITM_GAPDOT_L,         ITM_DOT,                RB_IP},
@@ -275,7 +275,7 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_BCD,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGUL
+  FLAG_FGGR
 };
 
 

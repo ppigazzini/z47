@@ -1948,7 +1948,7 @@
 #define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
 #define ITM_FRCYC                   1896
-#define ITM_FGUL                    1897
+#define ITM_FGGR                    1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
@@ -2340,7 +2340,7 @@
 #define SFL_SHFT_4s                 2284 // The SFL item names are not used
 #define SFL_FGLNLIM                 2285 // The SFL item names are not used
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
-#define SFL_FGUL                    2287 // The SFL item names are not used
+#define SFL_FGGR                    2287 // The SFL item names are not used
 #define SFL_2288                    2288 // The SFL item names are not used
 #define SFL_2289                    2289 // The SFL item names are not used
 #define SFL_2290                    2290 // The SFL item names are not used
