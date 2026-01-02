@@ -62,7 +62,7 @@ TO_QSPI const uint16_t refreshStateFlags[] = {       //these flags need to updat
   FLAG_NUMLOCK, FLAG_CPXMULT, FLAG_ERPN, FLAG_CARRY, FLAG_OVERFLOW, FLAG_FRCYC,
   FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
   FLAG_PBOX, FLAG_PCURVE, FLAG_PCROS, FLAG_PPLUS, FLAG_PLINE, FLAG_SCALE,
-  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX
+  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGUL
 };
 
 TO_QSPI const uint16_t clearStatusBarFlags[] = {       //these flags need to clear the statusbar and start SB again
@@ -664,7 +664,8 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_FRACT,
   FLAG_IRFRAC,
   FLAG_G_DOUBLETAP,
-  FLAG_SHFT_4s
+  FLAG_SHFT_4s,
+  FLAG_FGUL
 };
 
 
@@ -700,6 +701,8 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_MYM_TRIPLE:  fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_MYM_TRIPLE )) {clearSystemFlag(FLAG_HOME_TRIPLE);}; break;
     case FLAG_BASE_MYM:    fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_MYM   )) {clearSystemFlag(FLAG_BASE_HOME);}  ; break;
     case FLAG_BASE_HOME:   fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_BASE_HOME  )) {clearSystemFlag(FLAG_BASE_MYM );}  ; break;
+    case FLAG_FGLNFUL:     fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_FGLNFUL    )) {clearSystemFlag(FLAG_FGLNLIM );}  ; break;
+    case FLAG_FGLNLIM:     fnFlipFlag(jmConfig);     if(getSystemFlag(FLAG_FGLNLIM    )) {clearSystemFlag(FLAG_FGLNFUL );}  ; break;
     case ITM_DREAL:        fnFlipFlag(FLAG_DREAL);   break;
     case JC_UC:
       if(alphaCase == AC_LOWER) {

@@ -143,7 +143,6 @@ void configCommon(uint16_t idx) {
 #define FPGRP                 113    // config_grpGroupingRight
 #define IPGRP1                114    // config_grpGroupingGr1Left
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
-#define fgLongPressSetting    117    // config_setFGLSettings
 #define HIDE                  118    // config_exponentHideLimit
 
 #define DenMaX                120    // config_denmax
@@ -181,7 +180,6 @@ IPGRP,                               xxx,        3,                             
 FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,
-fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
@@ -285,6 +283,13 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            FLAG_BASE_MYM,   xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_BASE_HOME,                 FLAG_BASE_HOME,  FLAG_BASE_HOME,       FLAG_BASE_HOME,         FLAG_BASE_HOME,  xxx,             xxx,
 
+3,                                   1,          FLAG_FGLNFUL,                   xxx,             FLAG_FGLNFUL,         FLAG_FGLNFUL,           FLAG_FGLNFUL,    xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_FGLNFUL,    xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_FGLNLIM,    xxx,                  xxx,                    xxx,             xxx,             xxx,
+
+3,                                   1,          FLAG_FGUL,                      xxx,             xxx,                  FLAG_FGUL,              FLAG_FGUL,       xxx,             xxx,
+3,                                   0,          xxx,                            xxx,             FLAG_FGLNFUL,         xxx,                    xxx,             xxx,             xxx,
+
 
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
@@ -329,7 +334,6 @@ void Sett(int16_t grp) {
         case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
         case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
         case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
@@ -1366,7 +1370,6 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   DM_Cycling = 0;
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
-  fgLN = RBX_FGLNFUL;
   lastIntegerBase = 0;
   decodedIntegerBase = 0;
   timeLastOp = 0;

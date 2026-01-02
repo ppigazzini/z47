@@ -177,7 +177,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
   char *getItemCatalogName(int16_t itemNr) {
     char *itemName;
-    
+
     if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
       itemName = (char *)indexOfItems[abs(itemNr)].itemCatalogName;
     }
@@ -202,26 +202,26 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
     else {                                                 // unknown item, return empty string
       tmpStringLabelOrVariableName[0] = 0;
-      itemName = tmpStringLabelOrVariableName; 
+      itemName = tmpStringLabelOrVariableName;
     }
-    
+
     return itemName;
   }
-  
+
   function_t getItemFunc(int16_t itemNr) {
     void     (*func)(uint16_t);
-    
+
     if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
       func = indexOfItems[itemNr].func;
     }
     else {                                                 // Any other user or reserved item
       func = addItemToBuffer;
     }
-    
+
     return func;
   }
-  
-  
+
+
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -355,7 +355,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {
           temporaryInformation = TI_NOT_AVAILABLE;
-        } 
+        }
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -384,7 +384,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
     }
-    
+
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
@@ -491,7 +491,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_STOEL       : if(isMatrixIndexed()) temporaryInformation = TI_MIJEQ;   break;
 
         case ITM_INDEX       :
-        case ITM_IPLUS       : 
+        case ITM_IPLUS       :
         case ITM_IMINUS      :
         case ITM_JPLUS       :
         case ITM_JMINUS      : if(isMatrixIndexed()) temporaryInformation = TI_MIJ;   break;
@@ -554,7 +554,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo && 
+        if(thereIsSomethingToUndo &&
           !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
@@ -666,7 +666,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         } else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
-          } 
+          }
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -716,7 +716,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           printf("$$ PEM:    func=%d  showFunctionNameItem1=%d doNotAddStep=%d tam.mode=%d getSystemFlag(FLAG_ALPHA)=%d tam.alpha=%d\n", func, showFunctionNameItem, doNotAddStep, tam.mode, getSystemFlag(FLAG_ALPHA), tam.alpha);
           fflush(stdout);
         #endif // VERBOSEKEYS
-        
+
         if( !tam.mode && ((func != ITM_BACKSPACE && (!catalog || catalog == CATALOG_MVAR || fnKeyInCatalog) && !doNotAddStep) || func == ITM_ENTER )){
           #if defined(VERBOSEKEYS)
             printf("$$         items.c: runfunction: add step (before addStepInProgram) func=%i\n",func);
@@ -858,7 +858,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -1407,7 +1407,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
   void fnPplus                    (uint16_t unusedButMandatoryParameter) {}
   void fnPbox                     (uint16_t unusedButMandatoryParameter) {}
-  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {} 
+  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {}
   void fnPintg                    (uint16_t unusedButMandatoryParameter) {}
   void fnPdiff                    (uint16_t unusedButMandatoryParameter) {}
   void fnPrms                     (uint16_t unusedButMandatoryParameter) {}
@@ -1565,32 +1565,32 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define conditionalPCURVE itemToBeCoded
 #endif
 #if defined(OPTION_XFN_1000)
-  #define S18_fnEdit         fnEdit         
-  #define S18_fnXXfn         fnXXfn         
-  #define S18_fnXXfn_sin     fnXXfn_sin     
-  #define S18_fnXXfn_cos     fnXXfn_cos     
-  #define S18_fnXXfn_tan     fnXXfn_tan     
-  #define S18_fnXXfn_pi      fnXXfn_pi      
-  #define S18_fnXXfn_atan2   fnXXfn_atan2   
-  #define S18_fnXXfn_arcsin  fnXXfn_arcsin  
-  #define S18_fnXXfn_arccos  fnXXfn_arccos  
-  #define S18_fnXXfn_arctan  fnXXfn_arctan  
-  #define S18_fnXXfn_LN      fnXXfn_LN      
-  #define S18_fnXXfn_LOG     fnXXfn_LOG     
-  #define S18_fnXXfn_EXP     fnXXfn_EXP     
-  #define S18_fnXXfn_10X     fnXXfn_10X     
-  #define S18_fnXXfn_POWER   fnXXfn_POWER   
-  #define S18_fnXXfn_SQRT    fnXXfn_SQRT    
-  #define S18_fnXXfn_1ONX    fnXXfn_1ONX    
-  #define S18_fnXXfn_ADD     fnXXfn_ADD     
-  #define S18_fnXXfn_SUB     fnXXfn_SUB     
-  #define S18_fnXXfn_MULT    fnXXfn_MULT    
-  #define S18_fnXXfn_DIV     fnXXfn_DIV     
-  #define S18_fnXXfn_MOD     fnXXfn_MOD     
-  #define S18_fnXXfn_TO      fnXXfn_TO     
-  #define S18_fnXXfn_MODANG  fnXXfn_MODANG  
-  #define S18_fnXXfn_ToDEG   fnXXfn_ToDEG   
-  #define S18_fnXXfn_ToRAD   fnXXfn_ToRAD   
+  #define S18_fnEdit         fnEdit
+  #define S18_fnXXfn         fnXXfn
+  #define S18_fnXXfn_sin     fnXXfn_sin
+  #define S18_fnXXfn_cos     fnXXfn_cos
+  #define S18_fnXXfn_tan     fnXXfn_tan
+  #define S18_fnXXfn_pi      fnXXfn_pi
+  #define S18_fnXXfn_atan2   fnXXfn_atan2
+  #define S18_fnXXfn_arcsin  fnXXfn_arcsin
+  #define S18_fnXXfn_arccos  fnXXfn_arccos
+  #define S18_fnXXfn_arctan  fnXXfn_arctan
+  #define S18_fnXXfn_LN      fnXXfn_LN
+  #define S18_fnXXfn_LOG     fnXXfn_LOG
+  #define S18_fnXXfn_EXP     fnXXfn_EXP
+  #define S18_fnXXfn_10X     fnXXfn_10X
+  #define S18_fnXXfn_POWER   fnXXfn_POWER
+  #define S18_fnXXfn_SQRT    fnXXfn_SQRT
+  #define S18_fnXXfn_1ONX    fnXXfn_1ONX
+  #define S18_fnXXfn_ADD     fnXXfn_ADD
+  #define S18_fnXXfn_SUB     fnXXfn_SUB
+  #define S18_fnXXfn_MULT    fnXXfn_MULT
+  #define S18_fnXXfn_DIV     fnXXfn_DIV
+  #define S18_fnXXfn_MOD     fnXXfn_MOD
+  #define S18_fnXXfn_TO      fnXXfn_TO
+  #define S18_fnXXfn_MODANG  fnXXfn_MODANG
+  #define S18_fnXXfn_ToDEG   fnXXfn_ToDEG
+  #define S18_fnXXfn_ToRAD   fnXXfn_ToRAD
   #define S18_MENU           CAT_MENU
   #define S18_FNCT           CAT_FNCT
   #define S18_fnXXfn_STO     fnXXfn_STO
@@ -3583,7 +3583,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1894 */  { fnKeysManagement,             FROM_USER,                   "U" STD_RIGHT_ARROW "N",                       "U" STD_RIGHT_ARROW "N",                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1895 */  { SetSetting,                   FLAG_HPBASE,                 "BASE" STD_SUB_H STD_SUB_P,                    "BASE" STD_SUB_H STD_SUB_P,                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1896 */  { SetSetting,                   FLAG_FRCYC,                  "FRCYC",                                       "FRCYC",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1897 */  { itemToBeCoded,                NOPARAM,                     "1897",                                        "1897",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1897 */  { SetSetting,                   FLAG_FGUL,                   "fg.UL",                                       "fg.UL",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM NOBASE MENU SETTING
 /* 1898 */  { fnSigmaAssign,                16384+ITM_AIM,               "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM STD_alpha,(0 << TAM_MAX_BITS)|    0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1899 */  { SetSetting,                   ITM_DREAL,                   "d" STD_INTEGER_Z ".0",                        "d" STD_INTEGER_Z ".0",                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM INPUT DEFAULT
 /* 1900 */  { fnSigmaAssign,                16384+ITM_SHIFTg,            "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "g",    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3743,9 +3743,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2054 */  { fnKeysManagement,             USER_HRESET,                 "HOME.R",                                      "HOME.R",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2055 */  { fnKeysManagement,             USER_PRESET,                 "PFN.R",                                       "PFN.R",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2056 */  { SetSetting,                   FLAG_IRFRAC,                 "IRFRAC",                                      "IRFRAC",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2057 */  { setFGLSettings,               RBX_FGLNOFF,                 "fg.OFF",                                      "fg.OFF",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2058 */  { setFGLSettings,               RBX_FGLNLIM,                 "fg.LIM",                                      "fg.LIM",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2059 */  { setFGLSettings,               RBX_FGLNFUL,                 "fg.FUL",                                      "fg.FUL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2057 */  { fnOldItemError,               NOPARAM,                     ">fgOFF<",                                     ">fgOFF<",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },//Old item
+/* 2058 */  { SetSetting,                   FLAG_FGLNLIM,                "fg.LIM",                                      "fg.LIM",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2059 */  { SetSetting,                   FLAG_FGLNFUL,                "fg.FUL",                                      "fg.FUL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2060 */  { fnLongPressSwitches,          RBX_M124,                    "M.124",                                       "M.124",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2061 */  { fnLongPressSwitches,          RBX_F1234,                   "F.1234",                                      "F.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2062 */  { fnLongPressSwitches,          RBX_M1234,                   "M.1234",                                      "M.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

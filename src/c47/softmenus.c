@@ -166,7 +166,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGUL,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
@@ -186,7 +186,7 @@ TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_
 
 
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGUL,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
@@ -366,7 +366,7 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 
 
 //XFCNS is different for C47hw, R47hw. Sim is not R47, therefore the C47 layout
-TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_MODANG_XFN,             ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN, 
+TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_MODANG_XFN,             ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN,
                                              ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
                                              ITM_DEG,                       ITM_RAD,                    ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
 #if (CALCMODEL != USER_R47)
@@ -1673,7 +1673,7 @@ bool_t maxfgLines(int16_t y) {
 
   /********************************************//**
    * \brief Displays one softkey: helpers
-   ***********************************************/ 
+   ***********************************************/
   #define greyout true
   static bool_t initSoftkeyCoordinates(const char *label, int16_t xSoftkey, int16_t ySoftKey, int16_t *x1, int16_t *x2, int16_t *y1, int16_t *y2) {
     if(label[0] !=0 ) {
@@ -1722,10 +1722,10 @@ bool_t maxfgLines(int16_t y) {
 
   static void truncateAtArrow(char *label) {
     char sample[4];
-    
+
     stringCopy(sample, STD_RIGHT_ARROW);
     truncateAtString(label, sample);
-    
+
     stringCopy(sample, STD_LEFT_ARROW);
     truncateAtString(label, sample);
   }
@@ -1841,7 +1841,7 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   // Compute widths and strings once based on HPCONV, without changing math
   const char *t[4];
   int16_t widths[4];
-  int16_t arrowSpace; 
+  int16_t arrowSpace;
   const char *w[4];
 
   if(getSystemFlag(FLAG_HPCONV)) {
@@ -1918,7 +1918,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
     drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
     drawKeyFrame( clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
-    
+
     xcopy(l, label, stringByteLength(label) + 1);
     //    char *lw = stringAfterPixels(l, &standardFont, (rightMostSlot ? 65 : 66), false, false);
     //    *lw = 0;
@@ -2355,7 +2355,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_NEXTP  :
       case ITM_PRIME  :
       case ITM_FACTORS:
-      case ITM_PFACTORSMULT:  
+      case ITM_PFACTORSMULT:
       case ITM_EULPHI :
       case ITM_SIGMA0 :
       case ITM_SIGMA1 :
