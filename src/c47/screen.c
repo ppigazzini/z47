@@ -577,33 +577,33 @@ void execTimerApp(uint16_t timerType) {
       return;
     }
     xSoftkeyMask = xSoftkeyMask & (GRAPHMODE?0b000011u:0b111111u);
-    uint8_t minLine, maxLine;
+    uint8_t lineCount, maxLine;
+    maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
+    lineCount = fdUnderline ? 3 : SOFTMENU_HEIGHT - 3;
     if (yUnderlined <= 2) {
       // reset display to the buffer without shade
-      minLine = 242 - SOFTMENU_HEIGHT * (yUnderlined+1);
-      lcd_refresh_lines (minLine, SOFTMENU_HEIGHT-3);
+      lcd_refresh_lines (maxLine-lineCount, lineCount);
     }
     yUnderlined = ySoftkey;
     if(ySoftkey > 2) {
       return;
     }
     uint8_t temp_line[LCD_LINE_BUF_SIZE], tempByte, xBg[6], xIndex, line;
-    uint16_t j, buff_bit;
-    minLine = 242 - SOFTMENU_HEIGHT * (ySoftkey+1);
-    maxLine = minLine + SOFTMENU_HEIGHT - 4;
+    uint16_t j, buff_bit, colIncrease = fdUnderline ? 2 : 5;
+    maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
     for (xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
-      xBg[xIndex] = (lcd_buffer[52 * (minLine-1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
+      xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
     }
     // Draw shade pattern without changing lcd_buffer
-    for (line = minLine; line <= maxLine; line++) {
+    for (line = maxLine - lineCount + 1; line <= maxLine; line++) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
       for (xIndex = 0; xIndex < 6; xIndex++) {
         if (xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 2;
-          j += mod(j+2*line,5);
-          for (; j < KEY_X[xIndex + 1] - 1; j += 5) {
+          j += fdUnderline ? mod(j+line,2) : mod(j+2*line,5);
+          for (; j < KEY_X[xIndex + 1] - 1; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
             if (xBg[xIndex]){

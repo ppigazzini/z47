@@ -4,6 +4,8 @@
 /**
  * \file hal/lcd.h
  * LCD related functions.
+ * DMCP functions should follow specification at 
+ * https://technical.swissmicros.com/dmcp/doc/DMCP-ifc-html/group__lcd__graphics.html
  */
 #if !defined(LCD_H)
   #define LCD_H
@@ -13,10 +15,10 @@
     lcd_refresh();
   }
   static inline void _lcdSBRefresh(void) {
-    lcd_refresh();
+    lcd_refresh_lines(0,20);
   }
   static inline void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-    lcd_refresh();
+    lcd_refresh_lines(y,dy);
   }
   // lcd_fill_rect from dmcp.h
   // lcd_refresh   from dmcp.h
@@ -51,11 +53,48 @@
   *                rectangle
   */
   void lcd_fill_rect (uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val);
+  
+  // send a line buffer directly to LCD bypassing lcd_buffer
+  // buf has length LCD_LINE_BUF_SIZE (54byte)
+  // buf[0] = 0 means line is unchanged, 1 if line is changed (dirty)
+  // buf[1] = row number where 0 is bottom line
+  // Update the gtk screen only on this line
   void LCD_write_line (uint8_t *buf);
-  uint8_t * lcd_line_addr ( int y);	
+  
+  // get address to first data byte for the line
+  // i.e. lcd_line_addr(0) is (lcd_buffer + )
+  // also marks the line dirty
+  uint8_t * lcd_line_addr ( int y);
+  
+  /**
+  * Blits dx bits from val at position x, y.
+  *
+  * \param[in] x       Position x
+  * \param[in] dx      (1-24) Width x
+  * \param[in] y       Position y
+  * \param[in] val     Value to blit
+  * \param[in] blt_op  Blit operation BLT_OR, BLT_ANDN or BLT_XOR
+  * \param[in] fill    BLT_SET or BLT_NONE
+  *
+  * Value of fill doesn't apply for BLT_XOR.
+  *
+  * BLT_NONE doesn't affect any blit operation.
+  * BLT_SET affects src value of blit operation:
+  *
+  * for BLT_OR src = 0 over width of operation (i.e. dx)
+  * for BLT_ANDN src = 1 over width of operation (i.e. dx)
+  */
   void bitblt24 ( uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill );
+  
+  // set buffer lcd data to 0 and set row numbers
+  // no sure the original sets the row numbers
   void lcd_clear_buf ();
+  
+  // update LCD lines according to data in lcd_buffer
+  // skips line if not marked dirty
   void lcd_refresh ();
+  
+  // write cnt lines  starting with line ln regardless update mark
   void lcd_refresh_lines (uint ln, uint cnt);
 
   void refresh_gui(void);
