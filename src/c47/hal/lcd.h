@@ -12,7 +12,7 @@
 
 #if defined(DMCP_BUILD)
   static inline void _lcdRefresh(void) {
-    lcd_refresh();
+    lcd_forced_refresh();
   }
   static inline void _lcdSBRefresh(void) {
     lcd_refresh_lines(0,20);
@@ -95,7 +95,7 @@
   void lcd_refresh ();
   
   // write cnt lines  starting with line ln regardless update mark
-  void lcd_refresh_lines (uint ln, uint cnt);
+  void lcd_refresh_lines (uint8_t ln, uint8_t cnt);
 
   void refresh_gui(void);
 #endif // DMCP_BUILD

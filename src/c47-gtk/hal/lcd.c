@@ -42,7 +42,7 @@ void 	LCD_write_line (uint8_t *line_buf) {
 void 	lcd_clear_buf () {
   for (uint8_t row = 0; row < SCREEN_HEIGHT; row++) {
     uint8_t *line_buf = lcd_buffer + 52 * row;
-    for (uint c = 2; c < 52; c++) {
+    for (uint8_t c = 2; c < 52; c++) {
       line_buf[c] = 255u;
     }
     line_buf[1] = SCREEN_HEIGHT - row - 1;
@@ -66,7 +66,7 @@ void lcd_refresh () {
 #endif // FULLUPDATE (UGLY)
 }
 
-void lcd_refresh_lines (uint ln, uint cnt){
+void lcd_refresh_lines (uint8_t ln, uint8_t cnt){
   // no dirty line check
   for (uint8_t row = ln; row < ln + cnt; row++) {
     LCD_write_line(&lcd_buffer[52 * row]);
