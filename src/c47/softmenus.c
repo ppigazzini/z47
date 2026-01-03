@@ -1791,38 +1791,12 @@ bool_t maxfgLines(int16_t y) {
 static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
 
   // Draw the frame
-  grayRect(max(0, x1), y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - x1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
+  int16_t grx1 = max(0, x1);
+  grayRect(grx1, y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - grx1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
   if(toClear) {
     // Clear inside the frame
     lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
   }
-
-    // if(toClear) {
-    //   // Clear inside the frame
-    //   lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
-    //   return;
-    // }
-    //
-    // // Draw the frame
-    // //   Top line
-    // if(topLine) {
-    //   lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Bottom line
-    // if(y1 + SOFTMENU_HEIGHT <= min(y2, SCREEN_HEIGHT - 1) && bottomLine) {
-    //   lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Left line, only drawn if x1 is not on the corner, use 10 as an arbitrary border
-    // if(x1 >= 10) {
-    //   lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Right line, only drawn if x2 is not on the corner, use 10 as an arbitrary border
-    // if(x2 < SCREEN_WIDTH - 10) {
-    //   lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
 }
 
 
