@@ -543,6 +543,8 @@ void execTimerApp(uint16_t timerType) {
   void toggle6UnderLines(int16_t y) {
       if((maxfgLines(y) || (getSystemFlag(FLAG_FGLNFUL)))) {
         underline_softkey(0b111111u, y);
+      } else {
+        underline_softkey(0, 3);
       }
   }
 
