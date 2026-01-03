@@ -99,7 +99,7 @@
 
   void refresh_gui(void);
 #endif // DMCP_BUILD
-
+#if !defined(TESTSUITE_BUILD)
  /**
   * Sets a single black pixel on the screen.
   *
@@ -129,5 +129,5 @@
   static inline void flipPixel(uint32_t x, uint32_t y) {
     bitblt24(x, 1, y, 1, BLT_XOR,  BLT_NONE);
   }
-
+#endif // !TESTSUITE_BUILD
 #endif // !LCD_H
