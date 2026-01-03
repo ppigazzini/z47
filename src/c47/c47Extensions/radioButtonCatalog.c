@@ -59,9 +59,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_M14,              RBX_M14,                RB_M },   //
   {ITM_F124,             RBX_F124,               RB_F },   //
   {ITM_M124,             RBX_M124,               RB_M },   //
-  {ITM_FGLNOFF,          RBX_FGLNOFF,            RB_FG},  //
-  {ITM_FGLNLIM,          RBX_FGLNLIM,            RB_FG},  //
-  {ITM_FGLNFUL,          RBX_FGLNFUL,            RB_FG},  //
 
   {ITM_BCDU,             BCDu,                   RB_BCD}, //
   {ITM_BCD9,             BCD9c,                  RB_BCD}, //
@@ -165,6 +162,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 
   {ITM_BASE_HOME,        FLAG_BASE_HOME,         CB_JC},  //SetSetting
   {ITM_BASE_MYM,         FLAG_BASE_MYM,          CB_JC},  //SetSetting
+
+  {ITM_FGLNLIM,          FLAG_FGLNLIM,           CB_JC},  //SetSetting
+  {ITM_FGLNFUL,          FLAG_FGLNFUL,           CB_JC},  //SetSetting
+
+  {ITM_FGGR,             FLAG_FGGR,              CB_JC},
 
 
   {ITM_GAPDOT_L,         ITM_DOT,                RB_IP},
@@ -272,7 +274,8 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_TOPHEX,
   FLAG_BCD,
   FLAG_G_DOUBLETAP,
-  FLAG_SHFT_4s
+  FLAG_SHFT_4s,
+  FLAG_FGGR
 };
 
 
@@ -354,9 +357,6 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_M:   rb_param = LongPressM;
                      break;
 
-        case RB_FG:  rb_param = fgLN;
-                     break;
-
         case RB_BCD: rb_param = bcdDisplaySign;
                      break;
 
@@ -403,8 +403,8 @@ int8_t fnCbIsSet(int16_t item) {
                        case ITM_SETEUR  :
                        case ITM_SETIND  :
                        case ITM_SETJPN  :
-                       case ITM_SETUK   :  
-                       case ITM_SETUSA  : 
+                       case ITM_SETUK   :
+                       case ITM_SETUSA  :
                        case ITM_SETDFLT :  cb_param = isConfigCommon(param); break;
                        default:;
                      }
@@ -452,25 +452,32 @@ int8_t fnCbIsSet(int16_t item) {
 
                           case JC_UC:              cb_param = !alphaCase;                             break;
                           case JC_SS:              cb_param = scrLock != NC_NORMAL;                   break;
-                          
-                          case FLAG_MYM_TRIPLE: 
+
+                          case FLAG_MYM_TRIPLE:
                           case FLAG_HOME_TRIPLE:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) 
+                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE))
                               clearSystemFlag(FLAG_MYM_TRIPLE);
                             break;
-                            
+
                           case FLAG_BASE_HOME:
                           case FLAG_BASE_MYM:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) 
+                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM))
                               clearSystemFlag(FLAG_BASE_HOME);
                             break;
-                            
+
+                          case FLAG_FGLNLIM:
+                          case FLAG_FGLNFUL:
+                            cb_param = getSystemFlag(param);
+                            if(getSystemFlag(FLAG_FGLNLIM) && getSystemFlag(FLAG_FGLNFUL))
+                              clearSystemFlag(FLAG_FGLNLIM);
+                            break;
+
                           #if defined(INLINE_TEST)
                             case JC_ITM_TST:       cb_param = testEnabled;                            break;
                           #endif
-                          
+
                           default: ;
                         }
                       }

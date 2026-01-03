@@ -7,9 +7,6 @@
   TO_QSPI static const char bugScreenIdMustNotBe0[] = "In function showSoftmenu: id must not be 0!";
 #endif //TESTSUITE_BUILD
 
-#define xS1(x)    (x==0?0:x==1?66:x==2?133:x==3?200:x==4?266:x==5?333:0)
-#define xS2(x)    (x==0?66:x==1?67:x==2?67:x==3?66:x==4?67:x==5?66:0)
-
 
 /* The numbers refer to the index of items in items.c
  *         item <     0  ==>  sub menu
@@ -169,7 +166,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGGR,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
@@ -189,7 +186,7 @@ TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_
 
 
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGGR,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
@@ -369,7 +366,7 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 
 
 //XFCNS is different for C47hw, R47hw. Sim is not R47, therefore the C47 layout
-TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_MODANG_XFN,             ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN, 
+TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DRG_XFN,                   ITM_MODANG_XFN,             ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN,
                                              ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
                                              ITM_DEG,                       ITM_RAD,                    ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
 #if (CALCMODEL != USER_R47)
@@ -1678,7 +1675,7 @@ bool_t maxfgLines(int16_t y) {
 
   /********************************************//**
    * \brief Displays one softkey: helpers
-   ***********************************************/ 
+   ***********************************************/
   #define greyout true
   static bool_t initSoftkeyCoordinates(const char *label, int16_t xSoftkey, int16_t ySoftKey, int16_t *x1, int16_t *x2, int16_t *y1, int16_t *y2) {
     if(label[0] !=0 ) {
@@ -1694,8 +1691,8 @@ bool_t maxfgLines(int16_t y) {
       return false;
     }
     if(0 <= xSoftkey && xSoftkey <= 5) {
-      *x1 = xS1(xSoftkey);
-      *x2 = *x1 + xS2(xSoftkey);
+      *x1 = KEY_X[xSoftkey];
+      *x2 = KEY_X[xSoftkey+1];
     }
     else {
       sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
@@ -1727,12 +1724,21 @@ bool_t maxfgLines(int16_t y) {
 
   static void truncateAtArrow(char *label) {
     char sample[4];
-    
+
     stringCopy(sample, STD_RIGHT_ARROW);
     truncateAtString(label, sample);
-    
+
     stringCopy(sample, STD_LEFT_ARROW);
     truncateAtString(label, sample);
+  }
+
+  void grayRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
+    int16_t col, row;
+    for (row=y; row<dy+y; row++) {
+      for (col=x+mod(x+row,2); col<dx+x; col+=2) {
+        setBlackPixel(col, row);
+      }
+    }
   }
 
   /********************************************//**
@@ -1786,32 +1792,13 @@ bool_t maxfgLines(int16_t y) {
 #define clear true
 static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
 
-    if(toClear) {
-      // Clear inside the frame
-      lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
-      return;
-    }
-
-    // Draw the frame
-    //   Top line
-    if(topLine) {
-      lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Bottom line
-    if(y1 + SOFTMENU_HEIGHT <= min(y2, SCREEN_HEIGHT - 1) && bottomLine) {
-      lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Left line, only drawn if x1 is not on the corner, use 10 as an arbitrary border
-    if(x1 >= 10) {
-      lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
-
-    //   Right line, only drawn if x2 is not on the corner, use 10 as an arbitrary border
-    if(x2 < SCREEN_WIDTH - 10) {
-      lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    }
+  // Draw the frame
+  int16_t grx1 = max(0, x1);
+  grayRect(grx1, y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - grx1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
+  if(toClear) {
+    // Clear inside the frame
+    lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
+  }
 }
 
 
@@ -1830,7 +1817,7 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   // Compute widths and strings once based on HPCONV, without changing math
   const char *t[4];
   int16_t widths[4];
-  int16_t arrowSpace; 
+  int16_t arrowSpace;
   const char *w[4];
 
   if(getSystemFlag(FLAG_HPCONV)) {
@@ -1907,7 +1894,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
     drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
     drawKeyFrame( clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
-    
+
     xcopy(l, label, stringByteLength(label) + 1);
     //    char *lw = stringAfterPixels(l, &standardFont, (rightMostSlot ? 65 : 66), false, false);
     //    *lw = 0;
@@ -2344,7 +2331,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_NEXTP  :
       case ITM_PRIME  :
       case ITM_FACTORS:
-      case ITM_PFACTORSMULT:  
+      case ITM_PFACTORSMULT:
       case ITM_EULPHI :
       case ITM_SIGMA0 :
       case ITM_SIGMA1 :
@@ -2492,7 +2479,7 @@ void showSoftmenuCurrentPart(void) {
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
     clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
-    clear_ul();
+    // clear_ul();
     BASE_OVERRIDEONCE = false;
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       for(y=0; y<=2; y++) {

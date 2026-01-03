@@ -3075,7 +3075,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
   if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
-    fgLN            = RBX_FGLNFUL;  //not in conditional clear
+    setSystemFlag  (FLAG_FGLNFUL);
+    clearSystemFlag(FLAG_FGLNLIM);
     setSystemFlag  (FLAG_G_DOUBLETAP);
     setSystemFlag  (FLAG_SHFT_4s);
     setSystemFlag  (FLAG_HOME_TRIPLE);
@@ -3084,7 +3085,8 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
     setSystemFlag  (FLAG_BASE_MYM);
   }
   else {
-    fgLN            = RBX_FGLNOFF;  //not in conditional clear
+    clearSystemFlag(FLAG_FGLNFUL);
+    clearSystemFlag(FLAG_FGLNLIM);
     clearSystemFlag(FLAG_G_DOUBLETAP);
     clearSystemFlag(FLAG_SHFT_4s);
     clearSystemFlag(FLAG_HOME_TRIPLE);
@@ -3511,19 +3513,6 @@ void fnSetBCD (uint16_t bcd) {
       bcdDisplaySign = bcd;
       break;
     default: ;
-  }
-}
-
-
-void setFGLSettings(uint16_t option) {
-  switch(option) {
-    case RBX_FGLNOFF:
-    case RBX_FGLNLIM:
-    case RBX_FGLNFUL:
-      fgLN = (uint8_t)option;
-      break;
-    default:
-      fgLN = RBX_FGLNFUL;
   }
 }
 

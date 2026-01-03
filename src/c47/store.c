@@ -7,7 +7,7 @@
 bool_t isRegInRange(uint16_t regist) {
   return (regist <= LAST_LETTERED_REGISTER) ||                                                           // r00 -> r99 and includes X -> K
     (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||                                  // M -> S
-    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||                                 // E -> W                                  
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||                                 // E -> W
     (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || // 7000 -> 7098
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||        // 256  -> 1999 *
     (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||                           // 2000 -> 2047 *
@@ -22,7 +22,7 @@ bool_t regInRange(uint16_t regist) {
     const char *regType;
     uint16_t offset;
     uint8_t  errorType = ERROR_OUT_OF_RANGE;
-    
+
     if(regist <= LAST_LETTERED_REGISTER) {
       regType = "Lettered register";
       offset = regist - FIRST_LETTERED_REGISTER;
@@ -403,6 +403,7 @@ void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
+  uint8_t compatibility_byte1 = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte2  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte3  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
@@ -459,7 +460,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(systemFlags0);
   storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
-  storeToDtConfigDescriptor(fgLN);
+  storeToDtConfigDescriptor(    compatibility_byte1);
   storeToDtConfigDescriptor(    compatibility_byte19);
   storeToDtConfigDescriptor(    compatibility_byte28);
   storeToDtConfigDescriptor(    compatibility_byte29);
