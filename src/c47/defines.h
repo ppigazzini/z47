@@ -707,8 +707,11 @@
 #define FLAG_MYM_TRIPLE                       0x805F
 #define FLAG_HOME_TRIPLE                      0x8060
 #define FLAG_SHFT_4s                          0x8061
+#define FLAG_FGLNLIM                          0x8062
+#define FLAG_FGLNFUL                          0x8063
+#define FLAG_FGGR                             0x8064
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -843,7 +846,7 @@ typedef enum {
 
 // EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
 #define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
-#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC 
+#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
 
 #define INC_FLAG                                   0
@@ -1947,7 +1950,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
                                               !inputAngleError3r(r))
-#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))  
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))
 
 
 

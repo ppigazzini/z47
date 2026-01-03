@@ -6392,6 +6392,8 @@ int keyCntA = 0;
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    lcd_buffer = malloc(SCREEN_HEIGHT*(SCREEN_WIDTH/8+2)+2)+2;
+    lcd_clear_buf ();
 
   check_all_btn_widgets_for_consistency();
   }
