@@ -113,44 +113,11 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //  gtk_widget_queue_draw(w);
   //}
 
-//original
-//  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
-//    //debugf("Configure event: force a redraw");
-//    gtk_widget_queue_draw(w);
-//    return FALSE;
-//  }
-//
-
-
-static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
-    static guint redraw_timeout = 0;
-    // Cancel any pending redraw
-    if(redraw_timeout != 0) {
-        g_source_remove(redraw_timeout);
-        redraw_timeout = 0;
-    }    
-    // Schedule redraw after movement settles (50ms delay)
-    redraw_timeout = g_timeout_add(50, (GSourceFunc)gtk_widget_queue_draw, w);    
+  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
+    //debugf("Configure event: force a redraw");
+    gtk_widget_queue_draw(w);
     return FALSE;
-}
-
-
-//Possible alternative
-//static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
-//    static guint redraw_timeout = 0;
-//    static int last_x = -1, last_y = -1;
-//    
-//    // Only schedule redraw if position actually changed
-//    if(event->x != last_x || event->y != last_y) {
-//        last_x = event->x;
-//        last_y = event->y;        
-//        if(redraw_timeout != 0) {
-//            g_source_remove(redraw_timeout);
-//        }
-//        redraw_timeout = g_timeout_add(100, (GSourceFunc)gtk_widget_queue_draw, w);
-//    }    
-//    return FALSE;
-//}
+  }
 
 
 //  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
@@ -5090,6 +5057,28 @@ void check_all_btn_widgets_for_consistency(void) {
     return FALSE;  // Let GTK continue event processing
   }
 
+static guint ui_settle_timer = 0;
+
+// Helper to clear the active flag after UI settles
+static gboolean clear_ui_active_flag(gpointer data) {
+    ui_is_active = FALSE;
+    ui_settle_timer = 0;
+    return FALSE;
+}
+
+// Single handler for all UI events
+static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
+    ui_is_active = TRUE;
+    
+    if(ui_settle_timer) {
+        g_source_remove(ui_settle_timer);
+    }
+    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+    
+    return FALSE;  // Let event continue processing
+}
+
+
   /********************************************//**
   * \brief Creates the calc's GUI window with all the widgets
   *
@@ -5168,6 +5157,11 @@ void check_all_btn_widgets_for_consistency(void) {
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);

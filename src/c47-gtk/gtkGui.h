@@ -42,9 +42,10 @@
    * Leaves the alpha selection mode.
    */
   void leaveAsmMode                (void);
-  #endif // !TESTSUITE_BUILD
+#endif // !TESTSUITE_BUILD
 
   #if defined(PC_BUILD)
+    extern gboolean uiIsActive(void);
     extern char modelString[50];
     extern bool_t enableFunctionKeysDisplay;
   /**
