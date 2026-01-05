@@ -580,8 +580,8 @@ void execTimerApp(uint16_t timerType) {
     }
     xSoftkeyMask = xSoftkeyMask & (GRAPHMODE?0b000011u:0b111111u);
     uint8_t lineCount, maxLine;
-    maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
-    lineCount = (!getSystemFlag(FLAG_FGGR)) ? 3 : SOFTMENU_HEIGHT - 3;
+    maxLine = 238 - SOFTMENU_HEIGHT * (yUnderlined);
+    lineCount = (!getSystemFlag(FLAG_FGGR)) ? 3 : SOFTMENU_HEIGHT - 5;
     if (yUnderlined <= 2) {
       // reset display to the buffer without shade
       lcd_refresh_lines (maxLine-lineCount, lineCount);
@@ -592,7 +592,7 @@ void execTimerApp(uint16_t timerType) {
     }
     uint8_t temp_line[LCD_LINE_BUF_SIZE], tempByte, xBg[6], xIndex, line;
     uint16_t j, buff_bit, colIncrease = (!getSystemFlag(FLAG_FGGR)) ? 2 : 5;
-    maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
+    maxLine = 237 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
     for (xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
@@ -603,9 +603,9 @@ void execTimerApp(uint16_t timerType) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
       for (xIndex = 0; xIndex < 6; xIndex++) {
         if (xSoftkeyMask>>xIndex & 1u) {
-          j = KEY_X[xIndex] + 1;
-          j += (!getSystemFlag(FLAG_FGGR)) ? mod(j+line,2) : mod(j+2*line,5);
-          for (; j < KEY_X[xIndex + 1]; j += colIncrease) {
+          j = KEY_X[xIndex] + 3;
+          j += (!getSystemFlag(FLAG_FGGR)) ? mod(j+line,2) : mod(2*line-j,5);
+          for (; j < KEY_X[xIndex + 1]-2; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
             if (xBg[xIndex]){
