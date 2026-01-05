@@ -423,12 +423,13 @@
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
-#define STD_CB_OFF                    "\xa6\x10"     // 2610
-#define STD_CB_ON                     "\xa6\x12"     // 2612
-#define STD_RB_OFF                    "\xa5\xef"     // 25ef
-#define STD_RB_ON                     "\xa9\xbf"     // 29bf
-#define STD_DIA_OFF                   "\xa5\xc7"     // 25c7
-#define STD_DIA_ON                    "\xa5\xc8"     // 25c8
+#define STD_CB_OFF                    "\xa6\x10"     // U+2610  U+2610 - ☐ BALLOT BOX (empty checkbox)
+#define STD_CB_ON                     "\xa6\x12"     // U+2612  U+2612 - ☒ BALLOT BOX WITH X (checkbox with X)
+#define STD_RB_OFF                    "\xa5\xef"     // U+25ef  U+25EF - ◯ LARGE CIRCLE (large outline circle)
+#define STD_RB_ON                     "\xa9\xbf"     // U+29bf  U+29BF - ⦿ CIRCLED BULLET (circle with filled center dot)
+#define STD_DIA_OFF                   "\xa5\xc7"     // U+25c7  U+25CF - ● BLACK CIRCLE (filled circle)
+#define STD_DIA_ON                    "\xa5\xc8"     // U+25c8  U+25C8 - ◈ WHITE DIAMOND CONTAINING BLACK SMALL DIAMOND
+
 
 
 #define STD_HP_PERIOD                 "\xa0\x24"     // 2024
