@@ -123,7 +123,12 @@
             ((page == 6) && (kbd_std[key].gShiftedAim == kbd_usr[key].gShiftedAim))
            )
         ) {
-        greyOutBox(x1, x2, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, videoMode);
+        void (*setPixel)(uint32_t,uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
+        for(int16_t yStroke = YOFF+yy*SOFTMENU_HEIGHT + 3; yStroke < YOFF+(yy+1)*SOFTMENU_HEIGHT - 2; yStroke+=1){
+          for(int16_t xStroke = x1 + 3 + (3*yStroke+x1)%8; xStroke < x2 - 2; xStroke+=8) {
+              setPixel(xStroke, yStroke);
+          }
+        }
       }
     }
 
