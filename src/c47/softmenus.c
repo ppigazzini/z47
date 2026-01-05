@@ -1634,22 +1634,9 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
       default: {
         sprintf(errorMessage, "In function initVariableSoftmenu: unexpected variable softmenu %" PRId16 "!", (int16_t)(-dynamicSoftmenu[menu].menuItem));
                         displayBugScreen(errorMessage);
+      }
     }
   }
-  }
-
-
-void greyOutBox(int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode) {
-  // Grey out standard function names
-  // Choose pencil from corner pixel.
-  void (*setPixel)(uint32_t,uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
-  for(int16_t yStroke = y1 + 4; yStroke < y2 - 3; yStroke+=1){
-    for(int16_t xStroke = x1 + 4 + (yStroke)%6; xStroke < x2 - 3; xStroke+=7) {
-        setPixel(xStroke, yStroke);
-    }
-  }
-}
-
 
 
 static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
@@ -1752,15 +1739,12 @@ bool_t maxfgLines(int16_t y) {
    * \param[in] bottomLine bool_t     Draw a bottom line
    * \return void
    ***********************************************/
-  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t greyoutBox) {
+  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
     int16_t x1, y1, x2, y2;
     if(!initSoftkeyCoordinates(label, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
     showKey(label, x1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
-    if(greyoutBox) {
-      greyOutBox(x1, x2, y1, y2, videoMode);
-    }
   }
 
   static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
@@ -2477,7 +2461,7 @@ void showSoftmenuCurrentPart(void) {
           else {
             tmp1[0] = (int)((48+1+x+y*6));
           }
-          showSoftkey(tmp1, x, y, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+          showSoftkey(tmp1, x, y, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
         }
       }
       return;
@@ -2554,7 +2538,7 @@ void showSoftmenuCurrentPart(void) {
       #endif // PC_BUILD
       if(numberOfItems == 0) {
         for(x=0; x<6; x++) {
-          showSoftkey("", x, 0, vmNormal, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+          showSoftkey("", x, 0, vmNormal, true, true, NOVAL, NOVAL, NOTEXT);
         }
       }
       else {
@@ -2650,7 +2634,7 @@ void showSoftmenuCurrentPart(void) {
                     break;
                   }
                 }
-                showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText, !greyout);
+                showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
                 fnStrikeThroughIfNA(itemNr, x, y-currentFirstItem/6);
               }
@@ -2687,39 +2671,39 @@ void showSoftmenuCurrentPart(void) {
             }
 
             if(item == -MNU_ASN_N && calcModel == USER_C47) {
-              showSoftkey(STD_SIGMA "+ KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(STD_SIGMA "+ KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(item == -MNU_ASN_N && isR47FAM) {
-              showSoftkey(STD_BOX " KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(STD_BOX " KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(item == -MNU_HOME || item == -MNU_PFN ) {  //softmenu[menu].menuItem == 0, or does not exist
-              showSoftkey(indexOfItems[-item].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[-item].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == 0) {
               sprintf(errorMessage, "In function showSoftmenuCurrentPart: softmenu ID %" PRId16 " not found!", item);
               displayBugScreen(errorMessage);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHA_OMEGA && alphaCase == AC_UPPER) {
-              showSoftkey(indexOfItems[MNU_ALPHA_OMEGA].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[MNU_ALPHA_OMEGA].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) {
-              showSoftkey(indexOfItems[MNU_alpha_omega].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[MNU_alpha_omega].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_UPPER) {
-              showSoftkey(indexOfItems[MNU_ALPHAINTL].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[MNU_ALPHAINTL].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_LOWER) {
-              showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else {
               #if defined(INLINE_TEST)
                 if(softmenu[menu].menuItem == -MNU_INL_TST) {
-                  showSoftkey(/*STD_omicron*/STD_SPACE_3_PER_EM, x, y-currentFirstItem/6, vmNormal, false, false, NOVAL, NOVAL, NOTEXT, !greyout);
+                  showSoftkey(/*STD_omicron*/STD_SPACE_3_PER_EM, x, y-currentFirstItem/6, vmNormal, false, false, NOVAL, NOVAL, NOTEXT);
                 }
                 else {
               #endif // INLINE_TEST
               //MAIN SOFTMENU DISPLAY
-              showSoftkey(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+              showSoftkey(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
               #if defined(INLINE_TEST)
                 }
               #endif // INLINE_TEST
@@ -2731,16 +2715,16 @@ void showSoftmenuCurrentPart(void) {
           else if(softmenu[m].menuItem == -MNU_SYSFL) {                                         //JMvv add radiobuttons to standard flags
             if(indexOfItems[item%10000].itemCatalogName[0] != 0) {
               if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
-                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT);
               }
               else {
-                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT);
               }
             }
           }                                                                      //JM^^
 
           else if(softmenu[m].menuItem == -MNU_TAMFLAG && indexOfItems[item%10000].itemCatalogName[0] != 0 && indexOfItems[item%10000].func == fnGetSystemFlag) {                                         //JMvv add radiobuttons to standard flags
-            showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT, !greyout);
+            showSoftkey(indexOfItems[item%10000].itemCatalogName,  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT);
           }                                                                      //JM^^
 
           else if(softmenu[m].menuItem == -MNU_ALPHA && calcMode == CM_PEM && item%10000 == ITM_ASSIGN) {
@@ -2767,7 +2751,7 @@ void showSoftmenuCurrentPart(void) {
                  ((softmenu[m].menuItem == -MNU_IO   || softmenu[m].menuItem  == -MNU_PFN  ) && (item == ITM_STOCFG || item == ITM_RCLCFG))) { //do not display "Config"
                 stringCopy(itemName, changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName));
               }
-              showSoftkey(itemName, x, y-currentFirstItem/6, vm, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText, !greyout);
+              showSoftkey(itemName, x, y-currentFirstItem/6, vm, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText);
             }
 
 
@@ -2794,7 +2778,15 @@ void showSoftmenuCurrentPart(void) {
               case ITM_TIMER_RESET  : sprintf(tmpq,"%s","[" STD_LEFT_ARROW "]"); break;
               default:break;
             }
-            showSoftkey(tmpq, x, 2, vmNormal, false, true, NOVAL, NOVAL, tmpp, greyout);
+            int16_t x1, y1, x2, y2;
+            initSoftkeyCoordinates(tmpq, x, 2, &x1, &x2, &y1, &y2);
+            showKey(tmpq, x1, x2, y1, y2, vmNormal, false, true, NOVAL, NOVAL, tmpp);
+            // diagonals pattern
+            for(int16_t line = y1 + 3; line < y2 - 2; line += 1){
+              for(int16_t col = x1 + 3 + line%6; col < x2 - 2; col += 6) {
+                  setBlackPixel(col, line);
+              }
+            }
           }
 
           fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
