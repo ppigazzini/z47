@@ -1201,10 +1201,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //restoreStateValue(loadedScreen,                    0,                                                           "screenData",                     "screenData");
-    uint8_t fgLN = 0;
+    uint8_t fgLN = 255;
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
-    if(fgLN == RBX_FGLNOFF) {
+    if(fgLN == RBX_FGLNOFF) {                                                                                //This section to deal with any old states containing the old FG system
       clearSystemFlag(FLAG_FGLNLIM);
       clearSystemFlag(FLAG_FGLNFUL);
     } else     if(fgLN == RBX_FGLNLIM) {
@@ -2911,7 +2911,7 @@ int64_t stringToInt64(const char *str) {
             debugPrintf(16, aa, tmpString);
           #endif //LOADDEBUG
 
-          uint8_t fgLN = 0;
+          uint8_t fgLN = 255;
 
           if(strcmp(aimBuffer, "firstGregorianDay") == 0) {
             firstGregorianDay = toUint32(tmpString);
@@ -2960,7 +2960,7 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = toInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {
+          else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {                                        //This section to deal with any old states containing the old FG system
             fgLN = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF);
             if(fgLN == RBX_FGLNOFF) {
               clearSystemFlag(FLAG_FGLNLIM);
