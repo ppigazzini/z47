@@ -1644,7 +1644,7 @@ void greyOutBox(int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t vide
   // Choose pencil from corner pixel.
   void (*setPixel)(uint32_t,uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
   for(int16_t yStroke = y1 + 3; yStroke < y2 - 2; yStroke+=1){
-    for(int16_t xStroke = x1 + 3 + yStroke*2%5; xStroke < x2 - 2; xStroke+=5) {
+    for(int16_t xStroke = x1 + 3 + (yStroke*2-x1)%5; xStroke < x2 - 2; xStroke+=5) {
         setPixel(xStroke, yStroke);
     }
   }
