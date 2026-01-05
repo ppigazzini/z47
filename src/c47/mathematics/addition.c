@@ -501,7 +501,9 @@ void addStriDate(void) {
  * \return void
  ***********************************************/
 void addStriStri(void) {
-  xcopy(tmpString, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
+  xcopy( tmpString, REGISTER_STRING_DATA(REGISTER_X),
+    (REGISTER_STRING_DATA(REGISTER_X) && REGISTER_STRING_DATA(REGISTER_X)[0] != '\0') ? stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1 : 1
+  );
   _addString(tmpString);
 }
 

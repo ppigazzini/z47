@@ -166,7 +166,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGUL,              ITM_FGLNLIM,                 ITM_FGLNFUL,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGGR,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
@@ -186,7 +186,7 @@ TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_
 
 
 
-                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGUL,              ITM_FGLNLIM,                 ITM_FGLNFUL,
+                                             ITM_SAFERESET,                 ITM_G_DOUBLETAP,            ITM_SHTIM,                ITM_FGGR,              ITM_FGLNLIM,                 ITM_FGLNFUL,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
@@ -584,7 +584,9 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_N
 
                                              ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                ITM_BST_SIGN,                 ITM_SST_SIGN,
                                              ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                ITM_US,                       ITM_UK,
-                                             ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           ITM_ALTERN_CURRENT,           ITM_POWER_SYMBOL             };
+                                             ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           ITM_ALTERN_CURRENT,           ITM_POWER_SYMBOL,
+
+                                             ITM_CB_OFF,                   ITM_CB_ON,                    ITM_RB_OFF,                   ITM_RB_ON,                    ITM_DIA_OFF,                  ITM_DIA_ON };
 
 
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,
@@ -1791,38 +1793,12 @@ bool_t maxfgLines(int16_t y) {
 static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
 
   // Draw the frame
-  grayRect(max(0, x1), y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - x1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
+  int16_t grx1 = max(0, x1);
+  grayRect(grx1, y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - grx1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
   if(toClear) {
     // Clear inside the frame
     lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
   }
-
-    // if(toClear) {
-    //   // Clear inside the frame
-    //   lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
-    //   return;
-    // }
-    //
-    // // Draw the frame
-    // //   Top line
-    // if(topLine) {
-    //   lcd_fill_rect(max(0, x1), y1, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Bottom line
-    // if(y1 + SOFTMENU_HEIGHT <= min(y2, SCREEN_HEIGHT - 1) && bottomLine) {
-    //   lcd_fill_rect(max(0, x1), y1 + SOFTMENU_HEIGHT, min(x2, SCREEN_WIDTH) - max(0, x1), 1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Left line, only drawn if x1 is not on the corner, use 10 as an arbitrary border
-    // if(x1 >= 10) {
-    //   lcd_fill_rect(x1, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
-    //
-    // //   Right line, only drawn if x2 is not on the corner, use 10 as an arbitrary border
-    // if(x2 < SCREEN_WIDTH - 10) {
-    //   lcd_fill_rect(x2, y1, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    // }
 }
 
 
