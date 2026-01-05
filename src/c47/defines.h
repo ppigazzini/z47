@@ -709,7 +709,7 @@
 #define FLAG_SHFT_4s                          0x8061
 #define FLAG_FGLNLIM                          0x8062
 #define FLAG_FGLNFUL                          0x8063
-#define FLAG_FGUL                             0x8064
+#define FLAG_FGGR                             0x8064
 
 #define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
 
@@ -1731,7 +1731,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     239 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)

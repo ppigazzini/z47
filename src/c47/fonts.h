@@ -423,6 +423,12 @@
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
+#define STD_CB_OFF                    "\xa6\x10"     // 2610
+#define STD_CB_ON                     "\xa6\x12"     // 2612
+#define STD_RB_OFF                    "\xa5\xef"     // 25ef
+#define STD_RB_ON                     "\xa9\xbf"     // 29bf
+#define STD_DIA_OFF                   "\xa5\xc7"     // 25c7
+#define STD_DIA_ON                    "\xa5\xc8"     // 25c8
 
 
 #define STD_HP_PERIOD                 "\xa0\x24"     // 2024

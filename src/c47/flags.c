@@ -62,7 +62,7 @@ TO_QSPI const uint16_t refreshStateFlags[] = {       //these flags need to updat
   FLAG_NUMLOCK, FLAG_CPXMULT, FLAG_ERPN, FLAG_CARRY, FLAG_OVERFLOW, FLAG_FRCYC,
   FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
   FLAG_PBOX, FLAG_PCURVE, FLAG_PCROS, FLAG_PPLUS, FLAG_PLINE, FLAG_SCALE,
-  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGUL
+  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGGR
 };
 
 TO_QSPI const uint16_t clearStatusBarFlags[] = {       //these flags need to clear the statusbar and start SB again
@@ -665,7 +665,7 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_IRFRAC,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGUL
+  FLAG_FGGR
 };
 
 
