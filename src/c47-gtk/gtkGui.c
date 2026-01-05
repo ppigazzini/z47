@@ -113,8 +113,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //  gtk_widget_queue_draw(w);
   //}
 
-
-
   static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
     //debugf("Configure event: force a redraw");
     gtk_widget_queue_draw(w);
@@ -5049,6 +5047,37 @@ void check_all_btn_widgets_for_consistency(void) {
 }
 
 
+  static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnPressed(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+  static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnReleased(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+static guint ui_settle_timer = 0;
+
+// Helper to clear the active flag after UI settles
+static gboolean clear_ui_active_flag(gpointer data) {
+    ui_is_active = FALSE;
+    ui_settle_timer = 0;
+    return FALSE;
+}
+
+// Single handler for all UI events
+static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
+    ui_is_active = TRUE;
+    
+    if(ui_settle_timer) {
+        g_source_remove(ui_settle_timer);
+    }
+    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+    
+    return FALSE;  // Let event continue processing
+}
+
 
   /********************************************//**
   * \brief Creates the calc's GUI window with all the widgets
@@ -5128,6 +5157,11 @@ void check_all_btn_widgets_for_consistency(void) {
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
@@ -5303,18 +5337,18 @@ void check_all_btn_widgets_for_consistency(void) {
       gtk_widget_set_name(btn15, "calcKey");
       gtk_widget_set_name(btn16, "calcKey");
 
-      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed),  "1");
-      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed),  "2");
-      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed),  "3");
-      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed),  "4");
-      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed),  "5");
-      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed),  "6");
-      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased), "1");
-      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased), "2");
-      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased), "3");
-      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased), "4");
-      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased), "5");
-      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased), "6");
+      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "1");
+      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "2");
+      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "3");
+      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "4");
+      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "5");
+      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "6");
+      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "1");
+      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "2");
+      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "3");
+      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "4");
+      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "5");
+      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "6");
 
       gtk_widget_set_focus_on_click(btn11, FALSE);
       gtk_widget_set_focus_on_click(btn12, FALSE);
