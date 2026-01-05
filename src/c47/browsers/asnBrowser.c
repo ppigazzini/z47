@@ -12,14 +12,13 @@
 
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8ASN)
+  TO_QSPI const int      KEY_X_5[6] = {-1, 80, 160, 240, 320, 400};
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
   #define YOFF 32
-    int xx,yy;
+    int16_t x1,x2,yy;
     int kk = 0;
     int16_t key;
-    int16_t pixelsPerSoftKey;
     char Name[16];
-    xx = 0;
     yy = 1;
     if(previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha) {
       if(currentAsnScr < 4) {
@@ -42,13 +41,15 @@
     showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] Toggle STD/USER View", &standardFont, 20, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
-      if(key == 6 || key ==12 || key == 17 || key == 22 || key == 27 || key == 32) {
-          xx = 0;
-          yy ++;
+      if (key<17) {
+        x1 = KEY_X[key % 6 + (key > 12)];
+        x2 = KEY_X[(key + (key > 11)) % 6 + 1];
+        yy = key/6 + 1;
+      } else {
+        x1 = KEY_X_5[(key-17)%5];
+        x2 = KEY_X_5[(key-17)%5+1];
+        yy = (key-17)/5 + 4;
       }
-      if(key == 12) pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 3.0f + 0.5f); else
-      if(key <  12) pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 6.0f + 0.5f); else
-                    pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 5.0f + 0.5f);
 
       bool_t Norm_Key_00_used = false;
       if(AsnDisplayUSER) {
@@ -109,10 +110,9 @@
         Name[0] = 0;
         stringCopy(Name, tmp3);
       }
-
-      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5,
-          !Norm_Key_00_used ? (((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse) : vmReverse,
-          true, true, NOVAL, NOVAL, NOTEXT);
+      videoMode_t videoMode = !Norm_Key_00_used ? (((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse) : vmReverse;
+      showKey(Name, x1, x2, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT,
+          videoMode, true, true, NOVAL, NOVAL, NOTEXT);
 
       if(AsnDisplayUSER &&
           ( ((page == 1) && (kbd_std[key].primary == kbd_usr[key].primary)  )       ||
@@ -123,9 +123,8 @@
             ((page == 6) && (kbd_std[key].gShiftedAim == kbd_usr[key].gShiftedAim))
            )
         ) {
-        greyOutBox(xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT);
+        greyOutBox(x1, x2, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, videoMode);
       }
-    xx++;
     }
 
     temporaryInformation = TI_NO_INFO;

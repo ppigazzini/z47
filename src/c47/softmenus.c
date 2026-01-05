@@ -1639,21 +1639,20 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
   }
 
 
-void greyOutBox(int16_t x1, int16_t x2, int16_t y1, int16_t y2) {
+void greyOutBox(int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode) {
   // Grey out standard function names
-  int16_t yStroke;
-  for(int16_t xStroke=x1 + 2; xStroke < x2 - 2; xStroke++) {
-    for(yStroke = y1 + 2; yStroke < y2 - 2; yStroke++){
-      if(xStroke%2 == 0 && yStroke%2 == 0) {
-        flipPixel(xStroke, yStroke);
-      }
+  // Choose pencil from corner pixel.
+  void (*setPixel)(uint32_t,uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
+  for(int16_t yStroke = y1 + 3; yStroke < y2 - 2; yStroke+=1){
+    for(int16_t xStroke = x1 + 3 + yStroke*2%5; xStroke < x2 - 2; xStroke+=5) {
+        setPixel(xStroke, yStroke);
     }
   }
 }
 
 
 
-static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
+static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
 char label0[30];
 int16_t xx1;
 
@@ -1732,7 +1731,7 @@ bool_t maxfgLines(int16_t y) {
     truncateAtString(label, sample);
   }
 
-  void grayRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
+  void greyRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
     int16_t col, row;
     for (row=y; row<dy+y; row++) {
       for (col=x+mod(x+row,2); col<dx+x; col+=2) {
@@ -1758,9 +1757,9 @@ bool_t maxfgLines(int16_t y) {
     if(!initSoftkeyCoordinates(label, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2)) {
       return;
     }
-    showKey(label, x1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
+    showKey(label, x1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
     if(greyoutBox) {
-      greyOutBox(x1, x2, y1, y2);
+      greyOutBox(x1, x2, y1, y2, videoMode);
     }
   }
 
@@ -1783,27 +1782,22 @@ bool_t maxfgLines(int16_t y) {
     stringCopy(label1 + stringByteLength(label1), labelSM1);
     compressConversionName(label1);
     truncateAtArrow(label1);
-    showKey2(label0, label1, xx1, x2, y1, y2, xSoftkey == 5, videoMode, topLine, bottomLine, showCb, showValue, showText);
+    showKey2(label0, label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
   }
 }
 
 
 
-#define clear true
-static inline void drawKeyFrame(bool_t toClear, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
-
+static inline void drawKeyFrame(int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine) {
   // Draw the frame
-  int16_t grx1 = max(0, x1);
-  grayRect(grx1, y1 + (!bottomLine), min(x2+1, SCREEN_WIDTH) - grx1, min(y2 + bottomLine + topLine, SCREEN_HEIGHT) - y1 - 1);
-  if(toClear) {
-    // Clear inside the frame
-    lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
-  }
+  int16_t grx1 = max(0, x1), gry1 = y1 + (!bottomLine);
+  greyRect(grx1, gry1, min(x2+1, SCREEN_WIDTH) - grx1, min(y2 + topLine, SCREEN_HEIGHT) - gry1);
+  lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
 }
 
 
 
-static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
   #define YY -100
   int16_t Text0   ;
   int16_t Arr0    ;
@@ -1867,33 +1861,23 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   //printf(">>>> |%s|%s| Space %f, w1 %d, w2 %d, w3 %d, w4 %d\n", label0, label1, space, w1, w2, w3, w4);
 
   // Clear inside the frame
-  drawKeyFrame(clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
+  drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
   // Display strings once using the precomputed positions and sequence
   int16_t x[4] = {Text0, Arr0, Text1, Arr1};
   for(int i=0; i<4; i++) {
-    showStringEnhanced(t[i], &standardFont, x[i] + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
+    showStringEnhanced(t[i], &standardFont, x[i], y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
   }
-
-  // Draw frame again if needed
-  drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
-
   // Mid vertical line, unchanged
-  if(x1 >= 0) {
-    lcd_fill_rect(x1 + midpoint + (rightMostSlot ? 0 : 1), y1 + 5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-  }
-
-
-
+    lcd_fill_rect(x1 + midpoint, y1 + 5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
 }
 
 
-void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
+void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
     int16_t w;
     char l[16];
 
-    drawKeyFrame(!clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
-    drawKeyFrame( clear, x1, x2, y1, y2, videoMode, topLine, bottomLine);
+    drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
     xcopy(l, label, stringByteLength(label) + 1);
     //    char *lw = stringAfterPixels(l, &standardFont, (rightMostSlot ? 65 : 66), false, false);
@@ -1906,12 +1890,12 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       //    char *lw = stringAfterPixelsC47(l, stdNoEnlarge, compressString, rightMostSlot ? 65 : 66, false, false);
       //    *lw = 0;
     compressString = 1;       //JM compressString
-    showString(figlabel(l, showText, showValue), &standardFont, x1 + (rightMostSlot ? 33 : 34) - w/2, y1 + 2, videoMode, false, false);
+    showString(figlabel(l, showText, showValue), &standardFont, (x1 + x2 - w)/2, y1 + 2, videoMode, false, false);
     compressString = 0;       //JM compressString
   }
   else {
      //clearly short enough so no trimming was needed anyway
-     showString(figlabel(l, showText, showValue), &standardFont, x1 + (rightMostSlot ? 33 : 34) - w/2, y1 + 2, videoMode, false, false);
+     showString(figlabel(l, showText, showValue), &standardFont, (x1 + x2 - w)/2, y1 + 2, videoMode, false, false);
   }                                                                                              //JM & dr ^^
 
 #if defined(JM_LINE2_DRAW)
