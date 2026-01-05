@@ -31,6 +31,7 @@
   #define LCD_EMPTY_VALUE 255 // White (or empty) pixel
   typedef enum { BLT_OR = 0, BLT_ANDN = 1, BLT_XOR = 2 } blt_op_t;
   typedef enum { BLT_NONE = 0, BLT_SET  = 1 } blt_fill_t;
+  extern gboolean ui_is_active;
 
   
   // void lcd_fill_ptrn(int x, int y, int dx, int dy, int ptrn1, int ptrn2);

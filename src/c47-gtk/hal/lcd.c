@@ -149,11 +149,13 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
   #endif // DEBUGCLEARS
 }
 
+gboolean ui_is_active = FALSE;
 
 void refresh_gui(void) {
-    while(gtk_events_pending()) {
-      gtk_main_iteration();
-    }
+  while(gtk_events_pending()) {
+    if(ui_is_active) break;  // Exit if UI active - original W32 issue, but safer on all OS
+    gtk_main_iteration();
+  }
 }
 
 
