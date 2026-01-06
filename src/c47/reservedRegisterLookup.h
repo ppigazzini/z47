@@ -91,8 +91,11 @@ static unsigned int hash(register const char *str, register unsigned int len) {
   return hval;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunterminated-string-initialization"
+#ifndef __clang__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunterminated-string-initialization"
+#endif
+
 TO_QSPI static const struct reservedRegister wordlist[] = {
   {"\241\223Y",   RESERVED_VARIABLE_LY},
   {"\241\221Y",   RESERVED_VARIABLE_UY},
@@ -117,7 +120,10 @@ TO_QSPI static const struct reservedRegister wordlist[] = {
   {"I%/a",        RESERVED_VARIABLE_IPONA},
   {"#DEC",        RESERVED_VARIABLE_NDEC}
 };
-#pragma GCC diagnostic pop
+
+#ifndef __clang__
+  #pragma GCC diagnostic pop
+#endif
 
 static const struct reservedRegister *lookupReservedVariableName(register const char *str, register unsigned int len) {
   if(len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
