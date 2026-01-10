@@ -1536,6 +1536,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnXXfn_SQR                 (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_YRTX                (uint16_t unusedButMandatoryParameter) {}
   void fnXXfn_DUPX                (uint16_t unusedButMandatoryParameter) {}
+  void fnXXfn_RDP                 (uint16_t unusedButMandatoryParameter) {}
   void fn3Sto                     (uint16_t unusedButMandatoryParameter) {}
   void fn3Rcl                     (uint16_t unusedButMandatoryParameter) {}
   void fnDupN                     (uint16_t unusedButMandatoryParameter) {}
@@ -1598,6 +1599,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_DRG     fnXXfn_DRG
   #define S18_fnXXfn_SQR     fnXXfn_SQR
   #define S18_fnXXfn_YRTX    fnXXfn_YRTX
+  #define S18_fnXXfn_RDP     fnXXfn_RDP
 #else //OPTION_XFN_1000
   #define S18_fnEdit         itemToBeCoded
   #define S18_fnXXfn         itemToBeCoded
@@ -1632,6 +1634,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_DRG     itemToBeCoded
   #define S18_fnXXfn_SQR     itemToBeCoded
   #define S18_fnXXfn_YRTX    itemToBeCoded
+  #define S18_fnXXfn_RDP     itemToBeCoded
 #endif //OPTION_XFN_1000
 
 
@@ -4258,7 +4261,7 @@ TO_QSPI const item_t indexOfItems[] = {
 
 /* 2554 */  { S18_fnXXfn,               ITM_DEG2_XFN,                    "X" STD_RIGHT_DOUBLE_ARROW "DEG",              "X" STD_RIGHT_DOUBLE_ARROW "DEG",              (0 << TAM_MAX_BITS) |     0, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2555 */  { S18_fnXXfn,               ITM_RAD2_XFN,                    "X" STD_RIGHT_DOUBLE_ARROW "RAD",              "X" STD_RIGHT_DOUBLE_ARROW "RAD",              (0 << TAM_MAX_BITS) |     0, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2556 */  { itemToBeCoded,                 NOPARAM,                    "2556",                                        "2556",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2556 */  { S18_fnXXfn_RDP,               TM_VALUE,                    "XRDP",                                        "XRDP",                                        (0 << TAM_MAX_BITS) |  1034, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 2557 */  { itemToBeCoded,                 NOPARAM,                    "2557",                                        "2557",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2558 */  { S18_fnXXfn,                ITM_sin_XFN,                    "XSIN",                                        "XSIN",                                        (0 << TAM_MAX_BITS) |     0, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2559 */  { S18_fnXXfn,                ITM_cos_XFN,                    "XCOS",                                        "XCOS",                                        (0 << TAM_MAX_BITS) |     0, S18_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
