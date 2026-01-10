@@ -2632,7 +2632,7 @@
 #define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
-#define ITM_2556                    2556
+#define ITM_RDP_XFN                 2556
 
 #define MNU_2557                    2557
 #define ITM_sin_XFN                 2558
