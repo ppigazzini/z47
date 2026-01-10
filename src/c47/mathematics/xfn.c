@@ -78,6 +78,8 @@
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
   }
+  void fnXXfn_RDP                 (uint16_t digits) {    
+  }
 
 
 #else //OPTION_XFN_1000
@@ -302,6 +304,7 @@ typedef struct {
       { ITM_1ONX_XFN    ,FT_MONADIC },
       { ITM_DRG_XFN     ,FT_MONADIC },
       { ITM_SQR_XFN     ,FT_MONADIC },
+      { ITM_RDP_XFN     ,FT_MONADIC },
       { ITM_atan2_XFN   ,FT_DYADIC  },
       { ITM_ADD_XFN     ,FT_DYADIC  },
       { ITM_SUB_XFN     ,FT_DYADIC  },
@@ -514,7 +517,7 @@ printf("Dddd %d\n",registerNo);
 
 
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
-  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation);
+  static void doXfn(uint16_t registerNo, int function, int functionType, int functionParam, int ErrorLocation);
 
   void fnXXfn(uint16_t function) {                               //--------//--------//-- Known function, X --//--------//--------//--------
     int ErrorLocation = 0;
@@ -522,10 +525,10 @@ printf("Dddd %d\n",registerNo);
     if(functionType == XFN_NOTFOUND) {
       ErrorLocation = 11;
     }
-    doXfn(REGISTER_X, function, functionType, ErrorLocation);
+    doXfn(REGISTER_X, function, functionType, 0, ErrorLocation);
   }
 
-  void fnXfnIndirect(uint16_t registerNo, uint16_t function) {   //--------//--------//-- Known function, register no  --//--------//--------//--------
+  static void fnXfnIndirect(uint16_t registerNo, uint16_t function, uint16_t functionParam) {   //--------//--------//-- Known function, register no  --//--------//--------//--------
     int ErrorLocation = 0;
     int functionType = lookupFunctionId(function);
     if(functionType == XFN_NOTFOUND) {
@@ -534,7 +537,7 @@ printf("Dddd %d\n",registerNo);
     if((functionType == FT_NILADIC) || (functionType == FT_SINGLEX) ||
        (functionType == FT_MONADIC && (registerNo <= FIRST_LETTERED_REGISTER - 3 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 3) ))  ||
        (functionType == FT_DYADIC  && (registerNo <= FIRST_LETTERED_REGISTER - 6 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 6) )))   {
-      doXfn(registerNo, function, functionType, ErrorLocation);
+      doXfn(registerNo, function, functionType, functionParam, ErrorLocation);
       return;
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
@@ -548,90 +551,93 @@ printf("Dddd %d\n",registerNo);
 
 
   void fnXXfn_ToDEG               (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_DEG2_XFN);
+    fnXfnIndirect(registerNo, ITM_DEG2_XFN, 0);
   }
   void fnXXfn_ToRAD               (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_RAD2_XFN);
+    fnXfnIndirect(registerNo, ITM_RAD2_XFN, 0);
   }
   void fnXXfn_sin                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_sin_XFN);
+    fnXfnIndirect(registerNo, ITM_sin_XFN, 0);
   }
   void fnXXfn_cos                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_cos_XFN);
+    fnXfnIndirect(registerNo, ITM_cos_XFN, 0);
   }
   void fnXXfn_tan                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_tan_XFN);
+    fnXfnIndirect(registerNo, ITM_tan_XFN, 0);
   }
   void fnXXfn_pi                  (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_pi_XFN);
+    fnXfnIndirect(registerNo, ITM_pi_XFN, 0);
   }
   void fnXXfn_atan2               (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_atan2_XFN);
+    fnXfnIndirect(registerNo, ITM_atan2_XFN, 0);
   }
   void fnXXfn_arcsin              (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_arcsin_XFN);
+    fnXfnIndirect(registerNo, ITM_arcsin_XFN, 0);
   }
   void fnXXfn_arccos              (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_arccos_XFN);
+    fnXfnIndirect(registerNo, ITM_arccos_XFN, 0);
   }
   void fnXXfn_arctan              (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_arctan_XFN);
+    fnXfnIndirect(registerNo, ITM_arctan_XFN, 0);
   }
   void fnXXfn_LN                  (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_LN_XFN);
+    fnXfnIndirect(registerNo, ITM_LN_XFN, 0);
   }
   void fnXXfn_LOG                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_LOG_XFN);
+    fnXfnIndirect(registerNo, ITM_LOG_XFN, 0);
   }
   void fnXXfn_EXP                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_EXP_XFN);
+    fnXfnIndirect(registerNo, ITM_EXP_XFN, 0);
   }
   void fnXXfn_10X                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_10X_XFN);
+    fnXfnIndirect(registerNo, ITM_10X_XFN, 0);
   }
   void fnXXfn_POWER               (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_POWER_XFN);
+    fnXfnIndirect(registerNo, ITM_POWER_XFN, 0);
   }
   void fnXXfn_SQRT                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_SQRT_XFN);
+    fnXfnIndirect(registerNo, ITM_SQRT_XFN, 0);
   }
   void fnXXfn_1ONX                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_1ONX_XFN);
+    fnXfnIndirect(registerNo, ITM_1ONX_XFN, 0);
   }
   void fnXXfn_ADD                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_ADD_XFN);
+    fnXfnIndirect(registerNo, ITM_ADD_XFN, 0);
   }
   void fnXXfn_SUB                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_SUB_XFN);
+    fnXfnIndirect(registerNo, ITM_SUB_XFN, 0);
   }
   void fnXXfn_MULT                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_MULT_XFN);
+    fnXfnIndirect(registerNo, ITM_MULT_XFN, 0);
   }
   void fnXXfn_DIV                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_DIV_XFN);
+    fnXfnIndirect(registerNo, ITM_DIV_XFN, 0);
   }
   void fnXXfn_MOD                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_MOD_XFN);
+    fnXfnIndirect(registerNo, ITM_MOD_XFN, 0);
   }
   void fnXXfn_MODANG              (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_MODANG_XFN);
+    fnXfnIndirect(registerNo, ITM_MODANG_XFN, 0);
   }
   void fnXXfn_TO                  (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_TO_XFN);
+    fnXfnIndirect(registerNo, ITM_TO_XFN, 0);
   }
   void fnXXfn_DRG                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_DRG_XFN);
+    fnXfnIndirect(registerNo, ITM_DRG_XFN, 0);
   }
   void fnXXfn_SQR                 (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_SQR_XFN);
+    fnXfnIndirect(registerNo, ITM_SQR_XFN, 0);
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
-    fnXfnIndirect(registerNo, ITM_XTHROOT_XFN);
+    fnXfnIndirect(registerNo, ITM_XTHROOT_XFN, 0);
+  }
+  void fnXXfn_RDP                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
 
 
 
-  static void doXfn(uint16_t registerNo, int function, int functionType, int ErrorLocation) {
+  static void doXfn(uint16_t registerNo, int function, int functionType, int functionParam, int ErrorLocation) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -732,20 +738,15 @@ printf("Dddd %d\n",registerNo);
 
         case ITM_DRG_XFN: {
           angularMode_t nextAngleMode = angleMode == amDegree ? amRadian : angleMode == amRadian ? amGrad : angleMode == amGrad ? amMultPi : angleMode == amMultPi ? amDegree : amDegree;
-printf("aa001\n");
           if(inputIsNoAngle3r(registerNo)) {
-printf("aa002\n");
             angleMode = currentAngularMode;
             break;
           } else {
-printf("aa003\n");
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
-printf("aa004\n");
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
               realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);        
             }
           }
-printf("aa005\n");
           angleMode = nextAngleMode;
           break;
         }
@@ -828,6 +829,10 @@ printf("aa005\n");
           } else {
             WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
+          break;
+        }
+        case ITM_RDP_XFN: {
+          roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
           break;
         }
   //--------//SINGLE REG FUNCTIONS
