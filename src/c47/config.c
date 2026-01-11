@@ -1508,7 +1508,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-    setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
+    //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
       real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
@@ -2056,15 +2056,23 @@ void fnKeysManagement(uint16_t choice) {
       }
       break;
 
-      case USER_R47f_g:
-      case USER_R47bk_fg:
-      case USER_R47fg_bk:
-      case USER_R47fg_g:
-      case USER_C47:
-      case USER_DM42:
+    case USER_R47f_g:
+    case USER_R47bk_fg:
+    case USER_R47fg_bk:
+    case USER_R47fg_g:
+    case USER_C47:
+    case USER_DM42:
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
+      if(choice == USER_R47bk_fg) {                       // MyMenu is the long press default for R47bk_fg
+        fnClearFlag(FLAG_HOME_TRIPLE);
+        fnSetFlag(FLAG_MYM_TRIPLE);
+      }
+      else {                                              // HOME is the long press default for all other options
+        fnSetFlag(FLAG_HOME_TRIPLE);
+        fnClearFlag(FLAG_MYM_TRIPLE);
+      }
       fnShowVersion(choice);
       break;
 
@@ -2075,7 +2083,7 @@ void fnKeysManagement(uint16_t choice) {
       Norm_Key_00.func = Norm_Key_00_item_in_layout;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = false;
-      setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
+      //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;
