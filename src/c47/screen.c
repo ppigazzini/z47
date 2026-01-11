@@ -732,7 +732,7 @@ void execTimerApp(uint16_t timerType) {
     shiftF = shiftG = false;
   }
 
-  static void _executeItem(int16_t item, int keyCode) {
+  void _executeItem(int16_t item, int keyCode) {
     char *funcParam = "";
 
     keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
@@ -829,8 +829,24 @@ void execTimerApp(uint16_t timerType) {
               funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
               setCurrentUserMenu(item, funcParam);
               if(shiftF) {
-                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
-                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                if(getSystemFlag(FLAG_ALPHA) && ((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu())) {
+                  popSoftmenu();
+                }
+                //showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
+                //             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                
+                if(tam.alpha) {
+                  showSoftmenu(-MNU_TAMALPHA);
+                }
+                else if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM))) {
+                  showSoftmenu(-MNU_ALPHA);
+                }
+                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
+                  showSoftmenu(key->fShifted);
+                }
+                else {
+                  showSoftmenu(-MNU_HOME);
+                }
                 showSoftmenuCurrentPart();
               }
               else {
@@ -859,6 +875,8 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
             addItemToBuffer(item);
           }
+          shiftF = 0;
+          shiftG = 0;
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(23);
         }
@@ -888,7 +906,22 @@ void execTimerApp(uint16_t timerType) {
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {
           Shft_timeouts = false;
           resetShiftState();                                       //force into no shift state, i.e. to wait
-          openHOMEorMyM(keypress_long_f);
+          if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
+            #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+              int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+              shiftF = 1;
+              if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
+                _assignLongPressKey(keyCode);
+              }
+            #endif // PC_BUILD || NEW_HW
+            shiftF = 0;
+            shiftG = 0;
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(23);
+          }
+          else {
+            openHOMEorMyM(keypress_long_f);
+          }
         }
       }
     }

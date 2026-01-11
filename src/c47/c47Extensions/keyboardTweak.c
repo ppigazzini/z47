@@ -156,7 +156,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
+    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM)
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
@@ -167,36 +167,108 @@ void resetKeytimers(void) {
 
       int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
       int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
+//note: restored CUST changing to HOME
 
-      if((getSystemFlag(FLAG_HOME_TRIPLE) && currentMenu() == target_HOME)) {
-        if(situation == keypress_fff) {
-          popSoftmenu();
+//note: Removed fff clearing HOME again
+
+//note: Add Non-USER mode below for fff
+      
+      
+      bool_t baseOverrideOnce = false;
+      BASE_OVERRIDEONCE = baseOverrideOnce;
+            
+      if(getSystemFlag(FLAG_ALPHA)) {
+        leaveTamModeIfEnabled();
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu()) {
+            popSoftmenu();
+          }
+          if(tam.alpha) {
+            showSoftmenu(-MNU_TAMALPHA);
+          }
+          else {
+            showSoftmenu(-MNU_ALPHA);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          showSoftmenu(-MNU_MyAlpha);
         }
       }
       else {
-        if(getSystemFlag(FLAG_ALPHA)) {
-          leaveTamModeIfEnabled();
-          showSoftmenu(-MNU_MyAlpha);
-        }
-        else {
-          if(getSystemFlag(FLAG_HOME_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            showSoftmenu(target_HOME);
+        leaveTamModeIfEnabled();
+
+        int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+        if(keyCode != 9999) {
+          calcKey_t *key = kbd_usr + keyCode;
+          int16_t item = key->fShifted;
+          if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
+            delayCloseNim = false;
+            closeNim();
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           }
-          else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            if(situation == keypress_fff) {
-              BASE_OVERRIDEONCE = true;
+          if(getSystemFlag(FLAG_USER)) {    // USER mode
+            if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
+              #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+                _executeItem(item,keyCode);
+              #endif // PC_BUILD || NEW_HW
+
+              screenUpdatingMode = SCRUPD_AUTO;
+              refreshScreen(1000);
             }
-            showSoftmenu(target_MYM);
-          } //If none selected, do not display any menu, keep the screen blank
+            else {
+              if(item < 0) {
+                target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE)? -MNU_MyMenu : item);
+                showSoftmenu(target_HOME);
+              }
+              else {
+                if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  showSoftmenu(target_HOME);
+                }
+                else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  if(situation == keypress_fff) {
+                    BASE_OVERRIDEONCE = true;
+                  }
+                  showSoftmenu(target_MYM);
+                } //If none selected, do not display any menu, keep the screen blank
+              }
+            }
+          }
+          else {                            // Normal mode
+            if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+              leaveTamModeIfEnabled();
+              showSoftmenu(target_HOME);
+            }
+            else if(getSystemFlag(FLAG_MYM_TRIPLE)) {    
+              if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
+                leaveTamModeIfEnabled();
+                if(situation == keypress_fff) {
+                  baseOverrideOnce = true;
+                }
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                showSoftmenu(target_MYM);
+              }
+              else {
+                baseOverrideOnce = false;
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                fnExitAllMenus(0);               // If MyMb and HOMEb are both clear, return to the blank base menu display
+              }
+            }  //If none selected, do not display any menu, keep the screen blank
+          }
         }
       }
+      BASE_OVERRIDEONCE = baseOverrideOnce;
       showSoftmenuCurrentPart();
+      BASE_OVERRIDEONCE = baseOverrideOnce;            //for upcoming refresh*
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(23);
     }
   }
 
   void fg_processing_jm(void) {
+    bool_t toExecute = false;
     if(getSystemFlag(FLAG_SHFT_4s) || (getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE))) {
       if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
@@ -207,7 +279,7 @@ void resetKeytimers(void) {
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
             leaveTamModeIfEnabled();
-            openHOMEorMyM(keypress_fff);
+            toExecute = true;
           }
         }
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_STOPPED) {
@@ -233,6 +305,9 @@ void resetKeytimers(void) {
       shiftF = false;                                                             //JM shifts
       shiftG = false;                                                             //JM shifts
     }                                                                             //JM shifts
+    if(toExecute) {
+      openHOMEorMyM(keypress_fff);
+    }
   }
 
 
@@ -1324,7 +1399,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-
+      
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);

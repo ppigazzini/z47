@@ -3114,6 +3114,25 @@ char sstmp[16];
     }
     R47LongpressColour = true;
   }
+  else if(isR47FAM && key->primary == KEY_fg) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) {
+      if(key->fShifted == ITM_NULL) { 
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+        }
+        else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+        }
+      }
+      else {
+        strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+      }
+    }
+    else {
+      sstmp[0] = 0;
+    }
+    R47LongpressColour = true;
+  }
   else if(key->fShifted == 0) {
       sstmp[0] = 0;
   }
@@ -3206,11 +3225,33 @@ char sstmp[16];
         lbl[0] = 0;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
-        stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        if(tam.alpha) {
+          stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+        }
+        else {
+          stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        }
         R47LongpressColour = true;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
         stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        R47LongpressColour = true;
+      }
+      else if(isR47FAM && key->primaryAim == KEY_fg) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if(tam.alpha) {
+            stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+          }
+          else {
+            stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        }
+        else {
+          lbl[0] = 0;
+        }
         R47LongpressColour = true;
       }
       else {
@@ -3345,7 +3386,10 @@ char sstmp[16];
     void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
       uint8_t lbl[22];
 
-      stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      lbl[0] = 0;
+      if(key->primaryTam != ITM_NULL) {
+        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      }
 
       //THIS IS FOR TAM
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
