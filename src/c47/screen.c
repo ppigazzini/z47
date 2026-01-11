@@ -883,8 +883,24 @@ void execTimerApp(uint16_t timerType) {
               funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
               setCurrentUserMenu(item, funcParam);
               if(shiftF) {
-                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
-                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                if(getSystemFlag(FLAG_ALPHA) && ((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu())) {
+                  popSoftmenu();
+                }
+                //showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
+                //             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                
+                if(tam.alpha) {
+                  showSoftmenu(-MNU_TAMALPHA);
+                }
+                else if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM))) {
+                  showSoftmenu(-MNU_ALPHA);
+                }
+                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
+                  showSoftmenu(key->fShifted);
+                }
+                else {
+                  showSoftmenu(-MNU_HOME);
+                }
                 showSoftmenuCurrentPart();
               }
               else {
@@ -913,6 +929,8 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
             addItemToBuffer(item);
           }
+          shiftF = 0;
+          shiftG = 0;
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(23);
         }

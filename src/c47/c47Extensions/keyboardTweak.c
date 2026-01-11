@@ -173,10 +173,26 @@ void resetKeytimers(void) {
 
 //note: Add Non-USER mode below for fff
       
-
+      
+      bool_t baseOverrideOnce = false;
+      BASE_OVERRIDEONCE = baseOverrideOnce;
+            
       if(getSystemFlag(FLAG_ALPHA)) {
         leaveTamModeIfEnabled();
-        showSoftmenu(-MNU_MyAlpha);
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu()) {
+            popSoftmenu();
+          }
+          if(tam.alpha) {
+            showSoftmenu(-MNU_TAMALPHA);
+          }
+          else {
+            showSoftmenu(-MNU_ALPHA);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          showSoftmenu(-MNU_MyAlpha);
+        }
       }
       else {
         leaveTamModeIfEnabled();
@@ -191,43 +207,70 @@ void resetKeytimers(void) {
             closeNim();
             screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           }
-          if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
-            #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
-              _executeItem(item,keyCode);
-            #endif // PC_BUILD || NEW_HW
+          if(getSystemFlag(FLAG_USER)) {    // USER mode
+            if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
+              #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+                _executeItem(item,keyCode);
+              #endif // PC_BUILD || NEW_HW
 
-            screenUpdatingMode = SCRUPD_AUTO;
-            refreshScreen(1000);
-          }
-          else {
-            if(getSystemFlag(FLAG_USER) && item < 0) {
-              target_HOME = item;
+              screenUpdatingMode = SCRUPD_AUTO;
+              refreshScreen(1000);
             }
-            showSoftmenu(target_HOME); // The original target_HOME is the fallback; this can be changed of course - I just left it as minimum changes
-          }
-          
-          if(!FLAG_USER && getSystemFlag(FLAG_HOME_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            showSoftmenu(target_HOME);
-          }
-          else if(!FLAG_USER && getSystemFlag(FLAG_MYM_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            if(situation == keypress_fff) {
-              BASE_OVERRIDEONCE = true;
+            else {
+              if(item < 0) {
+                target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE)? -MNU_MyMenu : item);
+                showSoftmenu(target_HOME);
+              }
+              else {
+                if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  showSoftmenu(target_HOME);
+                }
+                else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  if(situation == keypress_fff) {
+                    BASE_OVERRIDEONCE = true;
+                  }
+                  showSoftmenu(target_MYM);
+                } //If none selected, do not display any menu, keep the screen blank
+              }
             }
-            showSoftmenu(target_MYM);
-          } //If none selected, do not display any menu, keep the screen blank
-
+          }
+          else {                            // Normal mode
+            if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+              leaveTamModeIfEnabled();
+              showSoftmenu(target_HOME);
+            }
+            else if(getSystemFlag(FLAG_MYM_TRIPLE)) {    
+              if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
+                leaveTamModeIfEnabled();
+                if(situation == keypress_fff) {
+                  baseOverrideOnce = true;
+                }
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                showSoftmenu(target_MYM);
+              }
+              else {
+                baseOverrideOnce = false;
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                fnExitAllMenus(0);               // If MyMb and HOMEb are both clear, return to the blank base menu display
+              }
+            }  //If none selected, do not display any menu, keep the screen blank
+          }
         }
       }
+      BASE_OVERRIDEONCE = baseOverrideOnce;
       showSoftmenuCurrentPart();
+      BASE_OVERRIDEONCE = baseOverrideOnce;            //for upcoming refresh*
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(23);
     }
   }
 
   void fg_processing_jm(void) {
     bool_t toExecute = false;
     if(getSystemFlag(FLAG_SHFT_4s) || (getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE))) {
-      if(getSystemFlag(FLAG_HOME_TRIPLE) && !GRAPHMODE) {
+      if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
           JM_SHIFT_HOME_TIMER1++;
           if(JM_SHIFT_HOME_TIMER1 >= 3) {
