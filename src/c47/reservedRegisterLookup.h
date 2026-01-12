@@ -91,9 +91,9 @@ static unsigned int hash(register const char *str, register unsigned int len) {
   return hval;
 }
 
-#ifndef __clang__
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wunterminated-string-initialization"
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunterminated-string-initialization"
 #endif
 
 TO_QSPI static const struct reservedRegister wordlist[] = {
@@ -121,8 +121,8 @@ TO_QSPI static const struct reservedRegister wordlist[] = {
   {"#DEC",        RESERVED_VARIABLE_NDEC}
 };
 
-#ifndef __clang__
-  #pragma GCC diagnostic pop
+#if defined(__clang__)
+  #pragma clang diagnostic pop
 #endif
 
 static const struct reservedRegister *lookupReservedVariableName(register const char *str, register unsigned int len) {
