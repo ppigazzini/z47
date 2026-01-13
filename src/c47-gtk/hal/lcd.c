@@ -176,9 +176,9 @@ void _lcdRefresh(void) {              //called by force_refresh() and _printHalf
   // _lcdBandRefreshHelper(0, SCREEN_HEIGHT);
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-          // #if defined(ANALYSE_REFRESH)
+           #if defined(ANALYSE_REFRESH)
             print_caller("y=%u, dy=%u\n",y, dy);
-          // #endif //ANALYSE_REFRESH
+           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);
 }
