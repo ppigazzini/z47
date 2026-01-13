@@ -4,7 +4,7 @@
 
 #include "c47.h"
 
-#if defined(PC_BUILD)
+#if defined(PC_BUILD) && !defined(WIN32)
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <stdarg.h>
