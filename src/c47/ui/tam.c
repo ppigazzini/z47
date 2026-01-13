@@ -1220,7 +1220,7 @@
         popSoftmenu();
       }
     }
-
+    
     #if defined(PC_BUILD)
       switch(calcMode) {
         case CM_NORMAL:

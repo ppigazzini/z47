@@ -172,11 +172,11 @@ void resetKeytimers(void) {
 //note: Removed fff clearing HOME again
 
 //note: Add Non-USER mode below for fff
-      
-      
+
+
       bool_t baseOverrideOnce = false;
       BASE_OVERRIDEONCE = baseOverrideOnce;
-            
+
       if(getSystemFlag(FLAG_ALPHA)) {
         leaveTamModeIfEnabled();
         if(getSystemFlag(FLAG_HOME_TRIPLE)) {
@@ -209,15 +209,19 @@ void resetKeytimers(void) {
           }
           if(getSystemFlag(FLAG_USER)) {    // USER mode
             if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
-              #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+              #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
                 _executeItem(item,keyCode);
-              #endif // PC_BUILD || NEW_HW
+              #endif // LONGPRESS_CFG
 
               screenUpdatingMode = SCRUPD_AUTO;
               refreshScreen(1000);
             }
-            else {
+            else {;
               if(item < 0) {
+                if(item == -MNU_DYNAMIC) {
+                  char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + 1);
+                  setCurrentUserMenu(item, funcParam);
+                }
                 target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE)? -MNU_MyMenu : item);
                 showSoftmenu(target_HOME);
               }
@@ -241,7 +245,7 @@ void resetKeytimers(void) {
               leaveTamModeIfEnabled();
               showSoftmenu(target_HOME);
             }
-            else if(getSystemFlag(FLAG_MYM_TRIPLE)) {    
+            else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
               if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
                 leaveTamModeIfEnabled();
                 if(situation == keypress_fff) {
@@ -1399,7 +1403,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-      
+
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);
