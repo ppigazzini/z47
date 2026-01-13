@@ -17,13 +17,16 @@ void print_caller(const char *format, ...) {
   Dl_info infoA, infoB;
   dladdr(cs[1], &infoA);
   dladdr(cs[2], &infoB);
-  printf("%s called from: %s\n", infoA.dli_sname, infoB.dli_sname);
+  printf("%s%s%s called from: %s%-30s%s",COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
 
   if (format != NULL) {
+    printf("| ");
     va_start(ap, format);
     vprintf(format, ap);
     va_end(ap);
   }
+  printf("\n");
+
 }
 #endif //PC_BUILD
 
@@ -173,9 +176,9 @@ void _lcdRefresh(void) {              //called by force_refresh() and _printHalf
   // _lcdBandRefreshHelper(0, SCREEN_HEIGHT);
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-          #if defined(ANALYSE_REFRESH)
+          // #if defined(ANALYSE_REFRESH)
             print_caller("y=%u, dy=%u\n",y, dy);
-          #endif //ANALYSE_REFRESH
+          // #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);
 }
