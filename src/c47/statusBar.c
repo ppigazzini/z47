@@ -35,13 +35,9 @@ void drawBattery(uint16_t voltage);
   bool_t   reInstateOCModeDisplay;
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
-                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "forceSBupdate called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(ANALYSE_REFRESH)
+                                  print_caller();
+                                #endif // ANALYSE_REFRESH
     setAllSystemFlagChanged();
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
@@ -339,12 +335,8 @@ void drawBattery(uint16_t voltage);
      else if(y > 0) {
        lcd_fill_rect(x, 0, dx, y-0, LCD_SET_VALUE);
      }
-                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "showStringAndClear called from: ", strs[1]);
-                                  free(strs);
+                                #if defined(ANALYSE_REFRESH)
+                                  print_caller();
                                 #endif // PC_BUILD && ANALYSE_REFRESH
      return xx;
   }
@@ -720,13 +712,9 @@ void drawBattery(uint16_t voltage) {
 
 
   void refreshStatusBar(void) {
-                                #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "refreshStatusBar called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(ANALYSE_REFRESH)
+                                  print_caller();
+                                #endif // ANALYSE_REFRESH
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {
         case CM_PEM:
