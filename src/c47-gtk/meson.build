@@ -33,12 +33,18 @@ endif
 # C47 Simulator
 #
 
+deps = [gtk_dep, gmp_dep, m_dep, pulse_dep]
+
+if host_machine.system() == 'linux'
+  deps += dependency('dl', required : true)
+endif
+
 sim = executable('c47',
   sources             : decNumber_src + c47_src + c47_gtk_src + c47_gtk_rc + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : ['-DCALCMODEL=USER_C47'],
   c_pch               : 'pch/c47-gtk_pch.h',
   include_directories : [decNumber_inc, c47_inc],
-  dependencies        : [gtk_dep, gmp_dep, m_dep, pulse_dep],
+  dependencies        : deps,
   native              : true,
   override_options    : ['b_lto=true'],
   win_subsystem       : 'windows'
@@ -55,7 +61,7 @@ simr47 = executable('r47',
   c_args              : ['-DCALCMODEL=USER_R47'],
   c_pch               : 'pch/c47-gtk_pch.h',
   include_directories : [decNumber_inc, c47_inc],
-  dependencies        : [gtk_dep, gmp_dep, m_dep, pulse_dep],
+  dependencies        : deps,
   native              : true,
   override_options    : ['b_lto=true'],
   win_subsystem       : 'windows'
