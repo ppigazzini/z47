@@ -36,7 +36,7 @@ void drawBattery(uint16_t voltage);
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
                                 #if defined(ANALYSE_REFRESH)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif // ANALYSE_REFRESH
     setAllSystemFlagChanged();
     SBlastIntegerBaseShown = 0xFF;
@@ -336,7 +336,7 @@ void drawBattery(uint16_t voltage);
        lcd_fill_rect(x, 0, dx, y-0, LCD_SET_VALUE);
      }
                                 #if defined(ANALYSE_REFRESH)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif // PC_BUILD && ANALYSE_REFRESH
      return xx;
   }
@@ -713,7 +713,7 @@ void drawBattery(uint16_t voltage) {
 
   void refreshStatusBar(void) {
                                 #if defined(ANALYSE_REFRESH)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif // ANALYSE_REFRESH
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {      // force statusbar display for these modes
       switch(calcMode) {

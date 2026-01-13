@@ -8,9 +8,9 @@
  * https://technical.swissmicros.com/dmcp/doc/DMCP-ifc-html/group__lcd__graphics.html
  */
 #if defined(PC_BUILD)
-void print_caller();
+void print_caller(const char *format, ...);
 #else
-static inline void print_caller() {}
+static inline void print_caller(const char *format, ...) {}
 #endif //PC_BUILD
 
 #if !defined(LCD_H)

@@ -239,7 +239,7 @@ void fnGetStackSize(uint16_t unusedButMandatoryParameter) {
 
 void saveForUndo(void) {
                                 #if defined(DEBUGUNDO)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif
   if(((calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_MIM) && thereIsSomethingToUndo) || calcMode == CM_NO_UNDO) {
     #if defined(DEBUGUNDO)
@@ -329,7 +329,7 @@ failed:
 
 void fnUndo(uint16_t unusedButMandatoryParameter) {
                                 #if defined(DEBUGUNDO)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif
   if(thereIsSomethingToUndo) {
     undo();
@@ -344,7 +344,7 @@ void undo(void) {
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
                                           printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
-                                          print_caller();
+                                          print_caller(NULL);
                                         #endif // DEBUGUNDO
 
   const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);

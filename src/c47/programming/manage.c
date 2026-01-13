@@ -1344,7 +1344,7 @@ static void _pemCloseAngleInput(int item) {
 
 void insertStepInProgram(const int16_t func) {
                                 #if defined(DEBUG_PGM)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif
 
   uint32_t opBytes = (func >= 128) ? 2 : 1;
@@ -1766,7 +1766,7 @@ void insertUserItemInProgram(int16_t func, char *funcParam) {
 
 void addStepInProgram(int16_t func) {
                                 #if defined(DEBUG_PGM)
-                                  print_caller();
+                                  print_caller(NULL);
                                 #endif
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
