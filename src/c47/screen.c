@@ -1684,7 +1684,7 @@ return res;
 
   void force_refresh(uint8_t mode) {
                                         #if defined(ANALYSE_REFRESH)
-                                          print_caller();
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdRefresh();
@@ -1694,7 +1694,7 @@ return res;
 
   void force_SBrefresh(uint8_t mode) {
                                         #if defined(ANALYSE_REFRESH)
-                                          print_caller();
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdSBRefresh();
@@ -2735,7 +2735,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                                         printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
                                         #if defined(ANALYSE_REFRESH)
-                                          print_caller();
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
                                       #endif // PC_BUILD &&MONITOR_CLRSCR
 
@@ -3141,7 +3141,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                         if(baseY < 0) {
                                           printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
                                           #if defined(ANALYSE_REFRESH)
-                                            print_caller();
+                                            print_caller(NULL);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
                                         #endif //PC_BUILD
@@ -5148,7 +5148,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                           printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
                                         #endif // PC_BUILD &&MONITOR_CLRSCR
                                         #if defined(ANALYSE_REFRESH)
-                                          print_caller();
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
       screenUpdatingMode = SCRUPD_AUTO;
@@ -5269,7 +5269,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   static void _refreshNormalScreen(void) {
                               #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
-                                print_caller();
+                                print_caller(NULL);
                               #endif // PC_BUILD &&MONITOR_CLRSCR
         if(calcMode != CM_NIM) refreshNIMdone = false;
 
@@ -5477,7 +5477,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
   void refreshScreen(uint16_t source) {
                               #if defined(ANALYSE_REFRESH)
-                                print_caller();
+                                print_caller(NULL);
                               #endif
 
                               #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)

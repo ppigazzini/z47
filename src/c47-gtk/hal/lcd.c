@@ -7,13 +7,23 @@
 #if defined(PC_BUILD)
 #include <execinfo.h>
 #include <dlfcn.h>
-void print_caller() {
+#include <stdarg.h>
+
+void print_caller(const char *format, ...) {
   void *cs[64];
+  va_list ap;
+
   backtrace(cs, 64);
   Dl_info infoA, infoB;
   dladdr(cs[1], &infoA);
   dladdr(cs[2], &infoB);
   printf("%s called from: %s\n", infoA.dli_sname, infoB.dli_sname);
+
+  if (format != NULL) {
+    va_start(ap, format);
+    vprintf(format, ap);
+    va_end(ap);
+  }
 }
 #endif //PC_BUILD
 
@@ -157,14 +167,14 @@ void refresh_gui(void) {
 
 void _lcdRefresh(void) {              //called by force_refresh() and _printHalfSecUpdate_Integer()
           #if defined(ANALYSE_REFRESH)
-            print_caller();
+            print_caller(NULL);
           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(0, SCREEN_HEIGHT);
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
           #if defined(ANALYSE_REFRESH)
-            print_caller();
+            print_caller("y=%u, dy=%u\n",y, dy);
           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);
@@ -172,7 +182,7 @@ void _lcdBandRefresh(uint32_t y, uint32_t dy) {
 
 void _lcdSBRefresh(void) {
           #if defined(ANALYSE_REFRESH)
-            print_caller();
+            print_caller(NULL);
           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(0, 20);
