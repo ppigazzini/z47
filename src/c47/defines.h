@@ -2163,6 +2163,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define COLOR_GREEN   "\033[1;92m"
 #define COLOR_YELLOW  "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
+#define COLOR_BLUE    "\033[1;38;5;12m"
 #define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)

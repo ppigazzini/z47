@@ -238,13 +238,9 @@ void fnGetStackSize(uint16_t unusedButMandatoryParameter) {
 
 
 void saveForUndo(void) {
-                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "saveForUndo called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUGUNDO)
+                                  print_caller(NULL);
+                                #endif
   if(((calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_MIM) && thereIsSomethingToUndo) || calcMode == CM_NO_UNDO) {
     #if defined(DEBUGUNDO)
       if(thereIsSomethingToUndo) {
@@ -332,13 +328,9 @@ failed:
 
 
 void fnUndo(uint16_t unusedButMandatoryParameter) {
-                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "fnUndo called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUGUNDO)
+                                  print_caller(NULL);
+                                #endif
   if(thereIsSomethingToUndo) {
     undo();
   }
@@ -352,12 +344,7 @@ void undo(void) {
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
                                           printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
-                                          #include <execinfo.h>
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "undo() called from: ", strs[1]);
-                                          free(strs);
+                                          print_caller(NULL);
                                         #endif // DEBUGUNDO
 
   const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);
