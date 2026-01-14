@@ -959,7 +959,7 @@ void execTimerApp(uint16_t timerType) {
         }
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12)) && JM_auto_longpress_enabled != ITM_CLRMOD && JM_auto_longpress_enabled > 0) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
           if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
             // stub for code to process on up1/down longpress
@@ -1716,12 +1716,8 @@ return res;
 
 
   void force_refresh(uint8_t mode) {
-                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "force_refresh called from: ", strs[1]);
-                                          free(strs);
+                                        #if defined(ANALYSE_REFRESH)
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdRefresh();
@@ -1730,12 +1726,8 @@ return res;
   }
 
   void force_SBrefresh(uint8_t mode) {
-                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "force_SBrefresh called from: ", strs[1]);
-                                          free(strs);
+                                        #if defined(ANALYSE_REFRESH)
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
     if(_force_refresh(mode)) {
       _lcdSBRefresh();
@@ -2775,12 +2767,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
                                       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                                         printf(">>> refreshRegisterLine   register=%u screenUpdatingMode=%d temporaryInformation=%u BASEMODEACTIVE=%u, lastIntegerBase=%u\n", regist, screenUpdatingMode, temporaryInformation, BASEMODEACTIVE, lastIntegerBase);
-                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
-                                          free(strs);
+                                        #if defined(ANALYSE_REFRESH)
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
                                       #endif // PC_BUILD &&MONITOR_CLRSCR
 
@@ -3185,12 +3173,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                         #if defined(PC_BUILD)
                                         if(baseY < 0) {
                                           printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
-                                          #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                            void *callstack[128];
-                                            int frames = backtrace(callstack, 128);
-                                            char **strs = backtrace_symbols(callstack, frames);
-                                            printf("%30s%42s%s\n", "", "refreshRegisterLine called from: ", strs[1]);
-                                            free(strs);
+                                          #if defined(ANALYSE_REFRESH)
+                                            print_caller(NULL);
                                           #endif //PC_BUILD && ANALYSE_REFRESH
                                         }
                                         #endif //PC_BUILD
@@ -5196,12 +5180,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                                           printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
                                         #endif // PC_BUILD &&MONITOR_CLRSCR
-                                        #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "clearScreenOld called from: ", strs[1]);
-                                          free(strs);
+                                        #if defined(ANALYSE_REFRESH)
+                                          print_caller(NULL);
                                         #endif //ANALYSE_REFRESH
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
       screenUpdatingMode = SCRUPD_AUTO;
@@ -5322,11 +5302,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   static void _refreshNormalScreen(void) {
                               #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
-                                void *callstack[128];
-                                int frames = backtrace(callstack, 128);
-                                char **strs = backtrace_symbols(callstack, frames);
-                                printf("%30s%42s%s\n", "", "_refreshNormalScreen called from: ", strs[1]);
-                                free(strs);
+                                print_caller(NULL);
                               #endif // PC_BUILD &&MONITOR_CLRSCR
         if(calcMode != CM_NIM) refreshNIMdone = false;
 
@@ -5533,13 +5509,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint16_t source) {
-                              #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                void *callstack[128];
-                                int frames = backtrace(callstack, 128);
-                                char **strs = backtrace_symbols(callstack, frames);
-                                printf("%30s%42s%s (%d)\n", "", "refreshScreen called from: ", strs[1], source);
-                                free(strs);
-                              #endif // PC_BUILD
+                              #if defined(ANALYSE_REFRESH)
+                                print_caller(NULL);
+                              #endif
 
                               #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
                                 powerMarkerMsF(3,10000);

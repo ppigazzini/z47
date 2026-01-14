@@ -1343,13 +1343,9 @@ static void _pemCloseAngleInput(int item) {
 }
 
 void insertStepInProgram(const int16_t func) {
-                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "insertStepInProgram called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUG_PGM)
+                                  print_caller(NULL);
+                                #endif
 
   uint32_t opBytes = (func >= 128) ? 2 : 1;
 
@@ -1769,13 +1765,9 @@ void insertUserItemInProgram(int16_t func, char *funcParam) {
 #endif // PC_BUILD &&MONITOR_CLRSCR
 
 void addStepInProgram(int16_t func) {
-                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "addStepInProgram called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUG_PGM)
+                                  print_caller(NULL);
+                                #endif
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
     ++currentLocalStepNumber;
