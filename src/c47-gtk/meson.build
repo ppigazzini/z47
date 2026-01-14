@@ -38,7 +38,27 @@ _c_args = []
 
 if host_machine.system() == 'linux'
   _c_args += ['-D_GNU_SOURCE']
-  deps += dependency('dl', required : true)
+endif
+
+have_dladdr = false
+cc = meson.get_compiler('c')
+
+if cc.has_function('dladdr', prefix : '#include <dlfcn.h>')
+  have_dladdr = true
+endif
+
+if not have_dladdr and host_machine.system() == 'linux'
+  libdl = cc.find_library('dl', required : false)
+  if libdl.found() and cc.has_function('dladdr',
+      prefix : '#include <dlfcn.h>',
+      dependencies : [libdl])
+    deps += libdl
+    have_dladdr = true
+  endif
+endif
+
+if have_dladdr
+  _c_args += ['-DHAVE_DLADDR=1']
 endif
 
 sim = executable('c47',
