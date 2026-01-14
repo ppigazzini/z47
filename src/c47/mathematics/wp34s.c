@@ -48,13 +48,12 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
         angle45 = const1071_piOn4;
         angle90 = const1071_piOn2;
         angle180 = const1071_pi;
-        WP34S_BigMod((real_t*)angle, const2139_2pi, angle, realContext); // mod(angle, 2pi) --> angle
       } else {
         angle45 = const_piOn4_75;
         angle90 = const_piOn2_75;
         angle180 = const_pi_75;
-        mod2Pi((real_t*)angle, angle, realContext); // mod(angle, 2pi) --> angle
       }
+      mod2Pi((real_t*)angle, angle, realContext); // mod(angle, 2pi) --> angle
       break;
     }
 
@@ -295,6 +294,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 }
 
 
+// used by normal TRIG
 // Calculate sin, cos by Taylor series and tan by division
 void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   bool_t doEpsilon = false;
@@ -342,6 +342,7 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 }
 
 
+//used by XFN
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real1071_t angle;
@@ -370,6 +371,7 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 
 
 
+//Used by normal C47 TRIG as well as XFN
 // Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
 void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
