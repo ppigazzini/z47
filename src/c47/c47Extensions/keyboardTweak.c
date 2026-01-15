@@ -440,7 +440,7 @@ void resetKeytimers(void) {
                 }
               break;
             case ITM_EXIT1:
-              longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
+              longpressDelayedkey1 = -MNU_MyAlpha;//  LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               longpressDelayedkey3 = 0;
               break;
@@ -466,8 +466,8 @@ void resetKeytimers(void) {
               }
               break;
             case ITM_EXIT1:
-              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey2 = 0;
+              longpressDelayedkey1 = -MNU_MyAlpha;
+              longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               longpressDelayedkey3 = 0;
               break;
             case ITM_ENTER:
