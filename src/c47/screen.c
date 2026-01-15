@@ -966,6 +966,9 @@ void execTimerApp(uint16_t timerType) {
           JM_auto_longpress_enabled = longpressDelayedkey3;
           longpressDelayedkey3 = 0;
         }
+        else {
+          JM_auto_longpress_enabled = ITM_NOP;
+        }
         if(JM_auto_longpress_enabled) {
           fnTimerStart(TO_CL_LONG, TO_CL_LONG, JM_TO_CL_LONG);
         }
