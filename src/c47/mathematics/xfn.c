@@ -321,24 +321,27 @@ typedef struct {
   };
 
 
+  static const FunctionLookup* lookupFunction(int function_id) {
+    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
+      if (entry->function_id == function_id) {
+        return entry;
+      }
+    }
+    return NULL;
+  }
+
 
   static int lookupFunctionId(int function_id) {
-      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
-          if (entry->function_id == function_id) {
-              return entry->function_type;
-          }
-      }
-      return XFN_NOTFOUND;
+    const FunctionLookup* entry = lookupFunction(function_id);
+    return entry ? entry->function_type : XFN_NOTFOUND;
   }
 
+
   static int lookupFunctionAngle(int function_id) {
-      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
-          if (entry->function_id == function_id) {
-              return entry->function_angle;
-          }
-      }
-      return XFN_NOTFOUND;
+    const FunctionLookup* entry = lookupFunction(function_id);
+    return entry ? entry->function_angle : XFN_NOTFOUND;
   }
+
 
   static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
