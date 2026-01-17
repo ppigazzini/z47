@@ -622,7 +622,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //saveStateValue(screenData,                      0,                                                           "screenData",                     "screenData");
-    saveStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     saveStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
     saveStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
     saveStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
@@ -1202,8 +1201,19 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //restoreStateValue(loadedScreen,                    0,                                                           "screenData",                     "screenData");
+    uint8_t fgLN = 255;
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
+    if(fgLN == RBX_FGLNOFF) {                                                                                //This section to deal with any old states containing the old FG system
+      clearSystemFlag(FLAG_FGLNLIM);
+      clearSystemFlag(FLAG_FGLNFUL);
+    } else     if(fgLN == RBX_FGLNLIM) {
+      setSystemFlag(FLAG_FGLNLIM);
+      clearSystemFlag(FLAG_FGLNFUL);
+    } else     if(fgLN == RBX_FGLNFUL) {
+      clearSystemFlag(FLAG_FGLNLIM);
+      setSystemFlag(FLAG_FGLNFUL);
+    }
     restoreStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
     restoreStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
     restoreStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
@@ -1448,8 +1458,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     printf("End of calc's restoration\n");fflush(stdout);
-
-    setFGLSettings(fgLN);
 
     if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation==TI_SHOW_REGISTER) {
       temporaryInformation = TI_NO_INFO;
@@ -1942,7 +1950,6 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "exponentLimit\n%"              PRId16  "\n",    exponentLimit);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "dispBase\n%"                   PRIu8  "\n",     (uint8_t)dispBase);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "calcModel\n%"                  PRId16  "\n",    calcModel);                    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
@@ -2904,6 +2911,8 @@ int64_t stringToInt64(const char *str) {
             debugPrintf(16, aa, tmpString);
           #endif //LOADDEBUG
 
+          uint8_t fgLN = 255;
+
           if(strcmp(aimBuffer, "firstGregorianDay") == 0) {
             firstGregorianDay = toUint32(tmpString);
           }
@@ -2951,8 +2960,19 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = toInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }
-          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
+          else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {                                        //This section to deal with any old states containing the old FG system
+            fgLN = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF);
+            if(fgLN == RBX_FGLNOFF) {
+              clearSystemFlag(FLAG_FGLNLIM);
+              clearSystemFlag(FLAG_FGLNFUL);
+            } else     if(fgLN == RBX_FGLNLIM) {
+              setSystemFlag(FLAG_FGLNLIM);
+              clearSystemFlag(FLAG_FGLNFUL);
+            } else     if(fgLN == RBX_FGLNFUL) {
+              clearSystemFlag(FLAG_FGLNLIM);
+              setSystemFlag(FLAG_FGLNFUL);
+            }
+          }             //Keep compatible with old setting
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);

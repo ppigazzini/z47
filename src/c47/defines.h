@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -17,6 +17,7 @@
 // Version 0.109.03.00b0    Public Release C47 & R47
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
+// Version 0.109.03.00a2    Internal C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -36,6 +37,7 @@
 #undef SAVE_SPACE_DM42_10
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12PRIME
 #undef SAVE_SPACE_DM42_12BESSEL
 #undef SAVE_SPACE_DM42_12ORTHO
 #undef SAVE_SPACE_DM42_13GRF
@@ -120,10 +122,10 @@
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
   //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
-  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW (use either old SHOW or VIEW, change in code)
+  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
-  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)
     #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
@@ -132,12 +134,12 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
   #if defined(PACKAGE2_NODISTR)
-  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   #endif
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    //#define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+    //#define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
@@ -193,6 +195,8 @@
 #undef    FN_TIME_DEBUG1
 
 //Verbose options
+  #define    VERBOSE_MINIMUM              //Minimal simulator key selections, program commands, refresh modes
+//#undef     VERBOSE_MINIMUM
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
@@ -703,8 +707,11 @@
 #define FLAG_MYM_TRIPLE                       0x805F
 #define FLAG_HOME_TRIPLE                      0x8060
 #define FLAG_SHFT_4s                          0x8061
+#define FLAG_FGLNLIM                          0x8062
+#define FLAG_FGLNFUL                          0x8063
+#define FLAG_FGGR                             0x8064
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -839,7 +846,7 @@ typedef enum {
 
 // EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
 #define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
-#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC 
+#define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
 
 #define INC_FLAG                                   0
@@ -1367,12 +1374,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CM_ERROR_MESSAGE                           9 // Error message in one of the register lines
 #define CM_BUG_ON_SCREEN                          10 // Bug message on screen
 #define CM_CONFIRMATION                           11 // Waiting for confirmation or canceling
-#define CM_MIM                                    12 // Matrix imput mode tbd reorder
-#define CM_EIM                                    13 // Equation imput mode
+#define CM_MIM                                    12 // Matrix input mode tbd reorder
+#define CM_EIM                                    13 // Equation input mode
 #define CM_TIMER                                  14 // Timer application
 #define CM_GRAPH                                  15 // Plot graph mode
 #define CM_NO_UNDO                                16 // Running functions without undo affected
-#define CM_ASN_BROWSER                            17 // Display stat list   //JM
+#define CM_ASN_BROWSER                            17 // Assignments browser   //JM
 #define CM_LISTXY                                 18 // Display stat list   //JM
 
 // Next character in AIM 2 bits
@@ -1724,7 +1731,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     239 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -1943,7 +1950,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
                                               !inputAngleError3r(r))
-#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))  
+#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))
 
 
 
@@ -2171,6 +2178,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define COLOR_GREEN   "\033[1;92m"
 #define COLOR_YELLOW  "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
+#define COLOR_BLUE    "\033[1;38;5;12m"
 #define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)

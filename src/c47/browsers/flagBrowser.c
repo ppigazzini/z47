@@ -267,33 +267,30 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == SYSTEM_FLAGS_SCREEN_1) {  // System Flags 00 to 59
+    if(currentFlgScr == SYSTEM_FLAGS_SCREEN_1 || currentFlgScr == SYSTEM_FLAGS_SCREEN_2) {  // System Flags 00 to 59
       extern int16_t menu_SYSFL[];
       uint16_t systemFlag;
       uint16_t param;
+      uint16_t x1, x2, y1, fOffset = currentFlgScr == SYSTEM_FLAGS_SCREEN_1?0:60;
       for(f=0; f<=59; f++) {
-        systemFlag = menu_SYSFL[f];
+        if (f+fOffset > NUMBER_OF_SYSTEM_FLAGS - 1) {
+          break;
+        }
+        systemFlag = menu_SYSFL[f+fOffset];
         param = indexOfItems[systemFlag].param;
+        x1 = KEY_X[f%6]+2;
+        x2 = KEY_X[f%6+1]-1;
+        y1 = 22*(f/6)+66-1-44;
         if(getSystemFlag(param)) {
-          lcd_fill_rect(66*(f%6)+1,22*(f/6)+66-1-44,  66*(f%6)+65-(66*(f%6)+1),22*(f/6)+66+20-1-44-(22*(f/6)+66-1-44)+1,LCD_EMPTY_VALUE);
+          lcd_fill_rect(
+            x1, 
+            y1,  
+            x2-x1,
+            22*(f/6)+66+20-1-44-y1+1,
+            LCD_EMPTY_VALUE);
         }
         sprintf(tmpString, "%s", indexOfItems[systemFlag].itemCatalogName);
-        showString(tmpString, &standardFont, 66*(f%6) + 34 - stringWidth(tmpString, &standardFont, false, false)/2, 22*(f/6)+66-1-44, getSystemFlag(param) ? vmReverse : vmNormal, true, true); //JM-44
-      }
-    }
-
-    if(currentFlgScr == SYSTEM_FLAGS_SCREEN_2) {  // System Flags 60 to NUMBER_OF_SYSTEM_FLAGS-1
-      extern int16_t menu_SYSFL[];
-      uint16_t systemFlag;
-      uint16_t param;
-      for(f=0; f<=NUMBER_OF_SYSTEM_FLAGS - 1 - 60; f++) {
-        systemFlag = menu_SYSFL[f+60];
-        param = indexOfItems[systemFlag].param;
-        if(getSystemFlag(param)) {
-          lcd_fill_rect(66*(f%6)+1,22*(f/6)+66-1-44,  66*(f%6)+65-(66*(f%6)+1),22*(f/6)+66+20-1-44-(22*(f/6)+66-1-44)+1,LCD_EMPTY_VALUE);
-        }
-        sprintf(tmpString, "%s", indexOfItems[systemFlag].itemCatalogName);
-        showString(tmpString, &standardFont, 66*(f%6) + 34 - stringWidth(tmpString, &standardFont, false, false)/2, 22*(f/6)+66-1-44, getSystemFlag(param) ? vmReverse : vmNormal, true, true); //JM-44
+        showString(tmpString, &standardFont, (x1 + x2 - stringWidth(tmpString, &standardFont, false, false))/2, y1, getSystemFlag(param) ? vmReverse : vmNormal, true, true); //JM-44
       }
     }
 

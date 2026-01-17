@@ -37,6 +37,7 @@ const font_t          *cursorFont;
 TO_QSPI const char     baseDigits[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
+TO_QSPI const int      KEY_X[7] = {-1, 66, 133, 200, 267, 333, 400}; // Softkey border positions
 
 uint8_t calcModel = (CALCMODEL == USER_R47 ? USER_R47f_g : CALCMODEL);          //Default set by compiler is "USER_R47" and the profile is changed to USER_R47f_g
 
@@ -140,6 +141,7 @@ uint16_t               gapItemRight;
 uint16_t               gapItemRadix;
 uint16_t               lastCenturyHighUsed = 0;
 
+uint8_t               *lcd_buffer;
 uint8_t                numScreensStandardFont;
 uint8_t                numScreensNumericFont;
 uint8_t                numScreensTinyFont;
@@ -240,7 +242,6 @@ bool_t                 fnAsnDisplayUSER = true;
 uint8_t                bcdDisplaySign = 0;
 uint8_t                LongPressM = 0;
 uint8_t                LongPressF = 0;
-uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
 uint8_t                editingLiteralType;
@@ -595,6 +596,8 @@ int convertKeyCode(int key) {
       //SET_ST(STAT_ALPHA_TAB_Fn);             // Alpha key table includes F keys - This doesn't apply to the R47
     #endif // CALCMODEL == USER_R47
 
+    // initialize lcd_buffer mainly used in hal/lcd.c
+    lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();

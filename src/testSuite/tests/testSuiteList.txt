@@ -143,6 +143,8 @@ parallel_shortInteger
 parallel_real
 parallel_complex
 
+prime
+
 specialResults
 
 ;Answer to the Ultimate Question of Life
