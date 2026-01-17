@@ -12,6 +12,8 @@
 #define RB_TRUE     1
 #define CB_FALSE    2
 #define CB_TRUE     3
+#define MB_FALSE    4
+#define MB_TRUE     5
 
 #define NOVAL              -126
 #define ITEM_NOT_CODED     -127
@@ -96,9 +98,9 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RBX_M14                224
 #define RBX_M124               225
 #define RBX_M1234              226
-#define RBX_FGLNOFF            227  //fgLine options
-#define RBX_FGLNFUL            228
-#define RBX_FGLNLIM            229
+#define RBX_FGLNOFF            227 // -- these names only used to be compatible with older state files and cfg file
+#define RBX_FGLNFUL            228 // -- these names only used to be compatible with older state files and cfg file
+#define RBX_FGLNLIM            229 // -- these names only used to be compatible with older state files and cfg file
 #define TF_H24                 230 // Time format 1 bit
 #define TF_H12                 231
 #define CU_I                   232 // Complex unit 1 bit
@@ -113,6 +115,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define DO_ENG                 241
 #define FN_BEG                 242 // FIN BEGIN END
 #define FN_END                 243
+#define MB_MAC                 244
 
 
 typedef struct {

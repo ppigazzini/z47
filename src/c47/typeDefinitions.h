@@ -129,11 +129,11 @@ typedef enum {
   amAngleMask = 15,
   amPolar     = 16, // JM bit 4 of the 5 bits is used for Polar in Complex Case
 
-  //removed the idea of adding bits: See registers.h 
-  //  amPolarCYL  =  64, // 3D Vector: Polar cylindrical. 
-  //  amPolarSPH  = 128  // 3D Vector: Polar cylindrical. 
+  //removed the idea of adding bits: See registers.h
+  //  amPolarCYL  =  64, // 3D Vector: Polar cylindrical.
+  //  amPolarSPH  = 128  // 3D Vector: Polar cylindrical.
   //----
-  // Replaced with the logic table below, in essence, if a real matrix, and if the matrix is 1x2, 2x1, 1x3 or 3x1 then it is a vector, for which: 
+  // Replaced with the logic table below, in essence, if a real matrix, and if the matrix is 1x2, 2x1, 1x3 or 3x1 then it is a vector, for which:
   //   - A 2D vector is in Rect, if the angleMode == amNone. The amPolar flag, bit 4, also is clear
   //   - A 3D vector is in Rect, if the angleMode == amNone. The amPolar flag set is Spherical Polar, and reset is Cylindrical.
   //   There are macros for this in defines.h (for matrix type) and registers.h (for registers)
@@ -145,13 +145,13 @@ typedef enum {
   //              ---.-...   - : spare bits
 
   //Real             0 -000       Real amRadian
-  //Real             0 -001       Real amGrad  
+  //Real             0 -001       Real amGrad
   //Real             0 -010       Real amDegree
-  //Real             0 -011       Real amDMS   
+  //Real             0 -011       Real amDMS
   //Real             0 -100       Real amMultPi
-  //Real             0 -101       Real amNone  
+  //Real             0 -101       Real amNone
   //Real             0 -110       Real amSecond
-  //Real             0 -111       Real TM_HMS  
+  //Real             0 -111       Real TM_HMS
 
   // Cpx             0 -000       Rect ---
   // Cpx             0 -001       Rect ---
@@ -160,12 +160,12 @@ typedef enum {
   // Cpx             0 -100       Rect ---
   // Cpx             0 -101       Rect amNone
   // Cpx             0 -110       Rect ---
-  // Cpx             0 -111       Rect ---  
+  // Cpx             0 -111       Rect ---
 
   // Cpx             1 -000      Polar amRadian
-  // Cpx             1 -001      Polar amGrad  
+  // Cpx             1 -001      Polar amGrad
   // Cpx             1 -010      Polar amDegree
-  // Cpx             1 -011      Polar amDMS   
+  // Cpx             1 -011      Polar amDMS
   // Cpx             1 -100      Polar amMultPi
   // Cpx             1 -101            ---
   // Cpx             1 -110            ---
@@ -178,21 +178,21 @@ typedef enum {
   // RealMx 2D 3D    0 -100       Rect ---
   // RealMx 2D 3D    0 -101       Rect amNone
   // RealMx 2D 3D    0 -110       Rect ---
-  // RealMx 2D 3D    0 -111       Rect ---  
+  // RealMx 2D 3D    0 -111       Rect ---
 
   // RealMx    3D    0 -000        CYL amRadian
-  // RealMx    3D    0 -001        CYL amGrad  
+  // RealMx    3D    0 -001        CYL amGrad
   // RealMx    3D    0 -010        CYL amDegree
-  // RealMx    3D    0 -011        CYL amDMS   
+  // RealMx    3D    0 -011        CYL amDMS
   // RealMx    3D    0 -100        CYL amMultPi
   // RealMx    3D    0 -101            ---
   // RealMx    3D    0 -110            ---
   // RealMx    3D    0 -111            ---
 
   // RealMx 2D 3D    1 -000    POL SPH amRadian
-  // RealMx 2D 3D    1 -001    POL SPH amGrad  
+  // RealMx 2D 3D    1 -001    POL SPH amGrad
   // RealMx 2D 3D    1 -010    POL SPH amDegree
-  // RealMx 2D 3D    1 -011    POL SPH amDMS   
+  // RealMx 2D 3D    1 -011    POL SPH amDMS
   // RealMx 2D 3D    1 -100    POL SPH amMultPi
   // RealMx 2D 3D    1 -101            ---
   // RealMx 2D 3D    1 -110            ---
@@ -237,7 +237,7 @@ typedef struct {
   uint8_t        grpGroupingRight;                                         //  GAP details
   angularMode_t  currentAngularMode;                                       //  ADM
   uint16_t       lrSelection;                                              //  STAT LR settings
-  uint16_t       lrChosen;                                                 //  Last chosen LR 
+  uint16_t       lrChosen;                                                 //  Last chosen LR
   uint32_t       denMax;                                                   //  DMX
   uint8_t        displayStack;                                             //  dSTACK
   uint32_t       firstGregorianDay;                                        //  First Gregorian Day
@@ -245,49 +245,49 @@ typedef struct {
   uint64_t       systemFlags0;                                             //  All SFL flags
   uint64_t       systemFlags1;                                             //  All SFL flags
   calcKey_t      kbd_usr[37];                                              //  All user keys
-  uint8_t        fgLN;                                                     //  fg.OFF/fg.FLIM/fg.FUL
-  bool_t         compatibility_byte19;                                     //  
+  uint8_t        compatibility_byte1;                                      //
+  bool_t         compatibility_byte19;                                     //
   bool_t         compatibility_byte27;
   bool_t         compatibility_byte29;
-  bool_t         compatibility_byte21;              //Spare Byte           //  
+  bool_t         compatibility_byte21;              //Spare Byte           //
   bool_t         compatibility_byte30;
-  bool_t         compatibility_byte00;               //Spare Byte          //  
-  int16_t        compatibility_int1;               //Spare Word            //  
+  bool_t         compatibility_byte00;               //Spare Byte          //
+  int16_t        compatibility_int1;               //Spare Word            //
   uint8_t        Input_Default;                                            //  iLi/R, iR, iC, iLI
   bool_t         dispBase;                                                 //  dBASE
   bool_t         compatibility_byte31;
   bool_t         compatibility_byte26;
-  float          compatibility_float1;              //Spare float          //  
-  float          compatibility_float2;              //Spare float          //  
+  float          compatibility_float1;              //Spare float          //
+  float          compatibility_float2;              //Spare float          //
   normKey_t      Norm_Key_00;                                              //  BlankKey Config
-  bool_t         compatibility_byte2;               //Spare Byte           //  
-  bool_t         compatibility_byte3;               //Spare Byte           //  
-  bool_t         compatibility_byte4;               //Spare Byte           //  
-  bool_t         compatibility_byte5;               //Spare Byte           //  
-  bool_t         compatibility_byte6;               //Spare Byte           //  
-  bool_t         compatibility_byte7;               //Spare Byte           //  
-  bool_t         compatibility_byte8;               //Spare Byte           //  
-  bool_t         compatibility_byte9;               //Spare Byte           //  
-  bool_t         compatibility_byte10;              //Spare Byte           //  
-  bool_t         compatibility_byte11;              //Spare Byte           //  
-  bool_t         compatibility_byte12;              //Spare Byte           //  
-  bool_t         compatibility_byte13;              //Spare Byte           //  
-  bool_t         compatibility_byte14;              //Spare Byte           //  
-  bool_t         compatibility_byte15;              //Spare Byte           //  
+  bool_t         compatibility_byte2;               //Spare Byte           //
+  bool_t         compatibility_byte3;               //Spare Byte           //
+  bool_t         compatibility_byte4;               //Spare Byte           //
+  bool_t         compatibility_byte5;               //Spare Byte           //
+  bool_t         compatibility_byte6;               //Spare Byte           //
+  bool_t         compatibility_byte7;               //Spare Byte           //
+  bool_t         compatibility_byte8;               //Spare Byte           //
+  bool_t         compatibility_byte9;               //Spare Byte           //
+  bool_t         compatibility_byte10;              //Spare Byte           //
+  bool_t         compatibility_byte11;              //Spare Byte           //
+  bool_t         compatibility_byte12;              //Spare Byte           //
+  bool_t         compatibility_byte13;              //Spare Byte           //
+  bool_t         compatibility_byte14;              //Spare Byte           //
+  bool_t         compatibility_byte15;              //Spare Byte           //
   int8_t         fractionDigits;                                           //  FDIGS
-  int8_t         compatibility_byte23;                                     //  
-  bool_t         compatibility_byte16;              //Spare Byte           //  
-  bool_t         compatibility_byte20;              //Spare Byte           //  
-  bool_t         compatibility_byte17;              //Spare Byte           //  
+  int8_t         compatibility_byte23;                                     //
+  bool_t         compatibility_byte16;              //Spare Byte           //
+  bool_t         compatibility_byte20;              //Spare Byte           //
+  bool_t         compatibility_byte17;              //Spare Byte           //
   uint8_t        IrFractionsCurrentStatus;                                 //  Internal control flag for IRFRAC
-  bool_t         compatibility_byte18;              //Spare Byte           //  
+  bool_t         compatibility_byte18;              //Spare Byte           //
   uint8_t        displayStackSHOIDISP;                                     //  dSI
   bool_t         compatibility_byte25;                                     //  BCD
-  bool_t         compatibility_byte24;              //Spare Byte           //  
+  bool_t         compatibility_byte24;              //Spare Byte           //
   uint8_t        bcdDisplaySign;                                           //  BCDUNS
   uint8_t        DRG_Cycling;                                              //  Internal control flag for DRG
   uint8_t        DM_Cycling;                                               //  internal control flag for FSE
-  bool_t         compatibility_byte22;                                     //  
+  bool_t         compatibility_byte22;                                     //
   uint8_t        LongPressM;                                               //  M.124, M.1234, M.14
   uint8_t        LongPressF;                                               //  F.1234, F.14, F.124
   uint32_t       lastDenominator;                                          //  internal control variable for last denominator used

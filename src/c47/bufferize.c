@@ -525,6 +525,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_GRADtoDEG   },
     {ITM_GRADtoRAD   },
     {ITM_RADtoGRAD   },
+    {ITM_INCHtoCM    },
     {ITM_NMItoMI     },
     {ITM_MItoNMI     },
     {ITM_FURtoM      },
@@ -2157,12 +2158,14 @@ typedef struct {
     }
 
     else if(item != ITM_NOP) {
-      #if defined (PC_BUILD)
+      #if defined (PC_BUILD) && defined(VERBOSE_MINIMUM)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
+        fflush(stdout);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
           case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open, and the BASE, INTS and BITS A-F and HEX/DEC commands are active on NIM
+          case ITM_toINT:
           case -MNU_BASE:
           case -MNU_INTS:
           case -MNU_BITS: {
