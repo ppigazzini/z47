@@ -816,10 +816,11 @@ returnKeyReleasedFalse:
 
 //#define allowAltGrKey ((event->state & 16) == 16) this will also allow the actual involved AltGr shifts. Narrowing will make it more accurate but may exclude other non-standard bitmasks
 #define allowAltGrKey (C47SpecialKey_Valid_Pressed)
+#define tamArrows (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
-     && (!(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (!(tamArrows || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
@@ -1006,7 +1007,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
         {}
       #endif
     }
-    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !getSystemFlag(FLAG_ALPHA)) {
+    else if((tamArrows) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
