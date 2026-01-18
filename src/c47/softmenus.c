@@ -2582,6 +2582,7 @@ void showSoftmenuCurrentPart(void) {
                   }
                   case MNU_MyAlpha: {
                     vm = (userAlphaItems[x + 6*y].item < 0) ? vmReverse : vmNormal;
+                    itemNr = 0;             // set to 0 to clear the previous itemNr to prevent unrelated strikethroughs
                     break;
                   }
                   case MNU_DYNAMIC: {
@@ -2631,7 +2632,13 @@ void showSoftmenuCurrentPart(void) {
                        strcpy(itemName, tmpC);
                        strcat(itemName, "*");
                     }
-
+                    itemNr = 0;             // set to 0 to clear the previous itemNr to prevent unrelated strikethroughs
+                    break;
+                  }
+                  case MNU_PROG:
+                  case MNU_PROGS: {
+                    itemNr = 0;             // set to 0 to clear the previous itemNr to prevent unrelated strikethroughs
+                    vm = vmNormal;
                     break;
                   }
                   default: {
@@ -2641,7 +2648,7 @@ void showSoftmenuCurrentPart(void) {
                 }
                 showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
-                fnStrikeThroughIfNA(itemNr, x, y-currentFirstItem/6);
+                fnStrikeThroughIfNA(itemNr, x, y);
               }
               ptr += stringByteLength((char *)ptr) + 1;
             }
