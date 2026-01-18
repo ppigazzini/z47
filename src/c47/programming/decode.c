@@ -145,7 +145,8 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 
 
 static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
-  uint8_t opParam = *(uint8_t *)(paramAddress++);
+uint8_t  opParam   = *(uint8_t *)(paramAddress);
+uint16_t opParam16 = *(uint16_t *)(paramAddress++);                          // The continuous falg number from FLAG_X up, is reported in the high byte, with the low byte being SYSTEM_FLAG_NUMBER = 250
 
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
@@ -239,8 +240,8 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam < FLAG_X) { // Global flag from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= FLAG_K) { // Lettered flag from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - FLAG_X].itemSoftmenuName);
+      else if(opParam == SYSTEM_FLAG_NUMBER && (opParam16 >> 8) <= FLAG_K) { // Lettered flag from X to K
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[(opParam16 >> 8) - FLAG_X]);                //this is weird, because the flag numbers reported is continuously incremental from FLAG_X, i.e. flag M (211), at the boundary, reports as 112, i.e. the unavailable flag just after the previous flag K (111). I tweaked the formula to print right.
       }
       else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
@@ -248,8 +249,8 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
-      else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - FLAG_M].itemSoftmenuName);
+      else if(opParam == SYSTEM_FLAG_NUMBER && (opParam16 >> 8) <= FLAG_W) { // Lettered flag from M to S and E to W
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[(opParam16 >> 8) - FLAG_X]);                //this is weird, because the flag numbers reported is continuously incremental from FLAG_X, i.e. flag M (211), at the boundary, reports as 112, i.e. the unavailable flag just after the previous flag K (111). I tweaked the formula to print right.
       }
       else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
