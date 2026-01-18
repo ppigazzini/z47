@@ -722,8 +722,8 @@ void execTimerApp(uint16_t timerType) {
     kc[0] = (keyCode / 10) + '0';
     kc[1] = (keyCode % 10) + '0';
     kc[2] = 0;
-    shiftF = true;
-    shiftG = false;
+    shiftF = false;
+    shiftG = true;
     assignToKey(kc);
     itemToBeAssigned = 0;
     leaveTamModeIfEnabled();
@@ -735,7 +735,7 @@ void execTimerApp(uint16_t timerType) {
   void _executeItem(int16_t item, int keyCode) {
     char *funcParam = "";
 
-    keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+    keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 2;
     funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
     if(item == ITM_RCL && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
       calcRegister_t var = findNamedVariable(funcParam);
@@ -794,7 +794,7 @@ void execTimerApp(uint16_t timerType) {
           //leaveTamModeIfEnabled();
           keyCode = (shiftF ? 10 : 11);  // R47 'f' or 'g' keyCode
           calcKey_t *key = kbd_usr + keyCode;
-          item = key->fShifted;
+          item = key->gShifted;
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
             if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
               _assignLongPressKey(keyCode);
@@ -825,7 +825,7 @@ void execTimerApp(uint16_t timerType) {
             }
             else {
               char *funcParam = "";
-              keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+              keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 2;
               funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
               setCurrentUserMenu(item, funcParam);
               if(shiftF) {
@@ -833,7 +833,7 @@ void execTimerApp(uint16_t timerType) {
                   popSoftmenu();
                 }
                 //showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
-                //             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                //             (getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL) ? key->gShifted : -MNU_HOME));
 
                 if(tam.alpha) {
                   showSoftmenu(-MNU_TAMALPHA);
@@ -841,8 +841,8 @@ void execTimerApp(uint16_t timerType) {
                 else if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM))) {
                   showSoftmenu(-MNU_ALPHA);
                 }
-                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
-                  showSoftmenu(key->fShifted);
+                else if(getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL)) {
+                  showSoftmenu(key->gShifted);
                 }
                 else {
                   showSoftmenu(-MNU_HOME);
@@ -855,8 +855,8 @@ void execTimerApp(uint16_t timerType) {
                 if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha) {
                   showSoftmenu(-MNU_MyAlpha);
                 }
-                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
-                  showSoftmenu(key->fShifted);
+                else if(getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL)) {
+                  showSoftmenu(key->gShifted);
                 }
                 else if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
                   showSoftmenu(-MNU_MyMenu);
@@ -909,7 +909,7 @@ void execTimerApp(uint16_t timerType) {
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
             #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
               int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
-              shiftF = 1;
+              //shiftF = 1;
               if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
                 _assignLongPressKey(keyCode);
               }

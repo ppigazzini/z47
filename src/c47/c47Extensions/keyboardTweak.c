@@ -200,7 +200,7 @@ void resetKeytimers(void) {
         int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
         if(keyCode != 9999) {
           calcKey_t *key = kbd_usr + keyCode;
-          int16_t item = key->fShifted;
+          int16_t item = key->gShifted;
           if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
                && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
             delayCloseNim = false;
