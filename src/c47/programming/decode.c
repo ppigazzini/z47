@@ -146,7 +146,7 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 
 static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
 uint8_t  opParam   = *(uint8_t *)(paramAddress);
-uint16_t opParam16 = *(uint16_t *)(paramAddress++);                          // The continuous falg number from FLAG_X up, is reported in the high byte, with the low byte being SYSTEM_FLAG_NUMBER = 250
+uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag number from FLAG_X up, is reported in the high byte, with the low byte being SYSTEM_FLAG_NUMBER = 250
 
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
