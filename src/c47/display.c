@@ -3178,9 +3178,13 @@ void realToSci(real_t* num, char* dispString) {
     
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
-    
+
     while(*p && (*p < '0' || *p > '9')) p++;    // skips to first digit
 
+    if(*p == '0' && *(p+1) == '.') {            // handle "0.ddd..." format
+      p += 2;                                    // skip "0."
+      while(*p == '0') p++;                      // skip all leading zeros after decimal
+    }
     dispString[mi++] = neg ? '-' : ' ';         // inserts - if prior determined
     dispString[mi++] = *p++;                    // copies first digit incr and continue
     if(*p == '.') p++;                          // if 2nd char is . skip it
