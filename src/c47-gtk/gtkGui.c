@@ -3112,8 +3112,17 @@ char sstmp[16];
     }
   }
 
-  if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
-    lbl[3] = 0;
+  if(strcmp((char *)lbl, "SST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
+      stringToUtf8(tt, lbl);
+  } else
+  if(strcmp((char *)lbl, "BST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
+      stringToUtf8(tt, lbl);
   }
 
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
