@@ -737,14 +737,20 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_WSIZE,
                                              ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_HPBASE,                  ITM_FF};
 
+#if (CALCMODEL != USER_R47)
+  #define SQR ITM_SQUARE
+#else
+  #define SQR ITM_NULL
+#endif
 
-TO_QSPI const int16_t menu_EE[]          = { ITM_op_j_pol,                  ITM_op_j,                   ITM_SQUARE,               ITM_op_a,              ITM_op_a2,                   ITM_CLSTK,                          //JM EE
-                                             ITM_M_INV,                     ITM_STKTO3x1,               ITM_3x1TOSTK,             ITM_MATX_A,            ITM_PARALLEL,                -MNU_CPX,                           //JM EE
-                                             ITM_DEG,                       ITM_DEG2,                   ITM_RAD,                  ITM_RAD2,              ITM_RECT,                    ITM_POLAR,                          //JM EE
 
-                                             ITM_EE_D2Y,                    ITM_EE_Y2D,                 ITM_EE_A2S,               ITM_EE_S2A,            ITM_NULL,                    ITM_CLSTK,                         //JM EE
-                                             ITM_EE_STO_V_I,                ITM_EE_STO_IR,              ITM_EE_STO_V_Z,           ITM_EE_X2BAL,          ITM_PARALLEL,                -MNU_CPX,                           //JM EE
-                                             ITM_EE_STO_Z,                  ITM_EE_RCL_Z,               ITM_EE_STO_V,             ITM_EE_RCL_V,          ITM_EE_STO_I,                ITM_EE_RCL_I                  };    //JM EE
+TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               SQR,                      ITM_op_a,              ITM_op_a2,                   ITM_CLSTK,
+                                             ITM_M_INV,                     ITM_STKTO3x1,               ITM_3x1TOSTK,             ITM_MATX_A,            ITM_MATX_A_1,                ITM_PARALLEL,
+                                             ITM_DEG,                       ITM_DEG2,                   ITM_RAD,                  ITM_RAD2,              ITM_RECT,                    ITM_POLAR,
+
+                                             ITM_EE_STO_V_I,               ITM_EE_STO_IR,               ITM_EE_STO_V_Z,           ITM_EE_X2BAL,          ITM_3SWAP,                   ITM_3DROP,
+                                             ITM_EE_RCL_Z,                 ITM_EE_RCL_V,                ITM_EE_RCL_I,             ITM_EE_Y2D,            ITM_EE_D2Y,                  -MNU_MULTSTK,
+                                             ITM_EE_STO_Z,                 ITM_EE_STO_V,                ITM_EE_STO_I,             ITM_EE_A2S,            ITM_EE_S2A,                  ITM_NULL                      };
 
 //#if defined(INLINE_TEST)
 TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_NULL,                   ITM_NULL,                 ITM_SYS_FREE_RAM,      ITM_GET_TEST_BS,             ITM_SET_TEST_BS               };    //dr
