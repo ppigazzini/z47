@@ -737,16 +737,16 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_WSIZE,
                                              ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_HPBASE,                  ITM_FF};
 
+
 #if (CALCMODEL != USER_R47)
-  #define SQR ITM_SQUARE
+TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               ITM_SQUARE,               ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
+                                             ITM_DEG,                       ITM_RAD,                    ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #else
-  #define SQR ITM_NULL
+TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               KEY_COMPLEX,              ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
+                                             ITM_DEG,                       ITM_RAD,                    ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #endif
-
-
-TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               SQR,                      ITM_op_a,              ITM_op_a2,                   ITM_CLSTK,
-                                             ITM_M_INV,                     ITM_STKTO3x1,               ITM_3x1TOSTK,             ITM_MATX_A,            ITM_MATX_A_1,                ITM_PARALLEL,
-                                             ITM_DEG,                       ITM_DEG2,                   ITM_RAD,                  ITM_RAD2,              ITM_RECT,                    ITM_POLAR,
 
                                              ITM_EE_STO_V_I,               ITM_EE_STO_IR,               ITM_EE_STO_V_Z,           ITM_EE_X2BAL,          ITM_3SWAP,                   ITM_3DROP,
                                              ITM_EE_RCL_Z,                 ITM_EE_RCL_V,                ITM_EE_RCL_I,             ITM_EE_Y2D,            ITM_EE_D2Y,                  -MNU_MULTSTK,
