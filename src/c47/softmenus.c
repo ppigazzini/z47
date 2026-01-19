@@ -809,7 +809,7 @@ TO_QSPI const int16_t menu_HOME[]        = { ITM_DRG,                       ITM_
 #else
 TO_QSPI const int16_t menu_HOME[]        = { ITM_op_j,                      ITM_op_j_pol,               ITM_XFACT,                ITM_XTHROOT,           ITM_10x,                     ITM_EXP,
                                              ITM_ROUND2,                    ITM_RMD,                    ITM_PARALLEL,             ITM_NULL,              ITM_LINPOL,                  ITM_EE_EXP_TH,
-                                             ITM_FP,                        ITM_IP,                     ITM_NULL,                 CC_EE,                 ITM_RECT,                    ITM_POLAR,            };
+                                             ITM_FP,                        ITM_IP,                     ITM_TIMER,                CC_EE,                 ITM_RECT,                    ITM_POLAR,            };
 #endif //C47/R47
 /*HOME MENU IS NOT USED ANYMORE*/
 /*INSTEAD THIS IS USED TO POPULATE THE HOME DYNAMIC MENU (USER MENU)*/
