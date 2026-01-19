@@ -2191,15 +2191,15 @@ void createSubstrings(uint8_t number) {
     }
     else if(temporaryInformation == TI_ABBCCA) {
       if(regist == REGISTER_X) {
-        strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
-        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      }
-      else if(regist == REGISTER_Y) {
         strcpy(prefix, "bc" STD_SPACE_FIGURE ":");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
-      else if(regist == REGISTER_Z) {
+      else if(regist == REGISTER_Y) {
         strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Z) {
+        strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
     }
