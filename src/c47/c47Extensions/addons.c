@@ -3132,7 +3132,7 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_FIN,      ITM_PC,        ITM_DELTAPC,   ITM_YX,        ITM_SQUARE,    ITM_10x,       -MNU_FIN},
   {ITM_RIBBON_FIN2,     ITM_PCPMG,     ITM_PCT,       ITM_PC,        ITM_DELTAPC,   -MNU_TVM,      -MNU_FIN},
   {ITM_RIBBON_CPX,      ITM_DRG,       ITM_CC,        ITM_EE_EXP_TH, ITM_EXP,       ITM_op_j_pol,  ITM_op_j},
-  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j},
+  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j_pol},
   {ITM_RIBBON_C47PL,    ITM_DRG,       ITM_DSP,       ITM_DREAL,     ITM_FF,        ITM_Rup,       ITM_XFACT},
   {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
   {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
