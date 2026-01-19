@@ -442,7 +442,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
       pemAlpha(sent);
     } else {
-        addItemToBuffer(sent);
+        processAimInput(sent);
       }
     }
 
