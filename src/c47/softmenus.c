@@ -740,12 +740,12 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
 
 #if (CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               ITM_SQUARE,               ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
-                                             ITM_DEG,                       ITM_RAD,                    ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #else
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               KEY_COMPLEX,              ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
-                                             ITM_DEG,                       ITM_RAD,                    ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #endif
 
                                              ITM_EE_STO_V_I,               ITM_EE_STO_IR,               ITM_EE_STO_V_Z,           ITM_EE_X2BAL,          ITM_3SWAP,                   ITM_3DROP,
