@@ -748,9 +748,9 @@ TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_
                                              ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #endif
 
-                                             ITM_EE_STO_V_I,               ITM_EE_STO_IR,               ITM_EE_STO_V_Z,           ITM_EE_X2BAL,          ITM_3SWAP,                   ITM_3DROP,
-                                             ITM_EE_RCL_Z,                 ITM_EE_RCL_V,                ITM_EE_RCL_I,             ITM_EE_Y2D,            ITM_EE_D2Y,                  -MNU_MULTSTK,
-                                             ITM_EE_STO_Z,                 ITM_EE_STO_V,                ITM_EE_STO_I,             ITM_EE_A2S,            ITM_EE_S2A,                  ITM_NULL                      };
+                                             ITM_EE_STO_IR,                ITM_EE_STO_V_Z,              ITM_EE_STO_V_I,           ITM_EE_X2BAL,          ITM_3SWAP,                   ITM_3DROP,
+                                             ITM_EE_RCL_V,                 ITM_EE_RCL_I,                ITM_EE_RCL_Z,             ITM_EE_Y2D,            ITM_EE_D2Y,                  -MNU_MULTSTK,
+                                             ITM_EE_STO_V,                 ITM_EE_STO_I,                ITM_EE_STO_Z,             ITM_EE_A2S,            ITM_EE_S2A,                  ITM_NULL                      };
 
 //#if defined(INLINE_TEST)
 TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_NULL,                   ITM_NULL,                 ITM_SYS_FREE_RAM,      ITM_GET_TEST_BS,             ITM_SET_TEST_BS               };    //dr
@@ -804,11 +804,11 @@ TO_QSPI const int16_t menu_BLUE_C47[]    = { ITM_MAGNITUDE,       -MNU_CPX,     
 
 #if (CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_HOME[]        = { ITM_DRG,                       ITM_YX,                     ITM_SQUARE,               ITM_10x,               ITM_EXP,                     ITM_op_j_pol,
-                                             ITM_ROUND2,                    ITM_RMD,                    ITM_PARALLEL,             ITM_XFACT,             ITM_EE_EXP_TH,               ITM_LINPOL,
+                                             ITM_ROUND2,                    ITM_RMD,                    ITM_XFACT,                ITM_PARALLEL,          ITM_EE_EXP_TH,               ITM_LINPOL,
                                              ITM_FP,                        ITM_IP,                    -MNU_PREFIX,               CC_EE,                 ITM_RECT,                    ITM_POLAR             };
 #else
 TO_QSPI const int16_t menu_HOME[]        = { ITM_op_j,                      ITM_op_j_pol,               ITM_XFACT,                ITM_XTHROOT,           ITM_10x,                     ITM_EXP,
-                                             ITM_ROUND2,                    ITM_RMD,                    ITM_PARALLEL,             ITM_NULL,              ITM_LINPOL,                  ITM_EE_EXP_TH,
+                                             ITM_ROUND2,                    ITM_RMD,                    ITM_SNAP,                 ITM_PARALLEL,          ITM_LINPOL,                  ITM_EE_EXP_TH,
                                              ITM_FP,                        ITM_IP,                     ITM_TIMER,                CC_EE,                 ITM_RECT,                    ITM_POLAR,            };
 #endif //C47/R47
 /*HOME MENU IS NOT USED ANYMORE*/
