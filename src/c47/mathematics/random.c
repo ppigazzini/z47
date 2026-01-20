@@ -72,7 +72,7 @@ static uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
 }
 
 
-static void realRandomU01(real_t *res) {
+void realRandomU01(real_t *res) {
   real_t t;
 
   uInt32ToReal(boundedRand(100000000),  res);
