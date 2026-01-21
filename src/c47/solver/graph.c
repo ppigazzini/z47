@@ -29,7 +29,15 @@
 #define COMPLEXKICKER true       //flag to allow conversion to complex plane if no convergenge found
 #define CHANGE_TO_MOD_SECANT 0   //at iteration nn go to the modified secant method. 0 means immediately
 #define CONVERGE_FACTOR 1.0f     //
-#define NUMBERITERATIONS 1999    // 35 // Must be smaller than LIM (see STATS)
+#define NUMBERITERATIONS 9999    // 35 // Must be smaller than LIM (see STATS)
+
+typedef struct {
+      real_t Real;
+      real_t Imag;
+} cplx_t;
+
+#define ctxtSolver2 &ctxtReal34
+#define CPLX(x) &(x).Real, &(x).Imag 
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -172,13 +180,13 @@
       runFunction(ITM_DIV);
     }
     static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im, bool_t addRandom, real_t *tol) {
-      if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || real34IsNaN(a_im) || realIsNaN(b_re) || real34IsNaN(b_im)) {
+      if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
         realCopy(const_0, res_re);
         realCopy(const_0, res_im);
         return;
       }
       if(!addRandom && (realIsZero(b_re) && realIsZero(b_im))) {
-        stringToReal("1E30", res_re, &ctxtReal39);
+        stringToReal("1E30", res_re, ctxtSolver2);
         realCopy(const_0, res_im);
         return;
       }
@@ -187,14 +195,14 @@
           printf(">>> ADD random number to denominator to prevent infinite result\n");
           #endif // PC_BUILD
         real_t temp0, temp1;
-        stringToReal("1E-6", &temp0, &ctxtReal39);
+        stringToReal("1E-6", &temp0, ctxtSolver2);
         realRandomU01(&temp1);
-        realAdd(&temp0, &temp1, &temp0, &ctxtReal39);
-        realAdd(&temp0, b_re, &temp0, &ctxtReal39);
-        divComplexComplex(a_re, a_im, &temp0, const_0, res_re, res_im, &ctxtReal39);
+        realAdd(&temp0, &temp1, &temp0, ctxtSolver2);
+        realAdd(&temp0, b_re, &temp0, ctxtSolver2);
+        divComplexComplex(a_re, a_im, &temp0, const_0, res_re, res_im, ctxtSolver2);
         return;
       }
-      divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, &ctxtReal39);
+      divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
     }
   #endif // !SAVE_SPACE_DM42_13GRF
 
@@ -2091,7 +2099,7 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     SAVED_SIGMA_lastAddRem = SIGMA_NONE;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
     return;
   }
-  
+
 #if defined(PC_BUILD)
   static void printComplexToConsole(const real_t *re, const real_t *im, const char *before, const char *after) {
     char str[100];
@@ -2110,18 +2118,13 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
   
   
   
+static inline void copyComplex(const cplx_t *from, cplx_t *to) {
+  realCopy(&from->Real, &to->Real);
+  realCopy(&from->Imag, &to->Imag);  
+}
   
   
   
-  
-typedef struct {
-      real_t Real;
-      real_t Imag;
-} cplx_t;
-
-#define CPLX(x) &(x).Real, &(x).Imag 
-// #define DECL_CPLX(name) real_t name##.Real; real_t name##.Imag;
-// #define CPLX(name) &(name##.Real), &(name##.Imag)
   
   static void complexSolver2() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
     currentKeyCode = 255;
@@ -2175,41 +2178,34 @@ typedef struct {
     cplx_t temp2; // temp REGISTER_Y
 
 
-    // Initialize all temporary registers
-    // Registers are being used in the DEMO data programs
+    // Initialize
     getRegisterAsComplex(SREG_STARTX1, CPLX(X1));
-    mulComplexComplex( CPLX(X1), const_1, const_0, CPLX(X1), &ctxtReal39);
     getRegisterAsComplex(SREG_STARTX0, CPLX(X0));
-    mulComplexComplex( CPLX(X0), const_1, const_0, CPLX(X0), &ctxtReal39);
 
     //if input parameters X0 and X1 are the same, add a random number to X0
     if(realCompareEqual(&X0.Real, &X1.Real) && realCompareEqual(&X0.Imag, &X1.Imag)) {
 #if defined(PC_BUILD)
       printf(">>> ADD random number to second input parameter to prevent infinite result\n");
 #endif
-      stringToReal("1E-3", &term, &ctxtReal39);
-      realAdd(&X0.Real, &term, &X0.Real, &ctxtReal39);
+      stringToReal("1E-3", &term, ctxtSolver2);
+      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
       realRandomU01(&term);
-      realAdd(&X0.Real, &term, &X0.Real, &ctxtReal39);
+      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
     }
     // uint32_t ticks = getUptimeMs() / 100;
 
 
-    realCopy(const_0, &Xold.Real);
-    realCopy(const_0, &Xold.Imag);
-    realCopy(const_0, &Yold.Real);
-    realCopy(const_0, &Yold.Imag);
-    realCopy(const_0, &X2N.Real);
-    realCopy(const_0, &X2N.Imag);
-    
-    convertDoubleToReal(CONVERGE_FACTOR, &f, &ctxtReal39);            // factor
-    stringToReal("1E-1", &dX.Real, &ctxtReal39);              // initial value for difference comparison must be larger than tolerance
-    realCopy(const_0, &dX.Imag);    
-    stringToReal("1E-1", &dY.Real, &ctxtReal39);              // initial value for difference comparison must be larger than tolerance
-    realCopy(const_0, &dY.Imag);    
+    realCopy(const_0, &Xold.Real); realCopy(const_0, &Xold.Imag);
+    copyComplex(&Xold, &Yold);
+    copyComplex(&Xold, &X2N);
+    copyComplex(&Xold, &dX);
+    // initial value for difference comparison must be larger than tolerance
+    stringToReal("1E-1", &dX.Real, ctxtSolver2);
+    copyComplex(&dX, &dY);                       
+
+    convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
 
     convergenceTolerence(&tol);
-
 
     convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
     execute_rpn_function();
@@ -2221,27 +2217,23 @@ typedef struct {
 
     checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y0), &tol);
     if(checkzero) {
-      realCopy(&Y0.Real,&Y2.Real);
-      realCopy(&Y0.Imag,&Y2.Imag);
-      realCopy(&X0.Real,&X2.Real);
-      realCopy(&X0.Imag,&X2.Imag);
+      copyComplex(&Y0, &Y2);
+      copyComplex(&X0, &X2);
     }
     else {
       checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y1), &tol);
       if(checkzero) {
-        realCopy(&Y1.Real,&Y2.Real);
-        realCopy(&Y1.Imag,&Y2.Imag);
-        realCopy(&X1.Real,&X2.Real);
-        realCopy(&X1.Imag,&X2.Imag);
+        copyComplex(&Y1, &Y2);
+        copyComplex(&X2, &X2);
       }
     }
 
     if(!checkzero) {
-      subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), &ctxtReal39);  //dx=x1-x0
-      subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), &ctxtReal39);  //dy=y1-y0
+      subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), ctxtSolver2);  //dx=x1-x0
+      subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
       divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0),  ADD_RAN, &tol);  //dx/dy
-      mulComplexComplex( CPLX(temp0), CPLX(Y1), CPLX(temp0), &ctxtReal39);  //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
-      subComplex(CPLX(X1), CPLX(temp0), CPLX(X2), &ctxtReal39);  //dx=x1-x0
+      mulComplexComplex( CPLX(temp0), CPLX(Y1), CPLX(temp0), ctxtSolver2);  //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
+      subComplex(CPLX(X1), CPLX(temp0), CPLX(X2), ctxtSolver2);  //x2=x1-deltaX
       convertComplexToResultRegister(CPLX(X2), REGISTER_X);
       execute_rpn_function();
       getRegisterAsComplex(REGISTER_Y, CPLX(Y2));
@@ -2364,22 +2356,27 @@ typedef struct {
 
 
         //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quadrant, multplied by a alrger number every time
+        
+        
+        
+        convertDoubleToReal( - (kicker + 0.001) / 100.0, &temp1.Real, ctxtSolver2);
+        realCopy(const_0, &temp1.Imag);
         if(kicker > 0) {
-          convertDoubleToReal( (kicker + 0.001) / 100.0, &temp0.Real, &ctxtReal39);
-          realSquareRoot(&temp0.Real, &temp0.Real, &ctxtReal39);
-          convertDoubleToReal( pow(-2.0,kicker), &temp1.Real, &ctxtReal39);
-          realMultiply(&temp0.Real, &temp1.Real, &temp0.Real, &ctxtReal39);
-          realCopy(&temp0.Real, &temp0.Imag);
-        } else {
-          convertDoubleToReal( - (kicker + 0.001) / 100.0, &temp0.Real, &ctxtReal39);
-          realCopy(const_0, &temp0.Imag);
+          sqrtComplex(CPLX(temp1), CPLX(temp1), ctxtSolver2);
+          convertDoubleToReal((kicker + 0.001) / 100.0, &temp2.Real, ctxtSolver2);
+          realCopy(const_0, &temp2.Imag);
+          sqrtComplex(CPLX(temp2), CPLX(temp2), ctxtSolver2);
+          addComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
+          convertDoubleToReal( pow(-2.0, kicker), &temp2.Real, ctxtSolver2);
+          realCopy(const_0, &temp2.Imag);
+          mulComplexComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
         }
 #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
         printf("------- Kicked oscillation, #%d, multiplied: ", kicker);
-        printComplexToConsole(CPLX(temp0), "multiplied: ", "\n");
+        printComplexToConsole(CPLX(temp1), "multiplied: ", "\n");
 #endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
         kicker++;
-        mulComplexComplex(CPLX(temp0), CPLX(X2), CPLX(X2), &ctxtReal39);
+        mulComplexComplex(CPLX(temp1), CPLX(X2), CPLX(X2), ctxtSolver2);
 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
         printComplexToConsole(CPLX(X2), " to ", "\n");
 #endif // VERBOSE_SOLVER2 && PC_BUILD
@@ -2418,8 +2415,8 @@ typedef struct {
 #endif // VERBOSE_SOLVER2 && PC_BUILD
 
       //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
-      realCopy(&dX.Real, &Xold.Real); realCopy(&dX.Imag, &Xold.Imag);  // store old DELTA values, for oscillation check
-      realCopy(&dY.Real, &Yold.Real); realCopy(&dY.Imag, &Yold.Imag);  // store old DELTA values, for oscillation check
+      copyComplex(&dX, &Xold);  // store old DELTA values, for oscillation check
+      copyComplex(&dY, &Yold);  // store old DELTA values, for oscillation check
 
       // ---------- Modified 3 point Secant ------------
       if((iterationCounter == 0) || (!checkzero && !checkNaN)) {
@@ -2434,76 +2431,75 @@ typedef struct {
         
 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
 
-        subComplex(CPLX(Y2), CPLX(Y0), CPLX(dY), &ctxtReal39); // Y2-Y0 = dY
-        subComplex(CPLX(X2), CPLX(X0), CPLX(dX), &ctxtReal39); // X2-X0 = dX
+        subComplex(CPLX(Y2), CPLX(Y0), CPLX(dY), ctxtSolver2); // Y2-Y0 = dY
+        subComplex(CPLX(X2), CPLX(X0), CPLX(dX), ctxtSolver2); // X2-X0 = dX
         divFunctionComplex(CPLX(dY), CPLX(dX),  CPLX(temp0), !ADD_RAN, &tol); // dY/dX = temp0
 
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp0), " m1=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
 
-        subComplex(CPLX(Y2), CPLX(Y1), CPLX(L1), &ctxtReal39);
+        subComplex(CPLX(Y2), CPLX(Y1), CPLX(L1), ctxtSolver2);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(L1), " Y2-Y1=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
 
-        mulComplexComplex(CPLX(temp0),CPLX(L1), CPLX(L1), &ctxtReal39);
+        mulComplexComplex(CPLX(temp0),CPLX(L1), CPLX(L1), ctxtSolver2);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(L1), " term1 lower m1*(Y2-Y1)=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
 
-        subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), &ctxtReal39);
+        subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp1), " dY2=","\n");//30
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        subComplex(CPLX(X1), CPLX(X0), CPLX(temp2), &ctxtReal39);
+        subComplex(CPLX(X1), CPLX(X0), CPLX(temp2), ctxtSolver2);
         divFunctionComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), !ADD_RAN, &tol);
 
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp1), " m2=","\n");//30
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        subComplex(CPLX(temp0), CPLX(temp1), CPLX(temp1), &ctxtReal39);
+        subComplex(CPLX(temp0), CPLX(temp1), CPLX(temp1), ctxtSolver2);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp1)," m1-m2 diff=","\n");
         printComplexToConsole(CPLX(Y2), " Y2=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        mulComplexComplex(CPLX(temp1), CPLX(Y2), CPLX(temp1), &ctxtReal39);
+        mulComplexComplex(CPLX(temp1), CPLX(Y2), CPLX(temp1), ctxtSolver2);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp1), " term2 lower=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        subComplex(CPLX(L1), CPLX(temp1), CPLX(temp1), &ctxtReal39);
+        subComplex(CPLX(L1), CPLX(temp1), CPLX(temp1), ctxtSolver2);
         
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp1), " lower diff=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        subComplex(CPLX(Y2), CPLX(Y1), CPLX(temp2), &ctxtReal39);
+        subComplex(CPLX(Y2), CPLX(Y1), CPLX(temp2), ctxtSolver2);
         //get the 1/slope
         divFunctionComplex(CPLX(temp2), CPLX(temp1), CPLX(temp0), !ADD_RAN, &tol);
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printComplexToConsole(CPLX(temp0), " 1/slope=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        mulComplexComplex(CPLX(temp0), CPLX(Y0), CPLX(temp1), &ctxtReal39); // increment to x is: y1 . DX/DY
+        mulComplexComplex(CPLX(temp0), CPLX(Y0), CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
         // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
-        mulComplexComplex(CPLX(temp1), &f, const_0, CPLX(temp1), &ctxtReal39); // increment to x is: y1 . DX/DY
+        mulComplexComplex(CPLX(temp1), &f, const_0, CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
 
 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
         printRealToConsole(&f, "    Factor=        ","\n");
         printComplexToConsole(CPLX(X0),"    New X =        "," - (");
         printComplexToConsole(CPLX(temp1),"",")\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
-        subComplex(CPLX(X0), CPLX(temp1), CPLX(temp1), &ctxtReal39); // subtract as per Newton, x1 - f/f'
+        subComplex(CPLX(X0), CPLX(temp1), CPLX(temp1), ctxtSolver2); // subtract as per Newton, x1 - f/f'
 
         //try round numbers
         if(convergent > 3 && iterationCounter > 6 && oscillations == 0 && realCompareLessEqual(&temp1.Real, const_1e_4)) {
           convergent = 0;
           double higherXStartValue;
           realToDouble(&temp1.Real, &higherXStartValue);
-          convertDoubleToReal(roundf(1000.0 * higherXStartValue)/1000.0, &temp1.Real, &ctxtReal39);
+          convertDoubleToReal(roundf(1000.0 * higherXStartValue)/1000.0, &temp1.Real, ctxtSolver2);
           realCopy(const_0, &temp1.Imag);
         }
 
-        realCopy(&temp1.Real, &X2N.Real);           // store temporarily to new x2n
-        realCopy(&temp1.Imag, &X2N.Imag);          
+        copyComplex(&temp1, &X2N);// store temporarily to new x2n
       }
 
       //#############################################
@@ -2517,14 +2513,13 @@ typedef struct {
       printComplexToConsole(&X2.Real,   &X2.Imag, "               X2=","");printComplexToConsole(CPLX(Y2),"Y2=","\n");
 #endif // VERBOSE_SOLVER1 && PC_BUILD
 
-      realCopy(&Y1.Real, &Y0.Real); realCopy(&Y1.Imag, &Y0.Imag);           //old y1 copied to y0
-      realCopy(&X1.Real, &X0.Real); realCopy(&X1.Imag, &X0.Imag);           //old x1 copied to x0
+      copyComplex(&Y1, &Y0); //old y1 copied to y0
+      copyComplex(&X1, &X0); //old x1 copied to x0
+      copyComplex(&Y2, &Y1); //old y2 copied to y1
+      copyComplex(&X2, &X1); //old x2 copied to x1
 
-      realCopy(&Y2.Real, &Y1.Real); realCopy(&Y2.Imag, &Y1.Imag);           //old y2 copied to y1
-      realCopy(&X2.Real, &X1.Real); realCopy(&X2.Imag, &X1.Imag);           //old x2 copied to x1
-
-      complexMagnitude(CPLX(dX), &temp2.Real,  &ctxtReal39);
-      complexMagnitude(CPLX(dY), &temp1.Real,  &ctxtReal39);
+      complexMagnitude(CPLX(dX), &temp2.Real,  ctxtSolver2);
+      complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
 
       checkzero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
       checkNaN |=  realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
