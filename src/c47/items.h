@@ -2634,7 +2634,7 @@
 #define ITM_RAD2_XFN                2555
 #define ITM_RDP_XFN                 2556
 
-#define MNU_2557                    2557
+#define ITM_RSD_XFN                 2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
 #define ITM_tan_XFN                 2560
