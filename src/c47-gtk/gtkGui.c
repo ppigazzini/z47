@@ -3097,25 +3097,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
-    if(key->fShifted == ITM_NULL) {
-      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
-    }
-    else {
-      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    }
-    R47LongpressColour = true;
-  }
-  else if(isR47FAM && key->primary == ITM_SHIFTg) {
-    if(key->fShifted == ITM_NULL) {
-      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
-    }
-    else {
-      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    }
-    R47LongpressColour = true;
-  }
-  else if(key->fShifted == 0) {
+  if(key->fShifted == 0) {
       sstmp[0] = 0;
   }
   else {
@@ -3163,7 +3145,50 @@ char sstmp[16];
 
 //  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
 //  else
-  strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
+    if(key->gShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+    }
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->primary == ITM_SHIFTg) {
+    if(key->gShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+    }
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->primary == KEY_fg) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) {
+      if(key->gShifted == ITM_NULL) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+        }
+        else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+        }
+      }
+      else {
+        strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+      }
+    }
+    else {
+      sstmp[0] = 0;
+    }
+    R47LongpressColour = true;
+  }
+  else if(key->gShifted == 0) {
+    lbl[0] = 0;
+  }
+  else {
+    strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+  }
+
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
   if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
   stringToUtf8(sstmp, lbl);
@@ -3173,38 +3198,43 @@ char sstmp[16];
     }
   }
 
-      if(key->gShifted == 0) {
-        lbl[0] = 0;
-      }
-      else if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
-        strcpy((char *)lbl,"#");
-      }
-      else if(strcmp((char *)lbl, "LINPOL") == 0) {
-        strcpy((char *)lbl,"LIN");
-      }
+  if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
+    strcpy((char *)lbl,"#");
+  }
+  else if(strcmp((char *)lbl, "LINPOL") == 0) {
+    strcpy((char *)lbl,"LIN");
+  }
 
+  gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
 
-      gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
-      if(key->gShifted < 0 /*|| key->gShifted == ITM_TIMER*/) gtk_widget_set_name(lblG, "gShiftedUnderline"); else  gtk_widget_set_name(lblG, "gShifted");
+  if(R47LongpressColour) {
+    gtk_widget_set_name(lblG, "letter");
+  }
+  else if(key->gShifted < 0 /*|| key->gShifted == ITM_TIMER*/) {
+    gtk_widget_set_name(lblG, "gShiftedUnderline");
+  }
+  else {
+    gtk_widget_set_name(lblG, "gShifted");
+  }
 
-      stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
-      if(key->primaryAim == 0) {
-        lbl[0] = 0;
-      }
+  stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
+  if(key->primaryAim == 0) {
+     lbl[0] = 0;
+  }
 
-      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }                       //JM SPACE
+  if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
+    lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
+    lbl[1]=0xB7;          //JM SPACE
+    lbl[2]='_';           //JM SPACE
+    lbl[3]=0xc2;          //JM SPACE
+    lbl[4]=0xb7;          //JM SPACE
+    lbl[5]=0;             //JM SPACE
+  }                       //JM SPACE
 
-      if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
-      gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-      gtk_widget_set_name(lblL, "letter");
-    }
+  if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
+  gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
+  gtk_widget_set_name(lblL, "letter");
+}
 
 
     //dr
@@ -3216,11 +3246,33 @@ char sstmp[16];
         lbl[0] = 0;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
-        stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        if(tam.alpha) {
+          stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+        }
+        else {
+          stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        }
         R47LongpressColour = true;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
         stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        R47LongpressColour = true;
+      }
+      else if(isR47FAM && key->primaryAim == KEY_fg) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if(tam.alpha) {
+            stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+          }
+          else {
+            stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        }
+        else {
+          lbl[0] = 0;
+        }
         R47LongpressColour = true;
       }
       else {
@@ -3258,7 +3310,16 @@ char sstmp[16];
     void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblG, GtkWidget *lblL) {
       uint8_t lbl[22];
 
-      if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
+      if(key->keyLblAim == ITM_SHIFTf) {
+        strcpy((char *)lbl, indexOfItems[ITM_SHIFTf].itemSoftmenuName);
+      }
+      else if(key->keyLblAim == ITM_SHIFTg) {
+        strcpy((char *)lbl, indexOfItems[ITM_SHIFTg].itemSoftmenuName);
+      }
+      else if(key->keyLblAim == KEY_fg) {     
+        strcpy((char *)lbl, indexOfItems[KEY_fg].itemSoftmenuName);
+      }
+      else if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
         lbl[0] = 0;
       }
       else {
@@ -3355,7 +3416,10 @@ char sstmp[16];
     void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
       uint8_t lbl[22];
 
-      stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      lbl[0] = 0;
+      if(key->primaryTam != ITM_NULL) {
+        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      }
 
       //THIS IS FOR TAM
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
@@ -5079,12 +5143,12 @@ static gboolean clear_ui_active_flag(gpointer data) {
 // Single handler for all UI events
 static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
     ui_is_active = TRUE;
-    
+
     if(ui_settle_timer) {
         g_source_remove(ui_settle_timer);
     }
     ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
-    
+
     return FALSE;  // Let event continue processing
 }
 
