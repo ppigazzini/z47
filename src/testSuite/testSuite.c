@@ -283,6 +283,8 @@ const funcTest_t funcTestNoParam[] = {
   {"fnToRect2",              fnToRect2             },
   {"fnTranspose",            fnTranspose           },
   {"fnXXfn",                 fnXXfn                },
+  {"fnXXfn_RSD",             fnXXfn_RSD            },
+  {"fnXXfn_RDP",             fnXXfn_RDP            },
 
   {"fnT_I",                  fnT_I                 },
   {"fnT_L",                  fnT_L                 },
