@@ -475,7 +475,7 @@ bool_t lastshiftG = false;
 
 #define lowercaseselected  (bool_t)((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)) // //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
-  static void processAimInput(int16_t item) {
+  void processAimInput(int16_t item) {
     int16_t item1 = 0;
                     #if defined(PC_BUILD)
                       char tmp[200]; sprintf(tmp,"^^^^processAimInput:AIM %d nextChar=%d",item,nextChar); jm_show_comment(tmp);
