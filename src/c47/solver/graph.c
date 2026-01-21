@@ -1366,6 +1366,23 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
 // END SOLVER HELPER FUNCTIONS
 // =============================================================================
 
+#if defined(PC_BUILD)
+  static void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {
+    char str[200];
+    real34ToString(REGISTER_REAL34_DATA(REGISTER_X), str);
+    printf("\n\n\033[1m%2u: %-36s ", significantDigits, str);
+    real34ToString(REGISTER_IMAG34_DATA(REGISTER_X), str);
+    if(real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X))) {
+      printf("- ix%-36s", str + 1);
+    }
+    else {
+      printf("+ ix%-36s", str);
+    }
+    printf(" (iter:%2i conj:%u)\033[0m\n\n", iterationCounter, conjugates);
+  }
+#else
+  static inline void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {}
+#endif // PC_BUILD
 
 
 // COMPLEX SOLVER
@@ -2064,6 +2081,8 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     fnRCL(SREG_X2);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
+    printSolverResult(iterationCounter, conjugates);
+
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
     }
@@ -2618,6 +2637,8 @@ typedef struct {
     convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
     convertComplexToResultRegister(CPLX(X2), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
+
+    printSolverResult(iterationCounter, conjugates);
 
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
