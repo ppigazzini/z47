@@ -78,7 +78,9 @@
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
   }
-  void fnXXfn_RDP                 (uint16_t digits) {
+  void fnXXfn_RDP                 (uint16_t digits) {    
+  }
+  void fnXXfn_RSD                 (uint16_t digits) {    
   }
 
 
@@ -190,9 +192,9 @@
 
   #if defined(TESTSUITE_BUILD)
     const bool_t use1071 = true;
-  #else
+  #else  
     #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
-      #define HIMEMORY true
+      #define HIMEMORY true  
     #else
       #define HIMEMORY false
     #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
@@ -309,6 +311,7 @@ typedef struct {
       { ITM_DRG_XFN     ,FT_MONADIC, NOANG},
       { ITM_SQR_XFN     ,FT_MONADIC, NOANG},
       { ITM_RDP_XFN     ,FT_MONADIC, NOANG},
+      { ITM_RSD_XFN     ,FT_MONADIC, NOANG},
       { ITM_atan2_XFN   ,FT_DYADIC , NOANG},
       { ITM_ADD_XFN     ,FT_DYADIC , NOANG},
       { ITM_SUB_XFN     ,FT_DYADIC , NOANG},
@@ -652,6 +655,9 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_RDP                 (uint16_t digits) {
     fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
+  void fnXXfn_RSD                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RSD_XFN, digits);
+  }
 
 
 
@@ -687,7 +693,7 @@ printf("Dddd %d\n",registerNo);
     if(functionType == FT_SINGLEX) {
       if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
         return;
-      }
+      }      
     } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
@@ -738,7 +744,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
           }
           angleMode = amRadian;
           break;
@@ -751,7 +757,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
           }
           angleMode = amDegree;
           break;
@@ -765,7 +771,7 @@ printf("Dddd %d\n",registerNo);
           } else {
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);
+              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);        
             }
           }
           angleMode = nextAngleMode;
@@ -856,6 +862,10 @@ printf("Dddd %d\n",registerNo);
           roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
           break;
         }
+        case ITM_RSD_XFN: {
+          roundToSignificantDigits((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
   //--------//SINGLE REG FUNCTIONS
         case ITM_TO_XFN: {
             //paramX input ->> output
@@ -943,7 +953,7 @@ printf("Dddd %d\n",registerNo);
         break;
       }
       case ITM_RAD2_XFN:    //leave angleMode, it is set in the function
-      case ITM_DEG2_XFN:
+      case ITM_DEG2_XFN: 
       case ITM_DRG_XFN:  {
         break;
       }
