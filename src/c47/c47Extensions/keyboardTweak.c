@@ -467,14 +467,14 @@ void resetKeytimers(void) {
 
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
-      longpressDelayedkey2 = longpressDelayedkey1;
+      longpressDelayedkey2 = 0; //longpressDelayedkey1;
       longpressDelayedkey3 = ITM_EDIT;
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
       longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-      longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-      longpressDelayedkey3 = 0;              // forcefully prevent the 3rd slot to trigger when EXIT is assigned elsewhere
+      longpressDelayedkey2 = 0;     // EXIT longpress DOES CLRMOD
+      longpressDelayedkey3 = ITM_CLRMOD;              // forcefully prevent the 3rd slot to trigger when EXIT is assigned elsewhere
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_DRG) {
@@ -494,8 +494,8 @@ void resetKeytimers(void) {
         }
         else if(LongPressM == RBX_M1234) {
           longpressDelayedkey1 = ITM_USERMODE;
-          longpressDelayedkey2 = tmpg;
-          //longpressDelayedkey3 = 0;
+          //longpressDelayedkey2 = 0;
+          longpressDelayedkey3 = tmpg;
         }
       }
     }
@@ -514,21 +514,21 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                   longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
-                  longpressDelayedkey2 = ITM_EDIT;
-                  longpressDelayedkey3 = 0;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = ITM_EDIT;
                 }
               break;
             case ITM_EXIT1:
               longpressDelayedkey1 = -MNU_MyAlpha;//  LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-              longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-              longpressDelayedkey3 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               break;
 
             case ITM_ENTER:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_XEDIT;
-                longpressDelayedkey2 = ITM_CR;
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CR;
               }
               break;
             default:;
@@ -546,14 +546,14 @@ void resetKeytimers(void) {
               break;
             case ITM_EXIT1:
               longpressDelayedkey1 = -MNU_MyAlpha;
-              longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey3 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               break;
             case ITM_ENTER:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_XEDIT;
-                longpressDelayedkey2 = ITM_CR;
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CR;
               }
               break;
             default:;
@@ -585,8 +585,8 @@ void resetKeytimers(void) {
                 longpressDelayedkey3 = 0;
               } else {
                 longpressDelayedkey1 = ITM_SNAP;
-                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               }
               break;
             default:;
