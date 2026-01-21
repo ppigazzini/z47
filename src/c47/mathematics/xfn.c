@@ -80,6 +80,8 @@
   }
   void fnXXfn_RDP                 (uint16_t digits) {    
   }
+  void fnXXfn_RSD                 (uint16_t digits) {    
+  }
 
 
 #else //OPTION_XFN_1000
@@ -305,6 +307,7 @@ typedef struct {
       { ITM_DRG_XFN     ,FT_MONADIC },
       { ITM_SQR_XFN     ,FT_MONADIC },
       { ITM_RDP_XFN     ,FT_MONADIC },
+      { ITM_RSD_XFN     ,FT_MONADIC },
       { ITM_atan2_XFN   ,FT_DYADIC  },
       { ITM_ADD_XFN     ,FT_DYADIC  },
       { ITM_SUB_XFN     ,FT_DYADIC  },
@@ -634,6 +637,9 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_RDP                 (uint16_t digits) {
     fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
+  void fnXXfn_RSD                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RSD_XFN, digits);
+  }
 
 
 
@@ -833,6 +839,10 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_RDP_XFN: {
           roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_RSD_XFN: {
+          roundToSignificantDigits((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
           break;
         }
   //--------//SINGLE REG FUNCTIONS
