@@ -2669,9 +2669,9 @@
 #define ITM_3STO                    2588
 #define ITM_3RCL                    2589
 
-#define ITM_NDUP                    2590
-#define ITM_NSWAP                   2591
-#define ITM_NDROP                   2592
+#define ITM_NDUP_OLD                2590
+#define ITM_NSWAP_OLD               2591
+#define ITM_NDROP_OLD               2592
 #define ITM_2STO                    2593
 #define ITM_2RCL                    2594
 #define ITM_4SWAP                   2595
@@ -2703,13 +2703,17 @@
 #define ITM_2618                    2618
 #define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
 
+#define ITM_NDUP                    2620
+#define ITM_NSWAP                   2621
+#define ITM_NDROP                   2622
+
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
 
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2620
+#define LAST_ITEM                   2623
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

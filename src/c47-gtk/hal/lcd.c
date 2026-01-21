@@ -4,17 +4,30 @@
 
 #include "c47.h"
 
-#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-  #include <execinfo.h>
-  void analyse_caller(const char *fn_name){
-    void *callstack[128];
-    int frames = backtrace(callstack, 128);
-    char **strs = backtrace_symbols(callstack, frames);
-    printf("%30s%42s%s\n", "",fn_name, " called from: ", strs[2]);
-    free(strs);
+#if defined(PC_BUILD) && defined(HAVE_DLADDR)
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <stdarg.h>
+
+void print_caller(const char *format, ...) {
+  void *cs[64];
+  va_list ap;
+
+  backtrace(cs, 64);
+  Dl_info infoA, infoB;
+  dladdr(cs[1], &infoA);
+  dladdr(cs[2], &infoB);
+  printf("%s%s%s called from: %s%-30s%s",COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
+
+  if (format != NULL) {
+    printf("| ");
+    va_start(ap, format);
+    vprintf(format, ap);
+    va_end(ap);
   }
-#else
-  #define analyse_caller(...) ((void)0)
+  printf("\n");
+
+}
 #endif //PC_BUILD
 
 uint8_t * lcd_line_addr (int row) {
@@ -126,12 +139,8 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
   if(endX > SCREEN_WIDTH || endY > SCREEN_HEIGHT) {
     #if defined(MONITOR_CLRSCR)
       printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
-                                    #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-                                      void *callstack[128];
-                                      int frames = backtrace(callstack, 128);
-                                      char **strs = backtrace_symbols(callstack, frames);
-                                      printf("%30s%42s%s\n", "", "lcd_fill_rect called from: ", strs[1]);
-                                      free(strs);
+                                    #if defined(ANALYSE_REFRESH)
+                                      print_caller();
                                     #endif //ANALYSE_REFRESH
     #endif
     return;
@@ -160,18 +169,24 @@ void refresh_gui(void) {
 
 
 void _lcdRefresh(void) {              //called by force_refresh() and _printHalfSecUpdate_Integer()
-  analyse_caller("_lcdRefresh");
+          #if defined(ANALYSE_REFRESH)
+            print_caller(NULL);
+          #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(0, SCREEN_HEIGHT);
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-  analyse_caller("_lcdBandRefresh");
+           #if defined(ANALYSE_REFRESH)
+            print_caller("y=%u, dy=%u\n",y, dy);
+           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);
 }
 
 void _lcdSBRefresh(void) {
-  analyse_caller("_lcdSBRefresh");
+          #if defined(ANALYSE_REFRESH)
+            print_caller(NULL);
+          #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(0, 20);
 }
