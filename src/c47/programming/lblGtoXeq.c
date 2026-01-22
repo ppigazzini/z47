@@ -459,7 +459,9 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
     case PARAM_REGISTER:
     case PARAM_COMPARE: {
       if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
-        reallyRunFunction(op, regKStoC(opParam));
+        if(regInRange(regKStoC(opParam))) {
+          reallyRunFunction(op, regKStoC(opParam));
+        }
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         _getStringLabelOrVariableName(paramAddress);
