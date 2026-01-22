@@ -1335,68 +1335,67 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-// =============================================================================
-// SOLVER HELPERS
-// =============================================================================
-
-#if !defined(TESTSUITE_BUILD)
-static bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
-  return (realIsZero(a) && realIsZero(b))
-     || ((realCompareAbsLessThan(a, tol))
-      && (realCompareAbsLessThan(b, tol)));
-  }
-
-// static bool_t checkRegisterXYRealZeroTol(calcRegister_t tol) {
-//   return (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
-//      || ((real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(tol)))
-//       && (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(tol))));
-//   }
-//
-// static bool_t checkRegisterXYImagZeroTol(calcRegister_t tol) {
-//   return (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)))
-//      || ((real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(tol)))
-//       && (real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_IMAG34_DATA(tol))));
-//   }
-//
-// static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
-//   if(getRegisterDataType(REGISTER_X) == dtComplex34 && getRegisterDataType(REGISTER_Y) == dtComplex34) {
-//     runFunction(ITM_MAGNITUDE);
-//     runFunction(ITM_XexY);
-//     runFunction(ITM_MAGNITUDE);
-//     runFunction(ITM_XexY);
-//   }
-//   return checkRegisterXYRealZeroTol(tol);
-//   }
-#endif // !TESTSUITE_BUILD
-
-// =============================================================================
-// END SOLVER HELPER FUNCTIONS
-// =============================================================================
-
-#if defined(PC_BUILD)
-  static void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {
-    char str[200];
-    real34ToString(REGISTER_REAL34_DATA(REGISTER_X), str);
-    printf("\n\n\033[1m%2u: %-36s ", significantDigits, str);
-    real34ToString(REGISTER_IMAG34_DATA(REGISTER_X), str);
-    if(real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X))) {
-      printf("- ix%-36s", str + 1);
-    }
-    else {
-      printf("+ ix%-36s", str);
-    }
-    printf(" (iter:%2i conj:%u)\033[0m\n\n", iterationCounter, conjugates);
-  }
-#else
-  static inline void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {}
-#endif // PC_BUILD
-
-
 // COMPLEX SOLVER
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
   #if !defined(TESTSUITE_BUILD)
+
+  // =============================================================================
+  // SOLVER HELPERS
+  // =============================================================================
+
+  #if !defined(TESTSUITE_BUILD)
+  static bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
+    return (realIsZero(a) && realIsZero(b))
+       || ((realCompareAbsLessThan(a, tol))
+        && (realCompareAbsLessThan(b, tol)));
+    }
+
+  // static bool_t checkRegisterXYRealZeroTol(calcRegister_t tol) {
+  //   return (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
+  //      || ((real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(tol)))
+  //       && (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(tol))));
+  //   }
+  //
+  // static bool_t checkRegisterXYImagZeroTol(calcRegister_t tol) {
+  //   return (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)))
+  //      || ((real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(tol)))
+  //       && (real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_IMAG34_DATA(tol))));
+  //   }
+  //
+  // static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
+  //   if(getRegisterDataType(REGISTER_X) == dtComplex34 && getRegisterDataType(REGISTER_Y) == dtComplex34) {
+  //     runFunction(ITM_MAGNITUDE);
+  //     runFunction(ITM_XexY);
+  //     runFunction(ITM_MAGNITUDE);
+  //     runFunction(ITM_XexY);
+  //   }
+  //   return checkRegisterXYRealZeroTol(tol);
+  //   }
+  #endif // !TESTSUITE_BUILD
+
+  // =============================================================================
+  // END SOLVER HELPER FUNCTIONS
+  // =============================================================================
+
+  #if defined(PC_BUILD)
+    static void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {
+      char str[200];
+      real34ToString(REGISTER_REAL34_DATA(REGISTER_X), str);
+      printf("\n\n\033[1m%2u: %-36s ", significantDigits, str);
+      real34ToString(REGISTER_IMAG34_DATA(REGISTER_X), str);
+      if(real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X))) {
+        printf("- ix%-36s", str + 1);
+      }
+      else {
+        printf("+ ix%-36s", str);
+      }
+      printf(" (iter:%2i conj:%u)\033[0m\n\n", iterationCounter, conjugates);
+    }
+  #else
+    static inline void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {}
+  #endif // PC_BUILD
+
 
   // Solver Registers used and destroyed. This is documented.
   // (One day this needs to be rewritten to use reals, at 39 digits)
