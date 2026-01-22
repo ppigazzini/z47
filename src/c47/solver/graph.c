@@ -10,10 +10,10 @@
 
 #if defined(PC_BUILD)
   //Verbose directives can be simulataneously selected
-  //#define VERBOSE_SOLVER00   // minimal text
-  //#define VERBOSE_SOLVER0  // a lot less text
-  //#define VERBOSE_SOLVER1  // a lot less text
-  //#define VERBOSE_SOLVER2  // verbose a lot
+  // #define VERBOSE_SOLVER00   // minimal text
+  // #define VERBOSE_SOLVER0  // a lot less text
+  // #define VERBOSE_SOLVER1  // a lot less text
+  // #define VERBOSE_SOLVER2  // verbose a lot
 #else // !PC_BUILD
   #undef VERBOSE_SOLVER00
   #undef VERBOSE_SOLVER0
@@ -30,6 +30,14 @@
 #define CHANGE_TO_MOD_SECANT 0   //at iteration nn go to the modified secant method. 0 means immediately
 #define CONVERGE_FACTOR 1.0f     //
 #define NUMBERITERATIONS 9999    // 35 // Must be smaller than LIM (see STATS)
+
+typedef struct {
+      real_t Real;
+      real_t Imag;
+} cplx_t;
+
+#define ctxtSolver2 &ctxtReal34
+#define CPLX(x) &(x).Real, &(x).Imag 
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -126,47 +134,75 @@
   }
 
   #if !defined(SAVE_SPACE_DM42_13GRF)
-    static bool_t regIsLowerThanTol(calcRegister_t REG, calcRegister_t TOL) {
-        return (    (real34IsZero(REGISTER_REAL34_DATA(REG)) && (getRegisterDataType(REG) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REG)) : 1 ))
-                 || (    (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REG), REGISTER_REAL34_DATA(TOL)))
-                      && (getRegisterDataType(REG) == dtComplex34 ? real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REG), REGISTER_REAL34_DATA(TOL)) : 1)
-                    )
-               );
+    // static bool_t regIsLowerThanTol(calcRegister_t REG, calcRegister_t TOL) {
+    //     return (    (real34IsZero(REGISTER_REAL34_DATA(REG)) && (getRegisterDataType(REG) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REG)) : 1 ))
+    //              || (    (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REG), REGISTER_REAL34_DATA(TOL)))
+    //                   && (getRegisterDataType(REG) == dtComplex34 ? real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REG), REGISTER_REAL34_DATA(TOL)) : 1)
+    //                 )
+    //            );
+    // }
+    static bool_t complexIsLowerThanTol(const real_t *re, const real_t *im, const real_t *tol) {
+        return ((realIsZero(re) && realIsZero(im)) || (realCompareAbsLessThan(re, tol) && realCompareAbsLessThan(im, tol)));
     }
 
 
     #define ADD_RAN true
-    static void divFunction(bool_t addRandom, calcRegister_t TOL) {
-      if(  (real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)) : 1 ) )
-         || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))
-         || (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_Y)) : 0 ) ) {
-        fnDrop(NOPARAM);
-        fnDrop(NOPARAM);
-        convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+    // static void divFunction(bool_t addRandom, calcRegister_t TOL) {
+    //   if(  (real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)) : 1 ) )
+    //      || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))
+    //      || (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_Y)) : 0 ) ) {
+    //     fnDrop(NOPARAM);
+    //     fnDrop(NOPARAM);
+    //     convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+    //     return;
+    //   }
+    //   if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)) : 0 ) ) {
+    //     fnDrop(NOPARAM);
+    //     fnDrop(NOPARAM);
+    //     convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+    //     return;
+    //   }
+    //   if(!addRandom && (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) : 1 ) )) {
+    //     fnDrop(NOPARAM);
+    //     fnDrop(NOPARAM);
+    //     convertDoubleToReal34RegisterPush(1e30, REGISTER_X);
+    //     return;
+    //   }
+    //   if(addRandom && regIsLowerThanTol(REGISTER_X, TOL)) {
+    //       #if defined(PC_BUILD)
+    //       printf(">>> ADD random number to denominator to prevent infinite result\n");
+    //       #endif // PC_BUILD
+    //     convertDoubleToReal34RegisterPush(1e-6, REGISTER_X);
+    //     runFunction(ITM_ADD);
+    //     runFunction(ITM_RAN);
+    //     runFunction(ITM_ADD);
+    //   }
+    //   runFunction(ITM_DIV);
+    // }
+    static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im, bool_t addRandom, real_t *tol) {
+      if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
+        realCopy(const_0, res_re);
+        realCopy(const_0, res_im);
         return;
       }
-      if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)) : 0 ) ) {
-        fnDrop(NOPARAM);
-        fnDrop(NOPARAM);
-        convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+      if(!addRandom && (realIsZero(b_re) && realIsZero(b_im))) {
+        stringToReal("1E30", res_re, ctxtSolver2);
+        realCopy(const_0, res_im);
         return;
       }
-      if(!addRandom && (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) : 1 ) )) {
-        fnDrop(NOPARAM);
-        fnDrop(NOPARAM);
-        convertDoubleToReal34RegisterPush(1e30, REGISTER_X);
-        return;
-      }
-      if(addRandom && regIsLowerThanTol(REGISTER_X, TOL)) {
+      if(addRandom && complexIsLowerThanTol(b_re, b_im, tol)) {
           #if defined(PC_BUILD)
           printf(">>> ADD random number to denominator to prevent infinite result\n");
           #endif // PC_BUILD
-        convertDoubleToReal34RegisterPush(1e-6, REGISTER_X);
-        runFunction(ITM_ADD);
-        runFunction(ITM_RAN);
-        runFunction(ITM_ADD);
+        real_t temp0, temp1;
+        stringToReal("1E-6", &temp0, ctxtSolver2);
+        realRandomU01(&temp1);
+        realAdd(&temp0, &temp1, &temp0, ctxtSolver2);
+        realAdd(&temp0, b_re, &temp0, ctxtSolver2);
+        divComplexComplex(a_re, a_im, &temp0, const_0, res_re, res_im, ctxtSolver2);
+        return;
       }
-      runFunction(ITM_DIV);
+      divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
     }
   #endif // !SAVE_SPACE_DM42_13GRF
 
@@ -1299,96 +1335,800 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-// =============================================================================
-// SOLVER HELPERS
-// =============================================================================
-
-#if !defined(TESTSUITE_BUILD)
-static bool_t checkRegisterXYRealZeroTol(calcRegister_t tol) {
-  return (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
-     || ((real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(tol)))
-      && (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(tol))));
-  }
-
-static bool_t checkRegisterXYImagZeroTol(calcRegister_t tol) {
-  return (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)))
-     || ((real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(tol)))
-      && (real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_IMAG34_DATA(tol))));
-  }
-
-static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
-  if(getRegisterDataType(REGISTER_X) == dtComplex34 && getRegisterDataType(REGISTER_Y) == dtComplex34) {
-    runFunction(ITM_MAGNITUDE);
-    runFunction(ITM_XexY);
-    runFunction(ITM_MAGNITUDE);
-    runFunction(ITM_XexY);
-  }
-  return checkRegisterXYRealZeroTol(tol);
-  }
-#endif // !TESTSUITE_BUILD
-
-// =============================================================================
-// END SOLVER HELPER FUNCTIONS
-// =============================================================================
-
-
-
 // COMPLEX SOLVER
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
   #if !defined(TESTSUITE_BUILD)
 
+  // =============================================================================
+  // SOLVER HELPERS
+  // =============================================================================
+
+  #if !defined(TESTSUITE_BUILD)
+  static bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
+    return (realIsZero(a) && realIsZero(b))
+       || ((realCompareAbsLessThan(a, tol))
+        && (realCompareAbsLessThan(b, tol)));
+    }
+
+  // static bool_t checkRegisterXYRealZeroTol(calcRegister_t tol) {
+  //   return (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
+  //      || ((real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(tol)))
+  //       && (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(tol))));
+  //   }
+  //
+  // static bool_t checkRegisterXYImagZeroTol(calcRegister_t tol) {
+  //   return (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)))
+  //      || ((real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(tol)))
+  //       && (real34CompareAbsLessThan(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_IMAG34_DATA(tol))));
+  //   }
+  //
+  // static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
+  //   if(getRegisterDataType(REGISTER_X) == dtComplex34 && getRegisterDataType(REGISTER_Y) == dtComplex34) {
+  //     runFunction(ITM_MAGNITUDE);
+  //     runFunction(ITM_XexY);
+  //     runFunction(ITM_MAGNITUDE);
+  //     runFunction(ITM_XexY);
+  //   }
+  //   return checkRegisterXYRealZeroTol(tol);
+  //   }
+  #endif // !TESTSUITE_BUILD
+
+  // =============================================================================
+  // END SOLVER HELPER FUNCTIONS
+  // =============================================================================
+
+  #if defined(PC_BUILD)
+    static void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {
+      char str[200];
+      real34ToString(REGISTER_REAL34_DATA(REGISTER_X), str);
+      printf("\n\n\033[1m%2u: %-36s ", significantDigits, str);
+      real34ToString(REGISTER_IMAG34_DATA(REGISTER_X), str);
+      if(real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X))) {
+        printf("- ix%-36s", str + 1);
+      }
+      else {
+        printf("+ ix%-36s", str);
+      }
+      printf(" (iter:%2i conj:%u)\033[0m\n\n", iterationCounter, conjugates);
+    }
+  #else
+    static inline void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {}
+  #endif // PC_BUILD
+
+
   // Solver Registers used and destroyed. This is documented.
   // (One day this needs to be rewritten to use reals, at 39 digits)
   #define __STARTX0 81
   #define __STARTX1 82
-  #define __TICKS  83
-  #define __TMP    84
-  #define __Xold   85
-  #define __Yold   86
-  #define __Y0     87
-  #define __X0     88
-  #define __X1     89
-  #define __X2     90
-  #define __Y1     91
-  #define __Y2     92
-  #define __X2N    93
-  #define __DX     94
-  #define __DY     95
-  #define __F      96
-  #define __TOL    97
-  #define __L1     98
+  // #define __TICKS  83
+  // #define __TMP    84
+  // #define __Xold   85
+  // #define __Yold   86
+  // #define __Y0     87
+  // #define __X0     88
+  // #define __X1     89
+  // #define __X2     90
+  // #define __Y1     91
+  // #define __Y2     92
+  // #define __X2N    93
+  // #define __DX     94
+  // #define __DY     95
+  // #define __F      96
+  // #define __TOL    97
+  // #define __L1     98
+  //
+  //
+  // static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
+  //   currentKeyCode = 255;
+  //   if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
+  //     #if defined(PC_BUILD) //PC_BUILD
+  //       printf("Error: No complex solver variable %u\n",graphVariabl1);
+  //     #endif //PC_BUILD
+  //     return;
+  //   }
+  //
+  //   calcMode = CM_NO_UNDO;
+  //   calcRegister_t SREG_TMP  = __TMP ;
+  //   calcRegister_t SREG_Xold = __Xold; //: x old difference
+  //   calcRegister_t SREG_Yold = __Yold; //: y old difference
+  //   calcRegister_t SREG_Y0   = __Y0  ; //: y0
+  //   calcRegister_t SREG_X0   = __X0  ; //: x0    //x0 stored but noever recalled
+  //   calcRegister_t SREG_X1   = __X1  ; //: x1
+  //   calcRegister_t SREG_X2   = __X2  ; //: x2
+  //   calcRegister_t SREG_Y1   = __Y1  ; //: y1
+  //   calcRegister_t SREG_Y2   = __Y2  ; //: y2
+  //   calcRegister_t SREG_X2N  = __X2N ; //: temporary new x2
+  //   calcRegister_t SREG_DX   = __DX  ; //: x difference
+  //   calcRegister_t SREG_DY   = __DY  ; //: y diffe rence
+  //   calcRegister_t SREG_F    = __F   ; //: faxctor
+  //   calcRegister_t SREG_TOL  = __TOL ; //: tolerance
+  //   calcRegister_t SREG_L1   = __L1  ; //: temporary stoar
+  //   calcRegister_t SREG_STARTX0 = __STARTX0;
+  //   calcRegister_t SREG_STARTX1 = __STARTX1;
+  //   calcRegister_t SREG_TICKS = __TICKS;
+  //
+  //   runFunction(ITM_CLSTK);
+  //   runFunction(ITM_RAD);
+  //   clearSystemFlag(FLAG_SSIZE8);
+  //   setSystemFlag(FLAG_CPXRES);
+  //   int16_t oscillationIterationCounter;
+  //   int16_t oscillations = 0;
+  //   int16_t convergent = 0;
+  //   int iterationCounter;
+  //   bool_t checkNaN = false;
+  //   bool_t checkzero = false;
+  //   osc = 0;
+  //   DXR = 0, DYR = 0, DXI = 0, DYI = 0;
+  //   iterationCounter = 0; oscillationIterationCounter = 0;
+  //   int16_t kicker = 0;
+  //
+  //
+  //   // Initialize all temporary registers
+  //   // Registers are being used in the DEMO data programs
+  //
+  //   convertDoubleToReal34RegisterPush(1.0, REGISTER_X);
+  //   fnRCL(SREG_STARTX1);
+  //   runFunction(ITM_MULT);     //Convert input to REAL
+  //   fnStore(SREG_X1);
+  //   convertDoubleToReal34RegisterPush(1.0, REGISTER_X);
+  //   fnRCL(SREG_STARTX0);
+  //   runFunction(ITM_MULT);     //Convert input to REAL
+  //
+  //   //if input parameters X0 and X1 are the same, add a random number to X0
+  //   if(real34CompareEqual(REGISTER_REAL34_DATA(SREG_X1), REGISTER_REAL34_DATA(REGISTER_X))) {
+  //     convertDoubleToReal34RegisterPush(1e-3, REGISTER_X);
+  //     #if defined(PC_BUILD)
+  //       printf(">>> ADD random number to second input parameter to prevent infinite result\n");
+  //     #endif
+  //     runFunction(ITM_ADD);
+  //     runFunction(ITM_RAN);
+  //     runFunction(ITM_ADD);
+  //     fnStore(SREG_X0);
+  //   }
+  //   else {
+  //     fnStore(SREG_X0);
+  //   }
+  //
+  //   runFunction(ITM_TICKS);
+  //   fnStore(SREG_TICKS);
+  //   convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+  //   fnStore(SREG_TMP);
+  //   fnStore(SREG_Xold);
+  //   fnStore(SREG_Yold);
+  //   fnStore(SREG_X2N);
+  //   convertDoubleToReal34RegisterPush(CONVERGE_FACTOR, REGISTER_X);
+  //   fnStore(SREG_F);                                     // factor
+  //   convertDoubleToReal34RegisterPush(1E-1, REGISTER_X);
+  //   fnStore(SREG_DX);                                    // initial value for difference comparison must be larger than tolerance
+  //   fnStore(SREG_DY);                                    // initial value for difference comparison must be larger than tolerance
+  //
+  //   real_t tol;
+  //   convergenceTolerence(&tol);
+  //   realToReal34(&tol,REGISTER_REAL34_DATA(SREG_TOL));   // tolerance
+  //
+  //   fnRCL(SREG_X0);          //determined third starting point using the slope or secant
+  //   execute_rpn_function();
+  //   copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y0);
+  //   fnRCL(SREG_X1);
+  //   execute_rpn_function();
+  //   copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y1);
+  //
+  //
+  //   checkzero = checkzero ||   regIsLowerThanTol(SREG_Y0,SREG_TOL);
+  //   if(checkzero) {
+  //     copySourceRegisterToDestRegister(SREG_Y0,SREG_Y2);
+  //     copySourceRegisterToDestRegister(SREG_X0,SREG_X2);
+  //   }
+  //   else {
+  //     checkzero = checkzero ||   regIsLowerThanTol(SREG_Y1,SREG_TOL);
+  //     if(checkzero) {
+  //       copySourceRegisterToDestRegister(SREG_Y1,SREG_Y2);
+  //       copySourceRegisterToDestRegister(SREG_X1,SREG_X2);
+  //     }
+  //   }
+  //
+  //   if(!checkzero) {
+  //     fnRCL(SREG_X1);
+  //     fnRCL(SREG_X0);
+  //     runFunction(ITM_SUB);                         //dx=x1-x0
+  //     fnRCL(SREG_Y1);
+  //     fnRCL(SREG_Y0);
+  //     runFunction(ITM_SUB);                         //dy=y1-y0
+  //     divFunction(ADD_RAN, SREG_TOL);               //dx/dy
+  //     fnRCL(SREG_Y1);
+  //     runFunction(ITM_MULT);                        //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
+  //
+  //     fnRCL(SREG_X1);
+  //     runFunction(ITM_XexY);
+  //     runFunction(ITM_SUB);
+  //     fnStore(SREG_X2);
+  //     execute_rpn_function();
+  //     copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y2);
+  //   }
+  //
+  //
+  //   #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)) && defined(PC_BUILD)
+  //     printf("INIT:   iterationCounter=%d \n",iterationCounter);
+  //     printRegisterToConsole(SREG_X0,"Init X0= ","\n");
+  //     printRegisterToConsole(SREG_X1,"Init X1= ","\n");
+  //     printRegisterToConsole(SREG_X2,"Init X2= ","\n");
+  //     printRegisterToConsole(SREG_Y0,"Init Y0= ","\n");
+  //     printRegisterToConsole(SREG_Y1,"Init Y1= ","\n");
+  //     printRegisterToConsole(SREG_Y2,"Init Y2= ","\n");
+  //   #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2) && PC_BUILD
+  //
+  //
+  //   //###############################################################################################################
+  //   //#################################################### Iteration start ##########################################
+  //   while(iterationCounter<NUMBERITERATIONS && !checkNaN && !checkzero) {
+  //                                 #if defined(PC_BUILD)
+  //                                   printf("Iteration start\v");
+  //                                 #endif
+  //       if(lastErrorCode != 0) {
+  //                                 #if defined(PC_BUILD)
+  //                                   printf(">>> ERROR CODE INITIALLY NON-ZERO = %d <<<<<\n",lastErrorCode);
+  //                                 #endif //PC_BUILD
+  //       break;
+  //       }
+  //
+  //     //Identify oscillations in real or imag: increment osc flag
+  //     //osc = 0;
+  //
+  //     if( (real34IsNegative(REGISTER_REAL34_DATA(SREG_DX)) && real34IsPositive(REGISTER_REAL34_DATA(SREG_Xold))) ||
+  //         (real34IsPositive(REGISTER_REAL34_DATA(SREG_DX)) && real34IsNegative(REGISTER_REAL34_DATA(SREG_Xold))) ) {
+  //       DXR = (DXR << 1) + 1;
+  //     }
+  //     else {
+  //       DXR = DXR << 1;
+  //     }
+  //
+  //     if( (real34IsNegative(REGISTER_REAL34_DATA(SREG_DY)) && real34IsPositive(REGISTER_REAL34_DATA(SREG_Yold))) ||
+  //         (real34IsPositive(REGISTER_REAL34_DATA(SREG_DY)) && real34IsNegative(REGISTER_REAL34_DATA(SREG_Yold))) ) {
+  //       DYR = (DYR << 1) + 1;
+  //     }
+  //     else {
+  //       DYR = DYR << 1;
+  //     }
+  //
+  //     if((getRegisterDataType(SREG_DX) == dtComplex34 && getRegisterDataType(SREG_Xold) == dtComplex34) &&
+  //          ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Xold))) ||
+  //           (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Xold))) )) {
+  //       DXI = (DXI << 1) + 1;
+  //     }
+  //     else {
+  //       DXI = DXI << 1;
+  //     }
+  //
+  //     if((getRegisterDataType(SREG_DY) == dtComplex34 && getRegisterDataType(SREG_Yold) == dtComplex34) &&
+  //          ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Yold))) ||
+  //           (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Yold))) )) {
+  //       DYI = (DYI << 1) + 1;
+  //     }
+  //     else {
+  //       DYI = DYI << 1;
+  //     }
+  //
+  //    check_osc(DXR);
+  //    check_osc(DYR);
+  //    check_osc(DXI);
+  //    check_osc(DYI);
+  //
+  //     //If osc flag is active, that is any delta polarity change, then increment oscillation count
+  //     if(osc > 0) {
+  //       oscillations++;
+  //     }
+  //     else {
+  //       oscillations = max(0,oscillations-1);
+  //     }
+  //
+  //     //If converging, increment convergence counter
+  //     if((!real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_DX), REGISTER_REAL34_DATA(SREG_Xold)) &&
+  //        (getRegisterDataType(SREG_DX) == dtComplex34 && getRegisterDataType(SREG_Xold) == dtComplex34 ?
+  //          !real34CompareAbsGreaterThan(REGISTER_IMAG34_DATA(SREG_DX), REGISTER_IMAG34_DATA(SREG_Xold)) : true))
+  //        &&
+  //        (!real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_DY), REGISTER_REAL34_DATA(SREG_Yold)) &&
+  //        (getRegisterDataType(SREG_DY) == dtComplex34 && getRegisterDataType(SREG_Yold) == dtComplex34 ?
+  //          !real34CompareAbsGreaterThan(REGISTER_IMAG34_DATA(SREG_DY), REGISTER_IMAG34_DATA(SREG_Yold)) : true))
+  //       ) {
+  //         convergent++;
+  //     }
+  //     else {
+  //       convergent = max(0,convergent-1);
+  //     }
+  //                                 #if defined(VERBOSE_SOLVER0)
+  //                                                   printf("##### iterationCounter= %d osc= %d  conv= %d n",iterationCounter, oscillations, convergent);
+  //                                 #endif // VERBOSE_SOLVER0
+  //                                 #if defined(VERBOSE_SOLVER1)
+  //                                                   printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
+  //                                 #endif //VERBOSE_SOLVER1
+  //
+  //     if(convergent > 6 && oscillations > 3) {
+  //
+  //                                 #if defined(PC_BUILD)
+  //                                                 printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
+  //                                 #endif // PC_BUILD
+  //       convergent = 2;
+  //       oscillations = 2;
+  //                                 #if defined(PC_BUILD)
+  //                                                 printf("%i and %i\n", convergent, oscillations);
+  //                                 #endif // PC_BUILD
+  //     }
+  //
+  //     // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
+  //
+  //     if((((oscillations >= 3) && (oscillationIterationCounter > 9) && (convergent <= 2)) )) { //|| (oscillations == 0 && convergent > 6 && real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DX), const34_1e_4) && (getRegisterDataType(SREG_DX) == dtComplex34 ? real34CompareAbsLessThan(REGISTER_IMAG34_DATA(SREG_DX), const34_1e_4) : 1 )  )
+  //       if(COMPLEXKICKER && (kicker ==0) && (convergent <= 1)) {
+  //         kicker = kicker +2;
+  //       }
+  //       oscillationIterationCounter = 0;
+  //       oscillations = 0;
+  //       convergent = 0;
+  //                                 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(SREG_X2,"\n>>>>>>>>>> from ","");
+  //                                 #endif // VERBOSE_SOLVER2 && PC_BUILD
+  //       fnRCL(SREG_X2);
+  //
+  //       //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quardrant, multplied by a alrger number every time
+  //       convertDoubleToReal34RegisterPush(  - (kicker +0.001) / 100.0, REGISTER_X);
+  //       if(kicker > 0) {
+  //         runFunction(ITM_SQUAREROOTX);
+  //         convertDoubleToReal34RegisterPush(    (kicker+0.001) / 100.0, REGISTER_X);
+  //         runFunction(ITM_SQUAREROOTX);
+  //         runFunction(ITM_ADD);
+  //         convertDoubleToReal34RegisterPush(pow(-2.0,kicker), REGISTER_X);
+  //         runFunction(ITM_MULT);
+  //       }
+  //                                 #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+  //                                   printf("------- Kicked oscillation, #%d, ", kicker);
+  //                                   printRegisterToConsole(REGISTER_X," multiplied: ","\n");
+  //                                 #endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+  //       kicker++;
+  //
+  //       runFunction(ITM_MULT);              //add just to force it complex  //
+  //       fnStore(SREG_X2); //replace X2 value                                //
+  //
+  //                                 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(SREG_X2," to ","\n");
+  //                                 #endif // VERBOSE_SOLVER2 && PC_BUILD
+  //     }
+  //
+  //     //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  //     fnRCL(SREG_X2);                                       // get (X2,Y2)
+  //     execute_rpn_function();                               // leaving y2 in Y and x2 in X
+  //     copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y2); // y2
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printf("    :   iterationCounter=%d",iterationCounter);
+  //                                   printRegisterToConsole(SREG_X2," X2="," ");
+  //                                   printRegisterToConsole(SREG_Y2," Y2=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //     // y2 in Y and x2 in X
+  //     checkzero = checkzero ||   regIsLowerThanTol(SREG_Y2,SREG_TOL);
+  //     checkNaN  = checkNaN  ||   real34IsNaN(REGISTER_REAL34_DATA(SREG_X2)) || (getRegisterDataType(SREG_X2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X2)) : 0 ) ||
+  //                                real34IsNaN(REGISTER_REAL34_DATA(SREG_Y2)) || (getRegisterDataType(SREG_Y2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_Y2)) : 0 ) ;
+  //
+  //                                 #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+  //                                   if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+  //                                     printf("-->A Endflags zero: Y2r=0:%u Y2i=0:%u X2r=NaN:%u X2i=NaN:%u Y2r=NaN:%u Y2i=NaN%u \n",
+  //                                       (uint16_t)real34IsZero(REGISTER_REAL34_DATA(SREG_Y2)),(uint16_t)real34IsZero(REGISTER_IMAG34_DATA(SREG_Y2)),
+  //                                       (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(SREG_X2)),(uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(SREG_X2)),
+  //                                       (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(SREG_Y2)),(uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(SREG_Y2))
+  //                                       );
+  //                                   }
+  //                                 #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+  //
+  //                                 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+  //                                   printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero);
+  //                                   printRegisterToConsole(SREG_X2,"","");
+  //                                   printRegisterToConsole(SREG_Y2,"Y2=","\n");
+  //                                 #endif // VERBOSE_SOLVER2 && PC_BUILD
+  //
+  //     //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
+  //     copySourceRegisterToDestRegister(SREG_DX,SREG_Xold);  // store old DELTA values, for oscillation check
+  //     copySourceRegisterToDestRegister(SREG_DY,SREG_Yold);  // store old DELTA values, for oscillation check
+  //
+  //     if(iterationCounter < CHANGE_TO_MOD_SECANT) {              //Secant and Newton approximation methods
+  //       if(iterationCounter < 3)  {
+  //         //###########################
+  //         //  normal Secant, 2-sample slope
+  //         //  DX = X2 - X1 in YREGISTER
+  //         //  DY = Y2 - Y1 in XREGISTER
+  //         //###########################
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //                                   printf("%3i ---------- Using normal Secant dydx 2-samples - osc=%d conv=%d",iterationCounter, oscillations, convergent);
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //         fnRCL  (SREG_X2); fnRCL(SREG_X1); runFunction(ITM_SUB);      // dx
+  //         fnStore(SREG_DX);                                     // store difference for later
+  //         fnRCL  (SREG_Y2); fnRCL(SREG_Y1); runFunction(ITM_SUB);      // dy
+  //         fnStore(SREG_DY);                                     // store difference for later
+  //         //Leave DX in YREG, and DY in XREG, so DX/DY can be computed
+  //       }
+  //
+  //       else {
+  //         //###########################
+  //         // normal secant with 3 sample slope
+  //         //  DX = X2 - X1 in YREGISTER
+  //         //  DY = Y2 - Y1 in XREGISTER
+  //         //###########################
+  //         //  The second order accurate one-sided finite difference formula for the first derivative, formule 32, of
+  //         //  ChE 205 — Formulas for Numerical Differentiation
+  //         //  Handout 5 05/08/02: from Pauli
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //                                   printf("%3i ---------- Using Secant with 3 samples dy/dx -- osc=%d conv=%d",iterationCounter, oscillations, convergent);
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //         fnRCL      (SREG_X2); fnRCL(SREG_X1); runFunction(ITM_SUB); //Determine x2-x1
+  //         fnStore    (SREG_DX);  //store difference DX for later
+  //         fnRCL      (SREG_X1);
+  //         runFunction(ITM_XexY);
+  //         runFunction(ITM_SUB);
+  //         fnStore    (SREG_X0);          //determine the new x0 by subtracting DX
+  //         execute_rpn_function(); //determine the new f(x0)
+  //         copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y0); //set y0 to the result f(x0)
+  //         //do DX = 2 (x2-x1)
+  //         fnRCL      (SREG_DX);
+  //         convertDoubleToReal34RegisterPush(2.0, REGISTER_X);//calculate 2(x2-x1)
+  //         runFunction(ITM_MULT);             // DX = 2 delta x
+  //         //do DY = (fi−2 − 4fi−1 + 3fi)
+  //         fnRCL      (SREG_Y0);              //y0
+  //         fnRCL      (SREG_Y1);
+  //         convertDoubleToReal34RegisterPush(4.0, REGISTER_X);
+  //         runFunction(ITM_MULT);
+  //         runFunction(ITM_SUB);               //-4.y1
+  //         fnRCL      (SREG_Y2);
+  //         convertDoubleToReal34RegisterPush(3.0, REGISTER_X);
+  //         runFunction(ITM_MULT);
+  //         runFunction(ITM_ADD);                    //+3.y2
+  //         fnStore    (SREG_DY);
+  //         //-3-sample slope-  //Leave DX in YREG, and DY in XREG, so DX/DY can be computed
+  //       }
+  //       //###########################
+  //       //  Start with DX and DY FROM EITHER 2- or 3- SAMPLE SECANT
+  //       //
+  //       //
+  //       //###########################
+  //       divFunction(!ADD_RAN, SREG_TOL);
+  //                                 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+  //                                   fnInvert(0);
+  //                                   printRegisterToConsole(REGISTER_X," SLOPE=","\n");
+  //                                   fnInvert(0);
+  //                                 #endif // VERBOSE_SOLVER2 && PC_BUILD
+  //
+  //       fnRCL(SREG_Y2);      // determine increment in x
+  //       runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
+  //       fnRCL(SREG_F);       // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
+  //       runFunction(ITM_MULT);       // increment to x
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(SREG_F,"    Factor=        ","\n");
+  //                                   printRegisterToConsole(SREG_X1,"    New X =        "," - ");
+  //                                   printRegisterToConsole(REGISTER_X," - (",")\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //       fnRCL(SREG_X2);
+  //       runFunction(ITM_XexY);
+  //       runFunction(ITM_SUB);       // subtract as per Newton, x1 - f/f'
+  //       fnStore(SREG_X2N);          // store temporarily to new x2n
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //                                   printf("  ");
+  //                                   printRegisterToConsole(SREG_X2N,"New X=","\n");
+  //                                   //printRegisterToConsole(REGISTER_Y,"Secant DeltaX=","\n");
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //     }
+  //     else {
+  //       // ---------- Modified 3 point Secant ------------
+  //       if((iterationCounter == 0) || (!checkzero && !checkNaN)) {
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //                                   printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d",iterationCounter, oscillations, convergent);
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //
+  //         fnRCL(SREG_Y2);fnRCL(SREG_Y0);runFunction(ITM_SUB);fnStore(SREG_DY);
+  //         fnRCL(SREG_X2);fnRCL(SREG_X0);runFunction(ITM_SUB);fnStore(SREG_DX);
+  //         divFunction(!ADD_RAN, SREG_TOL);
+  //
+  //         fnStore(SREG_TMP);
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                  printRegisterToConsole(SREG_TMP," m1=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //         fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);runFunction(ITM_MULT);
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," term1 lower=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         fnStore(SREG_L1);
+  //
+  //         fnRCL(SREG_TMP);
+  //         fnRCL(SREG_Y1);fnRCL(SREG_Y0);runFunction(ITM_SUB);
+  //         fnRCL(SREG_X1);fnRCL(SREG_X0);runFunction(ITM_SUB);
+  //         divFunction(!ADD_RAN, SREG_TOL);
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," m2=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         runFunction(ITM_SUB);
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," m1-m2 diff=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         fnRCL(SREG_Y2);
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," Y2=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         runFunction(ITM_MULT);
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," term2 lower=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         fnRecall(SREG_L1);
+  //         runFunction(ITM_XexY);
+  //         runFunction(ITM_SUB);
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                 printRegisterToConsole(REGISTER_X," lower diff=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);  //Y2-Y1
+  //         runFunction(ITM_XexY);
+  //         //get the 1/slope
+  //         divFunction(!ADD_RAN, SREG_TOL);
+  //         fnStore(SREG_TMP);
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(REGISTER_X," 1/slope=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //         fnRCL(SREG_Y0);              // determine increment in x
+  //         runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
+  //         fnRCL(SREG_F);               // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
+  //         runFunction(ITM_MULT);       // increment to x
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(SREG_F,"    Factor=        ","\n");
+  //                                   printRegisterToConsole(SREG_X0,"    New X =        "," - (");
+  //                                   printRegisterToConsole(REGISTER_X,"",")\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //                                   printf("  ");
+  //                                   printRegisterToConsole(REGISTER_X,"DeltaX=","\n");
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //         fnRCL(SREG_X0);
+  //         runFunction(ITM_XexY);
+  //         runFunction(ITM_SUB);        // subtract as per Newton, x1 - f/f'
+  //
+  //         //try round numbers
+  //         if(convergent > 3 && iterationCounter > 6 && oscillations == 0 && real34CompareLessEqual(REGISTER_REAL34_DATA(REGISTER_X),const34_1e_4)) {
+  //           convergent = 0;
+  //           double higherXStartValue = convertRegisterToDouble(REGISTER_X);
+  //           convertDoubleToReal34RegisterPush(roundf(1000.0 * higherXStartValue)/1000.0, REGISTER_X);
+  //         }
+  //
+  //         fnStore(SREG_X2N);           // store temporarily to new x2n
+  //       }
+  //     }
+  //
+  //
+  //
+  //     /* Not in use
+  //     //Experimental bisection method to kick out  in case of real arguments
+  //     bool_t bisect = false;
+  //     if(    !checkzero && !checkNaN
+  //         && (    (getRegisterDataType(SREG_Y0) == dtReal34)
+  //              && (getRegisterDataType(SREG_Y2) == dtReal34)
+  //              && (real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_Y0),const34_1e_6))
+  //              && (real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_Y2),const34_1e_6))
+  //              && ((    (real34IsNegative(REGISTER_REAL34_DATA(SREG_Y0))) && (real34IsPositive(REGISTER_REAL34_DATA(SREG_Y2))))
+  //                    || ((real34IsNegative(REGISTER_REAL34_DATA(SREG_Y2))) && (real34IsPositive(REGISTER_REAL34_DATA(SREG_Y0))))
+  //                 )
+  //              && !(    (    real34CompareGreaterEqual(REGISTER_REAL34_DATA(SREG_X2N),REGISTER_REAL34_DATA(SREG_X0))
+  //                         && real34CompareGreaterEqual(REGISTER_REAL34_DATA(SREG_X2),REGISTER_REAL34_DATA(SREG_X2N)))
+  //                    ||
+  //                           (real34CompareLessEqual(REGISTER_REAL34_DATA(SREG_X2N),REGISTER_REAL34_DATA(SREG_X0))
+  //                         && real34CompareLessEqual(REGISTER_REAL34_DATA(SREG_X2),REGISTER_REAL34_DATA(SREG_X2N)))
+  //                  )
+  //            )
+  //       ) {
+  //       bisect = true;
+  //       #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+  //         printf(" Using Bisection method: Y bracketed\n");
+  //       #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+  //     }
+  //     if(bisect) {
+  //       fnRCL(SREG_X0);
+  //       fnRCL(SREG_X2);
+  //       runFunction(ITM_ADD);
+  //       convertDoubleToReal34RegisterPush(2.0, REGISTERX);       //Leaving (x1+x2)/2
+  //       divFunction(!ADD_RAN, SREG_TOL);
+  //       fnStore(SREG_X2N);   // store temporarily to new x2n
+  //     }
+  //     */
+  //     //#############################################
+  //
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printf("               ");printRegisterToConsole(SREG_DX,"DX=","");printRegisterToConsole(SREG_DY,"DY=","\n");
+  //                                   printf("               ");printRegisterToConsole(SREG_X0,"X0=","");printRegisterToConsole(SREG_Y0,"Y0=","\n");
+  //                                   printf("   -------> newX2: ");printRegisterToConsole(SREG_X2N,"","\n");
+  //                                   printf("               ");printRegisterToConsole(SREG_X1,"X1=","");printRegisterToConsole(SREG_Y1,"Y1=","\n");
+  //                                   printf("               ");printRegisterToConsole(SREG_X2,"X2=","");printRegisterToConsole(SREG_Y2,"Y2=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //     copySourceRegisterToDestRegister(SREG_Y1,SREG_Y0); //old y1 copied to y0
+  //     copySourceRegisterToDestRegister(SREG_X1,SREG_X0); //old x1 copied to x0
+  //
+  //     copySourceRegisterToDestRegister(SREG_Y2,SREG_Y1); //old y2 copied to y1
+  //     copySourceRegisterToDestRegister(SREG_X2,SREG_X1); //old x2 copied to x1
+  //
+  //     fnRCL(SREG_DY);   runFunction(ITM_MAGNITUDE); //difference |dy| is in Y
+  //     fnRCL(SREG_DX);   runFunction(ITM_MAGNITUDE); //difference |dx| is in X
+  //
+  //
+  //     checkzero |= checkRegisterXYRealZeroTol(SREG_TOL);
+  //     checkNaN |=  real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))
+  //                || (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)) : 0)
+  //                || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))
+  //                || (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_Y)) : 0);
+  //
+  //                                 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
+  //                                   if(checkzero) {
+  //                                     printf("--B1 Checkzero\n");
+  //                                   }
+  //                                   if(checkNaN) {
+  //                                     printf("--B2 CheckNaN\n");
+  //                                   }
+  //                                   if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+  //                                     printf("--B3 Endflags: |DXr|=0:%u |DXr|<TOL:%u  |DXi|=0:%u |DYr|<TOL:%u |DYr|=0:%u |DYi|=0:%u |DXr|=NaN:%u |DXi|=NaN:%u |DYr|=NaN:%u |DYi|=NaN:%u \n",
+  //                                             (uint16_t)real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)),
+  //                                             (uint16_t)(real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(SREG_TOL))),
+  //                                             (uint16_t)real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)),
+  //                                             (uint16_t)real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)),
+  //                                             (uint16_t)(real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(SREG_TOL))),
+  //                                             (uint16_t)real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)),
+  //                                             (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(REGISTER_X)),
+  //                                             (uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(REGISTER_X)),
+  //                                             (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(REGISTER_Y)),
+  //                                             (uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(REGISTER_Y))
+  //                                           );
+  //                                   }
+  //                                 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1
+  //     iterationCounter++;
+  //     oscillationIterationCounter++;
+  //
+  //                                 #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+  //                                   if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !checkzero) {
+  //                                     printf("END     iterationCounter=%d |DX|<TOL:%d ",iterationCounter,real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DX), REGISTER_REAL34_DATA(SREG_TOL)));
+  //                                     printRegisterToConsole(SREG_DX,"","\n");
+  //                                     printf("END     iterationCounter=%d |DY|<TOL:%d ",iterationCounter,real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DY), REGISTER_REAL34_DATA(SREG_TOL)));
+  //                                     printRegisterToConsole(SREG_DY,"","\n");
+  //                                     printRegisterToConsole(REGISTER_Y,"END     DY=","\n");
+  //                                   }
+  //                                 #endif // VERBOSE_SOLVER2 && PC_BUILD
+  //
+  //                                 #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+  //                                   printRegisterToConsole(SREG_DX,">>> DX=","");
+  //                                   printRegisterToConsole(SREG_DY," DY=","");
+  //                                   printRegisterToConsole(SREG_TMP," 1/SLOPE=","\n");
+  //                                 #endif // VERBOSE_SOLVER1 && PC_BUILD
+  //
+  //     copySourceRegisterToDestRegister(SREG_X2N,SREG_X2);  //new x2
+  //
+  //     if(checkHalfSec()) {
+  //       if(progressHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+  //         real_t a, ai;
+  //         getRegisterAsComplex(SREG_X1, &a, &ai);
+  //         showProgressReal(&a, &ai, getRegisterDataType(SREG_X1) == dtComplex34);
+  //       }
+  //     }
+  //
+  //     if(exitKeyWaiting()) {
+  //       showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+  //       progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+  //       calcMode = CM_NORMAL;
+  //       screenUpdatingMode = SCRUPD_AUTO;
+  //       screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+  //       break;
+  //     }
+  //                                 #if defined(PC_BUILD)
+  //                                   printf("iterationCounter = %i ", iterationCounter);
+  //                                   printRegisterToConsole(SREG_X1,"X = "," ");
+  //                                   printRegisterToConsole(REGISTER_Y,"Y = ","\n");
+  //                                 #endif // PC_BUILD
+  //
+  //                                 if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
+  //                                   copySourceRegisterToDestRegister(REGISTER_X,REGISTER_K);
+  //                                   copySourceRegisterToDestRegister(SREG_X1,REGISTER_X);
+  //                                   fnP_All_Regs(PRN_XYr);
+  //                                   copySourceRegisterToDestRegister(REGISTER_K,REGISTER_X);
+  //                                 }
+  //
+  //
+  //
+  //   }  //Iteration end
+  //
+  //   refreshScreen(200);
+  //
+  //   checkNaN =    checkNaN
+  //              || real34IsNaN(REGISTER_REAL34_DATA(SREG_X1))
+  //              || (getRegisterDataType(SREG_X1) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X1)) : 0)
+  //              || real34IsNaN(REGISTER_REAL34_DATA(SREG_X2))
+  //              || (getRegisterDataType(SREG_X2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X2)) : 0);
+  //
+  //
+  //   bool_t   FLAG_FRACTN = getSystemFlag(FLAG_FRACT);
+  //   clearSystemFlag(FLAG_FRACT);
+  //
+  //
+  //   bool_t conjugates = false;
+  //   if(getRegisterDataType(SREG_X2) == dtComplex34) {  // do not consider conjugates for Real X
+  //     fnRCL(SREG_X2);
+  //     fnRCL(SREG_X2);                                  // a bit wasteful but the existing tolerance check works for two registers
+  //     runFunction(ITM_CONJ);
+  //     if(!checkRegisterXYImagZeroTol(SREG_TOL)) {      // prevent testing for conjugate recognition for X & Y complex Imag components close to zero, using the tolerance detector
+  //       execute_rpn_function();
+  //       fnDrop(NOPARAM);
+  //       fnRCL(SREG_Y2);
+  //       conjugates = checkRegisterXYComplexAbsZeroTol(SREG_TOL);
+  //       //printf("conjugates:%d\n",conjugates);
+  //     }
+  //   }
+  //
+  //
+  //   fnUndo(0);
+  //
+  //   if(((iterationCounter > NUMBERITERATIONS) && !checkzero) || checkNaN) {
+  //     temporaryInformation = TI_SOLVER_FAILED;
+  //     displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  //     convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_X);
+  //   }
+  //   else {
+  //     temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
+  //     lastErrorCode = ERROR_NONE;
+  //     convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_X);
+  //   }
+  //
+  //
+  //   fnRCL(SREG_Y2);
+  //   fnRCL(SREG_X1);
+  //   fnRCL(SREG_X2);
+  //   copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
+  //
+  //   printSolverResult(iterationCounter, conjugates);
+  //
+  //   if(FLAG_FRACTN) {
+  //     setSystemFlag(FLAG_FRACT);
+  //   }
+  //
+  //   calcMode = CM_NORMAL;
+  //   SAVED_SIGMA_lastAddRem = SIGMA_NONE;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
+  //   return;
+  // }
 
-
+#if defined(PC_BUILD)
+  static void printComplexToConsole(const real_t *re, const real_t *im, const char *before, const char *after) {
+    char str[100];
+    realToString(re, str);
+    printf("%s%s + ", before, str);
+    realToString(im, str);
+    printf("%si %s", str, after);
+  }
+#endif //PC_BUILD
+  
+  
+static inline void copyComplex(const cplx_t *from, cplx_t *to) {
+  realCopy(&from->Real, &to->Real);
+  realCopy(&from->Imag, &to->Imag);  
+}
+  
+  
   static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
     currentKeyCode = 255;
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
-      #if defined(PC_BUILD) //PC_BUILD
-        printf("Error: No complex solver variable %u\n",graphVariabl1);
-      #endif //PC_BUILD
+#if defined(PC_BUILD) //PC_BUILD
+      printf("Error: No complex solver variable %u\n",graphVariabl1);
+#endif //PC_BUILD
       return;
     }
 
     calcMode = CM_NO_UNDO;
-    calcRegister_t SREG_TMP  = __TMP ;
-    calcRegister_t SREG_Xold = __Xold; //: x old difference
-    calcRegister_t SREG_Yold = __Yold; //: y old difference
-    calcRegister_t SREG_Y0   = __Y0  ; //: y0
-    calcRegister_t SREG_X0   = __X0  ; //: x0    //x0 stored but noever recalled
-    calcRegister_t SREG_X1   = __X1  ; //: x1
-    calcRegister_t SREG_X2   = __X2  ; //: x2
-    calcRegister_t SREG_Y1   = __Y1  ; //: y1
-    calcRegister_t SREG_Y2   = __Y2  ; //: y2
-    calcRegister_t SREG_X2N  = __X2N ; //: temporary new x2
-    calcRegister_t SREG_DX   = __DX  ; //: x difference
-    calcRegister_t SREG_DY   = __DY  ; //: y diffe rence
-    calcRegister_t SREG_F    = __F   ; //: faxctor
-    calcRegister_t SREG_TOL  = __TOL ; //: tolerance
-    calcRegister_t SREG_L1   = __L1  ; //: temporary stoar
+    
     calcRegister_t SREG_STARTX0 = __STARTX0;
     calcRegister_t SREG_STARTX1 = __STARTX1;
-    calcRegister_t SREG_TICKS = __TICKS;
 
     runFunction(ITM_CLSTK);
     runFunction(ITM_RAD);
@@ -1405,156 +2145,154 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     iterationCounter = 0; oscillationIterationCounter = 0;
     int16_t kicker = 0;
 
+    real_t f;
+    real_t term;
+    real_t tol;
+    
+    cplx_t X0;
+    cplx_t X1;
+    cplx_t X2;
+    cplx_t X2N;
+    cplx_t dX;
+    cplx_t Xold;
 
-    // Initialize all temporary registers
-    // Registers are being used in the DEMO data programs
+    cplx_t Y0;
+    cplx_t Y1;
+    cplx_t Y2;
+    cplx_t dY;
+    cplx_t Yold;
 
-    convertDoubleToReal34RegisterPush(1.0, REGISTER_X);
-    fnRCL(SREG_STARTX1);
-    runFunction(ITM_MULT);     //Convert input to REAL
-    fnStore(SREG_X1);
-    convertDoubleToReal34RegisterPush(1.0, REGISTER_X);
-    fnRCL(SREG_STARTX0);
-    runFunction(ITM_MULT);     //Convert input to REAL
+    cplx_t L1;
+    cplx_t temp0; // temp
+    cplx_t temp1; // temp REGISTER_X
+    cplx_t temp2; // temp REGISTER_Y
+
+
+    // Initialize
+    getRegisterAsComplex(SREG_STARTX1, CPLX(X1));
+    getRegisterAsComplex(SREG_STARTX0, CPLX(X0));
 
     //if input parameters X0 and X1 are the same, add a random number to X0
-    if(real34CompareEqual(REGISTER_REAL34_DATA(SREG_X1), REGISTER_REAL34_DATA(REGISTER_X))) {
-      convertDoubleToReal34RegisterPush(1e-3, REGISTER_X);
-      #if defined(PC_BUILD)
-        printf(">>> ADD random number to second input parameter to prevent infinite result\n");
-      #endif
-      runFunction(ITM_ADD);
-      runFunction(ITM_RAN);
-      runFunction(ITM_ADD);
-      fnStore(SREG_X0);
+    if(realCompareEqual(&X0.Real, &X1.Real) && realCompareEqual(&X0.Imag, &X1.Imag)) {
+#if defined(PC_BUILD)
+      printf(">>> ADD random number to second input parameter to prevent infinite result\n");
+#endif
+      stringToReal("1E-3", &term, ctxtSolver2);
+      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
+      realRandomU01(&term);
+      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
     }
-    else {
-      fnStore(SREG_X0);
-    }
+    // uint32_t ticks = getUptimeMs() / 100;
 
-    runFunction(ITM_TICKS);
-    fnStore(SREG_TICKS);
-    convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
-    fnStore(SREG_TMP);
-    fnStore(SREG_Xold);
-    fnStore(SREG_Yold);
-    fnStore(SREG_X2N);
-    convertDoubleToReal34RegisterPush(CONVERGE_FACTOR, REGISTER_X);
-    fnStore(SREG_F);                                     // factor
-    convertDoubleToReal34RegisterPush(1E-1, REGISTER_X);
-    fnStore(SREG_DX);                                    // initial value for difference comparison must be larger than tolerance
-    fnStore(SREG_DY);                                    // initial value for difference comparison must be larger than tolerance
 
-    real_t tol;
+    realCopy(const_0, &Xold.Real); realCopy(const_0, &Xold.Imag);
+    copyComplex(&Xold, &Yold);
+    copyComplex(&Xold, &X2N);
+    copyComplex(&Xold, &dX);
+    // initial value for difference comparison must be larger than tolerance
+    stringToReal("1E-1", &dX.Real, ctxtSolver2);
+    copyComplex(&dX, &dY);                       
+
+    convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
+
     convergenceTolerence(&tol);
-    realToReal34(&tol,REGISTER_REAL34_DATA(SREG_TOL));   // tolerance
 
-    fnRCL(SREG_X0);          //determined third starting point using the slope or secant
+    convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
     execute_rpn_function();
-    copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y0);
-    fnRCL(SREG_X1);
+    getRegisterAsComplex(REGISTER_Y, CPLX(Y0));
+    convertComplexToResultRegister(CPLX(X1), REGISTER_X);
     execute_rpn_function();
-    copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y1);
+    getRegisterAsComplex(REGISTER_Y, CPLX(Y1));
 
 
-    checkzero = checkzero ||   regIsLowerThanTol(SREG_Y0,SREG_TOL);
+    checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y0), &tol);
     if(checkzero) {
-      copySourceRegisterToDestRegister(SREG_Y0,SREG_Y2);
-      copySourceRegisterToDestRegister(SREG_X0,SREG_X2);
+      copyComplex(&Y0, &Y2);
+      copyComplex(&X0, &X2);
     }
     else {
-      checkzero = checkzero ||   regIsLowerThanTol(SREG_Y1,SREG_TOL);
+      checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y1), &tol);
       if(checkzero) {
-        copySourceRegisterToDestRegister(SREG_Y1,SREG_Y2);
-        copySourceRegisterToDestRegister(SREG_X1,SREG_X2);
+        copyComplex(&Y1, &Y2);
+        copyComplex(&X2, &X2);
       }
     }
 
     if(!checkzero) {
-      fnRCL(SREG_X1);
-      fnRCL(SREG_X0);
-      runFunction(ITM_SUB);                         //dx=x1-x0
-      fnRCL(SREG_Y1);
-      fnRCL(SREG_Y0);
-      runFunction(ITM_SUB);                         //dy=y1-y0
-      divFunction(ADD_RAN, SREG_TOL);               //dx/dy
-      fnRCL(SREG_Y1);
-      runFunction(ITM_MULT);                        //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
-
-      fnRCL(SREG_X1);
-      runFunction(ITM_XexY);
-      runFunction(ITM_SUB);
-      fnStore(SREG_X2);
+      subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), ctxtSolver2);  //dx=x1-x0
+      subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
+      divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0),  ADD_RAN, &tol);  //dx/dy
+      mulComplexComplex( CPLX(temp0), CPLX(Y1), CPLX(temp0), ctxtSolver2);  //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
+      subComplex(CPLX(X1), CPLX(temp0), CPLX(X2), ctxtSolver2);  //x2=x1-deltaX
+      convertComplexToResultRegister(CPLX(X2), REGISTER_X);
       execute_rpn_function();
-      copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y2);
+      getRegisterAsComplex(REGISTER_Y, CPLX(Y2));
     }
 
 
-    #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)) && defined(PC_BUILD)
-      printf("INIT:   iterationCounter=%d \n",iterationCounter);
-      printRegisterToConsole(SREG_X0,"Init X0= ","\n");
-      printRegisterToConsole(SREG_X1,"Init X1= ","\n");
-      printRegisterToConsole(SREG_X2,"Init X2= ","\n");
-      printRegisterToConsole(SREG_Y0,"Init Y0= ","\n");
-      printRegisterToConsole(SREG_Y1,"Init Y1= ","\n");
-      printRegisterToConsole(SREG_Y2,"Init Y2= ","\n");
-    #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2) && PC_BUILD
+#if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)) && defined(PC_BUILD)
+    printf("INIT:   iterationCounter=%d \n",iterationCounter);
+    printComplexToConsole(CPLX(X0), "Init X0=", "\n");
+    printComplexToConsole(CPLX(X1), "Init X1=", "\n");
+    printComplexToConsole(CPLX(X2), "Init X2=", "\n");
+    printComplexToConsole(CPLX(Y0), "Init Y0=", "\n");
+    printComplexToConsole(CPLX(Y1), "Init Y1=", "\n");
+    printComplexToConsole(CPLX(Y2), "Init Y2=", "\n");
+#endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2) && PC_BUILD
 
 
     //###############################################################################################################
     //#################################################### Iteration start ##########################################
     while(iterationCounter<NUMBERITERATIONS && !checkNaN && !checkzero) {
-                                  #if defined(PC_BUILD)
-                                    printf("Iteration start\v");
-                                  #endif
-        if(lastErrorCode != 0) {
-                                  #if defined(PC_BUILD)
-                                    printf(">>> ERROR CODE INITIALLY NON-ZERO = %d <<<<<\n",lastErrorCode);
-                                  #endif //PC_BUILD
+#if defined(PC_BUILD)
+      printf("\nIteration start\v");
+#endif
+      if(lastErrorCode != 0) {
+#if defined(PC_BUILD)
+        printf(">>> ERROR CODE INITIALLY NON-ZERO = %d <<<<<\n",lastErrorCode);
+#endif //PC_BUILD
         break;
-        }
+      }
 
       //Identify oscillations in real or imag: increment osc flag
       //osc = 0;
 
-      if( (real34IsNegative(REGISTER_REAL34_DATA(SREG_DX)) && real34IsPositive(REGISTER_REAL34_DATA(SREG_Xold))) ||
-          (real34IsPositive(REGISTER_REAL34_DATA(SREG_DX)) && real34IsNegative(REGISTER_REAL34_DATA(SREG_Xold))) ) {
+      if( (realIsNegative(&dX.Real) && realIsPositive(&Xold.Real)) ||
+      (realIsPositive(&dX.Real) && realIsNegative(&Xold.Real)) ) {
         DXR = (DXR << 1) + 1;
       }
       else {
         DXR = DXR << 1;
       }
 
-      if( (real34IsNegative(REGISTER_REAL34_DATA(SREG_DY)) && real34IsPositive(REGISTER_REAL34_DATA(SREG_Yold))) ||
-          (real34IsPositive(REGISTER_REAL34_DATA(SREG_DY)) && real34IsNegative(REGISTER_REAL34_DATA(SREG_Yold))) ) {
+      if( (realIsNegative(&dY.Real) && realIsPositive(&Yold.Real)) ||
+      (realIsPositive(&dY.Real) && realIsNegative(&Yold.Real)) ) {
         DYR = (DYR << 1) + 1;
       }
       else {
         DYR = DYR << 1;
       }
 
-      if((getRegisterDataType(SREG_DX) == dtComplex34 && getRegisterDataType(SREG_Xold) == dtComplex34) &&
-           ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Xold))) ||
-            (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Xold))) )) {
+      if( (realIsNegative(&dX.Imag) && realIsPositive(&Xold.Imag)) ||
+      (realIsPositive(&dX.Imag) && realIsNegative(&Xold.Imag)) ) {
         DXI = (DXI << 1) + 1;
       }
       else {
         DXI = DXI << 1;
       }
 
-      if((getRegisterDataType(SREG_DY) == dtComplex34 && getRegisterDataType(SREG_Yold) == dtComplex34) &&
-           ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Yold))) ||
-            (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Yold))) )) {
+      if( (realIsNegative(&dY.Imag) && realIsPositive(&Yold.Imag)) ||
+      (realIsPositive(&dY.Imag) && realIsNegative(&Yold.Imag)) ) {
         DYI = (DYI << 1) + 1;
       }
       else {
         DYI = DYI << 1;
       }
 
-     check_osc(DXR);
-     check_osc(DYR);
-     check_osc(DXI);
-     check_osc(DYI);
+      check_osc(DXR);
+      check_osc(DYR);
+      check_osc(DXI);
+      check_osc(DYI);
 
       //If osc flag is active, that is any delta polarity change, then increment oscillation count
       if(osc > 0) {
@@ -1565,396 +2303,259 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
       }
 
       //If converging, increment convergence counter
-      if((!real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_DX), REGISTER_REAL34_DATA(SREG_Xold)) &&
-         (getRegisterDataType(SREG_DX) == dtComplex34 && getRegisterDataType(SREG_Xold) == dtComplex34 ?
-           !real34CompareAbsGreaterThan(REGISTER_IMAG34_DATA(SREG_DX), REGISTER_IMAG34_DATA(SREG_Xold)) : true))
-         &&
-         (!real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_DY), REGISTER_REAL34_DATA(SREG_Yold)) &&
-         (getRegisterDataType(SREG_DY) == dtComplex34 && getRegisterDataType(SREG_Yold) == dtComplex34 ?
-           !real34CompareAbsGreaterThan(REGISTER_IMAG34_DATA(SREG_DY), REGISTER_IMAG34_DATA(SREG_Yold)) : true))
-        ) {
-          convergent++;
+      if((!realCompareAbsGreaterThan(&dX.Real, &Xold.Real) && (!realCompareAbsGreaterThan(&dX.Imag, &Xold.Imag)))
+        &&
+          (!realCompareAbsGreaterThan(&dY.Real, &Yold.Real) && (!realCompareAbsGreaterThan(&dY.Imag, &Yold.Imag)))
+      ) {
+        convergent++;
       }
       else {
         convergent = max(0,convergent-1);
       }
-                                  #if defined(VERBOSE_SOLVER0)
-                                                    printf("##### iterationCounter= %d osc= %d  conv= %d n",iterationCounter, oscillations, convergent);
-                                  #endif // VERBOSE_SOLVER0
-                                  #if defined(VERBOSE_SOLVER1)
-                                                    printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
-                                  #endif //VERBOSE_SOLVER1
+#if defined(VERBOSE_SOLVER0)
+      printf("##### iterationCounter= %d osc= %d  conv= %d n",iterationCounter, oscillations, convergent);
+#endif // VERBOSE_SOLVER0
+#if defined(VERBOSE_SOLVER1)
+      printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
+#endif //VERBOSE_SOLVER1
 
       if(convergent > 6 && oscillations > 3) {
 
-                                  #if defined(PC_BUILD)
-                                                  printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
-                                  #endif // PC_BUILD
+#if defined(PC_BUILD)
+        printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
+#endif // PC_BUILD
         convergent = 2;
         oscillations = 2;
-                                  #if defined(PC_BUILD)
-                                                  printf("%i and %i\n", convergent, oscillations);
-                                  #endif // PC_BUILD
+#if defined(PC_BUILD)
+        printf("%i and %i\n", convergent, oscillations);
+#endif // PC_BUILD
       }
 
       // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
 
       if((((oscillations >= 3) && (oscillationIterationCounter > 9) && (convergent <= 2)) )) { //|| (oscillations == 0 && convergent > 6 && real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DX), const34_1e_4) && (getRegisterDataType(SREG_DX) == dtComplex34 ? real34CompareAbsLessThan(REGISTER_IMAG34_DATA(SREG_DX), const34_1e_4) : 1 )  )
-        if(COMPLEXKICKER && (kicker ==0) && (convergent <= 1)) {
-          kicker = kicker +2;
+        if(COMPLEXKICKER && (kicker == 0) && (convergent <= 1)) {
+          kicker = kicker + 2;
         }
         oscillationIterationCounter = 0;
         oscillations = 0;
         convergent = 0;
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_X2,"\n>>>>>>>>>> from ","");
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
-        fnRCL(SREG_X2);
+#if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
+#endif // VERBOSE_SOLVER2 && PC_BUILD
 
-        //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quardrant, multplied by a alrger number every time
-        convertDoubleToReal34RegisterPush(  - (kicker +0.001) / 100.0, REGISTER_X);
+
+        //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quadrant, multplied by a alrger number every time
+        
+        
+        
+        convertDoubleToReal( - (kicker + 0.001) / 100.0, &temp1.Real, ctxtSolver2);
+        realCopy(const_0, &temp1.Imag);
         if(kicker > 0) {
-          runFunction(ITM_SQUAREROOTX);
-          convertDoubleToReal34RegisterPush(    (kicker+0.001) / 100.0, REGISTER_X);
-          runFunction(ITM_SQUAREROOTX);
-          runFunction(ITM_ADD);
-          convertDoubleToReal34RegisterPush(pow(-2.0,kicker), REGISTER_X);
-          runFunction(ITM_MULT);
+          sqrtComplex(CPLX(temp1), CPLX(temp1), ctxtSolver2);
+          convertDoubleToReal((kicker + 0.001) / 100.0, &temp2.Real, ctxtSolver2);
+          realCopy(const_0, &temp2.Imag);
+          sqrtComplex(CPLX(temp2), CPLX(temp2), ctxtSolver2);
+          addComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
+          convertDoubleToReal( pow(-2.0, kicker), &temp2.Real, ctxtSolver2);
+          realCopy(const_0, &temp2.Imag);
+          mulComplexComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
         }
-                                  #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-                                    printf("------- Kicked oscillation, #%d, ", kicker);
-                                    printRegisterToConsole(REGISTER_X," multiplied: ","\n");
-                                  #endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+#if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+        printf("------- Kicked oscillation, #%d, multiplied: ", kicker);
+        printComplexToConsole(CPLX(temp1), "multiplied: ", "\n");
+#endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
         kicker++;
-
-        runFunction(ITM_MULT);              //add just to force it complex  //
-        fnStore(SREG_X2); //replace X2 value                                //
-
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_X2," to ","\n");
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
+        mulComplexComplex(CPLX(temp1), CPLX(X2), CPLX(X2), ctxtSolver2);
+#if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(X2), " to ", "\n");
+#endif // VERBOSE_SOLVER2 && PC_BUILD
       }
 
       //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      fnRCL(SREG_X2);                                       // get (X2,Y2)
-      execute_rpn_function();                               // leaving y2 in Y and x2 in X
-      copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y2); // y2
+      convertComplexToResultRegister(CPLX(X2), REGISTER_X); // get (X2)
+      execute_rpn_function();                                         // leaving y2 in Y and x2 in X
+      getRegisterAsComplex(REGISTER_Y, CPLX(Y2));           // y2
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printf("    :   iterationCounter=%d",iterationCounter);
-                                    printRegisterToConsole(SREG_X2," X2="," ");
-                                    printRegisterToConsole(SREG_Y2," Y2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+      printf("    :   iterationCounter=%d",iterationCounter);
+      printComplexToConsole(CPLX(X2)," X2="," ");
+      printComplexToConsole(CPLX(Y2)," Y2=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
 
-      // y2 in Y and x2 in X
-      checkzero = checkzero ||   regIsLowerThanTol(SREG_Y2,SREG_TOL);
-      checkNaN  = checkNaN  ||   real34IsNaN(REGISTER_REAL34_DATA(SREG_X2)) || (getRegisterDataType(SREG_X2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X2)) : 0 ) ||
-                                 real34IsNaN(REGISTER_REAL34_DATA(SREG_Y2)) || (getRegisterDataType(SREG_Y2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_Y2)) : 0 ) ;
+      // y2 in Y2 and x2 in X2
+      checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
+      checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
+        realIsNaN(&Y2.Real) || realIsNaN(&Y2.Imag) ;
 
-                                  #if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-                                    if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
-                                      printf("-->A Endflags zero: Y2r=0:%u Y2i=0:%u X2r=NaN:%u X2i=NaN:%u Y2r=NaN:%u Y2i=NaN%u \n",
-                                        (uint16_t)real34IsZero(REGISTER_REAL34_DATA(SREG_Y2)),(uint16_t)real34IsZero(REGISTER_IMAG34_DATA(SREG_Y2)),
-                                        (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(SREG_X2)),(uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(SREG_X2)),
-                                        (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(SREG_Y2)),(uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(SREG_Y2))
-                                        );
-                                    }
-                                  #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+#if (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+      if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+        printf("-->A Endflags zero: Y2r=0:%u Y2i=0:%u X2r=NaN:%u X2i=NaN:%u Y2r=NaN:%u Y2i=NaN%u \n",
+        (uint16_t)realIsZero(&Y2.Real),(uint16_t)realIsZero(&Y2.Imag),
+        (uint16_t)realIsNaN(&X2.Real),(uint16_t)realIsNaN(&X2.Imag),
+        (uint16_t)realIsNaN(&Y2.Real),(uint16_t)realIsNaN(&Y2.Imag)
+          );
+      }
+#endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
 
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero);
-                                    printRegisterToConsole(SREG_X2,"","");
-                                    printRegisterToConsole(SREG_Y2,"Y2=","\n");
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
+#if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+      printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero);
+      printComplexToConsole(CPLX(X2),"","");
+      printComplexToConsole(CPLX(Y2),"Y2=","\n");
+#endif // VERBOSE_SOLVER2 && PC_BUILD
 
       //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
-      copySourceRegisterToDestRegister(SREG_DX,SREG_Xold);  // store old DELTA values, for oscillation check
-      copySourceRegisterToDestRegister(SREG_DY,SREG_Yold);  // store old DELTA values, for oscillation check
+      copyComplex(&dX, &Xold);  // store old DELTA values, for oscillation check
+      copyComplex(&dY, &Yold);  // store old DELTA values, for oscillation check
 
-      if(iterationCounter < CHANGE_TO_MOD_SECANT) {              //Secant and Newton approximation methods
-        if(iterationCounter < 3)  {
-          //###########################
-          //  normal Secant, 2-sample slope
-          //  DX = X2 - X1 in YREGISTER
-          //  DY = Y2 - Y1 in XREGISTER
-          //###########################
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("%3i ---------- Using normal Secant dydx 2-samples - osc=%d conv=%d",iterationCounter, oscillations, convergent);
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-          fnRCL  (SREG_X2); fnRCL(SREG_X1); runFunction(ITM_SUB);      // dx
-          fnStore(SREG_DX);                                     // store difference for later
-          fnRCL  (SREG_Y2); fnRCL(SREG_Y1); runFunction(ITM_SUB);      // dy
-          fnStore(SREG_DY);                                     // store difference for later
-          //Leave DX in YREG, and DY in XREG, so DX/DY can be computed
+      // ---------- Modified 3 point Secant ------------
+      if((iterationCounter == 0) || (!checkzero && !checkNaN)) {
+#if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+        printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d\n",iterationCounter, oscillations, convergent);
+        printComplexToConsole(CPLX(X0), "           X0=","\n");
+        printComplexToConsole(CPLX(Y0), "           Y0=","\n");
+        printComplexToConsole(CPLX(X1), "           X1=","\n");
+        printComplexToConsole(CPLX(Y1), "           Y1=","\n");
+        printComplexToConsole(CPLX(X2), "           X2=","\n");
+        printComplexToConsole(CPLX(Y2), "           Y2=","\n");
+        
+#endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+
+        subComplex(CPLX(Y2), CPLX(Y0), CPLX(dY), ctxtSolver2); // Y2-Y0 = dY
+        subComplex(CPLX(X2), CPLX(X0), CPLX(dX), ctxtSolver2); // X2-X0 = dX
+        divFunctionComplex(CPLX(dY), CPLX(dX),  CPLX(temp0), !ADD_RAN, &tol); // dY/dX = temp0
+
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp0), " m1=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+
+        subComplex(CPLX(Y2), CPLX(Y1), CPLX(L1), ctxtSolver2);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(L1), " Y2-Y1=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+
+        mulComplexComplex(CPLX(temp0),CPLX(L1), CPLX(L1), ctxtSolver2);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(L1), " term1 lower m1*(Y2-Y1)=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+
+        subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp1), " dY2=","\n");//30
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        subComplex(CPLX(X1), CPLX(X0), CPLX(temp2), ctxtSolver2);
+        divFunctionComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), !ADD_RAN, &tol);
+
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp1), " m2=","\n");//30
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        subComplex(CPLX(temp0), CPLX(temp1), CPLX(temp1), ctxtSolver2);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp1)," m1-m2 diff=","\n");
+        printComplexToConsole(CPLX(Y2), " Y2=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        mulComplexComplex(CPLX(temp1), CPLX(Y2), CPLX(temp1), ctxtSolver2);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp1), " term2 lower=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        subComplex(CPLX(L1), CPLX(temp1), CPLX(temp1), ctxtSolver2);
+        
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp1), " lower diff=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        subComplex(CPLX(Y2), CPLX(Y1), CPLX(temp2), ctxtSolver2);
+        //get the 1/slope
+        divFunctionComplex(CPLX(temp2), CPLX(temp1), CPLX(temp0), !ADD_RAN, &tol);
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printComplexToConsole(CPLX(temp0), " 1/slope=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        mulComplexComplex(CPLX(temp0), CPLX(Y0), CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
+        // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
+        mulComplexComplex(CPLX(temp1), &f, const_0, CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
+
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printRealToConsole(&f, "    Factor=        ","\n");
+        printComplexToConsole(CPLX(X0),"    New X =        "," - (");
+        printComplexToConsole(CPLX(temp1),"",")\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
+        subComplex(CPLX(X0), CPLX(temp1), CPLX(temp1), ctxtSolver2); // subtract as per Newton, x1 - f/f'
+
+        //try round numbers
+        if(convergent > 3 && iterationCounter > 6 && oscillations == 0 && realCompareLessEqual(&temp1.Real, const_1e_4)) {
+          convergent = 0;
+          double higherXStartValue;
+          realToDouble(&temp1.Real, &higherXStartValue);
+          convertDoubleToReal(roundf(1000.0 * higherXStartValue)/1000.0, &temp1.Real, ctxtSolver2);
+          realCopy(const_0, &temp1.Imag);
         }
 
-        else {
-          //###########################
-          // normal secant with 3 sample slope
-          //  DX = X2 - X1 in YREGISTER
-          //  DY = Y2 - Y1 in XREGISTER
-          //###########################
-          //  The second order accurate one-sided finite difference formula for the first derivative, formule 32, of
-          //  ChE 205 — Formulas for Numerical Differentiation
-          //  Handout 5 05/08/02: from Pauli
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("%3i ---------- Using Secant with 3 samples dy/dx -- osc=%d conv=%d",iterationCounter, oscillations, convergent);
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-          fnRCL      (SREG_X2); fnRCL(SREG_X1); runFunction(ITM_SUB); //Determine x2-x1
-          fnStore    (SREG_DX);  //store difference DX for later
-          fnRCL      (SREG_X1);
-          runFunction(ITM_XexY);
-          runFunction(ITM_SUB);
-          fnStore    (SREG_X0);          //determine the new x0 by subtracting DX
-          execute_rpn_function(); //determine the new f(x0)
-          copySourceRegisterToDestRegister(REGISTER_Y,SREG_Y0); //set y0 to the result f(x0)
-          //do DX = 2 (x2-x1)
-          fnRCL      (SREG_DX);
-          convertDoubleToReal34RegisterPush(2.0, REGISTER_X);//calculate 2(x2-x1)
-          runFunction(ITM_MULT);             // DX = 2 delta x
-          //do DY = (fi−2 − 4fi−1 + 3fi)
-          fnRCL      (SREG_Y0);              //y0
-          fnRCL      (SREG_Y1);
-          convertDoubleToReal34RegisterPush(4.0, REGISTER_X);
-          runFunction(ITM_MULT);
-          runFunction(ITM_SUB);               //-4.y1
-          fnRCL      (SREG_Y2);
-          convertDoubleToReal34RegisterPush(3.0, REGISTER_X);
-          runFunction(ITM_MULT);
-          runFunction(ITM_ADD);                    //+3.y2
-          fnStore    (SREG_DY);
-          //-3-sample slope-  //Leave DX in YREG, and DY in XREG, so DX/DY can be computed
-        }
-        //###########################
-        //  Start with DX and DY FROM EITHER 2- or 3- SAMPLE SECANT
-        //
-        //
-        //###########################
-        divFunction(!ADD_RAN, SREG_TOL);
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    fnInvert(0);
-                                    printRegisterToConsole(REGISTER_X," SLOPE=","\n");
-                                    fnInvert(0);
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
-
-        fnRCL(SREG_Y2);      // determine increment in x
-        runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
-        fnRCL(SREG_F);       // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
-        runFunction(ITM_MULT);       // increment to x
-
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_F,"    Factor=        ","\n");
-                                    printRegisterToConsole(SREG_X1,"    New X =        "," - ");
-                                    printRegisterToConsole(REGISTER_X," - (",")\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-
-        fnRCL(SREG_X2);
-        runFunction(ITM_XexY);
-        runFunction(ITM_SUB);       // subtract as per Newton, x1 - f/f'
-        fnStore(SREG_X2N);          // store temporarily to new x2n
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("  ");
-                                    printRegisterToConsole(SREG_X2N,"New X=","\n");
-                                    //printRegisterToConsole(REGISTER_Y,"Secant DeltaX=","\n");
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-      }
-      else {
-        // ---------- Modified 3 point Secant ------------
-        if((iterationCounter == 0) || (!checkzero && !checkNaN)) {
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d",iterationCounter, oscillations, convergent);
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-
-          fnRCL(SREG_Y2);fnRCL(SREG_Y0);runFunction(ITM_SUB);fnStore(SREG_DY);
-          fnRCL(SREG_X2);fnRCL(SREG_X0);runFunction(ITM_SUB);fnStore(SREG_DX);
-          divFunction(!ADD_RAN, SREG_TOL);
-
-          fnStore(SREG_TMP);
-
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_TMP," m1=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-
-          fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);runFunction(ITM_MULT);
-
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," term1 lower=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          fnStore(SREG_L1);
-
-          fnRCL(SREG_TMP);
-          fnRCL(SREG_Y1);fnRCL(SREG_Y0);runFunction(ITM_SUB);
-          fnRCL(SREG_X1);fnRCL(SREG_X0);runFunction(ITM_SUB);
-          divFunction(!ADD_RAN, SREG_TOL);
-
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," m2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          runFunction(ITM_SUB);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," m1-m2 diff=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          fnRCL(SREG_Y2);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," Y2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          runFunction(ITM_MULT);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," term2 lower=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          fnRecall(SREG_L1);
-          runFunction(ITM_XexY);
-          runFunction(ITM_SUB);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                  printRegisterToConsole(REGISTER_X," lower diff=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);  //Y2-Y1
-          runFunction(ITM_XexY);
-          //get the 1/slope
-          divFunction(!ADD_RAN, SREG_TOL);
-          fnStore(SREG_TMP);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," 1/slope=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-          fnRCL(SREG_Y0);              // determine increment in x
-          runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
-          fnRCL(SREG_F);               // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
-          runFunction(ITM_MULT);       // increment to x
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_F,"    Factor=        ","\n");
-                                    printRegisterToConsole(SREG_X0,"    New X =        "," - (");
-                                    printRegisterToConsole(REGISTER_X,"",")\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
-
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("  ");
-                                    printRegisterToConsole(REGISTER_X,"DeltaX=","\n");
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-          fnRCL(SREG_X0);
-          runFunction(ITM_XexY);
-          runFunction(ITM_SUB);        // subtract as per Newton, x1 - f/f'
-
-          //try round numbers
-          if(convergent > 3 && iterationCounter > 6 && oscillations == 0 && real34CompareLessEqual(REGISTER_REAL34_DATA(REGISTER_X),const34_1e_4)) {
-            convergent = 0;
-            double higherXStartValue = convertRegisterToDouble(REGISTER_X);
-            convertDoubleToReal34RegisterPush(roundf(1000.0 * higherXStartValue)/1000.0, REGISTER_X);
-          }
-
-          fnStore(SREG_X2N);           // store temporarily to new x2n
-        }
+        copyComplex(&temp1, &X2N);// store temporarily to new x2n
       }
 
-
-
-      /* Not in use
-      //Experimental bisection method to kick out  in case of real arguments
-      bool_t bisect = false;
-      if(    !checkzero && !checkNaN
-          && (    (getRegisterDataType(SREG_Y0) == dtReal34)
-               && (getRegisterDataType(SREG_Y2) == dtReal34)
-               && (real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_Y0),const34_1e_6))
-               && (real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(SREG_Y2),const34_1e_6))
-               && ((    (real34IsNegative(REGISTER_REAL34_DATA(SREG_Y0))) && (real34IsPositive(REGISTER_REAL34_DATA(SREG_Y2))))
-                     || ((real34IsNegative(REGISTER_REAL34_DATA(SREG_Y2))) && (real34IsPositive(REGISTER_REAL34_DATA(SREG_Y0))))
-                  )
-               && !(    (    real34CompareGreaterEqual(REGISTER_REAL34_DATA(SREG_X2N),REGISTER_REAL34_DATA(SREG_X0))
-                          && real34CompareGreaterEqual(REGISTER_REAL34_DATA(SREG_X2),REGISTER_REAL34_DATA(SREG_X2N)))
-                     ||
-                            (real34CompareLessEqual(REGISTER_REAL34_DATA(SREG_X2N),REGISTER_REAL34_DATA(SREG_X0))
-                          && real34CompareLessEqual(REGISTER_REAL34_DATA(SREG_X2),REGISTER_REAL34_DATA(SREG_X2N)))
-                   )
-             )
-        ) {
-        bisect = true;
-        #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-          printf(" Using Bisection method: Y bracketed\n");
-        #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
-      }
-      if(bisect) {
-        fnRCL(SREG_X0);
-        fnRCL(SREG_X2);
-        runFunction(ITM_ADD);
-        convertDoubleToReal34RegisterPush(2.0, REGISTERX);       //Leaving (x1+x2)/2
-        divFunction(!ADD_RAN, SREG_TOL);
-        fnStore(SREG_X2N);   // store temporarily to new x2n
-      }
-      */
       //#############################################
 
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printf("               ");printRegisterToConsole(SREG_DX,"DX=","");printRegisterToConsole(SREG_DY,"DY=","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X0,"X0=","");printRegisterToConsole(SREG_Y0,"Y0=","\n");
-                                    printf("   -------> newX2: ");printRegisterToConsole(SREG_X2N,"","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X1,"X1=","");printRegisterToConsole(SREG_Y1,"Y1=","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X2,"X2=","");printRegisterToConsole(SREG_Y2,"Y2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+      printComplexToConsole(&dX.Real,   &dX.Imag, "               DX=","");printComplexToConsole(CPLX(dY),"DY=","\n");
+      printComplexToConsole(&X0.Real,   &X0.Imag, "               X0=","");printComplexToConsole(CPLX(Y0),"Y0=","\n");
+      printComplexToConsole(CPLX(X2N),"   -------> newX2: ","\n");
+      printComplexToConsole(&X1.Real,   &X1.Imag, "               X1=","");printComplexToConsole(CPLX(Y1),"Y1=","\n");
+      printComplexToConsole(&X2.Real,   &X2.Imag, "               X2=","");printComplexToConsole(CPLX(Y2),"Y2=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
 
-      copySourceRegisterToDestRegister(SREG_Y1,SREG_Y0); //old y1 copied to y0
-      copySourceRegisterToDestRegister(SREG_X1,SREG_X0); //old x1 copied to x0
+      copyComplex(&Y1, &Y0); //old y1 copied to y0
+      copyComplex(&X1, &X0); //old x1 copied to x0
+      copyComplex(&Y2, &Y1); //old y2 copied to y1
+      copyComplex(&X2, &X1); //old x2 copied to x1
 
-      copySourceRegisterToDestRegister(SREG_Y2,SREG_Y1); //old y2 copied to y1
-      copySourceRegisterToDestRegister(SREG_X2,SREG_X1); //old x2 copied to x1
+      complexMagnitude(CPLX(dX), &temp2.Real,  ctxtSolver2);
+      complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
 
-      fnRCL(SREG_DY);   runFunction(ITM_MAGNITUDE); //difference |dy| is in Y
-      fnRCL(SREG_DX);   runFunction(ITM_MAGNITUDE); //difference |dx| is in X
+      checkzero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
+      checkNaN |=  realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
 
-
-      checkzero |= checkRegisterXYRealZeroTol(SREG_TOL);
-      checkNaN |=  real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))
-                 || (getRegisterDataType(REGISTER_X) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)) : 0)
-                 || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))
-                 || (getRegisterDataType(REGISTER_Y) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_Y)) : 0);
-
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
-                                    if(checkzero) {
-                                      printf("--B1 Checkzero\n");
-                                    }
-                                    if(checkNaN) {
-                                      printf("--B2 CheckNaN\n");
-                                    }
-                                    if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
-                                      printf("--B3 Endflags: |DXr|=0:%u |DXr|<TOL:%u  |DXi|=0:%u |DYr|<TOL:%u |DYr|=0:%u |DYi|=0:%u |DXr|=NaN:%u |DXi|=NaN:%u |DYr|=NaN:%u |DYi|=NaN:%u \n",
-                                              (uint16_t)real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)),
-                                              (uint16_t)(real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(SREG_TOL))),
-                                              (uint16_t)real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)),
-                                              (uint16_t)real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)),
-                                              (uint16_t)(real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(SREG_TOL))),
-                                              (uint16_t)real34IsZero(REGISTER_IMAG34_DATA(REGISTER_Y)),
-                                              (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(REGISTER_X)),
-                                              (uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(REGISTER_X)),
-                                              (uint16_t)real34IsNaN (REGISTER_REAL34_DATA(REGISTER_Y)),
-                                              (uint16_t)real34IsNaN (REGISTER_IMAG34_DATA(REGISTER_Y))
-                                            );
-                                    }
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1
+#if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
+      if(checkzero) {
+        printf("--B1 Checkzero\n");
+      }
+      if(checkNaN) {
+        printf("--B2 CheckNaN\n");
+      }
+      if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+        printf("--B3 Endflags: |DXr|=0:%u |DXr|<TOL:%u |DYr|<TOL:%u |DYr|=0:%u |DXr|=NaN:%u |DYr|=NaN:%u \n",
+        (uint16_t) realIsZero(&temp1.Real),
+        (uint16_t)(realCompareAbsLessThan(&temp1.Real, &tol)),
+        (uint16_t) realIsZero(&temp2.Real),
+        (uint16_t)(realCompareAbsLessThan(&temp2.Real, &tol)),
+        (uint16_t) realIsNaN (&temp1.Real),
+        (uint16_t) realIsNaN (&temp2.Real)
+          );
+      }
+#endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1
       iterationCounter++;
       oscillationIterationCounter++;
 
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !checkzero) {
-                                      printf("END     iterationCounter=%d |DX|<TOL:%d ",iterationCounter,real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DX), REGISTER_REAL34_DATA(SREG_TOL)));
-                                      printRegisterToConsole(SREG_DX,"","\n");
-                                      printf("END     iterationCounter=%d |DY|<TOL:%d ",iterationCounter,real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DY), REGISTER_REAL34_DATA(SREG_TOL)));
-                                      printRegisterToConsole(SREG_DY,"","\n");
-                                      printRegisterToConsole(REGISTER_Y,"END     DY=","\n");
-                                    }
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
+#if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+      if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !checkzero) {
+        printf("END     iterationCounter=%d |DX|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dX.Real, &tol));
+        printComplexToConsole(CPLX(dX),"","\n");
+        printf("END     iterationCounter=%d |DY|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dY.Real, &tol));
+        printComplexToConsole(CPLX(dY),"","\n");
+        printComplexToConsole(CPLX(temp1),"END     DY=","\n");
+      }
+#endif // VERBOSE_SOLVER2 && PC_BUILD
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_DX,">>> DX=","");
-                                    printRegisterToConsole(SREG_DY," DY=","");
-                                    printRegisterToConsole(SREG_TMP," 1/SLOPE=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+#if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+      printComplexToConsole(CPLX(dX),">>> DX=","");
+      printComplexToConsole(CPLX(dY)," DY=","");
+      printComplexToConsole(CPLX(temp0)," 1/SLOPE=","\n");
+#endif // VERBOSE_SOLVER1 && PC_BUILD
 
-      copySourceRegisterToDestRegister(SREG_X2N,SREG_X2);  //new x2
+      realCopy(&X2N.Real, &X2.Real); realCopy(&X2N.Imag, &X2.Imag); //new x2
 
       if(checkHalfSec()) {
         if(progressHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-          real_t a, ai;
-          getRegisterAsComplex(SREG_X1, &a, &ai);
-          showProgressReal(&a, &ai, getRegisterDataType(SREG_X1) == dtComplex34);
+          showProgressReal(CPLX(X1), realIsZero(&X1.Imag));
         }
       }
 
@@ -1966,18 +2567,17 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
         break;
       }
-                                  #if defined(PC_BUILD)
-                                    printf("iterationCounter = %i ", iterationCounter);
-                                    printRegisterToConsole(SREG_X1,"X = "," ");
-                                    printRegisterToConsole(REGISTER_Y,"Y = ","\n");
-                                  #endif // PC_BUILD
+#if defined(PC_BUILD)
+      printf("iterationCounter = %i ", iterationCounter);
+      printComplexToConsole(CPLX(X1),"X = "," ");
+      printComplexToConsole(CPLX(Y1),"Y = ","\n");
+#endif // PC_BUILD
 
-                                  if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
-                                    copySourceRegisterToDestRegister(REGISTER_X,REGISTER_K);
-                                    copySourceRegisterToDestRegister(SREG_X1,REGISTER_X);
-                                    fnP_All_Regs(PRN_XYr);
-                                    copySourceRegisterToDestRegister(REGISTER_K,REGISTER_X);
-                                  }
+      if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
+        convertComplexToResultRegister(CPLX(X1), REGISTER_X);
+        convertComplexToResultRegister(CPLX(Y1), REGISTER_Y);
+        fnP_All_Regs(PRN_XYr);
+      }
 
 
 
@@ -1986,10 +2586,8 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     refreshScreen(200);
 
     checkNaN =    checkNaN
-               || real34IsNaN(REGISTER_REAL34_DATA(SREG_X1))
-               || (getRegisterDataType(SREG_X1) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X1)) : 0)
-               || real34IsNaN(REGISTER_REAL34_DATA(SREG_X2))
-               || (getRegisterDataType(SREG_X2) == dtComplex34 ? real34IsNaN(REGISTER_IMAG34_DATA(SREG_X2)) : 0);
+      || realIsNaN(&X1.Real) || realIsNaN(&X1.Imag)
+        || realIsNaN(&X2.Real) || realIsNaN(&X2.Imag);
 
 
     bool_t   FLAG_FRACTN = getSystemFlag(FLAG_FRACT);
@@ -1997,17 +2595,13 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
 
 
     bool_t conjugates = false;
-    if(getRegisterDataType(SREG_X2) == dtComplex34) {  // do not consider conjugates for Real X
-      fnRCL(SREG_X2);
-      fnRCL(SREG_X2);                                  // a bit wasteful but the existing tolerance check works for two registers
-      runFunction(ITM_CONJ);
-      if(!checkRegisterXYImagZeroTol(SREG_TOL)) {      // prevent testing for conjugate recognition for X & Y complex Imag components close to zero, using the tolerance detector
-        execute_rpn_function();
-        fnDrop(NOPARAM);
-        fnRCL(SREG_Y2);
-        conjugates = checkRegisterXYComplexAbsZeroTol(SREG_TOL);
-        //printf("conjugates:%d\n",conjugates);
-      }
+    if(!check2RealZeroTol(&X2.Imag, &X2.Imag, &tol)) {  // do not consider conjugates if X is close to Real
+      realCopy(&X2.Real, &temp1.Real); realCopy(&X2.Imag, &temp1.Imag);
+      realChangeSign(&temp1.Imag);
+      convertComplexToResultRegister(CPLX(temp1), REGISTER_X); // get (X2)
+      execute_rpn_function();                                         // leaving y2 in Y and x2 in X
+      getRegisterAsComplex(REGISTER_Y, CPLX(temp2));           // y2
+      conjugates = check2RealZeroTol(CPLX(temp2), &tol);
     }
 
 
@@ -2016,19 +2610,20 @@ static bool_t checkRegisterXYComplexAbsZeroTol(calcRegister_t tol) {
     if(((iterationCounter > NUMBERITERATIONS) && !checkzero) || checkNaN) {
       temporaryInformation = TI_SOLVER_FAILED;
       displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_X);
+      convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
     }
     else {
       temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
       lastErrorCode = ERROR_NONE;
-      convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_X);
+      convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_T);
     }
 
-
-    fnRCL(SREG_Y2);
-    fnRCL(SREG_X1);
-    fnRCL(SREG_X2);
+    convertComplexToResultRegister(CPLX(Y2), REGISTER_Z);
+    convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
+    convertComplexToResultRegister(CPLX(X2), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
+
+    printSolverResult(iterationCounter, conjugates);
 
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
