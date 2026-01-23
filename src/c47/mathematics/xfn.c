@@ -824,8 +824,7 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_MODANG_XFN: {
           if(angleMode == amRadian) {
-            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
-            // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
+            mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
           } else {
             WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
