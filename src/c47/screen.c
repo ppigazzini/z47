@@ -568,11 +568,11 @@ void execTimerApp(uint16_t timerType) {
       underline_softkey(0, 3);
     }
   }
-  
+
   static inline uint16_t getLine_buffer_bit(int x) {
     return 415-x;
   }
-  
+
   uint16_t yUnderlined = 3;
   void underline_softkey(uint16_t xSoftkeyMask, uint16_t ySoftkey) {
     if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || (!getSystemFlag(FLAG_FGLNFUL) && !getSystemFlag(FLAG_FGLNLIM))  ) {
@@ -716,14 +716,14 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
-#if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+#if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
   static void _assignLongPressKey(int keyCode) {
     char kc[4] = {};
     kc[0] = (keyCode / 10) + '0';
     kc[1] = (keyCode % 10) + '0';
     kc[2] = 0;
-    shiftF = true;
-    shiftG = false;
+    shiftF = false;
+    shiftG = true;
     assignToKey(kc);
     itemToBeAssigned = 0;
     leaveTamModeIfEnabled();
@@ -732,10 +732,10 @@ void execTimerApp(uint16_t timerType) {
     shiftF = shiftG = false;
   }
 
-  static void _executeItem(int16_t item, int keyCode) {
+  void _executeItem(int16_t item, int keyCode) {
     char *funcParam = "";
 
-    keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+    keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 2;
     funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
     if(item == ITM_RCL && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
       calcRegister_t var = findNamedVariable(funcParam);
@@ -777,7 +777,7 @@ void execTimerApp(uint16_t timerType) {
       runFunction(item);
     }
   }
-#endif // PC_BUILD || NEW_HW
+#endif // LONGPRESS_CFG
 
   void Shft_handler() {
     if(Shft_LongPress_f_g) {
@@ -785,7 +785,7 @@ void execTimerApp(uint16_t timerType) {
         Shft_LongPress_f_g = false;
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
-      #if defined(PC_BUILD) || defined(NEW_HW)   // Not for C47 on DM42 HW
+      #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
         int keyCode;
 
         int16_t item;
@@ -794,7 +794,7 @@ void execTimerApp(uint16_t timerType) {
           //leaveTamModeIfEnabled();
           keyCode = (shiftF ? 10 : 11);  // R47 'f' or 'g' keyCode
           calcKey_t *key = kbd_usr + keyCode;
-          item = key->fShifted;
+          item = key->gShifted;
           if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
             if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
               _assignLongPressKey(keyCode);
@@ -825,12 +825,28 @@ void execTimerApp(uint16_t timerType) {
             }
             else {
               char *funcParam = "";
-              keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 1;
+              keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 2;
               funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
               setCurrentUserMenu(item, funcParam);
               if(shiftF) {
-                showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
-                             (getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL) ? key->fShifted : -MNU_HOME));
+                if(getSystemFlag(FLAG_ALPHA) && ((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu())) {
+                  popSoftmenu();
+                }
+                //showSoftmenu((calcMode == CM_AIM) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha ? -MNU_ALPHA :
+                //             (getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL) ? key->gShifted : -MNU_HOME));
+
+                if(tam.alpha) {
+                  showSoftmenu(-MNU_TAMALPHA);
+                }
+                else if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM))) {
+                  showSoftmenu(-MNU_ALPHA);
+                }
+                else if(getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL)) {
+                  showSoftmenu(key->gShifted);
+                }
+                else {
+                  showSoftmenu(-MNU_HOME);
+                }
                 showSoftmenuCurrentPart();
               }
               else {
@@ -839,8 +855,8 @@ void execTimerApp(uint16_t timerType) {
                 if((calcMode == CM_AIM) || getSystemFlag(FLAG_ALPHA) || ((calcMode == CM_ASSIGN) && (previousCalcMode == CM_AIM)) || tam.alpha) {
                   showSoftmenu(-MNU_MyAlpha);
                 }
-                else if(getSystemFlag(FLAG_USER) && (key->fShifted != ITM_NULL)) {
-                  showSoftmenu(key->fShifted);
+                else if(getSystemFlag(FLAG_USER) && (key->gShifted != ITM_NULL)) {
+                  showSoftmenu(key->gShifted);
                 }
                 else if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
                   showSoftmenu(-MNU_MyMenu);
@@ -859,10 +875,12 @@ void execTimerApp(uint16_t timerType) {
           else if(tam.mode && indexOfItems[item].func == addItemToBuffer) {
             addItemToBuffer(item);
           }
+          shiftF = 0;
+          shiftG = 0;
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(23);
         }
-      #endif // PC_BUILD || NEW_HW
+      #endif // LONGPRESS_CFG
         shiftF = 0;
         shiftG = 0;
         showShiftState();
@@ -888,7 +906,22 @@ void execTimerApp(uint16_t timerType) {
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {
           Shft_timeouts = false;
           resetShiftState();                                       //force into no shift state, i.e. to wait
-          openHOMEorMyM(keypress_long_f);
+          if((calcMode == CM_ASSIGN) && (itemToBeAssigned !=0)) {
+            #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
+              int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+              //shiftF = 1;
+              if(previousCalcMode != CM_AIM) {   // No long press assignments in AIM
+                _assignLongPressKey(keyCode);
+              }
+            #endif // LONGPRESS_CFG
+            shiftF = 0;
+            shiftG = 0;
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(23);
+          }
+          else {
+            openHOMEorMyM(keypress_long_f);
+          }
         }
       }
     }
@@ -926,7 +959,7 @@ void execTimerApp(uint16_t timerType) {
         }
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
-        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12))) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
+        if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12)) && JM_auto_longpress_enabled != ITM_CLRMOD && JM_auto_longpress_enabled > 0) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
                                                                  // Exclude  BACKSP                   ENTER
           if(isArrowUp(currentKeyCode) || isArrowDown(currentKeyCode)) {
             // stub for code to process on up1/down longpress
@@ -965,6 +998,9 @@ void execTimerApp(uint16_t timerType) {
         else if(longpressDelayedkey3) {
           JM_auto_longpress_enabled = longpressDelayedkey3;
           longpressDelayedkey3 = 0;
+        }
+        else {
+          JM_auto_longpress_enabled = ITM_NOP;
         }
         if(JM_auto_longpress_enabled) {
           fnTimerStart(TO_CL_LONG, TO_CL_LONG, JM_TO_CL_LONG);
@@ -2191,15 +2227,15 @@ void createSubstrings(uint8_t number) {
     }
     else if(temporaryInformation == TI_ABBCCA) {
       if(regist == REGISTER_X) {
-        strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
-        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-      }
-      else if(regist == REGISTER_Y) {
         strcpy(prefix, "bc" STD_SPACE_FIGURE ":");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
-      else if(regist == REGISTER_Z) {
+      else if(regist == REGISTER_Y) {
         strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Z) {
+        strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
     }

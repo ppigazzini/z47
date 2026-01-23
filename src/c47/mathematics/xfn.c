@@ -80,6 +80,8 @@
   }
   void fnXXfn_RDP                 (uint16_t digits) {    
   }
+  void fnXXfn_RSD                 (uint16_t digits) {    
+  }
 
 
 #else //OPTION_XFN_1000
@@ -278,54 +280,71 @@ returnUnity:
   #define FT_DYADIC   102
   #define FT_SINGLEX  103
 
+  #define NOANG       200
+  #define FORCEANG    201
+
 typedef struct {
       int function_id;
       int function_type;
+      int function_angle;
   } FunctionLookup;
 
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      { ITM_pi_XFN      ,FT_NILADIC },
-      { ITM_TO_XFN      ,FT_SINGLEX },  //special case where hte function drops one register
-      { ITM_DEG2_XFN    ,FT_MONADIC },
-      { ITM_RAD2_XFN    ,FT_MONADIC },
-      { ITM_sin_XFN     ,FT_MONADIC },
-      { ITM_cos_XFN     ,FT_MONADIC },
-      { ITM_tan_XFN     ,FT_MONADIC },
-      { ITM_arcsin_XFN  ,FT_MONADIC },
-      { ITM_arccos_XFN  ,FT_MONADIC },
-      { ITM_arctan_XFN  ,FT_MONADIC },
-      { ITM_LN_XFN      ,FT_MONADIC },
-      { ITM_LOG_XFN     ,FT_MONADIC },
-      { ITM_EXP_XFN     ,FT_MONADIC },
-      { ITM_10X_XFN     ,FT_MONADIC },
-      { ITM_SQRT_XFN    ,FT_MONADIC },
-      { ITM_MODANG_XFN  ,FT_MONADIC },
-      { ITM_1ONX_XFN    ,FT_MONADIC },
-      { ITM_DRG_XFN     ,FT_MONADIC },
-      { ITM_SQR_XFN     ,FT_MONADIC },
-      { ITM_RDP_XFN     ,FT_MONADIC },
-      { ITM_atan2_XFN   ,FT_DYADIC  },
-      { ITM_ADD_XFN     ,FT_DYADIC  },
-      { ITM_SUB_XFN     ,FT_DYADIC  },
-      { ITM_POWER_XFN   ,FT_DYADIC  },
-      { ITM_XTHROOT_XFN ,FT_DYADIC  },
-      { ITM_MULT_XFN    ,FT_DYADIC  },
-      { ITM_DIV_XFN     ,FT_DYADIC  },
-      { ITM_MOD_XFN     ,FT_DYADIC  },
-      { 0               ,0   }
+      { ITM_pi_XFN      ,FT_NILADIC, NOANG},
+      { ITM_TO_XFN      ,FT_SINGLEX, NOANG},  //special case where hte function drops one register
+      { ITM_DEG2_XFN    ,FT_MONADIC, NOANG},
+      { ITM_RAD2_XFN    ,FT_MONADIC, NOANG},
+      { ITM_sin_XFN     ,FT_MONADIC, FORCEANG},
+      { ITM_cos_XFN     ,FT_MONADIC, FORCEANG},
+      { ITM_tan_XFN     ,FT_MONADIC, FORCEANG},
+      { ITM_arcsin_XFN  ,FT_MONADIC, NOANG},
+      { ITM_arccos_XFN  ,FT_MONADIC, NOANG},
+      { ITM_arctan_XFN  ,FT_MONADIC, NOANG},
+      { ITM_LN_XFN      ,FT_MONADIC, NOANG},
+      { ITM_LOG_XFN     ,FT_MONADIC, NOANG},
+      { ITM_EXP_XFN     ,FT_MONADIC, NOANG},
+      { ITM_10X_XFN     ,FT_MONADIC, NOANG},
+      { ITM_SQRT_XFN    ,FT_MONADIC, NOANG},
+      { ITM_MODANG_XFN  ,FT_MONADIC, FORCEANG},
+      { ITM_1ONX_XFN    ,FT_MONADIC, NOANG},
+      { ITM_DRG_XFN     ,FT_MONADIC, NOANG},
+      { ITM_SQR_XFN     ,FT_MONADIC, NOANG},
+      { ITM_RDP_XFN     ,FT_MONADIC, NOANG},
+      { ITM_RSD_XFN     ,FT_MONADIC, NOANG},
+      { ITM_atan2_XFN   ,FT_DYADIC , NOANG},
+      { ITM_ADD_XFN     ,FT_DYADIC , NOANG},
+      { ITM_SUB_XFN     ,FT_DYADIC , NOANG},
+      { ITM_POWER_XFN   ,FT_DYADIC , NOANG},
+      { ITM_XTHROOT_XFN ,FT_DYADIC , NOANG},
+      { ITM_MULT_XFN    ,FT_DYADIC , NOANG},
+      { ITM_DIV_XFN     ,FT_DYADIC , NOANG},
+      { ITM_MOD_XFN     ,FT_DYADIC , NOANG},
+      { 0               ,0         , 0}
   };
 
 
+  static const FunctionLookup* lookupFunction(int function_id) {
+    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
+      if (entry->function_id == function_id) {
+        return entry;
+      }
+    }
+    return NULL;
+  }
+
 
   static int lookupFunctionId(int function_id) {
-      for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
-          if (entry->function_id == function_id) {
-              return entry->function_type;
-          }
-      }
-      return XFN_NOTFOUND;
+    const FunctionLookup* entry = lookupFunction(function_id);
+    return entry ? entry->function_type : XFN_NOTFOUND;
   }
+
+
+  static int lookupFunctionAngle(int function_id) {
+    const FunctionLookup* entry = lookupFunction(function_id);
+    return entry ? entry->function_angle : XFN_NOTFOUND;
+  }
+
 
   static bool_t getLongintegerRegisterAsReal1071(int registerNo, real1071_t* result, realContext_t* c) {
     if(getRegisterDataType(registerNo) == dtLongInteger) {
@@ -517,27 +536,29 @@ printf("Dddd %d\n",registerNo);
 
 
 //--------//--------//-- MAIN function dispatcher --//--------//--------//--------
-  static void doXfn(uint16_t registerNo, int function, int functionType, int functionParam, int ErrorLocation);
+  static void doXfn(uint16_t registerNo, int function, int functionType, int functionAngle, int functionParam, int ErrorLocation);
 
   void fnXXfn(uint16_t function) {                               //--------//--------//-- Known function, X --//--------//--------//--------
     int ErrorLocation = 0;
     int functionType = lookupFunctionId(function);
+    int functionAngle = lookupFunctionAngle(function);
     if(functionType == XFN_NOTFOUND) {
       ErrorLocation = 11;
     }
-    doXfn(REGISTER_X, function, functionType, 0, ErrorLocation);
+    doXfn(REGISTER_X, function, functionType, functionAngle, 0, ErrorLocation);
   }
 
   static void fnXfnIndirect(uint16_t registerNo, uint16_t function, uint16_t functionParam) {   //--------//--------//-- Known function, register no  --//--------//--------//--------
     int ErrorLocation = 0;
     int functionType = lookupFunctionId(function);
+    int functionAngle = lookupFunctionAngle(function);
     if(functionType == XFN_NOTFOUND) {
       ErrorLocation = 14;
     }
     if((functionType == FT_NILADIC) || (functionType == FT_SINGLEX) ||
        (functionType == FT_MONADIC && (registerNo <= FIRST_LETTERED_REGISTER - 3 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 3) ))  ||
        (functionType == FT_DYADIC  && (registerNo <= FIRST_LETTERED_REGISTER - 6 || (registerNo >= FIRST_LETTERED_REGISTER && registerNo <= (LAST_SPARE_REGISTER+1) - 6) )))   {
-      doXfn(registerNo, function, functionType, functionParam, ErrorLocation);
+      doXfn(registerNo, function, functionType, functionAngle, functionParam, ErrorLocation);
       return;
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
@@ -634,10 +655,13 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_RDP                 (uint16_t digits) {
     fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
+  void fnXXfn_RSD                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RSD_XFN, digits);
+  }
 
 
 
-  static void doXfn(uint16_t registerNo, int function, int functionType, int functionParam, int ErrorLocation) {
+  static void doXfn(uint16_t registerNo, int function, int functionType, int functionAngle, int functionParam, int ErrorLocation) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -679,6 +703,9 @@ printf("Dddd %d\n",registerNo);
         if(!getCombinedParameter(2, registerNo + 3, &paramY, &paramTemp, &tmpAngle, &c)) { // ignore angle
           return;
         }
+      }
+      if(functionAngle == FORCEANG && angleMode == amNone) {
+        angleMode = currentAngularMode;
       }
     } else {
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -832,6 +859,10 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_RDP_XFN: {
           roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_RSD_XFN: {
+          roundToSignificantDigits((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
           break;
         }
   //--------//SINGLE REG FUNCTIONS
