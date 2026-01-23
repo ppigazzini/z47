@@ -12,14 +12,18 @@ BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
 FORCENEW_TESTPGMS =
+GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
+GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
 
-clean:
+$(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
+	rm -rf subprojects/gmp-6.2.1
+
+clean: $(GMP_MESON_BUILD)
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
 	rm -f r47$(EXE)
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
 	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
-	rm -rf subprojects/gmp-6.2.1
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel build.rel.debug
 	rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
 	rm -rf PROGRAMS/ALLPGMS
