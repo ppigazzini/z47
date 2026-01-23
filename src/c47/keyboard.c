@@ -475,7 +475,7 @@ bool_t lastshiftG = false;
 
 #define lowercaseselected  (bool_t)((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)) // //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
-  static void processAimInput(int16_t item) {
+  void processAimInput(int16_t item) {
     int16_t item1 = 0;
                     #if defined(PC_BUILD)
                       char tmp[200]; sprintf(tmp,"^^^^processAimInput:AIM %d nextChar=%d",item,nextChar); jm_show_comment(tmp);
@@ -1185,6 +1185,7 @@ endReturnTrue:
             //This section to auto-drop out of alpha submenu.
              if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
                popSoftmenu();
+               --numberOfTamMenusToPop;
              }
 
             addItemToBuffer(item);
@@ -2728,7 +2729,9 @@ RELEASE_END:
             // To TEST and investigate 2023-10-02
             // User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
 
+            printf("**[DL]** tamProcessInput(ITM_ENTER) currentMenu %d\n",currentMenu());fflush(stdout);
             tamProcessInput(ITM_ENTER);
+            printf("**[DL]**                            currentMenu %d\n",currentMenu());fflush(stdout);
             keyActionProcessed = true;
           }
           else if(calcMode == CM_NIM) {                             //JMvv

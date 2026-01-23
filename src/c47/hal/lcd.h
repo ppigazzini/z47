@@ -7,7 +7,7 @@
  * DMCP functions should follow specification at 
  * https://technical.swissmicros.com/dmcp/doc/DMCP-ifc-html/group__lcd__graphics.html
  */
-#if defined(PC_BUILD)
+#if defined(PC_BUILD) && !defined(WIN32)
 void print_caller(const char *format, ...);
 #else
 static inline void print_caller(const char *format, ...) {}
