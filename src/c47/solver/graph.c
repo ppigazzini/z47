@@ -1441,7 +1441,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     convergenceTolerence(&tol);
     // realCopy(const_1, &tol);
     // tol.exponent -= signDig;
-    fnSetSignificantDigits(signDig+2);
+    fnSetSignificantDigits(34);
 
     convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
     execute_rpn_function();
