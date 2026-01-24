@@ -1340,7 +1340,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   // =============================================================================
 
   #if defined(PC_BUILD)
-    static void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {
+    static void printSolverResult(uint16_t iterationCounter) {
       char str[200];
       real34ToString(REGISTER_REAL34_DATA(REGISTER_X), str);
       printf("\n\n\033[1m%2u: %-36s ", significantDigits, str);
@@ -1351,10 +1351,11 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       else {
         printf("+ ix%-36s", str);
       }
-      printf(" (iter:%2i conj:%u)\033[0m\n\n", iterationCounter, conjugates);
+      printf(" (iter:%2i code:%i)\033[0m\n\n", iterationCounter, real34ToInt32(REGISTER_REAL34_DATA(REGISTER_T)));
+      
     }
   #else
-    static inline void printSolverResult(uint16_t iterationCounter, bool_t conjugates) {}
+    static inline void printSolverResult(uint16_t iterationCounter) {}
   #endif // PC_BUILD
 
 
@@ -1403,7 +1404,8 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     int16_t convergent = 0;
     int iterationCounter;
     bool_t checkNaN = false;
-    bool_t checkzero = false;
+    bool_t Y2IsZero = false;
+    bool_t dXdYIsZero = false;
     osc = 0;
     DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     iterationCounter = 0; oscillationIterationCounter = 0;
@@ -1459,7 +1461,12 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 
     convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
 
+    // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
+    uint16_t signDig = significantDigits?significantDigits:34;
     convergenceTolerence(&tol);
+    // realCopy(const_1, &tol);
+    // tol.exponent -= signDig;
+    fnSetSignificantDigits(signDig+2);
 
     convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
     execute_rpn_function();
@@ -1469,20 +1476,17 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     getRegisterAsComplex(REGISTER_Y, CPLX(Y1));
 
 
-    checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y0), &tol);
-    if(checkzero) {
+    // check if any initial value is a solution
+    if(complexIsLowerThanTol(CPLX(Y0), &tol)) {
       copyComplex(&Y0, &Y2);
       copyComplex(&X0, &X2);
+      Y2IsZero = true;
     }
-    else {
-      checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y1), &tol);
-      if(checkzero) {
-        copyComplex(&Y1, &Y2);
-        copyComplex(&X2, &X2);
-      }
-    }
-
-    if(!checkzero) {
+    else if (complexIsLowerThanTol(CPLX(Y1), &tol)) {
+      copyComplex(&Y1, &Y2);
+      copyComplex(&X2, &X2);
+      Y2IsZero = true;
+    } else {
       subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), ctxtSolver2);  //dx=x1-x0
       subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
       divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0),  ADD_RAN, &tol);  //dx/dy
@@ -1507,7 +1511,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 
     //###############################################################################################################
     //#################################################### Iteration start ##########################################
-    while(iterationCounter<NUMBERITERATIONS && !checkNaN && !checkzero) {
+    while(iterationCounter<NUMBERITERATIONS && !checkNaN && !Y2IsZero && !dXdYIsZero) {
 #if defined(VERBOSE_SOLVER0)
       printf("\nIteration start\v");
 #endif
@@ -1648,7 +1652,9 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 #endif // VERBOSE_SOLVER1
 
       // y2 in Y2 and x2 in X2
-      checkzero = checkzero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
+      
+      // check if an acceptable solution is found
+      Y2IsZero = Y2IsZero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
         realIsNaN(&Y2.Real) || realIsNaN(&Y2.Imag) ;
 
@@ -1673,7 +1679,6 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       copyComplex(&dY, &Yold);  // store old DELTA values, for oscillation check
 
       // ---------- Modified 3 point Secant ------------
-      if((iterationCounter == 0) || (!checkzero && !checkNaN)) {
 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
         printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d\n",iterationCounter, oscillations, convergent);
         printComplexToConsole(CPLX(X0), "           X0=","\n");
@@ -1684,6 +1689,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
         printComplexToConsole(CPLX(Y2), "           Y2=","\n");
         
 #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+      if((iterationCounter == 0) || (!Y2IsZero && !dXdYIsZero && !checkNaN)) {
 
         subComplex(CPLX(Y2), CPLX(Y0), CPLX(dY), ctxtSolver2); // Y2-Y0 = dY
         subComplex(CPLX(X2), CPLX(X0), CPLX(dX), ctxtSolver2); // X2-X0 = dX
@@ -1775,7 +1781,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       complexMagnitude(CPLX(dX), &temp2.Real,  ctxtSolver2);
       complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
 
-      checkzero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
+      dXdYIsZero  |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
       checkNaN |=  realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
 
 #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
@@ -1815,7 +1821,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       printComplexToConsole(CPLX(temp0)," 1/SLOPE=","\n");
 #endif // VERBOSE_SOLVER1
 
-      realCopy(&X2N.Real, &X2.Real); realCopy(&X2N.Imag, &X2.Imag); //new x2
+      copyComplex(&X2N, &X2); //new x2
 
       if(checkHalfSec()) {
         if(progressHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
@@ -1869,9 +1875,10 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     }
 
 
+    fnSetSignificantDigits(signDig);
     fnUndo(0);
 
-    if(((iterationCounter > NUMBERITERATIONS) && !checkzero) || checkNaN) {
+    if(!Y2IsZero) {
       temporaryInformation = TI_SOLVER_FAILED;
       displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
@@ -1887,7 +1894,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     convertComplexToResultRegister(CPLX(X2), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
-    printSolverResult(iterationCounter, conjugates);
+    printSolverResult(iterationCounter);
 
     if(FLAG_FRACTN) {
       setSystemFlag(FLAG_FRACT);
