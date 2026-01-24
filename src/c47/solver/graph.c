@@ -1364,7 +1364,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   #define __STARTX1 82
 
 
-#if defined(PC_BUILD)
+#if defined(PC_BUILD) && (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2))
   static void printComplexToConsole(const real_t *re, const real_t *im, const char *before, const char *after) {
     char str[100];
     realToString(re, str);
