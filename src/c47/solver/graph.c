@@ -1437,7 +1437,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
 
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
-    uint16_t signDig = significantDigits?significantDigits:34;
+    uint16_t signDig = significantDigits ? significantDigits <= 5 ? 5 : significantDigits : 34;
     convergenceTolerence(&tol);
     // realCopy(const_1, &tol);
     // tol.exponent -= signDig;
