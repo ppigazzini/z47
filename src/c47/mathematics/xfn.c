@@ -10,9 +10,11 @@
 // The major bignumber reduction must be done outside Taylor
 
 #undef DEBUG_XFN
+#undef DEBUGRESULT_ONLY_XFN
 
 #if !defined(PC_BUILD)
   #undef DEBUG_XFN
+  #undef DEBUGRESULT_ONLY_XFN
 #endif
 
 
@@ -1029,6 +1031,15 @@ printf("Dddd %d\n",registerNo);
       printRegisterToConsole(REGISTER_Y,"\nY:","\n");
       printRegisterToConsole(REGISTER_X,"\nX:","\n");
     #endif //DEBUG_XFN
+
+
+    #if defined(DEBUG_XFN) || defined(DEBUGRESULT_ONLY_XFN)
+      real1071_t aa, tt;
+      readThreeRegisters(registerNo, &aa, &tt, &c);
+      realToString((real_t*)&aa, tmpString);   printf("\nAfter Step4, combined register: =%s|...%d\n", tmpString, (&aa)->digits);
+    #endif //DEBUG_XFN
+
+
 
     return;
 
