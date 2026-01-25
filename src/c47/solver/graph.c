@@ -1437,10 +1437,11 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
 
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
-    uint16_t signDig = significantDigits ? significantDigits <= 5 ? 5 : significantDigits : 34;
-    convergenceTolerence(&tol);
-    // realCopy(const_1, &tol);
-    // tol.exponent -= signDig;
+    uint16_t signDig  = significantDigits ? significantDigits : 34;
+
+    //convergenceTolerence(&tol);
+    realCopy(const_1, &tol);
+    tol.exponent -= significantDigits ? significantDigits <= 5 ? 5 : significantDigits : 34;;
     fnSetSignificantDigits(34);
 
     convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
