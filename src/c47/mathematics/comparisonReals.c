@@ -303,3 +303,99 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
   return counter;
 }
 */
+
+
+
+
+#if defined OPTION_XFN_1000
+// realCompareRoundedEqualConstant
+
+// Compares number to constant (2pi) at appropriate precision to avoid comparing a dirty rounding digit.
+// If both operands have equal digit counts and both fit within 1071 digits, compares at full
+// precision (no rounding occurs). If lengths differ, both are rounded to one digit less than the
+// shorter before comparison to avoid the dirty rounding digit. If nn > 0, verifies first nn digits
+// match (accounting for trailing zeros stripped by decNumber). If nn == 0, compares all input
+// digits. Returns false for an input number +-5 digits longer/shorter than the target, allowing
+// for up to 5 trailing zeros either side. Returns true if equal, false otherwise.
+
+// This portion identifies pi(1034) and if found, extends pi precision to 2139 digits.
+
+// Test: Using XPI, and adding and subtracting 1 ULP to verify recognition
+//
+// pi(1034)-Delta: is NOT recognized
+//   R11 = -1.238094855978690282734422681276933E-1000 <=== note the last digit
+//   R10 = 6283185307179586476925286766559005768394338798...398
+//   R09 = 1E-999
+//
+// pi(1034)+Delta: : is NOT recognized
+//   R08 = -1.238094855978690282734422681276931E-1000 <=== note the last digit
+//   R07 = 6283185307179586476925286766559005768394338798...398
+//   R06 = 1E-999
+//
+// Delta
+//   R05 = 0.
+//   R04 = 1
+//   R03 = 1E-1033
+//
+// pi(1034): : is recognized
+//   R02 = -1.238094855978690282734422681276932E-1000 <=== note the last digit
+//   R01 = 6283185307179586476925286766559005768394338798...398
+//   R00 = 1E-999
+
+
+bool_t realCompareRoundedEqualConstant(const real_t *number, const real_t *constant, int32_t nn) {
+  int32_t checkDigits = (nn > 0) ? nn : number->digits;
+
+  if(abs(number->digits - checkDigits) > 5) {
+    return false;
+  }
+
+  if(realGetExponent(number) != realGetExponent(constant)) {
+    return false;
+  }
+
+  real1071_t pii, n1;
+  realContext_t c = ctxtReal75;
+
+  // Extract constant at appropriate precision
+  int32_t piPrecision = (number->digits == checkDigits && checkDigits <= 1071) ? checkDigits : 1071;
+  c.digits = piPrecision;
+  realPlus(constant, (real_t *)&pii, &c);
+  realGetCoefficient((real_t *)&pii, tmpString);
+
+  // Check trailing zeros if needed
+  if(number->digits < checkDigits) {
+    for(int32_t i = number->digits; i < min(checkDigits, number->digits + 3); i++) {
+      if(tmpString[i] != '0') {
+        return false;
+      }
+    }
+    checkDigits = number->digits;
+  } else if(nn > 0 && number->digits > checkDigits) {
+    return false;
+  }
+
+  // Extract input at appropriate precision
+  if(number->digits == checkDigits && checkDigits <= 1071) {
+    realGetCoefficient(number, tmpString + TMP_STR_LENGTH/2);
+    c.digits = checkDigits;
+  } else {
+    int32_t minDigits = min(number->digits, 1071);
+    c.digits = minDigits > 1 ? minDigits - 1 : 1;
+    realPlus(number, (real_t *)&n1, &c);
+    realGetCoefficient((real_t *)&n1, tmpString + TMP_STR_LENGTH/2);
+  }
+
+  // Compare strings
+  int32_t compareDigits = min(checkDigits, c.digits);
+  for(int32_t i = 0; i < compareDigits; i++) {
+    if(tmpString[i] != tmpString[TMP_STR_LENGTH/2 + i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+#endif //!OPTION_XFN_1000
+
+

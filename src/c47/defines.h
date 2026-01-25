@@ -384,6 +384,7 @@
 #define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
 #define NARROW_SCREEN                    1 // 400x1280 portrait screen
 #undef  USECURVES                          // activate spline curve option in the plot menu
+#define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
