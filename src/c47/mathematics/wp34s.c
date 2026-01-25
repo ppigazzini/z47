@@ -402,7 +402,7 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
 
 
 static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* j, real_t* z, const real_t* x, real_t* b, real_t* epsilon, real_t* last,
-              const bool_t doEpsilon, int epsilonDigits, 
+              const bool_t doEpsilon, int epsilonDigits,
               int* doubles, int* invert, int* neg,
               realContext_t *realContext){
   bool_t conditionToKeepIterating = false;
@@ -442,7 +442,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
   for(int n=0; n<TaylorIterationMax; n++) {
     if(!doEpsilon && realCompareLessEqual(a, const_1on10)) {
       break;
-    } else 
+    } else
     if(doEpsilon && realCompareLessEqual((real_t*)a, const_1on10)){//  (real_t*)z)) {
       break;
     }
@@ -580,7 +580,7 @@ static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *real
   int invert;
   int neg;
   if(!doAtan( (real_t*)&a, (real_t*)angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)x, (real_t*)&b, (real_t*)&epsilon, (real_t*)&last,
-              true, 1040, 
+              true, 1040,
               &doubles, &invert, &neg,
               realContext)) {
     return; //NaN
