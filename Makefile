@@ -12,8 +12,13 @@ BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
 FORCENEW_TESTPGMS =
+GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
+GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
 
-clean:
+$(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
+	rm -rf subprojects/gmp-6.2.1
+
+clean: $(GMP_MESON_BUILD)
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
 	rm -f r47$(EXE)
