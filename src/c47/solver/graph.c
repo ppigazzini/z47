@@ -1439,9 +1439,8 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
     uint16_t signDig  = significantDigits ? significantDigits : 34;
 
-    //convergenceTolerence(&tol);
     realCopy(const_1, &tol);
-    tol.exponent -= significantDigits ? (significantDigits <= 5 ? 5 : (significantDigits > 33 ? 33 : significantDigits)) : 33;
+    tol.exponent -= signDig <= 5 ? 5 : (signDig > 33 ? 33 : signDig);
     fnSetSignificantDigits(34);
 
     convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
@@ -1630,7 +1629,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       // y2 in Y2 and x2 in X2
       
       // check if an acceptable solution is found
-      Y2IsZero  = Y2IsZero  ||   complexIsLowerThanTol(CPLX(Y2), &tol);
+      Y2IsZero = Y2IsZero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
         realIsNaN(&Y2.Real) || realIsNaN(&Y2.Imag) ;
 
