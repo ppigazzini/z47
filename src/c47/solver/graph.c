@@ -1629,7 +1629,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       // y2 in Y2 and x2 in X2
       
       // check if an acceptable solution is found
-      Y2IsZero = Y2IsZero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
+      Y2IsZero  = Y2IsZero  ||   complexIsLowerThanTol(CPLX(Y2), &tol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
         realIsNaN(&Y2.Real) || realIsNaN(&Y2.Imag) ;
 
@@ -1756,8 +1756,8 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       complexMagnitude(CPLX(dX), &temp2.Real,  ctxtSolver2);
       complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
 
-      dXdYIsZero  |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
-      checkNaN |=  realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
+      dXdYIsZero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
+      checkNaN   |= realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
                                               if(checkzero) {
