@@ -256,6 +256,7 @@ void fnRecallMax(uint16_t regist) {
 void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte00;    //for use in spare slots below
+    __attribute__((unused)) uint8_t compatibility_byte1;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte2 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte4 ;    //for use in spare slots below
@@ -312,7 +313,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(systemFlags0);
     recallFromDtConfigDescriptor(systemFlags1);
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
-    recallFromDtConfigDescriptor(fgLN);
+    recallFromDtConfigDescriptor(    compatibility_byte1);
     recallFromDtConfigDescriptor(    compatibility_byte19);
     recallFromDtConfigDescriptor(    compatibility_byte28);
     recallFromDtConfigDescriptor(    compatibility_byte29);

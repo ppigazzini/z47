@@ -113,8 +113,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //  gtk_widget_queue_draw(w);
   //}
 
-
-
   static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
     //debugf("Configure event: force a redraw");
     gtk_widget_queue_draw(w);
@@ -550,10 +548,11 @@ Jacos Mac, Control works
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State,shiftF,shiftG,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
 
@@ -706,10 +705,11 @@ returnKeyReleasedFalse:
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
@@ -805,9 +805,10 @@ returnKeyReleasedFalse:
 // 17 CM_ASN_BROWSER
 // 18 CM_LISTXY
 
-//#if defined(VERBOSEKEYS)
+#if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
   printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%5i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
-//#endif //VERBOSEKEYS
+  fflush(stdout);
+#endif //VERBOSEKEYS
 
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
@@ -1131,9 +1132,10 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 
 continueWithOldDetections:
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
-    //#endif
+      fflush(stdout);
+    #endif
 
       switch(event_keyval) {
         case GDK_KEY_H+65536: // Ctrl H
@@ -3094,31 +3096,51 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
-    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
-  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
-    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+  else if(isR47FAM && key->primary == ITM_SHIFTg) {
+    if(key->fShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    }
     R47LongpressColour = true;
   }
   else if(key->fShifted == 0) {
-      lbl[0] = 0;
+      sstmp[0] = 0;
   }
   else {
     strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-    stringToUtf8(sstmp, lbl);
-    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-      }
+  }
+
+  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  stringToUtf8(sstmp, lbl);
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
     }
   }
 
-  if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
-    lbl[3] = 0;
+  if(strcmp((char *)lbl, "SST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
+      stringToUtf8(tt, lbl);
+  } else
+  if(strcmp((char *)lbl, "BST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
+      stringToUtf8(tt, lbl);
   }
 
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
@@ -3286,23 +3308,7 @@ char sstmp[16];
         /*}*/       //dr - new AIM
       }
 
-
-      //Convert Greek CAPITAL and LOWER case to UTF !
-      if((ITM_ALPHA <= key->gShiftedAim && key->gShiftedAim <= ITM_OMEGA) || (ITM_QOPPA <= key->gShiftedAim && key->gShiftedAim <= ITM_SAMPI)) {   //JM GREEK. Add extra 36 char greek range
-        /*stringToUtf8(indexOfItems[key->gShiftedAim].itemSoftmenuName, lbl);  //vv dr - new AIM
-        lbl[2] = ' ';
-        lbl[3] = 0;
-        stringToUtf8(indexOfItems[key->gShiftedAim + (ITM_alpha - ITM_ALPHA)].itemSoftmenuName, lbl + 3);*/
-        if(alphaCase == AC_LOWER) {
-          stringToUtf8(indexOfItems[numlockReplacements(8,key->gShiftedAim + (ITM_alpha - ITM_ALPHA), getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-        }
-        else {
-          stringToUtf8(indexOfItems[numlockReplacements(9,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-        }                                                               //^^
-      }
-      else {
-        stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-      }
+      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
 
       //GShift set label
       if(key->gShiftedAim == 0) {
@@ -5050,6 +5056,37 @@ void check_all_btn_widgets_for_consistency(void) {
 }
 
 
+  static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnPressed(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+  static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnReleased(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+static guint ui_settle_timer = 0;
+
+// Helper to clear the active flag after UI settles
+static gboolean clear_ui_active_flag(gpointer data) {
+    ui_is_active = FALSE;
+    ui_settle_timer = 0;
+    return FALSE;
+}
+
+// Single handler for all UI events
+static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
+    ui_is_active = TRUE;
+    
+    if(ui_settle_timer) {
+        g_source_remove(ui_settle_timer);
+    }
+    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+    
+    return FALSE;  // Let event continue processing
+}
+
 
   /********************************************//**
   * \brief Creates the calc's GUI window with all the widgets
@@ -5129,6 +5166,11 @@ void check_all_btn_widgets_for_consistency(void) {
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
@@ -5304,18 +5346,18 @@ void check_all_btn_widgets_for_consistency(void) {
       gtk_widget_set_name(btn15, "calcKey");
       gtk_widget_set_name(btn16, "calcKey");
 
-      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed),  "1");
-      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed),  "2");
-      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed),  "3");
-      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed),  "4");
-      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed),  "5");
-      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed),  "6");
-      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased), "1");
-      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased), "2");
-      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased), "3");
-      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased), "4");
-      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased), "5");
-      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased), "6");
+      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "1");
+      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "2");
+      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "3");
+      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "4");
+      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "5");
+      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "6");
+      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "1");
+      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "2");
+      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "3");
+      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "4");
+      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "5");
+      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "6");
 
       gtk_widget_set_focus_on_click(btn11, FALSE);
       gtk_widget_set_focus_on_click(btn12, FALSE);
@@ -6393,6 +6435,8 @@ int keyCntA = 0;
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    lcd_buffer = malloc(SCREEN_HEIGHT*(SCREEN_WIDTH/8+2)+2)+2;
+    lcd_clear_buf ();
 
   check_all_btn_widgets_for_consistency();
   }

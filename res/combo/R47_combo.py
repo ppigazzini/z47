@@ -6,10 +6,12 @@ if(len(sys.argv) >= 1):
   Version = sys.argv[1]
 else:
   Version = "TEST"
+  
+dmcp   = "DMCP5_flash_3.56"   # DMCP version - to be updated for a new MDPC version
 
-path1  = "DMCP5_flash_3.55.bin"
+path1  = dmcp + ".bin"
 path2  = "R47.pg5"
-output = "DMCP5_flash_3.55_R47-" + Version + ".bin"
+output = dmcp + "_R47-" + Version + ".bin"
 FwName = Version
 
 addrData2 = 0xA0000

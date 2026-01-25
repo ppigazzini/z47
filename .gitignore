@@ -4,25 +4,32 @@
 /dep/gmp-6.2.1
 /wp43
 /c47
+/r47
 /testSuite
 /generate*
 /ttf2RasterFonts
 /wp43.exe
 /c47.exe
+/r47.exe
 /testSuite.exe
 /generate*.exe
 /ttf2RasterFonts.exe
 backup.bin
 backup.cfg
-wp43.sav
+backupR47.cfg
+wp43.sav    
 wp43.dat
 c47.sav
 c47.dat
 *.s47
+*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
+20*.REGS.TSV
+20*.bmp
 tags
 /PROGRAMS
+/SAVFILES
 /src/generated
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode

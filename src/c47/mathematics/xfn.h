@@ -41,5 +41,6 @@ void fnXXfn_TO      (uint16_t registerNo);
 void fnXXfn_DRG     (uint16_t registerNo);
 void fnXXfn_SQR     (uint16_t registerNo);
 void fnXXfn_YRTX    (uint16_t registerNo);
+void fnXXfn_RDP     (uint16_t digits);
 
 #endif // !XFN_H
