@@ -1523,16 +1523,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
   doMod(x, y, res, realContext, 2139, (real_t *)&small);
 #else
   real12321_t temp;
-  #if defined(OPTION_XFN_1000) && (XFN_EXTENDED_2PI_FOR_MOD == 1)
-    if(realCompareRoundedEqualConstant(y, const6147_2pi, 1034)) {
-      doMod(x, const6147_2pi, res, realContext, 12321, (real_t *)&temp);      //printf("\n******  ****** MATCHED 2pi !! ****** ******\n");
-    } else {
-  #endif //OPTION_XFN_1000
-      doMod(x, y, res, realContext, 12321, (real_t *)&temp);                  //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
-  #if defined(OPTION_XFN_1000) && (XFN_EXTENDED_2PI_FOR_MOD == 1)
-    }
-  #endif //!OPTION_XFN_1000
-
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);                  //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
 #endif
 }
 
