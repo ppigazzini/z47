@@ -667,7 +667,7 @@ void execTimerApp(uint16_t timerType) {
       refreshRegisterLineRestoreT(); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
     }
     showFunctionName(ITM_NOP, 0, "SF:N");
-    FN_timed_out_to_NOP = true;
+    FN_timed_out_to_NOP_or_Executed = true;
     underline_softkey(1<<(FN_key_pressed-38), 3);   //  Purposely select row 3 which does not exist, just to activate the 'clear previous line'
     FN_timeouts_in_progress = false;
     fnTimerStop(TO_FN_LONG);                                      //dr
