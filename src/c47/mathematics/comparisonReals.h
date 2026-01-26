@@ -35,6 +35,6 @@ bool_t  realCompareLessThan         (const real_t *number1, const real_t *number
 bool_t  real34IsAnInteger           (const real34_t *x);
 bool_t  realIsAnInteger             (const real_t *x);
 //int16_t realIdenticalDigits         (real_t *a, real_t *b);
-bool_t  realCompareRoundedEqualConstant(const real_t *number, const real_t *constant, int32_t nn);
+//bool_t  realCompareRoundedEqualConstant(const real_t *number, const real_t *constant, int32_t nn);
 
 #endif // !COMPARISONREALS_H
