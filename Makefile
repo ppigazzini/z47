@@ -46,16 +46,18 @@ build.dmcp5:
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 simr47: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja simr47
 	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 dmcp: build.dmcp
 	cd build.dmcp && ninja dmcp
