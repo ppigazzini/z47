@@ -137,8 +137,16 @@ typedef struct {
   int16_t osc = 0;
   uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
-  void check_osc(uint8_t ii){
-    switch(ii & 0b00111111) {
+  void check_osc(real_t *new, real_t *old, uint8_t *ii){
+    if( (realIsNegative(new) && realIsPositive(old)) ||
+    (realIsPositive(new) && realIsNegative(old)) ) {
+      *ii = (*ii << 1) + 1;
+    }
+    else {
+     *ii = *ii << 1;
+    }
+    
+    switch(*ii & 0b00111111) {
       case 0b001111:
       case 0b011110:
       case 0b111100:
@@ -151,7 +159,7 @@ typedef struct {
         break;
       default: ;
     }
-    switch(ii) {
+    switch(*ii) {
       case 0b01001001:
       case 0b10010010:
       case 0b00100100:
@@ -1271,39 +1279,24 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   // SOLVER HELPERS
   // =============================================================================
 
-  static bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
-    return (realIsZero(a) && realIsZero(b))
-       || ((realCompareAbsLessThan(a, tol))
-        && (realCompareAbsLessThan(b, tol)));
-    }
+static inline bool_t checkRealZeroTol(const real_t *a, const real_t *tol) {
+  return realIsZero(a) || realCompareAbsLessThan(a, tol);
+}
 
-  static bool_t complexIsLowerThanTol(const real_t *re, const real_t *im, const real_t *tol) {
-      return ((realIsZero(re) && realIsZero(im)) || (realCompareAbsLessThan(re, tol) && realCompareAbsLessThan(im, tol)));
-  }
+static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
+  return checkRealZeroTol(a, tol) && checkRealZeroTol(b, tol);
+}
 
 
-  #define ADD_RAN true
-  static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im, bool_t addRandom, real_t *tol) {
+  static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im) {
     if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
       realCopy(const_0, res_re);
       realCopy(const_0, res_im);
       return;
     }
-    if(!addRandom && (realIsZero(b_re) && realIsZero(b_im))) {
+    if(realIsZero(b_re) && realIsZero(b_im)) {
       stringToReal("1E30", res_re, ctxtSolver2);
       realCopy(const_0, res_im);
-      return;
-    }
-    if(addRandom && complexIsLowerThanTol(b_re, b_im, tol)) {
-        #if defined(PC_BUILD)
-        printf(">>> ADD random number to denominator to prevent infinite result\n");
-        #endif // PC_BUILD
-      real_t temp0, temp1;
-      stringToReal("1E-6", &temp0, ctxtSolver2);
-      realRandomU01(&temp1);
-      realAdd(&temp0, &temp1, &temp0, ctxtSolver2);
-      realAdd(&temp0, b_re, &temp0, ctxtSolver2);
-      divComplexComplex(a_re, a_im, &temp0, const_0, res_re, res_im, ctxtSolver2);
       return;
     }
     divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
@@ -1334,12 +1327,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   #endif // PC_BUILD
 
 
-  // Solver Registers used and destroyed. This is documented.
-  #define __STARTX0 81
-  #define __STARTX1 82
-
-
-#if defined(PC_BUILD) && (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2))
+#if defined(PC_BUILD) //&& (defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2))
   static void printComplexToConsole(const real_t *re, const real_t *im, const char *before, const char *after) {
     char str[100];
     realToString(re, str);
@@ -1348,15 +1336,35 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     printf("%si %s", str, after);
   }
 #endif //PC_BUILD
-  
+
+
+static void execute_rpn_function_reals(const cplx_t *from, cplx_t *to) {
+  convertComplexToResultRegister(&from->Real, &from->Imag, REGISTER_X); 
+  execute_rpn_function();
+  getRegisterAsComplex(REGISTER_Y, &to->Real, &to->Imag);
+}
   
 static inline void copyComplex(const cplx_t *from, cplx_t *to) {
   realCopy(&from->Real, &to->Real);
   realCopy(&from->Imag, &to->Imag);  
 }
+static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
+  cplx_t tmp;
+  copyComplex(base, &tmp);
+  for (uint8_t i = 1; i<*exp; i++) {
+     mulComplexComplex(CPLX(tmp), &base->Real,  &base->Imag, CPLX(tmp), ctxtSolver2);
+  }
+  copyComplex(&tmp, res);
+}  
   
   
   static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
+#if defined(PC_BUILD) //PC_BUILD
+      char filename[] = "bb.out.slvprg.py";
+      FILE *outfile = fopen(filename, "wb");
+      fputs("", outfile);
+      fclose(outfile);
+#endif //PC_BUILD
     currentKeyCode = 255;
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
 #if defined(PC_BUILD) //PC_BUILD
@@ -1367,12 +1375,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 
     calcMode = CM_NO_UNDO;
     
-    calcRegister_t SREG_STARTX0 = __STARTX0;
-    calcRegister_t SREG_STARTX1 = __STARTX1;
-
-    runFunction(ITM_CLSTK);
     runFunction(ITM_RAD);
-    clearSystemFlag(FLAG_SSIZE8);
     setSystemFlag(FLAG_CPXRES);
     int16_t oscillationIterationCounter;
     int16_t oscillations = 0;
@@ -1381,15 +1384,19 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     bool_t checkNaN = false;
     bool_t Y2IsZero = false;
     bool_t dXdYIsZero = false;
+    // bool_t zeroIsTested = false;
     osc = 0;
     DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     iterationCounter = 0; oscillationIterationCounter = 0;
-    int16_t kicker = 0;
+    int16_t kicker = 1;
+    uint8_t yPower = 1;
     
 
     real_t f;
-    real_t term;
+    // real_t term;
     real_t tol;
+    real_t yTol;
+    real_t dTol;
     
     cplx_t X0;
     cplx_t X1;
@@ -1401,6 +1408,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     cplx_t Y0;
     cplx_t Y1;
     cplx_t Y2;
+    cplx_t Y2N;
     cplx_t dY;
     cplx_t Yold;
 
@@ -1411,20 +1419,21 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 
 
     // Initialize
-    getRegisterAsComplex(SREG_STARTX1, CPLX(X1));
-    getRegisterAsComplex(SREG_STARTX0, CPLX(X0));
+    getRegisterAsComplex(REGISTER_X, CPLX(X1));
+    getRegisterAsComplex(REGISTER_Y, CPLX(X0));
 
     //if input parameters X0 and X1 are the same, add a random number to X0
     if(realCompareEqual(&X0.Real, &X1.Real) && realCompareEqual(&X0.Imag, &X1.Imag)) {
 #if defined(PC_BUILD)
-      printf(">>> ADD random number to second input parameter to prevent infinite result\n");
+      printf(">>> ADD 1 to second input parameter to prevent infinite result\n");
 #endif
-      stringToReal("1E-3", &term, ctxtSolver2);
-      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
-      realRandomU01(&term);
-      realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
+      // stringToReal("1E-3", &term, ctxtSolver2);
+      realAdd(&X1.Real, const_1, &X1.Real, ctxtSolver2);
+      // realRandomU01(&term);
+      // realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
     }
     // uint32_t ticks = getUptimeMs() / 100;
+
 
     realCopy(const_0, &Xold.Real); realCopy(const_0, &Xold.Imag);
     copyComplex(&Xold, &Yold);
@@ -1434,44 +1443,46 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     stringToReal("1E-1", &dX.Real, ctxtSolver2);
     copyComplex(&dX, &dY);                       
 
-    convertDoubleToReal(CONVERGE_FACTOR, &f, ctxtSolver2); // factor ()
+    convertDoubleToReal(0.5f, &f, ctxtSolver2); // factor ()
 
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
     uint16_t signDig  = significantDigits ? significantDigits : 34;
 
     realCopy(const_1, &tol);
-    tol.exponent -= signDig <= 5 ? 5 : (signDig > 33 ? 33 : signDig);
+    tol.exponent -= signDig <= 4 ? 4 : (signDig > 31 ? 31 : signDig);
+    realCopy(&tol, &yTol);
+    realCopy(&tol, &dTol);
+    dTol.exponent -= 1;
     fnSetSignificantDigits(34);
 
-    convertComplexToResultRegister(CPLX(X0), REGISTER_X); //determined third starting point using the slope or secant
-    execute_rpn_function();
-    getRegisterAsComplex(REGISTER_Y, CPLX(Y0));
-    convertComplexToResultRegister(CPLX(X1), REGISTER_X);
-    execute_rpn_function();
-    getRegisterAsComplex(REGISTER_Y, CPLX(Y1));
+    execute_rpn_function_reals(&X0, &Y0);
+    execute_rpn_function_reals(&X1, &Y1);
 
-
-    // check if any initial value is a solution
-    if(complexIsLowerThanTol(CPLX(Y0), &tol)) {
+    // check if a initial value is a solution
+    if(check2RealZeroTol(CPLX(Y0), &tol)) {
       copyComplex(&Y0, &Y2);
       copyComplex(&X0, &X2);
       Y2IsZero = true;
     }
-    else if (complexIsLowerThanTol(CPLX(Y1), &tol)) {
+    else if (check2RealZeroTol(CPLX(Y1), &tol)) {
       copyComplex(&Y1, &Y2);
       copyComplex(&X2, &X2);
       Y2IsZero = true;
     } else {
       subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), ctxtSolver2);  //dx=x1-x0
       subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
-      divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0),  ADD_RAN, &tol);  //dx/dy
+      if (check2RealZeroTol(CPLX(temp1), &tol)) {
+        addComplex(CPLX(temp1), const_1e_6, const_0, CPLX(temp1), ctxtSolver2);
+      }
+      divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0));  //dx/dy
       mulComplexComplex( CPLX(temp0), CPLX(Y1), CPLX(temp0), ctxtSolver2);  //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
       subComplex(CPLX(X1), CPLX(temp0), CPLX(X2), ctxtSolver2);  //x2=x1-deltaX
-      convertComplexToResultRegister(CPLX(X2), REGISTER_X);
-      execute_rpn_function();
-      getRegisterAsComplex(REGISTER_Y, CPLX(Y2));
+      if (realIsZero(&X2.Imag))
+      //   realCopy(&temp0.Real, &X2.Imag);
+        // X2.Imag.exponent -= 1;
+        realDivide(&X2.Real, const_5, &X2.Imag, ctxtSolver2);
+      execute_rpn_function_reals(&X2, &Y2);
     }
-
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
                                             printf("INIT:   iterationCounter=%d \n",iterationCounter);
@@ -1498,44 +1509,11 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       }
 
       //Identify oscillations in real or imag: increment osc flag
-      //osc = 0;
-
-      if( (realIsNegative(&dX.Real) && realIsPositive(&Xold.Real)) ||
-      (realIsPositive(&dX.Real) && realIsNegative(&Xold.Real)) ) {
-        DXR = (DXR << 1) + 1;
-      }
-      else {
-        DXR = DXR << 1;
-      }
-
-      if( (realIsNegative(&dY.Real) && realIsPositive(&Yold.Real)) ||
-      (realIsPositive(&dY.Real) && realIsNegative(&Yold.Real)) ) {
-        DYR = (DYR << 1) + 1;
-      }
-      else {
-        DYR = DYR << 1;
-      }
-
-      if( (realIsNegative(&dX.Imag) && realIsPositive(&Xold.Imag)) ||
-      (realIsPositive(&dX.Imag) && realIsNegative(&Xold.Imag)) ) {
-        DXI = (DXI << 1) + 1;
-      }
-      else {
-        DXI = DXI << 1;
-      }
-
-      if( (realIsNegative(&dY.Imag) && realIsPositive(&Yold.Imag)) ||
-      (realIsPositive(&dY.Imag) && realIsNegative(&Yold.Imag)) ) {
-        DYI = (DYI << 1) + 1;
-      }
-      else {
-        DYI = DYI << 1;
-      }
-
-      check_osc(DXR);
-      check_osc(DYR);
-      check_osc(DXI);
-      check_osc(DYI);
+      osc = 0;
+      check_osc(&dX.Real, &Xold.Real, &DXR);
+      check_osc(&dY.Real, &Yold.Real, &DYR);
+      check_osc(&dX.Imag, &Xold.Imag, &DXI);
+      check_osc(&dY.Imag, &Yold.Imag, &DYI);
 
       //If osc flag is active, that is any delta polarity change, then increment oscillation count
       if(osc > 0) {
@@ -1548,15 +1526,15 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       //If converging, increment convergence counter
       if((!realCompareAbsGreaterThan(&dX.Real, &Xold.Real) && (!realCompareAbsGreaterThan(&dX.Imag, &Xold.Imag)))
         &&
-          (!realCompareAbsGreaterThan(&dY.Real, &Yold.Real) && (!realCompareAbsGreaterThan(&dY.Imag, &Yold.Imag)))
+          (!realCompareAbsGreaterThan(&Y2.Real, &Y1.Real) && (!realCompareAbsGreaterThan(&Y2.Imag, &Y1.Imag)))
       ) {
         convergent++;
       }
       else {
-        convergent = max(0,convergent-1);
+        convergent--;// = max(0,convergent-1);
       }
                                         #if defined(VERBOSE_SOLVER0)
-                                              printf("##### iterationCounter= %d osc= %d  conv= %d n",iterationCounter, oscillations, convergent);
+                                              printf("##### iterationCounter= %d osc= %d  conv= %d n\n",iterationCounter, oscillations, convergent);
                                         #endif // VERBOSE_SOLVER0
                                         #if defined(VERBOSE_SOLVER1)
                                               printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
@@ -1565,7 +1543,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       if(convergent > 6 && oscillations > 3) {
 
                                         #if defined(VERBOSE_SOLVER0)
-                                                printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
+                                                printf("#    --   reset detection\n");
                                         #endif // VERBOSE_SOLVER0
         convergent = 2;
         oscillations = 2;
@@ -1574,64 +1552,73 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
                                         #endif // VERBOSE_SOLVER0
       }
 
-      // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
-
-      if((((oscillations >= 3) && (oscillationIterationCounter > 9) && (convergent <= 2)) )) { //|| (oscillations == 0 && convergent > 6 && real34CompareAbsLessThan(REGISTER_REAL34_DATA(SREG_DX), const34_1e_4) && (getRegisterDataType(SREG_DX) == dtComplex34 ? real34CompareAbsLessThan(REGISTER_IMAG34_DATA(SREG_DX), const34_1e_4) : 1 )  )
-        if(COMPLEXKICKER && (kicker == 0) && (convergent <= 1)) {
-          kicker = kicker + 2;
+      if (convergent <= -2-yPower && kicker > 2 + yPower && yPower < 8) {
+        convergent = 0;
+        oscillations = 0;
+        if (yPower>1) {
+          execute_rpn_function_reals(&X0, &Y0);
+          execute_rpn_function_reals(&X1, &Y1);
         }
+        yPower += 2;
+        powCplxNat(&Y0, &yPower, &Y0);
+        powCplxNat(&Y1, &yPower, &Y1);
+#if defined(PC_BUILD)
+        printf("-------- yPower: %u, iter: %u\n",yPower, iterationCounter);
+#endif // PC_BUILD
+      }
+      // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
+      if(iterationCounter==0 || (((oscillations >= 3) && (oscillationIterationCounter > 9) && (convergent <= 2)) )) { 
         oscillationIterationCounter = 0;
         oscillations = 0;
         convergent = 0;
                                         #if defined(VERBOSE_SOLVER2)
                                                 printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
                                         #endif // VERBOSE_SOLVER2
-
-
-        //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quadrant, multplied by a alrger number every time
-        
-        
-        
-        convertDoubleToReal( - (kicker + 0.001) / 100.0, &temp1.Real, ctxtSolver2);
-        realCopy(const_0, &temp1.Imag);
-        if(kicker > 0) {
-          sqrtComplex(CPLX(temp1), CPLX(temp1), ctxtSolver2);
-          convertDoubleToReal((kicker + 0.001) / 100.0, &temp2.Real, ctxtSolver2);
-          realCopy(const_0, &temp2.Imag);
-          sqrtComplex(CPLX(temp2), CPLX(temp2), ctxtSolver2);
-          addComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
-          convertDoubleToReal( pow(-2.0, kicker), &temp2.Real, ctxtSolver2);
-          realCopy(const_0, &temp2.Imag);
-          mulComplexComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), ctxtSolver2);
-        }
-                                        #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-                                                printf("------- Kicked oscillation, #%d, multiplied: ", kicker);
+        convertDoubleToReal( 0.2*sin(kicker*2), &temp1.Imag, ctxtSolver2);
+        convertDoubleToReal( 0.2*cos(kicker*2), &temp1.Real, ctxtSolver2);
+        convertDoubleToReal( pow(2.0, kicker), &temp2.Real, ctxtSolver2);
+        mulComplexComplex(CPLX(temp1), &temp2.Real, const_0, CPLX(temp1), ctxtSolver2);
+                                        #if defined(PC_BUILD)
+                                                printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);
                                                 printComplexToConsole(CPLX(temp1), "multiplied: ", "\n");
                                         #endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
         kicker++;
-        mulComplexComplex(CPLX(temp1), CPLX(X2), CPLX(X2), ctxtSolver2);
+        addComplex(CPLX(temp1), CPLX(X0), CPLX(X2), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER2)
                                                 printComplexToConsole(CPLX(X2), " to ", "\n");
                                         #endif // VERBOSE_SOLVER2
       }
 
       //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      convertComplexToResultRegister(CPLX(X2), REGISTER_X); // get (X2)
-      execute_rpn_function();                                         // leaving y2 in Y and x2 in X
-      getRegisterAsComplex(REGISTER_Y, CPLX(Y2));           // y2
-
+      execute_rpn_function_reals(&X2, &Y2N);
+      powCplxNat(&Y2N, &yPower, &Y2);
+#if defined(PC_BUILD)
+        FILE *outfile = fopen(filename, "ab");
+        char lineToFile[300];
+        char str[60];
+        cplx_t cp = X2;
+        realToString(&cp.Real, str);
+        sprintf(lineToFile, "X2.append((%s, ", str);
+        realToString(&cp.Imag, str);
+        sprintf(lineToFile, "%s%s))\n", lineToFile, str);
+        cp = Y2N;
+        realToString(&cp.Real, str);
+        sprintf(lineToFile, "%sY2.append((%s, ", lineToFile, str);
+        realToString(&cp.Imag, str);
+        sprintf(lineToFile, "%s%s))\n", lineToFile, str);
+        fputs(lineToFile, outfile);
+        fclose(outfile);
+#endif //PC_BUILD
                                         #if defined(VERBOSE_SOLVER1)
                                               printf("    :   iterationCounter=%d",iterationCounter);
                                               printComplexToConsole(CPLX(X2)," X2="," ");
-                                              printComplexToConsole(CPLX(Y2)," Y2=","\n");
+                                              printComplexToConsole(CPLX(Y2N)," Y2=","\n");
                                         #endif // VERBOSE_SOLVER1
-
-      // y2 in Y2 and x2 in X2
       
       // check if an acceptable solution is found
-      Y2IsZero = Y2IsZero ||   complexIsLowerThanTol(CPLX(Y2), &tol);
+      Y2IsZero = Y2IsZero ||   check2RealZeroTol(CPLX(Y2N), &yTol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
-        realIsNaN(&Y2.Real) || realIsNaN(&Y2.Imag) ;
+        realIsNaN(&Y2N.Real) || realIsNaN(&Y2N.Imag) ;
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                               if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
@@ -1668,7 +1655,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
 
         subComplex(CPLX(Y2), CPLX(Y0), CPLX(dY), ctxtSolver2); // Y2-Y0 = dY
         subComplex(CPLX(X2), CPLX(X0), CPLX(dX), ctxtSolver2); // X2-X0 = dX
-        divFunctionComplex(CPLX(dY), CPLX(dX),  CPLX(temp0), !ADD_RAN, &tol); // dY/dX = temp0
+        divFunctionComplex(CPLX(dY), CPLX(dX),  CPLX(temp0)); // dY/dX = temp0
 
                                         #if defined(VERBOSE_SOLVER1)
                                                 printComplexToConsole(CPLX(temp0), " m1=","\n");
@@ -1689,7 +1676,7 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
                                                 printComplexToConsole(CPLX(temp1), " dY2=","\n");//30
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(X1), CPLX(X0), CPLX(temp2), ctxtSolver2);
-        divFunctionComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1), !ADD_RAN, &tol);
+        divFunctionComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1));
 
                                         #if defined(VERBOSE_SOLVER1)
                                                 printComplexToConsole(CPLX(temp1), " m2=","\n");//30
@@ -1710,13 +1697,15 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(Y2), CPLX(Y1), CPLX(temp2), ctxtSolver2);
         //get the 1/slope
-        divFunctionComplex(CPLX(temp2), CPLX(temp1), CPLX(temp0), !ADD_RAN, &tol);
+        divFunctionComplex(CPLX(temp2), CPLX(temp1), CPLX(temp0));
                                         #if defined(VERBOSE_SOLVER1)
                                                 printComplexToConsole(CPLX(temp0), " 1/slope=","\n");
                                         #endif // VERBOSE_SOLVER1
         mulComplexComplex(CPLX(temp0), CPLX(Y0), CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
         // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
-        mulComplexComplex(CPLX(temp1), &f, const_0, CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
+        // if (oscillations >= 1) {
+        //   mulComplexComplex(CPLX(temp1), &f, const_0, CPLX(temp1), ctxtSolver2); // increment to x is: y1 . DX/DY
+        // }
 
                                         #if defined(VERBOSE_SOLVER1)
                                                 printRealToConsole(&f, "    Factor=        ","\n");
@@ -1725,15 +1714,14 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(X0), CPLX(temp1), CPLX(temp1), ctxtSolver2); // subtract as per Newton, x1 - f/f'
 
-        //try round numbers
-        if(convergent > 3 && iterationCounter > 6 && oscillations == 0 && realCompareLessEqual(&temp1.Real, const_1e_4)) {
-          convergent = 0;
-          double higherXStartValue;
-          realToDouble(&temp1.Real, &higherXStartValue);
-          convertDoubleToReal(roundf(1000.0 * higherXStartValue)/1000.0, &temp1.Real, ctxtSolver2);
-          realCopy(const_0, &temp1.Imag);
-        }
-
+        
+        // try zero once if close
+        // if (!zeroIsTested && check2RealZeroTol(CPLX(X2), &tol)){
+        //   printf("# Test zero iter:%i\n", iterationCounter);
+        //   realCopy(const_0, &temp1.Real);
+        //   realCopy(const_0, &temp1.Imag);
+        //   zeroIsTested = true;
+        // }
         copyComplex(&temp1, &X2N);// store temporarily to new x2n
       }
 
@@ -1754,9 +1742,10 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
       copyComplex(&X2, &X1); //old x2 copied to x1
 
       complexMagnitude(CPLX(dX), &temp2.Real,  ctxtSolver2);
-      complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
+      // complexMagnitude(CPLX(dY), &temp1.Real,  ctxtSolver2);
 
-      dXdYIsZero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &tol);
+      // dXdYIsZero |= check2RealZeroTol(&temp1.Real, &temp2.Real, &dTol);
+      // dXdYIsZero |= checkRealZeroTol(&temp2.Real, &dTol);
       checkNaN   |= realIsNaN(&temp1.Real) || realIsNaN(&temp2.Real);
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
@@ -1833,21 +1822,33 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     checkNaN =    checkNaN
       || realIsNaN(&X1.Real) || realIsNaN(&X1.Imag)
         || realIsNaN(&X2.Real) || realIsNaN(&X2.Imag);
+    
+
+
+    bool_t conjugates = false;
+    // Test if zeroed complex parts is equally good
+    dTol.exponent += 2;
+    copyComplex(&X2, &temp0);
+    if (checkRealZeroTol(&X2.Real, &dTol)) {
+      realCopy(const_0, &X2.Real);
+      execute_rpn_function_reals(&X2, &temp1);
+      if (check2RealZeroTol(CPLX(temp1), &tol)) Y2IsZero = true;
+      else realCopy(&temp0.Real, &X2.Real); // revert if not as good
+    }
+    if(checkRealZeroTol(&X2.Imag, &dTol)) {
+      realCopy(const_0, &X2.Imag);
+      execute_rpn_function_reals(&X2, &temp1);
+      if (check2RealZeroTol(CPLX(temp1), &tol)) Y2IsZero = true;
+      else realCopy(&temp0.Imag, &X2.Imag); // revert if not as good
+    } else {   // consider conjugates if X not close to Real
+      realChangeSign(&X2N.Imag);
+      execute_rpn_function_reals(&X2N, &temp2);
+      conjugates = check2RealZeroTol(CPLX(temp2), &tol);
+    }
 
 
     bool_t   FLAG_FRACTN = getSystemFlag(FLAG_FRACT);
     clearSystemFlag(FLAG_FRACT);
-
-
-    bool_t conjugates = false;
-    if(!check2RealZeroTol(&X2.Imag, &X2.Imag, &tol)) {  // do not consider conjugates if X is close to Real
-      realCopy(&X2.Real, &temp1.Real); realCopy(&X2.Imag, &temp1.Imag);
-      realChangeSign(&temp1.Imag);
-      convertComplexToResultRegister(CPLX(temp1), REGISTER_X); // get (X2)
-      execute_rpn_function();                                         // leaving y2 in Y and x2 in X
-      getRegisterAsComplex(REGISTER_Y, CPLX(temp2));           // y2
-      conjugates = check2RealZeroTol(CPLX(temp2), &tol);
-    }
 
 
     fnSetSignificantDigits(signDig);
@@ -1865,7 +1866,8 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     }
 
     convertComplexToResultRegister(CPLX(Y2), REGISTER_Z);
-    convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
+    // convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
+    convertDoubleToReal34Register(iterationCounter, REGISTER_Y);
     convertComplexToResultRegister(CPLX(X2), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
@@ -1893,12 +1895,6 @@ static inline void copyComplex(const cplx_t *from, cplx_t *to) {
                                           printRegisterToConsole(REGISTER_Y,">>> lowerXStartValue=","");
                                           printRegisterToConsole(REGISTER_X," higherXStartValue=","\n");
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
-    calcRegister_t SREG_STARTX0 = __STARTX0;
-    calcRegister_t SREG_STARTX1 = __STARTX1;
-    copySourceRegisterToDestRegister(REGISTER_Y,SREG_STARTX0);
-    copySourceRegisterToDestRegister(REGISTER_X,SREG_STARTX1);
-    fnDrop(NOPARAM);
-    fnDrop(NOPARAM);
     saveForUndo(); //repeat after dropping the input parameters
 
     if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
