@@ -590,6 +590,7 @@ bool_t lastshiftG = false;
         closeShowMenu();
       }
 
+      FN_timed_out_to_NOP_or_Executed = false;
       releaseOverride = false;
       temporaryInformation = TI_NO_INFO;
       FN_key_pressed = *((char *)data) - '0' + 37;  //to render 38-43, as per original keypress
@@ -915,6 +916,7 @@ endReturnTrue:
    ***********************************************/
   static void executeFunction(const char *data, int16_t item_) {
     int16_t item = ITM_NOP;
+    FN_timed_out_to_NOP_or_Executed = true;
 
                     #if defined(VERBOSEKEYS)
                       printf("keyboard.c: executeFunction %i (beginning of executeFunction): %i, %s tam.mode=%i calcMode=%u aimBuffer=%s\n", item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode, calcMode, aimBuffer);
