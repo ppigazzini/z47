@@ -234,7 +234,7 @@ int16_t                FN_key_pressed, FN_key_pressed_last; //JM LONGPRESS FN
 bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
 bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
 bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f and on g
-bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
+bool_t                 FN_timed_out_to_NOP_or_Executed; //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 fnAsnDisplayUSER = true;
@@ -1093,7 +1093,7 @@ int convertKeyCode(int key) {
                                                         sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
                                                       #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
+                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP_or_Executed, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
                                                       #if defined(BUFFER_CLICK_DETECTION)
                                                         sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);

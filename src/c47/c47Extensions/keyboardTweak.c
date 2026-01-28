@@ -807,7 +807,7 @@ void resetKeytimers(void) {
     if((FN_state == ST_1_PRESS1 || FN_state == ST_3_PRESS2) && (!FN_timeouts_in_progress || double_click_detected) && FN_key_pressed != 0) {
       FN_timeouts_in_progress = true;
       fnTimerStart(TO_FN_LONG, TO_FN_LONG,  FN_state == ST_1_PRESS1 ? TIME_FN_12XX_TO_F : TIME_FN_DOUBLE_G_TO_NOP);    //dr
-      FN_timed_out_to_NOP = false;
+      FN_timed_out_to_NOP_or_Executed = false;
 
 
       if(!shiftF && !shiftG) {
@@ -907,14 +907,14 @@ void resetKeytimers(void) {
     bool_t EXEC_pri;
     EXEC_pri = (FN_timeouts_in_progress && (FN_key_pressed != 0));
     // EXEC_FROM_LONGPRESS_RELEASE     EXEC_FROM_LONGPRESS_TIMEOUT  EXEC FN primary
-    if((FN_timed_out_to_RELEASE_EXEC || FN_timed_out_to_NOP || EXEC_pri ))  {                  //JM DOUBLE: If slower ON-OFF than half the limit (250 ms)
+    if((FN_timed_out_to_RELEASE_EXEC || FN_timed_out_to_NOP_or_Executed || EXEC_pri ))  {                  //JM DOUBLE: If slower ON-OFF than half the limit (250 ms)
       underline_softkey(1<<(FN_key_pressed-38), 3);   //Purposely in row 3 which does not exist, just to activate the clear previous line
       charKey[1]=0;
       charKey[0]=FN_key_pressed + (-37+48);
 
       hideFunctionName();
 
-      if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
+      if(!FN_timed_out_to_NOP_or_Executed && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
         #if defined(VERBOSEKEYS)
           printf(">>>>Z RRR2 LONGPRESS EXECUTE              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d \n", charKey, charKey[0]);
         #endif // VERBOSEKEYS
@@ -927,7 +927,7 @@ void resetKeytimers(void) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
 
       if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || GRAPHMODE || calcMode == CM_LISTXY)) {
-        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
+        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP_or_Executed) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }
@@ -953,7 +953,9 @@ void resetKeytimers(void) {
       printf(">>>>Z RRR3 execFnTimeout              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d key+11=%d \n", charKey, charKey[0], key+11);
     #endif // VERBOSEKEYS
 
-    btnFnClicked(NULL, (char *)charKey);
+    if(!FN_timed_out_to_NOP_or_Executed) {
+      btnFnClicked(NULL, (char *)charKey);
+    }
   }
 
 
