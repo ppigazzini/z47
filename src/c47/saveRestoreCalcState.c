@@ -3268,6 +3268,17 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     #endif  // CALCMODEL
     while(restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
     }
+
+    // Set the user primary functions for the R47 yellow and blue shift keys to their standard default value
+    //   to avoid discrepancies after loading key assignments
+    if(calcModel == USER_R47f_g || calcModel == USER_R47fg_g || calcModel == USER_R47fg_bk || calcModel == USER_R47bk_fg) {
+      for(int i = 10; i <= 11; i++) {        // R47 Yellow and Blue Shift keys
+        kbd_usr[i].primary    = kbd_std[i].primary;
+        kbd_usr[i].keyLblAim  = kbd_std[i].keyLblAim;
+        kbd_usr[i].primaryAim = kbd_std[i].primaryAim;
+        kbd_usr[i].primaryTam = kbd_std[i].primaryTam;
+      }
+    }
   }
 
   lastErrorCode = ERROR_NONE;
