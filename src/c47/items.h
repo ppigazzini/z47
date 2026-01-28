@@ -2657,7 +2657,7 @@
 #define ITM_MOD_XFN                 2577
 #define ITM_MODANG_XFN              2578
 #define ITM_TO_XFN                  2579
-#define ITM_2580                    2580
+#define ITM_CHS_XFN                 2580
 #define ITM_2581                    2581
 #define ITM_DRG_XFN                 2582
 #define ITM_SQR_XFN                 2583
