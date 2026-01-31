@@ -73,7 +73,7 @@ int main() {
     int i, j;
 
     puts("struct reservedRegister {");
-    puts("    char name[7];");
+    puts("    char name[8];");
     puts("    register_t reg;");
     puts("};\n");
     puts("%%");
