@@ -91,43 +91,30 @@ static unsigned int hash(register const char *str, register unsigned int len) {
   return hval;
 }
 
-#if defined(__clang__)
-  #if __clang_major__ < 15  // replace 15 with version that has the warning
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunterminated-string-initialization"
-    #define RESERVED_PRAGMA_POP 1
-  #endif
-#endif
-
 TO_QSPI static const struct reservedRegister wordlist[] = {
-  {"\241\223Y",   RESERVED_VARIABLE_LY},
-  {"\241\221Y",   RESERVED_VARIABLE_UY},
-  {"\241\223X",   RESERVED_VARIABLE_LX},
-  {"\241\221X",   RESERVED_VARIABLE_UX},
-  {"\241\223Lim", RESERVED_VARIABLE_LLIM},
-  {"\241\221Lim", RESERVED_VARIABLE_ULIM},
-  {"\241\223EST", RESERVED_VARIABLE_LEST},
-  {"\241\221EST", RESERVED_VARIABLE_UEST},
-  {"PPER/a",      RESERVED_VARIABLE_PPERONA},
-  {"PV",          RESERVED_VARIABLE_PV},
-  {"CPER/a",      RESERVED_VARIABLE_CPERONA},
-  {"ACC",         RESERVED_VARIABLE_ACC},
-  {"REALDF",      RESERVED_VARIABLE_REALDF},
-  {"NPPER",       RESERVED_VARIABLE_NPPER},
-  {"PMT",         RESERVED_VARIABLE_PMT},
-  {"ISM",         RESERVED_VARIABLE_ISM},
-  {"GRAMOD",      RESERVED_VARIABLE_GRAMOD},
-  {"FV",          RESERVED_VARIABLE_FV},
-  {"ADM",         RESERVED_VARIABLE_ADM},
-  {"D.MAX",       RESERVED_VARIABLE_DENMAX},
-  {"I%/a",        RESERVED_VARIABLE_IPONA},
-  {"#DEC",        RESERVED_VARIABLE_NDEC}
+  {"\241\223Y\0",   RESERVED_VARIABLE_LY},
+  {"\241\221Y\0",   RESERVED_VARIABLE_UY},
+  {"\241\223X\0",   RESERVED_VARIABLE_LX},
+  {"\241\221X\0",   RESERVED_VARIABLE_UX},
+  {"\241\223Lim\0", RESERVED_VARIABLE_LLIM},
+  {"\241\221Lim\0", RESERVED_VARIABLE_ULIM},
+  {"\241\223EST\0", RESERVED_VARIABLE_LEST},
+  {"\241\221EST\0", RESERVED_VARIABLE_UEST},
+  {"PPER/a\0",      RESERVED_VARIABLE_PPERONA},
+  {"PV\0",          RESERVED_VARIABLE_PV},
+  {"CPER/a\0",      RESERVED_VARIABLE_CPERONA},
+  {"ACC\0",         RESERVED_VARIABLE_ACC},
+  {"REALDF\0",      RESERVED_VARIABLE_REALDF},
+  {"NPPER\0",       RESERVED_VARIABLE_NPPER},
+  {"PMT\0",         RESERVED_VARIABLE_PMT},
+  {"ISM\0",         RESERVED_VARIABLE_ISM},
+  {"GRAMOD\0",      RESERVED_VARIABLE_GRAMOD},
+  {"FV\0",          RESERVED_VARIABLE_FV},
+  {"ADM\0",         RESERVED_VARIABLE_ADM},
+  {"D.MAX\0",       RESERVED_VARIABLE_DENMAX},
+  {"I%/a\0",        RESERVED_VARIABLE_IPONA},
+  {"#DEC\0",        RESERVED_VARIABLE_NDEC}
 };
-
-#if defined(RESERVED_PRAGMA_POP)
-  #pragma clang diagnostic pop
-  #undef RESERVED_PRAGMA_POP
-#endif
 
 static const struct reservedRegister *lookupReservedVariableName(register const char *str, register unsigned int len) {
   if(len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
@@ -136,7 +123,7 @@ static const struct reservedRegister *lookupReservedVariableName(register const 
     if(key <= MAX_HASH_VALUE) {
       register const char *s = wordlist[key].name;
 
-      if(*str == *s && !memcmp (str + 1, s + 1, len)) {
+      if(*str == *s && !memcmp (str + 1, s + 1, len - 1)) {
         return &wordlist[key];
       }
     }

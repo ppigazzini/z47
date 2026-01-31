@@ -82,6 +82,7 @@ int main() {
 
         for (j=1; j<= n; j++)
             putchar(names[i].name[j]);
+        putchar('\0');  // Add explicit null terminator to gperf input
         printf(",%s\n", names[i].reg);
     }
     return 0;
