@@ -6,7 +6,7 @@
  *      >src/c47/reservedRegisterLookup.h
  *
  * The output will then need editing.  The asso_values array needs the
- * 36th and 37th elements swaooed:
+ * 36th and 37th elements swapped:
  *      -      22, 22, 22, 22, 22, 22,  9,  8, 22, 22,
  *      +      22, 22, 22, 22, 22,  9, 22,  8, 22, 22,
  * The TO_QSPI prefix is needed for asso_values and wordlist.
@@ -14,78 +14,76 @@
 #include <stdio.h>
 
 struct {
-    unsigned char name[8];
-    const char *reg;
+  unsigned char name[8];
+  const char *reg;
 } names[] = {
 #if 0
-    {1, 'X',  0,   0,   0,   0,   0,   0},
-    {1, 'Y',  0,   0,   0,   0,   0,   0},
-    {1, 'Z',  0,   0,   0,   0,   0,   0},
-    {1, 'T',  0,   0,   0,   0,   0,   0},
-    {1, 'A',  0,   0,   0,   0,   0,   0},
-    {1, 'B',  0,   0,   0,   0,   0,   0},
-    {1, 'C',  0,   0,   0,   0,   0,   0},
-    {1, 'D',  0,   0,   0,   0,   0,   0},
-    {1, 'L',  0,   0,   0,   0,   0,   0},
-    {1, 'I',  0,   0,   0,   0,   0,   0},
-    {1, 'J',  0,   0,   0,   0,   0,   0},
-    {1, 'K',  0,   0,   0,   0,   0,   0},
-    {1, 'M',  0,   0,   0,   0,   0,   0},
-    {1, 'N',  0,   0,   0,   0,   0,   0},
-    {1, 'P',  0,   0,   0,   0,   0,   0},
-    {1, 'Q',  0,   0,   0,   0,   0,   0},
-    {1, 'R',  0,   0,   0,   0,   0,   0},
-    {1, 'S',  0,   0,   0,   0,   0,   0},
-    {1, 'E',  0,   0,   0,   0,   0,   0},
-    {1, 'F',  0,   0,   0,   0,   0,   0},
-    {1, 'G',  0,   0,   0,   0,   0,   0},
-    {1, 'H',  0,   0,   0,   0,   0,   0},
-    {1, 'O',  0,   0,   0,   0,   0,   0},
-    {1, 'U',  0,   0,   0,   0,   0,   0},
-    {1, 'V',  0,   0,   0,   0,   0,   0},
-    {1, 'W',  0,   0,   0,   0,   0,   0},
+  {2, 'X',  0,   0,   0,   0,   0,   0},
+  {2, 'Y',  0,   0,   0,   0,   0,   0},
+  {2, 'Z',  0,   0,   0,   0,   0,   0},
+  {2, 'T',  0,   0,   0,   0,   0,   0},
+  {2, 'A',  0,   0,   0,   0,   0,   0},
+  {2, 'B',  0,   0,   0,   0,   0,   0},
+  {2, 'C',  0,   0,   0,   0,   0,   0},
+  {2, 'D',  0,   0,   0,   0,   0,   0},
+  {2, 'L',  0,   0,   0,   0,   0,   0},
+  {2, 'I',  0,   0,   0,   0,   0,   0},
+  {2, 'J',  0,   0,   0,   0,   0,   0},
+  {2, 'K',  0,   0,   0,   0,   0,   0},
+  {2, 'M',  0,   0,   0,   0,   0,   0},
+  {2, 'N',  0,   0,   0,   0,   0,   0},
+  {2, 'P',  0,   0,   0,   0,   0,   0},
+  {2, 'Q',  0,   0,   0,   0,   0,   0},
+  {2, 'R',  0,   0,   0,   0,   0,   0},
+  {2, 'S',  0,   0,   0,   0,   0,   0},
+  {2, 'E',  0,   0,   0,   0,   0,   0},
+  {2, 'F',  0,   0,   0,   0,   0,   0},
+  {2, 'G',  0,   0,   0,   0,   0,   0},
+  {2, 'H',  0,   0,   0,   0,   0,   0},
+  {2, 'O',  0,   0,   0,   0,   0,   0},
+  {2, 'U',  0,   0,   0,   0,   0,   0},
+  {2, 'V',  0,   0,   0,   0,   0,   0},
+  {2, 'W',  0,   0,   0,   0,   0,   0},
 #endif
-    {{3, 'A', 'D', 'M',  0,   0,   0,   0}, "RESERVED_VARIABLE_ADM" },
-    {{5, 'D', '.', 'M', 'A', 'X',  0,   0}, "RESERVED_VARIABLE_DENMAX" },
-    {{3, 'I', 'S', 'M',  0,   0,   0,   0}, "RESERVED_VARIABLE_ISM" },
-    {{6, 'R', 'E', 'A', 'L', 'D', 'F',  0}, "RESERVED_VARIABLE_REALDF" },
-    {{4, '$', 'D', 'E', 'C',  0,   0,   0}, "RESERVED_VARIABLE_NDEC" },
-    {{3, 'A', 'C', 'C',  0,   0,   0,   0}, "RESERVED_VARIABLE_ACC" },
-    {{5, 161, 145, 'L', 'i', 'm',  0,   0}, "RESERVED_VARIABLE_ULIM" },
-    {{5, 161, 147, 'L', 'i', 'm',  0,   0}, "RESERVED_VARIABLE_LLIM" },
-    {{2, 'F', 'V',  0,   0,   0,   0,   0}, "RESERVED_VARIABLE_FV" },
-    {{4, 'I', '%', '/', 'a',  0,   0,   0}, "RESERVED_VARIABLE_IPONA" },
-    {{5, 'N', 'P', 'P', 'E', 'R',  0,   0}, "RESERVED_VARIABLE_NPPER" },
-    {{6, 'P', 'P', 'E', 'R', '/',  'a', 0}, "RESERVED_VARIABLE_PPERONA" },
-    {{3, 'P', 'M', 'T',  0,   0,   0,   0}, "RESERVED_VARIABLE_PMT" },
-    {{2, 'P', 'V',  0,   0,   0,   0,   0}, "RESERVED_VARIABLE_PV" },
-    {{6, 'G', 'R', 'A', 'M', 'O', 'D',  0}, "RESERVED_VARIABLE_GRAMOD" },
-    {{3, 161, 145, 'X',  0,   0,   0,   0}, "RESERVED_VARIABLE_UX" },
-    {{3, 161, 147, 'X',  0,   0,   0,   0}, "RESERVED_VARIABLE_LX" },
-    {{6, 'C', 'P', 'E', 'R', '/', 'a',  0}, "RESERVED_VARIABLE_CPERONA" },
-    {{5, 161, 145, 'E', 'S', 'T',  0,   0}, "RESERVED_VARIABLE_UEST" },
-    {{5, 161, 147, 'E', 'S', 'T',  0,   0}, "RESERVED_VARIABLE_LEST" },
-    {{3, 161, 145, 'Y',  0,   0,   0,   0}, "RESERVED_VARIABLE_UY" },
-    {{3, 161, 147, 'Y',  0,   0,   0,   0}, "RESERVED_VARIABLE_LY" },
+  {{4, 'A', 'D', 'M',  0,   0,   0,   0}, "RESERVED_VARIABLE_ADM" },
+  {{6, 'D', '.', 'M', 'A', 'X',  0,   0}, "RESERVED_VARIABLE_DENMAX" },
+  {{4, 'I', 'S', 'M',  0,   0,   0,   0}, "RESERVED_VARIABLE_ISM" },
+  {{7, 'R', 'E', 'A', 'L', 'D', 'F',  0}, "RESERVED_VARIABLE_REALDF" },
+  {{5, '$', 'D', 'E', 'C',  0,   0,   0}, "RESERVED_VARIABLE_NDEC" },
+  {{4, 'A', 'C', 'C',  0,   0,   0,   0}, "RESERVED_VARIABLE_ACC" },
+  {{6, 161, 145, 'L', 'i', 'm',  0,   0}, "RESERVED_VARIABLE_ULIM" },
+  {{6, 161, 147, 'L', 'i', 'm',  0,   0}, "RESERVED_VARIABLE_LLIM" },
+  {{3, 'F', 'V',  0,   0,   0,   0,   0}, "RESERVED_VARIABLE_FV" },
+  {{5, 'I', '%', '/', 'a',  0,   0,   0}, "RESERVED_VARIABLE_IPONA" },
+  {{6, 'N', 'P', 'P', 'E', 'R',  0,   0}, "RESERVED_VARIABLE_NPPER" },
+  {{7, 'P', 'P', 'E', 'R', '/',  'a', 0}, "RESERVED_VARIABLE_PPERONA" },
+  {{4, 'P', 'M', 'T',  0,   0,   0,   0}, "RESERVED_VARIABLE_PMT" },
+  {{3, 'P', 'V',  0,   0,   0,   0,   0}, "RESERVED_VARIABLE_PV" },
+  {{7, 'G', 'R', 'A', 'M', 'O', 'D',  0}, "RESERVED_VARIABLE_GRAMOD" },
+  {{4, 161, 145, 'X',  0,   0,   0,   0}, "RESERVED_VARIABLE_UX" },
+  {{4, 161, 147, 'X',  0,   0,   0,   0}, "RESERVED_VARIABLE_LX" },
+  {{7, 'C', 'P', 'E', 'R', '/', 'a',  0}, "RESERVED_VARIABLE_CPERONA" },
+  {{6, 161, 145, 'E', 'S', 'T',  0,   0}, "RESERVED_VARIABLE_UEST" },
+  {{6, 161, 147, 'E', 'S', 'T',  0,   0}, "RESERVED_VARIABLE_LEST" },
+  {{4, 161, 145, 'Y',  0,   0,   0,   0}, "RESERVED_VARIABLE_UY" },
+  {{4, 161, 147, 'Y',  0,   0,   0,   0}, "RESERVED_VARIABLE_LY" },
 };
 
 int main() {
-    int i, j;
+  int i, j;
 
-    puts("struct reservedRegister {");
-    puts("    char name[8];");
-    puts("    register_t reg;");
-    puts("};\n");
-    puts("%%");
-    for (i=0; i < sizeof(names)/sizeof(*names); i++) {
-        int n = names[i].name[0];
+  puts("struct reservedRegister {");
+  puts("  char name[7];");
+  puts("  register_t reg;");
+  puts("};\n");
+  puts("%%");
+  for(i=0; i < sizeof(names)/sizeof(*names); i++) {
+    int n = names[i].name[0];
 
-        for (j=1; j<= n; j++)
-            putchar(names[i].name[j]);
-        putchar('\0');  // Add explicit null terminator to gperf input
-        printf(",%s\n", names[i].reg);
+    for(j=1; j<= n; j++) {
+      putchar(names[i].name[j]);
     }
-    return 0;
+    printf(",%s\n", names[i].reg);
+  }
+  return 0;
 }
-
-

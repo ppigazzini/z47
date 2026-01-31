@@ -1,5 +1,5 @@
-/* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Library/Developer/CommandLineTools/usr/bin/gperf -C -G --null-strings -m 1000 -E -n -L ANSI-C -N lookupReservedVariableName -t  */
+/* ANSI-C code produced by gperf version 3.3 */
+/* Command-line: gperf -C -G --null-strings -m 1000 -E -n -L ANSI-C -N lookupReservedVariableName -t  */
 /* Computed positions: -k'1-3' */
 
 #if !(   (' ' ==  32) && ('!' ==  33) && ('"' ==  34) && ('#' ==  35) \
@@ -26,11 +26,11 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 struct reservedRegister {
-  char name[8];
+  char name[7];
   calcRegister_t reg;
 };
 enum {
@@ -78,7 +78,7 @@ static unsigned int hash(register const char *str, register unsigned int len) {
     22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
     22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
     22, 22, 22, 22, 22, 22
-  };
+    };
   register unsigned int hval = 0;
 
   switch(len) {
@@ -87,33 +87,33 @@ static unsigned int hash(register const char *str, register unsigned int len) {
     case 2:  hval += asso_values[(unsigned char)str[1]];
     /*FALLTHROUGH*/
     case 1:  hval += asso_values[(unsigned char)str[0]]; break;
-  }
+    }
   return hval;
 }
 
 TO_QSPI static const struct reservedRegister wordlist[] = {
-  {"\241\223Y\0",   RESERVED_VARIABLE_LY},
-  {"\241\221Y\0",   RESERVED_VARIABLE_UY},
-  {"\241\223X\0",   RESERVED_VARIABLE_LX},
-  {"\241\221X\0",   RESERVED_VARIABLE_UX},
-  {"\241\223Lim\0", RESERVED_VARIABLE_LLIM},
-  {"\241\221Lim\0", RESERVED_VARIABLE_ULIM},
-  {"\241\223EST\0", RESERVED_VARIABLE_LEST},
-  {"\241\221EST\0", RESERVED_VARIABLE_UEST},
-  {"PPER/a\0",      RESERVED_VARIABLE_PPERONA},
-  {"PV\0",          RESERVED_VARIABLE_PV},
-  {"CPER/a\0",      RESERVED_VARIABLE_CPERONA},
-  {"ACC\0",         RESERVED_VARIABLE_ACC},
-  {"REALDF\0",      RESERVED_VARIABLE_REALDF},
-  {"NPPER\0",       RESERVED_VARIABLE_NPPER},
-  {"PMT\0",         RESERVED_VARIABLE_PMT},
-  {"ISM\0",         RESERVED_VARIABLE_ISM},
-  {"GRAMOD\0",      RESERVED_VARIABLE_GRAMOD},
-  {"FV\0",          RESERVED_VARIABLE_FV},
-  {"ADM\0",         RESERVED_VARIABLE_ADM},
-  {"D.MAX\0",       RESERVED_VARIABLE_DENMAX},
-  {"I%/a\0",        RESERVED_VARIABLE_IPONA},
-  {"#DEC\0",        RESERVED_VARIABLE_NDEC}
+  {"\241\223Y",   RESERVED_VARIABLE_LY},
+  {"\241\221Y",   RESERVED_VARIABLE_UY},
+  {"\241\223X",   RESERVED_VARIABLE_LX},
+  {"\241\221X",   RESERVED_VARIABLE_UX},
+  {"\241\223Lim", RESERVED_VARIABLE_LLIM},
+  {"\241\221Lim", RESERVED_VARIABLE_ULIM},
+  {"\241\223EST", RESERVED_VARIABLE_LEST},
+  {"\241\221EST", RESERVED_VARIABLE_UEST},
+  {"PPER/a",      RESERVED_VARIABLE_PPERONA},
+  {"PV",          RESERVED_VARIABLE_PV},
+  {"CPER/a",      RESERVED_VARIABLE_CPERONA},
+  {"ACC",         RESERVED_VARIABLE_ACC},
+  {"REALDF",      RESERVED_VARIABLE_REALDF},
+  {"NPPER",       RESERVED_VARIABLE_NPPER},
+  {"PMT",         RESERVED_VARIABLE_PMT},
+  {"ISM",         RESERVED_VARIABLE_ISM},
+  {"GRAMOD",      RESERVED_VARIABLE_GRAMOD},
+  {"FV",          RESERVED_VARIABLE_FV},
+  {"ADM",         RESERVED_VARIABLE_ADM},
+  {"D.MAX",       RESERVED_VARIABLE_DENMAX},
+  {"I%/a",        RESERVED_VARIABLE_IPONA},
+  {"#DEC",        RESERVED_VARIABLE_NDEC}
 };
 
 static const struct reservedRegister *lookupReservedVariableName(register const char *str, register unsigned int len) {
@@ -123,7 +123,7 @@ static const struct reservedRegister *lookupReservedVariableName(register const 
     if(key <= MAX_HASH_VALUE) {
       register const char *s = wordlist[key].name;
 
-      if(*str == *s && !memcmp (str + 1, s + 1, len - 1)) {
+      if(*str == *s && !memcmp(str + 1, s + 1, len)) {
         return &wordlist[key];
       }
     }
