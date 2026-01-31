@@ -30,7 +30,7 @@
 #endif
 
 struct reservedRegister {
-  char name[6];
+  char name[8];
   calcRegister_t reg;
 };
 enum {
