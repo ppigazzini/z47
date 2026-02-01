@@ -2709,14 +2709,19 @@
 #define ITM_MATX_A_1                2623
 #define ITM_3R3P                    2624
 
-#define ITM_SetHP35                 2625
-#define ITM_SetC47                  2626
-#define ITM_SetJM                   2627
-#define ITM_SetRJ                   2628
-#define ITM_2628                    2629
-#define ITM_2629                    2630
-#define ITM_2630                    2631
-#define ITM_2631                    2632
+#define MNU_DEV                     2625
+#define ITM_SetHP35                 2626
+#define ITM_SetC47                  2627
+#define ITM_SetJM                   2628
+#define ITM_SetRJ                   2629
+#define ITM_2630                    2630
+#define ITM_2631                    2631
+#define ITM_2632                    2632
+#define ITM_2633                    2633
+#define ITM_2634                    2634
+#define ITM_2635                    2635
+#define ITM_2636                    2636
+#define ITM_2637                    2637
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2724,7 +2729,7 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2633
+#define LAST_ITEM                   2638
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
