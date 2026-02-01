@@ -21,5 +21,6 @@
   #include "pareto.h"
   #include "poisson.h"
   #include "t.h"
+  #include "uniform.h"
   #include "weibull.h"
 #endif // !DISTRIBUTIONS_H

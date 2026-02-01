@@ -285,7 +285,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
   }
 
   if(realIsZero((real_t*)cos)) {
-    realSetPositiveSign((real_t*)&cos);
+    realSetPositiveSign((real_t*)cos);
   }
   if(realIsZero((real_t*)sin)) {
     realSetPositiveSign((real_t*)sin);
