@@ -156,7 +156,7 @@ void resetKeytimers(void) {
   #define keypress_fff true
   #define keypress_long_f false
   void openHOMEorMyM(bool_t situation){
-    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
+    if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE && (calcMode != CM_EIM) && (calcMode != CM_MIM)) {  // f and g longpress temporarily disabled in EIM and MIM)
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
@@ -167,36 +167,112 @@ void resetKeytimers(void) {
 
       int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME);
       int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu);
+//note: restored CUST changing to HOME
 
-      if((getSystemFlag(FLAG_HOME_TRIPLE) && currentMenu() == target_HOME)) {
-        if(situation == keypress_fff) {
-          popSoftmenu();
+//note: Removed fff clearing HOME again
+
+//note: Add Non-USER mode below for fff
+
+
+      bool_t baseOverrideOnce = false;
+      BASE_OVERRIDEONCE = baseOverrideOnce;
+
+      if(getSystemFlag(FLAG_ALPHA)) {
+        leaveTamModeIfEnabled();
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if((currentMenu() == -MNU_MyAlpha) || (currentMenu() == -MNU_AIMCATALOG) || isAlphabeticSoftmenu()) {
+            popSoftmenu();
+          }
+          if(tam.alpha) {
+            showSoftmenu(-MNU_TAMALPHA);
+          }
+          else {
+            showSoftmenu(-MNU_ALPHA);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          showSoftmenu(-MNU_MyAlpha);
         }
       }
       else {
-        if(getSystemFlag(FLAG_ALPHA)) {
-          leaveTamModeIfEnabled();
-          showSoftmenu(-MNU_MyAlpha);
-        }
-        else {
-          if(getSystemFlag(FLAG_HOME_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            showSoftmenu(target_HOME);
+        leaveTamModeIfEnabled();
+
+        int keyCode = (calcModel == USER_R47bk_fg) ? 11 : (calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g) ? 10 : (calcModel == USER_C47 || calcModel == USER_DM42) ? 27 : 9999;
+        if(keyCode != 9999) {
+          calcKey_t *key = kbd_usr + keyCode;
+          int16_t item = key->gShifted;
+          if(calcMode == CM_NIM && getSystemFlag(FLAG_USER) && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD
+               && item != ITM_HASH_JM && item != ITM_toINT && item != ITM_BACKSPACE && indexOfItems[item].func != addItemToBuffer) {
+            delayCloseNim = false;
+            closeNim();
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           }
-          else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
-            leaveTamModeIfEnabled();
-            if(situation == keypress_fff) {
-              BASE_OVERRIDEONCE = true;
+          if(getSystemFlag(FLAG_USER)) {    // USER mode
+            if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
+              #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
+                _executeItem(item,keyCode);
+              #endif // LONGPRESS_CFG
+
+              screenUpdatingMode = SCRUPD_AUTO;
+              refreshScreen(1000);
             }
-            showSoftmenu(target_MYM);
-          } //If none selected, do not display any menu, keep the screen blank
+            else {;
+              if(item < 0) {
+                if(item == -MNU_DYNAMIC) {
+                  char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + 1);
+                  setCurrentUserMenu(item, funcParam);
+                }
+                target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE)? -MNU_MyMenu : item);
+                showSoftmenu(target_HOME);
+              }
+              else {
+                if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  showSoftmenu(target_HOME);
+                }
+                else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+                  leaveTamModeIfEnabled();
+                  if(situation == keypress_fff) {
+                    BASE_OVERRIDEONCE = true;
+                  }
+                  showSoftmenu(target_MYM);
+                } //If none selected, do not display any menu, keep the screen blank
+              }
+            }
+          }
+          else {                            // Normal mode
+            if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+              leaveTamModeIfEnabled();
+              showSoftmenu(target_HOME);
+            }
+            else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+              if(getSystemFlag(FLAG_BASE_MYM) || getSystemFlag(FLAG_BASE_HOME)) {
+                leaveTamModeIfEnabled();
+                if(situation == keypress_fff) {
+                  baseOverrideOnce = true;
+                }
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                showSoftmenu(target_MYM);
+              }
+              else {
+                baseOverrideOnce = false;
+                BASE_OVERRIDEONCE = baseOverrideOnce;
+                fnExitAllMenus(0);               // If MyMb and HOMEb are both clear, return to the blank base menu display
+              }
+            }  //If none selected, do not display any menu, keep the screen blank
+          }
         }
       }
+      BASE_OVERRIDEONCE = baseOverrideOnce;
       showSoftmenuCurrentPart();
+      BASE_OVERRIDEONCE = baseOverrideOnce;            //for upcoming refresh*
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(23);
     }
   }
 
   void fg_processing_jm(void) {
+    bool_t toExecute = false;
     if(getSystemFlag(FLAG_SHFT_4s) || (getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE))) {
       if((getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) && !GRAPHMODE) {
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_RUNNING) {
@@ -207,7 +283,7 @@ void resetKeytimers(void) {
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
             leaveTamModeIfEnabled();
-            openHOMEorMyM(keypress_fff);
+            toExecute = true;
           }
         }
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_STOPPED) {
@@ -233,6 +309,9 @@ void resetKeytimers(void) {
       shiftF = false;                                                             //JM shifts
       shiftG = false;                                                             //JM shifts
     }                                                                             //JM shifts
+    if(toExecute) {
+      openHOMEorMyM(keypress_fff);
+    }
   }
 
 
@@ -388,14 +467,14 @@ void resetKeytimers(void) {
 
     else if(calcMode == CM_NORMAL && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
-      longpressDelayedkey2 = longpressDelayedkey1;
+      longpressDelayedkey2 = 0; //longpressDelayedkey1;
       longpressDelayedkey3 = ITM_EDIT;
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
       longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-      longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-      longpressDelayedkey3 = 0;              // forcefully prevent the 3rd slot to trigger when EXIT is assigned elsewhere
+      longpressDelayedkey2 = 0;     // EXIT longpress DOES CLRMOD
+      longpressDelayedkey3 = ITM_CLRMOD;              // forcefully prevent the 3rd slot to trigger when EXIT is assigned elsewhere
     }
 
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_DRG) {
@@ -415,8 +494,8 @@ void resetKeytimers(void) {
         }
         else if(LongPressM == RBX_M1234) {
           longpressDelayedkey1 = ITM_USERMODE;
-          longpressDelayedkey2 = tmpg;
-          //longpressDelayedkey3 = 0;
+          //longpressDelayedkey2 = 0;
+          longpressDelayedkey3 = tmpg;
         }
       }
     }
@@ -435,21 +514,21 @@ void resetKeytimers(void) {
             case ITM_BACKSPACE:
               if(tam.mode == 0) {
                   longpressDelayedkey1 = ITM_CLA;      //BACKSPACE longpress clears input buffer
-                  longpressDelayedkey2 = ITM_EDIT;
-                  longpressDelayedkey3 = 0;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = ITM_EDIT;
                 }
               break;
             case ITM_EXIT1:
               longpressDelayedkey1 = -MNU_MyAlpha;//  LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
-              longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
-              longpressDelayedkey3 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               break;
 
             case ITM_ENTER:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_XEDIT;
-                longpressDelayedkey2 = ITM_CR;
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CR;
               }
               break;
             default:;
@@ -467,14 +546,14 @@ void resetKeytimers(void) {
               break;
             case ITM_EXIT1:
               longpressDelayedkey1 = -MNU_MyAlpha;
-              longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey3 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               break;
             case ITM_ENTER:
               if(tam.mode == 0) {
                 longpressDelayedkey1 = ITM_XEDIT;
-                longpressDelayedkey2 = ITM_CR;
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CR;
               }
               break;
             default:;
@@ -506,8 +585,8 @@ void resetKeytimers(void) {
                 longpressDelayedkey3 = 0;
               } else {
                 longpressDelayedkey1 = ITM_SNAP;
-                longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-                longpressDelayedkey3 = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               }
               break;
             default:;
@@ -728,7 +807,7 @@ void resetKeytimers(void) {
     if((FN_state == ST_1_PRESS1 || FN_state == ST_3_PRESS2) && (!FN_timeouts_in_progress || double_click_detected) && FN_key_pressed != 0) {
       FN_timeouts_in_progress = true;
       fnTimerStart(TO_FN_LONG, TO_FN_LONG,  FN_state == ST_1_PRESS1 ? TIME_FN_12XX_TO_F : TIME_FN_DOUBLE_G_TO_NOP);    //dr
-      FN_timed_out_to_NOP = false;
+      FN_timed_out_to_NOP_or_Executed = false;
 
 
       if(!shiftF && !shiftG) {
@@ -828,14 +907,14 @@ void resetKeytimers(void) {
     bool_t EXEC_pri;
     EXEC_pri = (FN_timeouts_in_progress && (FN_key_pressed != 0));
     // EXEC_FROM_LONGPRESS_RELEASE     EXEC_FROM_LONGPRESS_TIMEOUT  EXEC FN primary
-    if((FN_timed_out_to_RELEASE_EXEC || FN_timed_out_to_NOP || EXEC_pri ))  {                  //JM DOUBLE: If slower ON-OFF than half the limit (250 ms)
+    if((FN_timed_out_to_RELEASE_EXEC || FN_timed_out_to_NOP_or_Executed || EXEC_pri ))  {                  //JM DOUBLE: If slower ON-OFF than half the limit (250 ms)
       underline_softkey(1<<(FN_key_pressed-38), 3);   //Purposely in row 3 which does not exist, just to activate the clear previous line
       charKey[1]=0;
       charKey[0]=FN_key_pressed + (-37+48);
 
       hideFunctionName();
 
-      if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
+      if(!FN_timed_out_to_NOP_or_Executed && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
         #if defined(VERBOSEKEYS)
           printf(">>>>Z RRR2 LONGPRESS EXECUTE              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d \n", charKey, charKey[0]);
         #endif // VERBOSEKEYS
@@ -848,7 +927,7 @@ void resetKeytimers(void) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
 
       if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || GRAPHMODE || calcMode == CM_LISTXY)) {
-        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
+        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP_or_Executed) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }
@@ -874,7 +953,9 @@ void resetKeytimers(void) {
       printf(">>>>Z RRR3 execFnTimeout              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d key+11=%d \n", charKey, charKey[0], key+11);
     #endif // VERBOSEKEYS
 
-    btnFnClicked(NULL, (char *)charKey);
+    if(!FN_timed_out_to_NOP_or_Executed) {
+      btnFnClicked(NULL, (char *)charKey);
+    }
   }
 
 

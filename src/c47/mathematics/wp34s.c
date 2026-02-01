@@ -24,8 +24,8 @@
   #undef DEBUGTAYLOR
 #endif
 
-
-
+// called from WP34S_Cvt2RadSinCosTan for 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
+// called from C47_WP34S_Cvt2RadSinCosTan for 1071+ XFN
 static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
   const real_t *angle45, *angle90, *angle180;
   angle45  = const_0;
@@ -48,13 +48,12 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
         angle45 = const1071_piOn4;
         angle90 = const1071_piOn2;
         angle180 = const1071_pi;
-        WP34S_BigMod((real_t*)angle, const2139_2pi, angle, realContext); // mod(angle, 2pi) --> angle
       } else {
         angle45 = const_piOn4_75;
         angle90 = const_piOn2_75;
         angle180 = const_pi_75;
-        mod2Pi((real_t*)angle, angle, realContext); // mod(angle, 2pi) --> angle
       }
+      mod2Pi((real_t*)angle, angle, realContext); // mod(angle, 2pi) --> angle
       break;
     }
 
@@ -168,8 +167,9 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
 }
 
 
-// Have to be careful here to ensure that every function we call can handle
-// the increased size of the numbers we're using.
+// Called directly 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
+//
+// Have to be careful here to ensure that every function we call can handle the increased size of the numbers we're using.
 void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
@@ -199,7 +199,7 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   }
 
   doWP34S_SinCosTanTaylor((real_t*)&angle, &sinNeg, &cosNeg, &swap, (real_t*)sinOut, (real_t*)cosOut, (real_t*)tanOut, angularMode, savedContextDigits, realContext);
-  }
+}
 
 
 
@@ -295,6 +295,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 }
 
 
+// used by normal TRIG
 // Calculate sin, cos by Taylor series and tan by division
 void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   bool_t doEpsilon = false;
@@ -342,6 +343,7 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 }
 
 
+//used only by XFN
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real1071_t angle;
@@ -370,6 +372,7 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 
 
 
+//Used by normal C47 TRIG as well as XFN
 // Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
 void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
@@ -399,7 +402,7 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
 
 
 static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* j, real_t* z, const real_t* x, real_t* b, real_t* epsilon, real_t* last,
-              const bool_t doEpsilon, int epsilonDigits, 
+              const bool_t doEpsilon, int epsilonDigits,
               int* doubles, int* invert, int* neg,
               realContext_t *realContext){
   bool_t conditionToKeepIterating = false;
@@ -439,7 +442,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
   for(int n=0; n<TaylorIterationMax; n++) {
     if(!doEpsilon && realCompareLessEqual(a, const_1on10)) {
       break;
-    } else 
+    } else
     if(doEpsilon && realCompareLessEqual((real_t*)a, const_1on10)){//  (real_t*)z)) {
       break;
     }
@@ -577,7 +580,7 @@ static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *real
   int invert;
   int neg;
   if(!doAtan( (real_t*)&a, (real_t*)angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)x, (real_t*)&b, (real_t*)&epsilon, (real_t*)&last,
-              true, 1040, 
+              true, 1040,
               &doubles, &invert, &neg,
               realContext)) {
     return; //NaN
@@ -1461,6 +1464,7 @@ static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 }
 
 
+#if 0
 // Original e900193 fixes 2025-08 Pauli
 // When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
 void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
@@ -1501,6 +1505,7 @@ void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realConte
   doMod(x, y, res, realContext, 12321, (real_t *)&temp);
 #endif
 }
+#endif
 
 
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
@@ -1520,7 +1525,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
   doMod(x, y, res, realContext, 2139, (real_t *)&small);
 #else
   real12321_t temp;
-  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+  doMod(x, y, res, realContext, 12321, (real_t *)&temp);                  //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
 #endif
 }
 
