@@ -111,7 +111,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnErfc",                 fnErfc                },
   {"fnEuclideanNorm",        fnEuclideanNorm       },
   {"fnEulersFormula",        fnEulersFormula       },
-  {"fnEulPhi",               fnEulPhi              },
   {"fnExp",                  fnExp                 },
   {"fnExpM1",                fnExpM1               },
   {"fnExpMod",               fnExpMod              },
@@ -161,6 +160,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnLint",                 fnLint                },
   {"fnSint",                 fnSint                },
   {"fnIsPrime",              fnIsPrime             },
+  {"fnNextPrime",            fnNextPrime           },
+  {"fnPrimeFactors",         fnPrimeFactors        },
+  {"fnEvPFacts",             fnEvPFacts            },
   {"fnIxyz",                 fnIxyz                },
   {"fnJacobiAmplitude",      fnJacobiAmplitude     },
   {"fnJacobiCn",             fnJacobiCn            },
@@ -1404,7 +1406,7 @@ void setParameter(char *p) {
       }
     }
     else {
-      printf("\nMalformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nmalformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
 
@@ -2852,7 +2854,7 @@ void checkExpectedOutParameter(char *p) {
       }
     }
     else {
-      printf("\nMalformed register value. Unknown data type %s for register %s\n", l, p+1);
+      printf("\nmalformed register value. Unknown data type %s for register %s\n", l, p+1);
       abortTest();
     }
   }

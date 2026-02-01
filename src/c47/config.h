@@ -12,6 +12,7 @@ enum {
     CFG_CHINA, CFG_EUROPE, CFG_INDIA, CFG_JAPAN, CFG_UK, CFG_USA
 };
 
+bool_t   isConfigCommon        (uint16_t id);
 void     configCommon          (uint16_t idx);
 void     showSoftmenu          (int16_t id);  //JM repeat here to make DMCP compile
 void     fnShowVersion         (uint16_t option);

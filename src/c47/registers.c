@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+#include "reservedRegisterLookup.h"
+
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 
@@ -764,34 +766,20 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  uint8_t len = stringGlyphLength(variableName);
-
-  if(len < 1 || len > 7) {
-    return INVALID_VARIABLE;
-  }
-
-  int i;
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
-  //printf("|%20s|%20s|\n",(char *)(allReservedVariables[0].reservedVariableName + 1), variableName);
-  for(/*int*/ i = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
-    if(compareString((char *)(allReservedVariables[i].reservedVariableName + 1), variableName, CMP_NAME) == 0) {
-      //return i + FIRST_RESERVED_VARIABLE;
-      goto found;
-    }
-  }
+
+  uint8_t len = stringGlyphLength(variableName);
+  const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
+
+  if (reg != NULL)
+    return reg->reg;
 
   #if defined VERBOSE_REGISTERS
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
-
-found:
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
-  #endif //VERBOSE_REGISTERS
-  return i + FIRST_RESERVED_VARIABLE;
 }
 
 
@@ -1477,7 +1465,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_ISM) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uInt32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
+    int32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1816,7 +1804,17 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
             printf("[≈0 ");
           else {
             realToString(&tmpr, str);
-            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            if (strstr(str, "Infinity")) {
+                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
+                 while ((p = strstr(p, "Infinity"))) {
+                     *p = 0;
+                     q += sprintf(q, "%s∞", tmp);
+                     p += 8;
+                     strcpy(tmp, p);
+                 }
+                 strcpy(q, tmp);
+                }
+            }
             printf("[%s", str);
           }
           real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
@@ -1825,7 +1823,17 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
             printf(" i≈0] ");
           else {
             realToString(&tmpr, str);
-            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            if (strstr(str, "Infinity")) {
+                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
+                 while ((p = strstr(p, "Infinity"))) {
+                     *p = 0;
+                     q += sprintf(q, "%s∞", tmp);
+                     p += 8;
+                     strcpy(tmp, p);
+                 }
+                 strcpy(q, tmp);
+                }
+            }
             printf(" i%s] ", str);
           }
         }
