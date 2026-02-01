@@ -2058,6 +2058,21 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
+#define VECT_CR_xyz 1
+#define VECT_CR_zyx 2
+#define VECT_CR_100 3
+#define VECT_CR_010 4
+#define VECT_CR_001 5
+#define VECT_CR_yx  6
+#define VECT_CR_10  7
+#define VECT_CR_01  8
+#define VECT_yx_zyx 0x62
+
+#define V_D0        0
+#define V_D1        1
+#define V_COPY      2
+#define V_NANA      3
+
 #define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
 #define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
 #define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))

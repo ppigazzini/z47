@@ -177,7 +177,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
   char *getItemCatalogName(int16_t itemNr) {
     char *itemName;
-
+    
     if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
       itemName = (char *)indexOfItems[abs(itemNr)].itemCatalogName;
     }
@@ -202,26 +202,26 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
     else {                                                 // unknown item, return empty string
       tmpStringLabelOrVariableName[0] = 0;
-      itemName = tmpStringLabelOrVariableName;
+      itemName = tmpStringLabelOrVariableName; 
     }
-
+    
     return itemName;
   }
-
+  
   function_t getItemFunc(int16_t itemNr) {
     void     (*func)(uint16_t);
-
+    
     if(abs(itemNr) <= LAST_ITEM) {                         // Predefined item
       func = indexOfItems[itemNr].func;
     }
     else {                                                 // Any other user or reserved item
       func = addItemToBuffer;
     }
-
+    
     return func;
   }
-
-
+  
+  
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -355,7 +355,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {
           temporaryInformation = TI_NOT_AVAILABLE;
-        }
+        } 
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -384,7 +384,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
     }
-
+    
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
@@ -491,7 +491,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_STOEL       : if(isMatrixIndexed()) temporaryInformation = TI_MIJEQ;   break;
 
         case ITM_INDEX       :
-        case ITM_IPLUS       :
+        case ITM_IPLUS       : 
         case ITM_IMINUS      :
         case ITM_JPLUS       :
         case ITM_JMINUS      : if(isMatrixIndexed()) temporaryInformation = TI_MIJ;   break;
@@ -554,7 +554,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo &&
+        if(thereIsSomethingToUndo && 
           !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
@@ -666,7 +666,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         } else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
-          }
+          } 
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -858,7 +858,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {} 
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
   void fnRandomI                   (uint16_t unusedButMandatoryParameter) {}
   void fnImaginaryPart             (uint16_t unusedButMandatoryParameter) {}
@@ -1407,7 +1407,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
   void fnPplus                    (uint16_t unusedButMandatoryParameter) {}
   void fnPbox                     (uint16_t unusedButMandatoryParameter) {}
-  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {}
+  void fnPcurve                   (uint16_t unusedButMandatoryParameter) {} 
   void fnPintg                    (uint16_t unusedButMandatoryParameter) {}
   void fnPdiff                    (uint16_t unusedButMandatoryParameter) {}
   void fnPrms                     (uint16_t unusedButMandatoryParameter) {}
@@ -1501,6 +1501,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void V3RectoToSph               (uint16_t unusedButMandatoryParameter) {}
   void V3RectoToCyl               (uint16_t unusedButMandatoryParameter) {}
   void fnComplexToVector          (uint16_t unusedButMandatoryParameter) {}
+  void fnExchangeStkToMx          (uint16_t unusedButMandatoryParameter) {}
   void fnWeekOfYear               (uint16_t unusedButMandatoryParameter) {}
   void fnSetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
   void fnGetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
@@ -1566,32 +1567,32 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define conditionalPCURVE itemToBeCoded
 #endif
 #if defined(OPTION_XFN_1000)
-  #define S18_fnEdit         fnEdit
-  #define S18_fnXXfn         fnXXfn
-  #define S18_fnXXfn_sin     fnXXfn_sin
-  #define S18_fnXXfn_cos     fnXXfn_cos
-  #define S18_fnXXfn_tan     fnXXfn_tan
-  #define S18_fnXXfn_pi      fnXXfn_pi
-  #define S18_fnXXfn_atan2   fnXXfn_atan2
-  #define S18_fnXXfn_arcsin  fnXXfn_arcsin
-  #define S18_fnXXfn_arccos  fnXXfn_arccos
-  #define S18_fnXXfn_arctan  fnXXfn_arctan
-  #define S18_fnXXfn_LN      fnXXfn_LN
-  #define S18_fnXXfn_LOG     fnXXfn_LOG
-  #define S18_fnXXfn_EXP     fnXXfn_EXP
-  #define S18_fnXXfn_10X     fnXXfn_10X
-  #define S18_fnXXfn_POWER   fnXXfn_POWER
-  #define S18_fnXXfn_SQRT    fnXXfn_SQRT
-  #define S18_fnXXfn_1ONX    fnXXfn_1ONX
-  #define S18_fnXXfn_ADD     fnXXfn_ADD
-  #define S18_fnXXfn_SUB     fnXXfn_SUB
-  #define S18_fnXXfn_MULT    fnXXfn_MULT
-  #define S18_fnXXfn_DIV     fnXXfn_DIV
-  #define S18_fnXXfn_MOD     fnXXfn_MOD
-  #define S18_fnXXfn_TO      fnXXfn_TO
-  #define S18_fnXXfn_MODANG  fnXXfn_MODANG
-  #define S18_fnXXfn_ToDEG   fnXXfn_ToDEG
-  #define S18_fnXXfn_ToRAD   fnXXfn_ToRAD
+  #define S18_fnEdit         fnEdit         
+  #define S18_fnXXfn         fnXXfn         
+  #define S18_fnXXfn_sin     fnXXfn_sin     
+  #define S18_fnXXfn_cos     fnXXfn_cos     
+  #define S18_fnXXfn_tan     fnXXfn_tan     
+  #define S18_fnXXfn_pi      fnXXfn_pi      
+  #define S18_fnXXfn_atan2   fnXXfn_atan2   
+  #define S18_fnXXfn_arcsin  fnXXfn_arcsin  
+  #define S18_fnXXfn_arccos  fnXXfn_arccos  
+  #define S18_fnXXfn_arctan  fnXXfn_arctan  
+  #define S18_fnXXfn_LN      fnXXfn_LN      
+  #define S18_fnXXfn_LOG     fnXXfn_LOG     
+  #define S18_fnXXfn_EXP     fnXXfn_EXP     
+  #define S18_fnXXfn_10X     fnXXfn_10X     
+  #define S18_fnXXfn_POWER   fnXXfn_POWER   
+  #define S18_fnXXfn_SQRT    fnXXfn_SQRT    
+  #define S18_fnXXfn_1ONX    fnXXfn_1ONX    
+  #define S18_fnXXfn_ADD     fnXXfn_ADD     
+  #define S18_fnXXfn_SUB     fnXXfn_SUB     
+  #define S18_fnXXfn_MULT    fnXXfn_MULT    
+  #define S18_fnXXfn_DIV     fnXXfn_DIV     
+  #define S18_fnXXfn_MOD     fnXXfn_MOD     
+  #define S18_fnXXfn_TO      fnXXfn_TO     
+  #define S18_fnXXfn_MODANG  fnXXfn_MODANG  
+  #define S18_fnXXfn_ToDEG   fnXXfn_ToDEG   
+  #define S18_fnXXfn_ToRAD   fnXXfn_ToRAD   
   #define S18_MENU           CAT_MENU
   #define S18_FNCT           CAT_FNCT
   #define S18_fnXXfn_STO     fnXXfn_STO
@@ -4167,33 +4168,33 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2468 */  UNIT_CONV(constFactorBananaInch,multiply,                    "Banana"  STD_RIGHT_ARROW "inch",              "Banana" STD_RIGHT_ARROW                ),
 /* 2469 */  UNIT_CONV(constFactorInchBanana,divide,                      "inch"  STD_RIGHT_ARROW "Banana",              "inch" STD_RIGHT_ARROW                  ),
 
-/* 2470 */  { /*V3RectoToCyl*/itemToBeCoded,                     255,                     STD_RIGHT_ARROW "CYL",                         STD_RIGHT_ARROW "CYL",        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2471 */  { /*V3RectoToSph*/itemToBeCoded,                     255,                     STD_RIGHT_ARROW "SPH",                         STD_RIGHT_ARROW "SPH",        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2470 */  { V3RectoToCyl,                     255,                     STD_RIGHT_ARROW "CYL",                         STD_RIGHT_ARROW "CYL",        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2471 */  { V3RectoToSph,                     255,                     STD_RIGHT_ARROW "SPH",                         STD_RIGHT_ARROW "SPH",        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2472 */  { fnVectorDist,                 NOPARAM,                     "|" STD_SPACE_6_PER_EM STD_v_BAR "-" STD_v_BAR STD_SPACE_6_PER_EM "|",     "|" STD_SPACE_6_PER_EM STD_v_BAR "-" STD_v_BAR STD_SPACE_6_PER_EM "|", (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2473 */  { itemToBeCoded,                NOPARAM,                     "M.CONCT",                                     "CONCAT",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2474 */  { fnConvertStkToMx,                   2,                     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2475 */  { fnConvertStkToMx,                   6,                     "yx"  STD_RIGHT_ARROW  STD_v_BAR STD_SUB_2,    "yx"  STD_RIGHT_ARROW STD_v_BAR STD_SUB_2,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2476 */  { /*fnConvertMxToStk*/itemToBeCoded,                   2,                     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2477 */  { /*fnConvertMxToStk*/itemToBeCoded,                   6,                     STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW "yx", STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW "yx",      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2478 */  { /*fnConvertMxToStk*/itemToBeCoded,                0x62,                     STD_v_BAR STD_RIGHT_ARROW "stk",          STD_v_BAR STD_RIGHT_ARROW "stk",               (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2479 */  { fnConvertStkToMx,                   3,                     STD_v_BAR STD_SUB_3 "[100]",                   STD_v_BAR STD_SUB_3 "[100]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2480 */  { fnConvertStkToMx,                   4,                     STD_v_BAR STD_SUB_3 "[010]",                   STD_v_BAR STD_SUB_3 "[010]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2481 */  { fnConvertStkToMx,                   5,                     STD_v_BAR STD_SUB_3 "[001]",                   STD_v_BAR STD_SUB_3 "[001]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2474 */  { fnConvertStkToMx,         VECT_CR_zyx,                     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2475 */  { fnConvertStkToMx,         VECT_CR_yx ,                     "yx"  STD_RIGHT_ARROW  STD_v_BAR STD_SUB_2,    "yx"  STD_RIGHT_ARROW STD_v_BAR STD_SUB_2,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2476 */  { fnConvertMxToStk,         VECT_CR_zyx,                     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2477 */  { fnConvertMxToStk,         VECT_CR_yx ,                     STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW "yx",      STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW "yx",      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2478 */  { fnConvertMxToStk,         VECT_yx_zyx,                     STD_v_BAR STD_RIGHT_ARROW "stk",               STD_v_BAR STD_RIGHT_ARROW "stk",               (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2479 */  { fnConvertStkToMx,         VECT_CR_100,                     STD_v_BAR STD_SUB_3 "[100]",                   STD_v_BAR STD_SUB_3 "[100]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2480 */  { fnConvertStkToMx,         VECT_CR_010,                     STD_v_BAR STD_SUB_3 "[010]",                   STD_v_BAR STD_SUB_3 "[010]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2481 */  { fnConvertStkToMx,         VECT_CR_001,                     STD_v_BAR STD_SUB_3 "[001]",                   STD_v_BAR STD_SUB_3 "[001]",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2482 */  { fnRecallVElement,                   1,                     "RCLVEL" STD_SUB_1,                            STD_ELLIPSIS "VEL" STD_SUB_1,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2483 */  { fnRecallVElement,                   2,                     "RCLVEL" STD_SUB_2,                            STD_ELLIPSIS "VEL" STD_SUB_2,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2484 */  { fnRecallVElement,                   3,                     "RCLVEL" STD_SUB_3,                            STD_ELLIPSIS "VEL" STD_SUB_3,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2485 */  { fnStoreVElement,                    1,                     "STOVEL" STD_SUB_1,                            STD_ELLIPSIS "VEL" STD_SUB_1,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2486 */  { fnStoreVElement,                    2,                     "STOVEL" STD_SUB_2,                            STD_ELLIPSIS "VEL" STD_SUB_2,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2487 */  { fnStoreVElement,                    3,                     "STOVEL" STD_SUB_3,                            STD_ELLIPSIS "VEL" STD_SUB_3,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2488 */  { addItemToBuffer,              ITM_dddVEL,                  "",                                            STD_ELLIPSIS "VEL" STD_SUB_n STD_SUB_n,        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2489 */  { addItemToBuffer,              ITM_dddIX,                   "",                                            STD_ELLIPSIS STD_SPACE_4_PER_EM "INDEX",       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2490 */  { fnConvertStkToMx,                   7,                     STD_v_BAR STD_SUB_2 "[10]",                    STD_v_BAR STD_SUB_2 "[10]",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2491 */  { fnConvertStkToMx,                   8,                     STD_v_BAR STD_SUB_2 "[01]",                    STD_v_BAR STD_SUB_2 "[01]",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2492 */  { /*fnComplexToVector*/itemToBeCoded,            NOPARAM,                     STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2493 */  { itemToBeCoded,                NOPARAM,                     STD_COMPLEX_C STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,      STD_COMPLEX_C STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2494 */  { itemToBeCoded,                NOPARAM,                     STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                         STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2495 */  { itemToBeCoded,                NOPARAM,                     "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,         "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2496 */  { itemToBeCoded,                NOPARAM,                     "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,        "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2488 */  { addItemToBuffer,           ITM_dddVEL,                     "",                                            STD_ELLIPSIS "VEL" STD_SUB_n STD_SUB_n,        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2489 */  { addItemToBuffer,            ITM_dddIX,                     "",                                            STD_ELLIPSIS STD_SPACE_4_PER_EM "INDEX",       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2490 */  { fnConvertStkToMx,          VECT_CR_10,                     STD_v_BAR STD_SUB_2 "[10]",                    STD_v_BAR STD_SUB_2 "[10]",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2491 */  { fnConvertStkToMx,          VECT_CR_01,                     STD_v_BAR STD_SUB_2 "[01]",                    STD_v_BAR STD_SUB_2 "[01]",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2492 */  { fnComplexToVector,         ITM_CPXexV,                     STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2493 */  { fnComplexToVector,         ITM_CPXtoV,                     STD_COMPLEX_C STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,      STD_COMPLEX_C STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2494 */  { fnComplexToVector,         ITM_VtoCPX,                     STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                         STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2495 */  { fnExchangeStkToMx,        ITM_stkexV2,                     "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,         "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2496 */  { fnExchangeStkToMx,        ITM_stkexV3,                     "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,        "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2497 */  { itemToBeCoded,                NOPARAM,                     "R" STD_SUB_n STD_RIGHT_ARROW "V",                                         "R" STD_SUB_n STD_RIGHT_ARROW "V",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2498 */  { itemToBeCoded,                NOPARAM,                     "V" STD_RIGHT_ARROW "R" STD_SUB_n,                                         "V" STD_RIGHT_ARROW "R" STD_SUB_n,                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2499 */  { itemToBeCoded,                NOPARAM,                     STD_v_BAR STD_LEFT_ARROW STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR,     STD_v_BAR STD_LEFT_ARROW STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR,      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
