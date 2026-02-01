@@ -202,6 +202,8 @@
 //#undef     VERBOSE_MINIMUM
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
+  #define    VERBOSEKEYS_BUFFERED
+  #undef     VERBOSEKEYS_BUFFERED
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR

@@ -2760,8 +2760,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
-          !(regist == REGISTER_X || regist == REGISTER_Y) &&
+      if( !skippedStackLines && (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
+          !(regist == REGISTER_X)&&// || regist == REGISTER_Y) &&
           !runningOnSimOrUSB &&                                   // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
