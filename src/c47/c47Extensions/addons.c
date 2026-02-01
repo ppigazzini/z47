@@ -1051,8 +1051,8 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   #if defined(DMCP_BUILD)
     if(!anyKeyWaiting()) return -1;
     if(displayWaitForRelease) {
-      #if !defined(TESTSUITE_BUILD)
-        showString("Waiting for key ...", &standardFont, 20, 40, vmNormal, false, false);
+      #if !defined(TESTSUITE_BUILD) && defined(VERBOSEKEYS_BUFFERED)
+        showString("Key(s) buffered ...", &standardFont, 20, 40, vmNormal, false, false);
       #endif //!TESTSUITE_BUILD
       force_refresh(force);
 ////Monitor key codes on screen
@@ -1465,8 +1465,9 @@ struct cmplxPair {
   real_t r, i;
 };
 
-void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
+void fn_cnst_op_A(uint16_t option) {
   complex34Matrix_t matrixC;
+  bool_t inverted = option == ITM_MATX_A_1;
 
   if(!saveLastX()) {
     return;
@@ -1499,13 +1500,13 @@ void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
   realSetNegativeSign(&const__1on2);
 
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));
-  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[5]));
-  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(!inverted ? &const__rt3on2 : &const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[7]));
-  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(!inverted ? &const__rt3on2 : &const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
-  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
+  realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
 
   for (int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
@@ -1532,7 +1533,7 @@ TO_QSPI static const struct {
 } vecCreate[] = {
 
 //            type          r  c   x   y   z     xdef      ydef      zdef
-/* 1 */ [ VECT_CR_xyz ] = { 3, 1,  2,  1,  0,   V_COPY,   V_COPY,   V_COPY },     // 3x1 vector created from xyz FOR ELEC menu
+/* 1 */ [ VECT_CR_xyz ] = { 3, 1,  0,  1,  2,   V_COPY,   V_COPY,   V_COPY },     // 3x1 vector created from xyz FOR ELEC menu
 /* 2 */ [ VECT_CR_zyx ] = { 1, 3,  0,  1,  2,   V_COPY,   V_COPY,   V_COPY },     // 1x3 vector created from zyx FOR MATX menu
 /* 3 */ [ VECT_CR_100 ] = { 1, 3,  0,  1,  2,   V_D0  ,   V_D0  ,   V_D1   },     // V_DEF1x3 unity vectors 100
 /* 4 */ [ VECT_CR_010 ] = { 1, 3,  0,  1,  2,   V_D0  ,   V_D1  ,   V_D0   },     // V_DEF1x3 unity vectors 010
@@ -1544,9 +1545,9 @@ TO_QSPI static const struct {
     // r c is the size of the matrix to be created, eg. 1x3 or 2x1 etc.
     // x y z are the matrix element number mapping to the register name, eg. x=2 means x register goes to internal matrix element 2; 3 means not copied
     // xdef/ydef/zdef
-    //   = 1/0 : V_D0/V_D1 the value to be pre-loaded into the matrix element
-    //   = 2   : V_COPY    the value is copied from register X, Y or Z to the specified matrix element
-    //   = 3   : V_NANA    not copied
+    //   = 1/0 : the value to be pre-loaded into the matrix element
+    //   = 2   : the value is copied from register X, Y or Z to the specified matrix element
+    //   = 3   : not copied
   };
 
 
@@ -3334,7 +3335,7 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_FIN,      ITM_PC,        ITM_DELTAPC,   ITM_YX,        ITM_SQUARE,    ITM_10x,       -MNU_FIN},
   {ITM_RIBBON_FIN2,     ITM_PCPMG,     ITM_PCT,       ITM_PC,        ITM_DELTAPC,   -MNU_TVM,      -MNU_FIN},
   {ITM_RIBBON_CPX,      ITM_DRG,       ITM_CC,        ITM_EE_EXP_TH, ITM_EXP,       ITM_op_j_pol,  ITM_op_j},
-  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j},
+  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j_pol},
   {ITM_RIBBON_C47PL,    ITM_DRG,       ITM_DSP,       ITM_DREAL,     ITM_FF,        ITM_Rup,       ITM_XFACT},
   {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
   {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},

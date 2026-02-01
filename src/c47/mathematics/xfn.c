@@ -10,9 +10,11 @@
 // The major bignumber reduction must be done outside Taylor
 
 #undef DEBUG_XFN
+#undef DEBUGRESULT_ONLY_XFN
 
 #if !defined(PC_BUILD)
   #undef DEBUG_XFN
+  #undef DEBUGRESULT_ONLY_XFN
 #endif
 
 
@@ -78,7 +80,11 @@
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
   }
-  void fnXXfn_RDP                 (uint16_t digits) {
+  void fnXXfn_RDP                 (uint16_t digits) {    
+  }
+  void fnXXfn_RSD                 (uint16_t digits) {    
+  }
+  void fnXXfn_CHS                 (uint16_t registerNo) {    
   }
 
 
@@ -190,9 +196,9 @@
 
   #if defined(TESTSUITE_BUILD)
     const bool_t use1071 = true;
-  #else
+  #else  
     #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
-      #define HIMEMORY true
+      #define HIMEMORY true  
     #else
       #define HIMEMORY false
     #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
@@ -309,6 +315,8 @@ typedef struct {
       { ITM_DRG_XFN     ,FT_MONADIC, NOANG},
       { ITM_SQR_XFN     ,FT_MONADIC, NOANG},
       { ITM_RDP_XFN     ,FT_MONADIC, NOANG},
+      { ITM_RSD_XFN     ,FT_MONADIC, NOANG},
+      { ITM_CHS_XFN     ,FT_MONADIC, NOANG},
       { ITM_atan2_XFN   ,FT_DYADIC , NOANG},
       { ITM_ADD_XFN     ,FT_DYADIC , NOANG},
       { ITM_SUB_XFN     ,FT_DYADIC , NOANG},
@@ -652,6 +660,12 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_RDP                 (uint16_t digits) {
     fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
+  void fnXXfn_RSD                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RSD_XFN, digits);
+  }
+  void fnXXfn_CHS                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_CHS_XFN, 0);
+  }
 
 
 
@@ -687,7 +701,7 @@ printf("Dddd %d\n",registerNo);
     if(functionType == FT_SINGLEX) {
       if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
         return;
-      }
+      }      
     } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
@@ -738,7 +752,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
           }
           angleMode = amRadian;
           break;
@@ -751,7 +765,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);
+            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
           }
           angleMode = amDegree;
           break;
@@ -765,7 +779,7 @@ printf("Dddd %d\n",registerNo);
           } else {
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);
+              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);        
             }
           }
           angleMode = nextAngleMode;
@@ -845,8 +859,8 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_MODANG_XFN: {
           if(angleMode == amRadian) {
-            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
-            // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
+//            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+            mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
           } else {
             WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
@@ -854,6 +868,14 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_RDP_XFN: {
           roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_RSD_XFN: {
+          roundToSignificantDigits((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_CHS_XFN: {
+          realMultiply(const__1, (real_t *)&paramX, (real_t *)&paramX, &c);
           break;
         }
   //--------//SINGLE REG FUNCTIONS
@@ -943,7 +965,7 @@ printf("Dddd %d\n",registerNo);
         break;
       }
       case ITM_RAD2_XFN:    //leave angleMode, it is set in the function
-      case ITM_DEG2_XFN:
+      case ITM_DEG2_XFN: 
       case ITM_DRG_XFN:  {
         break;
       }
@@ -1019,6 +1041,15 @@ printf("Dddd %d\n",registerNo);
       printRegisterToConsole(REGISTER_Y,"\nY:","\n");
       printRegisterToConsole(REGISTER_X,"\nX:","\n");
     #endif //DEBUG_XFN
+
+
+    #if defined(DEBUG_XFN) || defined(DEBUGRESULT_ONLY_XFN)
+      real1071_t aa, tt;
+      readThreeRegisters(registerNo, &aa, &tt, &c);
+      realToString((real_t*)&aa, tmpString);   printf("\nAfter Step4, combined register: =%s|...%d\n", tmpString, (&aa)->digits);
+    #endif //DEBUG_XFN
+
+
 
     return;
 
