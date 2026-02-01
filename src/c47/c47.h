@@ -232,6 +232,8 @@
 
   extern uint8_t calcModel;
 
+  extern uint8_t             *lcd_buffer;
+  extern const int           KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
@@ -488,7 +490,6 @@
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
-  extern uint8_t                fgLN;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
   extern uint8_t                editingLiteralType;
@@ -597,7 +598,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-
+  
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)

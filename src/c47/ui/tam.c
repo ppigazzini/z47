@@ -921,7 +921,7 @@
         value = findOrAllocateNamedVariable(buffer);
         //printf("findOrAllocateNamedVariable value=%d lastErrorCode=%d\n",value, lastErrorCode);
       }
-      else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
+      else if((tam.mode == TM_MENU) && !tam.indirect) {
         value = findMenu(buffer);
         tam.value = value;
         if(value == INVALID_MENU && calcMode != CM_PEM) {
@@ -1026,7 +1026,21 @@
     }
 
     if(calcMode == CM_NIM) {
-      closeNim();
+      if(func == ITM_toINT || func == ITM_HASH_JM) {
+        lastIntegerBase = 0;
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        resetShiftState();
+        leaveTamModeIfEnabled();
+        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer,'#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
+          addItemToNimBuffer(ITM_BACKSPACE);
+        }
+        addItemToNimBuffer(func);
+        refreshRegisterLine(REGISTER_X);
+        return;
+      }
+      else {
+        closeNim();
+      }
     }
     else if(calcMode == CM_PEM && aimBuffer[0] != 0) {
       if(getSystemFlag(FLAG_ALPHA)) {
@@ -1201,8 +1215,10 @@
     catalog = CATALOG_NONE;
     clearSystemFlag(FLAG_ALPHA);
 
-    while(numberOfTamMenusToPop--) {
-      popSoftmenu();
+    if(numberOfTamMenusToPop > 0) {
+      while(numberOfTamMenusToPop--) {
+        popSoftmenu();
+      }
     }
 
     #if defined(PC_BUILD)
