@@ -48,7 +48,7 @@ void fnRecall(uint16_t regist) {
 
 
 void fn2Rcl(uint16_t regist) {
-  if((regist >= FIRST_GLOBAL_REGISTER && regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
     setSystemFlag(FLAG_ASLIFT);
     fnRecall(regist + 1);
     setSystemFlag(FLAG_ASLIFT);
@@ -64,7 +64,7 @@ void fn2Rcl(uint16_t regist) {
 
 
 void fn3Rcl(uint16_t regist) {
-  if((regist >= FIRST_GLOBAL_REGISTER && regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
     setSystemFlag(FLAG_ASLIFT);
     fnRecall(regist + 2);
     setSystemFlag(FLAG_ASLIFT);
