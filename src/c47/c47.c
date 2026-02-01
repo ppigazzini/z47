@@ -1186,7 +1186,7 @@ int convertKeyCode(int key) {
                             #if defined(DM42_KEYCLICK)
                               keyClick(7);
                             #endif //DM42_KEYCLICK
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT); // Key released
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, skippedStackLines ? TO_KB_ACTV_MEDIUM/5 : TO_KB_ACTV_SHORT); // Key released
         }
       }
 
