@@ -392,7 +392,6 @@ void Sett(int16_t grp) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
     #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
@@ -497,7 +496,6 @@ void fnSetC47(uint16_t unusedButMandatoryParameter) {
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(167);
   }
-#endif // !TESTSUITE_BUILD
 
 
 
