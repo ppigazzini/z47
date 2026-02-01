@@ -71,7 +71,7 @@ int main() {
 
   puts("struct reservedRegister {");
   puts("  char name[7];");
-  puts("  register_t reg;");
+  puts("  calcRegister_t reg;");
   puts("};\n");
   puts("%%");
   for(i=0; i < sizeof(names)/sizeof(*names); i++) {
