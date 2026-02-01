@@ -470,9 +470,6 @@ static void executeFunction(const char *data, int16_t item_);
 
 
 
-bool_t lastshiftF = false;
-bool_t lastshiftG = false;
-
 #define lowercaseselected  (bool_t)((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)) // //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
   void processAimInput(int16_t item) {
