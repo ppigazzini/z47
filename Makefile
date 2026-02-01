@@ -12,8 +12,13 @@ BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
 FORCENEW_TESTPGMS =
+GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
+GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
 
-clean:
+$(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
+	rm -rf subprojects/gmp-6.2.1
+
+clean: $(GMP_MESON_BUILD)
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
 	rm -f r47$(EXE)
@@ -41,16 +46,18 @@ build.dmcp5:
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 simr47: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja simr47
 	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 dmcp: build.dmcp
 	cd build.dmcp && ninja dmcp

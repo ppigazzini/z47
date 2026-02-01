@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1013     // Converted flags
+#define BACKUP_VERSION                     1014     // long press f/g
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -19,7 +19,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000022 // Converted flags
+#define configFileVersion                  10000023 // long press f/g
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -1253,6 +1253,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     calcModel = USER_C47;
     restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
 
+    if(backupVersion < 1014) {
+      setLongPressFg(calcModel, -MNU_HOME);
+    }
+
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if (getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);
@@ -1818,6 +1822,9 @@ void doSave(uint16_t saveType) {
                                                                                                              kbd_usr[i].gShiftedAim,
                                                                                                                          kbd_usr[i].primaryTam);
     save(tmpString, strlen(tmpString));
+  }
+  if(loadedVersion < 10000023) {
+    setLongPressFg(calcModel, -MNU_HOME); // This setting wil be overridden if loadedVersion < 1000022, by backwar old setting HOME3 and MYM3 settings in OTHER_CONFIGURATION_STUFF
   }
 
   // Keyboard arguments
@@ -2976,11 +2983,13 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+              setLongPressFg(calcModel, -MNU_HOME);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0);
+              setLongPressFg(calcModel, -MNU_MyMenu);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "dispBase"                    ) == 0) { dispBase              = toUint8(tmpString); }
@@ -3258,6 +3267,17 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       allowUserKeys = (savedCalcModel == USER_R47);
     #endif  // CALCMODEL
     while(restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
+    }
+
+    // Set the user primary functions for the R47 yellow and blue shift keys to their standard default value
+    //   to avoid discrepancies after loading key assignments
+    if(calcModel == USER_R47f_g || calcModel == USER_R47fg_g || calcModel == USER_R47fg_bk || calcModel == USER_R47bk_fg) {
+      for(int i = 10; i <= 11; i++) {        // R47 Yellow and Blue Shift keys
+        kbd_usr[i].primary    = kbd_std[i].primary;
+        kbd_usr[i].keyLblAim  = kbd_std[i].keyLblAim;
+        kbd_usr[i].primaryAim = kbd_std[i].primaryAim;
+        kbd_usr[i].primaryTam = kbd_std[i].primaryTam;
+      }
     }
   }
 

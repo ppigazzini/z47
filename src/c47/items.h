@@ -2634,7 +2634,7 @@
 #define ITM_RAD2_XFN                2555
 #define ITM_RDP_XFN                 2556
 
-#define MNU_2557                    2557
+#define ITM_RSD_XFN                 2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
 #define ITM_tan_XFN                 2560
@@ -2657,7 +2657,7 @@
 #define ITM_MOD_XFN                 2577
 #define ITM_MODANG_XFN              2578
 #define ITM_TO_XFN                  2579
-#define ITM_2580                    2580
+#define ITM_CHS_XFN                 2580
 #define ITM_2581                    2581
 #define ITM_DRG_XFN                 2582
 #define ITM_SQR_XFN                 2583
@@ -2706,6 +2706,8 @@
 #define ITM_NDUP                    2620
 #define ITM_NSWAP                   2621
 #define ITM_NDROP                   2622
+#define ITM_MATX_A_1                2623
+#define ITM_3R3P                    2624
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2713,7 +2715,7 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2623
+#define LAST_ITEM                   2625
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

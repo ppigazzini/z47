@@ -9,6 +9,7 @@
 
 int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG);
 void    setLastKeyCode              (int key);
+void    processAimInput             (int16_t item);
 
 
 void leavePem        (void);
