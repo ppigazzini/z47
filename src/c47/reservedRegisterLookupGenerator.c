@@ -78,6 +78,9 @@ int main() {
     int n = names[i].name[0];
     putchar('"');
     for(j=1; j<= n; j++) {
+      if(names[i].name[j] == '\\' || names[i].name[j] == '"') { // Escape \ and " with \.
+        putchar('\\');
+      }
       putchar(names[i].name[j]);
     }
     putchar('"');
