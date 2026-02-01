@@ -1464,6 +1464,7 @@ static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 }
 
 
+#if 0
 // Original e900193 fixes 2025-08 Pauli
 // When the memory allocation below is in place, 1E700 SIN (REAL), as well as 700 10^x SIN (LI) results in -NaN
 void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
@@ -1504,6 +1505,7 @@ void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realConte
   doMod(x, y, res, realContext, 12321, (real_t *)&temp);
 #endif
 }
+#endif
 
 
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
