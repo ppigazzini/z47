@@ -60,12 +60,10 @@ TO_QSPI const int16_t menu_DISP[]        = { ITM_FIX,                       ITM_
 
                                              ITM_SETCHN,                    ITM_SETEUR,                 ITM_SETIND,               ITM_SETJPN,            ITM_SETUK,                   ITM_SETUSA,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_SETDFLT,
-
-#if !defined(SAVE_SPACE_DM42_24_PROFILES) && defined(DEVPROFILES)
-                                             ITM_SetHP35,                   ITM_SetC47,                 ITM_SetJM,                ITM_SetRJ,             ITM_NULL,                    ITM_NULL                        };
-#else
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
-#endif                                             
+
+TO_QSPI const int16_t menu_Dev[]         = { ITM_SetHP35,                   ITM_SetC47,                 ITM_SetJM,                ITM_SetRJ,             ITM_NULL,                    ITM_NULL                        };
+
 
 TO_QSPI const int16_t menu_EXP[]         = { ITM_CUBE,                      ITM_YX,                     ITM_SQRT1PX2,             ITM_LOG2,              ITM_LN1X,                    ITM_LOGXY,                          //JM re-arranged menu. logxy and square to follow DM42 keyboard. Re-aligned with 42S keys.
                                              ITM_CUBEROOT,                  ITM_XTHROOT,                ITM_SQUAREROOTX,          ITM_2X,                ITM_EX1,                     ITM_EXP,                           //JM re-arranged menu. Added YˆX to follow DM42 keyboard. Swapped YˆX and Yˆ(1/X). Re-aligned with 42S keys.
@@ -1052,8 +1050,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 168 */  {.menuItem = -MNU_TAMVARONLY,  .numItems = sizeof(menu_TamVarOnly    )/sizeof(int16_t), .softkeyItem = menu_TamVarOnly     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 169 */  {.menuItem = -MNU_UNIFORM,     .numItems = sizeof(menu_Uniform       )/sizeof(int16_t), .softkeyItem = menu_Uniform        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 170 */  {.menuItem = -MNU_DISUNIFORM,  .numItems = sizeof(menu_DisUniform    )/sizeof(int16_t), .softkeyItem = menu_DisUniform     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 171 */  {.menuItem = -MNU_DEV,         .numItems = sizeof(menu_Dev           )/sizeof(int16_t), .softkeyItem = menu_Dev            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 
-/* 171 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 172 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1234,6 +1233,23 @@ int16_t findMenu(char *buffer) {
       }
     }
   }
+
+  if(!found) {                // If still not found search in predefined hidden menus. Placed after the user menus, so that a user menu DEV will override a hidden menu.
+    i = 0;
+    menuItem = MNU_MyMenu;
+    while(menuItem != 0) {      // Search in predefined menus for hidden menus
+      if((indexOfItems[menuItem].status & CAT_STATUS) == CAT_MNUH) {
+        if(compareString(name, indexOfItems[menuItem].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
+          found = true;
+          menu_id = menuItem;
+          break;
+        }
+      }
+      i++;
+      menuItem = -softmenu[i].menuItem;
+    }
+  }
+
 
   if(menu_id == INVALID_MENU) {
     menuPageNumber = 1;       // Restore default menu page number
