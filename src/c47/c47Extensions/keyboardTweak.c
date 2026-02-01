@@ -440,7 +440,7 @@ void resetKeytimers(void) {
                 }
               break;
             case ITM_EXIT1:
-              longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
+              longpressDelayedkey1 = -MNU_MyAlpha;//  LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
               longpressDelayedkey3 = 0;
               break;
@@ -466,8 +466,8 @@ void resetKeytimers(void) {
               }
               break;
             case ITM_EXIT1:
-              longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey2 = 0;
+              longpressDelayedkey1 = -MNU_MyAlpha;
+              longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               longpressDelayedkey3 = 0;
               break;
             case ITM_ENTER:
@@ -523,6 +523,9 @@ void resetKeytimers(void) {
     if(calcMode == CM_NIM) {
       if( (*result == ITM_ms       || longpressDelayedkey1 == ITM_ms       || longpressDelayedkey2 == ITM_ms       || longpressDelayedkey3 == ITM_ms   )   || //.ms needs NIM mode to be open if the user intends it to be open.
           (*result == ITM_CC       || longpressDelayedkey1 == ITM_CC       || longpressDelayedkey2 == ITM_CC       || longpressDelayedkey3 == ITM_CC   )   ||
+          (*result == ITM_dotD     || longpressDelayedkey1 == ITM_dotD     || longpressDelayedkey2 == ITM_dotD     || longpressDelayedkey3 == ITM_dotD )   ||
+          (*result == ITM_HASH_JM  || longpressDelayedkey1 == ITM_HASH_JM  || longpressDelayedkey2 == ITM_HASH_JM  || longpressDelayedkey3 == ITM_HASH_JM )||
+          (*result == ITM_toINT    || longpressDelayedkey1 == ITM_toINT    || longpressDelayedkey2 == ITM_toINT    || longpressDelayedkey3 == ITM_toINT   )||
           (*result == ITM_op_j     || longpressDelayedkey1 == ITM_op_j     || longpressDelayedkey2 == ITM_op_j     || longpressDelayedkey3 == ITM_op_j )   ||
           (*result == ITM_op_j_pol || longpressDelayedkey1 == ITM_op_j_pol || longpressDelayedkey2 == ITM_op_j_pol || longpressDelayedkey3 == ITM_op_j_pol )) {
         delayCloseNim = true;
@@ -665,7 +668,7 @@ void resetKeytimers(void) {
 
     if(FN_state == ST_3_PRESS2 && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {  //JM BUGFIX (INVERTED) The first  usage did not work due to the timer which was in stopped mode, not in expired mode.
       //----------------Copied here
-      underline_softkey(FN_key_pressed-38, 3, false);   //Purposely in row 3 which does not exist, just to activate the clear previous line
+      underline_softkey(1<<(FN_key_pressed-38), 3);   //Purposely in row 3 which does not exist, just to activate the clear previous line
 
       hideFunctionName();
 
@@ -736,7 +739,7 @@ void resetKeytimers(void) {
           varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
         }
         showFunctionName(Dyn, 0, varCatalogItem);
-        underline_softkey(FN_key_pressed-38, 0, !true /*dontclear at first call*/); //JMUL inverted clearflag
+        underline_softkey(1<<(FN_key_pressed-38), 0);
       }
 
 
@@ -748,7 +751,7 @@ void resetKeytimers(void) {
           varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
         }
         showFunctionName(Dyn, 0,  varCatalogItem);
-        underline_softkey(FN_key_pressed-38, 1, !true /*dontclear at first call*/); //JMUL inverted clearflag
+        underline_softkey(1<<(FN_key_pressed-38), 1);
       }
 
 
@@ -760,7 +763,7 @@ void resetKeytimers(void) {
           varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
         }
         showFunctionName(Dyn, 0,  varCatalogItem);
-        underline_softkey(FN_key_pressed-38, 2, !true /*dontclear at first call*/); //JMUL inverted clearflag
+        underline_softkey(1<<(FN_key_pressed-38), 2);
       }                                                                       //further shifts are done within FN_handler
     }
     //#if defined(INLINE_TEST)
@@ -826,7 +829,7 @@ void resetKeytimers(void) {
     EXEC_pri = (FN_timeouts_in_progress && (FN_key_pressed != 0));
     // EXEC_FROM_LONGPRESS_RELEASE     EXEC_FROM_LONGPRESS_TIMEOUT  EXEC FN primary
     if((FN_timed_out_to_RELEASE_EXEC || FN_timed_out_to_NOP || EXEC_pri ))  {                  //JM DOUBLE: If slower ON-OFF than half the limit (250 ms)
-      underline_softkey(FN_key_pressed-38, 3, false);   //Purposely in row 3 which does not exist, just to activate the clear previous line
+      underline_softkey(1<<(FN_key_pressed-38), 3);   //Purposely in row 3 which does not exist, just to activate the clear previous line
       charKey[1]=0;
       charKey[0]=FN_key_pressed + (-37+48);
 
@@ -1321,7 +1324,7 @@ void fnT_ARROW(uint16_t command) {
       #if defined(PC_BUILD)
         char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
       #endif //PC_BUILD
-      
+
       switch(command) {
         case ITM_T_LEFT_ARROW: /*STD_LEFT_ARROW */
           T_cursorPos = stringPrevGlyph(aimBuffer, T_cursorPos);
