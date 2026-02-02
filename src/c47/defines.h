@@ -10,6 +10,7 @@
 //*********************************
 
 #define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define DEVPROFILES
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -819,6 +820,7 @@ typedef enum {
 #define CAT_SYFL                           ( 8 << 4) // System flags
 #define CAT_AINT                           ( 9 << 4) // Upper case alpha_INTL
 #define CAT_aint                           (10 << 4) // Lower case alpha_intl
+#define CAT_MNUH                           (11 << 4) // Menu, Hidden, not appearing in the catalogue: Hidden menu, eg. 'DEV', accessible with [XEQ] 'OPENM' 'DEV' or [P.FN] [OPENM] 'DEV'
 
 // EIM (Equation Input Mode) status (1 bit)
 #define EIM_STATUS                            0x0100
