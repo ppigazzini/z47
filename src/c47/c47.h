@@ -291,6 +291,8 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
+  extern bool_t                 lastshiftF;
+  extern bool_t                 lastshiftG;
   extern bool_t                 showContent;
   extern bool_t                 rbr1stDigit;
   extern bool_t                 updateDisplayValueX;

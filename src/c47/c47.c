@@ -52,6 +52,8 @@ bool_t                 printerIconEnabled;
 bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
+bool_t                 lastshiftF = false;
+bool_t                 lastshiftG = false;
 bool_t                 showContent;
 bool_t                 rbr1stDigit;
 bool_t                 updateDisplayValueX;

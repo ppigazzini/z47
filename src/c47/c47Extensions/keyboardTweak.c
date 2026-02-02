@@ -129,6 +129,8 @@ void resetShiftState(void) {
 
     refreshModeGui();
   }
+  lastshiftF = shiftF;
+  lastshiftG = shiftG;
 }
 
 
