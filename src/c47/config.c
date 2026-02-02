@@ -543,6 +543,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     screenUpdatingMode = SCRUPD_AUTO;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     showShiftState();
     refreshModeGui();
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
@@ -1641,6 +1643,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
