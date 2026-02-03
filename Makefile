@@ -32,13 +32,19 @@ build.sim:
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
 
 both_asan: clean
-	CFLAGS="-fsanitize=address,null -Wno-deprecated-declarations" LDFLAGS="-fsanitize=address,null" meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true
+ifeq ($(OS),Windows_NT)
+	@echo "Warning: AddressSanitizer not supported on Windows MinGW, building without ASAN"
+	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations"
+else
+	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Db_sanitize=address -Dc_args="-Wno-deprecated-declarations"
+endif
 	cd $(BUILD_PC) && ninja sim
 	cd $(BUILD_PC) && ninja simr47
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
 	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
+ifneq ($(OS),Windows_NT)
 	@ASAN_OK=true; \
-	if ! otool -L ./c47 | grep -q asan; then \
+	if ! otool -L ./c47 2>/dev/null | grep -q asan && ! ldd ./c47 2>/dev/null | grep -q asan; then \
 		echo "\033[1;31m"; \
 		echo "WARNING: ASAN NOT ENABLED IN c47! The c47 binary was not built with AddressSanitizer."; \
 		echo "\033[0m"; \
@@ -46,7 +52,7 @@ both_asan: clean
 	else \
 		echo "\033[1;32m ASAN successfully enabled in c47\033[0m"; \
 	fi; \
-	if ! otool -L ./r47 | grep -q asan; then \
+	if ! otool -L ./r47 2>/dev/null | grep -q asan && ! ldd ./r47 2>/dev/null | grep -q asan; then \
 		echo "\033[1;31m"; \
 		echo "WARNING: ASAN NOT ENABLED IN r47! The r47 binary was not built with AddressSanitizer."; \
 		echo "\033[0m"; \
@@ -55,6 +61,7 @@ both_asan: clean
 		echo "\033[1;32m ASAN successfully enabled in r47\033[0m"; \
 	fi; \
 	if [ "$$ASAN_OK" = "false" ]; then exit 1; fi
+endif
 
 build.rel:
 	meson setup $(BUILD_PC) --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
