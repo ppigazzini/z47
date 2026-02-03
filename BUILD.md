@@ -20,7 +20,7 @@ make dmcp5r47     - Build r47 for R47 (DMCP5)
 
 ## Testing & Documentation
 ```
-make test         - Run test suite
+make test         - Run test suite (cleans first to ensure no ASAN contamination)
 make testPgms     - Generate test programs
 make docs         - Build documentation
 ```
@@ -41,5 +41,5 @@ make clean        - Remove all build artifacts and generated files
 ```
 
 ## ASAN Debugging
-When using `make both_asan`, the build will verify AddressSanitizer is properly enabled.
+`make both_asan` automatically cleans before building to ensure ASAN is properly enabled.
 A colored banner will appear if ASAN fails to activate.
