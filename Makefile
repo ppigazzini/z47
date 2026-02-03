@@ -31,8 +31,8 @@ clean: $(GMP_MESON_BUILD)
 build.sim:
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
 
-both_asan:
-	CFLAGS="-fsanitize=address,null -Wno-deprecated-declarations" LDFLAGS="-fsanitize=address,null" meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true --wipe
+both_asan: clean
+	CFLAGS="-fsanitize=address,null -Wno-deprecated-declarations" LDFLAGS="-fsanitize=address,null" meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true
 	cd $(BUILD_PC) && ninja sim
 	cd $(BUILD_PC) && ninja simr47
 	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
@@ -104,7 +104,7 @@ testPgms: build.sim
 	mkdir -p res/testPgms
 	cp $(BUILD_PC)/src/generateTestPgms/testPgms.bin res/testPgms/
 
-test: build.sim testPgms
+test: clean build.sim testPgms
 	cd $(BUILD_PC) && ninja test
 
 build.rel/wiki: build.rel
