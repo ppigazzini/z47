@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
 
 all: sim
 both: sim simr47
@@ -30,6 +30,31 @@ clean: $(GMP_MESON_BUILD)
 
 build.sim:
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
+
+both_asan:
+	CFLAGS="-fsanitize=address,null -Wno-deprecated-declarations" LDFLAGS="-fsanitize=address,null" meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true --wipe
+	cd $(BUILD_PC) && ninja sim
+	cd $(BUILD_PC) && ninja simr47
+	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
+	@ASAN_OK=true; \
+	if ! otool -L ./c47 | grep -q asan; then \
+		echo "\033[1;31m"; \
+		echo "WARNING: ASAN NOT ENABLED IN c47! The c47 binary was not built with AddressSanitizer."; \
+		echo "\033[0m"; \
+		ASAN_OK=false; \
+	else \
+		echo "\033[1;32m ASAN successfully enabled in c47\033[0m"; \
+	fi; \
+	if ! otool -L ./r47 | grep -q asan; then \
+		echo "\033[1;31m"; \
+		echo "WARNING: ASAN NOT ENABLED IN r47! The r47 binary was not built with AddressSanitizer."; \
+		echo "\033[0m"; \
+		ASAN_OK=false; \
+	else \
+		echo "\033[1;32m ASAN successfully enabled in r47\033[0m"; \
+	fi; \
+	if [ "$$ASAN_OK" = "false" ]; then exit 1; fi
 
 build.rel:
 	meson setup $(BUILD_PC) --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
