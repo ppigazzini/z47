@@ -41,5 +41,6 @@ make clean        - Remove all build artifacts and generated files
 ```
 
 ## ASAN Debugging
-`make both_asan` automatically cleans before building to ensure ASAN is properly enabled.
-A colored banner will appear if ASAN fails to activate.
+- `make both_asan` automatically cleans before building to ensure ASAN is properly enabled.
+- After using ASAN (both_asan), further simulator compiles will probably remain with ASAN installed. Use make clean after use.
+- A colored banner will appear if ASAN fails to activate.
