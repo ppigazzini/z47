@@ -29,12 +29,6 @@ void setLastintegerBasetoZero(void) {
 
 bool_t blockMonitoring = false;
 
-uint8_t multiEdLines = 0;            // lines   0
-uint8_t yMultiLineEdOffset = 0;      // pixels
-uint8_t xMultiLineEdOffset = 0;      // pixels 40
-uint16_t current_cursor_x = 0;
-uint16_t current_cursor_y = 0;
-
 
 #if !defined(TESTSUITE_BUILD)
   #define spc STD_SPACE

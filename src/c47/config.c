@@ -1734,6 +1734,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;
+    yMultiLineEdOffset = 0;
+    xMultiLineEdOffset = 0;
+    current_cursor_x = 0;
+    current_cursor_y = 0;
     lastT_cursorPos = 0;
 
 
