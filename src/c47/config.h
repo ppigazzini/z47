@@ -12,6 +12,7 @@ enum {
     CFG_CHINA, CFG_EUROPE, CFG_INDIA, CFG_JAPAN, CFG_UK, CFG_USA
 };
 
+bool_t   isConfigCommon        (uint16_t id);
 void     configCommon          (uint16_t idx);
 void     showSoftmenu          (int16_t id);  //JM repeat here to make DMCP compile
 void     fnShowVersion         (uint16_t option);
@@ -220,7 +221,8 @@ void     fnFractionType        (uint16_t unusedButMandatoryParameter);
 #define  loadAutoSav           true
 #define  doNotLoadAutoSav      false
 void     defaultStatusBar      (void);
-void     resetOtherConfigurationStuff(void);
+void     resetOtherConfigurationStuff(bool_t allowUserKeys);
+void     setLongPressFg        (int calcModel0, int16_t menuItem);
 void     fnReset               (uint16_t confirmation);
 void     doFnReset             (uint16_t confirmation, bool_t autoSav);
 

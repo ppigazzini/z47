@@ -68,24 +68,36 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0" 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=Real:"1.0"    RZ=LonI:"6"       RY=LonI:"11"       RX=Real:"6.0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
 
-
 ; 0*x^3 + 1*x^2 + 2*x + 1 = 0
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"0"      RZ=LonI:"1"       RY=LonI:"2"        RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1"                    RZ=Real:"NaN"     RY=Real:"-1.0"     RX=Real:"-1.0"
-
-; 1*x^3 + -1*x^2 + 0*x + 0 = 0
-;-----------
-In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-1"    RY=LonI:"0"        RX=LonI:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"0"     RY=Real:"0"        RX=Real:"1"
 
 ; 1*x^3 + -3*x^2 + 4*x + -2 = 0
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-3"      RY=LonI:"4"      RX=LonI:"-2"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-2" RZ=Cplx:"1 i -1" RY=Cplx:"1 i 1"  RX=Real:"1"
 
-; 1*x^3 + -2*x^2 + 2*x + 0 = 0
+
+
+
+
+; 1*x^3 + -1*x^2 + 0*x + 0 = 0
 ;-----------
-In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-2"    RY=LonI:"2"      RX=LonI:"0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"0"     RY=Cplx:"1 i -1" RX=Cplx:"1 i 1"
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-1"    RY=LonI:"0"   RX=LonI:"0"
+
+;ORIGINAL
+;Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"0"     RY=Real:"0"   RX=Real:"1"
+;SLVC 159 EXTREME
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"1"     RY=Real:"-1E-159"   RX=Real:"-1E-159"
+
+
+;Cubic equation for stress testing: x^3 - 10000000001.0000000001·x^2 + 10000000001.0000000001·x - 1 = 0
+; x1 = 1e-10, x2 = 1, x3 = 1e10
+In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1"  RZ=Real:"-10000000001.0000000001" RY=Real:"10000000001.0000000001" RX=LonI:"-1"
+
+;SLVC159:      Z = 1E+10, Y = 1, X = 1E-10
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E10" RY=Real:"1." RX=Real:"1E-10" 
+;SLVC not 159: Z = 1E+10, Y = 1.000000000000000000000000000108583, X = 1.000000000000000001085832068539056E-10
+;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E10" RY=Real:"1.000000000000000000000000000108583" RX=Real:"1.000000000000000001085832068539056E-10" 
 

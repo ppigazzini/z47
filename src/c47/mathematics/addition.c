@@ -501,7 +501,9 @@ void addStriDate(void) {
  * \return void
  ***********************************************/
 void addStriStri(void) {
-  xcopy(tmpString, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
+  xcopy( tmpString, REGISTER_STRING_DATA(REGISTER_X),
+    (REGISTER_STRING_DATA(REGISTER_X) && REGISTER_STRING_DATA(REGISTER_X)[0] != '\0') ? stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1 : 1
+  );
   _addString(tmpString);
 }
 
@@ -914,7 +916,7 @@ void addCxmaCxma(void) {
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
-      moreInfoOnError("In function addRemaRema:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function addCxmaCxma:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 

@@ -7,6 +7,14 @@
 
 #include "c47.h"
 
+#if defined(SAVE_SPACE_DM42_12PRIME)  
+  void fnIsPrime      (uint16_t unusedButMandatoryParameter){;}
+  void fnNextPrime    (uint16_t unusedButMandatoryParameter){;}
+  void fnPrimeFactors (uint16_t unusedButMandatoryParameter){;}
+  void fnEvPFacts     (uint16_t unusedButMandatoryParameter){;}
+#else
+
+
 #define maximumPrime 308   //10^308
 
 
@@ -22,7 +30,7 @@ const bool_t Factors_3_Pollard       = true;
 TO_QSPI const uint8_t smallPrimes[] = {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,
                                          41,  43,  47,  53,  59,  61,  67,  71,  73,  79,  83,  89,
                                          97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
-                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,      
+                                        157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,
                                         223, 227, 229, 233, 239, 241, 251 };
 
 // pre-calced sieve of Eratosthenes for n = 2, 3, 5, 7
@@ -39,11 +47,11 @@ TO_QSPI const uint8_t offsets[] = {  10,   2,   4,   2,   4,   6,   2,   6,   4,
 
 
 // distances between primes, to add to the 1-byte small prime list; starting at 251+6 ==> 257 .... 1009
-TO_QSPI const uint8_t smallPrimes2[] = { 6, 6, 6, 2, 6, 4, 2, 10, 14, 4, 2, 4, 14, 6, 10, 2, 4, 6, 8, 
-                                         6, 6, 4, 6, 8, 4, 8, 10, 2, 10, 2, 6, 4, 6, 8, 4, 2, 4, 12, 
-                                         8, 4, 8, 4, 6, 12, 2, 18, 6, 10, 6, 6, 2, 6, 10, 6, 6, 2, 6, 
-                                         6, 4, 2, 12, 10, 2, 4, 6, 6, 2, 12, 4, 6, 8, 10, 8, 10, 8, 6, 
-                                         6, 4, 8, 6, 4, 8, 4, 14, 10, 12, 2, 10, 2, 4, 2, 10, 14, 4, 2, 
+TO_QSPI const uint8_t smallPrimes2[] = { 6, 6, 6, 2, 6, 4, 2, 10, 14, 4, 2, 4, 14, 6, 10, 2, 4, 6, 8,
+                                         6, 6, 4, 6, 8, 4, 8, 10, 2, 10, 2, 6, 4, 6, 8, 4, 2, 4, 12,
+                                         8, 4, 8, 4, 6, 12, 2, 18, 6, 10, 6, 6, 2, 6, 10, 6, 6, 2, 6,
+                                         6, 4, 2, 12, 10, 2, 4, 6, 6, 2, 12, 4, 6, 8, 10, 8, 10, 8, 6,
+                                         6, 4, 8, 6, 4, 8, 4, 14, 10, 12, 2, 10, 2, 4, 2, 10, 14, 4, 2,
                                          4, 14, 4, 2, 4, 20, 4, 8, 10, 8, 4, 6, 6, 14, 4, 6, 6, 8, 6, 12 };
 
 
@@ -186,14 +194,26 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
   return true;
 } */
 
-static bool_t getIntArg(longInteger_t x) {
+static bool_t getIntArg(longInteger_t x, calcRegister_t regist) {
   bool_t fractional;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, &fractional))
+  if(!getRegisterAsLongInt(regist, x, &fractional)) {
+    if(getRegisterDataType(regist) != dtReal34Matrix) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is invalid for storage into a longinteger!");
+        moreInfoOnError("In function getIntArg:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
     return false;
+  }
 
-  if (fractional) {
+  if(fractional) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The input value is fractional and invalid for storage into a longinteger!");
+      moreInfoOnError("In function getIntArg:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   return true;
@@ -204,21 +224,23 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     longInteger_t tmp, primeCandidate;
 
-    longIntegerInit(primeCandidate);
+    if(!getIntArg(primeCandidate, REGISTER_X)) {
+      goto abort1;
+    }
+
     longIntegerInit(tmp);
-    if (!getIntArg(primeCandidate))
-      goto abort;
     longIntegerPowerUIntUInt(10,maximumPrime,tmp);
     longIntegerSubtract(primeCandidate, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
       badDomainError(REGISTER_X);
-      goto abort;
+      goto abort2;
     }
 
     SET_TI_TRUE_FALSE(longIntegerIsPositive(primeCandidate) && longIntegerIsPrime(primeCandidate) != 0);
 
-  abort:
+  abort2:
     longIntegerFree(tmp);
+  abort1:
     longIntegerFree(primeCandidate);
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
@@ -233,32 +255,30 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     real_t x;
     longInteger_t tmp, currentNumber, nextPrime;
 
-    longIntegerInit(currentNumber);
-    longIntegerInit(nextPrime);
-    longIntegerInit(tmp);
-
     if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
       if(!getRegisterAsReal(REGISTER_X, &x)) {
-        goto abort;
+        return;
       }
+      longIntegerInit(currentNumber);
       convertRealToLongInteger(&x, currentNumber, DEC_ROUND_DOWN);
     }
     else {
-      if(!getIntArg(currentNumber)) {
-        goto abort;
+      if(!getIntArg(currentNumber, REGISTER_X)) {
+        goto abort1;
       }
     }
 
-    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+    longIntegerInit(tmp);
+    longIntegerPowerUIntUInt(10, maximumPrime, tmp);
     longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
       badDomainError(REGISTER_X);
-      goto abort;
+      goto abort2;
     }
 
 
     if(!saveLastX()) {
-      goto abort;
+      goto abort2;
     }
 
     if(!longIntegerIsPositive(currentNumber)) {
@@ -266,6 +286,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     }
 
 
+    longIntegerInit(nextPrime);
     //longIntegerNextPrime(currentNumber, nextPrime);
     calculateNextPrime(currentNumber, nextPrime);
 
@@ -275,9 +296,11 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     else {
       convertLongIntegerToLongIntegerRegister(nextPrime, REGISTER_X);
     }
-  abort:
-    longIntegerFree(tmp);
+
     longIntegerFree(nextPrime);
+  abort2:
+    longIntegerFree(tmp);
+  abort1:
     longIntegerFree(currentNumber);
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
@@ -529,8 +552,8 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
   // find our position in the sieve rotation via binary search
   // The sieve algorithm uses a wheel of size 210 (the product of the first four primes:
-  // 2×3×5×7 = 210). The rotation pattern (or reduced residue system) under mod 210 
-  // consists of numbers < 210 that are coprime to 210, and these are indexed in indices[]. 
+  // 2×3×5×7 = 210). The rotation pattern (or reduced residue system) under mod 210
+  // consists of numbers < 210 that are coprime to 210, and these are indexed in indices[].
   // There are 48 such numbers, 47 when starting from 2 as we do.
 
   // below:
@@ -651,7 +674,7 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
  * all the prime factors with their exponents, and returns in the X register
  * the result as a long integer.
  */
-void _fnEvPFacts     (uint16_t param) {
+static void _doFnEvPFacts     (uint16_t param) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     real_t factorR, factorI, baseR, expR, prodR, prodI;
 
@@ -659,9 +682,8 @@ void _fnEvPFacts     (uint16_t param) {
     int32_t pwr = param;
     real_t x;
     longInteger_t currentNumber;
-    longIntegerInit(currentNumber);
-    if(param == M_EULER_SIGMA_k) {
-      if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
+    if(param == M_SIGMA_k) {
+      if(getRegisterDataType(REGISTER_X) == dtReal34) { //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
         if(!getRegisterAsReal(REGISTER_X, &x)) {
           goto abort;
         }
@@ -669,19 +691,19 @@ void _fnEvPFacts     (uint16_t param) {
         fnDrop(NOPARAM);
       }
       else {
-        if(!getIntArg(currentNumber)) {
+        if(!getIntArg(currentNumber, REGISTER_X)) {
+          longIntegerFree(currentNumber);
           goto abort;
         }
         longIntegerToInt32(currentNumber, pwr);
         if(pwr > 3321 || pwr < 0) {
+          longIntegerFree(currentNumber);
           goto abort;
         }
         fnDrop(NOPARAM);
+        longIntegerFree(currentNumber);
       }
     }
-    longIntegerFree(currentNumber);
-
-
 
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t matrix;
@@ -689,7 +711,7 @@ void _fnEvPFacts     (uint16_t param) {
       linkToRealMatrixRegister(REGISTER_X, &matrix);
       uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
       uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-      if ( rows == 2 && cols >= 1 ) {
+      if(rows == 2 && cols >= 1) {
         // Only operate if factorisation matrix has two rows and at least one column
         longInteger_t prod, factor, tmp_prod, p_li, k_li;
         longIntegerInit(prod);
@@ -701,17 +723,17 @@ void _fnEvPFacts     (uint16_t param) {
         #define sumTypeReal    1
         #define sumTypeComplex 2
         uint8_t sumType = sumTypeInteger;
-        for ( uint16_t j = 0;  j < cols;  ++j ) {
+        for(uint16_t j=0;  j<cols; ++j) {
           if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
             convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
             convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
             //printLongIntegerToConsole(p_li,"base:","  ");
             //printLongIntegerToConsole(k_li,"exp:","\n");
             switch(param){
-              case M_FACTORS:        longIntegerPower(p_li, k_li, factor); break;
-              case M_EULER_SIGMA_0:
-              case M_EULER_SIGMA_1:
-              case M_EULER_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
+              case M_FACTORS: longIntegerPower(p_li, k_li, factor); break;
+              case M_SIGMA_0:
+              case M_SIGMA_1:
+              case M_SIGMA_k: longIntegerSumPowers(p_li, k_li, pwr, factor); break;
               default:;
             }
             longIntegerFree(p_li);
@@ -744,7 +766,7 @@ void _fnEvPFacts     (uint16_t param) {
             else {
               displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+                moreInfoOnError("In function _doFnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               longIntegerFree(prod);
               longIntegerFree(factor);
@@ -778,7 +800,7 @@ void _fnEvPFacts     (uint16_t param) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Only 2" STD_CROSS "n matrix supported: %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-          moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function _doFnEvPFacts:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         goto return10;
       }
@@ -787,7 +809,7 @@ void _fnEvPFacts     (uint16_t param) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
-        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _doFnEvPFacts:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto return10;
     }
@@ -796,10 +818,9 @@ void _fnEvPFacts     (uint16_t param) {
     return;
 
     abort:
-    longIntegerFree(currentNumber);
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnEvPFacts:", "cannot do Euler sigma function due to parameter issue", NULL, NULL);
+      moreInfoOnError("In function _doFnEvPFacts:", "cannot do Euler sigma function due to parameter issue", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto return10;
 
@@ -808,61 +829,261 @@ void _fnEvPFacts     (uint16_t param) {
 
 
 
-void fnEvPFacts (uint16_t param) {
+static void doFnEvPFacts (uint16_t param) {
   longInteger_t xx;
   int32_t k = 1;
 
-  if(!saveLastX()) {
-    goto return10;
-  }
-  saveForUndo();
-  if(param == M_EULER_SIGMA_pk) {
-    longIntegerInit(xx);
-    if(!getIntArg(xx)) {
+  /* process M_SIGMA_p1 as M_SIGMA_1; process M_SIGMA_pk as M_SIGMA_k*/
+  if(param == M_SIGMA_p1 || param == M_SIGMA_pk) {
+    if(param == M_SIGMA_pk) {
+      if(!getIntArg(xx, REGISTER_X)) {
+        goto end;
+      }
+      longIntegerToInt32(xx, k);
+      fnSwapXY(NOPARAM);                                           // get matrix to X
+      end:
       longIntegerFree(xx);
-      return;
     }
-    longIntegerToInt32(xx, k);
-    longIntegerFree(xx);
-    fnSwapXY(NOPARAM);
-  }
 
-  if(param == M_EULER_SIGMA_p1 || param == M_EULER_SIGMA_pk) {
+    //expect matrix in X
+    real34Matrix_t xx;
+    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);    // temporary store matrix, as the temp register is being used already
     longInteger_t y, x, z, tmp;
-    _fnEvPFacts(M_FACTORS);                                      //longinteger register output
+    _doFnEvPFacts(M_FACTORS);                                      // longinteger register output
     convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
-    //printLongIntegerToConsole(y,"Y:","\n");
     longIntegerInit(z);
     longIntegerInit(tmp);
     int32ToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
-    longIntegerCopy(tmp,y);                                      //y is the number to be subtracted
-    //printLongIntegerToConsole(y,"Y:","\n");
-    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
-    copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+    longIntegerCopy(tmp,y);                                        // y is the number to be subtracted
+    convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
+
     switch(param) {
-      case M_EULER_SIGMA_p1: _fnEvPFacts(M_EULER_SIGMA_1); break;      //longintger register output
-      case M_EULER_SIGMA_pk: _fnEvPFacts(M_EULER_SIGMA_k); break;      //longintger register output
+      case M_SIGMA_p1:
+        _doFnEvPFacts(M_SIGMA_1);                                  // longinteger register output
+        break;
+      case M_SIGMA_pk:
+        fnSwapXY(NOPARAM);                                         // restore matrix to y
+        _doFnEvPFacts(M_SIGMA_k);                                  // longinteger register output
+        break;
       default:;
     }
     convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-    //printLongIntegerToConsole(x,"x:","  ");
-    //printLongIntegerToConsole(y,"y:","\n");
     longIntegerSubtract(x, y, x);
-    //printLongIntegerToConsole(x,"x:","\n");
     convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
     longIntegerFree(tmp);
     longIntegerFree(z);
     longIntegerFree(y);
     longIntegerFree(x);
   } else {
-    _fnEvPFacts(param);
+  /* process M_SIGMA_0, M_SIGMA_1, M_SIGMA_k */
+    _doFnEvPFacts(param);
+  }
+}
+
+/******************************************************************************
+ * isRegisterMatrixFactors
+ * Validates 2 rows, >= 1 cols matrix as likely prime factors for use in the phi and sigma functions
+ *   Row 1: [p1, p2, ..., pn]  factors >= 1 (or -1 in first column for optional sign)
+ *   Row 2: [e1, e2, ..., en]  exponents >= 0
+ * Parameters: reg - register to validate, isNegative output is true if [-1,1] sign column is present
+ * Returns: true if valid factorization matrix
+ ******************************************************************************/
+static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
+  const uint32_t type = getRegisterDataType(reg);
+  *isNegative = false;
+
+  if (type == dtReal34Matrix) {
+    const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
+    const uint16_t cols = head->matrixColumns;
+    real34_t *elems = REGISTER_REAL34_MATRIX_ELEMENTS(reg);
+    real_t x;
+    bool_t mustBeOne = false;
+    unsigned int i;
+
+    if (head->matrixRows != 2 || cols < 1)  // changed to allow single column, -1^1 or m^n
+      return false;
+    for (i = 0; i < cols; i++) {
+      real34ToReal(elems + i + 0 * cols, &x);
+      if (!realIsAnInteger(&x))
+        return false;
+      if (realCompareLessEqual(&x, const_0)) {// changed to allow any factor >= 1, to include 1^n
+        if (i != 0)
+          return false;
+        if (!realCompareEqual(&x, const__1))
+          return false;
+        mustBeOne = true;
+      }
+
+      real34ToReal(elems + i + 1 * cols, &x);
+      if (!realIsAnInteger(&x))
+        return false;
+      if (realCompareLessThan(&x, const_0))  // change to const_0 to allow n^0 (exponents ≥ 0). (0^0 per definition will not occur as 0 factor is not allowed).
+        return false;
+      if (mustBeOne) {
+        if (!realCompareEqual(&x, const_1))
+          return false;
+        *isNegative = true;
+        mustBeOne = false;
+      }
+    }
+    return true;
   }
 
+  return false;
+}
 
+static void fnEulPhi(uint16_t unusedButMandatoryParameter);
+static bool_t performPrimeFactorization(bool_t doSaveLastX);
+
+
+/******************************************************************************
+ * ensureFactorizationMatrix
+ * Validates register contains either:
+ *   - A valid factorization matrix, or
+ *   - A non-negative long integer
+ * Optionally factorizes the integer into a matrix.
+ * Parameters:
+ *   reg - register to validate
+ *   allowNegative - if false, rejects negative matrices
+ *   doFactorizeNow - if true, factorizes integer; if false, only validates
+ *   wasAlreadyMatrix - output: true if was already a matrix
+ * Returns: true if valid and non-negative, false otherwise (displays errors)
+ ******************************************************************************/
+static bool_t ensureFactorizationMatrix(calcRegister_t reg, bool_t allowNegative, bool_t doFactorizeNow, bool_t *wasAlreadyMatrix) {
+  bool_t isNegative;
+  *wasAlreadyMatrix = isRegisterMatrixFactors(reg, &isNegative);
+  if(!*wasAlreadyMatrix) {
+    if(getRegisterDataType(reg) == dtReal34Matrix) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is not a valid matrix!");
+        moreInfoOnError("In function ensureFactorizationMatrix 01:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+    //check long integer for validity and positive
+    longInteger_t x;
+      if(!getIntArg(x, reg)) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is neither a longinteger nor a valid matrix!");
+        moreInfoOnError("In function ensureFactorizationMatrix 02:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(x);
+      return false;
+    }
+    if(longIntegerIsNegative(x)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The input value is negative and therefore out of the domain!");
+        moreInfoOnError("In function ensureFactorizationMatrix 03:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(x);
+      return false;
+    }
+    longIntegerFree(x);
+  }
+  if(*wasAlreadyMatrix && !allowNegative && isNegative) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The matrix input value is negative and therefore out of the domain!");
+      moreInfoOnError("In function ensureFactorizationMatrix 04:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+  // Factorize the integer if requested
+  if(doFactorizeNow && !*wasAlreadyMatrix) {
+    if(reg == REGISTER_Y) {
+      fnSwapXY(NOPARAM);
+      performPrimeFactorization(false);
+      fnSwapXY(NOPARAM);
+    }
+    else {
+      performPrimeFactorization(false);
+    }
+  }
+  return true;
+}
+
+
+
+void fnEvPFacts(uint16_t param) {
+  bool_t isValidMxX      = false;
+  bool_t isValidMxY      = false;
+  bool_t needsFactorizeX = false;
+
+  // Validate (before saveLastX)
+  if(param != M_FACTORS) {
+    if(!ensureFactorizationMatrix(REGISTER_X, false, false, &isValidMxX)) {
+      goto return10;
+    }
+    needsFactorizeX = !isValidMxX && (param == M_SIGMA_0 || param == M_SIGMA_1 || param == M_SIGMA_p1);
+  }
+
+  if(!saveLastX()) {
+    goto return10;
+  }
+  saveForUndo();
+
+  // Factorize X if needed (after saveLastX)
+  if(needsFactorizeX) {
+    if(!ensureFactorizationMatrix(REGISTER_X, false, true, &isValidMxX)) {
+      goto return10;
+    }
+  }
+
+  //pre-processing
+  switch(param) {
+    case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
+    case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
+    case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
+      ; //nothing - X already ensured to be factorization matrix
+      break;
+    case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
+    case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
+      if(!ensureFactorizationMatrix(REGISTER_Y, false, false, &isValidMxY)) {
+        goto return10;
+      }
+      if(!isValidMxY) {
+        if(!ensureFactorizationMatrix(REGISTER_Y, false, true, &isValidMxY)) {
+          goto return10;
+        }
+      }
+      break;
+    case M_FACTORS  :  // 5
+      ; //nothing
+      break;
+    case M_PHI_EUL  :  // 6
+      ; //nothing
+      break;
+    default:;
+  }
+
+  //processing
+  switch(param) {
+    case M_SIGMA_0  :  // 0  // k = 0                      ; monadic; x has input number
+    case M_SIGMA_1  :  // 1  // k = 1                      ; monadic; x has input number
+    case M_SIGMA_k  :  // 2  // k > 1                      ; dyadic; x has k; y has input number
+    case M_SIGMA_p1 :  // 3  // k = 1 proper               ; monadic; x has input number
+    case M_SIGMA_pk :  // 4  // k > 1 proper genereralized ; dyadic; x has k; y has input number
+    case M_FACTORS  :  // 5
+      if(lastErrorCode == 0) {
+        doFnEvPFacts(param);
+      } else {
+        #if defined(PC_BUILD)
+          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);
+        #endif
+      }
+      break;
+    case M_PHI_EUL  :  // 6
+        fnEulPhi(NOPARAM);
+      break;
+    default:;
+  }
 
   return10:
-
+  screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   refreshScreen(254);
 }
 
@@ -886,17 +1107,27 @@ void fnEvPFacts (uint16_t param) {
  * The prime factors are extracted from this matrix and used to complete
  * the calculation.
  */
-void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
+static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
+    bool_t isMxXNegative = false;
     longInteger_t x;
-    longIntegerInit(x);
+    bool_t useMatrix = isRegisterMatrixFactors(REGISTER_X, &isMxXNegative);
+    real34Matrix_t xx;
 
-    if(!getIntArg(x)) {
+    if(useMatrix) {
+      convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &xx);
+      doFnEvPFacts(M_FACTORS);
+    }
+
+    if(!getIntArg(x, REGISTER_X)) {
+      if(useMatrix) {
+        convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix after matrix element operations
+      }
       goto return1;
     }
 
-    if(!saveLastX()) {
-      goto return1;
+    if(useMatrix) {
+      convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
     }
 
     longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
@@ -915,9 +1146,11 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       longIntegerCopy(x, phi_x);
       goto returnValue;
     }
-    if(longIntegerIsPositive(phi_x_tmp)) {
-      // Only operate if input long integer to fnPrimeFactors in register x is greater than 1 (***)
-      fnPrimeFactors(unusedButMandatoryParameter);
+
+    {
+      if(!useMatrix) {
+        fnPrimeFactors(unusedButMandatoryParameter);
+      }
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
         linkToRealMatrixRegister(REGISTER_X, &matrix);
@@ -957,14 +1190,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       goto return2;
       }
     }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "The input value is negative and therefore out of the domain for Euler's Phi function!");
-        moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      goto return2;
-    }
+
     returnValue:
     convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -1088,40 +1314,40 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         longIntegerCopy(s, result);
         goto cleanup;
       }
-      
+
       // Calculate s = sqrt(N)
       longIntegerSquareRoot(N, s);
-      
+
       for (k = 0; k < nbrOfElements(multipliers); k++) {
           // D = multiplier[k] * N  (just N here)
           longIntegerMultiplyUInt(N, multipliers[k], D);
-          
+
           // Po = Pprev = P = sqrt(D)
           longIntegerSquareRoot(D, Po);
           longIntegerCopy(Po, Pprev);
           longIntegerCopy(Po, P);
-          
+
           // Qprev = 1
           uInt32ToLongInteger(1, Qprev);
-          
+
           // Q = D - Po*Po
           longIntegerMultiply(Po, Po, temp1);
           longIntegerSubtract(D, temp1, Q);
           if (longIntegerSign(Q) == 0) {
               continue; // Q is zero; no factor found
           }
-          
+
           // LL = 2 * sqrt(2*s)
           longIntegerMultiplyUInt(s, 2, temp1);
           longIntegerSquareRoot(temp1, temp2);
           longIntegerMultiplyUInt(temp2, 2, LL);
-          
+
           // BB = 3 * LL
           longIntegerMultiplyUInt(LL, 3, BB);
-         
+
           // Initialize i as longInteger_t for comparison with BB
           uInt32ToLongInteger(2, ii);
-          
+
           while (longIntegerCompare(ii, BB) < 0) {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
@@ -1166,7 +1392,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               // b = (Po + P) / Q
               longIntegerAdd(Po, P, temp1);
               longIntegerDivide(temp1, Q, b);
-              
+
               // P = b*Q - P
               longIntegerMultiply(b, Q, temp1);
               longIntegerSubtract(temp1, P, temp2);
@@ -1183,11 +1409,11 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               if (longIntegerIsEven(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
                   break;
               }
-              
+
               // Qprev = q; Pprev = P
               longIntegerCopy(q, Qprev);
               longIntegerCopy(P, Pprev);
-              
+
               // Increment i
               longIntegerAddUInt(ii, 1, ii);
           }
@@ -1200,25 +1426,25 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
           if (longIntegerCompare(ii, BB) >= 0) {
               continue;
           }
-          
+
           // b = (Po - P) / r
           longIntegerSubtract(Po, P, temp1);
           longIntegerDivide(temp1, r, b);
-          
+
           // Pprev = P = b*r + P
           longIntegerMultiply(b, r, temp1);
           longIntegerAdd(temp1, P, temp2);
           longIntegerCopy(temp2, Pprev);
           longIntegerCopy(temp2, P);
-          
+
           // Qprev = r
           longIntegerCopy(r, Qprev);
-          
+
           // Q = (D - Pprev*Pprev) / Qprev
           longIntegerMultiply(Pprev, Pprev, temp1);
           longIntegerSubtract(D, temp1, temp2);
           longIntegerDivide(temp2, Qprev, Q);
-          
+
           do {
               #if !defined(TESTSUITE_BUILD)
                 loopp++;
@@ -1238,25 +1464,25 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
               // b = (Po + P) / Q
               longIntegerAdd(Po, P, temp1);
               longIntegerDivide(temp1, Q, b);
-              
+
               // Pprev = P
               longIntegerCopy(P, Pprev);
-              
+
               // P = b*Q - P
               longIntegerMultiply(b, Q, temp1);
               longIntegerSubtract(temp1, P, P);
-              
+
               // q = Q
               longIntegerCopy(Q, q);
-              
+
               // Q = Qprev + b*(Pprev - P)
               longIntegerSubtract(Pprev, P, temp1);
               longIntegerMultiply(b, temp1, temp2);
               longIntegerAdd(Qprev, temp2, Q);
-              
+
               // Qprev = q
               longIntegerCopy(q, Qprev);
-              
+
           } while (longIntegerCompare(P, Pprev) != 0);
 
           #if !defined(TESTSUITE_BUILD)
@@ -1269,7 +1495,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
           // r = gcd(N, Qprev)
           longIntegerGcd(N, Qprev, r);
-          
+
           // Check if r != 1 and r != N
           if (longIntegerCompareUInt(r, 1) != 0 && longIntegerCompare(r, N) != 0) {
               longIntegerCopy(r, result);
@@ -1279,7 +1505,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
       // No factor found
       uInt32ToLongInteger(0, result);
-      
+
 cleanup:
       //Pollard simultaneous analysis cleanup
       if(Factors_3_Pollard) {
@@ -1400,7 +1626,7 @@ typedef struct FactorAdder
   void dumpExponents(calcRegister_t regist, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
       uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
       uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
-      
+
                                             #ifdef MONITOR_FACTORS
                                               printf("\ndumpExponents:\n");
                                               printRegisterToConsole(regist,"Matrix: ","\n");
@@ -1486,7 +1712,7 @@ typedef struct FactorAdder
                                               fflush(stdout);
                                             #endif //MONITOR_FACTORS
 
-        if(errorMessage != 0) goto returnFalse;
+        if(lastErrorCode != 0) goto returnFalse;
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           uint16_t cols_ = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
@@ -1525,8 +1751,8 @@ typedef struct FactorAdder
                                               gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
                                               fflush(stdout);
                                             #endif //MONITOR_FACTORS
-    if(!redimMatrixRegister(regist, rows, wkgCols)) {
-      if(errorMessage != 0) goto returnFalse;
+    if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
+      if(lastErrorCode != 0) goto returnFalse;
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1585,8 +1811,8 @@ typedef struct FactorAdder
 
         ++wkgCols;
         faddr->expons[faddr->nExpons-1] = 1;
-        if(!redimMatrixRegister(regist, rows, wkgCols)) {
-          if(errorMessage != 0) goto returnFalse;
+        if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
+          if(lastErrorCode != 0) goto returnFalse;
           #if !defined(TESTSUITE_BUILD)
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1640,230 +1866,99 @@ static void printTitles(longInteger_t input) {
 }
 
 
-void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
-    iterations = true;
-    addFactorsToTSV = false;
-    loopp = 0;
-    currentKeyCode = 255;
-    real34_t lastAdded;
+// Helper that extracts from REGISTER_X, validates, and performs factorization
+// Parameter doSaveLastX: if true, calls saveLastX() before proceeding
+// Returns true on success, false on failure
+// All error reporting happens inside this function
+static bool_t performPrimeFactorization(bool_t doSaveLastX) {
+  iterations = true;
+  addFactorsToTSV = false;
+  loopp = 0;
+  currentKeyCode = 255;
+  real34_t lastAdded;
 
-    longInteger_t currentNumber, tmp, temp1;
+  longInteger_t currentNumber, tmp, temp1;
 
-    longIntegerInit(currentNumber);
-    longIntegerInit(tmp);
-    longIntegerInit(temp1);
+  longIntegerInit(tmp);
+  longIntegerInit(temp1);
 
-//    bool_t continueWithMatrix = false;
-//    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 2 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 0) {
-//      continueWithMatrix = true;
-//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns-1, temp1, RM_HALF_UP);
-//      convertReal34ToLongInteger(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns*2-1, tmp, RM_HALF_UP);
-//      longIntegerPower(temp1, tmp, currentNumber);
-//    } else
-    if(!getIntArg(currentNumber)) {
-      goto abort;
-    }
+  if(!getIntArg(currentNumber, REGISTER_X)) {
+    goto abort;
+  }
 
-    if(longIntegerIsZero(currentNumber)) {
-      badDomainError(REGISTER_X);
-      goto abort;
-    }
+  if(longIntegerIsZero(currentNumber)) {
+    badDomainError(REGISTER_X);
+    goto abort;
+  }
 
-    int32_t sign = longIntegerIsNegative(currentNumber);
-    if(sign) {
-      longIntegerSetPositiveSign(currentNumber);
-    }
+  int32_t sign = longIntegerIsNegative(currentNumber);
+  if(sign) {
+    longIntegerSetPositiveSign(currentNumber);
+  }
 
-    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
-    longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
-    if(longIntegerIsPositive(tmp)) {
-      badDomainError(REGISTER_X);
-      goto abort;
-    }
+  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+  if(longIntegerIsPositive(tmp)) {
+    badDomainError(REGISTER_X);
+    goto abort;
+  }
 
-    if(!saveLastX()) {
-      goto abort;
-    }
+  if(doSaveLastX && !saveLastX())
+    goto abort;
 
-    int32ToReal34(0,&lastAdded);
-    FactorAdder_t faddr;
-    initFactorAdder(&faddr);
+  int32ToReal34(0,&lastAdded);
+  FactorAdder_t faddr;
+  initFactorAdder(&faddr);
 
-//    if(continueWithMatrix) {
-//      initFactorCreateFromMatrix(&faddr);
-//    }
-
-    //determine if the TSV file is to be written
-    longInteger_t lgInt;
-    longIntegerInit(lgInt);
-    stringToLongInteger("9999999999999999999999999999999999", 10, lgInt);
-    addFactorsToTSV = (longIntegerCompare(currentNumber, lgInt) > 0);
-    longIntegerFree(lgInt);
-    printTitles(currentNumber);
+  //determine if the TSV file is to be written
+  longInteger_t lgInt;
+  longIntegerInit(lgInt);
+  stringToLongInteger("9999999999999999999999999999999999", 10, lgInt);
+  addFactorsToTSV = (longIntegerCompare(currentNumber, lgInt) > 0);
+  longIntegerFree(lgInt);
+  printTitles(currentNumber);
 
 
-    //capture the sign in the output matrix
-    int32ToLongInteger(sign ? -1 : 1, tmp);    
-    if(!addFactor(tmp, REGISTER_X, &lastAdded, &faddr)) {
-      goto abort;
-    }
+  //capture the sign in the output matrix
+  int32ToLongInteger(sign ? -1 : 1, tmp);
+  if(!addFactor(tmp, REGISTER_X, &lastAdded, &faddr)) {
+    goto abort;
+  }
 
 
-    longInteger_t queue[MAXIMUM_QUEUE_SIZE];
-    int queue_start = 0, queue_end = 0;
+  longInteger_t queue[MAXIMUM_QUEUE_SIZE];
+  int queue_start = 0, queue_end = 0;
 
-// initialize and prep second part
-    longInteger_t temp, factor, quotient, tempPrePrimeRun;
-    longIntegerInit(temp);
-    longIntegerInit(factor);
-    longIntegerInit(quotient);
-    longIntegerInit(tempPrePrimeRun);
-    // Initialize queue with the input number
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
-        longIntegerInit(queue[i]);
-    }
+  //initialize and prep second part
+  longInteger_t temp, factor, quotient, tempPrePrimeRun;
+  longIntegerInit(temp);
+  longIntegerInit(factor);
+  longIntegerInit(quotient);
+  longIntegerInit(tempPrePrimeRun);
+  // Initialize queue with the input number
+  for(int i=0; i<MAXIMUM_QUEUE_SIZE; i++) {
+    longIntegerInit(queue[i]);
+  }
 
-    #if !defined(TESTSUITE_BUILD)
-      clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
-      force_refresh(force);
-    #endif //TESTSUITE_BUILD
+  #if !defined(TESTSUITE_BUILD)
+    clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+    force_refresh(force);
+  #endif //TESTSUITE_BUILD
 
-    // original command, prior to pre-run of primes. Retain here to test without the pre-run block
-    //   longIntegerCopy(currentNumber, queue[queue_end++]);
+  // original command, prior to pre-run of primes. Retain here to test without the pre-run block
+  //   longIntegerCopy(currentNumber, queue[queue_end++]);
 
-    if(Factors_1_SmallPrimes) {
-      // first do a pre-run, to do small prime checking
-      for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
-        uint16_t smallP = smallPrimeList(i);
-        while (mpz_divisible_ui_p(currentNumber, smallP)) {
-          #if !defined(TESTSUITE_BUILD)
-            loopp++;
-            if(checkHalfSec()) {
-              keepFileNameAlive();
-              if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                _showProgress(&lastAdded, currentNumber);
-                dumpExponents(REGISTER_X, &faddr, 13);
-                force_refresh(force);
-              }
-            }
-            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              programRunStop = PGM_WAITING;
-              break;
-            }
-          #endif //!TESTSUITE_BUILD
-                              #if defined(MONITOR_FACTORS)
-                                printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
-                              #endif //MONITOR_FACTORS
-          mpz_divexact_ui(currentNumber, currentNumber, smallP);
-                              #if defined(MONITOR_FACTORS)
-                                mpz_out_str(stdout, 10, currentNumber);
-                              #endif //MONITOR_FACTORS
-          uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
-          if(!addFactor(tempPrePrimeRun, REGISTER_X, &lastAdded, &faddr)) {
-            goto cleanup;
-          }
-                              #if defined(MONITOR_FACTORS)
-                                printf("\n");
-                              #endif //MONITOR_FACTORS
-        }
-      } // end of small prime loop
-    }
-
-
-
-
-    // Early multiplier check using 32-bit perfect square test
-    static const uint32_t multipliers[] = {
-    1,   // Always include 1
-    3, 5, 7, 11,
-    15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
-    105 }; // 3-way composite: 3*5*7
-
-    if(Factors_2_PerfectSquare) {
-      for (uint16_t i = 0; i < nbrOfElements(multipliers); i++) {
-          #if !defined(TESTSUITE_BUILD)
-            loopp++;
-            if(checkHalfSec()) {
-              keepFileNameAlive();
-              if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                _showProgress(&lastAdded, currentNumber);
-                dumpExponents(REGISTER_X, &faddr, 13);
-                force_refresh(force);
-              }
-            }
-            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              programRunStop = PGM_WAITING;
-              break;
-            }
-          #endif //!TESTSUITE_BUILD
-          if (mpz_fits_uint_p(currentNumber)) {
-              uint32_t k = multipliers[i];
-              uint32_t n32;
-              longIntegerToUInt32(currentNumber, n32);
-              uint64_t kn = (uint64_t)k * (uint64_t)n32;
-              #if defined(MONITOR_FACTORS)
-                printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
-                fflush(stdout);
-              #endif
-              uint32_t root;
-              if (is_perfect_square_uint32(kn, &root)) {
-                  // Skip trivial perfect square 1 * 1 = 1
-                  if (!(k == 1 && root == 1)) {
-                      #if defined(MONITOR_FACTORS)
-                        printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
-                        fflush(stdout);
-                      #endif
-                      // Use gcd to extract non-trivial factor safely
-                      longInteger_t gcd;
-                      longIntegerInit(gcd);
-                      mpz_gcd_ui(gcd, currentNumber, root);
-                      if (longIntegerCompareUInt(gcd, 1) > 0) {
-                          // Inject a trivial factor
-                          if (!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
-                              longIntegerFree(gcd);
-                              goto cleanup;
-                          }
-                          mpz_divexact(currentNumber, currentNumber, gcd);
-                          longIntegerFree(gcd);
-                          break;
-                      }
-                      longIntegerFree(gcd);
-                  }
-              }
-          }
-      }
-    }
-
-    //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
-    longIntegerCopy(currentNumber, queue[queue_end]);
-    queue_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
-                            #if defined(MONITOR_FACTORS)
-                              printf("Factorizing: ");
-                              mpz_out_str(stdout, 10, currentNumber);
-                              printf("\nFactors found: ");
-                            #endif //MONITOR_FACTORS
-
-    longInteger_t current;
-    longIntegerInit(current);
-    while (queue_start != queue_end) {
-        longIntegerCopy(queue[queue_start], current);
-        queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
-                            #if defined(MONITOR_FACTORS)
-                              printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
-                            #endif //MONITOR_FACTORS
-           #if defined(MONITOR_FACTORS)
-             mpz_out_str(stdout, 10, current);
-             printf(" ");
-            #endif //MONITOR_FACTORS
-
+  if(Factors_1_SmallPrimes) {
+    // first do a pre-run, to do small prime checking
+    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+      uint16_t smallP = smallPrimeList(i);
+      while (mpz_divisible_ui_p(currentNumber, smallP)) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
             keepFileNameAlive();
-            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-              _showProgress(&lastAdded, current);
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+              _showProgress(&lastAdded, currentNumber);
               dumpExponents(REGISTER_X, &faddr, 13);
               force_refresh(force);
             }
@@ -1874,104 +1969,229 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             break;
           }
         #endif //!TESTSUITE_BUILD
-
-
-        // Skip if current is 1
-        if (longIntegerCompareUInt(current, 1) == 0) {
                             #if defined(MONITOR_FACTORS)
-                              printf("Skip, current is 1\n");
+                              printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
                             #endif //MONITOR_FACTORS
-            continue;
+        mpz_divexact_ui(currentNumber, currentNumber, smallP);
+                            #if defined(MONITOR_FACTORS)
+                              mpz_out_str(stdout, 10, currentNumber);
+                            #endif //MONITOR_FACTORS
+        uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
+        if(!addFactor(tempPrePrimeRun, REGISTER_X, &lastAdded, &faddr)) {
+          goto cleanup;
         }
-
-        // Check if current is prime
-        if (longIntegerProbabPrime(current)) {
-           #if defined(MONITOR_FACTORS)
-             mpz_out_str(stdout, 10, current);
-             printf(" ");
-            #endif //MONITOR_FACTORS
-            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
-              goto doneWhile;
-            }
                             #if defined(MONITOR_FACTORS)
-                              printf("Skip, current is prime\n");
-                            #endif //MONITOR_FACTORS
-            continue;
-        }
-
-        // Attempt to find a factor using SQUFOF
-        SQUFOF(factor, current, lastAdded);
-        if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
-            // SQUFOF failed; treat current as prime
-                            #if defined(MONITOR_FACTORS)
-                              printf("SQUFOF failed; treat current as prime: ");
-                              mpz_out_str(stdout, 10, current);
-                              printf(" ");
-                            #endif //MONITOR_FACTORS
-            if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
-              goto doneWhile;
-            }
-                            #if defined(MONITOR_FACTORS)
-                              printf("current considered prime, next\n");
-                            #endif //MONITOR_FACTORS
-            continue;
-        }
-
-        // Divide current by the found factor
-        mpz_divexact(quotient, current, factor);
-
-        // Enqueue the factor and quotient for further factorization
-        int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
-        int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
-        if (next_next_end != queue_start) {
-                            #if defined(MONITOR_FACTORS)
-                              printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
-                              mpz_out_str(stdout, 10, factor);
-                              printf(" quotient: ");
-                              mpz_out_str(stdout, 10, quotient);
                               printf("\n");
                             #endif //MONITOR_FACTORS
-            longIntegerCopy(factor, queue[queue_end]);
-            queue_end = next_end;
-            longIntegerCopy(quotient, queue[queue_end]);
-            queue_end = next_next_end;
-        } else {
-            if(errorMessage != 0) break;
-            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-              moreInfoOnError("In function fnPrimeFactors 001:  Queue overflow:", errorMessage, NULL, NULL);
-            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-            break;
-        }
+      }
+    } // end of small prime loop
+  }
 
+
+
+
+  // Early multiplier check using 32-bit perfect square test
+  static const uint32_t multipliers[] = {
+  1,   // Always include 1
+  3, 5, 7, 11,
+  15, 21, 33, 35, 55, 65, 77, 91, // 2-way composite square-free products
+  105 }; // 3-way composite: 3*5*7
+
+  if(Factors_2_PerfectSquare) {
+    for(uint16_t i=0; i<nbrOfElements(multipliers); i++) {
+      #if !defined(TESTSUITE_BUILD)
+        loopp++;
+        if(checkHalfSec()) {
+          keepFileNameAlive();
+          if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            _showProgress(&lastAdded, currentNumber);
+            dumpExponents(REGISTER_X, &faddr, 13);
+            force_refresh(force);
+          }
+        }
+        if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+          break;
+        }
+      #endif //!TESTSUITE_BUILD
+      if(mpz_fits_uint_p(currentNumber)) {
+        uint32_t k = multipliers[i];
+        uint32_t n32;
+        longIntegerToUInt32(currentNumber, n32);
+        uint64_t kn = (uint64_t)k * (uint64_t)n32;
+        #if defined(MONITOR_FACTORS)
+          printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+          fflush(stdout);
+        #endif
+        uint32_t root;
+        if(is_perfect_square_uint32(kn, &root)) {
+          // Skip trivial perfect square 1 * 1 = 1
+          if(!(k == 1 && root == 1)) {
+            #if defined(MONITOR_FACTORS)
+              printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
+              fflush(stdout);
+            #endif
+            // Use gcd to extract non-trivial factor safely
+            longInteger_t gcd;
+            longIntegerInit(gcd);
+            mpz_gcd_ui(gcd, currentNumber, root);
+            if (longIntegerCompareUInt(gcd, 1) > 0) {
+                // Inject a trivial factor
+                if (!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
+                    longIntegerFree(gcd);
+                    goto cleanup;
+                }
+                mpz_divexact(currentNumber, currentNumber, gcd);
+                longIntegerFree(gcd);
+                break;
+            }
+            longIntegerFree(gcd);
+          }
+        }
+      }
     }
+  }
+
+  //SQUFOF SHANKS & POLLARD RHO FACTORISATION START
+  longIntegerCopy(currentNumber, queue[queue_end]);
+  queue_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+                          #if defined(MONITOR_FACTORS)
+                            printf("Factorizing: ");
+                            mpz_out_str(stdout, 10, currentNumber);
+                            printf("\nFactors found: ");
+                          #endif //MONITOR_FACTORS
+
+  longInteger_t current;
+  longIntegerInit(current);
+  while (queue_start != queue_end) {
+    longIntegerCopy(queue[queue_start], current);
+    queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
+                        #if defined(MONITOR_FACTORS)
+                          printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+                          mpz_out_str(stdout, 10, current);
+                          printf(" ");
+                        #endif //MONITOR_FACTORS
+
+    #if !defined(TESTSUITE_BUILD)
+      loopp++;
+      if(checkHalfSec()) {
+        keepFileNameAlive();
+        if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          _showProgress(&lastAdded, current);
+          dumpExponents(REGISTER_X, &faddr, 13);
+          force_refresh(force);
+        }
+      }
+      if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+        progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        programRunStop = PGM_WAITING;
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
+
+
+    // Skip if current is 1
+    if(longIntegerCompareUInt(current, 1) == 0) {
+                        #if defined(MONITOR_FACTORS)
+                          printf("Skip, current is 1\n");
+                        #endif //MONITOR_FACTORS
+      continue;
+    }
+
+    // Check if current is prime
+    if(longIntegerProbabPrime(current)) {
+                      #if defined(MONITOR_FACTORS)
+                        mpz_out_str(stdout, 10, current);
+                        printf(" ");
+                      #endif //MONITOR_FACTORS
+      if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
+        goto doneWhile;
+      }
+                      #if defined(MONITOR_FACTORS)
+                        printf("Skip, current is prime\n");
+                      #endif //MONITOR_FACTORS
+      continue;
+    }
+
+    // Attempt to find a factor using SQUFOF
+    SQUFOF(factor, current, lastAdded);
+    if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
+      // SQUFOF failed; treat current as prime
+                      #if defined(MONITOR_FACTORS)
+                        printf("SQUFOF failed; treat current as prime: ");
+                        mpz_out_str(stdout, 10, current);
+                        printf(" ");
+                      #endif //MONITOR_FACTORS
+      if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
+        goto doneWhile;
+      }
+                      #if defined(MONITOR_FACTORS)
+                        printf("current considered prime, next\n");
+                      #endif //MONITOR_FACTORS
+      continue;
+    }
+
+    // Divide current by the found factor
+    mpz_divexact(quotient, current, factor);
+
+    // Enqueue the factor and quotient for further factorization
+    int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
+    int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
+    if (next_next_end != queue_start) {
+                        #if defined(MONITOR_FACTORS)
+                          printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
+                          mpz_out_str(stdout, 10, factor);
+                          printf(" quotient: ");
+                          mpz_out_str(stdout, 10, quotient);
+                          printf("\n");
+                        #endif //MONITOR_FACTORS
+      longIntegerCopy(factor, queue[queue_end]);
+      queue_end = next_end;
+      longIntegerCopy(quotient, queue[queue_end]);
+      queue_end = next_next_end;
+    }
+    else {
+      if(lastErrorCode != 0) break;
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+        moreInfoOnError("In function fnPrimeFactors 001:  Queue overflow:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      break;
+    }
+  }
+
 doneWhile:
-    longIntegerFree(current);
+  longIntegerFree(current);
 
 cleanup:
-    longIntegerFree(temp);
-    longIntegerFree(factor);
-    longIntegerFree(quotient);
-    longIntegerFree(tempPrePrimeRun);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; i++) {
-        longIntegerFree(queue[i]);
-    }
+  longIntegerFree(temp);
+  longIntegerFree(factor);
+  longIntegerFree(quotient);
+  longIntegerFree(tempPrePrimeRun);
+  for(int i=0; i<MAXIMUM_QUEUE_SIZE; i++) {
+    longIntegerFree(queue[i]);
+  }
 
-    dumpExponents(REGISTER_X, &faddr, 65535);
-    delCol1RealMatrixX();
+  dumpExponents(REGISTER_X, &faddr, 65535);
+  delCol1RealMatrixX();
 
 abort:
-    uInt32ToLongInteger(1u, tmp);
-    convertLongIntegerToLongIntegerRegister(tmp, TEMP_REGISTER_1);
-    longIntegerFree(tmp);
-    longIntegerFree(temp1);
-    longIntegerFree(currentNumber);
-    cancelFilename = true;
-    iterations = false;
+  uInt32ToLongInteger(1u, tmp);
+  convertLongIntegerToLongIntegerRegister(tmp, TEMP_REGISTER_1);
+  longIntegerFree(tmp);
+  longIntegerFree(temp1);
+  longIntegerFree(currentNumber);
+  cancelFilename = true;
+  iterations = false;
+  return false;
 }
 
 
+void fnPrimeFactors(uint16_t unusedButMandatoryParameter) {
+  performPrimeFactorization(true);  // Call with saveLastX enabled
+}
 
 //-------------------------------------------------------------------
 /*
@@ -1981,9 +2201,9 @@ abort:
  * jaymos 2025
  * The point of this approach of coding is to let Pollard's algo operate step wise,
  *   interjected while doing the Shanks algo. Shanks was done first, and found to get
- *   stuck with relatively simple factor not being found. Pollard will in PARALLEL 
+ *   stuck with relatively simple factor not being found. Pollard will in PARALLEL
  *   scan the current number and whichever Shanks or Pollard finding a factor,
- *   will run the addFactor function, and continue to look in the same way sharing the 
+ *   will run the addFactor function, and continue to look in the same way sharing the
  *   processor.
  * The idea comes from 'linear programming' in the 80's afaik, where a simplistic
  * single threaded industrial controller or PLC does 'multi-tasking' without formal time
@@ -2101,7 +2321,7 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
   if (self->attempt % 3 == 0) {
     uInt32ToLongInteger(1, self->c);      // f(x) = x² + 1
   } else if (self->attempt % 3 == 1) {
-    uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2  
+    uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2
   } else {
     mpz_urandomm_pcg32(self->c, &self->rng, self->n); // Random c
   }
@@ -2120,7 +2340,7 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
         break;
       }
       // Floyd's cycle detection: tortoise and hare
-      f(self->x, self->x, self->c, self->n);         // tortoise: 1 step  
+      f(self->x, self->x, self->c, self->n);         // tortoise: 1 step
       f(self->y, self->y, self->c, self->n);         // hare: 2 steps
       f(self->y, self->y, self->c, self->n);
       longIntegerSubtract(self->x, self->y, self->tmp);
@@ -2145,3 +2365,4 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
   return result;
 }
 
+#endif // SAVE_SPACE_DM42_12PRIME

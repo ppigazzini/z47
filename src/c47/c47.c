@@ -18,6 +18,8 @@
 #endif
 
 #if !defined(GENERATE_CATALOGS)
+  uint16_t lastI = 0;
+  uint16_t lastJ = 0;
   int16_t lastFunc = 0;
   int16_t lastParam = 0;
   char    lastTemp[16];
@@ -35,6 +37,7 @@ const font_t          *cursorFont;
 TO_QSPI const char     baseDigits[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
+TO_QSPI const int      KEY_X[7] = {-1, 66, 133, 200, 267, 333, 400}; // Softkey border positions
 
 uint8_t calcModel = (CALCMODEL == USER_R47 ? USER_R47f_g : CALCMODEL);          //Default set by compiler is "USER_R47" and the profile is changed to USER_R47f_g
 
@@ -49,6 +52,8 @@ bool_t                 printerIconEnabled;
 bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
+bool_t                 lastshiftF = false;
+bool_t                 lastshiftG = false;
 bool_t                 showContent;
 bool_t                 rbr1stDigit;
 bool_t                 updateDisplayValueX;
@@ -61,6 +66,7 @@ bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
 bool_t                 iterations = false;
+bool_t                 explicitTaylorIterVisibilitySelection = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
@@ -137,6 +143,7 @@ uint16_t               gapItemRight;
 uint16_t               gapItemRadix;
 uint16_t               lastCenturyHighUsed = 0;
 
+uint8_t               *lcd_buffer;
 uint8_t                numScreensStandardFont;
 uint8_t                numScreensNumericFont;
 uint8_t                numScreensTinyFont;
@@ -192,22 +199,18 @@ int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
 int16_t                lastKeyItemDetermined = 0;
+bool_t                 lastUserMode = false;         //used in btnReleased and btnFnReleased
+int16_t                lastItem = 0;                 //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 int16_t                showFunctionNameItem;
 char *                 showFunctionNameArg;
 
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;
 bool_t                doRefreshSoftMenu;                       //dr
-bool_t                BASE_MYM;                                //JM Screen / keyboard operation setup
-bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
 uint8_t               IrFractionsCurrentStatus;
 bool_t                tvmIKnown;
 bool_t                tvmIChanges;
 
-bool_t                HOME3;                                   //JM HOME Create a flag to enable or disable triple shift HOME3. Create a flag to enable or disable HOME TIMER CANCEL.
-bool_t                MYM3;                                    //JM HOME Create a flag to enable or disable triple shift MYM3. Create a flag to enable or disable HOME TIMER CANCEL.
-bool_t                ShiftTimoutMode;                         //JM SHIFT Create a flag to enable or disable SHIFT TIMER CANCEL.
-bool_t                BASE_HOME;                               //JM BASEHOME
 normKey_t             Norm_Key_00;                             //JM USER NORMAL
 uint8_t               Input_Default;                           //JM Input Default
 uint8_t               DRG_Cycling = 0;
@@ -219,6 +222,11 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+uint8_t                multiEdLines = 0;
+uint8_t                yMultiLineEdOffset = 0;
+uint8_t                xMultiLineEdOffset = 0;
+uint16_t               current_cursor_x = 0;
+uint16_t               current_cursor_y = 0;
 int16_t                alphaCursor;                  //DL
 int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
@@ -233,7 +241,7 @@ int16_t                FN_key_pressed, FN_key_pressed_last; //JM LONGPRESS FN
 bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
 bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
 bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f and on g
-bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
+bool_t                 FN_timed_out_to_NOP_or_Executed; //JM LONGPRESS FN
 bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 fnAsnDisplayUSER = true;
@@ -241,7 +249,6 @@ bool_t                 fnAsnDisplayUSER = true;
 uint8_t                bcdDisplaySign = 0;
 uint8_t                LongPressM = 0;
 uint8_t                LongPressF = 0;
-uint8_t                fgLN = 0;
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
 uint8_t                editingLiteralType;
@@ -605,6 +612,8 @@ int convertKeyCode(int key) {
       //SET_ST(STAT_ALPHA_TAB_Fn);             // Alpha key table includes F keys - This doesn't apply to the R47
     #endif // CALCMODEL == USER_R47
 
+    // initialize lcd_buffer mainly used in hal/lcd.c
+    lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();
@@ -1085,6 +1094,7 @@ int convertKeyCode(int key) {
         while (!emptyKeyBuffer()) {
           outKeyBuffer(&outKey);
         }
+        lastItem = SCREENDUMP;
       }
 
                                                   #if defined(JMSHOWCODES)
@@ -1099,7 +1109,7 @@ int convertKeyCode(int key) {
                                                         sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
                                                       #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
+                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP_or_Executed, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
                                                       #if defined(BUFFER_CLICK_DETECTION)
                                                         sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
@@ -1192,7 +1202,7 @@ int convertKeyCode(int key) {
                             #if defined(DM42_KEYCLICK)
                               keyClick(7);
                             #endif //DM42_KEYCLICK
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_SHORT); // Key released
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, skippedStackLines ? TO_KB_ACTV_MEDIUM/5 : TO_KB_ACTV_SHORT); // Key released
         }
       }
 

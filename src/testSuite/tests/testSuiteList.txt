@@ -143,6 +143,8 @@ parallel_shortInteger
 parallel_real
 parallel_complex
 
+prime
+
 specialResults
 
 ;Answer to the Ultimate Question of Life
@@ -205,6 +207,8 @@ tanh
 
 ;The standard calculator performance test arcsin(arccos(arctan(tan(cos(sin(9°))))))-9
 trig
+
+xfn
 
 erf
 erfc

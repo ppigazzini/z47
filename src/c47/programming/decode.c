@@ -171,7 +171,8 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 
 
 static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
-  uint8_t opParam = *(uint8_t *)(paramAddress++);
+uint8_t  opParam   = *(uint8_t *)(paramAddress);
+uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag number from FLAG_X up, is reported in the high byte, with the low byte being SYSTEM_FLAG_NUMBER = 250
 
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
@@ -265,17 +266,14 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam < FLAG_X) { // Global flag from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= FLAG_K) { // Lettered flag from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - FLAG_X].itemSoftmenuName);
+      else if(opParam == SYSTEM_FLAG_NUMBER && (opParam16 >> 8) >= FLAG_X && (opParam16 >> 8) <= FLAG_W) { // Lettered flag from X to W
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[(opParam16 >> 8) - FLAG_X]);
       }
       else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
       }
       else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
-      }
-      else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - FLAG_M].itemSoftmenuName);
       }
       else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
@@ -867,12 +865,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
-        if(textVersion == MODE_42S) {
-          _name42s(op, nameOp); 
-        }
-        else {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName);
-        }
+        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;

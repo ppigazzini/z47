@@ -192,9 +192,12 @@ static void pyxCplx(real_t *yReal, real_t *yImag, real_t *xReal, real_t *xImag, 
 static void cpyxLonI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
-      || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    goto end2;
+  }
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -211,8 +214,10 @@ static void cpyxLonI(uint16_t combOrPerm) {
     longIntegerFree(t);
   }
 
-  longIntegerFree(x);
+end2:
   longIntegerFree(y);
+end1:
+  longIntegerFree(x);
 }
 
 //=============================================================================
@@ -282,9 +287,12 @@ static void cpyxCplx(uint16_t combOrPerm) {
 static void cpyxShoI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
-      || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    goto end2;
+  }
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -308,8 +316,10 @@ static void cpyxShoI(uint16_t combOrPerm) {
     longIntegerFree(t);
   }
 
-  longIntegerFree(x);
+end2:
   longIntegerFree(y);
+end1:
+  longIntegerFree(x);
 }
 
 

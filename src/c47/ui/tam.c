@@ -4,107 +4,67 @@
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
+    TO_QSPI const int16_t StoOperations[][2] = {
+      {ITM_ADD,      ITM_STOADD},
+      {ITM_SUB,      ITM_STOSUB},
+      {ITM_MULT,     ITM_STOMULT},
+      {ITM_DIV,      ITM_STODIV},
+      {ITM_Max,      ITM_STOMAX},
+      {ITM_Min,      ITM_STOMIN},
+      {ITM_Config,   ITM_STOCFG},
+      {ITM_Stack,    ITM_STOS},
+      {ITM_dddEL,    ITM_STOEL},
+      {ITM_dddIJ,    ITM_STOIJ},
+      {ITM_dddVEL,   ITM_STOVEL},
+      {ITM_dddIX,    ITM_INDEX}
+    };
+
+    TO_QSPI const int16_t RclOperations[][2] = {
+      {ITM_ADD,      ITM_RCLADD},
+      {ITM_SUB,      ITM_RCLSUB},
+      {ITM_MULT,     ITM_RCLMULT},
+      {ITM_DIV,      ITM_RCLDIV},
+      {ITM_Max,      ITM_RCLMAX},
+      {ITM_Min,      ITM_RCLMIN},
+      {ITM_Config,   ITM_RCLCFG},
+      {ITM_Stack,    ITM_RCLS},
+      {ITM_dddEL,    ITM_RCLEL},
+      {ITM_dddIJ,    ITM_RCLIJ},
+      {ITM_dddVEL,   ITM_RCLVEL}
+    };
+
+    TO_QSPI const int16_t DelitmOperations[][2] = {
+      {MNU_PROGS,    ITM_DELITM_PROG},
+      {MNU_MENUS,    ITM_DELITM_MENU}
+    };
+
   int16_t tamOperation(void) {
     switch(tam.function) {
       case ITM_STO: {
-        switch(tam.currentOperation) {
-          case ITM_ADD: {
-            return ITM_STOADD;
-          }
-          case ITM_SUB: {
-            return ITM_STOSUB;
-          }
-          case ITM_MULT: {
-            return ITM_STOMULT;
-          }
-          case ITM_DIV: {
-            return ITM_STODIV;
-          }
-          case ITM_Max: {
-            return ITM_STOMAX;
-          }
-          case ITM_Min: {
-            return ITM_STOMIN;
-          }
-          case ITM_Config: {
-            return ITM_STOCFG;
-          }
-          case ITM_Stack: {
-            return ITM_STOS;
-          }
-          case ITM_dddEL: {
-            return ITM_STOEL;
-          }
-          case ITM_dddIJ: {
-           return ITM_STOIJ;
-          }
-          case ITM_dddVEL: {
-            return ITM_STOVEL;
-          }
-          case ITM_dddIX: {
-            return ITM_INDEX;
-          }
-          default: {
-            return ITM_STO;
+        for(uint_fast8_t i = 0; i < nbrOfElements(StoOperations); i++) {
+          if(tam.currentOperation == StoOperations[i][0]) {
+            return StoOperations[i][1];
           }
         }
+        return ITM_STO;
       }
-
       case ITM_RCL: {
-        switch(tam.currentOperation) {
-          case ITM_ADD: {
-            return ITM_RCLADD;
-          }
-          case ITM_SUB: {
-            return ITM_RCLSUB;
-          }
-          case ITM_MULT: {
-            return ITM_RCLMULT;
-          }
-          case ITM_DIV: {
-            return ITM_RCLDIV;
-          }
-          case ITM_Max: {
-            return ITM_RCLMAX;
-          }
-          case ITM_Min: {
-            return ITM_RCLMIN;
-          }
-          case ITM_Config: {
-            return ITM_RCLCFG;
-          }
-          case ITM_Stack: {
-            return ITM_RCLS;
-          }
-          case ITM_dddEL: {
-            return ITM_RCLEL;
-          }
-          case ITM_dddIJ: {
-            return ITM_RCLIJ;
-          }
-          case ITM_dddVEL: {
-            return ITM_RCLVEL;
-          }
-          default: {
-            return ITM_RCL;
+        for(uint_fast8_t i = 0; i < nbrOfElements(RclOperations); i++) {
+          if(tam.currentOperation == RclOperations[i][0]) {
+            return RclOperations[i][1];
           }
         }
+        return ITM_RCL;
       }
-
       case ITM_DELITM: {
-        switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
-          case MNU_PROGS: {
-            return ITM_DELITM_PROG;
-          }
-          case MNU_MENUS: {
-            return ITM_DELITM_MENU;
-          }
-          default: {
-            return ITM_DELITM;
+        int16_t menu = -softmenu[softmenuStack[0].softmenuId].menuItem;
+        for(uint_fast8_t i = 0; i < nbrOfElements(DelitmOperations); i++) {
+          if(menu == DelitmOperations[i][0]) {
+            return DelitmOperations[i][1];
           }
         }
+        return ITM_DELITM;
       }
-
       default: {
         return tam.function;
       }
@@ -291,6 +251,16 @@
     dupNum = 0;
     if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
+      if(tam.alpha && calcMode == CM_ASSIGN) {
+        assignLeaveAlpha();
+        if(itemToBeAssigned == 0) {
+          assignGetName1();
+        }
+        else {
+          assignGetName2();
+        }
+        return;
+      }
     }
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
@@ -356,6 +326,9 @@
         else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
           showSoftmenu(-MNU_TAM);
         }
+        else if(tam.mode == TM_VARONLY) {
+          showSoftmenu(-MNU_TAMVARONLY);
+        }
         else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
           showSoftmenu(-MNU_TAMFLAG);
         }
@@ -365,12 +338,15 @@
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           showSoftmenu(-MNU_TAMLABEL);
         }
+        else if(tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+          showSoftmenu(-MNU_TAMLBLONLY);
+        }
         else if(tam.mode == TM_SOLVE) {
           if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
-            showSoftmenu(-MNU_TAM);
+            showSoftmenu(-MNU_TAMVARONLY);
           }
           else {
-            showSoftmenu(-MNU_TAMLABEL);
+            showSoftmenu(-MNU_TAMLBLONLY);
           }
         }
         else if(tam.mode == TM_MENU) {
@@ -400,7 +376,7 @@
         tam.min         = 1;
         tam.digitsSoFar = 1;
         popSoftmenu();
-        showSoftmenu(-MNU_TAM);
+        showSoftmenu(-MNU_TAM); //probably best to leave this fallback as TAM not TAMVARONLY
         --numberOfTamMenusToPop;
         if(tam.alpha) {
           setSystemFlag(FLAG_ALPHA);
@@ -430,11 +406,11 @@
     }
     else if(!(tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && item == ITM_alpha) {
       bool_t allowAlphaMode = false, beginWithLowercase = false;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && !valueParameter && (tam.mode == TM_STORCL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP || tam.function == ITM_MVAR));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && !valueParameter && (tam.mode == TM_STORCL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_VARONLY || tam.mode == TM_CMP || tam.function == ITM_MVAR));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && ((tam.mode == TM_LABEL) || (tam.mode == TM_MENU)));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_MENU));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.keyInputFinished && tam.mode == TM_KEY);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && (tam.function == ITM_LBL || tam.function == ITM_GTOP));
       if(allowAlphaMode) {
@@ -452,7 +428,9 @@
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
           case -MNU_TAMCMP      :
           case -MNU_TAMLABEL    :
+          case -MNU_TAMLBLONLY  :
           case -MNU_TAM         :
+          case -MNU_TAMVARONLY  :
           case -MNU_TAMSTO      :
           case -MNU_TAMRCL      :
           case -MNU_TAMMENU     :
@@ -621,7 +599,7 @@
     }
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
-    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
       tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
       forceTry = true;
       tryOoR = true;
@@ -629,7 +607,7 @@
 
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
-        if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
+        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
             // Local label from A to J
             case REGISTER_A: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'A'; forceTry = true; tryOoR = true; break;
@@ -732,7 +710,7 @@
         else if(tam.indirect && (currentNumberOfLocalRegisters || calcMode == CM_PEM)) {
           tam.dot = true;
         }
-        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL && tam.mode != TM_MENU) {
+        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL && tam.mode != TM_LBLONLY && tam.mode != TM_MENU) {
           if(calcMode == CM_PEM || ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && currentLocalFlags != NULL) || ((tam.mode != TM_FLAGR && tam.mode != TM_FLAGW) && currentNumberOfLocalRegisters)) {
             tam.dot = true;
           }
@@ -784,7 +762,7 @@
         tam.min         = 0;
         tam.digitsSoFar = 0;
         popSoftmenu();
-        showSoftmenu(-MNU_TAMLABEL);
+        showSoftmenu(-MNU_TAMLABEL); // Probably better to have the fallback TAMLABEL, not TAMLBLONLY
         --numberOfTamMenusToPop;
         clearSystemFlag(FLAG_ALPHA);
         calcModeTamGui();
@@ -864,7 +842,7 @@
       if(tam.mode == TM_NEWMENU) {
         value = 1;
       }
-      else if(tam.mode == TM_LABEL || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
+      else if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
         if(!tam.indirect) {
           value = findNamedLabelWithDuplicate(buffer, dupNum);
         }
@@ -943,7 +921,7 @@
         value = findOrAllocateNamedVariable(buffer);
         //printf("findOrAllocateNamedVariable value=%d lastErrorCode=%d\n",value, lastErrorCode);
       }
-      else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
+      else if((tam.mode == TM_MENU) && !tam.indirect) {
         value = findMenu(buffer);
         tam.value = value;
         if(value == INVALID_MENU && calcMode != CM_PEM) {
@@ -1031,7 +1009,7 @@
 
 
   void tamEnterMode(int16_t func) {
-    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param;
+    tam.mode = func == ITM_ASSIGN ? TM_LABEL : func == ITM_USERMODE ? TM_NEWMENU : indexOfItems[func].param; // TM_LABEL should be fine and TM_LBLONLY not needed here
     func = func == ITM_USERMODE ? ITM_ASSIGN : func;
     tam.function = func;
     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
@@ -1044,12 +1022,25 @@
     }
 
     if(func == ITM_CNST) {
-//    tam.max = NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_34 - 1;  //use this line if UI access to all constants are needed.
       tam.max = LAST_CONSTANT-FIRST_CONSTANT - 1;
     }
 
     if(calcMode == CM_NIM) {
-      closeNim();
+      if(func == ITM_toINT || func == ITM_HASH_JM) {
+        lastIntegerBase = 0;
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        resetShiftState();
+        leaveTamModeIfEnabled();
+        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer,'#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
+          addItemToNimBuffer(ITM_BACKSPACE);
+        }
+        addItemToNimBuffer(func);
+        refreshRegisterLine(REGISTER_X);
+        return;
+      }
+      else {
+        closeNim();
+      }
     }
     else if(calcMode == CM_PEM && aimBuffer[0] != 0) {
       if(getSystemFlag(FLAG_ALPHA)) {
@@ -1111,6 +1102,10 @@
         }
         break;
       }
+      case TM_VARONLY: {
+        showSoftmenu(-MNU_TAMVARONLY);
+        break;
+      }
 
       case TM_CMP: {
         showSoftmenu(-MNU_TAMCMP);
@@ -1145,6 +1140,11 @@
         break;
       }
 
+      case TM_LBLONLY: {
+        showSoftmenu(-MNU_TAMLBLONLY);
+        break;
+      }
+
       case TM_MENU: {
         showSoftmenu(-MNU_TAMMENU);
         break;
@@ -1152,10 +1152,10 @@
 
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
-          showSoftmenu(-MNU_TAM);
+          showSoftmenu(-MNU_TAMVARONLY);
         }
         else {
-          showSoftmenu(-MNU_TAMLABEL);
+          showSoftmenu(-MNU_TAMLBLONLY);
         }
         break;
       }
@@ -1215,10 +1215,12 @@
     catalog = CATALOG_NONE;
     clearSystemFlag(FLAG_ALPHA);
 
-    while(numberOfTamMenusToPop--) {
-      popSoftmenu();
+    if(numberOfTamMenusToPop > 0) {
+      while(numberOfTamMenusToPop--) {
+        popSoftmenu();
+      }
     }
-
+    
     #if defined(PC_BUILD)
       switch(calcMode) {
         case CM_NORMAL:
