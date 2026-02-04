@@ -3,6 +3,10 @@
 
 #include "c47.h"
 
+  #if !defined(DMCP_BUILD) && !defined(WIN32)
+    #include <execinfo.h>
+  #endif // !DMCP_BUILD
+
 void *freeListAlloc(size_t sizeInBlocks) {
   uint16_t minSizeInBlocks = 65535u, minBlock = C47_NULL;
   int i;
@@ -225,8 +229,19 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
       if(allocatedMemoryRegions[region].blockAddress == C47RamPtr) {
         //printf("Memory freeing: %5zd blocks at address %5u     (number of allocated regions = %4d)\n", sizeInBlocks, C47RamPtr, numberOfAllocatedMemoryRegions - 1);
         if(allocatedMemoryRegions[region].sizeInBlocks != sizeInBlocks) {
-          errorf("---->Memory freeing:");
+          errorf("---->Memory freeing A (regions):");
           fprintf(stderr, "%zd blocks at address %" PRIu16 ", but %" PRIu16 " were allocated\n", sizeInBlocks, C47RamPtr, allocatedMemoryRegions[region].sizeInBlocks);
+                                        #if !defined(WIN32)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n\n\n", "", "freeListFree called from: ", strs[1]);
+                                          printf("%30s%42s%s\n\n\n", "", "backtrace: ", "");
+                                          for (int i = 1; i < frames; i++) {
+                                              printf("%30s%42d: %s\n", "", i, strs[i]);
+                                          }
+                                          free(strs);
+                                        #endif 
           fflush(stderr);
         }
         if(numberOfAllocatedMemoryRegions - region - 1) {
@@ -238,8 +253,19 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
       }
     }
     if(region >= numberOfAllocatedMemoryRegions) {
-      errorf("---->Memory freeing:");
+      errorf("---->Memory freeing B (number of regions):");
       fprintf(stderr, "%5zd blocks at address %5u never allocated at this address     (number of allocated regions = %4d)\n", sizeInBlocks, C47RamPtr, numberOfAllocatedMemoryRegions);
+                                        #if !defined(WIN32)
+                                          void *callstack[128];
+                                          int frames = backtrace(callstack, 128);
+                                          char **strs = backtrace_symbols(callstack, frames);
+                                          printf("%30s%42s%s\n\n\n", "", "freeListFree called from: ", strs[1]);
+                                          printf("%30s%42s%s\n\n\n", "", "backtrace: ", "");
+                                          for (int i = 1; i < frames; i++) {
+                                              printf("%30s%42d: %s\n", "", i, strs[i]);
+                                          }
+                                          free(strs);
+                                        #endif
       fflush(stderr);
     }
   #endif // !DMCP_BUILD

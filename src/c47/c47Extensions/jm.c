@@ -115,6 +115,26 @@ void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
 
 
 
+void flipPolar(void) {
+  real_t zReal, zImag;
+  if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+    if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+      return;
+    }
+    convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+    return;
+  }
+
+  if(getComplexRegisterPolarMode(REGISTER_X) != amPolar) {
+    setComplexRegisterPolarMode(REGISTER_X, amPolar);
+  } else {
+    fnToRect2(NOPARAM);
+//      setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+  //    setComplexRegisterAngularMode(REGISTER_X, amNone);
+  }
+}
+
+
 uint16_t nprimes = 0;
 /********************************************//**
  * RPN PROGRAM.
@@ -300,88 +320,56 @@ void fnJM(uint16_t JM_OPCODE) {
       temporaryInformation = TI_012;
     }
 
-    else if(JM_OPCODE == 11) {                                  //STO Z
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 90);
-      copySourceRegisterToDestRegister(REGISTER_Y, 91);
-      copySourceRegisterToDestRegister(REGISTER_Z, 92);
-    }
 
-    else if(JM_OPCODE == 13) {                                  //STO V
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 93);
-      copySourceRegisterToDestRegister(REGISTER_Y, 94);
-      copySourceRegisterToDestRegister(REGISTER_Z, 95);
-    }
+    #define TripleRegZ1_96 96  //old:rr90
+    #define TripleRegZ2_97 97  //old:rr91
+    #define TripleRegZ3_98 98  //old:rr92
+    #define TripleRegV1_90 90  //old:rr93
+    #define TripleRegV2_91 91  //old:rr94
+    #define TripleRegV3_92 92  //old:rr95
+    #define TripleRegI1_93 93  //old:rr96
+    #define TripleRegI2_94 94  //old:rr97
+    #define TripleRegI3_95 95  //old:rr98
 
-    else if(JM_OPCODE == 15) {                                  //STO I
-      saveForUndo();
-      setSystemFlag(FLAG_ASLIFT);                               //  Registers: Z:90-92  V:93-95  I:96-98  XYZ
-      copySourceRegisterToDestRegister(REGISTER_X, 96);
-      copySourceRegisterToDestRegister(REGISTER_Y, 97);
-      copySourceRegisterToDestRegister(REGISTER_Z, 98);
-    }
-
-    else if(JM_OPCODE == 12) {                                  //RCL Z
-      saveForUndo();
-      fnRCL(92);
-      fnRCL(91);
-      fnRCL(90);
-    }
-
-    else if(JM_OPCODE == 14) {                                  //RCL V
-      saveForUndo();
-      fnRCL(95);
-      fnRCL(94);
-      fnRCL(93);
-    }
-
-    else if(JM_OPCODE == 16) {                                  //RCL I
-      saveForUndo();
-      fnRCL(98);
-      fnRCL(97);
-      fnRCL(96);
-    }
 
     else if(JM_OPCODE == 17) {                                  // V/I
       saveForUndo();
-      fnRCL(95);
-      fnRCL(98);
+      fnRCL(TripleRegV3_92);  //rr95
+      fnRCL(TripleRegI3_95);  //rr98
       fnDivide(0);
-      fnRCL(94);
-      fnRCL(97);
+      fnRCL(TripleRegV2_91);  //rr94
+      fnRCL(TripleRegI2_94);  //rr97
       fnDivide(0);
-      fnRCL(93);
-      fnRCL(96);
+      fnRCL(TripleRegV1_90);  //rr93
+      fnRCL(TripleRegI1_93);  //rr96
       fnDivide(0);
+      fn3Sto(TripleRegZ1_96);
     }
-
     else if(JM_OPCODE == 18) {                                  // IZ
       saveForUndo();
-      fnRCL(98);
-      fnRCL(92);
+      fnRCL(TripleRegI3_95);  //rr98
+      fnRCL(TripleRegZ3_98);  //rr92
       fnMultiply(0);
-      fnRCL(97);
-      fnRCL(91);
+      fnRCL(TripleRegI2_94);  //rr97
+      fnRCL(TripleRegZ2_97);  //rr91
       fnMultiply(0);
-      fnRCL(96);
-      fnRCL(91);
+      fnRCL(TripleRegI1_93);  //rr96
+      fnRCL(TripleRegZ1_96);  //rr91
       fnMultiply(0);
+      fn3Sto(TripleRegV1_90);
     }
-
     else if(JM_OPCODE == 19) {                                  // V/Z
       saveForUndo();
-      fnRCL(95);
-      fnRCL(92);
+      fnRCL(TripleRegV3_92);  //rr95
+      fnRCL(TripleRegZ3_98);  //rr92
       fnDivide(0);
-      fnRCL(94);
-      fnRCL(91);
+      fnRCL(TripleRegV2_91);  //rr94
+      fnRCL(TripleRegZ2_97);  //rr91
       fnDivide(0);
-      fnRCL(93);
-      fnRCL(90);
+      fnRCL(TripleRegV1_90);  //rr93
+      fnRCL(TripleRegZ1_96);  //rr90
       fnDivide(0);
+      fn3Sto(TripleRegI1_93);
     }
 
     else if(JM_OPCODE == 20) {                                  //Copy Create X>ABC
@@ -403,6 +391,17 @@ void fnJM(uint16_t JM_OPCODE) {
       fnMultiply(0);
 
       temporaryInformation = TI_ABC;
+    }
+
+    else if(JM_OPCODE == 21) {                                  // V/Z
+      saveForUndo();
+      flipPolar();
+      fnSwapX(REGISTER_Y);
+      flipPolar();
+      fnSwapX(REGISTER_Y);
+      fnSwapX(REGISTER_Z);
+      flipPolar();
+      fnSwapX(REGISTER_Z);
     }
 
 

@@ -33,4 +33,11 @@
                                     real_t *x1Real,      real_t *x1Imag,
                                     real_t *x2Real,      real_t *x2Imag, realContext_t *realContext);
 
+  void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, 
+                              const real_t *bReal, const real_t *bImag, 
+                              const real_t *cReal, const real_t *cImag, 
+                                    real_t *rReal,       real_t *rImag, 
+                                    real_t *x1Real,      real_t *x1Imag, 
+                                    real_t *x2Real,      real_t *x2Imag, realContext_t *realContext);
+
 #endif // !SLVQ_H

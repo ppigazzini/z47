@@ -419,3 +419,14 @@ Added QRNZ to NUM font
     U+24EA STD_BASE_0
     
 2025-09-11 Fix Numfont arrow directions and arrow glyph names
+
+2026-01-03 Add Numfont glyphs for Radiobuttons, Checkboxes and Diamond boxes
+
+     U+2610 STD_CB_OFF      \xa6\x10
+     U+2612 STD_CB_ON       \xa6\x12
+     U+25ef STD_RB_OFF      \xa5\xef
+     U+29bf STD_RB_ON       \xa9\xbf
+     U+25c7 STD_DIA_OFF     \xa5\xc7
+     U+25c8 STD_DIA_ON      \xa5\xc8
+
+

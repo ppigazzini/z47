@@ -1177,3 +1177,14 @@ void strReplace(char *haystack, const char *needle, const char *newNeedle) {
   }
 }
 #endif // !DMCP_BUILD
+
+
+bool_t findTwoChars(const char *tmpString, uint8_t char1, uint8_t char2, uint16_t *position) {
+  for(uint16_t i = 0; tmpString[i] != '\0' && tmpString[i + 1] != '\0'; i++) {
+    if((uint8_t)tmpString[i] == char1 && (uint8_t)tmpString[i + 1] == char2) {
+      *position = i;
+      return true;
+    }
+  }
+  return false;
+}

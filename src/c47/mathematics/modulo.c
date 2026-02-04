@@ -22,7 +22,7 @@ static void modLonI(void) {
   longInteger_t x, y, remainder;
 
   if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
-    return;
+    goto err1;
   }
 
   if(longIntegerIsZero(x)) {
@@ -30,10 +30,12 @@ static void modLonI(void) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function modLonILonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto err1;
   }
   else {
-    if (!getRegisterAsLongInt(REGISTER_Y, y, NULL))
-      goto err;
+    if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+      goto err2;
+    }
 
     longIntegerInit(remainder);
     longIntegerDivideRemainder(y, x, remainder);
@@ -42,10 +44,11 @@ static void modLonI(void) {
 
     convertLongIntegerToLongIntegerRegister(remainder, REGISTER_X);
 
-    longIntegerFree(y);
     longIntegerFree(remainder);
   }
-err:
+err2:
+  longIntegerFree(y);
+err1:
   longIntegerFree(x);
 }
 
@@ -64,18 +67,21 @@ static void modShoI(void) {
   longInteger_t x, y, remainder;
   uint32_t baseY;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto err1;
+  }
 
   if(longIntegerIsZero(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function modLonILonI:", "cannot IDIVR a short integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto err1;
   }
   else {
-    if (!getRegisterAsLongInt(REGISTER_Y, y, NULL))
-      goto err;
+    if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+      goto err2;
+    }
     baseY = getRegisterShortIntegerBase(REGISTER_Y);
 
     longIntegerInit(remainder);
@@ -85,10 +91,11 @@ static void modShoI(void) {
 
     convertLongIntegerToShortIntegerRegister(remainder, baseY, REGISTER_X);
 
-    longIntegerFree(y);
     longIntegerFree(remainder);
   }
-err:
+err2:
+  longIntegerFree(y);
+err1:
   longIntegerFree(x);
 }
 

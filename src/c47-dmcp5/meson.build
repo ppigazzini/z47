@@ -3,28 +3,47 @@ dmcp_cargs = [
   '-D__packed="__attribute__((__packed__))"',
   '-DNEW_HW',
   '-Wno-unused-parameter',
+<<<<<<< HEAD
   '-fno-exceptions',                  # added in symmetry with DM42
   '-fno-unwind-tables',               # added in symmetry with DM42
   '-fno-asynchronous-unwind-tables',  # added in symmetry with DM42
   '-IC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/include',  # Added this line for absolute path support
+=======
+  '-fno-exceptions',                 # added in symmetry with DM42
+  '-fno-unwind-tables',              # added in symmetry with DM42
+  '-fno-asynchronous-unwind-tables', # added in symmetry with DM42
+>>>>>>> master
 ]
 
 dmcp_linkargs = [
-  '--specs=nano.specs',               # can remove full math later to save space
+  '--specs=nano.specs',              # can remove full math later to save space
   '--specs=nosys.specs',
-  '-u', '_printf_float',              # added in symmetry with DM42 - Enable printf
-#  '-u', '_scanf_float',               # added in symmetry with DM42 - Enable float scanf
-  '-lc',                              # added in symmetry with DM42 - Link C standard library
-  '-lm',                              # added in symmetry with DM42 - Link math library (needed for float ops)
-  '-lnosys',                          # added in symmetry with DM42 - Stub system calls for bare-metal
+  '-u', '_printf_float',             # added in symmetry with DM42 - Enable printf
+#  '-u', '_scanf_float',              # added in symmetry with DM42 - Enable float scanf
+  '-lc',                             # added in symmetry with DM42 - Link C standard library
+  '-lm',                             # added in symmetry with DM42 - Link math library (needed for float ops)
+  '-lnosys',                         # added in symmetry with DM42 - Stub system calls for bare-metal
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
+<<<<<<< HEAD
   '-T' + meson.current_source_dir() + '/stm32_program.ld',
 # '-Wl,--strip-all',
   '-LC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/lib',  # Added this line for absolute path support
+=======
+  '-T' + meson.current_source_dir() + '/stm32_program.ld'
+#  '-Wl,--strip-all',
+>>>>>>> master
 ]
 
+gmp_build_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build'
+gmp_lib_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build' / '.libs'
+
+arm_gmp_dep = declare_dependency(
+  dependencies : [dependency('arm-gmp-6.2.1')],
+  compile_args : ['-I' + gmp_build_dir],
+  link_args    : ['-L' + gmp_lib_dir],
+)
 
 #
 # C47 Build : standard build for the DM32 board with the C47 bezel and DM42 keys or the DM42n
@@ -36,8 +55,7 @@ c47_dmcp_src = files(
   'hal/print_ir.c'
 )
 
-c47_lib = static_library(
-  'libc47',
+c47_lib = static_library('libc47',
   build_by_default    : false,
   sources             : decNumber_src + c47_src + c47_dmcp_src + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : dmcp_cargs,
@@ -53,6 +71,7 @@ c47_pre_elf = executable('C47_pre.elf',
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs,
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -89,6 +108,7 @@ c47_elf = executable('C47.elf',
   sources             : dmcp_src + [vcs_h, version_h, generated_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_QSPI_CRC'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -154,8 +174,7 @@ r47_dmcp_src = files(
   'hal/print_ir.c'
 )
 
-r47_lib = static_library(
-  'libr47',
+r47_lib = static_library('libr47',
   build_by_default    : false,
   sources             : decNumber_src + c47_src + c47_dmcp_src + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
@@ -171,6 +190,7 @@ r47_pre_elf = executable('R47_pre.elf',
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -207,6 +227,7 @@ r47_elf = executable('R47.elf',
   sources             : dmcp_src + [vcs_h, version_h, generated_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_QSPI_CRC'] + ['-DCALCMODEL=USER_R47'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,

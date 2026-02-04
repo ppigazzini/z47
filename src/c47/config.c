@@ -41,6 +41,64 @@ TO_QSPI static const struct {
     [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
 };
 
+
+bool_t isConfigCommon(uint16_t id) {
+  uint16_t idx = 99;
+  switch(id) {
+    case ITM_SETDFLT: idx = CFG_DFLT  ; break;
+    case ITM_SETCHN : idx = CFG_CHINA ; break;
+    case ITM_SETEUR : idx = CFG_EUROPE; break;
+    case ITM_SETIND : idx = CFG_INDIA ; break;
+    case ITM_SETJPN : idx = CFG_JAPAN ; break;
+    case ITM_SETUK  : idx = CFG_UK    ; break;
+    case ITM_SETUSA : idx = CFG_USA   ; break;
+    default:;
+  }
+  bool_t cmp1  = (int32_t)getSystemFlag(FLAG_TDM24) == (int32_t)configSettings[idx].tdm24;
+  bool_t cmp2  = (int32_t)getSystemFlag(FLAG_DMY)   == (int32_t)configSettings[idx].dmy;
+  bool_t cmp3  = (int32_t)getSystemFlag(FLAG_MDY)   == (int32_t)configSettings[idx].mdy;
+  bool_t cmp4  = (int32_t)getSystemFlag(FLAG_YMD)   == (int32_t)configSettings[idx].ymd;
+  bool_t cmp5  = (int32_t)firstGregorianDay == (int32_t)configSettings[idx].gregorianDay;
+  bool_t cmp6a = ((int32_t)configSettings[idx].woy == ITM_WOY_ISO && (int32_t)firstDayOfWeek == 1 && (int32_t)firstWeekOfYearDay == 4);
+  bool_t cmp6b = ((int32_t)configSettings[idx].woy == ITM_WOY_US  && (int32_t)firstDayOfWeek == 7 && (int32_t)firstWeekOfYearDay == 6);
+  bool_t cmp6c = ((int32_t)configSettings[idx].woy == ITM_WOY_ME  && (int32_t)firstDayOfWeek == 6 && (int32_t)firstWeekOfYearDay == 5);
+  bool_t cmp6  = (cmp6a || cmp6b || cmp6c);
+  bool_t cmp7  = (0x3FFF & (uint32_t)gapItemLeft) == (0x3FFF & (int32_t)configSettings[idx].gapl);
+  bool_t cmp8  = (int32_t)grpGroupingLeft == (int32_t)configSettings[idx].gprl;
+  bool_t cmp9  = (int32_t)grpGroupingGr1LeftOverflow == (int32_t)configSettings[idx].gpr1x;
+  bool_t cmp10 = (int32_t)grpGroupingGr1Left == (int32_t)configSettings[idx].gpr1;
+  bool_t cmp11 = (int32_t)grpGroupingRight == (int32_t)configSettings[idx].gprr;
+  bool_t cmp12 = (0x3FFF & (uint32_t)gapItemRight) == (0x3FFF & (uint32_t)configSettings[idx].gapr);
+  bool_t cmp13 = (0x3FFF & (uint32_t)gapItemRadix) == (0x3FFF & (uint32_t)configSettings[idx].gaprx);
+  bool_t cmp14 = (int32_t)getSystemFlag(FLAG_US) == (int32_t)configSettings[idx].us;
+
+  //printf("DEBUG: Boolean comparison breakdown (idx=%d)\n", (int32_t)idx);
+  //printf("  FLAG_TDM24:               %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_TDM24), (int32_t)configSettings[idx].tdm24, cmp1 ? "TRUE" : "FALSE");
+  //printf("  FLAG_DMY:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_DMY), (int32_t)configSettings[idx].dmy, cmp2 ? "TRUE" : "FALSE");
+  //printf("  FLAG_MDY:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_MDY), (int32_t)configSettings[idx].mdy, cmp3 ? "TRUE" : "FALSE");
+  //printf("  FLAG_YMD:                 %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_YMD), (int32_t)configSettings[idx].ymd, cmp4 ? "TRUE" : "FALSE");
+  //printf("  firstGregorianDay:        %d == %d → %s\n", (int32_t)firstGregorianDay, (int32_t)configSettings[idx].gregorianDay, cmp5 ? "TRUE" : "FALSE");
+  //printf("  WOY (compound):\n");
+  //printf("    ISO (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6a ? "TRUE" : "FALSE");
+  //printf("    US  (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6b ? "TRUE" : "FALSE");
+  //printf("    ME  (woy=%d fdw=%d fwd=%d): %s\n", (int32_t)configSettings[idx].woy, (int32_t)firstDayOfWeek, (int32_t)firstWeekOfYearDay, cmp6c ? "TRUE" : "FALSE");
+  //printf("    Combined WOY:           → %s\n", cmp6 ? "TRUE" : "FALSE");
+  //printf("  gapItemLeft:              %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemLeft), (0x3FFF & (uint32_t)configSettings[idx].gapl), cmp7 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingLeft:          %d == %d → %s\n", (int32_t)grpGroupingLeft, (int32_t)configSettings[idx].gprl, cmp8 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingGr1LeftOvrflw: %d == %d → %s\n", (int32_t)grpGroupingGr1LeftOverflow, (int32_t)configSettings[idx].gpr1x, cmp9 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingGr1Left:       %d == %d → %s\n", (int32_t)grpGroupingGr1Left, (int32_t)configSettings[idx].gpr1, cmp10 ? "TRUE" : "FALSE");
+  //printf("  grpGroupingRight:         %d == %d → %s\n", (int32_t)grpGroupingRight, (int32_t)configSettings[idx].gprr, cmp11 ? "TRUE" : "FALSE");
+  //printf("  gapItemRight:             %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemRight), (0x3FFF & (uint32_t)configSettings[idx].gapr), cmp12 ? "TRUE" : "FALSE");
+  //printf("  gapItemRadix:             %d == %d → %s\n", (0x3FFF & (uint32_t)gapItemRadix), (0x3FFF & (uint32_t)configSettings[idx].gaprx), cmp13 ? "TRUE" : "FALSE");
+  //printf("  FLAG_US:                  %d == %d → %s\n", (int32_t)getSystemFlag(FLAG_US), (int32_t)configSettings[idx].us, cmp14 ? "TRUE" : "FALSE");
+
+  bool_t finalResult = cmp1 && (cmp2 || cmp3 || cmp4) && cmp5 && cmp6 && cmp7 && cmp8 && cmp9 && cmp10 && cmp11 && cmp12 && cmp13 && cmp14;
+  //printf("  ═══════════════════════════════════════════\n");
+  //printf("  FINAL RESULT:             → %s\n", finalResult ? "TRUE" : "FALSE");
+
+  return finalResult;
+}
+
 void configCommon(uint16_t idx) {
   #if !defined(TESTSUITE_BUILD)
     if(checkHP) {
@@ -85,7 +143,6 @@ void configCommon(uint16_t idx) {
 #define FPGRP                 113    // config_grpGroupingRight
 #define IPGRP1                114    // config_grpGroupingGr1Left
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
-#define fgLongPressSetting    117    // config_setFGLSettings
 #define HIDE                  118    // config_exponentHideLimit
 
 #define DenMaX                120    // config_denmax
@@ -112,8 +169,6 @@ InputDefaultDataType,                xxx,        xxx,                           
 SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,
 AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,
 FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,
-MymB,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,
-HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,
 FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,
@@ -125,7 +180,6 @@ IPGRP,                               xxx,        3,                             
 FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,
-fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
@@ -220,6 +274,24 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 
+
+3,                                   1,          FLAG_G_DOUBLETAP,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_HOME_TRIPLE,               xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_MYM_TRIPLE,                xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_SHFT_4s,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_BASE_MYM,                  xxx,             FLAG_BASE_MYM,        FLAG_BASE_MYM,          FLAG_BASE_MYM,   xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_BASE_MYM,   xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_BASE_HOME,                 FLAG_BASE_HOME,  FLAG_BASE_HOME,       FLAG_BASE_HOME,         FLAG_BASE_HOME,  xxx,             xxx,
+
+3,                                   1,          FLAG_FGLNFUL,                   xxx,             FLAG_FGLNFUL,         FLAG_FGLNFUL,           FLAG_FGLNFUL,    xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_FGLNFUL,    xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          xxx,                            FLAG_FGLNLIM,    xxx,                  xxx,                    xxx,             xxx,             xxx,
+
+3,                                   0,          FLAG_FGGR,                      xxx,             xxx,                  FLAG_FGGR,              FLAG_FGGR,       xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_FGGR,            xxx,                    xxx,             xxx,             xxx,
+
+
+
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM,32768+_gapr,    xxx,             xxx,                  //fnSetGapChar
@@ -251,8 +323,6 @@ void Sett(int16_t grp) {
         case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
         case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits
         case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits
-        case MymB                 : {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB
-        case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB
         case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
         case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
         case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
@@ -264,7 +334,6 @@ void Sett(int16_t grp) {
         case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
         case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
         case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
@@ -323,9 +392,8 @@ void Sett(int16_t grp) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
+    #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": HP35 defaults");
       fnKeyExit(0);                            //Clear pending key input
@@ -346,9 +414,10 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     fnDrop(NOPARAM);
     fnSquare(0);
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": Jaco defaults");
 
@@ -373,11 +442,13 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(161);
-    }
+  #endif //#!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
-    resetOtherConfigurationStuff();
+  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+    resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": RJvM defaults");
 
@@ -389,7 +460,8 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(165);
-    }
+  #endif //!SAVE_SPACE_DM42_24_PROFILES
+  }
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
@@ -424,7 +496,6 @@ void fnSetC47(uint16_t unusedButMandatoryParameter) {
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(167);
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -457,6 +528,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     temporaryInformation = TI_NO_INFO;
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
+    dispBase = 0;
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
@@ -471,6 +543,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     screenUpdatingMode = SCRUPD_AUTO;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     showShiftState();
     refreshModeGui();
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
@@ -1210,21 +1284,23 @@ void restoreStats(void){
 
 
     TO_QSPI const numberstr indexOfMsgs[] = {
-      {0,USER_C47,      "C47: Classic single shift (DM42 base"  },
+      {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
       {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
       {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
-      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
+      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_fg  ", R.Shift is " STD_BOX},
       {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME menu reset to default"                      },
       {0,USER_PRESET,  "P.FN menu reset to default"                      },
-      {0,USER_KRESET,  "USER keys cleaned"                               },
+      {0,USER_KRESET,  "Key assignments cleaned"                         },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
       {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
+      {0,ITM_RIBBON_FIN2 , "MyMenu primary F-key financial ribbon 2"     },
       {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
       {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
+      {0,ITM_RIBBON_SAV2 , "MyMenu primary F-key save/load ribbon 2"     },
       {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
       {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
       {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
@@ -1263,7 +1339,7 @@ void defaultStatusBar(void) {
 }
 
 
-void resetOtherConfigurationStuff(void) {
+void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   cancelFilename = true;
   lastStateFileOpened[0]=0;
 
@@ -1282,21 +1358,18 @@ void resetOtherConfigurationStuff(void) {
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
   IrFractionsCurrentStatus = CF_NORMAL;
-  HOME3 = true;
-  MYM3 = false;
-  ShiftTimoutMode = false;
-  Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
-  Norm_Key_00.funcParam[0] = 0;
-  Norm_Key_00.used = false;
+  if(allowUserKeys) {
+    Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
+    Norm_Key_00.funcParam[0] = 0;
+    Norm_Key_00.used = false;
+  }
   Input_Default =  ID_43S;
-  jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
-  fgLN = RBX_FGLNFUL;
   lastIntegerBase = 0;
   decodedIntegerBase = 0;
   timeLastOp = 0;
@@ -1305,12 +1378,44 @@ void resetOtherConfigurationStuff(void) {
   dispBase = 0;
 
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastI = 0;
+    lastI = 0;
     lastFunc    = 0;
     lastParam   = 0;
     lastTemp[0] = 0;
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
 
+  blockMonitoring = false;
+}
 
+
+void setLongPressFg(int calcModel0, int16_t menuItem) {
+  int16_t keyCode = 9999;
+  switch(calcModel0) {
+    case USER_R47f_g:
+           keyCode = 9999;
+           break;
+    case USER_R47bk_fg:
+           keyCode = 11;
+           break;
+    case USER_R47fg_bk:
+           keyCode = 10;
+           break;
+    case USER_R47fg_g:
+           keyCode = 10;
+           break;
+    case USER_C47:
+           keyCode = 27;
+           break;
+    case USER_DM42:
+           keyCode = 27;
+           break;
+    default:;
+  }
+  if(keyCode != 9999) {
+    calcKey_t *key_assign_test = kbd_usr + keyCode;
+    key_assign_test->fShifted = menuItem;
+  }
 }
 
 
@@ -1406,7 +1511,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-
+    //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
       real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
@@ -1490,7 +1595,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
 
-    resetOtherConfigurationStuff();
+    resetOtherConfigurationStuff(true);
 
     statisticalSumsPointer = NULL;
     savedStatisticalSumsPointer = NULL;
@@ -1538,11 +1643,14 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
     iterations = false;
+    explicitTaylorIterVisibilitySelection = false;
     updateOldConstants = false;
     programRunStop = PGM_STOPPED;
 
@@ -1593,6 +1701,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentMvarLabel = INVALID_VARIABLE;
     lastKeyCode = 0;
     entryStatus = 0;
+    lastUserMode = false;   //used in btnReleased and btnFnReleased
+    lastItem = 0;           //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
 
     memset(userMenuItems,  0, sizeof(userMenuItem_t) * 18);
     memset(userAlphaItems, 0, sizeof(userMenuItem_t) * 18);
@@ -1609,7 +1719,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     #if !defined(TESTSUITE_BUILD)
       calcModeNormal();
-      if(BASE_HOME) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
+      if(getSystemFlag(FLAG_BASE_HOME)) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
     #endif // !TESTSUITE_BUILD
 
     showRegis = 9999;                                          //JMSHOW
@@ -1624,6 +1734,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;
+    yMultiLineEdOffset = 0;
+    xMultiLineEdOffset = 0;
+    current_cursor_x = 0;
+    current_cursor_y = 0;
     lastT_cursorPos = 0;
 
 
@@ -1960,15 +2074,23 @@ void fnKeysManagement(uint16_t choice) {
       }
       break;
 
-      case USER_R47f_g:
-      case USER_R47bk_fg:
-      case USER_R47fg_bk:
-      case USER_R47fg_g:
-      case USER_C47:
-      case USER_DM42:
+    case USER_R47f_g:
+    case USER_R47bk_fg:
+    case USER_R47fg_bk:
+    case USER_R47fg_g:
+    case USER_C47:
+    case USER_DM42:
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
+      if(choice == USER_R47bk_fg) {                       // MyMenu is the long press default for R47bk_fg
+        fnClearFlag(FLAG_HOME_TRIPLE);
+        fnSetFlag(FLAG_MYM_TRIPLE);
+      }
+      else {                                              // HOME is the long press default for all other options
+        fnSetFlag(FLAG_HOME_TRIPLE);
+        fnClearFlag(FLAG_MYM_TRIPLE);
+      }
       fnShowVersion(choice);
       break;
 
@@ -1979,6 +2101,7 @@ void fnKeysManagement(uint16_t choice) {
       Norm_Key_00.func = Norm_Key_00_item_in_layout;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = false;
+      //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;
@@ -2011,8 +2134,10 @@ void fnKeysManagement(uint16_t choice) {
 
     case ITM_RIBBON_CPX  :
     case ITM_RIBBON_FIN  :
+    case ITM_RIBBON_FIN2 :
     case ITM_RIBBON_ENG  :
     case ITM_RIBBON_SAV  :
+    case ITM_RIBBON_SAV2 :
     case ITM_RIBBON_C47  :
     case ITM_RIBBON_C47PL:
     case ITM_RIBBON_R47  :

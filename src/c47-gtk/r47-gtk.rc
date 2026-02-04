@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
+/********************************************//**
+ * \file r47-gtk.rc
+ ***********************************************/
+
+#include <windows.h>
+#include "version.h"
+
+#define STD_SPACE_3_PER_EM " "
+#if CUSTOM_BUILD == 1 || VERSION_MODDED == 1
+  #define FF_CUSTOM VS_FF_PRIVATEBUILD
+#else // CUSTOM_BUILD == 1 || VERSION_MODDED == 1
+  #define FF_CUSTOM 0
+#endif // CUSTOM_BUILD == 1 || VERSION_MODDED == 1
+#if defined(NDEBUG)
+  #define FF_DEBUG 0
+#else // defined(NDEBUG)
+  #define FF_DEBUG VS_FF_DEBUG
+#endif // defined(NDEBUG)
+
+1 ICON "../../res/r47.ico"
+
+1 VERSIONINFO
+
+FILEVERSION     VERSION_WINRS
+PRODUCTVERSION  VERSION_WINRS
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       (FF_CUSTOM|FF_DEBUG)
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     VFT2_UNKNOWN
+
+{
+  BLOCK "StringFileInfo" {
+    BLOCK "040904E4" {
+      VALUE "CompanyName",      ""
+      VALUE "FileDescription",  "R47 RPN Scientific Calculator"
+      VALUE "FileVersion",      VERSION_SHORT
+      VALUE "InternalName",     "r47"
+      VALUE "OriginalFilename", "r47.exe"
+      #if CUSTOM_BUILD == 1
+        VALUE "PrivateBuild",   VERSION_SHORT
+      #endif // CUSTOM_BUILD == 1
+      VALUE "ProductName",      "R47"
+      VALUE "ProductVersion",   VERSION_SHORT
+    }
+  }
+
+  BLOCK "VarFileInfo" {
+    VALUE   "Translation",      0x0409, 1254
+  }
+}

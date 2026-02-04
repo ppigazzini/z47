@@ -1051,8 +1051,8 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   #if defined(DMCP_BUILD)
     if(!anyKeyWaiting()) return -1;
     if(displayWaitForRelease) {
-      #if !defined(TESTSUITE_BUILD)
-        showString("Waiting for key ...", &standardFont, 20, 40, vmNormal, false, false);
+      #if !defined(TESTSUITE_BUILD) && defined(VERBOSEKEYS_BUFFERED)
+        showString("Key(s) buffered ...", &standardFont, 20, 40, vmNormal, false, false);
       #endif //!TESTSUITE_BUILD
       force_refresh(force);
 ////Monitor key codes on screen
@@ -1465,8 +1465,9 @@ struct cmplxPair {
   real_t r, i;
 };
 
-void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
+void fn_cnst_op_A(uint16_t option) {
   complex34Matrix_t matrixC;
+  bool_t inverted = option == ITM_MATX_A_1;
 
   if(!saveLastX()) {
     return;
@@ -1499,13 +1500,13 @@ void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
   realSetNegativeSign(&const__1on2);
 
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));
-  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[5]));
-  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(!inverted ? &const__rt3on2 : &const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[7]));
-  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(!inverted ? &const__rt3on2 : &const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
-  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
+  realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
 
   for (int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
@@ -1531,7 +1532,7 @@ TO_QSPI static const struct {
     unsigned zdef  : 2;
 } vecCreate[] = {
 //  type     r  c   x    y    z   xdef ydef zdef
-    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu
+    [ 1] = { 3, 1,  0 ,  1,   2,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu //changed sequence to zyx
     [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },     // 1x3 vector created from zyx FOR MATX menu
     [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },     // 1x3 unity vectors 100
     [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },     // 1x3 unity vectors 010
@@ -1729,7 +1730,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
 
 TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
-TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
 
   displayString[0] = ' ';
   displayString[1] = 0;
@@ -1746,8 +1747,8 @@ TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
       }
   }
   else if(flag2To10) {                            //exponent of 2^(10/3)
-
-      if((3 <= exponent && exponent <= 15)) {
+      if((3 <= exponent && exponent <= 15) ||
+         (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = ITSIprefixes[exponent - 3];
         displayString[2] = 'i';
       }
@@ -2223,7 +2224,6 @@ void dms34ToReal34(uint16_t dms) {
   real34_t value34, d34, m34, s34, fs34;
   real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
 
-  //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
 
@@ -2952,43 +2952,26 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   }
 
 
-void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
-  uint16_t constant =constantAddr;
-  *constNr = constant;
-  //printf(">>> %u\n",constant);
-  if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), rVal);
-  }
-  else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
-  }
-  else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), rVal);
-  }
-}
-
-
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
-  if(!jm_G_DOUBLETAP && !ShiftTimoutMode && !HOME3 && !MYM3) {
-    fgLN            = RBX_FGLNFUL;  //not in conditional clear
-    jm_G_DOUBLETAP  = true;
-    ShiftTimoutMode = true;
-    HOME3           = true;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+  if(!getSystemFlag(FLAG_G_DOUBLETAP) && !getSystemFlag(FLAG_SHFT_4s) && !getSystemFlag(FLAG_HOME_TRIPLE) && !getSystemFlag(FLAG_MYM_TRIPLE)) {
+    setSystemFlag  (FLAG_FGLNFUL);
+    clearSystemFlag(FLAG_FGLNLIM);
+    setSystemFlag  (FLAG_G_DOUBLETAP);
+    setSystemFlag  (FLAG_SHFT_4s);
+    setSystemFlag  (FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
   else {
-    fgLN            = RBX_FGLNOFF;  //not in conditional clear
-    jm_G_DOUBLETAP  = false;
-    ShiftTimoutMode = false;
-    HOME3           = false;
-    MYM3            = false;
-    BASE_HOME       = false;
-    BASE_MYM        = true;
+    clearSystemFlag(FLAG_FGLNFUL);
+    clearSystemFlag(FLAG_FGLNLIM);
+    clearSystemFlag(FLAG_G_DOUBLETAP);
+    clearSystemFlag(FLAG_SHFT_4s);
+    clearSystemFlag(FLAG_HOME_TRIPLE);
+    clearSystemFlag(FLAG_MYM_TRIPLE);
+    clearSystemFlag(FLAG_BASE_HOME);
+    setSystemFlag  (FLAG_BASE_MYM);
   }
 }
 
@@ -3011,118 +2994,58 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #endif // !TESTSUITE_BUILD
 
 
+
+// Pseudo ITM constants for conditional ENG C47/R47 ribbons
+#define ITM_RIBBON_ENG_C47  32000
+#define ITM_RIBBON_ENG_R47  32001
+
+// Ribbon mappings: [param, fn1, fn2, fn3, fn4, fn5, fn6]
+#if !defined(TESTSUITE_BUILD)
+TO_QSPI static const int16_t ribbonMappings[][7] = {
+  {ITM_RIBBON_ENG_C47,  -MNU_CPX,      -MNU_MATX,     ITM_CONSTpi,   ITM_op_j,      ITM_EXP,       -MNU_TRG_C47},
+  {ITM_RIBBON_ENG_R47,  ITM_op_j,      -MNU_CPX,      ITM_CONSTpi,   -MNU_MATX,     -MNU_TRG_R47,  ITM_EXP},
+
+  {ITM_RIBBON_SAV,      ITM_SYSTEM2,   ITM_ACTUSB,    ITM_SAVE,      ITM_LOAD,      ITM_SAVEST,    ITM_LOADST},
+  {ITM_RIBBON_SAV2,     ITM_SYSTEM2,   ITM_ACTUSB,    ITM_WRITEP,    ITM_READP,     ITM_SAVEST,    ITM_LOADST},
+  {ITM_RIBBON_FIN,      ITM_PC,        ITM_DELTAPC,   ITM_YX,        ITM_SQUARE,    ITM_10x,       -MNU_FIN},
+  {ITM_RIBBON_FIN2,     ITM_PCPMG,     ITM_PCT,       ITM_PC,        ITM_DELTAPC,   -MNU_TVM,      -MNU_FIN},
+  {ITM_RIBBON_CPX,      ITM_DRG,       ITM_CC,        ITM_EE_EXP_TH, ITM_EXP,       ITM_op_j_pol,  ITM_op_j},
+  {ITM_RIBBON_C47,      ITM_DRG,       ITM_YX,        ITM_SQUARE,    ITM_10x,       ITM_EXP,       ITM_op_j_pol},
+  {ITM_RIBBON_C47PL,    ITM_DRG,       ITM_DSP,       ITM_DREAL,     ITM_FF,        ITM_Rup,       ITM_XFACT},
+  {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
+  {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
+};
+#endif //!TESTSUITE_BUILD
+
+
 void fnRESET_MyM(uint16_t param) {
-  //Pre-assign the MyMenu                   //JM
+  //Pre-assign the MyMenu
   #if !defined(TESTSUITE_BUILD)
-    BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
+    clearSystemFlag(FLAG_BASE_MYM);                                                   //switch off menu to prevent slow updating of 6 menu items
+
+    int16_t searchParam = param;
+    if(param == ITM_RIBBON_ENG) {
+      searchParam = isR47FAM ? ITM_RIBBON_ENG_R47 : ITM_RIBBON_ENG_C47;
+    }
+
+    uint16_t i;
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == ITM_RIBBON_SAV) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_SYSTEM2; break;
-          case 2: itemToBeAssigned = ITM_ACTUSB;  break;
-          case 3: itemToBeAssigned = ITM_SAVE;    break;
-          case 4: itemToBeAssigned = ITM_LOAD;    break;
-          case 5: itemToBeAssigned = ITM_SAVEST;  break;
-          case 6: itemToBeAssigned = ITM_LOADST;  break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_FIN) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_PC;      break;
-          case 2: itemToBeAssigned = ITM_DELTAPC; break;
-          case 3: itemToBeAssigned = ITM_YX;      break;
-          case 4: itemToBeAssigned = ITM_SQUARE;  break;
-          case 5: itemToBeAssigned = ITM_10x;     break;
-          case 6: itemToBeAssigned = -MNU_FIN;    break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_CPX) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_CC;       break;
-          case 3: itemToBeAssigned = ITM_EE_EXP_TH;break;
-          case 4: itemToBeAssigned = ITM_EXP;      break;
-          case 5: itemToBeAssigned = ITM_op_j_pol; break;
-          case 6: itemToBeAssigned = ITM_op_j;     break;
-          default:break;
-        }
-      }
-
-      //C47 et al
-          else if(!isR47FAM && param == ITM_RIBBON_ENG) {
-            switch(fn) {
-              case 1: itemToBeAssigned = -MNU_CPX;     break;
-              case 2: itemToBeAssigned = -MNU_MATX;    break;
-              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
-              case 4: itemToBeAssigned = ITM_op_j;     break;
-              case 5: itemToBeAssigned = ITM_EXP;      break;
-              case 6: itemToBeAssigned = -MNU_TRG_C47; break;
-              default:break;
-            }
+      for(i = 0; i < nbrOfElements(ribbonMappings); i++) {
+        if(ribbonMappings[i][0] == searchParam) {
+          if(fn >= 1 && fn <= 6) {
+            itemToBeAssigned = ribbonMappings[i][fn];
           }
-      //R47
-          else if(isR47FAM && param == ITM_RIBBON_ENG) {
-            switch(fn) {
-              case 1: itemToBeAssigned = ITM_op_j;     break;
-              case 2: itemToBeAssigned = -MNU_CPX;     break;
-              case 3: itemToBeAssigned = ITM_CONSTpi;  break;
-              case 4: itemToBeAssigned = -MNU_MATX;    break;
-              case 5: itemToBeAssigned = -MNU_TRG_R47; break;
-              case 6: itemToBeAssigned = ITM_EXP;      break;
-              default:break;
-            }
+          else {
+            itemToBeAssigned = ASSIGN_CLEAR;
           }
-      //END CONDITIONAL
-
-      else if(param == ITM_RIBBON_C47) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_YX;       break;
-          case 3: itemToBeAssigned = ITM_SQUARE;   break;
-          case 4: itemToBeAssigned = ITM_10x;      break;
-          case 5: itemToBeAssigned = ITM_EXP;      break;
-          case 6: itemToBeAssigned = ITM_op_j;     break;
-          default:break;
+          break;
         }
       }
-      else if(param == ITM_RIBBON_C47PL) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_DRG;      break;
-          case 2: itemToBeAssigned = ITM_DSP;      break;
-          case 3: itemToBeAssigned = ITM_DREAL;    break;
-          case 4: itemToBeAssigned = ITM_FF;       break;
-          case 5: itemToBeAssigned = ITM_Rup;      break;
-          case 6: itemToBeAssigned = ITM_XFACT;    break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_R47) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_op_j;     break;
-          case 2: itemToBeAssigned = ITM_op_j_pol; break;
-          case 3: itemToBeAssigned = ITM_XFACT;    break;
-          case 4: itemToBeAssigned = ITM_XTHROOT;  break;
-          case 5: itemToBeAssigned = ITM_10x;      break;
-          case 6: itemToBeAssigned = ITM_EXP;      break;
-          default:break;
-        }
-      }
-      else if(param == ITM_RIBBON_R47PL) {
-        switch(fn) {
-          case 1: itemToBeAssigned = ITM_TIMER;    break;
-          case 2: itemToBeAssigned = ITM_DSP;      break;
-          case 3: itemToBeAssigned = ITM_DREAL;    break;
-          case 4: itemToBeAssigned = ITM_FF;       break;
-          case 5: itemToBeAssigned = -MNU_LOOP;    break;
-          case 6: itemToBeAssigned = -MNU_TEST;    break;
-          default:break;
-        }
-      }
-      else {
+      if(i >= nbrOfElements(ribbonMappings)) {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
+
+
 
       if(itemToBeAssigned == -MNU_PFN) {
         strcpy(aimBuffer,"P.FN");
@@ -3141,7 +3064,7 @@ void fnRESET_MyM(uint16_t param) {
         assignToMyMenu_(12 + fn - 1);
       }
     }
-    BASE_MYM = true;                                           //JM Menu system default (removed from reset_jm_defaults)
+    setSystemFlag(FLAG_BASE_MYM);                                           //JM Menu system default (removed from reset_jm_defaults)
     refreshScreen(42);
   #endif // !TESTSUITE_BUILD
 }
@@ -3167,7 +3090,6 @@ void fnRESET_Mya(void){
 
 //Softmenus:
 //--------------------------------------------------------------------------------------------
-//JM To determine the menu number for a given menuId          //JMvv
 int16_t mm(int16_t id) {
   int16_t m;
   m = 0;
@@ -3182,286 +3104,283 @@ int16_t mm(int16_t id) {
     }
   }
   return m;
-}                                                             //JM^^
+}
+
 
 #if !defined(TESTSUITE_BUILD)
-  //vv EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX
-  #define JM_LINE2_DRAW
-  #undef JM_LINE2_DRAW
-  #if defined(JM_LINE2_DRAW)
-    void JM_LINE2(uint32_t xx, uint32_t yy) {                          // To draw the lines for radiobutton on screen
-      uint32_t x, y;
-      y = yy-3-1;
-      for(x=xx-66+1; x<min(xx-1,SCREEN_WIDTH); x++) {
-        if(mod(x, 2) == 0) {
-          setBlackPixel(x, y);
-          setBlackPixel(x, y+2);
-        }
-        else {
-          setBlackPixel(x, y+1);
-        }
+//EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX AND MB_MACRO
+
+  // Helper function to draw pixel array
+  static inline void drawPixelArray(uint32_t xx, uint32_t yy, const uint8_t coords[][2], uint8_t count, bool white) {
+    for(uint8_t i = 0; i < count; i++) {
+      if(white) {
+        setWhitePixel(xx + coords[i][0], yy + coords[i][1]);
+      }
+      else {
+        setBlackPixel(xx + coords[i][0], yy + coords[i][1]);
       }
     }
-  #endif // JM_LINE2_DRAW
-
-
-  #define RB_EXTRA_BORDER
-  //#undef RB_EXTRA_BORDER
-  #define RB_CLEAR_CENTER
-  #undef RB_CLEAR_CENTER
-  #if defined(RB_EXTRA_BORDER)
-    void rbColumnCcccccc(uint32_t xx, uint32_t yy) {
-      lcd_fill_rect(xx,yy+2,1,7,  0);
-    }
-  #endif // RB_EXTRA_BORDER
-
-
-  void rbColumnCcSssssCc(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy+8, 1, 2,  0);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+3, 1, 5,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy+1, 1, 1,  0);
-    #endif // RB_EXTRA_BORDER
   }
 
-
-  void rbColumnCcSssssssCc(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy+9, 1, 2,  0);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+2, 1, 7,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy, 1, 2,  0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
-  void rbColumnCSssCccSssC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel (xx, yy+10);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+7, 1, 3,  0xFF);
-    lcd_fill_rect(xx, yy+4, 1, 3,  0);
-    lcd_fill_rect(xx, yy+1, 1, 3,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel (xx, yy+0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
-  void rbColumnCSsCSssCSsC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+10);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+8, 1, 2,  0xFF);
-    setWhitePixel(xx, yy+7);
-    lcd_fill_rect(xx, yy+4, 1, 3,  0xFF);
-    setWhitePixel(xx, yy+3);
-    lcd_fill_rect(xx, yy+1, 1, 2,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
-  void rbColumnCcSsNnnSsCc(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy+9, 1, 2,  0);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+7, 1, 2,  0xFF);
-
-    #if defined(RB_CLEAR_CENTER)
-      lcd_fill_rect(xx, yy+4, 1, 3,  0);
-    #endif // RB_CLEAR_CENTER
-
-    lcd_fill_rect(xx, yy+2, 1, 2,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy+0, 1, 2,  0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
-  void rbColumnCSsNnnnnSsC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel (xx, yy+10);
-    #endif //RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+8,1,2,  0xFF);
-
-    #if defined(RB_CLEAR_CENTER)
-      lcd_fill_rect(xx, yy+3,1,5,  0);
-    #endif //RB_CLEAR_CENTER
-
-    lcd_fill_rect(xx, yy+1,1,2,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+0);
-    #endif //RB_EXTRA_BORDERf
-  }
-
-
-  void rbColumnCSNnnnnnnSC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+10);
-    #endif //RB_EXTRA_BORDER
-
-    setBlackPixel(xx, yy+9);
-
-    #if defined(RB_CLEAR_CENTER)
-      lcd_fill_rect(xx, yy+2, 1, 7,  0);
-    #endif //RB_CLEAR_CENTER
-
-    setBlackPixel (xx, yy+1);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+0);
-    #endif //RB_EXTRA_BORDER
-  }
-
-
-  #if defined(RB_EXTRA_BORDER)
-    void cbColumnCcccccccccc(uint32_t xx, uint32_t yy) {
-      lcd_fill_rect(xx, yy+0, 1, 11,  0);
-    }
-  #endif // RB_EXTRA_BORDER
-
-
-  void cbColumnCSssssssssC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+10);
-    #endif //RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+1, 1, 9,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx,yy+0);
-    #endif //RB_EXTRA_BORDER
-  }
-
-
-  void cbColumnCSsCccccSsC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+10);
-    #endif // RB_EXTRA_BORDER
-
-    lcd_fill_rect(xx, yy+8, 1, 2,  0xFF);
-    lcd_fill_rect(xx, yy+3, 1, 5,  0);
-    lcd_fill_rect(xx, yy+1, 1, 2,  0xFF);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
-  void cbColumnCSNnnnnnnSC(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx,yy+10);
-    #endif // RB_EXTRA_BORDER
-
-    setBlackPixel(xx, yy+9);
-
-    #if defined(RB_CLEAR_CENTER)
-      lcd_fill_rect(xx, yy+2, 1, 7,  0);
-    #endif // RB_CLEAR_CENTER
-
-    setBlackPixel(xx, yy+1);
-
-    #if defined(RB_EXTRA_BORDER)
-      setWhitePixel(xx, yy+0);
-    #endif // RB_EXTRA_BORDER
-  }
-
-
+  // Radio button checked: 11×11 circle with filled center
+  // Draws visible black ring with black center dot
   void RB_CHECKED(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      rbColumnCcccccc(xx+0, yy);
-    #endif // RB_EXTRA_BORDER
-    rbColumnCcSssssCc(xx+1, yy);
-    rbColumnCcSssssssCc(xx+2, yy);
-    rbColumnCSssCccSssC(xx+3, yy);
-    rbColumnCSsCSssCSsC(xx+4, yy);
-    rbColumnCSsCSssCSsC(xx+5, yy);
-    rbColumnCSsCSssCSsC(xx+6, yy);
-    rbColumnCSssCccSssC(xx+7, yy);
-    rbColumnCcSssssssCc(xx+8, yy);
-    rbColumnCcSssssCc(xx+9, yy);
-    //#if defined(RB_EXTRA_BORDER)
-    //  rbColumnCcccccc(xx+10, yy);
-    //#endif // RB_EXTRA_BORDER
+    // BLACK pixels: outer ring + center dot (visible parts)
+    TO_QSPI static const uint8_t rbBlack[][2] = {
+      // Column 1: yy+3..yy+7
+      {1,3},{1,4},{1,5},{1,6},{1,7},
+      // Column 2: yy+2..yy+8
+      {2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},
+      // Column 3: yy+1..yy+3, yy+7..yy+9
+      {3,1},{3,2},{3,3},{3,7},{3,8},{3,9},
+      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
+      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
+      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
+      // Column 7: yy+1..yy+3, yy+7..yy+9
+      {7,1},{7,2},{7,3},{7,7},{7,8},{7,9},
+      // Column 8: yy+2..yy+8
+      {8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},
+      // Column 9: yy+3..yy+7
+      {9,3},{9,4},{9,5},{9,6},{9,7}
+    };
+
+    // WHITE pixels: background borders and gaps creating ring shape
+    TO_QSPI static const uint8_t rbWhite[][2] = {
+      // Column 0: yy+2..yy+8 (left border)
+      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
+      // Column 1: yy+1, yy+8, yy+9
+      {1,1},{1,8},{1,9},
+      // Column 2: yy+0, yy+1, yy+9, yy+10
+      {2,0},{2,1},{2,9},{2,10},
+      // Column 3: yy+0, yy+4..yy+6, yy+10
+      {3,0},{3,4},{3,5},{3,6},{3,10},
+      // Column 4: yy+0, yy+3, yy+7, yy+10
+      {4,0},{4,3},{4,7},{4,10},
+      // Column 5: yy+0, yy+3, yy+7, yy+10
+      {5,0},{5,3},{5,7},{5,10},
+      // Column 6: yy+0, yy+3, yy+7, yy+10
+      {6,0},{6,3},{6,7},{6,10},
+      // Column 7: yy+0, yy+4..yy+6, yy+10
+      {7,0},{7,4},{7,5},{7,6},{7,10},
+      // Column 8: yy+0, yy+1, yy+9, yy+10
+      {8,0},{8,1},{8,9},{8,10},
+      // Column 9: yy+1, yy+8, yy+9
+      {9,1},{9,8},{9,9}
+    };
+
+    drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
+    drawPixelArray(xx, yy, rbWhite, sizeof(rbWhite)/sizeof(rbWhite[0]), true);
   }
 
-
+  // Radio button unchecked: 11×11 circle with hollow center
   void RB_UNCHECKED(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      rbColumnCcccccc(xx+0, yy);
-    #endif // RB_EXTRA_BORDER
-    rbColumnCcSssssCc(xx+1, yy);
-    rbColumnCcSsNnnSsCc(xx+2, yy);
-    rbColumnCSsNnnnnSsC(xx+3, yy);
-    rbColumnCSNnnnnnnSC(xx+4, yy);
-    rbColumnCSNnnnnnnSC(xx+5, yy);
-    rbColumnCSNnnnnnnSC(xx+6, yy);
-    rbColumnCSsNnnnnSsC(xx+7, yy);
-    rbColumnCcSsNnnSsCc(xx+8, yy);
-    rbColumnCcSssssCc(xx+9, yy);
-    //#if defined(RB_EXTRA_BORDER)
-    //  rbColumnCcccccc(xx+10, yy);
-    //#endif // RB_EXTRA_BORDER
+    // BLACK pixels: outer ring only (visible parts)
+    TO_QSPI static const uint8_t rbBlack[][2] = {
+      // Column 1: yy+3..yy+7
+      {1,3},{1,4},{1,5},{1,6},{1,7},
+      // Column 2: yy+2, yy+3, yy+7, yy+8
+      {2,2},{2,3},{2,7},{2,8},
+      // Column 3: yy+1, yy+2, yy+8, yy+9
+      {3,1},{3,2},{3,8},{3,9},
+      // Column 4: yy+1, yy+9
+      {4,1},{4,9},
+      // Column 5: yy+1, yy+9
+      {5,1},{5,9},
+      // Column 6: yy+1, yy+9
+      {6,1},{6,9},
+      // Column 7: yy+1, yy+2, yy+8, yy+9
+      {7,1},{7,2},{7,8},{7,9},
+      // Column 8: yy+2, yy+3, yy+7, yy+8
+      {8,2},{8,3},{8,7},{8,8},
+      // Column 9: yy+3..yy+7
+      {9,3},{9,4},{9,5},{9,6},{9,7}
+    };
+
+    // WHITE pixels: background borders, gaps, and hollow center
+    TO_QSPI static const uint8_t rbWhite[][2] = {
+      // Column 0: yy+2..yy+8 (left border)
+      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
+      // Column 1: yy+1, yy+8, yy+9
+      {1,1},{1,8},{1,9},
+      // Column 2: yy+0, yy+1, yy+9, yy+10
+      {2,0},{2,1},{2,9},{2,10},
+      // Column 3: yy+0, yy+10
+      {3,0},{3,10},
+      // Column 4: yy+0, yy+10
+      {4,0},{4,10},
+      // Column 5: yy+0, yy+10
+      {5,0},{5,10},
+      // Column 6: yy+0, yy+10
+      {6,0},{6,10},
+      // Column 7: yy+0, yy+10
+      {7,0},{7,10},
+      // Column 8: yy+0, yy+1, yy+9, yy+10
+      {8,0},{8,1},{8,9},{8,10},
+      // Column 9: yy+1, yy+8, yy+9
+      {9,1},{9,8},{9,9}
+    };
+
+    drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
+    drawPixelArray(xx, yy, rbWhite, sizeof(rbWhite)/sizeof(rbWhite[0]), true);
   }
 
-
+  // Checkbox checked: 11×11 square with filled center
   void CB_CHECKED(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy-1, 10, 11, 0);
-      cbColumnCcccccccccc(xx+0, yy);
-    #endif // RB_EXTRA_BORDER
-    cbColumnCSssssssssC(xx+1, yy);
-    cbColumnCSssssssssC(xx+2, yy);
-    cbColumnCSsCccccSsC(xx+3, yy);
-    rbColumnCSsCSssCSsC(xx+4, yy);
-    rbColumnCSsCSssCSsC(xx+5, yy);
-    rbColumnCSsCSssCSsC(xx+6, yy);
-    cbColumnCSsCccccSsC(xx+7, yy);
-    cbColumnCSssssssssC(xx+8, yy);
-    cbColumnCSssssssssC(xx+9, yy);
-    //#if defined(RB_EXTRA_BORDER)
-    //  cbColumnCcccccccccc(xx+10, yy);
-    //#endif // RB_EXTRA_BORDER
+    lcd_fill_rect(xx, yy-1, 10, 11, 0);  // Clear background area
+
+    // BLACK pixels: outer square + inner checkmark pattern
+    TO_QSPI static const uint8_t cbBlack[][2] = {
+      // Column 1: yy+1..yy+9 (full)
+      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
+      // Column 2: yy+1..yy+9 (full)
+      {2,1},{2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},{2,9},
+      // Column 3: yy+1, yy+2, yy+8, yy+9
+      {3,1},{3,2},{3,8},{3,9},
+      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
+      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
+      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
+      // Column 7: yy+1, yy+2, yy+8, yy+9
+      {7,1},{7,2},{7,8},{7,9},
+      // Column 8: yy+1..yy+9 (full)
+      {8,1},{8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},{8,9},
+      // Column 9: yy+1..yy+9 (full)
+      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+    };
+
+    // WHITE pixels: background borders and hollow center area
+    TO_QSPI static const uint8_t cbWhite[][2] = {
+      // Column 0: yy+0..yy+10 (left border)
+      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
+      // Column 1: yy+0, yy+10
+      {1,0},{1,10},
+      // Column 2: yy+0, yy+10
+      {2,0},{2,10},
+      // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {3,0},{3,3},{3,4},{3,5},{3,6},{3,7},{3,10},
+      // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {4,0},{4,3},{4,7},{4,10},
+      // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {5,0},{5,3},{5,7},{5,10},
+      // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {6,0},{6,3},{6,7},{6,10},
+      // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {7,0},{7,3},{7,4},{7,5},{7,6},{7,7},{7,10},
+      // Column 8: yy+0, yy+10
+      {8,0},{8,10},
+      // Column 9: yy+0, yy+10
+      {9,0},{9,10}
+    };
+
+    drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
+    drawPixelArray(xx, yy, cbWhite, sizeof(cbWhite)/sizeof(cbWhite[0]), true);
   }
 
-
+  // Checkbox unchecked: 11×11 square with hollow center
   void CB_UNCHECKED(uint32_t xx, uint32_t yy) {
-    #if defined(RB_EXTRA_BORDER)
-      lcd_fill_rect(xx, yy-1, 10, 11, 0);
-      cbColumnCcccccccccc(xx+0, yy);
-    #endif // RB_EXTRA_BORDER
-    cbColumnCSssssssssC(xx+1, yy);
-    cbColumnCSNnnnnnnSC(xx+2, yy);
-    cbColumnCSNnnnnnnSC(xx+3, yy);
-    cbColumnCSNnnnnnnSC(xx+4, yy);
-    cbColumnCSNnnnnnnSC(xx+5, yy);
-    cbColumnCSNnnnnnnSC(xx+6, yy);
-    cbColumnCSNnnnnnnSC(xx+7, yy);
-    cbColumnCSNnnnnnnSC(xx+8, yy);
-    cbColumnCSssssssssC(xx+9, yy);
-    //#if defined(RB_EXTRA_BORDER)
-    //  cbColumnCcccccccccc(xx+10, yy);
-    //#endif // RB_EXTRA_BORDER
+    lcd_fill_rect(xx, yy-1, 10, 11, 0);  // Clear background area
+
+    // BLACK pixels: outer square only (hollow inside)
+    TO_QSPI static const uint8_t cbBlack[][2] = {
+      // Column 1: yy+1..yy+9 (full)
+      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
+      // Column 2: yy+1, yy+9 (top/bottom only)
+      {2,1},{2,9},
+      // Column 3: yy+1, yy+9
+      {3,1},{3,9},
+      // Column 4: yy+1, yy+9
+      {4,1},{4,9},
+      // Column 5: yy+1, yy+9
+      {5,1},{5,9},
+      // Column 6: yy+1, yy+9
+      {6,1},{6,9},
+      // Column 7: yy+1, yy+9
+      {7,1},{7,9},
+      // Column 8: yy+1, yy+9
+      {8,1},{8,9},
+      // Column 9: yy+1..yy+9 (full)
+      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+    };
+
+    // WHITE pixels: background borders
+    TO_QSPI static const uint8_t cbWhite[][2] = {
+      // Column 0: yy+0..yy+10 (left border)
+      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
+      // Column 1: yy+0, yy+10
+      {1,0},{1,10},
+      // Column 2: yy+0, yy+10
+      {2,0},{2,10},
+      // Column 3: yy+0, yy+10
+      {3,0},{3,10},
+      // Column 4: yy+0, yy+10
+      {4,0},{4,10},
+      // Column 5: yy+0, yy+10
+      {5,0},{5,10},
+      // Column 6: yy+0, yy+10
+      {6,0},{6,10},
+      // Column 7: yy+0, yy+10
+      {7,0},{7,10},
+      // Column 8: yy+0, yy+10
+      {8,0},{8,10},
+      // Column 9: yy+0, yy+10
+      {9,0},{9,10}
+    };
+
+    drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
+    drawPixelArray(xx, yy, cbWhite, sizeof(cbWhite)/sizeof(cbWhite[0]), true);
   }
-  //^^
+
+  // ◇ Diamond/macro button outline: 11×11 diamond shape
+  void MB_MACRO(uint32_t xx, uint32_t yy) {
+    // Diamond outline coordinates (x_offset, y_offset from xx, yy)
+    // Forms diamond shape: top point → widest middle → bottom point
+    TO_QSPI static const uint8_t diamond[][2] = {
+      {5, 0},                                       // Top point
+      {4, 1}, {6, 1},                               // Row 1: 2 pixels
+      {3, 2}, {7, 2},                               // Row 2: 2 pixels
+      {2, 3}, {8, 3},                               // Row 3: 2 pixels
+      {1, 4}, {9, 4},                               // Row 4: 2 pixels
+      {0, 5}, {10, 5},                              // Row 5: widest point (2 pixels)
+      {1, 6}, {9, 6},                               // Row 6: 2 pixels
+      {2, 7}, {8, 7},                               // Row 7: 2 pixels
+      {3, 8}, {7, 8},                               // Row 8: 2 pixels
+      {4, 9}, {6, 9},                               // Row 9: 2 pixels
+      {5, 10}                                       // Bottom point
+    };
+    #define DOUBLE                                  // Draw double-width for visibility
+    #define offs 1                                  // X-offset adjustment
+    for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
+      placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1]);
+      #ifdef DOUBLE
+        placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Duplicate row above for thickness
+      #endif
+    }
+  }
+
+  // ◇ Diamond/macro button checked: diamond outline + center fill
+  void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy) {
+    MB_MACRO(xx,yy);  // Draw outline first
+
+    // Diamond interior fill coordinates (x_offset, y_offset from xx, yy)
+    // Fills center area to indicate checked state
+    TO_QSPI static const uint8_t diamond[][2] = {
+      {5, 3},                                       // Row 3: 1 pixel
+      {4, 4}, {5, 4}, {6, 4},                       // Row 4: 3 pixels
+      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5},       // Row 5: 5 pixels (widest)
+      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6},       // Row 6: 5 pixels (widest)
+      {4, 7}, {5, 7}, {6, 7},                       // Row 7: 3 pixels
+      {5, 8}                                        // Row 8: 1 pixel
+    };
+    for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
+      placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Match DOUBLE offset from outline
+    }
+  }
+
 #endif // !TESTSUITE_BUILD
 
 
@@ -3473,19 +3392,6 @@ void fnSetBCD (uint16_t bcd) {
       bcdDisplaySign = bcd;
       break;
     default: ;
-  }
-}
-
-
-void setFGLSettings(uint16_t option) {
-  switch(option) {
-    case RBX_FGLNOFF:
-    case RBX_FGLNLIM:
-    case RBX_FGLNFUL:
-      fgLN = (uint8_t)option;
-      break;
-    default:
-      fgLN = RBX_FGLNFUL;
   }
 }
 

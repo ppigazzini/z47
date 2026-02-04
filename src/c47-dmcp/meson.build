@@ -25,6 +25,14 @@ dmcp_linkargs = [
   '-LC:/msys64/home/didie/c43/build.dmcp/subprojects/gmp-6.2.1/dist/msys64/mingw64/lib',  # Added this line for absolute path support
 ]
 
+gmp_build_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build'
+gmp_lib_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build' / '.libs'
+
+arm_gmp_dep = declare_dependency(
+  dependencies : [dependency('arm-gmp-6.2.1')],
+  compile_args : ['-I' + gmp_build_dir],
+  link_args    : ['-L' + gmp_lib_dir],
+)
 
 #
 # C47 Build : standard build for the DM42 board with the C47 bezel
@@ -51,6 +59,7 @@ c47_pre_elf = executable('C47_pre.elf',
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs,
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -87,6 +96,7 @@ c47_elf = executable('C47.elf',
   sources             : dmcp_src + [vcs_h, version_h, generated_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_QSPI_CRC'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -146,8 +156,12 @@ alias_target('dmcp', c47_pgm, c47_qspi, c47_sizes)
 # R47 Build : to be used on DM42 board with R47 keymap.bin plus paper keyboard or overlay/key stickers
 #
 
-r47_lib = static_library(
-  'libr47',
+r47_dmcp_src = files(
+  'hal/audio.c',
+  'hal/io.c'
+)
+
+r47_lib = static_library('libr47',
   build_by_default    : false,
   sources             : decNumber_src + c47_src + c47_dmcp_src + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
@@ -163,6 +177,7 @@ r47_pre_elf = executable('R47_pre.elf',
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -199,6 +214,7 @@ r47_elf = executable('R47.elf',
   sources             : dmcp_src + [vcs_h, version_h, generated_r47_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_R47_QSPI_CRC'] + ['-DCALCMODEL=USER_R47'],
   link_args           : dmcp_linkargs,
+  dependencies        : arm_gmp_dep,
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
@@ -236,7 +252,6 @@ r47_qspi = custom_target(
   output           : 'R47_qspi.bin',
   command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
 )
-
 
 r47_section_sizes = custom_target(
   'r47_section_sizes.txt',

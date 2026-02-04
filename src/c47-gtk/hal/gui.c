@@ -49,7 +49,7 @@
       gtk_fixed_move(GTK_FIXED(grid), calcKeyboard[key].keyImage[0], -999,                -999);
       gtk_fixed_move(GTK_FIXED(grid), calcKeyboard[key].keyImage[1], -999,                -999);
       if(key == 10) {
-        if(tam.mode == TM_LABEL || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+        if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           gtk_fixed_move(GTK_FIXED(grid), calcKeyboard[key].keyImage[2], -999,                -999);
           gtk_fixed_move(GTK_FIXED(grid), calcKeyboard[key].keyImage[3], calcKeyboard[key].x, calcKeyboard[key].y);
         }

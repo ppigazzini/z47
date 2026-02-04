@@ -11,8 +11,15 @@
    * This functions are borrowed from the WP34S project
    ******************************************************/
 
-  void   WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t am, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
-  void   WP34S_SinCosTanTaylor (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+  void   WP34S_Cvt2RadSinCosTan    (const real_t *angle, angularMode_t am, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
+  void   WP34S_SinCosTanTaylor     (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+  void   C47_WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t am, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
+  void   C47_WP34S_SinCosTanTaylor (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+  void   C47_WP34S_Asin            (const real_t *x, real_t *angle, realContext_t *realContext);
+  void   C47_WP34S_Acos            (const real_t *x, real_t *angle, realContext_t *realContext);
+  void   C47_WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
+  void   C47_WP34S_Atan2           (const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext);
+
   void   WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   WP34S_Atan2           (const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
   void   WP34S_Asin            (const real_t *x, real_t *angle, realContext_t *realContext);
@@ -35,6 +42,7 @@
   void   WP34S_ComplexLnGamma  (const real_t *zinReal, const real_t *zinImag, real_t *resReal, real_t *resImag, realContext_t *realContext);
   void   WP34S_Mod             (const real_t *x, const real_t *y, real_t *res, realContext_t *realContext);
   void   WP34S_BigMod          (const real_t *x, const real_t *y, real_t *res, realContext_t *realContext);
+  void   mod2Pi                (const real_t *x, real_t *res, realContext_t *realContext);
   bool_t WP34S_RelativeError   (const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
   bool_t WP34S_AbsoluteError   (const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
   bool_t WP34S_ComplexRelativeError (const real_t *xReal, const real_t *xImag, const real_t *yReal, const real_t *yImag, const real_t *tol, realContext_t *realContext);

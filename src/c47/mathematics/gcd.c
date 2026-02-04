@@ -24,10 +24,12 @@ static void gcdInt(void) {
   longInteger_t liX, liY;
   bool_t fracX, fracY;
 
-  if (!getRegisterAsLongInt(REGISTER_Y, liY, &fracY))
-    return;
-  if (!getRegisterAsLongInt(REGISTER_X, liX, &fracX))
+  if(!getRegisterAsLongInt(REGISTER_Y, liY, &fracY)) {
     goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_X, liX, &fracX)) {
+    goto end2;
+  }
 
   if (fracX) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

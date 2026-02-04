@@ -19,7 +19,6 @@ void fnJM(uint16_t JM_OPCODE);
 
 void fnStrInputReal34 (char inp1[]);
 void fnStrInputLongint(char inp1[]);
-void fnRCL          (int16_t inp);
 
 
 #endif // !JM_H

@@ -12,7 +12,7 @@ const char *_ioFileNameFromFilePath(ioFilePath_t path) {
     case ioPathManualSave: return "c47.sav";
     case ioPathPgmFile:    return "c47.dat";
     case ioPathTestPgms:   return "res/testPgms/testPgms.bin";
-    case ioPathBackup:     return "backup.cfg";
+    case ioPathBackup:     return CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg";
     default:               return false;
   }
 }

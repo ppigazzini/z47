@@ -93,4 +93,8 @@
    * \param[in] regist
    */
   void         fnStoreIJ     (uint16_t unusedButMandatoryParameter);
+
+  void         fn2Sto(uint16_t regist);
+  void         fn3Sto(uint16_t regist);
+
 #endif // !STORE_H

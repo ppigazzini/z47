@@ -10,8 +10,9 @@
 static void fibLonI(void) {
   longInteger_t x, result;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end;
+  }
 
   if(longIntegerIsNegative(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -20,8 +21,7 @@ static void fibLonI(void) {
       sprintf(tmpString, "cannot calculate fib(%s)", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    longIntegerFree(x);
-    return;
+    goto end;
   }
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
@@ -31,8 +31,7 @@ static void fibLonI(void) {
       sprintf(tmpString, "cannot calculate fib(%s), the limit for UNSIGN is 93", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    longIntegerFree(x);
-    return;
+    goto end;
   }
   else*/ if(longIntegerCompareUInt(x, 4791) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -41,8 +40,7 @@ static void fibLonI(void) {
       sprintf(tmpString, "cannot calculate fib(%s), the limit is 4791, it's to ensure that the 3328 bits limit is not exceeded", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    longIntegerFree(x);
-    return;
+    goto end;
   }
 
   uint32_t n;
@@ -54,6 +52,7 @@ static void fibLonI(void) {
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
 
   longIntegerFree(result);
+end:
   longIntegerFree(x);
 }
 

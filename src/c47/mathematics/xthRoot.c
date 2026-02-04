@@ -209,26 +209,25 @@ static void doXthRootLonI(void) {
   longInteger_t base, exponent, l;
   int32_t exp;
 
-  if(!getRegisterAsLongInt(REGISTER_Y, base, NULL)
-      || !getRegisterAsLongInt(REGISTER_X, exponent, NULL))
-    return;
+  if(!getRegisterAsLongInt(REGISTER_Y, base, NULL)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_X, exponent, NULL)) {
+    goto end2;
+  }
 
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function doXthRootLonILonI: Cannot divide by 0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    longIntegerFree(base);
-    longIntegerFree(exponent);
-    return;
+    goto end2;
   }
 
   if(longIntegerIsZero(base)) {          //base=0 -->  0
     uInt32ToLongInteger(0u, base);
     convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
-    longIntegerFree(base);
-    longIntegerFree(exponent);
-    return;
+    goto end2;
   }
 
   if(longIntegerCompareUInt(base, 2147483640) == -1) {
@@ -237,10 +236,8 @@ static void doXthRootLonI(void) {
       longIntegerInit(l);
       if(longIntegerRoot(base, exp, l)) {                             // if integer xthRoot found, return
         convertLongIntegerToLongIntegerRegister(l, REGISTER_X);
-        longIntegerFree(base);
-        longIntegerFree(exponent);
         longIntegerFree(l);
-        return;
+        goto end2;
       }
       longIntegerFree(l);
     }
@@ -252,25 +249,25 @@ static void doXthRootLonI(void) {
           if(longIntegerRoot(base, exp, l)) {                           // if negative integer xthRoot found, return
             longIntegerChangeSign(l);
             convertLongIntegerToLongIntegerRegister(l, REGISTER_X);
-            longIntegerFree(base);
-            longIntegerFree(exponent);
             longIntegerFree(l);
-            return;
+            goto end2;
           }
           longIntegerFree(l);
-          longIntegerChangeSign(base);
         }
       }
     }
   }
 
-  longIntegerFree(base);
-  longIntegerFree(exponent);
-
-  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
-    return;
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
+    goto end2;
+  }
 
   xthRootReal(&y, &x, &ctxtReal75);
+
+end2:
+  longIntegerFree(exponent);
+end1:
+  longIntegerFree(base);
 }
 
 /********************************************//**

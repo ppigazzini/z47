@@ -525,6 +525,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_GRADtoDEG   },
     {ITM_GRADtoRAD   },
     {ITM_RADtoGRAD   },
+    {ITM_INCHtoCM    },
     {ITM_NMItoMI     },
     {ITM_MItoNMI     },
     {ITM_FURtoM      },
@@ -2157,12 +2158,14 @@ typedef struct {
     }
 
     else if(item != ITM_NOP) {
-      #if defined (PC_BUILD)
+      #if defined (PC_BUILD) && defined(VERBOSE_MINIMUM)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
+        fflush(stdout);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
           case ITM_HASH_JM:     //closeNim simply not needed because we need to type the base while NIM remains open, and the BASE, INTS and BITS A-F and HEX/DEC commands are active on NIM
+          case ITM_toINT:
           case -MNU_BASE:
           case -MNU_INTS:
           case -MNU_BITS: {
@@ -2356,7 +2359,7 @@ typedef struct {
       subNumberToDisplayString(lastDenominator, displayBuffer + stringByteLength(displayBuffer), NULL);
     }
     else if (buffer[index] != 0) {
-      int16_t denominator = toInt32(buffer + index);
+      int32_t denominator = toInt32(buffer + index);
       subNumberToDisplayString(denominator, displayBuffer + stringByteLength(displayBuffer), NULL);
       for(; buffer[index] >= '0' && buffer[index] <= '9'; index++) {
       }
@@ -2510,7 +2513,6 @@ typedef struct {
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
           realAdd(&theta, const_pi, &theta, &ctxtReal39);
-          //WP34S_Mod(&theta, const1071_2pi, &theta, &c);   // this is not needed here, it is done in realPolarToRectangular() below
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
         realToReal34(&magnitude, dest_r);

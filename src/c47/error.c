@@ -84,7 +84,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 59 */  "Undefined menu name",
 /* 60 */  "Operation aborted",
 /* 61 */  "Reserved variable name",
-/* 62 */  "",
+/* 62 */  "Invalid register type/angle",
 /* 63 */  "",
 /* 64 */  "",
 /* 65 */  "",

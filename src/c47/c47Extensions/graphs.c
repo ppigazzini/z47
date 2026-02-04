@@ -204,15 +204,17 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 
 void fnPlotZoom(uint16_t unusedButMandatoryParameter){
     longInteger_t x;
-    longIntegerInit(x);
     int32_t ii;
+
     if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
-      return;
+      goto end;
     }
+
     longIntegerToInt32(x, ii);
-    longIntegerFree(x);
     //the ZOOM command from outside the PLOT mode only works for PLSTAT
     PLOT_ZMY = ii;
+end:
+    longIntegerFree(x);
   }
 
 
@@ -1209,7 +1211,7 @@ void graph_plotmem(void) {
 
             x = grf_x(ix);
             y = grf_y(ix);
- 
+
           }
           else { //_VECT
             sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
@@ -1270,7 +1272,7 @@ void graph_plotmem(void) {
                   yo = yN0;
                 }
               }
-              // Coming in from top - BOTH positive and negative slopes  
+              // Coming in from top - BOTH positive and negative slopes
               else if (outOfScreen0 && !outOfScreen1 && yN0 < minN_y) {
                 //printf("ENTRY CLIP TOP: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
                 int16_t dY = abs(yN0 - minN_y);

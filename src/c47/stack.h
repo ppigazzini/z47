@@ -35,6 +35,9 @@ void liftStack     (void);
 void fnDropY       (uint16_t unusedButMandatoryParameter);
 void fnDropZ       (uint16_t unusedButMandatoryParameter);
 void fnDropT       (uint16_t unusedButMandatoryParameter);
+void fnDropN       (uint16_t number);
+void fnDupN        (uint16_t number);
+void fnSwapN       (uint16_t number);
 
 /**
  * Rolls the stack up and refreshes the stack.

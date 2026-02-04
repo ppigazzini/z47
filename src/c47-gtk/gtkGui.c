@@ -113,8 +113,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //  gtk_widget_queue_draw(w);
   //}
 
-
-
   static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
     //debugf("Configure event: force a redraw");
     gtk_widget_queue_draw(w);
@@ -268,9 +266,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if(tam.mode == TM_LABEL && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+    if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
-        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL\n");
+        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL/TM_LBLONLY\n");
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
@@ -360,7 +358,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     }
 
     if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
+    if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -444,7 +442,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
       pemAlpha(sent);
     } else {
-        addItemToBuffer(sent);
+        processAimInput(sent);
       }
     }
 
@@ -550,10 +548,11 @@ Jacos Mac, Control works
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State,shiftF,shiftG,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
 
@@ -706,10 +705,11 @@ returnKeyReleasedFalse:
       strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
-    //#endif //VERBOSEKEYS
+      fflush(stdout);
+    #endif //VERBOSEKEYS
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
@@ -805,9 +805,10 @@ returnKeyReleasedFalse:
 // 17 CM_ASN_BROWSER
 // 18 CM_LISTXY
 
-//#if defined(VERBOSEKEYS)
+#if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
   printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%5i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
-//#endif //VERBOSEKEYS
+  fflush(stdout);
+#endif //VERBOSEKEYS
 
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
@@ -815,13 +816,15 @@ returnKeyReleasedFalse:
 
 //#define allowAltGrKey ((event->state & 16) == 16) this will also allow the actual involved AltGr shifts. Narrowing will make it more accurate but may exclude other non-standard bitmasks
 #define allowAltGrKey (C47SpecialKey_Valid_Pressed)
+#define tamArrows (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
-     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (!(tamArrows || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
+         ||  calcMode == CM_TIMER
          || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
         )
      && !getSystemFlag(FLAG_ALPHA)
@@ -838,8 +841,22 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
     //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
 //}
 
+
+  //list of special case keys, server non-CM_xxx modes
+  switch(event_keyval) {
+    case GDK_KEY_backslash:
+    case GDK_KEY_z:
+      if(SHOWMODE){// || currentMenu() == -MNU_TIMERF) {
+        btnClicked(w, "35");  //R/S
+        goto returnKeyPressedFalse;
+      }
+      break;
+    default:;
+  }
+
+
 //C47 & R47============
-  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
+  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",        0b0100000000001101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
   if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[v]erse
   if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} else        //                        s[q]rt
   if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} else        //                         l[o]g
@@ -913,7 +930,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
   if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
   if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",        0b0100000000001101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
   if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
 //                                             PC_GTK3_code                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno ,            Valid CalcMode requiredCalcMode2  itemForRunFunction
@@ -931,7 +948,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} else        //                      [m]emory
   if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} else        //                         [r]cl
   if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} else        //                        [d]own
-  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
+  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
   if(shortCutCommand(w, event_key_command, GDK_KEY_f           /* f 102   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {goto returnKeyPressedFalse;} else        //                             f
   if(shortCutCommand(w, event_key_command, GDK_KEY_g           /* g 103   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {goto returnKeyPressedFalse;} else        //                             g
   if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69 EE */    ,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} else        //                           key
@@ -990,7 +1007,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
         {}
       #endif
     }
-    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) {
+    else if((tamArrows) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
@@ -1019,22 +1036,10 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
   #endif
 
   //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
-  #if defined(ALTERNATE_ALPHA_F1)
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #elif defined(ALTERNATE_ALPHA_F5)
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "f", "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #else
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-    if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-  #endif //ALTERNATE_ALPHA_F1
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
   #if defined(VERBOSEKEYS)
     printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");
   #else
@@ -1051,7 +1056,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-//        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+//        ||((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
         ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )
@@ -1128,9 +1133,10 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 
 continueWithOldDetections:
-    //#if defined(VERBOSEKEYS)
+    #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
-    //#endif
+      fflush(stdout);
+    #endif
 
       switch(event_keyval) {
         case GDK_KEY_H+65536: // Ctrl H
@@ -1233,7 +1239,7 @@ continueWithOldDetections:
   //          softmenuStack[0].firstItem = jj;
   //          showSoftmenuCurrentPart();
   //        }
-  //        else 
+  //        else
           {
             btnFnClicked(w, "6");  //F6
           }
@@ -1538,7 +1544,6 @@ continueWithOldDetections:
             btnClicked(w, "10");
           }
           break;
-
 
         case GDK_KEY_Left:                                               //JM     // CursorLt  //JM Left
           btnFnClicked(w, "5");  //F5
@@ -2632,7 +2637,7 @@ returnKeyPressedFalse:
 // Function to get button name from widget pointer
 const char* get_button_name(GtkWidget* widget) {
     if(!widget) return "NULL";
-    
+
     // Row 1 buttons
     if(widget == btn11) return "btn11";
     if(widget == btn12) return "btn12";
@@ -2640,7 +2645,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == btn14) return "btn14";
     if(widget == btn15) return "btn15";
     if(widget == btn16) return "btn16";
-    
+
     // Row 2 buttons and labels
     if(widget == btn21) return "btn21";
     if(widget == btn22) return "btn22";
@@ -2684,7 +2689,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl24Fa) return "lbl24Fa";
     if(widget == lbl25Fa) return "lbl25Fa";
     if(widget == lbl26Fa) return "lbl26Fa";
-    
+
     // Row 3 buttons and labels
     if(widget == btn31) return "btn31";
     if(widget == btn32) return "btn32";
@@ -2728,7 +2733,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl34Fa) return "lbl34Fa";
     if(widget == lbl35Fa) return "lbl35Fa";
     if(widget == lbl36Fa) return "lbl36Fa";
-    
+
     // Row 4 buttons and labels
     if(widget == btn41) return "btn41";
     if(widget == btn42) return "btn42";
@@ -2763,7 +2768,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl43Fa) return "lbl43Fa";
     if(widget == lbl44Fa) return "lbl44Fa";
     if(widget == lbl45Fa) return "lbl45Fa";
-    
+
     // Row 5 buttons and labels
     if(widget == btn51) return "btn51";
     if(widget == btn52) return "btn52";
@@ -2799,7 +2804,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl53Fa) return "lbl53Fa";
     if(widget == lbl54Fa) return "lbl54Fa";
     if(widget == lbl55Fa) return "lbl55Fa";
-    
+
     // Row 6 buttons and labels
     if(widget == btn61) return "btn61";
     if(widget == btn62) return "btn62";
@@ -2835,7 +2840,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl63Fa) return "lbl63Fa";
     if(widget == lbl64Fa) return "lbl64Fa";
     if(widget == lbl65Fa) return "lbl65Fa";
-    
+
     // Row 7 buttons and labels
     if(widget == btn71) return "btn71";
     if(widget == btn72) return "btn72";
@@ -2872,7 +2877,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl73Fa) return "lbl73Fa";
     if(widget == lbl74Fa) return "lbl74Fa";
     if(widget == lbl75Fa) return "lbl75Fa";
-    
+
     // Row 8 buttons and labels
     if(widget == btn81) return "btn81";
     if(widget == btn82) return "btn82";
@@ -2907,7 +2912,7 @@ const char* get_button_name(GtkWidget* widget) {
     if(widget == lbl83Fa) return "lbl83Fa";
     if(widget == lbl84Fa) return "lbl84Fa";
     if(widget == lbl85Fa) return "lbl85Fa";
-    
+
     return "UNKNOWN_WIDGET";
 }
 
@@ -3092,31 +3097,33 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
-    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
-    R47LongpressColour = true;
-  }
-  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
-    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
-    R47LongpressColour = true;
-  }
-  else if(key->fShifted == 0) {
-      lbl[0] = 0;
+  if(key->fShifted == 0) {
+      sstmp[0] = 0;
   }
   else {
     strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-    stringToUtf8(sstmp, lbl);
-    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-      }
+  }
+
+  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  stringToUtf8(sstmp, lbl);
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
     }
   }
 
-  if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
-    lbl[3] = 0;
+  if(strcmp((char *)lbl, "SST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
+      stringToUtf8(tt, lbl);
+  } else
+  if(strcmp((char *)lbl, "BST") == 0) {
+      char tt[20];
+      strcpy(tt, STD_HAMBURGER);
+      strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
+      stringToUtf8(tt, lbl);
   }
 
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
@@ -3138,7 +3145,50 @@ char sstmp[16];
 
 //  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
 //  else
-  strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
+    if(key->gShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+    }
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->primary == ITM_SHIFTg) {
+    if(key->gShifted == ITM_NULL) {
+      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+    }
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->primary == KEY_fg) {
+    if(getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) {
+      if(key->gShifted == ITM_NULL) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
+        }
+        else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+          strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
+        }
+      }
+      else {
+        strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+      }
+    }
+    else {
+      sstmp[0] = 0;
+    }
+    R47LongpressColour = true;
+  }
+  else if(key->gShifted == 0) {
+    lbl[0] = 0;
+  }
+  else {
+    strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+  }
+
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
   if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
   stringToUtf8(sstmp, lbl);
@@ -3148,38 +3198,43 @@ char sstmp[16];
     }
   }
 
-      if(key->gShifted == 0) {
-        lbl[0] = 0;
-      }
-      else if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
-        strcpy((char *)lbl,"#");
-      }
-      else if(strcmp((char *)lbl, "LINPOL") == 0) {
-        strcpy((char *)lbl,"LIN");
-      }
+  if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
+    strcpy((char *)lbl,"#");
+  }
+  else if(strcmp((char *)lbl, "LINPOL") == 0) {
+    strcpy((char *)lbl,"LIN");
+  }
 
+  gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
 
-      gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
-      if(key->gShifted < 0 /*|| key->gShifted == ITM_TIMER*/) gtk_widget_set_name(lblG, "gShiftedUnderline"); else  gtk_widget_set_name(lblG, "gShifted");
+  if(R47LongpressColour) {
+    gtk_widget_set_name(lblG, "letter");
+  }
+  else if(key->gShifted < 0 /*|| key->gShifted == ITM_TIMER*/) {
+    gtk_widget_set_name(lblG, "gShiftedUnderline");
+  }
+  else {
+    gtk_widget_set_name(lblG, "gShifted");
+  }
 
-      stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
-      if(key->primaryAim == 0) {
-        lbl[0] = 0;
-      }
+  stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
+  if(key->primaryAim == 0) {
+     lbl[0] = 0;
+  }
 
-      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }                       //JM SPACE
+  if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
+    lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
+    lbl[1]=0xB7;          //JM SPACE
+    lbl[2]='_';           //JM SPACE
+    lbl[3]=0xc2;          //JM SPACE
+    lbl[4]=0xb7;          //JM SPACE
+    lbl[5]=0;             //JM SPACE
+  }                       //JM SPACE
 
-      if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
-      gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-      gtk_widget_set_name(lblL, "letter");
-    }
+  if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
+  gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
+  gtk_widget_set_name(lblL, "letter");
+}
 
 
     //dr
@@ -3191,11 +3246,33 @@ char sstmp[16];
         lbl[0] = 0;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
-        stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        if(tam.alpha) {
+          stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+        }
+        else {
+          stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        }
         R47LongpressColour = true;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
         stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        R47LongpressColour = true;
+      }
+      else if(isR47FAM && key->primaryAim == KEY_fg) {
+        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
+          if(tam.alpha) {
+            stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
+          }
+          else {
+            stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+          }
+        }
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
+          stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        }
+        else {
+          lbl[0] = 0;
+        }
         R47LongpressColour = true;
       }
       else {
@@ -3233,7 +3310,16 @@ char sstmp[16];
     void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblG, GtkWidget *lblL) {
       uint8_t lbl[22];
 
-      if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
+      if(key->keyLblAim == ITM_SHIFTf) {
+        strcpy((char *)lbl, indexOfItems[ITM_SHIFTf].itemSoftmenuName);
+      }
+      else if(key->keyLblAim == ITM_SHIFTg) {
+        strcpy((char *)lbl, indexOfItems[ITM_SHIFTg].itemSoftmenuName);
+      }
+      else if(key->keyLblAim == KEY_fg) {     
+        strcpy((char *)lbl, indexOfItems[KEY_fg].itemSoftmenuName);
+      }
+      else if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
         lbl[0] = 0;
       }
       else {
@@ -3284,23 +3370,7 @@ char sstmp[16];
         /*}*/       //dr - new AIM
       }
 
-
-      //Convert Greek CAPITAL and LOWER case to UTF !
-      if((ITM_ALPHA <= key->gShiftedAim && key->gShiftedAim <= ITM_OMEGA) || (ITM_QOPPA <= key->gShiftedAim && key->gShiftedAim <= ITM_SAMPI)) {   //JM GREEK. Add extra 36 char greek range
-        /*stringToUtf8(indexOfItems[key->gShiftedAim].itemSoftmenuName, lbl);  //vv dr - new AIM
-        lbl[2] = ' ';
-        lbl[3] = 0;
-        stringToUtf8(indexOfItems[key->gShiftedAim + (ITM_alpha - ITM_ALPHA)].itemSoftmenuName, lbl + 3);*/
-        if(alphaCase == AC_LOWER) {
-          stringToUtf8(indexOfItems[numlockReplacements(8,key->gShiftedAim + (ITM_alpha - ITM_ALPHA), getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-        }
-        else {
-          stringToUtf8(indexOfItems[numlockReplacements(9,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-        }                                                               //^^
-      }
-      else {
-        stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-      }
+      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
 
       //GShift set label
       if(key->gShiftedAim == 0) {
@@ -3346,7 +3416,10 @@ char sstmp[16];
     void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
       uint8_t lbl[22];
 
-      stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      lbl[0] = 0;
+      if(key->primaryTam != ITM_NULL) {
+        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
+      }
 
       //THIS IS FOR TAM
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
@@ -4952,7 +5025,7 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
 
 void check_all_btn_widgets_for_consistency(void) {
     printf("Checking all btn widgets for consistency...\n");
-    
+
     // Row 1 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn11, "btn11");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn12, "btn12");
@@ -4960,7 +5033,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn14, "btn14");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn15, "btn15");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn16, "btn16");
-    
+
     // Row 2 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn21, "btn21");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn22, "btn22");
@@ -4974,7 +5047,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn24A, "btn24A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn25A, "btn25A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn26A, "btn26A");
-    
+
     // Row 3 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn31, "btn31");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn32, "btn32");
@@ -4988,7 +5061,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn34A, "btn34A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn35A, "btn35A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn36A, "btn36A");
-    
+
     // Row 4 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn41, "btn41");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn42, "btn42");
@@ -4998,7 +5071,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn42A, "btn42A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn43A, "btn43A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn44A, "btn44A");
-    
+
     // Row 5 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn51, "btn51");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn52, "btn52");
@@ -5009,7 +5082,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn53A, "btn53A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn54A, "btn54A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn55A, "btn55A");
-    
+
     // Row 6 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn61, "btn61");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn62, "btn62");
@@ -5020,7 +5093,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn63A, "btn63A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn64A, "btn64A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn65A, "btn65A");
-    
+
     // Row 7 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn71, "btn71");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn72, "btn72");
@@ -5032,7 +5105,7 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn73A, "btn73A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn74A, "btn74A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn75A, "btn75A");
-    
+
     // Row 8 buttons
     CHECK_WIDGET_CONSISTENCY_CHECK(btn81, "btn81");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn82, "btn82");
@@ -5043,10 +5116,41 @@ void check_all_btn_widgets_for_consistency(void) {
     CHECK_WIDGET_CONSISTENCY_CHECK(btn83A, "btn83A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn84A, "btn84A");
     CHECK_WIDGET_CONSISTENCY_CHECK(btn85A, "btn85A");
-    
+
     printf("Consistency check complete - none found.\n");
 }
 
+
+  static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnPressed(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+  static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    btnFnReleased(widget, event, data);
+    return FALSE;  // Let GTK continue event processing
+  }
+
+static guint ui_settle_timer = 0;
+
+// Helper to clear the active flag after UI settles
+static gboolean clear_ui_active_flag(gpointer data) {
+    ui_is_active = FALSE;
+    ui_settle_timer = 0;
+    return FALSE;
+}
+
+// Single handler for all UI events
+static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
+    ui_is_active = TRUE;
+
+    if(ui_settle_timer) {
+        g_source_remove(ui_settle_timer);
+    }
+    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+
+    return FALSE;  // Let event continue processing
+}
 
 
   /********************************************//**
@@ -5116,13 +5220,22 @@ void check_all_btn_widgets_for_consistency(void) {
 
       gtk_widget_set_name(frmCalc, "mainWindow");
       gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
-      gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
+      #if CALCMODEL == USER_R47
+        gtk_window_set_title(GTK_WINDOW(frmCalc), "R47");                   //JM NAME
+      #else
+        gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
+      #endif // CALCMODEL == USER_R47
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
@@ -5226,7 +5339,7 @@ void check_all_btn_widgets_for_consistency(void) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s: SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
@@ -5298,18 +5411,18 @@ void check_all_btn_widgets_for_consistency(void) {
       gtk_widget_set_name(btn15, "calcKey");
       gtk_widget_set_name(btn16, "calcKey");
 
-      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed),  "1");
-      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed),  "2");
-      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed),  "3");
-      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed),  "4");
-      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed),  "5");
-      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed),  "6");
-      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased), "1");
-      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased), "2");
-      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased), "3");
-      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased), "4");
-      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased), "5");
-      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased), "6");
+      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "1");
+      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "2");
+      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "3");
+      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "4");
+      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "5");
+      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "6");
+      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "1");
+      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "2");
+      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "3");
+      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "4");
+      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "5");
+      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "6");
 
       gtk_widget_set_focus_on_click(btn11, FALSE);
       gtk_widget_set_focus_on_click(btn12, FALSE);
@@ -6387,6 +6500,8 @@ int keyCntA = 0;
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    lcd_buffer = malloc(SCREEN_HEIGHT*(SCREEN_WIDTH/8+2)+2)+2;
+    lcd_clear_buf ();
 
   check_all_btn_widgets_for_consistency();
   }

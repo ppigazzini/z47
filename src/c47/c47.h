@@ -196,6 +196,8 @@
 
   // Variables for the simulator
   #if !defined(GENERATE_CATALOGS)
+    extern uint16_t lastI;
+    extern uint16_t lastJ;
     extern int16_t lastFunc;
     extern int16_t lastParam;
     extern char    lastTemp[16];
@@ -232,8 +234,9 @@
 
 
   extern uint8_t calcModel;
-  //TODO calModel resets, it must still be saved in backup.cfg and in the state files
 
+  extern uint8_t             *lcd_buffer;
+  extern const int           KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
@@ -291,6 +294,8 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
+  extern bool_t                 lastshiftF;
+  extern bool_t                 lastshiftG;
   extern bool_t                 showContent;
   extern bool_t                 rbr1stDigit;
   extern bool_t                 updateDisplayValueX;
@@ -303,6 +308,7 @@
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
   extern bool_t                 iterations;
+  extern bool_t                 explicitTaylorIterVisibilitySelection;
 
   extern bool_t                 reDraw;
   extern bool_t                 refreshNIMdone;
@@ -445,6 +451,8 @@
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
   extern int16_t                lastKeyItemDetermined;
+  extern bool_t                 lastUserMode;                 //used in btnReleased and btnFnReleased
+  extern int16_t                lastItem;                     //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP
   extern int16_t                showFunctionNameItem;
   extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
@@ -465,6 +473,11 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern uint8_t                multiEdLines;
+  extern uint8_t                yMultiLineEdOffset;
+  extern uint8_t                xMultiLineEdOffset;
+  extern uint16_t               current_cursor_x;
+  extern uint16_t               current_cursor_y; 
   extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
@@ -481,26 +494,19 @@
   extern bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
   extern bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
   extern bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f and on g
-  extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
+  extern bool_t                 FN_timed_out_to_NOP_or_Executed; //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
-  extern uint8_t                fgLN;
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
   extern uint8_t                editingLiteralType;
 
   // Variables from jm.h
-  extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.
-  extern bool_t                 MYM3;                         //JM HOME Create a flag to enable or disable triple shift MYM3; enable or disable TRIPLE SHIFT TIMER.
-  extern bool_t                 ShiftTimoutMode;              //JM HOME Create a flag to enable or disable SHIFT TIMER CANCEL.
-  extern bool_t                 BASE_HOME;                    //JM BASEHOME Create a flag to enable or disable triple shift
   extern normKey_t              Norm_Key_00;                  //JM USER NORMAL
   extern uint8_t                Input_Default;                //JM Input Default
-  extern bool_t                 BASE_MYM;                     //JM Screen / keyboard operation setup
-  extern bool_t                 jm_G_DOUBLETAP;               //JM Screen / keyboard operation setup
   extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;
@@ -603,12 +609,15 @@
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
   
+<<<<<<< HEAD
   //#if defined(INFRARED)
     extern printerState_t         printerState;
     extern const printerFont_t    printerFont8;
     extern uint16_t               printerColumn;
   //#endif //INFRARED
 
+=======
+>>>>>>> master
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
