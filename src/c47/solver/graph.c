@@ -1272,8 +1272,7 @@ static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const r
   }
 
   bool_t check_osc(real_t *new, real_t *old, uint8_t *ii){
-    if( (realIsNegative(new) && realIsPositive(old)) ||
-    (realIsPositive(new) && realIsNegative(old)) ) {
+    if( realGetSign(new) ^ realGetSign(old) ) {
       *ii = (*ii << 1) + 1;
     }
     else {
@@ -1308,10 +1307,6 @@ static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const r
   }
 
 
-  // =============================================================================
-  // END SOLVER HELPER FUNCTIONS
-  // =============================================================================
-
   #if defined(PC_BUILD)
     static void printSolverResult(uint16_t iterationCounter) {
       char str[200];
@@ -1342,19 +1337,26 @@ static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const r
   }
 #endif //PC_BUILD
 
+  static inline void copyComplex(const cplx_t *from, cplx_t *to) {
+    realCopy(&from->Real, &to->Real);
+    realCopy(&from->Imag, &to->Imag);  
+  }
 
-static void execute_rpn_function_reals(const cplx_t *from, cplx_t *to) {
+cplx_t cpxSlvBestX;
+real_t cpxSlvBestMagnitudeY;
+static void execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t *magnitude) {
   convertComplexToResultRegister(&from->Real, &from->Imag, REGISTER_X);
   // parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   
   execute_rpn_function();
   getRegisterAsComplex(REGISTER_Y, &to->Real, &to->Imag);
+  complexMagnitude(&to->Real, &to->Imag, magnitude,  ctxtSolver2);
+  if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
+    realCopy(magnitude, &cpxSlvBestMagnitudeY);
+    copyComplex(from, &cpxSlvBestX);
+  }
 }
   
-static inline void copyComplex(const cplx_t *from, cplx_t *to) {
-  realCopy(&from->Real, &to->Real);
-  realCopy(&from->Imag, &to->Imag);  
-}
 static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
   cplx_t tmp;
   copyComplex(base, &tmp);
@@ -1364,21 +1366,11 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
   copyComplex(&tmp, res);
 }  
 
-const char *bit_rep[16] = {
-    [ 0] = "0000", [ 1] = "0001", [ 2] = "0010", [ 3] = "0011",
-    [ 4] = "0100", [ 5] = "0101", [ 6] = "0110", [ 7] = "0111",
-    [ 8] = "1000", [ 9] = "1001", [10] = "1010", [11] = "1011",
-    [12] = "1100", [13] = "1101", [14] = "1110", [15] = "1111",
-};
+  // =============================================================================
+  // END SOLVER HELPER FUNCTIONS
+  // =============================================================================
 
-  
   static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
-#if defined(PC_BUILD) //PC_BUILD
-      char filename[] = "bb.out.slvprg.py";
-      FILE *outfile = fopen(filename, "wb");
-      fputs("", outfile);
-      fclose(outfile);
-#endif //PC_BUILD
     currentKeyCode = 255;
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
 #if defined(PC_BUILD) //PC_BUILD
@@ -1397,23 +1389,25 @@ const char *bit_rep[16] = {
     int iterationCounter;
     bool_t checkNaN = false;
     bool_t Y2IsZero = false;
+    bool_t Y2IsCloseToZero = false;
     bool_t dXdYIsZero = false;
-    // bool_t zeroIsTested = false;
     // osc = 0;
     DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     iterationCounter = 0; oscillationIterationCounter = 0;
     int16_t kicker = 1;
     uint8_t yPower = 1;
-    double convergeLn = 0.0;
-    // double tempD0 = 0.0;
-    
 
     real_t f;
     // real_t tempR0;
     real_t tol;
-    real_t yTol;
-    real_t dTol;
+    real_t tolH1;
+    real_t tolH4;
+    real_t oldMagnitudeY;
+    real_t magnitudeY;
     
+    cplx_t lowerStart;
+    cplx_t upperStart;
+
     cplx_t X0;
     cplx_t X1;
     cplx_t X2;
@@ -1427,27 +1421,28 @@ const char *bit_rep[16] = {
     cplx_t Y2N;
     cplx_t dY;
     cplx_t dYold;
-    // cplx_t magnitudeY;
 
     cplx_t L1;
-    cplx_t temp0; // temp
-    cplx_t temp1; // temp REGISTER_X
-    cplx_t temp2; // temp REGISTER_Y
+    cplx_t temp0;
+    cplx_t temp1;
+    cplx_t temp2;
 
 
     // Initialize
-    getRegisterAsComplex(REGISTER_X, CPLX(X1));
-    getRegisterAsComplex(REGISTER_Y, CPLX(X0));
+    getRegisterAsComplex(REGISTER_X, CPLX(lowerStart));
+    getRegisterAsComplex(REGISTER_Y, CPLX(upperStart));
+    copyComplex(&lowerStart, &X1);
+    copyComplex(&upperStart, &X0);
+    copyComplex(&upperStart, &cpxSlvBestX);
+
+    realCopy(const_1e32, &cpxSlvBestMagnitudeY);
 
     //if input parameters X0 and X1 are the same, add a random number to X0
     if(realCompareEqual(&X0.Real, &X1.Real) && realCompareEqual(&X0.Imag, &X1.Imag)) {
 #if defined(PC_BUILD)
       printf(">>> ADD 1 to second input parameter to prevent infinite result\n");
 #endif
-      // stringToReal("1E-3", &term, ctxtSolver2);
       realAdd(&X1.Real, const_1, &X1.Real, ctxtSolver2);
-      // realRandomU01(&term);
-      // realAdd(&X0.Real, &term, &X0.Real, ctxtSolver2);
     }
 
 
@@ -1466,29 +1461,31 @@ const char *bit_rep[16] = {
 
     realCopy(const_1, &tol);
     tol.exponent -= signDig <= 4 ? 4 : (signDig > 31 ? 31 : signDig);
-    realCopy(&tol, &yTol);
-    realCopy(&tol, &dTol);
-    dTol.exponent -= 1;
+    realCopy(&tol, &tolH1);
+    tolH1.exponent += 1;
+    realCopy(const_1, &tolH4);
+    tolH4.exponent -= signDig <= 4 ? 4 : (signDig > 27 ? 27 : signDig);
     fnSetSignificantDigits(34);
 
-    execute_rpn_function_reals(&X0, &Y0);
-    execute_rpn_function_reals(&X1, &Y1);
+    execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
+    execute_rpn_function_reals(&X1, &Y1, &oldMagnitudeY);
 
-    // check if a initial value is a solution
-    if(check2RealZeroTol(CPLX(Y0), &tol)) {
+    // check if an initial value is a solution
+    if(checkRealZeroTol(&magnitudeY, &tol)) {
       copyComplex(&Y0, &Y2);
       copyComplex(&X0, &X2);
       Y2IsZero = true;
     }
-    else if (check2RealZeroTol(CPLX(Y1), &tol)) {
+    else if (checkRealZeroTol(&oldMagnitudeY, &tol)) {
       copyComplex(&Y1, &Y2);
       copyComplex(&X2, &X2);
       Y2IsZero = true;
     } else {
       subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
-      if (check2RealZeroTol(CPLX(temp1), &tol)) { // avoid equal Y
+      // avoid equal Y as it causes double iterations
+      if (check2RealZeroTol(CPLX(temp1), &tol)) {
         addComplex(CPLX(X0), const_1e_6, const_0, CPLX(X0), ctxtSolver2);
-        execute_rpn_function_reals(&X0, &Y0);
+        execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
         subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
       }
       subComplex(CPLX(X1), CPLX(X0), CPLX(temp0), ctxtSolver2);  //dx=x1-x0
@@ -1499,10 +1496,10 @@ const char *bit_rep[16] = {
       //   realCopy(&temp0.Real, &X2.Imag);
         // X2.Imag.exponent -= 1;
         realDivide(&X2.Real, const_3, &X2.Imag, ctxtSolver2);
-      execute_rpn_function_reals(&X2, &Y2);
     }
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+                                            execute_rpn_function_reals(&X2, &Y2, &magnitudeY);
                                             printf("INIT:   iterationCounter=%d \n",iterationCounter);
                                             printComplexToConsole(CPLX(X0), "Init X0=", "\n");
                                             printComplexToConsole(CPLX(X1), "Init X1=", "\n");
@@ -1544,21 +1541,23 @@ const char *bit_rep[16] = {
       //If converging, increment convergence counter
       // complexMagnitude(CPLX(dX), &temp0.Real,  ctxtSolver2);
       // complexMagnitude(CPLX(dXold), &temp0.Imag,  ctxtSolver2);
-      complexMagnitude(CPLX(Y1), &temp1.Real,  ctxtSolver2);
-      complexMagnitude(CPLX(Y0), &temp1.Imag,  ctxtSolver2);
+      // complexMagnitude(CPLX(Y1), &temp1.Real,  ctxtSolver2);
+      // complexMagnitude(CPLX(Y0), &temp1.Imag,  ctxtSolver2);
       // realDivide(&temp1.Real,&temp1.Imag, &tempR0, ctxtSolver2);
       // WP34S_Ln(&tempR0, &tempR0, ctxtSolver2);
       // realToDouble(&tempR0, &tempD0);
       // convergeLn = (convergeLn + 2*tempD0)/3.0;
       
       
-      if (realCompareLessThan(&temp1.Real, &temp1.Imag))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
+      if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
       {
         convergent++;
       }
       else {
         convergent = max(-3, convergent-2);
+        if (Y2IsCloseToZero) Y2IsZero = true;
       }
+      realCopy(&magnitudeY, &oldMagnitudeY);
                                         #if defined(VERBOSE_SOLVER0)
                                               printf("##### iterationCounter= %d osc= %d  conv= %d n\n",iterationCounter, oscillations, convergent);
                                         #endif // VERBOSE_SOLVER0
@@ -1581,8 +1580,8 @@ const char *bit_rep[16] = {
         oscillations = 0;
         kicker = 3;
         if (yPower>1) {
-          execute_rpn_function_reals(&X0, &Y0);
-          execute_rpn_function_reals(&X1, &Y1);
+          execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
+          execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
         }
         yPower += 2;
         powCplxNat(&Y0, &yPower, &Y0);
@@ -1591,6 +1590,7 @@ const char *bit_rep[16] = {
         printf("-------- yPower: %u, iter: %u\n",yPower, iterationCounter);
 #endif // PC_BUILD
       }
+      copyComplex(&X2, &temp0);
       // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
       if(iterationCounter==0 ||  (((oscillations >= 2)
             && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
@@ -1613,38 +1613,25 @@ const char *bit_rep[16] = {
                                                 printComplexToConsole(CPLX(X2), " to ", "\n");
                                         #endif // VERBOSE_SOLVER2
                                                 kicker++;
+        
       }
 
       //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      execute_rpn_function_reals(&X2, &Y2N);
+      execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
       powCplxNat(&Y2N, &yPower, &Y2);
+      if (realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
 #if defined(PC_BUILD)
-      FILE *outfile = fopen(filename, "ab");
-      char lineToFile[300];
-      char str[60];
-      sprintf(lineToFile, "#%3u o=%i c=%i cln=%.2f k=%i DXR=%s%s DXI=%s%s, DYR=%s%s, DYI=%s%s\n", 
-          iterationCounter, 
-          oscillations,
-          convergent,
-          convergeLn,
-          kicker, 
-          bit_rep[DXR >> 4], bit_rep[DXR & 0x0F], 
-          bit_rep[DXI >> 4], bit_rep[DXI & 0x0F], 
-          bit_rep[DYR >> 4], bit_rep[DYR & 0x0F], 
-          bit_rep[DYI >> 4], bit_rep[DYI & 0x0F]);
-      cplx_t cp = X2;
-      realToString(&cp.Real, str);
-      sprintf(lineToFile, "%sX.append((%s, ", lineToFile, str);
-      realToString(&cp.Imag, str);
-      sprintf(lineToFile, "%s%s))\n", lineToFile, str);
-      cp = Y2N;
-      realToString(&cp.Real, str);
-      sprintf(lineToFile, "%sY.append((%s, ", lineToFile, str);
-      realToString(&cp.Imag, str);
-      sprintf(lineToFile, "%s%s))\n", lineToFile, str);
-      fputs(lineToFile, outfile);
-      fclose(outfile);
-#endif //PC_BUILD
+        printf("----- Inf.Y iter:%u  revert kick", iterationCounter);
+#endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
+        // Revert kick
+        copyComplex(&temp0, &X2);
+        execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
+        powCplxNat(&Y2N, &yPower, &Y2);
+        kicker-=2;
+      }
+      
+      
+      
                                         #if defined(VERBOSE_SOLVER1)
                                               printf("    :   iterationCounter=%d",iterationCounter);
                                               printComplexToConsole(CPLX(X2)," X2="," ");
@@ -1652,12 +1639,13 @@ const char *bit_rep[16] = {
                                         #endif // VERBOSE_SOLVER1
       
       // check if an acceptable solution is found
-      Y2IsZero = Y2IsZero ||   check2RealZeroTol(CPLX(Y2N), &yTol);
+      Y2IsZero = Y2IsZero ||   checkRealZeroTol(&magnitudeY, &tol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
-        realIsNaN(&Y2N.Real) || realIsNaN(&Y2N.Imag) ;
+        realIsNaN(&Y2N.Real) || realIsNaN(&Y2N.Imag);
+      Y2IsCloseToZero = Y2IsCloseToZero ||   checkRealZeroTol(&magnitudeY, &tolH4);
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-                                              if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+                                              if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero) {
                                                 printf("-->A Endflags zero: Y2r=0:%u Y2i=0:%u X2r=NaN:%u X2i=NaN:%u Y2r=NaN:%u Y2i=NaN%u \n",
                                                 (uint16_t)realIsZero(&Y2.Real),(uint16_t)realIsZero(&Y2.Imag),
                                                 (uint16_t)realIsNaN(&X2.Real),(uint16_t)realIsNaN(&X2.Imag),
@@ -1667,7 +1655,7 @@ const char *bit_rep[16] = {
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
                                         #if defined(VERBOSE_SOLVER2)
-                                              printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero);
+                                              printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero);
                                               printComplexToConsole(CPLX(X2),"","");
                                               printComplexToConsole(CPLX(Y2),"Y2=","\n");
                                         #endif // VERBOSE_SOLVER2
@@ -1738,9 +1726,8 @@ const char *bit_rep[16] = {
                                                 printComplexToConsole(CPLX(temp0), " 1/slope=","\n");
                                         #endif // VERBOSE_SOLVER1
         mulComplexComplex(CPLX(X2N), CPLX(Y1), CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
-        // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
+        // if converges slow without oscillating then accelerate.
         if (convergent > 10) {
-        // if (oscillations >= 1) {
           convertDoubleToReal(1.0 + convergent * 0.1, &f, ctxtSolver2); // factor ()
           mulComplexComplex(CPLX(X2N), &f, const_0, CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
         }
@@ -1780,17 +1767,17 @@ const char *bit_rep[16] = {
       copyComplex(&X2, &X1); //old x2 copied to x1
       copyComplex(&X2N, &X2); //new x2
 
-      complexMagnitude(CPLX(dX), &temp0.Real,  ctxtSolver2);
-      checkNaN   |=  realIsNaN(&temp0.Real);
+      // complexMagnitude(CPLX(dX), &temp0.Real,  ctxtSolver2);
+      // checkNaN   |=  realIsNaN(&temp0.Real);
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1)
-                                              if(checkzero) {
-                                                printf("--B1 Checkzero\n");
+                                              if(Y2IsZero) {
+                                                printf("--B1 Y2IsZero\n");
                                               }
                                               if(checkNaN) {
                                                 printf("--B2 CheckNaN\n");
                                               }
-                                              if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || checkzero) {
+                                              if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero) {
                                                 printf("--B3 Endflags: |DXr|=0:%u |DXr|<TOL:%u |DYr|<TOL:%u |DYr|=0:%u |DXr|=NaN:%u |DYr|=NaN:%u \n",
                                                 (uint16_t) realIsZero(&temp1.Real),
                                                 (uint16_t)(realCompareAbsLessThan(&temp1.Real, &tol)),
@@ -1805,7 +1792,7 @@ const char *bit_rep[16] = {
       oscillationIterationCounter++;
 
                                         #if defined(VERBOSE_SOLVER2)
-                                              if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !checkzero) {
+                                              if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !Y2IsZero) {
                                                 printf("END     iterationCounter=%d |DX|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dX.Real, &tol));
                                                 printComplexToConsole(CPLX(dX),"","\n");
                                                 printf("END     iterationCounter=%d |DY|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dY.Real, &tol));
@@ -1860,24 +1847,24 @@ const char *bit_rep[16] = {
 
 
     bool_t conjugates = false;
-    // Test if zeroed complex parts is equally good
-    dTol.exponent += 2;
-    copyComplex(&X2, &temp0);
-    if (checkRealZeroTol(&X2.Real, &dTol)) {
-      realCopy(const_0, &X2.Real);
-      execute_rpn_function_reals(&X2, &temp1);
-      if (check2RealZeroTol(CPLX(temp1), &tol)) Y2IsZero = true;
-      else realCopy(&temp0.Real, &X2.Real); // revert if not as good
+    // Test if zeroed complex parts is better
+    copyComplex(&cpxSlvBestX, &temp0);
+    if (checkRealZeroTol(&temp0.Real, &tolH1)) {
+      realCopy(const_0, &temp0.Real);
+      execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
+      // if (checkRealZeroTol(&magnitudeY, &tol)) Y2IsZero = true;
+      // else realCopy(&temp0.Real, &X2.Real); // revert if not as good
     }
-    if(checkRealZeroTol(&X2.Imag, &dTol)) {
-      realCopy(const_0, &X2.Imag);
-      execute_rpn_function_reals(&X2, &temp1);
-      if (check2RealZeroTol(CPLX(temp1), &tol)) Y2IsZero = true;
-      else realCopy(&temp0.Imag, &X2.Imag); // revert if not as good
+    copyComplex(&cpxSlvBestX, &temp0);
+    if(checkRealZeroTol(&temp0.Imag, &tolH1)) {
+      realCopy(const_0, &temp0.Imag);
+      execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
+      // if (checkRealZeroTol(&magnitudeY, &tol)) Y2IsZero = true;
+      // else realCopy(&temp0.Imag, &X2.Imag); // revert if not as good
     } else {   // consider conjugates if X not close to Real
-      realChangeSign(&X2N.Imag);
-      execute_rpn_function_reals(&X2N, &temp1);
-      conjugates = check2RealZeroTol(CPLX(temp1), &tol);
+      realChangeSign(&temp0.Imag);
+      execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
+      conjugates = checkRealZeroTol(&magnitudeY, &tol);
     }
 
 
@@ -1899,10 +1886,10 @@ const char *bit_rep[16] = {
       convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_T);
     }
 
-    convertComplexToResultRegister(CPLX(Y2), REGISTER_Z);
+    convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
     // convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
     convertDoubleToReal34Register(iterationCounter, REGISTER_Y);
-    convertComplexToResultRegister(CPLX(X2), REGISTER_X);
+    convertComplexToResultRegister(CPLX(cpxSlvBestX), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
     printSolverResult(iterationCounter);
