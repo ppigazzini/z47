@@ -33,7 +33,7 @@
   #define DECQUAD_Emax   6144      /* maximum adjusted exponent       */
   #define DECQUAD_EmaxD     4      /* maximum exponent digits         */
   #define DECQUAD_Bias   6176      /* bias for the exponent           */
-  #define DECQUAD_String   43      /* maximum string length, +1       */
+  #define DECQUAD_String   80      /* maximum string length, +1       */
   #define DECQUAD_EconL    12      /* exponent continuation length    */
   #define DECQUAD_Declets  11      /* count of declets                */
   /* highest biased exponent (Elimit-1) */
