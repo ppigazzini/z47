@@ -1341,9 +1341,8 @@ static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const r
     realCopy(&from->Real, &to->Real);
     realCopy(&from->Imag, &to->Imag);  
   }
-
-cplx_t cpxSlvBestX;
-real_t cpxSlvBestMagnitudeY;
+static cplx_t cpxSlvBestX;
+static real_t cpxSlvBestMagnitudeY;
 static void execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t *magnitude) {
   convertComplexToResultRegister(&from->Real, &from->Imag, REGISTER_X);
   // parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
@@ -1383,17 +1382,16 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     
     runFunction(ITM_RAD);
     setSystemFlag(FLAG_CPXRES);
-    int16_t oscillationIterationCounter;
+    int16_t oscillationIterationCounter = 0;
     int16_t oscillations = 0;
     int16_t convergent = 0;
-    int iterationCounter;
+    int iterationCounter = 0;
     bool_t checkNaN = false;
     bool_t Y2IsZero = false;
     bool_t Y2IsCloseToZero = false;
     bool_t dXdYIsZero = false;
-    // osc = 0;
+    osc = 0;
     DXR = 0, DYR = 0, DXI = 0, DYI = 0;
-    iterationCounter = 0; oscillationIterationCounter = 0;
     int16_t kicker = 1;
     uint8_t yPower = 1;
 
@@ -1597,10 +1595,10 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
       powCplxNat(&Y2N, &yPower, &Y2);
       if (realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
-#if defined(PC_BUILD)
-        printf("----- Inf.Y iter:%u  revert kick", iterationCounter);
-#endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
         // Revert kick
+                                        #if defined(PC_BUILD)
+                                                printf("----- Inf.Y iter:%u  revert kick", iterationCounter);
+                                        #endif  // PC_BUILD
         copyComplex(&temp0, &X2);
         execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
         powCplxNat(&Y2N, &yPower, &Y2);
@@ -1854,8 +1852,8 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     }
 
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
-    // convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
-    convertDoubleToReal34Register(iterationCounter, REGISTER_Y);
+    convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
+    // convertDoubleToReal34Register(iterationCounter, REGISTER_Y);
     convertComplexToResultRegister(CPLX(cpxSlvBestX), REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
