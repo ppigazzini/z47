@@ -1404,9 +1404,6 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     real_t tolH4;
     real_t oldMagnitudeY;
     real_t magnitudeY;
-    
-    cplx_t lowerStart;
-    cplx_t upperStart;
 
     cplx_t X0;
     cplx_t X1;
@@ -1429,11 +1426,9 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
     // Initialize
-    getRegisterAsComplex(REGISTER_X, CPLX(lowerStart));
-    getRegisterAsComplex(REGISTER_Y, CPLX(upperStart));
-    copyComplex(&lowerStart, &X1);
-    copyComplex(&upperStart, &X0);
-    copyComplex(&upperStart, &cpxSlvBestX);
+    getRegisterAsComplex(REGISTER_X, CPLX(X1));
+    getRegisterAsComplex(REGISTER_Y, CPLX(X0));
+    copyComplex(&X0, &cpxSlvBestX);
 
     realCopy(const_1e32, &cpxSlvBestMagnitudeY);
 
@@ -1471,14 +1466,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     execute_rpn_function_reals(&X1, &Y1, &oldMagnitudeY);
 
     // check if an initial value is a solution
-    if(checkRealZeroTol(&magnitudeY, &tol)) {
-      copyComplex(&Y0, &Y2);
-      copyComplex(&X0, &X2);
-      Y2IsZero = true;
-    }
-    else if (checkRealZeroTol(&oldMagnitudeY, &tol)) {
-      copyComplex(&Y1, &Y2);
-      copyComplex(&X2, &X2);
+    if(checkRealZeroTol(&cpxSlvBestMagnitudeY, &tol)) {
       Y2IsZero = true;
     } else {
       subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
@@ -1524,11 +1512,10 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       }
 
       //Identify oscillations in real or imag: increment osc flag
-      osc = 0;
-      osc += check_osc(&dX.Real, &dXold.Real, &DXR);
-      osc += check_osc(&dX.Imag, &dXold.Imag, &DXI);
-      osc += check_osc(&dY.Real, &dYold.Real, &DYR);
-      osc += check_osc(&dY.Imag, &dYold.Imag, &DYI);
+      osc = check_osc(&dY.Real, &dYold.Real, &DYR);
+      osc = (osc << 1) + check_osc(&dY.Imag, &dYold.Imag, &DYI);
+      osc = (osc << 1) + check_osc(&dX.Real, &dXold.Real, &DXR);
+      osc = (osc << 1) + check_osc(&dX.Imag, &dXold.Imag, &DXI);
 
       //If osc flag is active, that is any delta polarity change, then increment oscillation count
       if(osc) {
@@ -1539,16 +1526,6 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       }
 
       //If converging, increment convergence counter
-      // complexMagnitude(CPLX(dX), &temp0.Real,  ctxtSolver2);
-      // complexMagnitude(CPLX(dXold), &temp0.Imag,  ctxtSolver2);
-      // complexMagnitude(CPLX(Y1), &temp1.Real,  ctxtSolver2);
-      // complexMagnitude(CPLX(Y0), &temp1.Imag,  ctxtSolver2);
-      // realDivide(&temp1.Real,&temp1.Imag, &tempR0, ctxtSolver2);
-      // WP34S_Ln(&tempR0, &tempR0, ctxtSolver2);
-      // realToDouble(&tempR0, &tempD0);
-      // convergeLn = (convergeLn + 2*tempD0)/3.0;
-      
-      
       if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
       {
         convergent++;
@@ -1738,16 +1715,6 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                 printComplexToConsole(CPLX(temp1),"",")\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(X1), CPLX(X2N), CPLX(X2N), ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n
-
-        
-        // try zero once if close
-        // if (!zeroIsTested && check2RealZeroTol(CPLX(X2), &tol)){
-        //   printf("# Test zero iter:%i\n", iterationCounter);
-        //   realCopy(const_0, &temp1.Real);
-        //   realCopy(const_0, &temp1.Imag);
-        //   zeroIsTested = true;
-        // }
-        // copyComplex(&temp1, &X2N);// store temporarily to new x2n
       }
 
       //#############################################
