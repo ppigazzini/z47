@@ -234,16 +234,18 @@ bool_t isFunctionOldParam16(uint16_t func) {
       lastParam = param;
     }
 
-    if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-        (currentMenu() == -MNU_MVAR) &&
-        (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
-      currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
-    }
-    if(indexOfItems[func].func != fnTvmVar && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-        currentMenu() == -MNU_TVM && 
-        (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION)) {       //clear execute flag, to prioritise entry, on all keys except the actual variable keys
-      currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;      
-    }
+    #if !defined(TESTSUITE_BUILD)
+      if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+          (currentMenu() == -MNU_MVAR) &&
+          (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
+        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
+      }
+      if(indexOfItems[func].func != fnTvmVar && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+          currentMenu() == -MNU_TVM && 
+          (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION)) {       //clear execute flag, to prioritise entry, on all keys except the actual variable keys
+        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;      
+      }
+    #endif //TESTSUITE_BUILD
 
     if(func != ITM_CLX) { //JM Do not reset for backspace, because the timers need to run after the first action, CLX
       resetKeytimers();  //JM
