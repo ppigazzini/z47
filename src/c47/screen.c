@@ -1628,25 +1628,28 @@ return res;
           numPixels += 8;
         }
         //printf("±±± lastline=%d string[ch]=%d x=%d numPixels=%d\n", lastline, string[ch], x, numPixels);
-
-        if(x + numPixels > SCREEN_WIDTH-1 && lastline == orglastlines) {
+        #define ALLOW_PIXELS_FOR_CURSOR 12
+        if(x + numPixels > SCREEN_WIDTH-1-ALLOW_PIXELS_FOR_CURSOR && lastline == orglastlines) {
           x = xMultiLineEdOffset;
           y += yincr;
           lastline--;
         }
-        else if(x + numPixels > SCREEN_WIDTH-1 && lastline > 1) {
+        else if(x + numPixels > SCREEN_WIDTH-1-ALLOW_PIXELS_FOR_CURSOR && lastline > 1) {
           x = 1;
           y += yincr;
           lastline--;
         }
-        else if(x + numPixels > SCREEN_WIDTH-1 && lastline <= 1) {
+        else if(x + numPixels > SCREEN_WIDTH-1-ALLOW_PIXELS_FOR_CURSOR && lastline <= 1) {
           xCursor = x;
           yCursor = y;
           return x;
         }
+        #undef ALLOW_PIXELS_FOR_CURSOR
 
         maxiC = 1;                                                                            //JM
-          if(y!=(uint32_t)(-100)) x = showGlyphCode(charCode, font, x, y - raiseString, videoMode, slc, sec, false) - compressString;        //JM compressString
+        if(y!=(uint32_t)(-100)) {
+          x = showGlyphCode(charCode, font, x, y - raiseString, videoMode, slc, sec, false) - compressString;        //JM compressString
+        }
         maxiC = 0;                                                                            //JM
       }
       //printf("\n");
