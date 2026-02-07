@@ -2332,17 +2332,6 @@
 #define SFL_BCD                     2276 // The SFL item names are not used
 #define SFL_PCURVE                  2277 // The SFL item names are not used
 #define SFL_CLX_DROP                2278 // The SFL item names are not used
-<<<<<<< HEAD
-#define SFL_PRTEN                   2279 // The SFL item names are not used
-#define SFL_2280                    2280 // The SFL item names are not used
-#define SFL_2281                    2281 // The SFL item names are not used
-#define SFL_2282                    2282 // The SFL item names are not used
-#define SFL_2283                    2283 // The SFL item names are not used
-#define SFL_2284                    2284 // The SFL item names are not used
-#define SFL_2285                    2285 // The SFL item names are not used
-#define SFL_2286                    2286 // The SFL item names are not used
-#define SFL_2287                    2287 // The SFL item names are not used
-=======
 #define SFL_BASE_MYM                2279 // The SFL item names are not used
 #define SFL_G_DOUBLETAP             2280 // The SFL item names are not used
 #define SFL_BASE_HOME               2281 // The SFL item names are not used
@@ -2352,8 +2341,7 @@
 #define SFL_FGLNLIM                 2285 // The SFL item names are not used
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
 #define SFL_FGGR                    2287 // The SFL item names are not used
->>>>>>> master
-#define SFL_2288                    2288 // The SFL item names are not used
+#define SFL_PRTEN                   2288 // The SFL item names are not used
 #define SFL_2289                    2289 // The SFL item names are not used
 #define SFL_2290                    2290 // The SFL item names are not used
 #define SFL_2291                    2291 // The SFL item names are not used
@@ -2641,25 +2629,10 @@
 #define ITM_DENMAX2                 2551
 #define MNU_AIMCATALOG              2552
 
-<<<<<<< HEAD
-
-#define MNU_PRINTER                 2553
-#define ITM_PRINTERALPHA            2554
-#define ITM_PRINTERHP               2555
-#define ITM_PRINTERMARTEL           2556
-#define ITM_PRINTEROTHER            2557
-#define ITM_TRACE                   2558
-#define ITM_PRINTERDLAYQ            2559
-#define ITM_PRINTERON               2560
-#define ITM_PRINTEROFF              2561
-
-#define LAST_ITEM                   2562
-=======
 #define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
 #define ITM_RDP_XFN                 2556
->>>>>>> master
 
 #define ITM_RSD_XFN                 2557
 #define ITM_sin_XFN                 2558
@@ -2756,7 +2729,17 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2638
+#define MNU_PRINTER                 2638
+#define ITM_PRINTERALPHA            2639
+#define ITM_PRINTERHP               2640
+#define ITM_PRINTERMARTEL           2641
+#define ITM_PRINTEROTHER            2642
+#define ITM_TRACE                   2643
+#define ITM_PRINTERDLAYQ            2644
+#define ITM_PRINTERON               2645
+#define ITM_PRINTEROFF              2646
+
+#define LAST_ITEM                   2647
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

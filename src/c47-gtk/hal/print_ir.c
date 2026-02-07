@@ -113,7 +113,9 @@ uint16_t printer_set_delay (uint16_t val)
     return 0;
 }
 
+/*
 uint8_t * lcd_line_addr ( int y)
 {
     return 0;
 }
+*/
