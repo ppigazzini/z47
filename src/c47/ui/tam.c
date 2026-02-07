@@ -614,7 +614,7 @@
         if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           #define LOCAL_LABEL 0            // Local label from A to J
           #define ALPHA_LABEL 1            // Global single letters alpha labels
-          TO_QSPI const int16_t registerLookup[REGISTER_W - FIRST_LETTERED_REGISTER + 1][2] = {
+          static TO_QSPI const int16_t registerLookup[REGISTER_W - FIRST_LETTERED_REGISTER + 1][2] = {
             [REGISTER_X - FIRST_LETTERED_REGISTER] = {'X', ALPHA_LABEL},
             [REGISTER_Y - FIRST_LETTERED_REGISTER] = {'Y', ALPHA_LABEL},
             [REGISTER_Z - FIRST_LETTERED_REGISTER] = {'Z', ALPHA_LABEL},
