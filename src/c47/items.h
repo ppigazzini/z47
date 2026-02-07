@@ -2722,6 +2722,15 @@
 #define ITM_2635                    2635
 #define ITM_2636                    2636
 #define ITM_2637                    2637
+#define MNU_TAMSTO_TVM              2638
+#define MNU_TAMRCL_TVM              2639
+#define ITM_STORCL_NPPER            2640
+#define ITM_STORCL_IPonA            2641
+#define ITM_STORCL_PV               2642
+#define ITM_STORCL_FV               2643
+#define ITM_STORCL_PMT              2644
+#define ITM_STORCL_PPERonA          2645
+#define ITM_STORCL_CPERonA          2646
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2729,7 +2738,7 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2638
+#define LAST_ITEM                   2647
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
