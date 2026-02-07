@@ -1088,7 +1088,18 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      xcopy(userMenus[numberOfUserMenus].menuName, name, sizeof(userMenus[0].menuName)); // Martin: changed size from stringByteLength(name) + 1 to sizeof(userMenus[0].menuName)
+      #ifdef PC_BUILD
+      if(name == NULL) {
+        abortf("The parameter name is NULL!\n");
+      }
+      if(stringByteLength(name) + 1 > (int32_t)sizeof(userMenus[0].menuName)) {
+        char tmp[1000];
+        sprintf(tmp, "The string \"name\" <%s> is too long (%" PRId32 "+1 bytes) to be copied to userMenus[numberOfUserMenus].menuName (%" PRIi32 " bytes)\n",
+                                           name,              stringByteLength(name),                                                    (int32_t)sizeof(userMenus[0].menuName));
+        abortf(tmp);
+      }
+      #endif // PC_PUILD
+      xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
       ++numberOfUserMenus;
     }
     else {
