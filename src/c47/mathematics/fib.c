@@ -14,15 +14,9 @@ static void fibLonI(void) {
     goto end;
   }
 
-  if(longIntegerIsNegative(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
-      sprintf(tmpString, "cannot calculate fib(%s)", errorMessage);
-      moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto end;
-  }
+  bool_t neg = longIntegerIsNegative(x);
+  if (neg)
+    longIntegerChangeSign(x);
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -48,6 +42,9 @@ static void fibLonI(void) {
 
   longIntegerInit(result);           // Initialize fib variable
   longIntegerFibonacci(n, result);   // result = FIB(n)
+
+  if (neg && longIntegerIsEven(x))
+    longIntegerChangeSign(result);
 
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
 
