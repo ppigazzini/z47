@@ -1838,17 +1838,20 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
     fnSetSignificantDigits(signDig);
+    // reset stack and lift to reasonable height
     fnUndo(0);
+    liftStack();
+    liftStack();
 
     if(!Y2IsZero) {
       temporaryInformation = TI_SOLVER_FAILED;
       displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      convertDoubleToReal34RegisterPush(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
+      convertDoubleToReal34Register(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
     }
     else {
       temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
       lastErrorCode = ERROR_NONE;
-      convertDoubleToReal34RegisterPush(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_T);
+      convertDoubleToReal34Register(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_T);
     }
 
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
@@ -1871,14 +1874,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
   void fnComplexSolver(void) {
     printStatus(1,errorMessages[COMPLEX_SOLVER],force);
-    // fnClDrawMx(4);
-    // strcpy(plotStatMx,"DrwMX"); //why is this graph stuff here?
-    // statGraphReset();
-
-                                        #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-                                        #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
-    // saveForUndo(); //repeat after dropping the input parameters
-
+    saveForUndo();
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                           double higherXStartValue = convertRegisterToDouble(REGISTER_X);
                                           double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
