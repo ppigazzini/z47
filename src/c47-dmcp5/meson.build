@@ -3,16 +3,9 @@ dmcp_cargs = [
   '-D__packed="__attribute__((__packed__))"',
   '-DNEW_HW',
   '-Wno-unused-parameter',
-<<<<<<< HEAD
-  '-fno-exceptions',                  # added in symmetry with DM42
-  '-fno-unwind-tables',               # added in symmetry with DM42
-  '-fno-asynchronous-unwind-tables',  # added in symmetry with DM42
-  '-IC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/include',  # Added this line for absolute path support
-=======
   '-fno-exceptions',                 # added in symmetry with DM42
   '-fno-unwind-tables',              # added in symmetry with DM42
   '-fno-asynchronous-unwind-tables', # added in symmetry with DM42
->>>>>>> master
 ]
 
 dmcp_linkargs = [
@@ -26,14 +19,8 @@ dmcp_linkargs = [
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
-<<<<<<< HEAD
-  '-T' + meson.current_source_dir() + '/stm32_program.ld',
-# '-Wl,--strip-all',
-  '-LC:/msys64/home/didie/c43/build.dmcp5/subprojects/gmp-6.2.1/dist/msys64/mingw64/lib',  # Added this line for absolute path support
-=======
   '-T' + meson.current_source_dir() + '/stm32_program.ld'
 #  '-Wl,--strip-all',
->>>>>>> master
 ]
 
 gmp_build_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build'

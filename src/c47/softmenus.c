@@ -2760,7 +2760,7 @@ void showSoftmenuCurrentPart(void) {
               showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_PRINTER) {
-              showSoftkey(indexOfItems[MNU_PRINTER].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, showText, !greyout);
+              showSoftkey(indexOfItems[MNU_PRINTER].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, showText);
             }
             else {
               #if defined(INLINE_TEST)

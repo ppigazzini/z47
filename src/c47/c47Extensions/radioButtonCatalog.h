@@ -66,27 +66,13 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_PRON                159 // PRINTER ON/OFF
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not
-<<<<<<< HEAD
-#define JC_HOME_TRIPLE         179    // HOME.3
-#define JC_SHFT_4s             180    // SH_4s
-#define JC_BASE_HOME           181    // HOME
-#define JC_MYM_TRIPLE          182    // HOME.3
-#define JC_PROPER              183    // CB FractionType
-#define JC_IMPROPER            184    // CB FractionType
-#define JC_FRC                 185    // CB FRACTION MODE
-#define PRTACT0                186    // PRTACT checkbox
-#define PRTACT1                187    // PRTACT checkbox
-#define JC_BASE_MYM            188    // screen setup
-#define JC_G_DOUBLETAP         189    // screen setup
-#define JC_ITM_TST             190    //dr
-=======
 #define JC_PROPER              165    // CB FractionType
 #define JC_IMPROPER            166    // CB FractionType
 #define JC_FRC                 171    // CB FRACTION MODE
 #define PRTACT0                174    // PRTACT checkbox
 #define PRTACT1                175    // PRTACT checkbox
 #define JC_ITM_TST             180    //dr
->>>>>>> master
+
 #define JC_INTG                191    // graph setup
 #define JC_DIFF                192    // graph setup
 #define JC_RMS                 193    // graph setup

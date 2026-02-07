@@ -202,14 +202,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPWIDPER_RX,     ITM_WPERIOD,            RB_RX},
   {ITM_GAPCOM_RX,        ITM_COMMA,              RB_RX},
   {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
-<<<<<<< HEAD
-  
-  {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
-  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM},
-  {ITM_PRINTERON,        true,                   RB_PRON},
-  {ITM_PRINTEROFF,       false,                  RB_PRON}
-  
-=======
 
   {ITM_S08,              ITM_S08,                MB_MAC},
   {ITM_U08,              ITM_U08,                MB_MAC},
@@ -225,9 +217,13 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SETJPN,           ITM_SETJPN,             MB_MAC},
   {ITM_SETUK,            ITM_SETUK,              MB_MAC},
   {ITM_SETUSA,           ITM_SETUSA,             MB_MAC},
-  {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC}
+  {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC},
+  
+  {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
+  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM},
+  {ITM_PRINTERON,        true,                   RB_PRON},
+  {ITM_PRINTEROFF,       false,                  RB_PRON}
 
->>>>>>> master
 };
 
 
@@ -399,12 +395,6 @@ int8_t fnCbIsSet(int16_t item) {
                      }
                      break;
 
-<<<<<<< HEAD
-        case RB_PRM: rb_param = printerState.printer_model;
-                     break;
-
-        case RB_PRON: rb_param = printerState.print_on;
-=======
         case MB_MAC: is_mb = true;
                      switch(param){
                        case ITM_S08     :  cb_param = shortIntegerWordSize == 8  && shortIntegerMode==SIM_2COMPL; break;
@@ -424,7 +414,12 @@ int8_t fnCbIsSet(int16_t item) {
                        case ITM_SETDFLT :  cb_param = isConfigCommon(param); break;
                        default:;
                      }
->>>>>>> master
+                     break;
+
+        case RB_PRM: rb_param = printerState.printer_model;
+                     break;
+
+        case RB_PRON: rb_param = printerState.print_on;
                      break;
 
         case CB_JC:  is_cb = true;
@@ -433,47 +428,6 @@ int8_t fnCbIsSet(int16_t item) {
                       uint16_t param = indexOfRadioCbEepromItems[i].param;
                       bool_t param_found = false;
 
-
-<<<<<<< HEAD
-            case FLAG_CPXRES :
-            case FLAG_SPCRES :
-            case FLAG_LEAD0  :
-            case FLAG_HPRP   :
-            case FLAG_MNUp1  :
-            case FLAG_HPBASE :
-            case FLAG_2TO10  :
-            case FLAG_DENANY :
-            case FLAG_DENFIX :
-            case FLAG_PROPFR :
-            case FLAG_FRACT  :
-            case FLAG_PRTACT :
-            case FLAG_TRACE  :
-            case FLAG_ERPN   :
-            case FLAG_CARRY  :
-            case FLAG_OVERFLOW:
-            case FLAG_FRCYC  :
-            case FLAG_LARGELI:
-            case FLAG_IRFRAC :
-            case FLAG_CPXPLOT:
-            case FLAG_SHOWX  :
-            case FLAG_SHOWY  :
-            case FLAG_PBOX   :
-            case FLAG_PCURVE :
-            case FLAG_PCROS  :
-            case FLAG_PPLUS  :
-            case FLAG_PLINE  :
-            case FLAG_SCALE  :
-            case FLAG_VECT   :
-            case FLAG_NVECT  :
-            case FLAG_NUMLOCK     :
-            case FLAG_USER        :
-            case FLAG_SH_LONGPRESS:
-            case FLAG_DREAL       :
-            case FLAG_CPXMULT     :
-            case FLAG_TOPHEX      :
-            case FLAG_BCD         :
-                       cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
-=======
                       for(uint_fast16_t j = 0; j < nbrOfElements(fittingParams); j++) {                                         // Check fitting parameters
                         if(param == fittingParams[j].jcParam) {
                           cb_param = ((lrSelection & fittingParams[j].cfFlag) == fittingParams[j].cfFlag);
@@ -481,7 +435,6 @@ int8_t fnCbIsSet(int16_t item) {
                           break;
                         }
                       }
->>>>>>> master
 
                       if(!param_found) {
                         for(uint_fast16_t j = 0; j < nbrOfElements(systemFlagParams); j++) {                                    // Check system flag parameters only if not found yet

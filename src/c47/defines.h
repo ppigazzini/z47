@@ -9,23 +9,6 @@
 // VARIOUS OPTIONS
 //*********************************
 
-<<<<<<< HEAD
-#define VERSION1 "0.109.02.07a12"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
-
-// Version 7b5 is the subsequent public beta, to test the internal changes to allow the upcoming vector branch
-// Version 7b6 is a quick bugfix version
-// Version 7c6 fixes a gitlab compile issue, no other changes.
-// Version 7a7 internal alpha test
-// Version 7b7 bugfix version, supplementing nano with float libraries
-// Version 7b8 bugfix version, supplementing nano with float libraries
-// Version 7a9 internal alphs
-// Version 7b9 test for FACTORS
-// Version 7b10 bugfixes for FACTORS
-// Version 7b11 bugfixes for FACTORS; FACTOR RNG updated
-// Version 7b12 bugfixes, changed SI input, Mx, SHOW, SBI, longpress, improvements
-// Version 7a12 temporary test for longpress alpha keys
-// cont.        with generic EDIT; XFN3 1000-digit precision; EigenValue fixl Delete Program fix, and more
-=======
 #define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 #define DEVPROFILES
 
@@ -37,7 +20,6 @@
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
 
->>>>>>> master
 
 #if !defined(CALCMODEL)
   #define CALCMODEL USER_C47               // USER_C47 or USER_R47
@@ -75,7 +57,7 @@
 #undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
 #define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
 #define OPTION_XFN_1000
-#define LONGPRESS_CFG 
+#define LONGPRESS_CFG
 
 #if defined(WIN32)
     #define INFRARED  // Enable IR printing for on Windows simulator
@@ -134,7 +116,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-      #undef LONGPRESS_CFG 
+      #undef LONGPRESS_CFG
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -152,30 +134,14 @@
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
-<<<<<<< HEAD
-  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-      #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-  //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
-=======
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)
     #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   #endif
->>>>>>> master
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-<<<<<<< HEAD
-  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-      #define SAVE_SPACE_DM42_18_XFN   //  3872 byte  // Without XFN extended 1000 digit math Functionality
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
-      #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
-      #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
-=======
   #if defined(PACKAGE2_NODISTR)
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
@@ -191,7 +157,6 @@
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
->>>>>>> master
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -740,32 +705,27 @@
 #define FLAG_PPLUS                            0x8050
 #define FLAG_PLINE                            0x8051
 #define FLAG_SCALE                            0x8052
-#define FLAG_VECT                             0x8053 //20
+#define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
 #define FLAG_TOPHEX                           0x8058
-#define FLAG_BCD                              0x8059 //26
-#define FLAG_PCURVE                           0x805A //27
-#define FLAG_CLX_DROP                         0x805B //28
-<<<<<<< HEAD
-#define FLAG_PRTEN                            0x805C //29
-
-#define NUMBER_OF_SYSTEM_FLAGS                 64+29 // We can have a maximum of 128 system flags
-=======
+#define FLAG_BCD                              0x8059
+#define FLAG_PCURVE                           0x805A
+#define FLAG_CLX_DROP                         0x805B
 #define FLAG_BASE_MYM                         0x805C
 #define FLAG_G_DOUBLETAP                      0x805D
 #define FLAG_BASE_HOME                        0x805E
-#define FLAG_MYM_TRIPLE                       0x805F
+#define FLAG_MYM_TRIPLE                       0x805F //32
 #define FLAG_HOME_TRIPLE                      0x8060
 #define FLAG_SHFT_4s                          0x8061
 #define FLAG_FGLNLIM                          0x8062
 #define FLAG_FGLNFUL                          0x8063
 #define FLAG_FGGR                             0x8064
+#define FLAG_PRTEN                            0x8065 //38
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
->>>>>>> master
+#define NUMBER_OF_SYSTEM_FLAGS                 64+38 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -799,8 +759,8 @@ typedef enum {
 #define PRON    1
 
 typedef enum {
-  PRINT_BYTE, 
-  PRINT_CHAR, 
+  PRINT_BYTE,
+  PRINT_CHAR,
   PRINT_TAB,
   PRINT_ALPHA,
   PRINT_ALPHA_NOADV,
@@ -810,8 +770,8 @@ typedef enum {
 
 
 typedef enum {
-  PRINTER_HP, 
-  PRINTER_MARTEL, 
+  PRINTER_HP,
+  PRINTER_MARTEL,
   PRINTER_OTHER
 } printerModel_t;
 
@@ -1822,11 +1782,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-<<<<<<< HEAD
-#define NUMBER_OF_GLYPH_ROWS                     235 //Used in the font browser application
-=======
 #define NUMBER_OF_GLYPH_ROWS                     239 //Used in the font browser application
->>>>>>> master
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -2037,18 +1993,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
-<<<<<<< HEAD
-#define inputAngleMode(r)                    (registerIsNoAngle(r+1) && registerIsNoAngle(r+2) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
-#define deemedInputAngleMode(r)              (inputAngleError(r) ? amNone : inputAngleMode(r) == amNone ? currentAngularMode : inputAngleMode(r))
-#define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
-#define inputIsNoAngle(r)                    ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
-#define inputAngleError(r)                   (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
-#define isXFNregisterValid(r)                ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
-                                              (getRegisterDataType(r+1) == dtReal34 || getRegisterDataType(r+1) == dtLongInteger) &&\
-                                              (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
-                                              !inputAngleError(r))
-#define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid(r))  
-=======
+
 #define inputAngleMode3r(r)                  ((registerIsNoAngle(r+1) && registerIsNoAngle(r+2)) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 #define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
 #define inputIsNoAngle3r(r)                  ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
@@ -2058,8 +2003,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
                                               !inputAngleError3r(r))
 #define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))
->>>>>>> master
-
 
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))

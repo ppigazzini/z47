@@ -609,15 +609,12 @@
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
   
-<<<<<<< HEAD
   //#if defined(INFRARED)
     extern printerState_t         printerState;
     extern const printerFont_t    printerFont8;
     extern uint16_t               printerColumn;
   //#endif //INFRARED
 
-=======
->>>>>>> master
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)

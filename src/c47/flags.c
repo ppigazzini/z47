@@ -671,67 +671,9 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
 
 void SetSetting(uint16_t jmConfig) {
 
-<<<<<<< HEAD
-
-    case TF_H12:         fnClearFlag(FLAG_TDM24);                               break;
-    case TF_H24:         fnSetFlag(FLAG_TDM24);                                 break;
-    case CU_I:           fnClearFlag(FLAG_CPXj);                                break;
-    case CU_J:           fnSetFlag(FLAG_CPXj);                                  break;
-    case PS_DOT:         fnClearFlag(FLAG_MULTx);                               break;
-    case PS_CROSS:       fnSetFlag(FLAG_MULTx);                                 break;
-    case SS_4:           fnClearFlag(FLAG_SSIZE8);                              break;
-    case SS_8:           fnSetFlag(FLAG_SSIZE8);                                break;
-    case CM_RECTANGULAR: fnClearFlag(FLAG_POLAR);                               break;
-    case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
-    case DO_SCI:         fnClearFlag(FLAG_ENGOVR);                              break;
-    case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
-
-    case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
-
-    case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
-    case FLAG_MNUp1:
-    case FLAG_HPBASE:
-    case FLAG_2TO10:
-    case FLAG_PROPFR:
-    case FLAG_PRTACT:
-    case FLAG_PRTEN:
-    case FLAG_TRACE:
-    case FLAG_LEAD0:
-    case FLAG_CPXRES:
-    case FLAG_SPCRES:
-    case FLAG_ERPN:
-    case FLAG_CARRY:
-    case FLAG_OVERFLOW:
-    case FLAG_FRCYC:
-    case FLAG_CPXMULT:
-    case FLAG_CPXPLOT:
-    case FLAG_SHOWX   :
-    case FLAG_SHOWY   :
-    case FLAG_PBOX   :
-    case FLAG_PCURVE :
-    case FLAG_PCROS  :
-    case FLAG_PPLUS  :
-    case FLAG_PLINE  :
-    case FLAG_SCALE  :
-    case FLAG_VECT   :
-    case FLAG_NVECT  :
-    case FLAG_TOPHEX :
-    case FLAG_BCD    :
-    case FLAG_LARGELI:
-              fnFlipFlag(jmConfig);                                  break; //
-    case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
-    case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
-
-    case FLAG_FRACT:
-      fnFlipFlag(FLAG_FRACT);
-      break;
-    case FLAG_IRFRAC:
-      fnFlipFlag(FLAG_IRFRAC);
-=======
   for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: {config_clear, config_set, flag}
     if(jmConfig == clearSetPairs[i].clearConfig) {
       fnClearFlag(clearSetPairs[i].flag);
->>>>>>> master
       fnRefreshState();
       return;
     }
