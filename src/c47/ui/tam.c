@@ -237,7 +237,7 @@
     bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
-printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
+    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
