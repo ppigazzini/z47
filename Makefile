@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test test_asan dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
 
 all: sim
 both: sim simr47
@@ -36,7 +36,7 @@ ifeq ($(OS),Windows_NT)
 	@echo "Warning: AddressSanitizer not supported on Windows MinGW, building without ASAN"
 	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations"
 else
-	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Db_sanitize=address -Dc_args="-Wno-deprecated-declarations"
+	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations" -Db_sanitize=address
 endif
 	cd $(BUILD_PC) && ninja sim
 	cd $(BUILD_PC) && ninja simr47
@@ -67,10 +67,10 @@ build.rel:
 	meson setup $(BUILD_PC) --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.rel.debug:
-	meson setup $(BUILD_PC) --buildtype=custom -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
+	meson setup $(BUILD_PC) --buildtype=custom  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.dmcp:
-	meson setup build.dmcp --cross-file=src/c47-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
+	meson setup build.dmcp  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.dmcp5:
 	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
@@ -112,6 +112,16 @@ testPgms: build.sim
 	cp $(BUILD_PC)/src/generateTestPgms/testPgms.bin res/testPgms/
 
 test: clean build.sim testPgms
+	cd $(BUILD_PC) && ninja test
+
+test_asan: clean testPgms
+	meson setup $(BUILD_PC)
+ifeq ($(OS),Windows_NT)
+	@echo "Warning: AddressSanitizer not supported on Windows MinGW, building without ASAN"
+	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations"
+else
+	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations" -Db_sanitize=address
+endif
 	cd $(BUILD_PC) && ninja test
 
 build.rel/wiki: build.rel
