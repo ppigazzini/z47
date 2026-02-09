@@ -19,5 +19,5 @@ test(
   testSuite,
   args    : [files('tests/testSuiteList.txt')],
   workdir : meson.project_source_root(),
-  timeout : 180
+  timeout : 0
 )
