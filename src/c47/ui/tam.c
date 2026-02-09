@@ -237,7 +237,7 @@
     bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
-    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
+printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -657,12 +657,19 @@
           }
         }
         else {
-          tam.value = indexOfItems[item].param;
-          tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
-          forceTry = true;
-          // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
-          // when determining if this is valid
-          tryOoR = true;
+          if(calcMode == CM_PEM && indexOfItems[item].param >= FIRST_RESERVED_VARIABLE && indexOfItems[item].param <= LAST_RESERVED_VARIABLE) {
+            tam.alpha = true;
+            strcpy(aimBuffer, (char *)(allReservedVariables[indexOfItems[item].param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1));
+            forceTry = true;
+          } else {
+            tam.value = indexOfItems[item].param;
+            tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
+printf("tam.value: %d\n",tam.value);
+            forceTry = true;
+            // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
+            // when determining if this is valid
+            tryOoR = true;
+          }
         }
       }
     }
