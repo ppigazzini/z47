@@ -1923,7 +1923,7 @@ return res;
     int16_t item = (int16_t)itm;
     //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=-\n", itm, (int16_t)itm, item, arg );
     char functionName[64];
-    char padding[20];
+    char padding[25];          //(2+0)+(15+0)+(7+0)+1 = 25
     functionName[0] = 0;
     showFunctionNameArg = NULL;
 
@@ -1991,10 +1991,10 @@ return res;
       }
       // Clear SHIFT f and SHIFT g in case they were present (otherwise they will be obscured by the function name)
       clearShiftState();
-      int xx = showString(padding, &standardFont, 18, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
+      int xx = showString(padding, &standardFont, Y_SHIFT ? 18 : 0, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
       if(overLapPossible) {
-        plotrect(18, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx,18+typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
-        if(xx < 18+typWidth) lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, 18+typWidth-xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
+        plotrect(Y_SHIFT ? 18 : 0, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx,(Y_SHIFT ? 18 : 0)+typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        if(xx < (Y_SHIFT ? 18 : 0)+typWidth) lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, (Y_SHIFT ? 18 : 0)+typWidth-xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
@@ -5028,7 +5028,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   void clearTamBuffer(void) {
     if(temporaryInformation == TI_SHOWNOTHING) return; //to allow a matrix being dispayed without clearing the tam line through it
 
-    if(shiftF || shiftG) {
+    if((shiftF || shiftG) && Y_SHIFT) {
       //lcd_fill_rect(18, Y_POSITION_OF_TAM_LINE, 120, 32, LCD_SET_VALUE);
       lcd_fill_rect(18, Y_POSITION_OF_TAM_LINE, SCREEN_WIDTH - 18, 32, LCD_SET_VALUE); //JM Clear the whole t-register instead of only 120+18 oixels
     }
@@ -5083,7 +5083,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       }
       else { // Fixed line to display TAM informations
         clearTamBuffer();
-        showString(tamBuffer, &standardFont, 18, Y_POSITION_OF_TAM_LINE + 6, vmNormal, true, true);
+        showString(tamBuffer, &standardFont, Y_SHIFT ? 18 : 0, Y_POSITION_OF_TAM_LINE + 6, vmNormal, true, true);
       }
     }
   }
