@@ -1357,7 +1357,7 @@ static void execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t *m
   execute_rpn_function();
   getRegisterAsComplex(REGISTER_Y, &to->Real, &to->Imag);
   complexMagnitude(&to->Real, &to->Imag, magnitude,  ctxtSolver2);
-  if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
+  if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
     realCopy(magnitude, &cpxSlvBestMagnitudeY);
     copyComplex(from, &cpxSlvBestX);
   }
@@ -1534,10 +1534,10 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
       {
         convergent++;
-        if (Y2IsCloseToZero) Y2IsZero = true;   // move zero check to convergence branch, not the non-convergence branch
       }
       else {
-        convergent = max(-3, convergent-2);
+        if (Y2IsCloseToZero) Y2IsZero = true; // if close to solution stop if converge strike is over
+        else convergent = max(-3, convergent-2);
       }
       realCopy(&magnitudeY, &oldMagnitudeY);
                                         #if defined(VERBOSE_SOLVER0)
@@ -1828,15 +1828,11 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     if (checkRealZeroTol(&temp0.Real, &tolH1)) {
       realCopy(const_0, &temp0.Real);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
-      // if (checkRealZeroTol(&magnitudeY, &tol)) Y2IsZero = true;
-      // else realCopy(&temp0.Real, &X2.Real); // revert if not as good
     }
     copyComplex(&cpxSlvBestX, &temp0);
     if(checkRealZeroTol(&temp0.Imag, &tolH1)) {
       realCopy(const_0, &temp0.Imag);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
-      // if (checkRealZeroTol(&magnitudeY, &tol)) Y2IsZero = true;
-      // else realCopy(&temp0.Imag, &X2.Imag); // revert if not as good
     } else {   // consider conjugates if X not close to Real
       realChangeSign(&temp0.Imag);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
