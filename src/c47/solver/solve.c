@@ -657,6 +657,11 @@ retryLevel:
         ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         break;
       }
+      if(loop > (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION ? 2000 : 10000)) {
+        result = SOLVER_RESULT_OTHER_FAILURE;
+        break;
+      }
+
     } while(true);
 
     #if (defined PC_BUILD) && (defined SOLVERDEBUG2)

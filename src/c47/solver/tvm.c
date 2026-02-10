@@ -554,14 +554,12 @@ int calculateCPER(const real_t *pv,
 #endif //TESTSUITE_BUILD
 
 
-// Solve for the specified TVM variable
-// Returns: 0 on success, error code on failure
+// Solve for the specified TVM variable, returns: 0 on success, error code on failure
 int solveTvmVariable(uint16_t variable) {
   real_t fv, iA, nPer, pperA, cperA, pmt, pv, p;
   real_t result;
   int error = 0;
   
-  // Extract all TVM variables from registers
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);     // Future value
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);     // Interest percentage per annum
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);   // Number of periods
@@ -570,19 +568,16 @@ int solveTvmVariable(uint16_t variable) {
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);    // Payment
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);     // Present value
 
-  // Extract payment timing flag: false=END mode (p=0), true=BEGIN mode (p=1)
   if(getSystemFlag(FLAG_ENDPMT)) {
     int32ToReal(0, &p);  // END mode: p=0
   } else {
     int32ToReal(1, &p);  // BEGIN mode: p=1
   }
   
-  // Dispatch to appropriate helper function based on variable to solve
   switch(variable) {
     case RESERVED_VARIABLE_PV:
       error = calculatePV(&fv, &iA, &nPer, &pperA, &pmt, &cperA, &p, &result);
       if(!error) realToReal34(&result   , REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)      );     // Present value
-
       break;
       
     case RESERVED_VARIABLE_FV:
@@ -662,6 +657,9 @@ void fnTvmVar(uint16_t variable) {
         
           if(variable != RESERVED_VARIABLE_IPONA) {
             if(solveTvmVariable(variable) == 0) {
+              #if defined(PC_BUILD)
+                printf("Success analytical TVM\n");
+              #endif //PC_BUILD
               return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
             }
           }
@@ -704,12 +702,19 @@ void fnTvmVar(uint16_t variable) {
               break;
             }
 
-            case RESERVED_VARIABLE_NPPER:
-            case RESERVED_VARIABLE_CPERONA:
-            case RESERVED_VARIABLE_PPERONA: {
+            case RESERVED_VARIABLE_NPPER: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
                 real34Copy(const34_1, &x);
+              }
+              break;
+            }
+
+            case RESERVED_VARIABLE_CPERONA:
+            case RESERVED_VARIABLE_PPERONA: {
+              if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_3)) {
+                real34Copy(const34_24, &y);
+                real34Copy(const34_9, &x);
               }
               break;
             }
