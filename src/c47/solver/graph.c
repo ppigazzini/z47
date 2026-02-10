@@ -1248,14 +1248,21 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   // SOLVER HELPERS
   // =============================================================================
 
-static inline bool_t checkRealZeroTol(const real_t *a, const real_t *tol) {
-  return realIsZero(a) || realCompareAbsLessThan(a, tol);
-}
+  static inline bool_t checkRealZeroTol(const real_t *a, const real_t *tol) {
+    return realIsZero(a) || realCompareAbsLessThan(a, tol);
+  }
 
-static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
-  return checkRealZeroTol(a, tol) && checkRealZeroTol(b, tol);
-}
+  static inline bool_t check2RealZeroTol(const real_t *a, const real_t *b, const real_t *tol) {
+    return checkRealZeroTol(a, tol) && checkRealZeroTol(b, tol);
+  }
 
+  static void convertComplexRegisterToRealIfZeroImag(calcRegister_t regist) {
+    real_t b;
+    if(real34IsZero(REGISTER_IMAG34_DATA(regist))) {
+      real34ToReal(REGISTER_REAL34_DATA(regist), &b);
+      convertRealToResultRegister(&b, regist, amNone);
+    }
+  }
 
   static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im) {
     if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
@@ -1516,7 +1523,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       osc = (osc << 1) + check_osc(&dX.Imag, &dXold.Imag, &DXI);
 
       //If osc flag is active, that is any delta polarity change, then increment oscillation count
-      if(osc) {
+      if(osc && (realGetExponent(&magnitudeY) - realGetExponent(&oldMagnitudeY) >= -2)) { //only increment if convergence is less than ca. 1 %, otherwise assume it is a damped oscillation
         oscillations++;
       }
       else {
@@ -1527,10 +1534,10 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
       {
         convergent++;
+        if (Y2IsCloseToZero) Y2IsZero = true;   // move zero check to convergence branch, not the non-convergence branch
       }
       else {
         convergent = max(-3, convergent-2);
-        if (Y2IsCloseToZero) Y2IsZero = true;
       }
       realCopy(&magnitudeY, &oldMagnitudeY);
                                         #if defined(VERBOSE_SOLVER0)
@@ -1540,55 +1547,59 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                               printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
                                         #endif //VERBOSE_SOLVER1
 
-      if(convergent > 6 && oscillations > 3) {
-        convergent = 2;
-        oscillations = 1;
-                                        #if defined(VERBOSE_SOLVER0)
-                                                printf("#    --   reset detection\n");
-                                                printf("%i and %i\n", convergent, oscillations);
-                                        #endif // VERBOSE_SOLVER0
-      }
+      if(!Y2IsZero)
+        { // only do the convergence and oscillation checks if Y is not zero
 
-      if (((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
-        osc = 0;
-        convergent = 0;
-        oscillations = 0;
-        kicker = 3;
-        if (yPower>1) {
-          execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
-          execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
+        if(convergent > 6 && oscillations > 3) {
+          convergent = 2;
+          oscillations = 1;
+                                          #if defined(VERBOSE_SOLVER0)
+                                                  printf("#    --   reset detection\n");
+                                                  printf("%i and %i\n", convergent, oscillations);
+                                          #endif // VERBOSE_SOLVER0
         }
-        yPower += 2;
-        powCplxNat(&Y0, &yPower, &Y0);
-        powCplxNat(&Y1, &yPower, &Y1);
-#if defined(PC_BUILD)
-        printf("-------- yPower: %u, iter: %u\n",yPower, iterationCounter);
-#endif // PC_BUILD
-      }
-      copyComplex(&X2, &temp0);
-      // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
-      if(iterationCounter==0 ||  (((oscillations >= 2)
-            && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
-            && (convergent <= 2)) )) { 
-        oscillationIterationCounter = 0;
-        oscillations = 0;
-        convergent = 0;
-                                        #if defined(VERBOSE_SOLVER2)
-                                                printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
-                                        #endif // VERBOSE_SOLVER2
-        double kick = 0.8123 * kicker * kicker * pow(2.0, kicker);
-        convertDoubleToReal( kicker%2?-kick:kick, &temp1.Real, ctxtSolver2);
-        convertDoubleToReal( kick, &temp1.Imag, ctxtSolver2);
-        addComplex(CPLX(temp1), CPLX(X0), CPLX(X2), ctxtSolver2);
-                                        #if defined(PC_BUILD)
-                                                printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);
-                                                printComplexToConsole(CPLX(temp1), "added: ", "\n");
-                                        #endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
-                                        #if defined(VERBOSE_SOLVER2)
-                                                printComplexToConsole(CPLX(X2), " to ", "\n");
-                                        #endif // VERBOSE_SOLVER2
-                                                kicker++;
-        
+
+        if (((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
+          osc = 0;
+          convergent = 0;
+          oscillations = 0;
+          kicker = 3;
+          if (yPower>1) {
+            execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
+            execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
+          }
+          yPower += 2;
+          powCplxNat(&Y0, &yPower, &Y0);
+          powCplxNat(&Y1, &yPower, &Y1);
+  #if defined(PC_BUILD)
+          printf("-------- yPower: %u, iter: %u\n",yPower, iterationCounter);
+  #endif // PC_BUILD
+        }
+        copyComplex(&X2, &temp0);
+        // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
+        if(iterationCounter==0 ||  (((oscillations >= 2)
+              && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
+              && (convergent <= 2)) )) { 
+          oscillationIterationCounter = 0;
+          oscillations = 0;
+          convergent = 0;
+                                          #if defined(VERBOSE_SOLVER2)
+                                                  printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
+                                          #endif // VERBOSE_SOLVER2
+          double kick = 0.8123 * kicker * kicker * pow(2.0, kicker);
+          convertDoubleToReal( kicker%2?-kick:kick, &temp1.Real, ctxtSolver2);
+          convertDoubleToReal( kick, &temp1.Imag, ctxtSolver2);
+          addComplex(CPLX(temp1), CPLX(X0), CPLX(X2), ctxtSolver2);
+                                          #if defined(PC_BUILD)
+                                                  printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);
+                                                  printComplexToConsole(CPLX(temp1), "added: ", "\n");
+                                          #endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
+                                          #if defined(VERBOSE_SOLVER2)
+                                                  printComplexToConsole(CPLX(X2), " to ", "\n");
+                                          #endif // VERBOSE_SOLVER2
+                                                  kicker++;
+          
+        }
       }
 
       //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1856,8 +1867,10 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
     convertComplexToResultRegister(CPLX(X1), REGISTER_Y);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
     // convertDoubleToReal34Register(iterationCounter, REGISTER_Y);
     convertComplexToResultRegister(CPLX(cpxSlvBestX), REGISTER_X);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
     printSolverResult(iterationCounter);
