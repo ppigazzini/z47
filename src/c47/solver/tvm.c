@@ -549,9 +549,7 @@ int calculateCPER(const real_t *pv,
 
 
 
-#if !defined(TESTSUITE_BUILD)
   TO_QSPI static const char bugScreenNotForTvmVar[] = "In function solveTvmVariable: this variable is not intended for TVM application!";
-#endif //TESTSUITE_BUILD
 
 
 // Solve for the specified TVM variable, returns: 0 on success, error code on failure
@@ -577,22 +575,22 @@ int solveTvmVariable(uint16_t variable) {
   switch(variable) {
     case RESERVED_VARIABLE_PV:
       error = calculatePV(&fv, &iA, &nPer, &pperA, &pmt, &cperA, &p, &result);
-      if(!error) realToReal34(&result   , REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)      );     // Present value
+      if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)      );     // Present value
       break;
       
     case RESERVED_VARIABLE_FV:
       error = calculateFV(&pv, &iA, &nPer, &pperA, &pmt, &cperA, &p, &result);
-      if(!error) realToReal34(&result   , REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV)      );     // Future value
+      if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV)      );     // Future value
       break;
       
     case RESERVED_VARIABLE_PMT:
       error = calculatePMT(&pv, &fv, &iA, &nPer, &pperA, &cperA, &p, &result);
-      if(!error) realToReal34(&result  , REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT)     );    // Payment
+      if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT)     );    // Payment
       break;
       
     case RESERVED_VARIABLE_NPPER:
       error = calculateNPPER(&pv, &fv, &iA, &pperA, &pmt, &cperA, &p, &result);
-      if(!error) realToReal34(&result , REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER)   );   // Number of periods
+      if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER)   );   // Number of periods
       break;
       
     case RESERVED_VARIABLE_PPERONA:
@@ -620,21 +618,23 @@ int solveTvmVariable(uint16_t variable) {
   }
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&result, REGISTER_X);  
+  convertRealToReal34ResultRegister(&result, REGISTER_X);
+  setSystemFlag(FLAG_ASLIFT);
   return 0;
 }
 
 
 
-
-
-
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const char bugScreenNotForTvm[] = "In function fnTvmVar: this variable is not intended for TVM application!";
+#if defined(TESTSUITE_BUILD)
+  #define testing TRUE
+#else
+  #define testing FALSE
 #endif //TESTSUITE_BUILD
 
+
+  TO_QSPI static const char bugScreenNotForTvm[] = "In function fnTvmVar: this variable is not intended for TVM application!";
+
 void fnTvmVar(uint16_t variable) {
-  #if !defined(TESTSUITE_BUILD)
     switch(variable) {
       case RESERVED_VARIABLE_FV:
       case RESERVED_VARIABLE_IPONA:
@@ -648,7 +648,7 @@ void fnTvmVar(uint16_t variable) {
         tvmIKnown = false;
 
         /* Calculate */
-        if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
+        if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED || testing) {
           real34_t y, x, resZ, resY, resX;
           saveForUndo();
           thereIsSomethingToUndo = true;
@@ -827,7 +827,6 @@ void fnTvmVar(uint16_t variable) {
         displayBugScreen(bugScreenNotForTvm);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
