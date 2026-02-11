@@ -14,11 +14,13 @@
   // #define VERBOSE_SOLVER0  // a lot less text
   // #define VERBOSE_SOLVER1  // a lot less text
   // #define VERBOSE_SOLVER2  // verbose a lot
+  #define VERBOSE_SOLVER_ITERDATA // One long line for each iteration
 #else // !PC_BUILD
   #undef VERBOSE_SOLVER00
   #undef VERBOSE_SOLVER0
   #undef VERBOSE_SOLVER1
   #undef VERBOSE_SOLVER2
+  #undef VERBOSE_SOLVER_ITERDATA
   #undef STATDEBUG
   #undef GRAPHDEBUG
 #endif // PC_BUILD
@@ -1338,9 +1340,9 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
   static void printComplexToConsole(const real_t *re, const real_t *im, const char *before, const char *after) {
     char str[100];
     realToString(re, str);
-    printf("%s%s + ", before, str);
+    printf("%s%43s + ", before, str);
     realToString(im, str);
-    printf("%si %s", str, after);
+    printf("%43si %s", str, after);
   }
 #endif //PC_BUILD
 
@@ -1394,6 +1396,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     int16_t oscillationIterationCounter = 0;
     int16_t oscillations = 0;
     int16_t convergent = 0;
+    int16_t iterAfterBest = 0;
     int iterationCounter = 0;
     bool_t checkNaN = false;
     bool_t Y2IsZero = false;
@@ -1606,7 +1609,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       complexMagnitude(CPLX(temp1), &temp1.Real,  ctxtSolver2);
       Y2IsCloseToZero = Y2IsCloseToZero || (realCompareLessThan(&cpxSlvBestMagnitudeY,const_1e_6) && realIsZero(&temp1.Real) && realIsZero(&temp1.Imag));
 
-      execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
+      iterAfterBest = execute_rpn_function_reals(&X2, &Y2N, &magnitudeY) ? 0 : iterAfterBest + 1;
       powCplxNat(&Y2N, &yPower, &Y2);
       if (realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
         // Revert kick
@@ -1634,6 +1637,23 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       Y2IsCloseToZero = Y2IsCloseToZero ||   checkRealZeroTol(&magnitudeY, &tolClose);
       
       
+                                        #if defined(VERBOSE_SOLVER_ITERDATA)
+                                            float dbYr,dbYi;
+                                            char *arrows[8] = {"→","↗︎","↑","↖︎","←","↙︎","↓","↘︎"};
+                                            realToFloat(&Y2N.Real, &dbYr);
+                                            realToFloat(&Y2N.Imag, &dbYi);
+                                            uint8_t ang = mod((int)(4.0 * (atan2((double)dbYi, (double)dbYr)) / M_PI+8.5), 8);
+                                            double magn =  sqrt((double)dbYr * (double)dbYr + (double)dbYi * (double)dbYi);
+                                            printf("#%-4u osc=%-2i conv=%-2i close=%i !best=%-2u Y=%s%5.0e ",
+                                                  iterationCounter, 
+                                                  oscillations, 
+                                                  convergent, 
+                                                  Y2IsCloseToZero, 
+                                                  iterAfterBest, 
+                                                  arrows[ang%8], 
+                                                  magn);
+                                                  printComplexToConsole(CPLX(X2),"X=","\n");
+                                        #endif // VERBOSE_SOLVER_ITERDATA
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                               if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero) {
