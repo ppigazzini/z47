@@ -805,6 +805,7 @@ void fnTvmVar(uint16_t variable) {
           }
 
           adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+          setSystemFlag(FLAG_ASLIFT);
         }
 
         /* Store parameters */
@@ -819,6 +820,7 @@ void fnTvmVar(uint16_t variable) {
             temporaryInformation = TI_SOLVER_VARIABLE;
           }
           adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+          setSystemFlag(FLAG_ASLIFT);
         }
         break;
       }
