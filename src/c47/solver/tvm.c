@@ -626,9 +626,9 @@ int solveTvmVariable(uint16_t variable) {
 
 
 #if defined(TESTSUITE_BUILD)
-  #define testing TRUE
+  #define testing true
 #else
-  #define testing FALSE
+  #define testing false
 #endif //TESTSUITE_BUILD
 
 
