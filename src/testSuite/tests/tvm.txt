@@ -1,0 +1,28 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                     TVM                                 **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 FL_ENDPMT=1 SD=0 RMODE=0 IM=2compl SS=8 WS=64 
+
+
+;all veriables, for reference: use by number
+;RESERVED_VARIABLE_FV,        2034
+;RESERVED_VARIABLE_IPONA,     2035
+;RESERVED_VARIABLE_NPPER,     2036
+;RESERVED_VARIABLE_PPERONA,   2037
+;RESERVED_VARIABLE_PMT,       2038
+;RESERVED_VARIABLE_PV,        2039
+;RESERVED_VARIABLE_CPERONA,   2043
+
+;todo:
+;fnEffToI
+;fnEff
+
+Func: fnTvmVar(2039)   ;RESERVED_VARIABLE_PV
+;                                                             I/a             N                PMT                                              FV              CPER           CPER
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 V2034=Real:"0" V2035=Real:"15" V2036=Real:"36"  V2038=Real:"-235.831424639538961211021635667714" V2034=Real:"0" V2043=Real:"12" V2037=Real:"12" RX=Real:"1.01E+04"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"6803.092161985597113625555764464722"
+
