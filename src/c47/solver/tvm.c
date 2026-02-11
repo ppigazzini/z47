@@ -7,6 +7,7 @@
 
 #include "c47.h"
 
+#if defined(OPTION_TVM_FORMULAS)
 
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   const char * const tvmErrorMessages[] = {
@@ -624,6 +625,8 @@ int solveTvmVariable(uint16_t variable) {
 }
 
 
+#endif //OPTION_TVM_FORMULAS
+
 
 #if defined(TESTSUITE_BUILD)
   #define testing true
@@ -654,15 +657,17 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
           tvmIKnown = false;
-        
-          if(variable != RESERVED_VARIABLE_IPONA) {
-            if(solveTvmVariable(variable) == 0) {
-              #if defined(PC_BUILD)
-                printf("Success analytical TVM\n");
-              #endif //PC_BUILD
-              return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
+
+          #if defined(OPTION_TVM_FORMULAS)
+            if(variable != RESERVED_VARIABLE_IPONA) {
+              if(solveTvmVariable(variable) == 0) {
+                #if defined(PC_BUILD)
+                  printf("Success analytical TVM\n");
+                #endif //PC_BUILD
+                return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
+              }
             }
-          }
+          #endif //OPTION_TVM_FORMULAS
 
           switch(variable) {
             case RESERVED_VARIABLE_IPONA:
