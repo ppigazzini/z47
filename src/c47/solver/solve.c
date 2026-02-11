@@ -187,7 +187,6 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
-#if !defined(TESTSUITE_BUILD)
   static void _solverIteration(real34_t *res) {
     if(lastErrorCode == ERROR_SOLVER_ABORT) {
       realToReal34(const_NaN, res);
@@ -284,6 +283,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 
 
+#if !defined(TESTSUITE_BUILD)
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
@@ -314,7 +314,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
       }
     #endif // ENABLE_SOLVER_PROGRESS == 1
   }
-#endif //TESTSUITE_BUILD
+#endif //!TESTSUITE_BUILD
 
 
 #undef SOLVERDEBUG
@@ -322,7 +322,6 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
-  #if !defined(TESTSUITE_BUILD)
     real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34, tol34AlmostZero;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
     bool_t extendRange = false;
@@ -460,18 +459,20 @@ retryLevel:
       #endif
 
       loop++;
-      if(checkHalfSec()) {
-        if(progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-          _showProgress(&a, &b, &fa, &fb);
+      #if !defined (TESTSUITE_BUILD)
+        if(checkHalfSec()) {
+          if(progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            _showProgress(&a, &b, &fa, &fb);
+          }
         }
-      }
 
-      if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          programRunStop = PGM_WAITING;
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-        break;
-      }
+        if(exitKeyWaiting()) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          break;
+        }
+      #endif //!TESTSUITE_BUILD
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
@@ -734,7 +735,4 @@ retryLevel:
     }
 
     return result;
-  #else // !TESTSUITE_BUILD
-    return SOLVER_RESULT_NORMAL;
-  #endif // TESTSUITE_BUILD
 }

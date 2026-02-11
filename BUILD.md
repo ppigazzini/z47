@@ -44,3 +44,8 @@ make clean        - Remove all build artifacts and generated files
 - `make both_asan` automatically cleans before building to ensure ASAN is properly enabled.
 - After using ASAN (both_asan), further simulator compiles will probably remain with ASAN installed. Use make clean after use.
 - A colored banner will appear if ASAN fails to activate.
+
+
+## Compiling for hardware tips
+- For all commits after 728d36d (2025-12-12) will compile automatically wrt GMP. For commits before that, starting at df76632 (2025-12-09) going back in time, you need to manually delete subprojects/gmp-6.2.1 directory manually prior to hardware compile.
+
