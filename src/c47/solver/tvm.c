@@ -664,6 +664,7 @@ void fnTvmVar(uint16_t variable) {
                 #if defined(PC_BUILD)
                   printf("Success analytical TVM\n");
                 #endif //PC_BUILD
+                temporaryInformation = TI_SOLVER_VARIABLE;
                 return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
               }
             }
