@@ -4,7 +4,7 @@
 #include "c47.h"
 
 
-#ifdef INFRARED
+#ifdef IR_PRINTING
 
   #define RETURN_IF_PRINT_OFF if (!getSystemFlag(FLAG_PRTACT)) return
   #define BREAK_IF_EXIT  if (key_pop() == KEY_EXIT) break
@@ -1318,7 +1318,7 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
         strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
       }
     }
-    strcpy(tmpString + strlen(tmpString), "   ***");   // End line with "   ***" as on the HP-41 and 42
+    strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
   }
 
   switch (where) {
@@ -1527,6 +1527,32 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 }
 */
 
+//
+//  Trace the X register
+//
+void print_traceX()
+{
+    if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+       print_reg(REGISTER_X, NULL, false, LINE_FULL );  // Print register X without name header
+    }
+}
+
+
+//
+//  Trace an instruction
+//
+void print_trace(int16_t func, uint16_t param)
+{
+    if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+     if(func < 0) {  
+       print_justified(indexOfItems[-func].itemSoftmenuName);   // Menu
+     }
+     else { 
+       print_justified(indexOfItems[func].itemCatalogName);    // Function
+     }
+    }
+}
+
 /*
 //
 //  Trace an instruction
@@ -1711,7 +1737,7 @@ void printProgram(void) {
     }
   #endif // !TESTSUITE_BUILD
 }
-#endif // INFRARED
+#endif // IR_PRINTING
 
 
 //********************************************************
@@ -1721,7 +1747,7 @@ void printProgram(void) {
 // Printer On
 void fnP_PrinterOnOff(uint16_t op) {
   #if !defined(TESTSUITE_BUILD)
-    //#if defined(INFRARED)
+    //#if defined(IR_PRINTING)
       if(op == PRON) {
         printerState.print_on    = true;
         setSystemFlag(FLAG_PRTACT);
@@ -1732,23 +1758,23 @@ void fnP_PrinterOnOff(uint16_t op) {
         clearSystemFlag(FLAG_PRTACT);
         fnClearFlag(FLAG_PRTEN);
       }
-    //#endif //INFRARED
+    //#endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
 // Printer model selection
 void fnSetPrinter(uint16_t model) {
   #if !defined(TESTSUITE_BUILD)
-    //#if defined(INFRARED)
+    //#if defined(IR_PRINTING)
       printerState.printer_model    = model;
-    //#endif //INFRARED
+    //#endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
 // Get printer line delay
 void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       longInteger_t delay;
 
       liftStack();
@@ -1757,28 +1783,28 @@ void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
       int32ToLongInteger(getLineDelay(), delay);
       convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
       longIntegerFree(delay);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
 // Set printer line delay
 void fnP_SetDelay(uint16_t delay) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       printerState.delay = delay;
       setLineDelay(delay);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
 // Printer paper advance
 void fnP_Advance(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)  // Show Print SBI
+    #if defined(IR_PRINTING)  // Show Print SBI
       setPrinterSBI(true);
       print_lf();
       setPrinterSBI(false);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
@@ -1786,11 +1812,11 @@ void fnP_Advance(uint16_t unusedButMandatoryParameter) {
 // Print byte
 void fnP_Byte(uint16_t byte) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       setPrinterSBI(true);
       cmdprint( byte, PRINT_BYTE );
       setPrinterSBI(false);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
@@ -1856,12 +1882,12 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
 void fnP_Char(uint16_t registerNo) {
   uint16_t character;
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       setPrinterSBI(true);
       character = _getUnicodeValue(registerNo);
       cmdprint( character, PRINT_CHAR );
       setPrinterSBI(false);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
@@ -1869,11 +1895,11 @@ void fnP_Char(uint16_t registerNo) {
 // Print Tab
 void fnP_Tab(uint16_t column) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       setPrinterSBI(true);
       cmdprint( column, PRINT_TAB );
       setPrinterSBI(false);
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
@@ -1888,7 +1914,7 @@ void fnP_Tab(uint16_t column) {
 // Print User
 void fnP_User(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       char label[16];
 
       // Print User variables
@@ -1956,7 +1982,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
 
       print_line(".END.", 1);
 
-    #endif //INFRARED
+    #endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
 }
 
@@ -1964,13 +1990,13 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
 void fnP_LCD(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       setPrinterSBI(true);
       resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
       refreshScreen(80);
       print_lcd();
       setPrinterSBI(false);
-    #endif //INFRARED
+    #endif //IR_PRINTING
     }
     else {                             // SNAP
       fnSNAP(NOPARAM);
@@ -1983,11 +2009,11 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
 void fnP_Alpha(uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       if (getRegisterDataType(registerNo) == dtString) {
         print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
       }
-    #endif //INFRARED
+    #endif //IR_PRINTING
     }
     else {                             // Print to file
       if(calcMode != CM_AIM) {
@@ -2019,7 +2045,7 @@ void fnP_Alpha(uint16_t registerNo) {
 void fnP_Regs (uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       char label[16];
       label[0] = 0;
       if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
@@ -2039,7 +2065,7 @@ void fnP_Regs (uint16_t registerNo) {
         sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       }
       print_reg(registerNo, label, true, LINE_FULL );
-    #endif //INFRARED
+    #endif //IR_PRINTING
     }
     else {                             // Print to file
       if(calcMode != CM_NORMAL) {
@@ -2099,13 +2125,13 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     if(statisticalSumsPointer != NULL) {
       if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-      #if defined(INFRARED)
+      #if defined(IR_PRINTING)
         uint16_t regist;
         for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
           convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
           print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL );
         }
-      #endif //INFRARED
+      #endif //IR_PRINTING
       }
       else {                             // Print to file
       }
@@ -2149,7 +2175,7 @@ void fnP_All_Regs(uint16_t option) {
   bool_t exited;
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       switch(option) {
         case PRN_ALL:
           exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
@@ -2293,7 +2319,7 @@ void fnP_All_Regs(uint16_t option) {
 
         default: ;
       }
-    #endif //INFRARED
+    #endif //IR_PRINTING
     }
     else {                             // Print to file
       if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {

@@ -362,14 +362,14 @@ bool_t                 cancelFilename;
 uint8_t                firstDayOfWeek = 1;     // Monday
 uint8_t                firstWeekOfYearDay = 4; // Thursday
 
-//#if defined(INFRARED)
+//#if defined(IR_PRINTING)
   printerState_t         printerState;
   /*
    *  Where will the next data be printed?
    *  Columns are in pixel units from 0 to 165 for the HP-82240 and 0 to 383 for the Martel graphic mode
    */
   uint16_t               printerColumn; 
-//#endif //INFRARED
+//#endif //IR_PRINTING
 
 
 #if defined(DMCP_BUILD)

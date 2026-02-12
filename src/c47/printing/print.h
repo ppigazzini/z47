@@ -41,4 +41,8 @@ void fnP_LCD          (uint16_t unusedButMandatoryParameter);
 void fnP_PrinterOnOff (uint16_t op);
 void printProgram     ();
 
+// Print routines
+void print_trace      (int16_t func, uint16_t param);
+void print_traceX     ();
+
 #endif // PRINT_H

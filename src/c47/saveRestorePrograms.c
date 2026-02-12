@@ -378,9 +378,9 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
 
     _selectProgram(label);
     if ((getSystemFlag(FLAG_PRTACT)) && (lastFunc == ITM_PRINTERPROG)) {     // If printer active and command is to print program then print to IR printer
-    #if defined(INFRARED)
+    #if defined(IR_PRINTING)
       printProgram();
-    #endif //INFRARED
+    #endif //IR_PRINTING
     }
     else {                                                                   // else print to file
       _fnExportProgram(path);
