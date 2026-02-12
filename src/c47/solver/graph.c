@@ -39,7 +39,7 @@ typedef struct {
 } cplx_t;
 
 #define ctxtSolver2 &ctxtReal39
-#define CPLX(x) &(x).Real, &(x).Imag 
+#define CPLX(x) &(x).Real, &(x).Imag
 
 int16_t osc = 0;
 uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
@@ -1287,11 +1287,11 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     else {
      *ii = *ii << 1;
     }
-    
+
     switch(*ii & 0b00111111) {
       case 0b010101:
       case 0b101010:
-      
+
       case 0b111111:
         return true;
       default: ;
@@ -1329,7 +1329,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         printf("+ ix%-36s", str);
       }
       printf(" (iter:%2i code:%i)\033[0m\n\n", iterationCounter, real34ToInt32(REGISTER_REAL34_DATA(REGISTER_T)));
-      
+
     }
   #else
     static inline void printSolverResult(uint16_t iterationCounter) {}
@@ -1348,7 +1348,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
   static inline void copyComplex(const cplx_t *from, cplx_t *to) {
     realCopy(&from->Real, &to->Real);
-    realCopy(&from->Imag, &to->Imag);  
+    realCopy(&from->Imag, &to->Imag);
   }
 static cplx_t cpxSlvBestX;
 static real_t cpxSlvBestMagnitudeY;
@@ -1360,13 +1360,14 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
   complexMagnitude(&to->Real, &to->Imag, magnitude,  ctxtSolver2);
   if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
     copyComplex(from, &cpxSlvBestX);
-    if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY))
+    if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
       realCopy(magnitude, &cpxSlvBestMagnitudeY);
-      return true;
+    }
+    return true;
   }
   return false;
 }
-  
+
 static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
   cplx_t tmp;
   copyComplex(base, &tmp);
@@ -1374,7 +1375,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
      mulComplexComplex(CPLX(tmp), &base->Real,  &base->Imag, CPLX(tmp), ctxtSolver2);
   }
   copyComplex(&tmp, res);
-}  
+}
 
   // =============================================================================
   // END SOLVER HELPER FUNCTIONS
@@ -1390,7 +1391,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     }
 
     calcMode = CM_NO_UNDO;
-    
+
     runFunction(ITM_RAD);
     setSystemFlag(FLAG_CPXRES);
     int16_t oscillationIterationCounter = 0;
@@ -1455,7 +1456,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     copyComplex(&dXold, &dX);
     // initial value for difference comparison must be larger than tolerance
     stringToReal("1E-1", &dX.Real, ctxtSolver2);
-    copyComplex(&dX, &dY);                       
+    copyComplex(&dX, &dY);
 
     convertDoubleToReal(0.5f, &f, ctxtSolver2); // factor ()
 
@@ -1580,7 +1581,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
         // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
         if(iterationCounter==0 ||  (((oscillations >= 2)
               && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
-              && (convergent <= 2)) )) { 
+              && (convergent <= 2)) )) {
           oscillationIterationCounter = 0;
           oscillations = 0;
           convergent = 0;
@@ -1599,7 +1600,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                   printComplexToConsole(CPLX(X2), " to ", "\n");
                                           #endif // VERBOSE_SOLVER2
                                                   kicker++;
-          
+
         }
       }
 
@@ -1621,22 +1622,22 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
         powCplxNat(&Y2N, &yPower, &Y2);
         kicker-=2;
       }
-      
-      
-      
+
+
+
                                         #if defined(VERBOSE_SOLVER1)
                                               printf("    :   iterationCounter=%d",iterationCounter);
                                               printComplexToConsole(CPLX(X2)," X2="," ");
                                               printComplexToConsole(CPLX(Y2N)," Y2=","\n");
                                         #endif // VERBOSE_SOLVER1
-      
+
       // check if an acceptable solution is found
       Y2IsZero = Y2IsZero ||   checkRealZeroTol(&magnitudeY, &tol);
       checkNaN  = checkNaN  ||   realIsNaN(&X2.Real) || realIsNaN(&X2.Imag) ||
         realIsNaN(&Y2N.Real) || realIsNaN(&Y2N.Imag);
       Y2IsCloseToZero = Y2IsCloseToZero ||   checkRealZeroTol(&magnitudeY, &tolClose);
-      
-      
+
+
                                         #if defined(VERBOSE_SOLVER_ITERDATA)
                                             float dbYr,dbYi;
                                             char *arrows[8] = {"→","↗︎","↑","↖︎","←","↙︎","↓","↘︎"};
@@ -1645,12 +1646,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                             uint8_t ang = mod((int)(4.0 * (atan2((double)dbYi, (double)dbYr)) / M_PI+8.5), 8);
                                             double magn =  sqrt((double)dbYr * (double)dbYr + (double)dbYi * (double)dbYi);
                                             printf("#%-4u osc=%-2i conv=%-2i close=%i !best=%-2u Y=%s%5.0e ",
-                                                  iterationCounter, 
-                                                  oscillations, 
-                                                  convergent, 
-                                                  Y2IsCloseToZero, 
-                                                  iterAfterBest, 
-                                                  arrows[ang%8], 
+                                                  iterationCounter,
+                                                  oscillations,
+                                                  convergent,
+                                                  Y2IsCloseToZero,
+                                                  iterAfterBest,
+                                                  arrows[ang%8],
                                                   magn);
                                                   printComplexToConsole(CPLX(X2),"X=","\n");
                                         #endif // VERBOSE_SOLVER_ITERDATA
@@ -1684,7 +1685,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                 printComplexToConsole(CPLX(Y1), "           Y1=","\n");
                                                 printComplexToConsole(CPLX(X2), "           X2=","\n");
                                                 printComplexToConsole(CPLX(Y2), "           Y2=","\n");
-                                                
+
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
       if((iterationCounter == 0) || (!Y2IsZero && !dXdYIsZero && !checkNaN)) {
 
@@ -1726,7 +1727,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                 printComplexToConsole(CPLX(temp1), " term2 lower=","\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(temp3), CPLX(temp1), CPLX(temp1), ctxtSolver2);
-        
+
                                         #if defined(VERBOSE_SOLVER1)
                                                 printComplexToConsole(CPLX(temp1), " lower diff=","\n");
                                         #endif // VERBOSE_SOLVER1
@@ -1844,7 +1845,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     checkNaN =    checkNaN
       || realIsNaN(&X1.Real) || realIsNaN(&X1.Imag)
         || realIsNaN(&X2.Real) || realIsNaN(&X2.Imag);
-    
+
 
 
     bool_t conjugates = false;
