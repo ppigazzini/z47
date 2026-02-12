@@ -1,0 +1,71 @@
+Tested 2026-02-12 directly before release 03.00b2
+
+jacomostert@Jacos-MacBook-Air tests % python3 validate_tvm.py tvm.txt
+
+
+
+
+==============================================================================================================
+TVM VALIDATION TEST - Loading from tvm.txt
+==============================================================================================================
+
+Found 47 test cases
+
+Test Name                                       Mode           Error     Max Comp    Rel Error
+--------------------------------------------------------------------------------------------------------------
+✓ Duncan's TVM problems, #P1;    N=456, i%/a=    END        2.92e-29     2.70e+05     1.08e-34
+✓ Duncan's TVM problems, #P1b;    N=456, i%/a    END       -7.09e-29     2.70e+05     2.63e-34
+✓ Duncan's TVM problems, #2 part1;    N=360,     END        3.03e-29     1.00e+05     3.03e-34
+✓ Duncan's TVM problems, #2 part2;    N=360,     END        2.02e-29     1.00e+05     2.02e-34
+✓ Duncan's TVM problems, #2 part3;    N=36, i    END       -1.25e-31     6.80e+03     1.84e-35
+✓ Duncan's TVM problems, #P3;    N=31536000,     END        3.49e-29     3.00e+05     1.16e-34
+✓ Duncan's TVM problems, #P4 Part 1;    N=480    END        1.60e-29     1.00e+05     1.60e-34
+✓ Duncan's TVM problems, #P5;    N=10, i%/a=?    END       -1.41e-32     1.54e+02     9.14e-35
+✓ Duncan's TVM problems, #P5b with bias;    N    END       -4.04e-34     5.56e+01     7.26e-36
+✓ Duncan's TVM problems, #P6 with 0 bias;        END        8.79e-31     8.04e+03     1.09e-34
+✓ Duncan's TVM problems, #P6b with bias;    N    END       -3.04e-33     5.08e+01     5.99e-35
+✗ Duncan's TVM problems, #P7;    N=10, i%/a=?    END        3.51e-25     1.00e+02     3.51e-27
+✓ Duncan's TVM problems, #P8;    N=32, i%/a=?    END       -9.80e-32     1.00e+06     9.80e-38
+✓ Duncan's TVM problems, #P9;    N=??, i%/a=2    END       -2.52e-37     1.00e+05     2.52e-42
+✓ Duncan's TVM problems, #P10;    N=??, i%/a=  BEGIN       -4.39e-35     1.00e+05     4.39e-40
+✓ Duncan's TVM problems, #P11 part 1;    N=52    END        2.37e-31     5.25e+03     4.51e-35
+✓ Duncan's TVM problems, #P12 part 1;    N=40  BEGIN       -5.94e-31     9.00e+02     6.60e-34
+✓ Robbert's sign test: n=60, I/a=10, PV=10000    END        2.10e-30     1.00e+04     2.10e-34
+✓ Test 1: Basic loan - solve PMT                 END       -1.15e-32     1.00e+03     1.15e-35
+✓ Test 2: Flip PV sign - solve PMT               END        1.15e-32     1.00e+03     1.15e-35
+✓ Test 3: With FV - solve PMT                    END        5.05e-32     1.00e+03     5.05e-35
+✓ Test 4: Solve PV                               END       -2.08e-31     1.00e+03     2.08e-34
+✓ Test 5: Negative interest - solve PMT          END       -4.35e-33     1.00e+03     4.35e-36
+✓ Test 6: Both PV and FV negative - solve PMT    END        7.35e-32     1.44e+03     5.09e-35
+✓ Test 7: Zero interest - solve PMT              END        0.00e+00     1.20e+03     0.00e+00
+✓ Test 8: Very small interest - solve PMT        END        0.00e+00     1.00e+03     0.00e+00
+✓ Test 9: Solve FV from loan                     END        8.61e-57     1.00e+03     8.61e-60
+✓ Test 10: Solve N                               END        2.74e-31     1.00e+03     2.74e-34
+✓ Test 11: Annual payments with monthly compo    END        3.98e-31     1.00e+04     3.98e-35
+✓ Test 12: Quarterly payments with annual com    END       -1.02e-31     5.00e+03     2.05e-35
+✓ Test 13: Savings (negative PV, positive FV)    END        3.08e-30     5.50e+04     5.60e-35
+✓ Test 14: Large N with small interest - solv    END       -1.52e-29     2.50e+05     6.08e-35
+✓ Test 15: Solve PV with negative PMT and pos    END       -4.09e-30     2.51e+04     1.63e-34
+✓ Test 16: Both positive PV and FV - solve PM    END       -4.92e-31     5.84e+03     8.43e-35
+✓ Test B1: Basic loan BEGIN - solve PMT        BEGIN        2.79e-32     1.00e+03     2.79e-35
+✓ Test B2: Flip PV sign BEGIN - solve PMT      BEGIN       -2.79e-32     1.00e+03     2.79e-35
+✓ Test B3: With FV BEGIN - solve PMT           BEGIN       -4.85e-32     1.00e+03     4.85e-35
+✓ Test B4: Zero interest BEGIN - solve PMT     BEGIN        0.00e+00     1.20e+03     0.00e+00
+✓ Test B5: Solve PV BEGIN                      BEGIN        1.80e-32     1.00e+03     1.80e-35
+✓ Test B6: Annual payments BEGIN - solve PMT   BEGIN        1.78e-30     1.00e+04     1.78e-34
+✓ Test B7: Savings BEGIN - solve PMT           BEGIN        1.04e-31     5.50e+04     1.89e-36
+✓ Test U1: Solve PMT - END mode, unity scale     END        2.41e-34     5.00e+00     4.81e-35
+✓ Test U2: Solve PMT - BEGIN mode, unity scal  BEGIN       -1.28e-34     5.00e+00     2.56e-35
+✓ Test U3: Solve PV - END mode, unity scale      END        2.96e-34     4.92e+00     6.02e-35
+✓ Test U4: Solve FV - END mode, unity scale      END        4.60e-60     5.00e+00     9.20e-61
+✓ Test U5: Solve N - END mode, unity scale       END        4.82e-34     5.00e+00     9.63e-35
+✓ Test U6: Solve I% - END mode, unity scale      END        7.11e-35     5.00e+00     1.42e-35
+--------------------------------------------------------------------------------------------------------------
+
+Results: 46 passed, 1 failed
+Maximum relative error: 3.51e-27
+
+⚠ Warning: Some results show reduced precision
+==============================================================================================================
+jacomostert@Jacos-MacBook-Air tests %
+jacomostert@Jacos-MacBook-Air tests %
