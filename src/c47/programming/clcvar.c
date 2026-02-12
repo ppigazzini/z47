@@ -87,7 +87,7 @@
       _clearVar(regKStoC(opParam));
     }
     else {
-      sprintf(tmpString, "\nIn function _executeWithIndirectRegister: " STD_RIGHT_ARROW " %u is not a valid parameter!", opParam);
+      sprintf(tmpString, "\nIn function _indirectRegister: " STD_RIGHT_ARROW " %u is not a valid parameter!", opParam);
     }
   }
 

@@ -368,7 +368,7 @@ void fnZip(uint16_t unusedButMandatoryParameter) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot shift/rotate %s", getRegisterDataTypeName(REGISTER_Y, true, false));
-      moreInfoOnError("In function fnAsr:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function fnZip:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }

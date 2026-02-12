@@ -136,7 +136,7 @@ void atan2RealRema(void) {
     if(realIsZero(&y) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", NULL, NULL);
+        moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }

@@ -51,9 +51,9 @@ void convertDigits(char * refstr, char * outstr) {
       case 'i':
       case 'c':
       case 'k':
-      case 'x': 
-      case 'y': 
-      case 'a': 
+      case 'x':
+      case 'y':
+      case 'a':
       case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break;
       case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //:
       case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+
@@ -266,7 +266,7 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
                  "In function stringWidth: %d is an unexpected value returned by findGlyph!"
                "/n---------------------------------------------------------------------------\n", glyphId);
       #else // !GENERATE_CATALOGS
-        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "stringWidth", glyphId);
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "_calculateStringWidth", glyphId);
         displayBugScreen(errorMessage);
       #endif // GENERATE_CATALOGS
       *width = 0;
@@ -593,13 +593,13 @@ void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
         printf("%02X ", str[i]);
     }
     printf("; ");
-    
+
     printf("  Dec:   ");
     for (size_t i = 0; i < max_len; i++) {
         printf("%3d ", str[i]);
     }
     printf("; ");
-    
+
     printf("  Char:  ");
     for (size_t i = 0; i < max_len; i++) {
         if (str[i] >= 32 && str[i] < 127) {
