@@ -52,12 +52,14 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
-#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
-#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
-#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
-#define OPTION_XFN_1000
-#define OPTION_TVM_FORMULAS            //             // Use analytical formulas where possible
 #define LONGPRESS_CFG 
+#define OPTION_CUBIC_159               //                   // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED AT ALL // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits.
+#define OPTION_EIGEN_159               //                   // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+#define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
+#define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
+
+
 
 #if defined(DMCP_BUILD)
 
@@ -78,12 +80,8 @@
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
-//The byte savings below determined by compiling on Mac on 2024-06-04 using:
-//C compiler for the host machine: ccache arm-none-eabi-gcc (gcc 12.3.1 "arm-none-eabi-gcc (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626")
-//C linker for the host machine: arm-none-eabi-gcc ld.bfd 12.3
-//C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
-//C linker for the build machine: cc ld64 820.1
 
+//The byte counts are never accurate and depending on build system. Consider general info.
 //THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
       #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
@@ -107,54 +105,82 @@
       #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  LONGPRESS_CFG 
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
-      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
-      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159.
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
       #undef  OPTION_TVM_FORMULAS      //       bytes // Use analytical formulas where possible
-      #undef LONGPRESS_CFG 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 
 //#define PACKAGE1_NOBESSEL_NOORTHO
 #define PACKAGE2_NODISTR
+//#define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
+
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO    //  0744 bytes // Without ORTHO MENU
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+  #endif
+
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR)
+    #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO    //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
+  #endif
+
+  #if defined(PACKAGE2_NODISTR)
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15         // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_16         //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17         //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+  #endif
+
+  //Options common to all packages
   //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
-  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
-  #endif
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-  #if defined(PACKAGE2_NODISTR)
-    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-  #endif
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    //#define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+
+  //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
-      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
-      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159.
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
       #undef  OPTION_TVM_FORMULAS      //       bytes // Use analytical formulas where possible
 
-    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+  //Not user options
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
