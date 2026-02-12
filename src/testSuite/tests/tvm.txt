@@ -48,7 +48,7 @@ In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"4.373218372310086835354687826497751"
-
+;Python check iteration: 4.373218372310086835354687826497753
 
 
 ;Duncan's TVM problems, #2 part1;    N=360, i%/a=15, PV=100000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -1264.444021565043387690640169724623
@@ -298,5 +298,40 @@ In: V2037=Real:"1"
 In: V2043=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-999.9999999999999999999999999999993"
 ;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+;Robbert's sign test: n=60, I/a=10, PV=10000, PMT ?? -> -212.470 ; do again for PV = -10000, and ensure PMT result changes sign, FV = 0 
+;······································································································································
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+;RESERVED_VARIABLE_NPPER,     2036
+In: V2036=Real:"60"
+;RESERVED_VARIABLE_IPONA,     2035
+In: V2035=Real:"10"
+;RESERVED_VARIABLE_PV,        2039
+In: V2039=Real:"10000"
+;RESERVED_VARIABLE_PMT,       2038
+;;  V2038=Real ??
+;RESERVED_VARIABLE_FV,        2034
+In: V2034=Real:"0"
+;RESERVED_VARIABLE_PPERONA,   2037
+In: V2037=Real:"12"
+;RESERVED_VARIABLE_CPERONA,   2043
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-212.4704471126827444695120706917064"
+;                        PV     I%/a          PPER            I%/a          PPER    N    Digits needed
+;Wolframalpha Web: N[-(10000*(1000/100 / 100)/12)/(1 - (1 + (1000/100 / 100)/12)^(-60)), 40]            =  -212.4704471126827444695120706917064 446756
+
+;Reverse the PV, and check if the PMT follows:
+;·············································
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+;RESERVED_VARIABLE_PV,        2039
+In: V2039=Real:"-10000"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"212.4704471126827444695120706917064"
+
+
 
 
