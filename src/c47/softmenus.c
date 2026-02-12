@@ -94,10 +94,9 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_TVM[]         = {
-                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      ITM_ITOEFF,
-                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  ITM_EFFTOI,
-                                             ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_CASHFL                  };
+TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,
+                                             ITM_CLTVM,                     ITM_EFFTOI,                 ITM_ITOEFF,               ITM_NULL,              ITM_NULL,                    VAR_CPERonA,
+                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_CASHFL                  };
 
 TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_FS,                     ITM_FF,                   ITM_STATUS,            ITM_FC,                      ITM_CF,
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
@@ -694,6 +693,13 @@ TO_QSPI const int16_t menu_TamRcl[]      = { ITM_INDIRECTION,               -MNU
                                              ITM_Config,                    ITM_Stack,                  ITM_dddVEL,               ITM_NULL,              ITM_Min,                     ITM_Max,
                                              ITM_dddEL,                     ITM_dddIJ,                  ITM_RCLVEL1,              ITM_RCLVEL2,           ITM_RCLVEL3,                 -MNU_REG                      };
 
+TO_QSPI const int16_t menu_TamStoTVM[]   = { ITM_STORCL_NPPER,              ITM_STORCL_IPonA,           ITM_STORCL_PV,            ITM_STORCL_PMT,        ITM_STORCL_FV,               VAR_PPERonA,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    VAR_CPERonA, 
+                                             ITM_INDIRECTION,               -MNU_VAR,                   ITM_Min,                  ITM_Max,               ITM_NULL,                    -MNU_REG                     };
+
+TO_QSPI const int16_t menu_TamRclTVM[]   = { ITM_STORCL_NPPER,              ITM_STORCL_IPonA,           ITM_STORCL_PV,            ITM_STORCL_PMT,        ITM_STORCL_FV,               VAR_PPERonA,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    VAR_CPERonA,
+                                             ITM_INDIRECTION,               -MNU_VAR,                   ITM_Min,                  ITM_Max,               ITM_NULL,                    -MNU_REG                     };
 
 TO_QSPI const int16_t menu_TamShuffle[]  = { ITM_NULL,                      ITM_NULL,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
 
@@ -1051,6 +1057,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 169 */  {.menuItem = -MNU_UNIFORM,     .numItems = sizeof(menu_Uniform       )/sizeof(int16_t), .softkeyItem = menu_Uniform        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 170 */  {.menuItem = -MNU_DISUNIFORM,  .numItems = sizeof(menu_DisUniform    )/sizeof(int16_t), .softkeyItem = menu_DisUniform     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 171 */  {.menuItem = -MNU_DEV,         .numItems = sizeof(menu_Dev           )/sizeof(int16_t), .softkeyItem = menu_Dev            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 171 */  {.menuItem = -MNU_TAMSTO_TVM,  .numItems = sizeof(menu_TamStoTVM     )/sizeof(int16_t), .softkeyItem = menu_TamStoTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 171 */  {.menuItem = -MNU_TAMRCL_TVM,  .numItems = sizeof(menu_TamRclTVM     )/sizeof(int16_t), .softkeyItem = menu_TamRclTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 
 /* 172 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
@@ -2121,6 +2129,14 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_LEST    :
       case VAR_UY      :
       case VAR_LY      :
+
+      case ITM_STORCL_FV     :
+      case ITM_STORCL_IPonA  :
+      case ITM_STORCL_NPPER  :
+      case ITM_STORCL_PPERonA:
+      case ITM_STORCL_CPERonA:
+      case ITM_STORCL_PMT    :
+      case ITM_STORCL_PV     :
 
       case VAR_IPonA   :
       case VAR_NPPER   :
