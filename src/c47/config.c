@@ -854,7 +854,7 @@ void fnRoundingMode(uint16_t RM) {
   }
   else {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fnRoundingMode", RM, "RM");
-    sprintf(errorMessage + strlen(errorMessage), "Must be from 0 to 6");
+    strcat(errorMessage, "Must be from 0 to 6");
     displayBugScreen(errorMessage);
   }
 }

@@ -150,7 +150,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
-          moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -158,7 +158,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     return false;

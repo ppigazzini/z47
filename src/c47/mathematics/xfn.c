@@ -80,11 +80,11 @@
   }
   void fnXXfn_YRTX                (uint16_t registerNo) {
   }
-  void fnXXfn_RDP                 (uint16_t digits) {    
+  void fnXXfn_RDP                 (uint16_t digits) {
   }
-  void fnXXfn_RSD                 (uint16_t digits) {    
+  void fnXXfn_RSD                 (uint16_t digits) {
   }
-  void fnXXfn_CHS                 (uint16_t registerNo) {    
+  void fnXXfn_CHS                 (uint16_t registerNo) {
   }
 
 
@@ -196,9 +196,9 @@
 
   #if defined(TESTSUITE_BUILD)
     const bool_t use1071 = true;
-  #else  
+  #else
     #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
-      #define HIMEMORY true  
+      #define HIMEMORY true
     #else
       #define HIMEMORY false
     #endif //(HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(DMCP_BUILD)
@@ -471,7 +471,7 @@ typedef struct {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
     }
@@ -497,7 +497,7 @@ printf("Dddd %d\n",registerNo);
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Total VAR = r%d exceeds the maximum exponent %d > %d", registerNo, realGetExponent(combined), maxAllowedDigits);
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
     }
@@ -701,7 +701,7 @@ printf("Dddd %d\n",registerNo);
     if(functionType == FT_SINGLEX) {
       if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
         return;
-      }      
+      }
     } else
     if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
@@ -752,7 +752,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);        
+            realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);
           }
           angleMode = amRadian;
           break;
@@ -765,7 +765,7 @@ printf("Dddd %d\n",registerNo);
           } else
           if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);        
+            realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);
           }
           angleMode = amDegree;
           break;
@@ -779,7 +779,7 @@ printf("Dddd %d\n",registerNo);
           } else {
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
-              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);        
+              realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);
             }
           }
           angleMode = nextAngleMode;
@@ -965,7 +965,7 @@ printf("Dddd %d\n",registerNo);
         break;
       }
       case ITM_RAD2_XFN:    //leave angleMode, it is set in the function
-      case ITM_DEG2_XFN: 
+      case ITM_DEG2_XFN:
       case ITM_DRG_XFN:  {
         break;
       }
@@ -1058,7 +1058,7 @@ noFunction:
     displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Incorrect function code %d (location %d)", function, location);
-      moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function doXfn:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
 }
