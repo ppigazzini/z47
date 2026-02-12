@@ -749,11 +749,11 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
 
 #if (CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               ITM_SQUARE,               ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,
                                              ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #else
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               KEY_COMPLEX,              ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,                
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,
                                              ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
 #endif
 
@@ -3243,9 +3243,20 @@ void showSoftmenuCurrentPart(void) {
 
   void showSoftmenu(int16_t id) {
     int16_t m;
+
+    #if defined(IR_PRINTING)
+      if(!tam.mode) {
+        print_trace(id,NOPARAM);
+      }
+    #endif //IR_PRINTING
+
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
       jm_show_comment(tmp);
+      if(!tam.mode) {
+        printf("**[DL]** Trace: %s %d in showSoftmenu\n",indexOfItems[id > 0 ? id : -id].itemSoftmenuName,NOPARAM);fflush(stdout);
+        printf("**[DL]**        tamBuffer %s\n",tamBuffer);fflush(stdout);
+      }
     #endif // PC_BUILD
 
     #if !defined(INLINE_TEST)

@@ -218,7 +218,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SETUK,            ITM_SETUK,              MB_MAC},
   {ITM_SETUSA,           ITM_SETUSA,             MB_MAC},
   {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC},
-  
+
   {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
   {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM},
   {ITM_PRINTERON,        true,                   RB_PRON},
@@ -281,7 +281,8 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_BCD,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGGR
+  FLAG_FGGR,
+  FLAG_TRACE
 };
 
 
@@ -289,7 +290,6 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
 int8_t fnCbIsSet(int16_t item) {
   int8_t result = NOVAL;
   int16_t itemNr = max(item, -item);
-
   if(itemNotAvail(item)) {
     return result;
   }

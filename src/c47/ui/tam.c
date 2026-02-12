@@ -83,7 +83,7 @@
   }
 
 
-  static void _tamUpdateBuffer(void) {
+  /*static*/ void _tamUpdateBuffer(bool in_progress) {
     char regists[5];
     char *tbPtr = tamBuffer;
     if(tam.mode == 0) {
@@ -167,15 +167,24 @@
         uint8_t maxDigits = _tamMaxDigits(max);
         uint8_t underscores = maxDigits - tam.digitsSoFar;
         int16_t v = tam.value;
-        for(int i = tam.digitsSoFar - 1; i >= 0; i--) {
+       if(in_progress) {
+        for(int i = tam.digitsSoFar-1; i >= 0; i--) {
           tbPtr[i] = '0' + (v % 10);
           v /= 10;
         }
-        tbPtr += tam.digitsSoFar;
+        tbPtr += maxDigits;
         for(int i = 0; i < underscores; i++) {
           tbPtr[0] = '_';
           tbPtr++;
         }
+       }
+       else {
+        for(int i = maxDigits-1; i >= 0; i--) {
+          tbPtr[i] = '0' + (v % 10);
+          v /= 10;
+        }
+        tbPtr += maxDigits;
+       }
       }
     }
 
@@ -1181,7 +1190,7 @@
     numberOfTamMenusToPop = 1;
     //numberOfTamMenusToPop = (func == ITM_ASSIGN) || (catalog && catalog == CATALOG_MVAR && (tam.mode == TM_STORCL || func == ITM_VIEW)) ? 0 : 1;
 
-    _tamUpdateBuffer();
+    _tamUpdateBuffer(TAM_IN_PROGRESS);
 
     clearSystemFlag(FLAG_ALPHA);
 
@@ -1248,6 +1257,6 @@
 
   void tamProcessInput(uint16_t item) {
     _tamProcessInput(item);
-    _tamUpdateBuffer();
+    _tamUpdateBuffer(TAM_IN_PROGRESS);
   }
 #endif // !TESTSUITE_BUILD

@@ -227,6 +227,25 @@ bool_t isFunctionOldParam16(uint16_t func) {
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n",calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
 
+    #if defined(PC_BUILD)
+      if(!isFunctionItemAMenu(func)) {
+        if(!tam.mode) {
+          printf("**[DL]** Trace: %s in reallyRunFunction\n",indexOfItems[func].itemCatalogName);fflush(stdout);
+        }
+        else {
+          _tamUpdateBuffer(TAM_COMPLETE);
+          printf("**[DL]** Trace: %s %d in reallyRunFunction\n",tamBuffer,param);fflush(stdout);
+        }
+        printf("**[DL]**        tam.mode %d tamBuffer %s\n",tam.mode,tamBuffer);fflush(stdout);
+      }
+    #endif // PC_BUILD
+
+    #if defined(IR_PRINTING)
+      if(!isFunctionItemAMenu(func)) {  // Menu tracing is done in showSoftmenu
+        print_trace(func,param);
+      }
+    #endif //IR_PRINTING
+
     //do not store parameters for the commands ending or stopping a program as that is killing the prior RCL TI
     bool_t funcIsProgramStopControl = (func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1);
     if(!funcIsProgramStopControl) {
@@ -351,6 +370,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     //**RunFunction
     if(!itemNotAvail(func)) {
+      //printf("**[DL]** Trace: %s %d\n",indexOfItems[func].itemCatalogName,param);fflush(stdout);
       indexOfItems[func].func(param);
     } else {
         if(itemERRTIVal(func) ==  _TO_ITM_TI) {

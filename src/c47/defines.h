@@ -60,7 +60,7 @@
 #define LONGPRESS_CFG
 
 #if defined(WIN32)
-    #define INFRARED  // Enable IR printing for on Windows simulator
+    #define IR_PRINTING  // Enable IR printing for on Windows simulator
 #endif // WIN32
 
 #if defined(DMCP_BUILD)
@@ -76,7 +76,7 @@
     #undef TWO_FILE_PGM
     #undef HARDWARE_MODEL
     #define HARDWARE_MODEL HWM_DM42n
-    #define INFRARED  // Enable IR printing for on new hardware
+    #define IR_PRINTING  // Enable IR printing for on new hardware
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -1474,6 +1474,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_LBLONLY                             10018
 #define TM_VARONLY                             10019
 #define TM_CMP                                 10020 // TM_CMP must be the last in this list
+
+#define TAM_IN_PROGRESS                         true
+#define TAM_COMPLETE                           false
 
 // gamma function type
 #define GAMMA_XYLOWER                              0

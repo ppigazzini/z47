@@ -665,12 +665,12 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_IRFRAC,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGGR
+  FLAG_FGGR,
+  FLAG_TRACE
 };
 
 
 void SetSetting(uint16_t jmConfig) {
-
   for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: {config_clear, config_set, flag}
     if(jmConfig == clearSetPairs[i].clearConfig) {
       fnClearFlag(clearSetPairs[i].flag);
