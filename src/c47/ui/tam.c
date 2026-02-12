@@ -607,8 +607,8 @@
       tryOoR = true;
     }
 
-    else if( ((REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W) || 
-              (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) && 
+    else if( ((REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W) ||
+              (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) &&
               !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
@@ -1196,7 +1196,7 @@ printf("tam.value: %d\n",tam.value);
       }
 
       default: {
-        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "calcModeTam", tam.mode, "tam.mode");
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "tamEnterMode", tam.mode, "tam.mode");
         displayBugScreen(errorMessage);
         return;
       }
@@ -1244,7 +1244,7 @@ printf("tam.value: %d\n",tam.value);
         popSoftmenu();
       }
     }
-    
+
     #if defined(PC_BUILD)
       switch(calcMode) {
         case CM_NORMAL:

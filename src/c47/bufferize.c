@@ -2121,7 +2121,7 @@ typedef struct {
         }
 
         default: {
-          sprintf(errorMessage, "In function addItemToNimBuffer:%d is an unexpected nimNumberPart value while converting buffer to display!", nimNumberPart);
+          sprintf(errorMessage, "In function addItemToNimBuffer: %d is an unexpected nimNumberPart value while converting buffer to display!", nimNumberPart);
           displayBugScreen(errorMessage);
         }
       }
@@ -2390,7 +2390,7 @@ typedef struct {
       if(source[i]<'0' || source[i]>'9') { // This should never happen
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function parseNimString:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
+          moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
       }
@@ -2408,7 +2408,7 @@ typedef struct {
       if(source[i]<'0' || source[i]>'9') { // This should never happen
        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-         moreInfoOnError("In function parseNimString:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
+         moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        return;
       }
@@ -2419,7 +2419,7 @@ typedef struct {
         if(source[i]<'0' || source[i]>'9') {
           displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseNimString:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
+            moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
         }
@@ -2448,7 +2448,7 @@ typedef struct {
     if(denom == 0 && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function parseNimString:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.", NULL);
+        moreInfoOnError("In function nimFractionToReal34:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }

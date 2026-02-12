@@ -1325,7 +1325,7 @@ endReturnTrue:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -1341,7 +1341,7 @@ endReturnTrue:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -1734,7 +1734,7 @@ endReturnTrue:
     #endif //VERBOSE_DETERMINEITEM
     return result;
   }
-  
+
 
 
   #if defined(PC_BUILD)
@@ -3122,7 +3122,7 @@ RELEASE_END:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", label);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -3137,7 +3137,7 @@ RELEASE_END:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", var);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
