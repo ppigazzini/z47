@@ -1234,7 +1234,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "There is no statistical/plot data available!");
-        moreInfoOnError("In function fnPlotStat:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function graph_stat:", errorMessage, NULL, NULL);
       #endif
     }
   #endif // !TESTSUITE_BUILD

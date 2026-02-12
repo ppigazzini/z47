@@ -761,7 +761,7 @@ void execTimerApp(uint16_t timerType) {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
            sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
-           moreInfoOnError("In function Shft_handler:", errorMessage, NULL, NULL);
+           moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -779,7 +779,7 @@ void execTimerApp(uint16_t timerType) {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named label", funcParam);
-            moreInfoOnError("In function Shft_handler:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -2930,7 +2930,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
-            moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
+            moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           w = stringWidth(tmpString, &standardFont, true, true);
           showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -3384,7 +3384,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else {
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Error message %" PRIu8 " is too wide!", lastErrorCode);
-              moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
+              moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(tmpString, "Error message %" PRIu8 " is too wide!", lastErrorCode);
             w = stringWidth(tmpString, &standardFont, true, true);
@@ -3555,7 +3555,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             lineWidth = w;
             if(w > SCREEN_WIDTH) {
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
+                moreInfoOnError("In function _refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Fraction representation too wide!");
               w = stringWidth(tmpString, &standardFont, false, true);
@@ -4731,7 +4731,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             w = stringWidth(tmpString, &standardFont, false, true);
             if(w > SCREEN_WIDTH) {
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
+                moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Long integer representation too wide!");
             }
