@@ -3187,7 +3187,17 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             showBottomLine();
           }
       }
-      else if((!checkHP && restoreRegisterT == RESTORE_T && regist == REGISTER_T) || regist < REGISTER_X + min(displayStack, origDisplayStack) || (lastErrorCode != 0 && regist == errorMessageRegisterLine) || (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+
+//Keepin original until tested, for easy of putting back:
+//      else if((!checkHP && restoreRegisterT == RESTORE_T && regist == REGISTER_T) ||
+//               regist < REGISTER_X + min(displayStack, origDisplayStack) ||
+//               (lastErrorCode != 0 && regist == errorMessageRegisterLine) ||
+//               (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T)) {
+//Cautiously removing the first condition above, as it should only be active when display stack allows; and this AND condition will be overridden by the second OR condition.
+
+      else if( (regist < REGISTER_X + min(displayStack, origDisplayStack)) ||
+               (lastErrorCode != 0 && regist == errorMessageRegisterLine) ||
+               (temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ) {
         prefixWidth = 0;
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
                                         #if defined(PC_BUILD)
