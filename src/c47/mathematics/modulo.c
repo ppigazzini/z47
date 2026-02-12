@@ -28,7 +28,7 @@ static void modLonI(void) {
   if(longIntegerIsZero(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function modLonILonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
+      moreInfoOnError("In function modLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err1;
   }
@@ -74,7 +74,7 @@ static void modShoI(void) {
   if(longIntegerIsZero(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function modLonILonI:", "cannot IDIVR a short integer by 0", NULL, NULL);
+      moreInfoOnError("In function modShoI:", "cannot IDIVR a short integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err1;
   }

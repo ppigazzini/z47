@@ -1045,7 +1045,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
   if(parserHint != PARSER_HINT_NUMERIC && stringGlyphLength(strPtr) > 7) {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function _processOperator:", strPtr, "token too long!", NULL);
+      moreInfoOnError("In function _parseWord:", strPtr, "token too long!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }

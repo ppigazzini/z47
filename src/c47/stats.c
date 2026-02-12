@@ -465,7 +465,7 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "matrix/line not removed");
-        moreInfoOnError("In function removeFromStatsMatrix:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
@@ -895,7 +895,7 @@ void fnConvertStatsToHisto(uint16_t statsVariableToHistogram) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Wrong statistical matrix is selected: %s!", statMx);
-        moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnConvertStatsToHisto:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
