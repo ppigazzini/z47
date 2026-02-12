@@ -22,7 +22,7 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fnPercentPlusMG:", "cannot divide 0 by 0", NULL, NULL);
+        moreInfoOnError("In function percentPlusMGReal:", "cannot divide 0 by 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
@@ -34,7 +34,7 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fnPercenPlusMG:", "cannot divide a real by 0", NULL, NULL);
+        moreInfoOnError("In function percentPlusMGReal:", "cannot divide a real by 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }

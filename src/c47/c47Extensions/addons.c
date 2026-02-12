@@ -66,7 +66,7 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
 
   if(base <= 1 || base >= 17) {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", base, "base");
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", base, "base");
     displayBugScreen(errorMessage);
     base = 10;
   }
@@ -92,7 +92,7 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
       number &= ~shortIntegerSignBit;
     }
     else {
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", shortIntegerMode, "shortIntegerMode");
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", shortIntegerMode, "shortIntegerMode");
       displayBugScreen(errorMessage);
     }
 
@@ -2433,7 +2433,7 @@ void notSexa(void) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, false, false));
-    moreInfoOnError("In function notSexagecimal:", errorMessage, NULL, NULL);
+    moreInfoOnError("In function notSexa:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 

@@ -450,12 +450,12 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
-          moreInfoOnError("In function setRegisterDataInfo:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
+          moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
       #endif // PC_BUILD
     }
     else {
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterDataInfo");
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterTag");
       displayBugScreen(errorMessage);
     }
   }
@@ -473,19 +473,19 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
-          moreInfoOnError("In function setRegisterDataInfo:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
+          moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
       #endif // PC_BUILD
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterDataInfo:", "no local registers defined!", "", "");
+        moreInfoOnError("In function setRegisterTag:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
 
   else {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterDataInfo", regist, LAST_RESERVED_VARIABLE + 1);
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterTag", regist, LAST_RESERVED_VARIABLE + 1);
     displayBugScreen(errorMessage);
   }
 }
@@ -1023,7 +1023,7 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterMaxsetRegisterMaxDataLengthInBlocksDataLength:", "no named variables defined!", NULL, NULL);
+        moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1081,7 +1081,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterMaxStringLength:", "no named variables defined!", NULL, NULL);
+        moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1103,7 +1103,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterMaxStringLength:", "no local registers defined!", NULL, NULL);
+        moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }

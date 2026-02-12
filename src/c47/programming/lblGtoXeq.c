@@ -331,7 +331,7 @@ static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
-      moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _executeWithIndirectVariable:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }

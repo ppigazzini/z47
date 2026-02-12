@@ -311,7 +311,7 @@ static void powCplx(void) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnPower:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+      moreInfoOnError("In function powCplx:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {

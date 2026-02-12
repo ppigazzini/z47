@@ -90,7 +90,7 @@
       displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not count to destination");
-        moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
