@@ -26,7 +26,7 @@ static void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc,
     if(realIsZero(&c)&&realIsZero(&d)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function xthRootComplexComplex: 0th Root is not defined!", NULL, NULL, NULL);
+        moreInfoOnError("In function xthRootComplex: 0th Root is not defined!", NULL, NULL, NULL);
       #endif //  (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
      }
@@ -128,7 +128,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
     if(realIsZero(&x)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function xthRootRealReal: 0th Root is not defined!", NULL, NULL, NULL);
+        moreInfoOnError("In function xthRootReal: 0th Root is not defined!", NULL, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -154,7 +154,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
         if(!getFlag(FLAG_CPXRES)) {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
+            moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
         }
@@ -179,7 +179,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
           if(!getFlag(FLAG_CPXRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
+              moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             return;
           }
@@ -219,7 +219,7 @@ static void doXthRootLonI(void) {
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function doXthRootLonILonI: Cannot divide by 0!", NULL, NULL, NULL);
+      moreInfoOnError("In function doXthRootLonI: Cannot divide by 0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto end2;
   }
@@ -309,7 +309,7 @@ static void doXthRootReal(void) {
   if((realIsInfinite(&x) || realIsInfinite(&y)) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function xthRootRealReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X or Y input of xthRoot when flag D is not set", NULL, NULL);
+      moreInfoOnError("In function doXthRootReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X or Y input of xthRoot when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }

@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_12PRIME)  
+#if defined(SAVE_SPACE_DM42_12PRIME)
   void fnIsPrime      (uint16_t unusedButMandatoryParameter){;}
   void fnNextPrime    (uint16_t unusedButMandatoryParameter){;}
   void fnPrimeFactors (uint16_t unusedButMandatoryParameter){;}
@@ -2156,7 +2156,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-        moreInfoOnError("In function fnPrimeFactors 001:  Queue overflow:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function performPrimeFactorization:  Queue overflow:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       break;
     }

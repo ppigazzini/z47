@@ -25,7 +25,7 @@ real_t yReal;
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fndeltaPercentXmean:", "cannot divide 0 by 0", NULL, NULL);
+          moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide 0 by 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
       }
@@ -37,7 +37,7 @@ real_t yReal;
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fndeltaPercentXmean:", "cannot divide a real by y=0", NULL, NULL);
+        moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide a real by y=0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }

@@ -108,8 +108,8 @@
       #undef  LONGPRESS_CFG 
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
-      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159.
-      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //       bytes // Use analytical formulas where possible
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
@@ -176,11 +176,11 @@
   //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
-      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159.
-      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
+      #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
+      #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //       bytes // Use analytical formulas where possible
 
-  //Not user options
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -436,7 +436,7 @@
 
 
 #if defined(LINUX)
-  #define _XOPEN_SOURCE                700 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
+  #define _XOPEN_SOURCE                800 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
 #endif // LINUX
 
 
