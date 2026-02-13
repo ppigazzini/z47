@@ -2568,9 +2568,7 @@ RELEASE_END:
             // To TEST and investigate 2023-10-02
             // User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
 
-            printf("**[DL]** tamProcessInput(ITM_ENTER) currentMenu %d\n",currentMenu());fflush(stdout);
             tamProcessInput(ITM_ENTER);
-            printf("**[DL]**                            currentMenu %d\n",currentMenu());fflush(stdout);
             keyActionProcessed = true;
           }
           else if(calcMode == CM_NIM) {                             //JMvv
