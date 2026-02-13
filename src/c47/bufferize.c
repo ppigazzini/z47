@@ -2568,6 +2568,11 @@ typedef struct {
       setLastintegerBasetoZero();
     }
 
+    if(calcMode == CM_PEM) {
+      pemCloseNumberInput();
+      return;
+    }
+    
     bool_t delayedShortIntegerCHS = false;
     //#if defined(PC_BUILD)
     //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);
@@ -2579,11 +2584,6 @@ typedef struct {
     }
 
     int16_t lastChar = strlen(aimBuffer) - 1;
-
-    if(calcMode == CM_PEM) {
-      pemCloseNumberInput();
-      return;
-    }
 
     if(nimNumberPart != NP_INT_16) { // We need a # and a base
       if(nimNumberPart != NP_INT_BASE || aimBuffer[lastChar] != '#') { // We need a base
