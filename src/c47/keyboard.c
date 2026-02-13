@@ -1268,7 +1268,7 @@ endReturnTrue:
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
