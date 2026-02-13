@@ -223,7 +223,7 @@ int calculatePMT(const real_t *pv,
   realMultiply(fv, &powerTerm, &temp1, &ctxtReal51);
   realAdd(pv, &temp1, &temp2, &ctxtReal51);
   realMultiply(&temp2, &ip, &numerator, &ctxtReal51);
-  realSetNegativeSign(&numerator);
+  realChangeSign(&numerator);
   
   // Denominator = (1+ip*p) * [1-(1+ip)^(-NPPER)]
   realMultiply(&ip, p, &temp1, &ctxtReal51);

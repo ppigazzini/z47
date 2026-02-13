@@ -241,9 +241,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
         currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
       }
       if(indexOfItems[func].func != fnTvmVar && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-          currentMenu() == -MNU_TVM && 
+          currentMenu() == -MNU_TVM &&
           (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION)) {       //clear execute flag, to prioritise entry, on all keys except the actual variable keys
-        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;      
+        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
       }
     #endif //TESTSUITE_BUILD
 
@@ -670,7 +670,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not Available");
-              moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
+              moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           screenUpdatingMode = SCRUPD_AUTO;
