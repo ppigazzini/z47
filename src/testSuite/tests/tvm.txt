@@ -131,7 +131,7 @@ In: V2039=Real:"100000"
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-3.75935122288958926199999999999999E-19"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-4.570764482250861218011708416696719E-26"
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -201,7 +201,8 @@ In: V2038=Real:"10"
 In: V2034=Real:"1.0E-10"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815793989659467608744016E-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565888201173E-10"
+;TVM iteration check                        = 2.1818181818158016528925658782870022E-10
 
 
 ;Duncan's TVM problems, #P8;    N=32, i%/a=??, PV=-999999, PMT=0, FV=1000000, pp/a=1, cp/a=1; Expected answer = 0.000003125001611329216004244745444268481
@@ -272,36 +273,36 @@ In: V2038=Real:"-0.01"
 ;;  V2034=Real          From previous step #P11 part 1
 In: V2037=Real:"525600"
 In: V2043=Real:"525600"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"0.1666666666666666666666666668388424"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"0.1666666666666666666666666666666757"
 ;Python iteration check to 34 digits, internal 100 digits: 0.166666666666666666666666666666667
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-;Duncan's TVM problems, #P12 part 1;    N=40, i%/a=??, PV=900, PMT=-400, FV=-1000, pp/a=1, cp/a=1, BEGIN; Expected answer = -200.3345359720324002616674180500769
+;Duncan's TVM problems, #P12a part 1;    N=40, i%/a=??, PV=900, PMT=-400, FV=-1000, pp/a=1, cp/a=1, BEGIN; Expected answer = 80.00000000098450919907260317672220
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=0
 In: V2036=Real:"40"
-;;In: V2035=Real:"00000000"
+In: V2035=Real:"55"
 In: V2039=Real:"900"
 In: V2038=Real:"-400"
 In: V2034=Real:"-1000"
 In: V2037=Real:"1"
 In: V2043=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-200.3345359720324002616674180500769"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"80.00000000098450919907260317672220"
 ;TVM iteration: I%/a = 80.00000000098450919907260317672220394925590951192
 
-;Duncan's TVM problems, #P12 part 2;    N=40, i%/a=from above, PV=900, PMT=-400, FV=???, pp/a=1, cp/a=1, BEGIN; Expected answer = -999.9999999999999999999999999999993
-Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+;Duncan's TVM problems, #P12a part 2;    N=40, i%/a=from above, PV=900, PMT=-400, FV=???, pp/a=1, cp/a=1, BEGIN; Expected answer = -999.9999999999999999999999999999993
+Func: fnTvmVar(2034)   ;RESERVED_VARIABLE_FV
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=0
 In: V2036=Real:"40"
 ;;In: V2035=Real:"00000000"   FROM ABOVE
 In: V2039=Real:"900"
 In: V2038=Real:"-400"
-In: V2034=Real:"-1000"
+;;In: V2034=Real:??
 In: V2037=Real:"1"
 In: V2043=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-999.9999999999999999999999999999993"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-999.9999999999999999999995988604358"
 ;TVM calc: FV = −999.999999999999999999999999999999999999872
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
