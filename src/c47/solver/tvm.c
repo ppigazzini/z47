@@ -66,9 +66,12 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
   realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtReal51);
   
   // ip = (1 + ic)^exponent - 1
-  realAdd(&ic, const_1, &temp, &ctxtReal51);
-  realPower(&temp, &exponent, ip, &ctxtReal51);
-  realSubtract(ip, const_1, ip, &ctxtReal51);
+  {
+    real_t temp2;
+    WP34S_Ln1P(&ic, &temp2, &ctxtReal75);                  // temp2 = ln(1 + ic)
+    realMultiply(&temp2, &exponent, &temp2, &ctxtReal75);  // temp2 = exponent * ln(1 + ic)
+    WP34S_ExpM1(&temp2, ip, &ctxtReal75);                  // ip = exp(exponent * ln(1 + ic)) - 1
+  }
 
   *error = 0;
 }
@@ -100,14 +103,17 @@ int calculatePV(const real_t *fv,
   }
   
   // General case: ip ≠ 0
-  // Calculate (1 + ip)^(-NPPER)
-  realCopy(npper, &negNpper);
-  realSetNegativeSign(&negNpper);
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, &negNpper, &powerTerm, &ctxtReal51);
-  
+  {
+    // Calculate annuity factor: numerator: 1 - (1+ip)^(-NPPER)
+    realSubtract(const_0, npper, &negNpper, &ctxtReal51);
+    real_t temp2;
+    WP34S_Ln1P(&ip, &temp2, &ctxtReal51);                  // temp2 = ln(1 + ip)
+    realMultiply(&temp2, &negNpper, &temp2, &ctxtReal51);  // temp2 = -NPPER * ln(1 + ip)
+    realExp(&temp2, &powerTerm, &ctxtReal51);              // powerTerm = (1+ip)^(-NPPER)
+    WP34S_ExpM1(&temp2, &temp1, &ctxtReal51);              // temp1 = (1+ip)^(-NPPER) - 1
+    realChangeSign(&temp1);                                // temp1 = 1 - (1+ip)^(-NPPER)
+  }
   // Annuity factor = [1 - (1+ip)^(-NPPER)] / ip
-  realSubtract(const_1, &powerTerm, &temp1, &ctxtReal51);
   realDivide(&temp1, &ip, &annuityFactor, &ctxtReal51);
   
   // Payment timing factor = (1 + ip*p)
@@ -156,15 +162,19 @@ int calculateFV(const real_t *pv,
   
   // General case: ip ≠ 0
   // Calculate (1 + ip)^NPPER
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, npper, &powerTerm, &ctxtReal51);
-  
+  {
+    real_t temp_ln;
+    WP34S_Ln1P(&ip, &temp_ln, &ctxtReal51);                 // temp_ln = ln(1 + ip)
+    realMultiply(&temp_ln, npper, &temp_ln, &ctxtReal51);   // temp_ln = npper * ln(1 + ip)
+    realExp(&temp_ln, &powerTerm, &ctxtReal51);             // powerTerm = (1+ip)^npper
+    WP34S_ExpM1(&temp_ln, &temp2, &ctxtReal51);             // temp2 = (1+ip)^npper - 1
+  }
+
   // FV from PV = -PV * (1+ip)^NPPER
   realMultiply(pv, &powerTerm, &temp1, &ctxtReal51);
   realSetNegativeSign(&temp1);
   
   // Annuity factor = [(1+ip)^NPPER - 1] / ip
-  realSubtract(&powerTerm, const_1, &temp2, &ctxtReal51);
   realDivide(&temp2, &ip, &annuityFactor, &ctxtReal51);
   
   // Payment timing factor = (1 + ip*p)
@@ -214,11 +224,17 @@ int calculatePMT(const real_t *pv,
   
   // General case: ip ≠ 0
   // Calculate (1 + ip)^(-NPPER)
-  realCopy(npper, &negNpper);
-  realSetNegativeSign(&negNpper);
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, &negNpper, &powerTerm, &ctxtReal51);
-  
+  realSubtract(const_0, npper, &negNpper, &ctxtReal51);
+   {
+    real_t temp_ln;
+    WP34S_Ln1P(&ip, &temp_ln, &ctxtReal51);                    // temp_ln = ln(1 + ip)
+    realMultiply(&temp_ln, &negNpper, &temp_ln, &ctxtReal51);  // temp_ln = -npper * ln(1 + ip)
+    realExp(&temp_ln, &powerTerm, &ctxtReal51);                // powerTerm = (1+ip)^(-npper)
+    WP34S_ExpM1(&temp_ln, &temp3, &ctxtReal51);                // temp3 = (1+ip)^(-npper) - 1
+    realChangeSign(&temp3);                                    // temp3 = 1 - (1+ip)^(-npper)
+  }
+
+
   // Numerator = -[PV + FV*(1+ip)^(-NPPER)] * ip
   realMultiply(fv, &powerTerm, &temp1, &ctxtReal51);
   realAdd(pv, &temp1, &temp2, &ctxtReal51);
@@ -228,7 +244,6 @@ int calculatePMT(const real_t *pv,
   // Denominator = (1+ip*p) * [1-(1+ip)^(-NPPER)]
   realMultiply(&ip, p, &temp1, &ctxtReal51);
   realAdd(&temp1, const_1, &temp2, &ctxtReal51);
-  realSubtract(const_1, &powerTerm, &temp3, &ctxtReal51);
   realMultiply(&temp2, &temp3, &denominator, &ctxtReal51);
   
   // Check for zero denominator
@@ -516,10 +531,13 @@ int calculateCPER(const real_t *pv,
     realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtReal51);
     
     // test_ip = (1 + ic)^exponent - 1
-    realAdd(&ic, const_1, &temp1, &ctxtReal51);
-    realPower(&temp1, &exponent, &test_ip, &ctxtReal51);
-    realSubtract(&test_ip, const_1, &test_ip, &ctxtReal51);
-    
+    {
+      real_t temp_exp;
+      WP34S_Ln1P(&ic, &temp_exp, &ctxtReal51);                    // temp_exp = ln(1 + ic)
+      realMultiply(&temp_exp, &exponent, &temp_exp, &ctxtReal51); // temp_exp = exponent * ln(1 + ic)
+      WP34S_ExpM1(&temp_exp, &test_ip, &ctxtReal51);              // test_ip = (1+ic)^exponent - 1
+    }
+
     // error = test_ip - ip
     realSubtract(&test_ip, &ip, &error_val, &ctxtReal51);
     
