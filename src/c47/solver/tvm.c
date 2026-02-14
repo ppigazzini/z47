@@ -748,7 +748,7 @@ void fnTvmVar(uint16_t variable) {
           real34_t xx, yy;
 
           #define nIter 6
-          while(iter++ < nIter || !real34CompareEqual(&resX, &resY)) {
+          while(iter++ < nIter && !real34CompareEqual(&resX, &resY)) {
             real34Copy(&x, &xx);
             real34Copy(&y, &yy);
             #if defined(PC_BUILD)
@@ -863,9 +863,12 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
 
     iA.exponent -= 2; // iA = iA / 100
     realDivide(&iA, &cperA, &tmp, &ctxtReal39);
-    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
-    realPower(&tmp, &cperA, &tmp, &ctxtReal39);
-    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    {
+      real_t temp2;
+      WP34S_Ln1P(&tmp, &temp2, &ctxtReal51);              // temp2 = ln(1 + tmp)
+      realMultiply(&temp2, &cperA, &temp2, &ctxtReal51);  // temp2 = cperA * ln(1 + tmp)
+      WP34S_ExpM1(&temp2, &tmp, &ctxtReal51);             // tmp = exp(cperA * ln(1 + tmp)) - 1
+    }
     tmp.exponent += 2; // tmp = tmp * 100
 
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -969,18 +972,25 @@ void tvmEquation(void) {
 
     if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
       realDivide(&i, &r, &i, &ctxtReal39);
-      realAdd(&i, const_1, &i, &ctxtReal39);
-      realPower(&i, &r, &i, &ctxtReal39);
-      realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
+      {
+        // Converted to: (1+i)^r = exp(r * ln(1+i))
+        real_t temp;
+        WP34S_Ln1P(&i, &temp, &ctxtReal51);             // temp = ln(1 + i)
+        realMultiply(&temp, &r, &temp, &ctxtReal51);    // temp = r * ln(1 + i)
+        WP34S_ExpM1(&temp, &i, &ctxtReal51);            // i = exp(r * ln(1 + i)) - 1
+      } // i = (1 + (i/pperA)/r)^r - 1
     }
     tvmIKnown = true;
   }
 
   realChangeSign(&pv);
-
-  realAdd(&i, const_1, &i1nPer, &ctxtReal39);
-  realPower(&i1nPer, &nPer, &i1nPer, &ctxtReal39);
-
+  {
+    // Converted to: (1+i)^nPer = exp(nPer * ln(1+i))
+    real_t temp;
+    WP34S_Ln1P(&i, &temp, &ctxtReal51);                 // temp = ln(1 + i)
+    realMultiply(&temp, &nPer, &temp, &ctxtReal51);     // temp = nPer * ln(1 + i)
+    realExp(&temp, &i1nPer, &ctxtReal51);               // i1nPer = exp(nPer * ln(1 + i))
+  }
   if(getSystemFlag(FLAG_ENDPMT)) {
     realCopy(const_1, &val); // END mode
   }
@@ -992,7 +1002,7 @@ void tvmEquation(void) {
   if(realCompareAbsLessThan(&i,const_1e_37)) {    //prevent infinity when i = 0, to continue work
     realCopy(const_1e_37,&i);
   }
-  realDivide(&val, &i, &val, &ctxtReal39);
+  realDivide(&val, &i, &val, &ctxtReal51);              // increase digits to make sure 1/i for very small i will not loose digits.
 
   realSubtract(const_1, &i1nPer, &tmp, &ctxtReal39);
   realMultiply(&val, &tmp, &val, &ctxtReal39);
