@@ -410,8 +410,12 @@ int calculatePPER(const real_t *pv,
     }
     
     realDivide(const_1, npper, &temp2, &ctxtReal51);
-    realPower(&temp1, &temp2, &ip_effective, &ctxtReal51);
-    realSubtract(&ip_effective, const_1, &ip_effective, &ctxtReal51);
+    {
+      real_t temp_ln;
+      WP34S_Ln(&temp1, &temp_ln, &ctxtReal51);
+      realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtReal51);
+      WP34S_ExpM1(&temp_ln, &ip_effective, &ctxtReal51);
+    }
     
   } else {
     // Complex case: with payments
@@ -439,13 +443,13 @@ int calculatePPER(const real_t *pv,
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
-  WP34S_Ln(&temp1, &lnBase, &ctxtReal51);
+  WP34S_Ln1P(&ic, &lnBase, &ctxtReal51);
   
   realAdd(&ip_effective, const_1, &temp1, &ctxtReal51);
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
-  WP34S_Ln(&temp1, &lnTarget, &ctxtReal51);
+  WP34S_Ln1P(&ip_effective, &lnTarget, &ctxtReal51);
   
   if(decNumberIsZero((decNumber *)&lnTarget)) {
     return tvmRangeError(0);
@@ -478,7 +482,7 @@ int calculateCPER(const real_t *pv,
                   real_t *compoundPerYear) {
   real_t ip, ic, temp1, temp2;
   real_t exponent, test_ip, error_val, tolerance;
-  real_t delta, damping;
+  real_t delta;
   int iterations = 0;
   const int maxIterations = 100;
   
@@ -506,8 +510,12 @@ int calculateCPER(const real_t *pv,
     }
     
     realDivide(const_1, npper, &temp2, &ctxtReal51);
-    realPower(&temp1, &temp2, &ip, &ctxtReal51);
-    realSubtract(&ip, const_1, &ip, &ctxtReal51);
+    {
+      real_t temp_ln;
+      WP34S_Ln(&temp1, &temp_ln, &ctxtReal51);
+      realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtReal51);
+      WP34S_ExpM1(&temp_ln, &ip, &ctxtReal51);
+    }
     
   } else {
     // Complex case - use I%/a solver first
@@ -517,7 +525,7 @@ int calculateCPER(const real_t *pv,
   // Iterative solution for CPER/a
   // Equation: (1 + (I%/a/100)/CPER)^(CPER/PPER) - 1 = ip
   
-  stringToReal("1e-34", &tolerance, &ctxtReal51);
+  stringToReal("1e-36", &tolerance, &ctxtReal51);
   
   // Initial guess: CPER/a = PPER/a
   realCopy(paymentPerYear, compoundPerYear);
@@ -546,16 +554,14 @@ int calculateCPER(const real_t *pv,
       return 0;
     }
     
-    // Newton-Raphson update
-    // f(CPER) = (1 + I%/100/CPER)^(CPER/PPER) - 1 - ip
-    // f'(CPER) uses quotient and chain rules - complex
-    // Use simplified damped iteration instead
-    
-    realDivide(&error_val, &ip, &temp1, &ctxtReal51);
-    realMultiply(&temp1, const_1on2, &delta, &ctxtReal51);  // damping = 0.5
-    realSubtract(const_1, &delta, &damping, &ctxtReal51);
-    realMultiply(compoundPerYear, &damping, compoundPerYear, &ctxtReal51);
-    
+    {
+      // Newton-Raphson update with damping
+      real_t temp2;
+      realDivide(&error_val, &ip, &temp1, &ctxtReal51);
+      realMultiply(&temp1, const_1on2, &delta, &ctxtReal51);  // damping = 0.5
+      realSubtract(const_1, &delta, &temp2, &ctxtReal51);
+      realMultiply(compoundPerYear, &temp2, compoundPerYear, &ctxtReal51);
+    }
     // Keep CPER/a positive
     if(!realIsPositive(compoundPerYear)) {
       realCopy(paymentPerYear, compoundPerYear);
