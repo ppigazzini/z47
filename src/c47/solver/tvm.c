@@ -567,8 +567,6 @@ int calculateCPER(const real_t *pv,
     if(!realIsPositive(compoundPerYear)) {
       realCopy(paymentPerYear, compoundPerYear);
     }
-printRealToConsole(paymentPerYear,"paymentPerYear:","   ");
-printRealToConsole(compoundPerYear,"compoundPerYear:","\n");
   }
   
   // Failed to converge
