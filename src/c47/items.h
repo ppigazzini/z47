@@ -1010,12 +1010,12 @@
 #define ITM_US                       979
 #define ITM_NEG_EXCLAMATION_MARK     980
 #define ITM_ex                       981
-#define ITM_Max                      982
-#define ITM_Min                      983
-#define ITM_Config                   984
-#define ITM_Stack                    985
-#define ITM_dddEL                    986
-#define ITM_dddIJ                    987
+#define ITM_0982                     982
+#define ITM_0983                     983
+#define ITM_0984                     984
+#define ITM_0985                     985
+#define ITM_0986                     986
+#define ITM_0987                     987
 #define ITM_0P                       988
 #define ITM_1P                       989
 #define ITM_EXPONENT                 990
@@ -2557,8 +2557,8 @@
 #define ITM_STOVEL1                 2485
 #define ITM_STOVEL2                 2486
 #define ITM_STOVEL3                 2487
-#define ITM_dddVEL                  2488
-#define ITM_dddIX                   2489
+#define ITM_2488                    2488
+#define ITM_2489                    2489
 #define ITM_V10                     2490
 #define ITM_V01                     2491
 #define ITM_CPXexV                  2492
@@ -2731,6 +2731,17 @@
 #define ITM_STORCL_PMT              2644
 #define ITM_STORCL_PPERonA          2645
 #define ITM_STORCL_CPERonA          2646
+#define ITM_dddVEL1                 2647
+#define ITM_dddVEL2                 2648
+#define ITM_dddVEL3                 2649
+#define ITM_dddVEL                  2650
+#define ITM_dddIX                   2651
+#define ITM_dddEL                   2652
+#define ITM_dddIJ                   2653
+#define ITM_Max                     2654
+#define ITM_Min                     2655
+#define ITM_Config                  2656
+#define ITM_Stack                   2657
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2738,7 +2749,7 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2647
+#define LAST_ITEM                   2658
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
