@@ -1010,10 +1010,10 @@
 #define ITM_US                       979
 #define ITM_NEG_EXCLAMATION_MARK     980
 #define ITM_ex                       981
-#define ITM_Max                      982
-#define ITM_Min                      983
-#define ITM_Config                   984
-#define ITM_Stack                    985
+#define ITM_0982                     982
+#define ITM_0983                     983
+#define ITM_0984                     984
+#define ITM_0985                     985
 #define ITM_0986                     986
 #define ITM_0987                     987
 #define ITM_0P                       988
@@ -2738,6 +2738,10 @@
 #define ITM_dddIX                   2651
 #define ITM_dddEL                   2652
 #define ITM_dddIJ                   2653
+#define ITM_Max                     2654
+#define ITM_Min                     2655
+#define ITM_Config                  2656
+#define ITM_Stack                   2657
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2745,7 +2749,7 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2654
+#define LAST_ITEM                   2658
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
