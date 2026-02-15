@@ -19,7 +19,8 @@
     "TVM: Payment frequency cannot be zero",    // 5
     "TVM: Compound frequency cannot be zero",   // 6
     "TVM: Present value cannot be zero",        // 7
-    "TCM: Invalid variable requested"           // 8
+    "TCM: Invalid variable requested",          // 8
+    "TCM: Exit to proceed to old solver"        // 9
   };
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -519,7 +520,7 @@ int calculateCPER(const real_t *pv,
     
   } else {
     // Complex case - use I%/a solver first
-    return tvmRangeError(3);
+    return tvmRangeError(9);
   }
   
   // Iterative solution for CPER/a
@@ -566,6 +567,8 @@ int calculateCPER(const real_t *pv,
     if(!realIsPositive(compoundPerYear)) {
       realCopy(paymentPerYear, compoundPerYear);
     }
+printRealToConsole(paymentPerYear,"paymentPerYear:","   ");
+printRealToConsole(compoundPerYear,"compoundPerYear:","\n");
   }
   
   // Failed to converge
@@ -574,11 +577,11 @@ int calculateCPER(const real_t *pv,
 
 
 
-  TO_QSPI static const char bugScreenNotForTvmVar[] = "In function solveTvmVariable: this variable is not intended for TVM application!";
+  TO_QSPI static const char bugScreenNotForTvmVar[] = "In function solveTvmVariable51: this variable is not intended for TVM application!";
 
 
 // Solve for the specified TVM variable, returns: 0 on success, error code on failure
-int solveTvmVariable(uint16_t variable) {
+int solveTvmVariable51(uint16_t variable) {
   real_t fv, iA, nPer, pperA, cperA, pmt, pv, p;
   real_t result;
   int error = 0;
@@ -637,7 +640,7 @@ int solveTvmVariable(uint16_t variable) {
     //Not stopping for an error, but letting it through to the old solver for erroring and/or solving
     //displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function solveTvmVariable:", tvmErrorMessages[error], " Cannot compute TVM equation with current parameters", NULL);
+      moreInfoOnError("In function solveTvmVariable51:", tvmErrorMessages[error], " Cannot compute TVM equation with current parameters", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return error;
   }
@@ -684,13 +687,20 @@ void fnTvmVar(uint16_t variable) {
 
           #if defined(OPTION_TVM_FORMULAS)
             if(variable != RESERVED_VARIABLE_IPONA) {
-              if(solveTvmVariable(variable) == 0) {
+              int err = solveTvmVariable51(variable);
+              if( err == 0) {
                 #if defined(PC_BUILD)
                   printf("Success analytical TVM\n");
                 #endif //PC_BUILD
                 temporaryInformation = TI_SOLVER_VARIABLE;
-                return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
-              }
+                return;   // Try analytic solution, if successful, return
+              } 
+              else {
+                lastErrorCode = 0;  // Failure in analytical solver section, error is on the PC screen but continue to retry using the old solver without erroring
+                #if defined(PC_BUILD)
+                  printf("Clearing analytical TVM error to continue to iterative solver\n");
+                #endif //PC_BUILD
+              } 
             }
           #endif //OPTION_TVM_FORMULAS
 
