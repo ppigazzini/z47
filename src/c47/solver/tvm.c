@@ -179,8 +179,7 @@ int calculateFV(const real_t *pv,
   realDivide(&temp2, &ip, &annuityFactor, &ctxtReal51);
   
   // Payment timing factor = (1 + ip*p)
-  realMultiply(&ip, p, &temp2, &ctxtReal51);
-  realAdd(&temp2, const_1, &temp3, &ctxtReal51);
+  realFMA(&ip, p, const_1, &temp3, &ctxtReal51);
   
   // FV from payments = (1 + ip*p) * PMT * annuityFactor
   realMultiply(&temp3, pmt, &temp2, &ctxtReal51);
