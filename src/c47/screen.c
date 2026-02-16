@@ -1116,7 +1116,7 @@ return res;
       return 0;
     }
 
-    int32_t yy = ((int32_t)(y+1000))-(int32_t)1000; //get unsigned integer that was negative, back to signed integer negative
+    int32_t yy = (int32_t)y; //get unsigned integer that was negative, back to signed integer negative
     data = (int8_t *)glyph->data;
     uint32_t y0 = y;                                                   //JMmini 0-reference
     xGlyph      = showLeadingCols ? glyph->colsBeforeGlyph : 0;

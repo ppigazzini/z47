@@ -109,7 +109,7 @@
   #define real34IsZero(source)                                   decQuadIsZero            ((real34_t *)(source))
   #define real34Minus(operand, res)                              decQuadMinus             ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34Multiply(operand1, operand2, res)                decQuadMultiply          ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
-  #define real34NextMinus(operand, res)                          decQuadNextPlus          ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
+  #define real34NextMinus(operand, res)                          decQuadNextMinus          ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34NextPlus(operand, res)                           decQuadNextPlus          ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34Plus(operand, res)                               decQuadPlus              ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34SetNegativeSign(operand)                         ((real34_t *)(operand))->bytes[15] |= 0x80

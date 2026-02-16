@@ -1,4 +1,4 @@
-.PHONY: all clean sim test test_asan dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test test_asan dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47 repeattest
 
 all: sim
 both: sim simr47
@@ -27,6 +27,7 @@ clean: $(GMP_MESON_BUILD)
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel build.rel.debug
 	rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
 	rm -rf PROGRAMS/ALLPGMS
+	rm -f src_files_stamp testPgms_stamp
 
 build.sim:
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
@@ -40,8 +41,8 @@ else
 endif
 	cd $(BUILD_PC) && ninja sim
 	cd $(BUILD_PC) && ninja simr47
-	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
-	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
+	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./ 
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./ 
 ifneq ($(OS),Windows_NT)
 	@ASAN_OK=true; \
 	if ! otool -L ./c47 2>/dev/null | grep -q asan && ! ldd ./c47 2>/dev/null | grep -q asan; then \
@@ -77,7 +78,7 @@ build.dmcp5:
 
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
-	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
+	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./ 
 	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
 	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
 	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
@@ -85,7 +86,7 @@ sim: $(BUILD_PC)
 
 simr47: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja simr47
-	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./ 
 	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
 	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
 	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
@@ -122,6 +123,23 @@ ifeq ($(OS),Windows_NT)
 else
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations" -Db_sanitize=address
 endif
+	cd $(BUILD_PC) && ninja test
+
+# ----------------------------
+# Incremental repeattest
+
+# Stamp file updated if any .c or .h changes
+SRC_FILES := $(shell find src -name '*.c' -o -name '*.h')
+src_files_stamp: $(SRC_FILES)
+	touch $@
+
+testPgms_stamp: build.sim src_files_stamp
+	cd $(BUILD_PC) && ninja testPgms
+	mkdir -p res/testPgms
+	cp $(BUILD_PC)/src/generateTestPgms/testPgms.bin res/testPgms/
+	touch $@
+
+repeattest: build.sim testPgms_stamp
 	cd $(BUILD_PC) && ninja test
 
 build.rel/wiki: build.rel

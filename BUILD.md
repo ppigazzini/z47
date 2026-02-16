@@ -21,6 +21,7 @@ make dmcp5r47     - Build r47 for R47 (DMCP5)
 ## Testing & Documentation
 ```
 make test         - Run test suite (cleans first to ensure no ASAN contamination)
+make repeattest   - Run test suite incrementally (only rebuilds program if sources changed)
 make testPgms     - Generate test programs
 make docs         - Build documentation
 ```
