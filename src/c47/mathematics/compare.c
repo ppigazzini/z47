@@ -176,89 +176,143 @@ static void cmpToResult(int result, uint8_t mode) {
     SET_TI_TRUE_FALSE((mode & COMPARE_MODE_EQUAL) != 0);
   }
 }
+define GLUE2(x, y) ((uint16_t)(y << 8 | x))
+#define GLUE2X(g) (g & 0xFF)
+#define GLUE2Y(g) (g >> 8)
 
 static void compareRegisters(uint16_t regist, uint8_t mode) {
-  if((regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || (FIRST_NAMED_VARIABLE <= regist && regist <= FIRST_NAMED_VARIABLE + numberOfNamedVariables) || (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) || (regist == TEMP_REGISTER_1)) {
-    const uint32_t typeX = getRegisterDataType(REGISTER_X);
-    const uint32_t typeR = getRegisterDataType(regist);
+  uint32_t test =
+      GLUE2(getRegisterDataType(REGISTER_X), getRegisterDataType(regist));
 
-    if(typeX == dtString || typeR == dtString) {
-      if(typeX != typeR) {
-        compareTypeError(regist);
-      }
-      else {
-        cmpToResult(compareString(REGISTER_STRING_DATA(REGISTER_X), REGISTER_STRING_DATA(regist), CMP_EXTENSIVE), mode);
-      }
-    }
-    else if(typeX == dtConfig || typeR == dtConfig) {
-      if(typeX != typeR) {
-        compareTypeError(regist);
-      }
-      else if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-        compareTypeError(regist);
-      }
-      else {
-        cmpToResult(memcmp(REGISTER_CONFIG_DATA(REGISTER_X), REGISTER_CONFIG_DATA(regist), CONFIG_SIZE_IN_BLOCKS), mode);
-      }
-    }
-    else if(typeX == dtReal34Matrix || typeX == dtComplex34Matrix || typeR == dtReal34Matrix || typeR == dtComplex34Matrix) {
-      if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-        compareTypeError(regist);
-      }
-      else if(regist == TEMP_REGISTER_1) {
-        compareMatrix01(regist, mode, typeX);
-      }
-      else if((typeX != dtReal34Matrix && typeX != dtComplex34Matrix) || (typeR != dtReal34Matrix && typeR != dtComplex34Matrix)) {
-        compareTypeError(regist);
-      }
-      else {
-        compareMatrices(regist, mode, typeX, typeR);
-      }
-    }
-    else if((typeX == dtShortInteger || typeX == dtLongInteger) && (typeR == dtShortInteger || typeR == dtLongInteger)) {
-      longInteger_t xInt, rInt;
+  // pre condition
+  if ((regist >= FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) &&
+      (regist < FIRST_NAMED_VARIABLE ||
+       regist > FIRST_NAMED_VARIABLE + numberOfNamedVariables) &&
+      (regist < FIRST_RESERVED_VARIABLE || regist > LAST_RESERVED_VARIABLE) &&
+      (regist != TEMP_REGISTER_1))
+    return;
 
-      if(getRegisterAsLongInt(REGISTER_X, xInt, NULL) && getRegisterAsLongInt(regist, rInt, NULL)) {
-        cmpToResult(longIntegerCompare(xInt, rInt), mode);
-      }
-      longIntegerFree(xInt);
-      longIntegerFree(rInt);
-    }
-    else {
-      real_t xReal, xImag, rReal, rImag;
-      bool cmplx = false;
+  real_t xReal, xImag, rReal, rImag;
+  bool cmplx = false;
 
-      if(!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx) || !getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx)) {
-        return;
-      }
-      if(cmplx) {
-        if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-          compareTypeError(regist);
-        }
-        else if(realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) || realIsNaN(&rImag)) {
-          temporaryInformation = TI_FALSE;
-        }
-        else {
-          SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) && realCompareEqual(&xImag, &rImag)) == (mode == COMPARE_MODE_EQUAL));
-        }
-      }
+  switch (test) {
+    // Pair of strings
+  case GLUE2(dtString, dtString):
+    cmpToResult(compareString(REGISTER_STRING_DATA(REGISTER_X),
+                              REGISTER_STRING_DATA(regist), CMP_EXTENSIVE),
+                mode);
+    break;
+    // Pair of configs
+  case GLUE2(dtConfig, dtConfig):
+    if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
+      compareTypeError(regist);
+    else
+      cmpToResult(memcmp(REGISTER_CONFIG_DATA(REGISTER_X),
+                         REGISTER_CONFIG_DATA(regist), CONFIG_SIZE_IN_BLOCKS),
+                  mode);
+    break;
+    // Pair of matrices
+  case GLUE2(dtReal34Matrix, dtReal34Matrix):
+  case GLUE2(dtComplex34Matrix, dtComplex34Matrix):
+    if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
+      compareTypeError(regist);
+    else if (regist == TEMP_REGISTER_1)
+      compareMatrix01(regist, mode, GLUE2X(test));
+    else
+      compareMatrices(regist, mode, GLUE2X(test), GLUE2Y(test));
+    break;
+
+  // Pair of integers
+  case GLUE2(dtShortInteger, dtShortInteger):
+  case GLUE2(dtLongInteger, dtLongInteger):
+  case GLUE2(dtShortInteger, dtLongInteger):
+  case GLUE2(dtLongInteger, dtShortInteger): {
+    longInteger_t xInt, rInt;
+
+    if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL))
+      compareTypeError(REGISTER_X);
+    else if (!getRegisterAsLongInt(regist, rInt, NULL))
+      compareTypeError(regist);
+    else
+      cmpToResult(longIntegerCompare(xInt, rInt), mode);
+
+    longIntegerFree(xInt);
+    longIntegerFree(rInt);
+  } break;
+
+  // Integer and real mix
+  case GLUE2(dtShortInteger, dtReal34):
+  case GLUE2(dtLongInteger, dtReal34):
+  case GLUE2(dtReal34, dtShortInteger):
+  case GLUE2(dtReal34, dtLongInteger):
+    if (!getRegisterAsReal(REGISTER_X, &xReal))
+      compareTypeError(REGISTER_X);
+    else if (!getRegisterAsReal(regist, &rReal))
+      compareTypeError(regist);
+    else // 1. comparison is only valid if no NaN found
+      if (realIsNaN(&xReal) || realIsNaN(&rReal))
+        temporaryInformation = TI_FALSE;
       else {
-        if(realIsNaN(&xReal) || realIsNaN(&rReal)) {
-          temporaryInformation = TI_FALSE;
-        }
-        else {
-          realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
-          cmpToResult(realIsZero(&xImag) ? 0 : realIsNegative(&xImag) ? -1 : 1, mode);
-        }
+        realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
+        cmpToResult(realIsZero(&xImag)       ? 0
+                    : realIsNegative(&xImag) ? -1
+                                             : 1,
+                    mode);
+      }
+  break;
+
+  // Complex & real together
+  case GLUE2(dtComplex34, dtComplex34):
+  case GLUE2(dtReal34, dtReal34):
+  case GLUE2(dtComplex34, dtReal34):
+  case GLUE2(dtReal34, dtComplex34):
+    // read both values and ensure they are actually complex
+    if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx))
+      compareTypeError(REGISTER_X);
+    else if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx))
+      compareTypeError(regist);
+    // If one of the arguments is actually complex (Img!=0)
+    else if (cmplx) {
+      // Pre requisite
+      // 1. comparison of complexes is only valid for EQU
+      if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
+        compareTypeError(regist);
+      }
+      // 2. comparison is only valid if no NaN found
+      else if (realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) ||
+               realIsNaN(&rImag))
+        temporaryInformation = TI_FALSE;
+      else
+        SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) &&
+                           realCompareEqual(&xImag, &rImag)) ==
+                          (mode == COMPARE_MODE_EQUAL));
+
+    } else
+    // No complex found
+    {
+      // Pre requisite
+      // 1. comparison is only valid if no NaN found
+      if (realIsNaN(&xReal) || realIsNaN(&rReal))
+        temporaryInformation = TI_FALSE;
+      else {
+        realCompare(&xReal, &rReal, &xImag, &ctxtReal39); // re-purpose xImage to store result
+        cmpToResult(realIsZero(&xImag)       ? 0
+                    : realIsNegative(&xImag) ? -1
+                                             : 1,
+                    mode);
       }
     }
-  }
-  #if defined(PC_BUILD)
-    else {
-      sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
-      moreInfoOnError("In function compareRegisters:", errorMessage, "is not defined!", NULL);
-    }
-  #endif // PC_BUILD
+  break;
+  default:
+    compareTypeError(regist);
+#if defined(PC_BUILD)
+    sprintf(errorMessage, "local register .%02d",
+            regist - FIRST_LOCAL_REGISTER);
+    moreInfoOnError("In function compareRegisters:", errorMessage,
+                    "is not defined!", NULL);
+#endif // PC_BUILD
+    break;
+  } // Switch
 }
 
 void fnXLessThan(uint16_t regist) {
