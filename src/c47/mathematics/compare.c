@@ -263,6 +263,9 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
   break;
 
   // Complex & real together
+  // Rule: for complex numbers, only EQUAL is supported. 
+  // This is why we do not cast real numbers to complex 
+  // and do not provide a universal comparison.
   case GLUE2(dtComplex34, dtComplex34):
   case GLUE2(dtReal34, dtReal34):
   case GLUE2(dtComplex34, dtReal34):
