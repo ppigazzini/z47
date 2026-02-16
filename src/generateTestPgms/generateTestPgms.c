@@ -3,6 +3,17 @@
 
 #include "c47.h"
 
+static uint8_t * _insertItem( int32_t item, uint8_t *currentStep) {
+  if(item < 128) {
+    *(currentStep++) = item;
+  }
+  else {
+    *(currentStep++) = (item>> 8) | 0x80;
+    *(currentStep++) =  item      & 0xff;
+  }
+  return currentStep;
+}
+
 int main(int argc, char* argv[]) {
   uint8_t memory[65536], *currentStep;
   FILE *testPgms;
@@ -4865,8 +4876,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = SYSTEM_FLAG_NUMBER;
     *(currentStep++) = FLAG_IGN1ER & 0xff;
 
-    *(currentStep++) = (ITM_PAUSE >> 8) | 0x80;
-    *(currentStep++) =  ITM_PAUSE       & 0xff;
+    *(currentStep++) = ITM_PAUSE;
     *(currentStep++) = 0;
 
     *(currentStep++) = ITM_RCL;
@@ -5063,8 +5073,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = FLAG_IGN1ER & 0xff;
 
     // 50
-    *(currentStep++) = (ITM_PAUSE >> 8) | 0x80;
-    *(currentStep++) =  ITM_PAUSE       & 0xff;
+    *(currentStep++) = ITM_PAUSE;
     *(currentStep++) = 0;
 
     *(currentStep++) = ITM_INC;
@@ -5091,6 +5100,1533 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = '\'';
     *(currentStep++) = 's';
 
+    int32_t item;
+    for(item=1; item<LAST_ITEM; item++) {
+      switch (indexOfItems[item].status & PTP_STATUS) {
+        case PTP_NONE: {
+          if(item != ITM_END) {
+            currentStep = _insertItem(item,currentStep);
+          }
+          break;
+        }
+        case PTP_DECLARE_LABEL: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'A' - 'A' + 100; // A
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'E' - 'A' + 100; // E
+          break;
+        }
+        case PTP_LABEL: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'A' - 'A' + 100; // A
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'E' - 'A' + 100; // E
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 5;
+          *(currentStep++) = 'L';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'b';
+          *(currentStep++) = 'e';
+          *(currentStep++) = 'l';
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          break;
+        }
+        case PTP_REGISTER: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          break;
+        }
+        case PTP_FLAG: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = FIRST_LOCAL_FLAG;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = LAST_LOCAL_FLAG;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = SYSTEM_FLAG_NUMBER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = SYSTEM_FLAG_NUMBER;
+          *(currentStep++) = NUMBER_OF_SYSTEM_FLAGS - 1;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_FLAG;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+          break;
+        }
+        case PTP_NUMBER_8: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          break;
+        }
+        case PTP_NUMBER_16: {
+          if(isFunctionOldParam16(item)) {  // original Param16 functions without indirection support (little endian parameter)
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = (indexOfItems[item].tamMinMax >> TAM_MAX_BITS) & 0xff; // little endian
+            *(currentStep++) = (indexOfItems[item].tamMinMax >> TAM_MAX_BITS) >> 8;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = (indexOfItems[item].tamMinMax & TAM_MAX_MASK) & 0xff;  // little endian
+            *(currentStep++) = (indexOfItems[item].tamMinMax & TAM_MAX_MASK) >> 8;
+          }
+          else {                        // new Param16 functions with indirection support (big endian parameter)
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = (indexOfItems[item].tamMinMax >> TAM_MAX_BITS) >> 8;   // BIG endian
+            *(currentStep++) = (indexOfItems[item].tamMinMax >> TAM_MAX_BITS) & 0xff;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = (indexOfItems[item].tamMinMax & TAM_MAX_MASK) >> 8;    // BIG endian   
+            *(currentStep++) = (indexOfItems[item].tamMinMax & TAM_MAX_MASK) & 0xff;    
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(item,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+          }
+          break;
+        }
+        
+        case PTP_COMPARE: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+
+          break;
+        }
+        
+        case PTP_KEYG_KEYX: {
+          for(int i=0; i<=1; i++) {
+            int32_t op = (i == 0 ? ITM_GTO : ITM_XEQ);
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 1;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = 21;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = 'A' - 'A' + 100; // A
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = 'E' - 'A' + 100; // E
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = STRING_LABEL_VARIABLE;
+            *(currentStep++) = 5;
+            *(currentStep++) = 'L';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'b';
+            *(currentStep++) = 'e';
+            *(currentStep++) = 'l';
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 0;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = 99;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_REGISTER;
+            *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+            currentStep = _insertItem(ITM_KEY,currentStep);
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+            *(currentStep++) = op; 
+            *(currentStep++) = INDIRECT_VARIABLE;
+            *(currentStep++) = 3;
+            *(currentStep++) = 'V';
+            *(currentStep++) = 'a';
+            *(currentStep++) = 'r';
+          }
+          break;
+        }
+        
+        case PTP_SKIP_BACK: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax >> TAM_MAX_BITS;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = indexOfItems[item].tamMinMax & TAM_MAX_MASK;
+
+          break;
+        }
+        
+        case PTP_NUMBER_8_16: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) =  1;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) =  79;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+          
+          break;
+        }
+        
+        case PTP_SHUFFLE: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 255;
+          
+          break;
+        }
+        
+        case PTP_MENU: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 4;
+          *(currentStep++) = 'M';
+          *(currentStep++) = 'e';
+          *(currentStep++) = 'n';
+          *(currentStep++) = 'u';
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 0;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = 99;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_X_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = LAST_LOCAL_REGISTER_IN_KS_CODE;
+
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_VARIABLE;
+          *(currentStep++) = 3;
+          *(currentStep++) = 'V';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'r';
+          
+          break;
+        }
+        
+        case PTP_LITERAL: {
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 2; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 3; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 4; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 8; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 10; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_SHORT_INTEGER;
+          *(currentStep++) = 16; // Base
+          *(currentStep++) = 1;
+          *(currentStep++) = 2;
+          *(currentStep++) = 3;
+          *(currentStep++) = 4;
+          *(currentStep++) = 5;
+          *(currentStep++) = 6;
+          *(currentStep++) = 7;
+          *(currentStep++) = 0xF8;
+
+          *(currentStep++) = (ITM_NOP >> 8) | 0x80; // TODO: implement ITM_LITERAL BINARY_LONG_INTEGER
+          *(currentStep++) =  ITM_NOP       & 0xff;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_REAL34;
+          *(currentStep++) =  1;
+          *(currentStep++) =  2;
+          *(currentStep++) =  3;
+          *(currentStep++) =  4;
+          *(currentStep++) =  5;
+          *(currentStep++) =  6;
+          *(currentStep++) =  7;
+          *(currentStep++) =  8;
+          *(currentStep++) =  9;
+          *(currentStep++) = 10;
+          *(currentStep++) = 11;
+          *(currentStep++) = 12;
+          *(currentStep++) = 13;
+          *(currentStep++) = 14;
+          *(currentStep++) = 15;
+          *(currentStep++) = 16;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = BINARY_COMPLEX34;
+          *(currentStep++) =  1;
+          *(currentStep++) =  2;
+          *(currentStep++) =  3;
+          *(currentStep++) =  4;
+          *(currentStep++) =  5;
+          *(currentStep++) =  6;
+          *(currentStep++) =  7;
+          *(currentStep++) =  8;
+          *(currentStep++) =  9;
+          *(currentStep++) = 10;
+          *(currentStep++) = 11;
+          *(currentStep++) = 12;
+          *(currentStep++) = 13;
+          *(currentStep++) = 14;
+          *(currentStep++) = 15;
+          *(currentStep++) = 16;
+          *(currentStep++) = 17;
+          *(currentStep++) = 18;
+          *(currentStep++) = 19;
+          *(currentStep++) = 20;
+          *(currentStep++) = 21;
+          *(currentStep++) = 22;
+          *(currentStep++) = 23;
+          *(currentStep++) = 24;
+          *(currentStep++) = 25;
+          *(currentStep++) = 26;
+          *(currentStep++) = 27;
+          *(currentStep++) = 28;
+          *(currentStep++) = 29;
+          *(currentStep++) = 30;
+          *(currentStep++) = 31;
+          *(currentStep++) = 32;
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_SHORT_INTEGER;
+          *(currentStep++) =  16; // Base
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  'A';
+          *(currentStep++) =  'B';
+          *(currentStep++) =  'C';
+          *(currentStep++) =  'D';
+          *(currentStep++) =  'E';
+          *(currentStep++) =  'F';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_LONG_INTEGER;
+          *(currentStep++) =  6;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_COMPLEX34;
+          *(currentStep++) = 4; // String length
+          *(currentStep++) = '1';
+          *(currentStep++) = '-';
+          *(currentStep++) = 'i';
+          *(currentStep++) = '2';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_TIME;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_DATE;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+          *(currentStep++) =  '6';
+          *(currentStep++) =  '7';
+          *(currentStep++) =  '8';
+          *(currentStep++) =  '9';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_DMS;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_RADIAN;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_GRAD;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_DEGREE;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_MULTPI;
+          *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+          
+          break;
+        }
+        
+        case PTP_REM:
+          break;
+
+        case PTP_DISABLED:
+          break;
+      }
+    }
+    *(currentStep++) = (ITM_END >> 8) | 0x80;
+    *(currentStep++) =  ITM_END       & 0xff;
+
+/*
     *(currentStep++) = ITM_LBL;
     *(currentStep++) = 0;
 
@@ -15168,8 +16704,9 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
-  }
+*/
 
+  }
 
 
 
@@ -19367,7 +20904,6 @@ int main(int argc, char* argv[]) {
 //JACO DEMO END
 
 //-----JACO GENERATED FROM SPREADSHEET ^^^^^^^^^^
-
 
 
 

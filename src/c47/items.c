@@ -8,7 +8,7 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
 }
 
   void fnOldItemError(uint16_t unusedButMandatoryParameter) {
-    #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
       displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE, REGISTER_X);
     #endif // !TESTSUITE_BUILD
   }
@@ -96,7 +96,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
             func == ITM_DENMAX2_OLD);
 }
 
-#if !defined(GENERATE_CATALOGS)
+#if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
   uint16_t indirectionType(uint16_t func) {
     switch(indexOfItems[func].param) {
       case TM_FLAGR   :
@@ -741,9 +741,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
       #endif // PC_BUILD
     }
   }
-#endif // !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS && !GENERATE_TESTPGMS
 
-#if defined(GENERATE_CATALOGS)
+#if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
   void fnAsnViewer                 (uint16_t unusedButMandatoryParameter) {}
   void registerBrowser             (uint16_t unusedButMandatoryParameter) {}
   void flagBrowser                 (uint16_t unusedButMandatoryParameter) {}
@@ -1547,7 +1547,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSetJM                    (uint16_t unusedButMandatoryParameter) {}
   void fnSetRJ                    (uint16_t unusedButMandatoryParameter) {}
 
-#endif // GENERATE_CATALOGS
+#endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
 
 #ifdef TESTSUITE_BUILD
   void fnDiskInfo                 (uint16_t unusedButMandatoryParameter) {}
