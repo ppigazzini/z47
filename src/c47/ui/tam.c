@@ -16,6 +16,9 @@
       {ITM_dddEL,    ITM_STOEL},
       {ITM_dddIJ,    ITM_STOIJ},
       {ITM_dddVEL,   ITM_STOVEL},
+      {ITM_dddVEL1,  ITM_STOVEL1},
+      {ITM_dddVEL2,  ITM_STOVEL2},
+      {ITM_dddVEL3,  ITM_STOVEL3},
       {ITM_dddIX,    ITM_INDEX}
     };
 
@@ -30,6 +33,9 @@
       {ITM_Stack,    ITM_RCLS},
       {ITM_dddEL,    ITM_RCLEL},
       {ITM_dddIJ,    ITM_RCLIJ},
+      {ITM_dddVEL1,  ITM_RCLVEL1},
+      {ITM_dddVEL2,  ITM_RCLVEL2},
+      {ITM_dddVEL3,  ITM_RCLVEL3},
       {ITM_dddVEL,   ITM_RCLVEL}
     };
 
@@ -452,7 +458,10 @@
       hourGlassIconEnabled = false;
       return;
     }
-    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
+    else if(item==ITM_Max    || item==ITM_Min   || 
+            item==ITM_ADD    || item==ITM_SUB   || item==ITM_MULT  || item==ITM_DIV || 
+            item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || 
+            item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_dddVEL1 && item <= ITM_dddVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {
           if(item == ITM_Max) { // UP
@@ -496,7 +505,7 @@
             tam.currentOperation = tam.function;
           }
 
-          else if((item >= ITM_STOVEL1 && item <= ITM_STOVEL3) || (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) {
+          else if(item >= ITM_dddVEL1 && item <= ITM_dddVEL3) {
             tam.currentOperation = item;
             switch(calcMode) {
               case CM_MIM: {
@@ -516,7 +525,7 @@
           }
 
 
-          else if(item == ITM_dddVEL || item == ITM_dddIX) {
+          else if(item == ITM_dddVEL || (item >= ITM_dddVEL1 && item <= ITM_dddVEL3) || item == ITM_dddIX) {
             tam.currentOperation = item;
             if(calcMode != CM_MIM
 //                && !tam.alpha && !tam.dot
@@ -924,7 +933,7 @@ printf("tam.value: %d\n",tam.value);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
-          else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
+          else if(calcMode != CM_PEM){
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);

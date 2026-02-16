@@ -6,6 +6,10 @@
 
   #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+  #if defined(LINUX)
+    #define _XOPEN_SOURCE                800 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
+  #endif // LINUX
+
   #include <assert.h>
   #include <ctype.h>
   #include <errno.h>
@@ -474,7 +478,7 @@
   extern uint8_t                yMultiLineEdOffset;
   extern uint8_t                xMultiLineEdOffset;
   extern uint16_t               current_cursor_x;
-  extern uint16_t               current_cursor_y; 
+  extern uint16_t               current_cursor_y;
   extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
@@ -605,7 +609,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
