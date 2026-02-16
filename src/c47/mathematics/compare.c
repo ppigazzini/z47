@@ -176,12 +176,13 @@ static void cmpToResult(int result, uint8_t mode) {
     SET_TI_TRUE_FALSE((mode & COMPARE_MODE_EQUAL) != 0);
   }
 }
-define GLUE2(x, y) ((uint16_t)(y << 8 | x))
+
+#define GLUE2(x, y) ((uint16_t)(y << 8 | x))
 #define GLUE2X(g) (g & 0xFF)
 #define GLUE2Y(g) (g >> 8)
 
 static void compareRegisters(uint16_t regist, uint8_t mode) {
-  uint32_t test =
+  uint16_t test =
       GLUE2(getRegisterDataType(REGISTER_X), getRegisterDataType(regist));
 
   // pre condition
