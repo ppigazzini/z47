@@ -7,7 +7,15 @@
 
 #include "c47.h"
 
-#if defined(OPTION_TVM_FORMULAS)
+
+
+
+
+#if !defined(OPTION_TVM_FORMULAS) // DM42 normally here
+#define ctxtTvm       ctxtReal39
+#define ctxtSolverTVM ctxtReal51  // only the exp/log parts
+
+#else
 
 #define ctxtTvm       ctxtReal51
 #define ctxtTvmHi     ctxtReal75  // only some exp/log parts
