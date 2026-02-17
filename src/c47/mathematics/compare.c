@@ -177,7 +177,7 @@ static void cmpToResult(int result, uint8_t mode) {
   }
 }
 
-* ============================================================================
+/* ============================================================================
  *  Type-pair helpers (replaces GLUE2 / GLUE2X / GLUE2Y)
  *  - Encodes two 8-bit type IDs into one 16-bit key:
  *      low byte  = left operand type (REGISTER_X)
