@@ -329,7 +329,7 @@
     }
 
 
-    //set the special user profule
+    //set the special user profile
     switch(config) {
       case 1: fnSetJM(0);   break;
       case 2: fnSetRJ(0);   break;
