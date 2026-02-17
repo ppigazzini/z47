@@ -235,13 +235,9 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_t *res) {
   if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-    real34_t tmp34;
-    realToReal34(val, &tmp34);
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    real34Copy(&tmp34, REGISTER_REAL34_DATA(REGISTER_X));
-    copySourceRegisterToDestRegister(REGISTER_X, variable);
-    tvmEquation();
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), res);
+    // pass real_t value via ioVal, result comes back in same variable as real_t
+    realCopy(val, res);
+    tvmEquation(variable, res);
   }
   else {
     real34_t val34, res34;
@@ -460,6 +456,11 @@ retryLevel:
       real34Zero(resZ);
       real34Zero(resY);
       realToReal34(realIsZero(&faa) ? &aa : &bb, resX);
+
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
+      copySourceRegisterToDestRegister(REGISTER_X, variable);
+
       return SOLVER_RESULT_NORMAL;
     }
 
@@ -681,6 +682,10 @@ retryLevel:
     realToReal34(&tmp, resZ);
     realToReal34(&bb1, resY);
     realToReal34(&bb, resX);
+
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
+    copySourceRegisterToDestRegister(REGISTER_X, variable);
 
     if((extendRange && !originallyLevel) || extremum) {
       result = SOLVER_RESULT_EXTREMUM;
