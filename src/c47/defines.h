@@ -963,8 +963,8 @@ typedef enum {
 // 137…249              113 undefined free registers: no possibility of indirect access
 //
 //                             SYSTEM_FLAG_NUMBER --> Used for system flag access                   250
-//                                  VALUE_0 --> Can't remember what this is!                        251
-//                                  VALUE_1 --> Can't remember what this is!                        252
+//                              VALUE_0 --> special "0." value in comparison ops                    251
+//                              VALUE_1 --> special "1." value in comparison ops                    252
 //                                           STRING_LABEL_VARIABLE                                  253
 //                                             INDIRECT_REGISTER                                    254
 //                                             INDIRECT_VARIABLE                                    255
