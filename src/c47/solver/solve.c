@@ -320,6 +320,9 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 #undef SOLVERDEBUG
 #define SOLVERDEBUG2 //only progress indicators
 
+#define ctxtSolver   ctxtReal39
+#define ctxtSolverHi ctxtReal51
+
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
     real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp, antiLevel34, tol34AlmostZero;
@@ -476,32 +479,32 @@ retryLevel:
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
-        realSubtract(&bb, &bb1, &deltaB, &ctxtReal39);
+        realSubtract(&bb, &bb1, &deltaB, &ctxtSolverHi);
       }
       else {
-        realSubtract(&bb1, &bb2, &deltaB, &ctxtReal39);
+        realSubtract(&bb1, &bb2, &deltaB, &ctxtSolverHi);
       }
       realSetPositiveSign(&deltaB);
 
-      _linearInterpolation(&aa, &bb, &faa, &fbb, NULL, &secantSlopeA, &ctxtReal39);
+      _linearInterpolation(&aa, &bb, &faa, &fbb, NULL, &secantSlopeA, &ctxtSolverHi);
 
       // interpolation
       if(!(realCompareEqual(&faa, &fbb) || realCompareEqual(&faa, &fbb1) || realCompareEqual(&fbb, &fbb1))) { // inverse quadratic interpolation
-        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, NULL, &secantSlopeB, &ctxtReal39);
-        _inverseQuadraticInterpolation(&aa, &bb, &bb1, &faa, &fbb, &fbb1, &ss, &ctxtReal39);
+        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, NULL, &secantSlopeB, &ctxtSolverHi);
+        _inverseQuadraticInterpolation(&aa, &bb, &bb1, &faa, &fbb, &fbb1, &ss, &ctxtSolverHi);
       }
       else { // linear interpolation
-        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, &ss, &secantSlopeB, &ctxtReal39);
+        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, &ss, &secantSlopeB, &ctxtSolverHi);
       }
       realToReal34(&ss, &s);
 
-      realSubtract(&ss, &bb, &smb, &ctxtReal39);
-      realMultiply(&smb, const_2, &smb, &ctxtReal39);
+      realSubtract(&ss, &bb, &smb, &ctxtSolverHi);
+      realMultiply(&smb, const_2, &smb, &ctxtSolverHi);
       realSetPositiveSign(&smb);
 
       // bisection
-      realAdd(&aa, &bb, &mm, &ctxtReal39);
-      realMultiply(&mm, const_1on2, &mm, &ctxtReal39);
+      realAdd(&aa, &bb, &mm, &ctxtSolverHi);
+      realMultiply(&mm, const_1on2, &mm, &ctxtSolverHi);
       realToReal34(&mm, &m);
 
       // next point
@@ -634,7 +637,7 @@ retryLevel:
       real34ToReal(&b1, &bb1);
 
 
-      bool_t bb_bb1_converged   = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39);
+      bool_t bb_bb1_converged   = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtSolver);
       bool_t b1_b2_Equal = real34CompareEqual(&b1, &b2);
       bool_t b_b1_Equal  = real34CompareEqual(&b,  &b1);
       fbIsAlmostZero = real34CompareAbsLessThan(&fb,&tol34AlmostZero);
@@ -642,8 +645,8 @@ retryLevel:
       //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
       //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
       //   } while(result == SOLVER_RESULT_NORMAL &&
-      //           (real34IsSpecial(&b2) || !real34CompareEqual(&b1, &b2) || !(extendRange || extremum || WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39))) &&
-      //           (originallyLevel || !((!extendRange && WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39)) || real34CompareEqual(&b, &b1) || real34CompareEqual(&fb, const34_0)))
+      //           (real34IsSpecial(&b2) || !real34CompareEqual(&b1, &b2) || !(extendRange || extremum || WP34S_RelativeError(&bb, &bb1, &tol, &ctxtSolver))) &&
+      //           (originallyLevel || !((!extendRange && WP34S_RelativeError(&bb, &bb1, &tol, &ctxtSolver)) || real34CompareEqual(&b, &b1) || real34CompareEqual(&fb, const34_0)))
       //          );
       //Rewrote the above while condition as more understandable discrete logic:
 
