@@ -346,9 +346,18 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     int16_t getOutOfLevel = 17;
     bool_t fbIsAlmostZero = false;
 
-    convergenceTolerence(&tol);
+    if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
+      stringToReal("1e-38", &tol, &ctxtReal39);
+    } else {
+      convergenceTolerence(&tol);
+    }
+
     stringToReal34("1e-34", &tol34AlmostZero);
-    real34ToReal(&tol34AlmostZero, &tolAlmostZero);
+    if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
+      stringToReal("1e-37", &tolAlmostZero, &ctxtReal39);
+    } else {
+      real34ToReal(&tol34AlmostZero, &tolAlmostZero);
+    }
     //printReal34ToConsole(&tol34AlmostZero,"tol=","\n");
 
     ++currentSolverNestingDepth;
