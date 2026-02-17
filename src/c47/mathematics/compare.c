@@ -361,8 +361,8 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
         cmpToResult(longIntegerCompare(xInt, rInt), mode);
       }
 
-      if (xInt) longIntegerFree(xInt);
-      if (rInt) longIntegerFree(rInt);
+      longIntegerFree(xInt);
+      longIntegerFree(rInt);
     } break;
 
     /* ------------------------------------------------------------------------
