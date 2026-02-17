@@ -121,7 +121,7 @@ In: V2043=Real:"12"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-208.3333333333333333333333333333333"
 
 
-;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = -3.75935122288958926199999999999999E-19
+;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = -7.98337011581690422009588E-34
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"480"
@@ -131,7 +131,7 @@ In: V2039=Real:"100000"
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.98342273380382390721769E-34"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.98337011581690422009588E-34"
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -191,7 +191,7 @@ In: V2043=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"58.46195526622098709870320744645958"
 
 
-;Duncan's TVM problems, #P7;    N=10, i%/a=??, PV=-100, PMT=10, FV=1.0E-10, pp/a=12, cp/a=12; Expected answer = 2.181818181815801652892565121253262E-10
+;Duncan's TVM problems, #P7;    N=10, i%/a=??, PV=-100, PMT=10, FV=1.0E-10, pp/a=12, cp/a=12; Expected answer = 2.181818181815801652892565114774086E-10
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"10"
@@ -201,7 +201,7 @@ In: V2038=Real:"10"
 In: V2034=Real:"1.0E-10"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565121253262E-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565114774086E-10"
 ;TVM iteration check                        = 2.1818181818158016528925658782870022E-10
 
 
