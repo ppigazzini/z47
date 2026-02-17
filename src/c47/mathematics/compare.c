@@ -370,22 +370,26 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     } break;
 
     /* ------------------------------------------------------------------------
-     * Complex & real together
+     * (complex, real) x (complex, real, shortI, longI)
+     * short & long integers will be casted as real
      * Rule:
      *  - If any operand is truly complex (imag != 0), only == and != are supported.
      *  - If both are effectively real (imag == 0), allow full real comparison.
-     * IMPORTANT FIX:
-     *  - Use separate flags (xIsComplex / rIsComplex). Reusing one flag can be
-     *    overwritten by the second read and lead to wrong behavior.
      * ---------------------------------------------------------------------- */
     case type_pair_u8(dtComplex34, dtComplex34):
-    case type_pair_u8(dtReal34,    dtReal34):
     case type_pair_u8(dtComplex34, dtReal34):
-    case type_pair_u8(dtReal34,    dtComplex34): 
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
+
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):
+
+    case type_pair_u8(dtShortInteger, dtComplex34):
     case type_pair_u8(dtShortInteger, dtReal34):
-    case type_pair_u8(dtLongInteger,  dtReal34):
-    case type_pair_u8(dtReal34,       dtShortInteger):
-    case type_pair_u8(dtReal34,       dtLongInteger): {
+    case type_pair_u8(dtLongInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtReal34): {
 
       bool xIsComplex = false;
       bool rIsComplex = false;
