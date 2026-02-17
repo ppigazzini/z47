@@ -236,6 +236,24 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
   }
 }
 
+static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_t *res) {
+  if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
+    real34_t tmp34;
+    realToReal34(val, &tmp34);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    real34Copy(&tmp34, REGISTER_REAL34_DATA(REGISTER_X));
+    copySourceRegisterToDestRegister(REGISTER_X, variable);
+    tvmEquation();
+    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), res);
+  }
+  else {
+    real34_t val34, res34;
+    realToReal34(val, &val34);
+    _executeSolver(variable, &val34, &res34);
+    real34ToReal(&res34, res);
+  }
+}
+
 
   static void _linearInterpolation(const real_t *a, const real_t *b, const real_t *fa, const real_t *fb, real_t *res, real_t *slope, realContext_t *realContext) {
     real_t amb, famfb;
