@@ -393,8 +393,9 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
 
       bool isComplex = false;
 
-      // Note: getRegisterAsComplexOrAnyReal set isComplex to true or leave it intact
-      // hence achives a OR function
+      
+      // Note: getRegisterAsComplexOrAnyReal sets isComplex to true or leaves it unchanged,
+      // effectively implementing a logical OR.
       if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &isComplex)) {
         compareTypeError(REGISTER_X);
         break;
