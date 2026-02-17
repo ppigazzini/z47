@@ -184,9 +184,9 @@ static void cmpToResult(int result, uint8_t mode) {
  *      high byte = right operand type (regist)
  *  IMPORTANT: This assumes dtXXX values fit into 0..255. If not, use 16+16.
  * ========================================================================== */
-#define type_pair_u8(uint8_t lo, uint8_t hi) ((uint16_t)lo | ((uint16_t)hi << 8))
-#define type_lo_u8(uint16_t p) ((uint8_t)(p & 0xFFu))
-#define type_hi_u8(uint16_t p) ((uint8_t)(p >> 8))
+#define type_pair_u8(lo, hi) ((uint16_t)lo | ((uint16_t)hi << 8))
+#define type_lo_u8(p) ((uint8_t)(p & 0xFFu))
+#define type_hi_u8(p) ((uint8_t)(p >> 8))
 
 /* Normalize any comparator output into -1 / 0 / +1 */
 static inline int cmp_sign(int v) { return (v > 0) - (v < 0); }
