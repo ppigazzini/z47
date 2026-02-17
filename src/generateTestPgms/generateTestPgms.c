@@ -5091,13 +5091,12 @@ int main(int argc, char* argv[]) {
     // 1
     *(currentStep++) = ITM_LBL;
     *(currentStep++) = STRING_LABEL_VARIABLE;
-    *(currentStep++) = 7; // String length
+    *(currentStep++) = 6; // String length
     *(currentStep++) = 'A';
     *(currentStep++) = 'l';
     *(currentStep++) = 'l';
     *(currentStep++) = 'O';
     *(currentStep++) = 'p';
-    *(currentStep++) = '\'';
     *(currentStep++) = 's';
 
     int32_t item;
@@ -5120,7 +5119,24 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = 'A' - 'A' + 100; // A
 
           currentStep = _insertItem(item,currentStep);
-          *(currentStep++) = 'E' - 'A' + 100; // E
+          *(currentStep++) = 'L' - 'A' + 100; // L
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'a' - 'a' + FIRST_LC_LOCAL_LABEL;  // a
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'l' - 'a' + FIRST_LC_LOCAL_LABEL;  // l
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 6; // String length
+          *(currentStep++) = 'C';
+          *(currentStep++) = STD_i_ACUTE[0];
+          *(currentStep++) = STD_i_ACUTE[1];
+          *(currentStep++) = 'm';
+          *(currentStep++) = 'k';
+          *(currentStep++) = 'e';
+
           break;
         }
         case PTP_LABEL: {
@@ -5135,18 +5151,24 @@ int main(int argc, char* argv[]) {
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = 'A' - 'A' + 100; // A
 
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'L' - 'A' + 100; // L
+          
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 'a' - 'a' + FIRST_LC_LOCAL_LABEL;  // a
 
           currentStep = _insertItem(item,currentStep);
-          *(currentStep++) = 'E' - 'A' + 100; // E
+          *(currentStep++) = 'l' - 'a' + FIRST_LC_LOCAL_LABEL;  // l
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = STRING_LABEL_VARIABLE;
-          *(currentStep++) = 5;
-          *(currentStep++) = 'L';
-          *(currentStep++) = 'a';
-          *(currentStep++) = 'b';
+          *(currentStep++) = 6; // String length
+          *(currentStep++) = 'C';
+          *(currentStep++) = STD_i_ACUTE[0];
+          *(currentStep++) = STD_i_ACUTE[1];
+          *(currentStep++) = 'm';
+          *(currentStep++) = 'k';
           *(currentStep++) = 'e';
-          *(currentStep++) = 'l';
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
@@ -5164,7 +5186,7 @@ int main(int argc, char* argv[]) {
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
-          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
 
           currentStep = _insertItem(item,currentStep);
@@ -5179,10 +5201,12 @@ int main(int argc, char* argv[]) {
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_VARIABLE;
-          *(currentStep++) = 3;
+          *(currentStep++) = 5;
           *(currentStep++) = 'V';
           *(currentStep++) = 'a';
           *(currentStep++) = 'r';
+          *(currentStep++) = STD_alpha[0];
+          *(currentStep++) = STD_alpha[1];
 
           break;
         }
@@ -5197,7 +5221,7 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
-          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE;
@@ -5226,7 +5250,7 @@ int main(int argc, char* argv[]) {
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
-          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
@@ -5286,7 +5310,7 @@ int main(int argc, char* argv[]) {
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
-          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
@@ -5325,7 +5349,7 @@ int main(int argc, char* argv[]) {
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
-          *(currentStep++) = REGISTER_K_IN_KS_CODE;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
@@ -5377,7 +5401,7 @@ int main(int argc, char* argv[]) {
 
             currentStep = _insertItem(item,currentStep);
             *(currentStep++) = INDIRECT_REGISTER;
-            *(currentStep++) = REGISTER_K_IN_KS_CODE;
+            *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
             currentStep = _insertItem(item,currentStep);
             *(currentStep++) = INDIRECT_REGISTER;
@@ -5398,6 +5422,12 @@ int main(int argc, char* argv[]) {
         }
         
         case PTP_COMPARE: {
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = VALUE_0;
+          
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = VALUE_1;
+          
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = 0;
 
@@ -6323,6 +6353,12 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = 0;
 
           currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 27;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = 228;
+
+          currentStep = _insertItem(item,currentStep);
           *(currentStep++) = 255;
           
           break;
@@ -6350,11 +6386,17 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = INDIRECT_REGISTER;
           *(currentStep++) = REGISTER_X_IN_KS_CODE;
 
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_M_IN_KS_CODE;
+
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = INDIRECT_REGISTER;
+          *(currentStep++) = REGISTER_W_IN_KS_CODE;
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
           *(currentStep++) = REGISTER_K_IN_KS_CODE;
-
 
           currentStep = _insertItem(item,currentStep);
           *(currentStep++) = INDIRECT_REGISTER;
@@ -6509,6 +6551,17 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = ITM_LITERAL;
           *(currentStep++) = STRING_SHORT_INTEGER;
           *(currentStep++) =  16; // Base
+          *(currentStep++) =  6;  // String length
+          *(currentStep++) =  'A';
+          *(currentStep++) =  'B';
+          *(currentStep++) =  'C';
+          *(currentStep++) =  'D';
+          *(currentStep++) =  'E';
+          *(currentStep++) =  'F';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_SHORT_INTEGER;
+          *(currentStep++) =  16; // Base
           *(currentStep++) =  7;  // String length
           *(currentStep++) =  '-';
           *(currentStep++) =  'A';
@@ -6539,6 +6592,17 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = ITM_LITERAL;
           *(currentStep++) = STRING_TIME;
           *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_TIME;
+          *(currentStep++) =  7;  // String length
           *(currentStep++) =  '-';
           *(currentStep++) =  '1';
           *(currentStep++) =  '.';
@@ -6561,7 +6625,28 @@ int main(int argc, char* argv[]) {
           *(currentStep++) = ITM_LITERAL;
           *(currentStep++) = STRING_ANGLE_DMS;
           *(currentStep++) =  7;  // String length
+          *(currentStep++) =  '7';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_DMS;
+          *(currentStep++) =  7;  // String length
           *(currentStep++) =  '-';
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_RADIAN;
+          *(currentStep++) =  6;  // String length
           *(currentStep++) =  '1';
           *(currentStep++) =  '.';
           *(currentStep++) =  '2';
@@ -6582,9 +6667,33 @@ int main(int argc, char* argv[]) {
 
           *(currentStep++) = ITM_LITERAL;
           *(currentStep++) = STRING_ANGLE_GRAD;
+          *(currentStep++) =  8;  // String length
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '9';
+          *(currentStep++) =  '8';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_GRAD;
           *(currentStep++) =  7;  // String length
           *(currentStep++) =  '-';
           *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_DEGREE;
+          *(currentStep++) =  8;  // String length
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '7';
+          *(currentStep++) =  '9';
           *(currentStep++) =  '.';
           *(currentStep++) =  '2';
           *(currentStep++) =  '3';
@@ -6604,6 +6713,16 @@ int main(int argc, char* argv[]) {
 
           *(currentStep++) = ITM_LITERAL;
           *(currentStep++) = STRING_ANGLE_MULTPI;
+          *(currentStep++) =  6;  // String length
+          *(currentStep++) =  '1';
+          *(currentStep++) =  '.';
+          *(currentStep++) =  '2';
+          *(currentStep++) =  '3';
+          *(currentStep++) =  '4';
+          *(currentStep++) =  '5';
+          
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_ANGLE_MULTPI;
           *(currentStep++) =  7;  // String length
           *(currentStep++) =  '-';
           *(currentStep++) =  '1';
@@ -6612,11 +6731,88 @@ int main(int argc, char* argv[]) {
           *(currentStep++) =  '3';
           *(currentStep++) =  '4';
           *(currentStep++) =  '5';
-          
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 0; // Length
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 20; // Length
+          *(currentStep++) = 'A';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'm';
+          *(currentStep++) = 'e';
+          *(currentStep++) = 's';
+          *(currentStep++) = 's';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'g';
+          *(currentStep++) = 'e';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'i';
+          *(currentStep++) = 'n';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'E';
+          *(currentStep++) = 'n';
+          *(currentStep++) = 'g';
+          *(currentStep++) = 'l';
+          *(currentStep++) = 'i';
+          *(currentStep++) = 's';
+          *(currentStep++) = 'h';
+
+          *(currentStep++) = ITM_LITERAL;
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 24; // Length
+          *(currentStep++) = 'U';
+          *(currentStep++) = 'n';
+          *(currentStep++) = 'e';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'c';
+          *(currentStep++) = 'h';
+          *(currentStep++) = 'a';
+          *(currentStep++) = STD_i_CIRC[0];
+          *(currentStep++) = STD_i_CIRC[1];
+          *(currentStep++) = 'n';
+          *(currentStep++) = 'e';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'e';
+          *(currentStep++) = 'n';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'f';
+          *(currentStep++) = 'r';
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'n';
+          *(currentStep++) = STD_c_CEDILLA[0];
+          *(currentStep++) = STD_c_CEDILLA[1];
+          *(currentStep++) = 'a';
+          *(currentStep++) = 'i';
+          *(currentStep++) = 's';
+
           break;
         }
         
         case PTP_REM:
+          currentStep = _insertItem(item,currentStep);
+          *(currentStep++) = STRING_LABEL_VARIABLE;
+          *(currentStep++) = 18;
+          *(currentStep++) = 'T';
+          *(currentStep++) = 'h';
+          *(currentStep++) = 'i';
+          *(currentStep++) = 's';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'i';
+          *(currentStep++) = 's';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'a';
+          *(currentStep++) = ' ';
+          *(currentStep++) = 'c';
+          *(currentStep++) = 'o';
+          *(currentStep++) = 'm';
+          *(currentStep++) = 'm';
+          *(currentStep++) = 'e';
+          *(currentStep++) = 'n';
+          *(currentStep++) = 't';
+          *(currentStep++) = '.';
           break;
 
         case PTP_DISABLED:
