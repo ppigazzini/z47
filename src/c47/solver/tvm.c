@@ -8,18 +8,28 @@
 #include "c47.h"
 
 
-
+// Create context for this module only
+static decContext ctxtTvm42;
+static inline void ensureTvmContext(void) {
+  if(ctxtTvm42.digits == 0) {
+    ctxtTvm42 = ctxtReal39;
+    ctxtTvm42.digits = 42;
+  }
+}
 
 
 #if !defined(OPTION_TVM_FORMULAS) // DM42 normally here
-#define ctxtTvm         ctxtReal39
-#define ctxtSolverTvmHi ctxtReal51  // only the exp/log parts
+#define ctxtTvm           ctxtTvm42
+//#define ctxtTvmHi       ctxtTvm42  // not used in DM42 version
+#define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
+#define ctxtSolverTvmInv ctxtReal51  // only the inverting of i
 
 #else
 
-#define ctxtTvm         ctxtReal51
-#define ctxtTvmHi       ctxtReal75  // only some exp/log parts
-#define ctxtSolverTvmHi ctxtReal75  // only the exp/log parts
+#define ctxtTvm          ctxtReal51
+#define ctxtTvmHi        ctxtReal51  // only some exp/log parts
+#define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
+#define ctxtSolverTvmInv ctxtReal75  // only the inverting of i
 
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   const char * const tvmErrorMessages[] = {
@@ -51,6 +61,7 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
                                     const real_t *paymentPerYear,
                                     real_t *ip,
                                     int *error) {
+  ensureTvmContext();
   real_t ic, temp, exponent;
   
   // Check for zero frequencies
@@ -100,6 +111,7 @@ int calculatePV(const real_t *fv,
                 const real_t *compoundPerYear,
                 const real_t *p,
                 real_t *pv) {
+  ensureTvmContext();
   real_t ip, temp1, temp2, temp3, negNpper, powerTerm, annuityFactor;
   int error = 0;
   
@@ -158,6 +170,7 @@ int calculateFV(const real_t *pv,
                 const real_t *compoundPerYear,
                 const real_t *p,
                 real_t *fv) {
+  ensureTvmContext();
   real_t ip, temp1, temp2, temp3, powerTerm, annuityFactor;
   int error = 0;
   
@@ -215,6 +228,7 @@ int calculatePMT(const real_t *pv,
                  const real_t *compoundPerYear,
                  const real_t *p,
                  real_t *pmt) {
+  ensureTvmContext();
   real_t ip, temp1, temp2, temp3, negNpper, powerTerm, numerator, denominator;
   int error = 0;
   
@@ -284,6 +298,7 @@ int calculateNPPER(const real_t *pv,
                    const real_t *compoundPerYear,
                    const real_t *p,
                    real_t *npper) {
+  ensureTvmContext();
   real_t ip, temp1, temp2, a, b, ratio, lnRatio, lnBase;
   int error = 0;
   
@@ -390,6 +405,7 @@ int calculatePPER(const real_t *pv,
                   const real_t *compoundPerYear,
                   const real_t *p,
                   real_t *paymentPerYear) {
+  ensureTvmContext();
   real_t ic, temp1, temp2, lnBase, lnTarget, ratio;
   real_t ip_effective;
   
@@ -493,6 +509,7 @@ int calculateCPER(const real_t *pv,
                   const real_t *pmt,
                   const real_t *p,
                   real_t *compoundPerYear) {
+  ensureTvmContext();
   real_t ip, ic, temp1, temp2;
   real_t exponent, test_ip, error_val, tolerance;
   real_t delta;
@@ -893,6 +910,7 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 
 void fnEff(uint16_t unusedButMandatoryParameter) {
+  ensureTvmContext();
   real_t iA, cperA, tmp;
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
     //   EFF = 100({[iA / 100cperA] + 1} ^ cperA - 1)
@@ -967,6 +985,7 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(calcRegister_t variable, real_t *ioVal) {
+  ensureTvmContext();
   real_t fv, iA, nPer, pperA, cperA, pmt, pv;
   real_t i1nPer, val, tmp, r;
   static real_t i;
@@ -1069,7 +1088,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal) {
   realMultiply(&val, &pmt, &val, &ctxtTvm);
 
   // divide tmp by i before sign flip: tmp/i = expm1(n*ln1p(i))/i -> n as i->0, no cancellation
-  realDivide(&tmp, &i, &tmp, &ctxtSolverTvmHi);              // increase digits to make sure 1/i for very small i will not loose digits.
+  realDivide(&tmp, &i, &tmp, &ctxtSolverTvmInv);              // increase digits to make sure 1/i for very small i will not loose digits.
   realChangeSign(&tmp);
   realMultiply(&val, &tmp, &val, &ctxtTvm);
 
