@@ -187,46 +187,6 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
-  static void _solverIteration(real34_t *res) {
-    if(lastErrorCode == ERROR_SOLVER_ABORT) {
-      realToReal34(const_NaN, res);
-      return;
-    }
-    if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-      tvmEquation();
-    }
-    else if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
-      parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
-    }
-    else {
-      uint16_t savedCurrentSolverProgram = currentSolverProgram;
-      dynamicMenuItem = -1;
-      execProgram(currentSolverProgram + FIRST_LABEL);
-      currentSolverProgram = savedCurrentSolverProgram;
-    }
-    if(lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
-      realToReal34(const_plusInfinity, res);
-      lastErrorCode = ERROR_NONE;
-    }
-    else if(lastErrorCode == ERROR_OVERFLOW_MINUS_INF) {
-      realToReal34(const_minusInfinity, res);
-      lastErrorCode = ERROR_NONE;
-    }
-    else if(lastErrorCode != ERROR_NONE) {
-      realToReal34(const_NaN, res);
-    }
-    else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
-      ;
-    } 
-    else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
-      real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
-      real34ChangeSign(res);
-    }
-    else {
-      realToReal34(const_NaN, res);
-    }
-  }
-
 static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_t *res) {
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   real34Copy(val, REGISTER_REAL34_DATA(REGISTER_X));
@@ -237,8 +197,45 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
     reallyRunFunction(ITM_STO, variable);
     fnFillStack(NOPARAM);
   }
-  _solverIteration(res);
+  if(lastErrorCode == ERROR_SOLVER_ABORT) {
+    realToReal34(const_NaN, res);
+    return;
+  }
+  if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
+    tvmEquation();
+  }
+  else if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
+    parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+  }
+  else {
+    uint16_t savedCurrentSolverProgram = currentSolverProgram;
+    dynamicMenuItem = -1;
+    execProgram(currentSolverProgram + FIRST_LABEL);
+    currentSolverProgram = savedCurrentSolverProgram;
+  }
+  if(lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
+    realToReal34(const_plusInfinity, res);
+    lastErrorCode = ERROR_NONE;
+  }
+  else if(lastErrorCode == ERROR_OVERFLOW_MINUS_INF) {
+    realToReal34(const_minusInfinity, res);
+    lastErrorCode = ERROR_NONE;
+  }
+  else if(lastErrorCode != ERROR_NONE) {
+    realToReal34(const_NaN, res);
+  }
+  else if(getRegisterAsReal34Quiet(REGISTER_X, res)) {
+    ;
+  }
+  else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+    real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
+    real34ChangeSign(res);
+  }
+  else {
+    realToReal34(const_NaN, res);
+  }
 }
+
 
   static void _linearInterpolation(const real_t *a, const real_t *b, const real_t *fa, const real_t *fb, real_t *res, real_t *slope, realContext_t *realContext) {
     real_t amb, famfb;
@@ -446,6 +443,8 @@ retryLevel:
       return SOLVER_RESULT_NORMAL;
     }
 
+
+    // =========== ITERATION START =============
     do {
       // convert real34 to real
       real34ToReal(&a, &aa);
