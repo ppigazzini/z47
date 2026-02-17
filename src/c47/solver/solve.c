@@ -328,8 +328,12 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 #undef SOLVERDEBUG
 #define SOLVERDEBUG2 //only progress indicators
 
+//The solver converter to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the legacy callers
 #define ctxtSolver   ctxtReal39
-#define ctxtSolverHi ctxtReal51
+#define ctxtSolverHi ctxtReal39
+//The 39-digit solver tolerances must be lower in order to leverage the guard digits
+#define solverTvmTol "1E-36"  
+#define solverTvmZer "1E-37"  
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
@@ -345,18 +349,17 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     int loop = 0;
     int16_t getOutOfLevel = 17;
     bool_t fbIsAlmostZero = false;
-
-    if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-      stringToReal("1e-38", &tol, &ctxtReal39);
-    } else {
-      convergenceTolerence(&tol);
-    }
+    real_t minBracketSpacing;
 
     stringToReal34("1e-34", &tol34AlmostZero);
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-      stringToReal("1e-37", &tolAlmostZero, &ctxtReal39);
+      stringToReal(solverTvmTol, &tol, &ctxtReal39);
+      stringToReal(solverTvmZer, &tolAlmostZero, &ctxtReal39);
+      stringToReal(solverTvmTol, &minBracketSpacing, &ctxtReal39);
     } else {
+      convergenceTolerence(&tol);
       real34ToReal(&tol34AlmostZero, &tolAlmostZero);
+      realCopy(const_1e_32, &minBracketSpacing);
     }
     //printReal34ToConsole(&tol34AlmostZero,"tol=","\n");
 
@@ -409,8 +412,8 @@ retryLevel:
     #endif
 
     realSubtract(&bb, &aa, &ss, &ctxtSolver);
-    if(realCompareAbsLessThan(&ss, const_1e_32)) {
-      realCopy(const_1e_32, &ss);
+    if(realCompareAbsLessThan(&ss, &minBracketSpacing)) {
+      realCopy(&minBracketSpacing, &ss);
       if(realCompareLessThan(&bb, &aa)) {
         realSetNegativeSign(&ss);
       }
@@ -533,8 +536,8 @@ retryLevel:
       if(extendRange) {
         if(realCompareEqual(&fbb, &faa)) {
           realSubtract(&bb, &aa, &ss, &ctxtSolver);
-          if(realCompareAbsLessThan(&ss, const_1e_32)) {
-            realCopy(const_1e_32, &ss);
+          if(realCompareAbsLessThan(&ss, &minBracketSpacing)) {
+            realCopy(&minBracketSpacing, &ss);
             if(realCompareLessThan(&bb, &aa)) {
               realSetNegativeSign(&ss);
             }
@@ -554,13 +557,13 @@ retryLevel:
           realAdd(&ss, &bb, &ss, &ctxtSolver);
         }
         else if(realIsNegative(&fbb)) {
-          realMultiply(&bb, const_1e_32, &ss, &ctxtSolver);
+          realMultiply(&bb, &minBracketSpacing, &ss, &ctxtSolver);
           realSubtract(&bb, &ss, &ss, &ctxtSolver);
         }
         else {
-          realMultiply(&bb, const_1e_32, &ss, &ctxtSolver);
+          realMultiply(&bb, &minBracketSpacing, &ss, &ctxtSolver);
           if(realCompareAbsLessThan(&ss, const_1e_32)) {
-            realCopy(const_1e_32, &ss);
+            realCopy(&minBracketSpacing, &ss);
             if(realCompareLessThan(&bb, &aa)) {
               realSetNegativeSign(&ss);
             }
@@ -715,7 +718,7 @@ retryLevel:
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
       bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
       setSystemFlag(FLAG_SOLVING);
-      realCopy(const_1e_32, &tmp);
+      realCopy(&minBracketSpacing, &tmp);
       while(true) {
         real_t resXr, resZr;
         real34ToReal(resX, &resXr);
