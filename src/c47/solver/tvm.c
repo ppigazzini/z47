@@ -12,14 +12,14 @@
 
 
 #if !defined(OPTION_TVM_FORMULAS) // DM42 normally here
-#define ctxtTvm       ctxtReal39
-#define ctxtSolverTVM ctxtReal51  // only the exp/log parts
+#define ctxtTvm         ctxtReal39
+#define ctxtSolverTvmHi ctxtReal51  // only the exp/log parts
 
 #else
 
-#define ctxtTvm       ctxtReal51
-#define ctxtTvmHi     ctxtReal75  // only some exp/log parts
-#define ctxtSolverTVM ctxtReal75  // only the exp/log parts
+#define ctxtTvm         ctxtReal51
+#define ctxtTvmHi       ctxtReal75  // only some exp/log parts
+#define ctxtSolverTvmHi ctxtReal75  // only the exp/log parts
 
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   const char * const tvmErrorMessages[] = {
@@ -1007,52 +1007,60 @@ void tvmEquation(void) {
    */
 
   if((!tvmIKnown) || (tvmIChanges)) { // if i hasn't been found yet or i changes each time
-    realDivide(&iA, const_100, &i, &ctxtReal39);
-    realDivide(&i, &pperA, &i, &ctxtReal39);
+    realDivide(&iA, const_100, &i, &ctxtTvm);
+    realDivide(&i, &pperA, &i, &ctxtTvm);
     // i is now (iA / 100) / pperA.
     // This is the "normal" value of i when cperA = pperA.
 
-    realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
+    realDivide(&cperA, &pperA, &r, &ctxtTvm); // r = cperA / pperA
 
     if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
-      realDivide(&i, &r, &i, &ctxtReal39);
+      realDivide(&i, &r, &i, &ctxtTvm);
       {
         // Converted to: (1+i)^r = exp(r * ln(1+i))
         real_t temp;
-        WP34S_Ln1P(&i, &temp, &ctxtSolverTVM);             // temp = ln(1 + i)
-        realMultiply(&temp, &r, &temp, &ctxtSolverTVM);    // temp = r * ln(1 + i)
-        WP34S_ExpM1(&temp, &i, &ctxtSolverTVM);            // i = exp(r * ln(1 + i)) - 1
+        WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);             // temp = ln(1 + i)
+        realMultiply(&temp, &r, &temp, &ctxtSolverTvmHi);    // temp = r * ln(1 + i)
+        WP34S_ExpM1(&temp, &i, &ctxtSolverTvmHi);            // i = exp(r * ln(1 + i)) - 1
       } // i = (1 + (i/pperA)/r)^r - 1
     }
     tvmIKnown = true;
   }
 
   realChangeSign(&pv);
+  // early return for i = 0: exact limit avoids 0/0 in annuity; f = -PV + n*PMT - FV (k -> 1 for both modes)
+  if(realIsZero(&i)) {
+    realMultiply(&nPer, &pmt, &val, &ctxtTvm);
+    realAdd(&pv, &val, &val, &ctxtTvm);
+    realSubtract(&val, &fv, &val, &ctxtTvm);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    convertRealToReal34ResultRegister(&val, REGISTER_X);
+    return;
+  }
   {
     // Converted to: (1+i)^nPer = exp(nPer * ln(1+i))
     real_t temp;
-    WP34S_Ln1P(&i, &temp, &ctxtSolverTVM);                 // temp = ln(1 + i)
-    realMultiply(&temp, &nPer, &temp, &ctxtSolverTVM);     // temp = nPer * ln(1 + i)
-    realExp(&temp, &i1nPer, &ctxtSolverTVM);               // i1nPer = exp(nPer * ln(1 + i))
+    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);                 // temp = ln(1 + i)
+    realMultiply(&temp, &nPer, &temp, &ctxtSolverTvmHi);     // temp = nPer * ln(1 + i)
+    WP34S_ExpM1(&temp, &tmp, &ctxtSolverTvmHi);              // tmp = (1+i)^nPer - 1
   }
+  realAdd(&tmp, const_1, &i1nPer, &ctxtTvm);               // i1nPer = (1+i)^nPer
   if(getSystemFlag(FLAG_ENDPMT)) {
     realCopy(const_1, &val); // END mode
   }
   else {
-    realAdd(const_1, &i, &val, &ctxtReal39); // BEGIN mode
+    realAdd(const_1, &i, &val, &ctxtTvm); // BEGIN mode
   }
 
-  realMultiply(&val, &pmt, &val, &ctxtReal39);
-  if(realCompareAbsLessThan(&i,const_1e_37)) {    //prevent infinity when i = 0, to continue work
-    realCopy(const_1e_37,&i);
-  }
-  realDivide(&val, &i, &val, &ctxtSolverTVM);              // increase digits to make sure 1/i for very small i will not loose digits.
+  realMultiply(&val, &pmt, &val, &ctxtTvm);
 
-  realSubtract(const_1, &i1nPer, &tmp, &ctxtReal39);
-  realMultiply(&val, &tmp, &val, &ctxtReal39);
+  // divide tmp by i before sign flip: tmp/i = expm1(n*ln1p(i))/i -> n as i->0, no cancellation
+  realDivide(&tmp, &i, &tmp, &ctxtSolverTvmHi);              // increase digits to make sure 1/i for very small i will not loose digits.
+  realChangeSign(&tmp);
+  realMultiply(&val, &tmp, &val, &ctxtTvm);
 
-  realFMA(&pv, &i1nPer, &val, &val, &ctxtReal39);
-  realSubtract(&val, &fv, &val, &ctxtReal39);
+  realFMA(&pv, &i1nPer, &val, &val, &ctxtTvm);
+  realSubtract(&val, &fv, &val, &ctxtTvm);
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&val, REGISTER_X);
