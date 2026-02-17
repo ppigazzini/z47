@@ -350,8 +350,8 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     case type_pair_u8(dtLongInteger,  dtLongInteger):
     case type_pair_u8(dtShortInteger, dtLongInteger):
     case type_pair_u8(dtLongInteger,  dtShortInteger): {
-      longInteger_t xInt = NULL;
-      longInteger_t rInt = NULL;
+      longInteger_t xInt;
+      longInteger_t rInt;
 
       if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
         compareTypeError(REGISTER_X);
