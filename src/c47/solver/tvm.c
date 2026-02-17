@@ -966,18 +966,30 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 
 
-void tvmEquation(void) {
+void tvmEquation(calcRegister_t variable, real_t *ioVal) {
   real_t fv, iA, nPer, pperA, cperA, pmt, pv;
   real_t i1nPer, val, tmp, r;
   static real_t i;
 
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);     //future value
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);     //interest percentage per annum
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);   //number of periods
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);  //payment periods per annum
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);  //compounding periods per annum
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);    //payment
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);     //present value
+  if(variable != RESERVED_VARIABLE_FV     ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);   }  //future value
+  if(variable != RESERVED_VARIABLE_IPONA  ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);   }  //interest percentage per annum
+  if(variable != RESERVED_VARIABLE_NPPER  ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer); }  //number of periods
+  if(variable != RESERVED_VARIABLE_PPERONA) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);}  //payment periods per annum
+  if(variable != RESERVED_VARIABLE_CPERONA) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);}  //compounding periods per annum
+  if(variable != RESERVED_VARIABLE_PMT    ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);  }  //payment
+  if(variable != RESERVED_VARIABLE_PV     ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);   }  //present value
+
+  // override the new real_t variable being solved, with the incoming full digit real_t value from the solver, overriding the priod 34-digit from the reserved value.
+  switch(variable) {
+    case RESERVED_VARIABLE_FV:     realCopy(ioVal, &fv);    break;
+    case RESERVED_VARIABLE_IPONA:  realCopy(ioVal, &iA);    break;
+    case RESERVED_VARIABLE_NPPER:  realCopy(ioVal, &nPer);  break;
+    case RESERVED_VARIABLE_PPERONA:realCopy(ioVal, &pperA); break;
+    case RESERVED_VARIABLE_CPERONA:realCopy(ioVal, &cperA); break;
+    case RESERVED_VARIABLE_PMT:    realCopy(ioVal, &pmt);   break;
+    case RESERVED_VARIABLE_PV:     realCopy(ioVal, &pv);    break;
+  }
+
   /*
     The plan is to find an interest rate iM which,
     when compounded pperA times in a year, gives iAER.
@@ -1033,8 +1045,10 @@ void tvmEquation(void) {
     realMultiply(&nPer, &pmt, &val, &ctxtTvm);
     realAdd(&pv, &val, &val, &ctxtTvm);
     realSubtract(&val, &fv, &val, &ctxtTvm);
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    convertRealToReal34ResultRegister(&val, REGISTER_X);
+    // result returned via ioVal; X-register write commented out (may be needed on solver abort)
+    realCopy(&val, ioVal);
+    //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    //convertRealToReal34ResultRegister(&val, REGISTER_X);
     return;
   }
   {
@@ -1062,6 +1076,8 @@ void tvmEquation(void) {
   realFMA(&pv, &i1nPer, &val, &val, &ctxtTvm);
   realSubtract(&val, &fv, &val, &ctxtTvm);
 
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&val, REGISTER_X);
+  // result returned via ioVal; X-register write commented out (may be needed on solver abort)
+  realCopy(&val, ioVal);
+  //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  //convertRealToReal34ResultRegister(&val, REGISTER_X);
 }
