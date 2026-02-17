@@ -177,146 +177,247 @@ static void cmpToResult(int result, uint8_t mode) {
   }
 }
 
-#define GLUE2(x, y) ((uint16_t)(y << 8 | x))
-#define GLUE2X(g) (g & 0xFF)
-#define GLUE2Y(g) (g >> 8)
+* ============================================================================
+ *  Type-pair helpers (replaces GLUE2 / GLUE2X / GLUE2Y)
+ *  - Encodes two 8-bit type IDs into one 16-bit key:
+ *      low byte  = left operand type (REGISTER_X)
+ *      high byte = right operand type (regist)
+ *  IMPORTANT: This assumes dtXXX values fit into 0..255. If not, use 16+16.
+ * ========================================================================== */
+
+static inline uint16_t type_pair_u8(uint8_t lo, uint8_t hi) {
+  return (uint16_t)lo | ((uint16_t)hi << 8);
+}
+
+static inline uint8_t type_lo_u8(uint16_t p) { return (uint8_t)(p & 0xFFu); }
+static inline uint8_t type_hi_u8(uint16_t p) { return (uint8_t)(p >> 8); }
+
+/* Normalize any comparator output into -1 / 0 / +1 */
+static inline int cmp_sign(int v) { return (v > 0) - (v < 0); }
+
+static inline bool mode_is_equality(uint8_t mode) {
+  return (mode == COMPARE_MODE_EQUAL) || (mode == COMPARE_MODE_NOT_EQUAL);
+}
+
+/* ============================================================================
+ *  Register eligibility helpers (precondition)
+ *  Goal: replace the hard-to-read compound boolean with readable helpers.
+ * ========================================================================== */
+
+static inline bool in_range_inclusive(uint16_t v, uint16_t lo, uint16_t hi) {
+  return (v >= lo) && (v <= hi);
+}
+
+static inline bool is_local_register(uint16_t r) {
+  /* Assumption: currentNumberOfLocalRegisters is a COUNT -> upper bound exclusive */
+  const uint16_t first = FIRST_LOCAL_REGISTER;
+  const uint16_t end_exclusive =
+      (uint16_t)(FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
+  return (r >= first) && (r < end_exclusive);
+}
+
+static inline bool is_named_variable(uint16_t r) {
+  /* Assumption: numberOfNamedVariables is a COUNT.
+     If it is already an inclusive max index, adjust accordingly. */
+  if (numberOfNamedVariables == 0) return false;
+  const uint16_t lo = FIRST_NAMED_VARIABLE;
+  const uint16_t hi =
+      (uint16_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+  return in_range_inclusive(r, lo, hi);
+}
+
+static inline bool is_reserved_variable(uint16_t r) {
+  return in_range_inclusive(r, FIRST_RESERVED_VARIABLE, LAST_RESERVED_VARIABLE);
+}
+
+static inline bool is_comparable_register(uint16_t r) {
+  return is_local_register(r) ||
+         is_named_variable(r) ||
+         is_reserved_variable(r) ||
+         (r == TEMP_REGISTER_1);
+}
+
+/* ============================================================================
+ *  Numeric comparison helpers
+ * ========================================================================== */
+
+static inline void compare_reals_or_set_false(real_t *a, real_t *b, uint8_t mode) {
+  /* Real ordering/equality is invalid if any operand is NaN */
+  if (realIsNaN(a) || realIsNaN(b)) {
+    temporaryInformation = TI_FALSE;
+    return;
+  }
+
+  /* realCompare stores the sign of (a ? b) into diff */
+  real_t diff;
+  realCompare(a, b, &diff, &ctxtReal39);
+
+  const int cmp = realIsZero(&diff) ? 0 : (realIsNegative(&diff) ? -1 : 1);
+  cmpToResult(cmp, mode);
+}
+
+static inline void compare_complex_eq_only_or_set_false(real_t *aRe, real_t *aIm,
+                                                       real_t *bRe, real_t *bIm,
+                                                       uint8_t mode,
+                                                       uint16_t regist_for_error) {
+  /* Complex numbers do not have a total ordering; only == and != are supported */
+  if (!mode_is_equality(mode)) {
+    compareTypeError(regist_for_error);
+    return;
+  }
+
+  /* Complex equality is invalid if any component is NaN */
+  if (realIsNaN(aRe) || realIsNaN(bRe) || realIsNaN(aIm) || realIsNaN(bIm)) {
+    temporaryInformation = TI_FALSE;
+    return;
+  }
+
+  const bool eq = realCompareEqual(aRe, bRe) && realCompareEqual(aIm, bIm);
+  SET_TI_TRUE_FALSE(eq == (mode == COMPARE_MODE_EQUAL));
+}
+
+/* ============================================================================
+ *  Main compare function
+ * ========================================================================== */
 
 static void compareRegisters(uint16_t regist, uint8_t mode) {
-  uint16_t test =
-      GLUE2(getRegisterDataType(REGISTER_X), getRegisterDataType(regist));
 
-  // pre condition
-  if ((regist >= FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) &&
-      (regist < FIRST_NAMED_VARIABLE ||
-       regist > FIRST_NAMED_VARIABLE + numberOfNamedVariables) &&
-      (regist < FIRST_RESERVED_VARIABLE || regist > LAST_RESERVED_VARIABLE) &&
-      (regist != TEMP_REGISTER_1))
+  /* Precondition: only proceed for valid/comparable registers regardless types */
+  if (!is_comparable_register(regist)) {
     return;
+  }
+
+  /* Encode type pair */
+  const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
+  const uint8_t rType = (uint8_t)getRegisterDataType(regist);
+  const uint16_t test = type_pair_u8(xType, rType);
 
   real_t xReal, xImag, rReal, rImag;
-  bool cmplx = false;
 
   switch (test) {
-    // Pair of strings
-  case GLUE2(dtString, dtString):
-    cmpToResult(compareString(REGISTER_STRING_DATA(REGISTER_X),
-                              REGISTER_STRING_DATA(regist), CMP_EXTENSIVE),
-                mode);
-    break;
-    // Pair of configs
-  case GLUE2(dtConfig, dtConfig):
-    if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
-      compareTypeError(regist);
-    else
-      cmpToResult(memcmp(REGISTER_CONFIG_DATA(REGISTER_X),
-                         REGISTER_CONFIG_DATA(regist), CONFIG_SIZE_IN_BLOCKS),
-                  mode);
-    break;
-    // Pair of matrices
-  case GLUE2(dtReal34Matrix, dtReal34Matrix):
-  case GLUE2(dtComplex34Matrix, dtComplex34Matrix):
-    if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL)
-      compareTypeError(regist);
-    else if (regist == TEMP_REGISTER_1)
-      compareMatrix01(regist, mode, GLUE2X(test));
-    else
-      compareMatrices(regist, mode, GLUE2X(test), GLUE2Y(test));
-    break;
 
-  // Pair of integers
-  case GLUE2(dtShortInteger, dtShortInteger):
-  case GLUE2(dtLongInteger, dtLongInteger):
-  case GLUE2(dtShortInteger, dtLongInteger):
-  case GLUE2(dtLongInteger, dtShortInteger): {
-    longInteger_t xInt, rInt;
+    /* ------------------------------------------------------------------------
+     * String vs String
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtString, dtString): {
+      const int c = compareString(REGISTER_STRING_DATA(REGISTER_X),
+                                  REGISTER_STRING_DATA(regist),
+                                  CMP_EXTENSIVE);
+      cmpToResult(c, mode);
+    } break;
 
-    if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL))
-      compareTypeError(REGISTER_X);
-    else if (!getRegisterAsLongInt(regist, rInt, NULL))
-      compareTypeError(regist);
-    else
-      cmpToResult(longIntegerCompare(xInt, rInt), mode);
-
-    longIntegerFree(xInt);
-    longIntegerFree(rInt);
-  } break;
-
-  // Integer and real mix
-  case GLUE2(dtShortInteger, dtReal34):
-  case GLUE2(dtLongInteger, dtReal34):
-  case GLUE2(dtReal34, dtShortInteger):
-  case GLUE2(dtReal34, dtLongInteger):
-    if (!getRegisterAsReal(REGISTER_X, &xReal))
-      compareTypeError(REGISTER_X);
-    else if (!getRegisterAsReal(regist, &rReal))
-      compareTypeError(regist);
-    else // 1. comparison is only valid if no NaN found
-      if (realIsNaN(&xReal) || realIsNaN(&rReal))
-        temporaryInformation = TI_FALSE;
-      else {
-        realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
-        cmpToResult(realIsZero(&xImag)       ? 0
-                    : realIsNegative(&xImag) ? -1
-                                             : 1,
-                    mode);
-      }
-  break;
-
-  // Complex & real together
-  // Rule: for complex numbers, only EQUAL is supported. 
-  // This is why we do not cast real numbers to complex 
-  // and do not provide a universal comparison.
-  case GLUE2(dtComplex34, dtComplex34):
-  case GLUE2(dtReal34, dtReal34):
-  case GLUE2(dtComplex34, dtReal34):
-  case GLUE2(dtReal34, dtComplex34):
-    // read both values and ensure they are actually complex
-    if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx))
-      compareTypeError(REGISTER_X);
-    else if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx))
-      compareTypeError(regist);
-    // If one of the arguments is actually complex (Img!=0)
-    else if (cmplx) {
-      // Pre requisite
-      // 1. comparison of complexes is only valid for EQU
-      if (mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
+    /* ------------------------------------------------------------------------
+     * Config vs Config (equality only)
+     * NOTE: memcmp is safe only if configs are canonical byte blobs (no padding).
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtConfig, dtConfig): {
+      if (!mode_is_equality(mode)) {
         compareTypeError(regist);
+        break;
       }
-      // 2. comparison is only valid if no NaN found
-      else if (realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) ||
-               realIsNaN(&rImag))
-        temporaryInformation = TI_FALSE;
-      else
-        SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) &&
-                           realCompareEqual(&xImag, &rImag)) ==
-                          (mode == COMPARE_MODE_EQUAL));
+      int c = memcmp(REGISTER_CONFIG_DATA(REGISTER_X),
+                     REGISTER_CONFIG_DATA(regist),
+                     CONFIG_SIZE_IN_BLOCKS);
+      cmpToResult(cmp_sign(c), mode);
+    } break;
 
-    } else
-    // No complex found
-    {
-      // Pre requisite
-      // 1. comparison is only valid if no NaN found
-      if (realIsNaN(&xReal) || realIsNaN(&rReal))
-        temporaryInformation = TI_FALSE;
-      else {
-        realCompare(&xReal, &rReal, &xImag, &ctxtReal39); // re-purpose xImage to store result
-        cmpToResult(realIsZero(&xImag)       ? 0
-                    : realIsNegative(&xImag) ? -1
-                                             : 1,
-                    mode);
+    /* ------------------------------------------------------------------------
+     * Matrix vs Matrix (equality only)
+     * Supports same-type matrices and (optionally) real/complex matrix mix.
+     * We forward both types to compareMatrices so it can decide how to handle it.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtReal34Matrix,    dtReal34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
+    /* Optional mixed matrix equality support (enable if compareMatrices supports it) */
+    case type_pair_u8(dtReal34Matrix,    dtComplex34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtReal34Matrix): {
+      if (!mode_is_equality(mode)) {
+        compareTypeError(regist);
+        break;
       }
-    }
-  break;
-  default:
-    compareTypeError(regist);
+
+      /* TEMP_REGISTER_1 has a specialized path in the original code.
+         If the matrix types differ, use the generic path (it receives both types). */
+      if (regist == TEMP_REGISTER_1 && xType == rType) {
+        compareMatrix01(regist, mode, xType);
+      } else {
+        compareMatrices(regist, mode, xType, rType);
+      }
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Integer pairs (short/long mix)
+     * Use big-int comparison to avoid precision loss.
+     * IMPORTANT: initialize to NULL to avoid freeing uninitialized values.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtShortInteger, dtShortInteger):
+    case type_pair_u8(dtLongInteger,  dtLongInteger):
+    case type_pair_u8(dtShortInteger, dtLongInteger):
+    case type_pair_u8(dtLongInteger,  dtShortInteger): {
+      longInteger_t xInt = NULL;
+      longInteger_t rInt = NULL;
+
+      if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
+        compareTypeError(REGISTER_X);
+      } else if (!getRegisterAsLongInt(regist, rInt, NULL)) {
+        compareTypeError(regist);
+      } else {
+        cmpToResult(longIntegerCompare(xInt, rInt), mode);
+      }
+
+      if (xInt) longIntegerFree(xInt);
+      if (rInt) longIntegerFree(rInt);
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Complex & real together
+     * Rule:
+     *  - If any operand is truly complex (imag != 0), only == and != are supported.
+     *  - If both are effectively real (imag == 0), allow full real comparison.
+     * IMPORTANT FIX:
+     *  - Use separate flags (xIsComplex / rIsComplex). Reusing one flag can be
+     *    overwritten by the second read and lead to wrong behavior.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtReal34,    dtReal34):
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtReal34,    dtComplex34): 
+    case type_pair_u8(dtShortInteger, dtReal34):
+    case type_pair_u8(dtLongInteger,  dtReal34):
+    case type_pair_u8(dtReal34,       dtShortInteger):
+    case type_pair_u8(dtReal34,       dtLongInteger): {
+
+      bool xIsComplex = false;
+      bool rIsComplex = false;
+
+      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &xIsComplex)) {
+        compareTypeError(REGISTER_X);
+        break;
+      }
+      if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &rIsComplex)) {
+        compareTypeError(regist);
+        break;
+      }
+
+      if (xIsComplex || rIsComplex) {
+        compare_complex_eq_only_or_set_false(&xReal, &xImag, &rReal, &rImag, mode, regist);
+      } else {
+        compare_reals_or_set_false(&xReal, &rReal, mode);
+      }
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Unsupported combinations
+     * ---------------------------------------------------------------------- */
+    default:
+      compareTypeError(regist);
 #if defined(PC_BUILD)
-    sprintf(errorMessage, "local register .%02d",
-            regist - FIRST_LOCAL_REGISTER);
-    moreInfoOnError("In function compareRegisters:", errorMessage,
-                    "is not defined!", NULL);
-#endif // PC_BUILD
-    break;
-  } // Switch
+      sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
+      moreInfoOnError("In function compareRegisters:", errorMessage,
+                      "is not defined!", NULL);
+#endif
+      break;
+  }
 }
 
 void fnXLessThan(uint16_t regist) {
