@@ -391,19 +391,20 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     case type_pair_u8(dtLongInteger, dtComplex34):
     case type_pair_u8(dtLongInteger, dtReal34): {
 
-      bool xIsComplex = false;
-      bool rIsComplex = false;
+      bool isComplex = false;
 
-      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &xIsComplex)) {
+      // Note: getRegisterAsComplexOrAnyReal set isComplex to true or leave it intact
+      // hence achives a OR function
+      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &isComplex)) {
         compareTypeError(REGISTER_X);
         break;
       }
-      if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &rIsComplex)) {
+      if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &isComplex)) {
         compareTypeError(regist);
         break;
       }
 
-      if (xIsComplex || rIsComplex) {
+      if (isComplex) {
         compare_complex_eq_only_or_set_false(&xReal, &xImag, &rReal, &rImag, mode, regist);
       } else {
         compare_reals_or_set_false(&xReal, &rReal, mode);
