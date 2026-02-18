@@ -256,6 +256,7 @@ dist_dmcp: dmcp $(DIST_TESTPGMS_DM)
 	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
 	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
+	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
 	zip -r c47-dmcp.zip $(DIST_DIR_DM)
 	rm -rf $(DIST_DIR_DM)
 
@@ -265,6 +266,7 @@ dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DIST_DIR_DM)/resources
 	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/install_C47_on_DM42n.txt $(DIST_DIR_DM)
+	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
 	zip -r c47-dmcp5.zip $(DIST_DIR_DM)
 	rm -rf $(DIST_DIR_DM)
 
