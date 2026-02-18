@@ -226,10 +226,15 @@ static inline bool is_reserved_variable(uint16_t r) {
   return in_range_inclusive(r, FIRST_RESERVED_VARIABLE, LAST_RESERVED_VARIABLE);
 }
 
+static inline bool is_lettered_register(uint16_t r) {
+  return in_range_inclusive(r, FIRST_LETTERED_REGISTER , LAST_LETTERED_REGISTER);
+}
+
 static inline bool is_comparable_register(uint16_t r) {
   return is_local_register(r) ||
          is_named_variable(r) ||
          is_reserved_variable(r) ||
+         is_lettered_register(r) ||
          (r == TEMP_REGISTER_1);
 }
 
@@ -275,14 +280,12 @@ static inline void compare_complex_eq_only_or_set_false(real_t *aRe, real_t *aIm
 /* ============================================================================
  *  Main compare function
  * ========================================================================== */
-
 static void compareRegisters(uint16_t regist, uint8_t mode) {
-
   /* Precondition: only proceed for valid/comparable registers regardless types */
   if (!is_comparable_register(regist)) {
+    // TODO: raiser a proper error
     return;
   }
-
   /* Encode type pair */
   const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
   const uint8_t rType = (uint8_t)getRegisterDataType(regist);
@@ -386,7 +389,6 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     case type_pair_u8(dtShortInteger, dtReal34):
     case type_pair_u8(dtLongInteger, dtComplex34):
     case type_pair_u8(dtLongInteger, dtReal34): {
-
       bool isComplex = false;
 
       // Note: getRegisterAsComplexOrAnyReal sets isComplex to true or leaves it unchanged,
@@ -521,85 +523,137 @@ static void almostEqualMatrix(uint16_t regist) {
   #endif // !TESTSUITE_BUILD
 }
 
+#define SNAPREAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
+  { \
+  case dtComplex34: \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
+    real34Copy(REGISTER_IMAG34_DATA(reg), &s.i); \
+    break; \
+  case dtReal34: \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
+    real34Copy(const34_0, &s.i); \
+    break; \
+  }
+
+#define RESTOREREAL(reg, s) switch(s.t) \
+  { \
+  case dtComplex34: \
+    real34Copy(&s.i,REGISTER_IMAG34_DATA(reg)); \
+  case dtReal34: \
+    real34Copy(&s.r,REGISTER_REAL34_DATA(reg)); \
+    break; \
+  }
+
 static void almostEqualScalar(uint16_t regist) {
-  real34_t val1r, val1i, val2r, val2i;
+  struct snap_t {
+      uint8_t t;
+      real34_t r, i;
+    } snap1, snap2;
 
-  real34Copy(const34_0, &val1i);
-  real34Copy(const34_0, &val2i);
-
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
-    real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), &val1i);
-  }
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &val1r);
-  if(getRegisterDataType(regist) == dtComplex34) {
-    real34Copy(REGISTER_IMAG34_DATA(regist), &val2i);
-  }
-  real34Copy(REGISTER_REAL34_DATA(regist), &val2r);
+  // Snapshot real values before rounding
+  SNAPREAL(REGISTER_X, snap1);
+  SNAPREAL(regist, snap2);
 
   switch(getRegisterDataType(REGISTER_X)) {
-    case dtComplex34: {
+    case dtComplex34: 
       roundCplx();
       break;
-    }
-    case dtReal34: {
+
+    case dtReal34: 
       roundReal();
       break;
-    }
-    default: { /* dtTime */
+    
+    case dtShortInteger:
+    case dtLongInteger:
+      break;
+
+    case dtTime: 
      roundTime();
      break;
-    }
+
+    default:
+     compareTypeError(regist);
+     return;
   }
   if(regist != TEMP_REGISTER_1) {
     fnSwapX(regist);
     switch(getRegisterDataType(REGISTER_X)) {
-      case dtComplex34: {
+      case dtComplex34: 
         roundCplx();
         break;
-      }
-      case dtReal34: {
+      
+      case dtReal34: 
         roundReal();
         break;
-      }
-      default: { /* dtTime */
+      
+      case dtShortInteger:
+      case dtLongInteger:
+        break;
+
+      case dtTime: // dtTime
         roundTime();
         break;
-      }
+
+      default:
+        fnSwapX(regist);
+        compareTypeError(regist);
+        return;
     }
     fnSwapX(regist);
   }
 
   compareRegisters(regist, COMPARE_MODE_EQUAL);
 
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
-    real34Copy(&val1i, REGISTER_IMAG34_DATA(REGISTER_X));
-  }
-  real34Copy(&val1r, REGISTER_REAL34_DATA(REGISTER_X));
-  if(getRegisterDataType(regist) == dtComplex34) {
-    real34Copy(&val2i, REGISTER_IMAG34_DATA(regist));
-  }
-  real34Copy(&val2r, REGISTER_REAL34_DATA(regist));
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+  RESTOREREAL(REGISTER_X, snap1);
+  RESTOREREAL(regist, snap2);
+  #pragma GCC diagnostic pop
 }
 
+
 void fnXAlmostEqual(uint16_t regist) {
-  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-      almostEqualMatrix(regist);
-    }
-    else {
-      compareTypeError(regist);
-    }
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtTime) {
-    if(getRegisterDataType(regist) == dtReal34 || getRegisterDataType(regist) == dtComplex34 || getRegisterDataType(regist) == dtTime) {
-      almostEqualScalar(regist);
-    }
-    else {
-      compareTypeError(regist);
-    }
-  }
-  else {
+  /* Encode type pair */
+  const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
+  const uint8_t rType = (uint8_t)getRegisterDataType(regist);
+  const uint16_t test = type_pair_u8(xType, rType);
+  switch(test) 
+  {
+  case type_pair_u8(dtReal34Matrix, dtReal34Matrix):
+  case type_pair_u8(dtReal34Matrix, dtComplex34Matrix):
+  case type_pair_u8(dtComplex34Matrix, dtReal34Matrix):
+  case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
+    almostEqualMatrix(regist);
+    break;
+
+  case type_pair_u8(dtComplex34, dtComplex34):
+  case type_pair_u8(dtComplex34, dtReal34):
+  case type_pair_u8(dtComplex34, dtShortInteger):
+  case type_pair_u8(dtComplex34, dtLongInteger):
+
+  case type_pair_u8(dtReal34, dtComplex34):
+  case type_pair_u8(dtReal34, dtReal34):
+  case type_pair_u8(dtReal34, dtShortInteger):
+  case type_pair_u8(dtReal34, dtLongInteger):
+
+  case type_pair_u8(dtShortInteger, dtComplex34):
+  case type_pair_u8(dtShortInteger, dtReal34):
+  case type_pair_u8(dtLongInteger, dtComplex34):
+  case type_pair_u8(dtLongInteger, dtReal34):
+    almostEqualScalar(regist);
+    break;
+
+  case type_pair_u8(dtShortInteger, dtShortInteger):
+  case type_pair_u8(dtShortInteger, dtLongInteger):  
+  case type_pair_u8(dtLongInteger, dtShortInteger):
+  case type_pair_u8(dtLongInteger, dtLongInteger):
+    // No need to round
+    compareRegisters(regist, COMPARE_MODE_EQUAL);
+    break;
+
+  default:
     compareTypeError(regist);
+    break;
   }
 }
 
