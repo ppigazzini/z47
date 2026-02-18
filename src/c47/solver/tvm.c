@@ -63,7 +63,7 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
                                     int *error) {
   ensureTvmContext();
   real_t ic, temp, exponent;
-  
+
   // Check for zero frequencies
   if(decNumberIsZero((decNumber *)compoundPerYear)) {
     *error = tvmRangeError(6);
@@ -73,11 +73,11 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
     *error = tvmRangeError(5);
     return;
   }
-  
+
   // ic = (I%/a / 100) / CPER/a
   realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
   realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
-  
+
   // When CPER/a = PPER/a, ip = ic (shortcut)
   realSubtract(compoundPerYear, paymentPerYear, &temp, &ctxtTvm);
   if(decNumberIsZero((decNumber *)&temp)) {
@@ -85,10 +85,10 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
     *error = 0;
     return;
   }
-  
+
   // exponent = CPER/a / PPER/a
   realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtTvm);
-  
+
   // ip = (1 + ic)^exponent - 1
   {
     real_t temp2;
@@ -114,10 +114,10 @@ int calculatePV(const real_t *fv,
   ensureTvmContext();
   real_t ip, temp1, temp2, temp3, negNpper, powerTerm, annuityFactor;
   int error = 0;
-  
+
   calculateEffectiveRate(iPercentPerYear, compoundPerYear, paymentPerYear, &ip, &error);
   if(error != 0) return error;
-  
+
   // Check if ip ≈ 0
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // PV = -PMT*NPPER - FV
@@ -126,7 +126,7 @@ int calculatePV(const real_t *fv,
     realSetNegativeSign(pv);
     return 0;
   }
-  
+
   // General case: ip ≠ 0
   {
     // Calculate annuity factor: numerator: 1 - (1+ip)^(-NPPER)
@@ -140,18 +140,18 @@ int calculatePV(const real_t *fv,
   }
   // Annuity factor = [1 - (1+ip)^(-NPPER)] / ip
   realDivide(&temp1, &ip, &annuityFactor, &ctxtTvm);
-  
+
   // Payment timing factor = (1 + ip*p)
   realMultiply(&ip, p, &temp1, &ctxtTvm);
   realAdd(&temp1, const_1, &temp2, &ctxtTvm);
-  
+
   // PV from payments = (1 + ip*p) * PMT * annuityFactor
   realMultiply(&temp2, pmt, &temp1, &ctxtTvm);
   realMultiply(&temp1, &annuityFactor, &temp3, &ctxtTvm);
-  
+
   // PV from FV = FV * (1+ip)^(-NPPER)
   realMultiply(fv, &powerTerm, &temp1, &ctxtTvm);
-  
+
   // PV = -(payment part + FV part)
   realAdd(&temp3, &temp1, pv, &ctxtTvm);
   realChangeSign(pv);
@@ -173,10 +173,10 @@ int calculateFV(const real_t *pv,
   ensureTvmContext();
   real_t ip, temp1, temp2, temp3, powerTerm, annuityFactor;
   int error = 0;
-  
+
   calculateEffectiveRate(iPercentPerYear, compoundPerYear, paymentPerYear, &ip, &error);
   if(error != 0) return error;
-  
+
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // FV = -PV - PMT*NPPER
@@ -185,7 +185,7 @@ int calculateFV(const real_t *pv,
     realSetNegativeSign(fv);
     return 0;
   }
-  
+
   // General case: ip ≠ 0
   // Calculate (1 + ip)^NPPER
   {
@@ -199,13 +199,13 @@ int calculateFV(const real_t *pv,
   // FV from PV = -PV * (1+ip)^NPPER
   realMultiply(pv, &powerTerm, &temp1, &ctxtTvm);
   realSetNegativeSign(&temp1);
-  
+
   // Annuity factor = [(1+ip)^NPPER - 1] / ip
   realDivide(&temp2, &ip, &annuityFactor, &ctxtTvm);
-  
+
   // Payment timing factor = (1 + ip*p)
   realFMA(&ip, p, const_1, &temp3, &ctxtTvm);
-  
+
   // FV from payments = (1 + ip*p) * PMT * annuityFactor
   // FV = PV part - payment part
   realMultiply(&temp3, pmt, &temp2, &ctxtTvm);
@@ -213,7 +213,7 @@ int calculateFV(const real_t *pv,
   realChangeSign(&temp1);
   realFMA(&temp2, &annuityFactor, &temp1, fv, &ctxtTvm);
   realChangeSign(fv);
-  
+
   return 0;
 }
 
@@ -231,15 +231,15 @@ int calculatePMT(const real_t *pv,
   ensureTvmContext();
   real_t ip, temp1, temp2, temp3, negNpper, powerTerm, numerator, denominator;
   int error = 0;
-  
+
   // Check for zero periods
   if(decNumberIsZero((decNumber *)npper)) {
     return tvmRangeError(2);
   }
-  
+
   calculateEffectiveRate(iPercentPerYear, compoundPerYear, paymentPerYear, &ip, &error);
   if(error != 0) return error;
-  
+
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // PMT = -(PV + FV) / NPPER
@@ -248,7 +248,7 @@ int calculatePMT(const real_t *pv,
     realSetNegativeSign(pmt);
     return 0;
   }
-  
+
   // General case: ip ≠ 0
   // Calculate (1 + ip)^(-NPPER)
   realSubtract(const_0, npper, &negNpper, &ctxtTvm);
@@ -267,20 +267,20 @@ int calculatePMT(const real_t *pv,
   realAdd(pv, &temp1, &temp2, &ctxtTvm);
   realMultiply(&temp2, &ip, &numerator, &ctxtTvm);
   realChangeSign(&numerator);
-  
+
   // Denominator = (1+ip*p) * [1-(1+ip)^(-NPPER)]
   realMultiply(&ip, p, &temp1, &ctxtTvm);
   realAdd(&temp1, const_1, &temp2, &ctxtTvm);
   realMultiply(&temp2, &temp3, &denominator, &ctxtTvm);
-  
+
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&denominator)) {
     return tvmRangeError(0);
   }
-  
+
   // PMT = numerator / denominator
   realDivide(&numerator, &denominator, pmt, &ctxtTvm);
-  
+
   return 0;
 }
 
@@ -301,10 +301,10 @@ int calculateNPPER(const real_t *pv,
   ensureTvmContext();
   real_t ip, temp1, temp2, a, b, ratio, lnRatio, lnBase;
   int error = 0;
-  
+
   calculateEffectiveRate(iPercentPerYear, compoundPerYear, paymentPerYear, &ip, &error);
   if(error != 0) return error;
-  
+
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // Case 3: NPPER = -(PV + FV) / PMT
@@ -316,7 +316,7 @@ int calculateNPPER(const real_t *pv,
     realSetNegativeSign(npper);
     return 0;
   }
-  
+
   // Check if PMT = 0 (simple compound interest)
   if(decNumberIsZero((decNumber *)pmt)) {
     // Case 1: NPPER = ln(-FV/PV) / ln(1+ip)
@@ -324,28 +324,28 @@ int calculateNPPER(const real_t *pv,
     if(decNumberIsZero((decNumber *)pv)) {
       return tvmRangeError(7);
     }
-    
+
     realDivide(fv, pv, &ratio, &ctxtTvm);
     realSetNegativeSign(&ratio);
-    
+
     // Check for non-positive argument to ln
     if(!realIsPositive(&ratio)) {
       return tvmRangeError(4);
     }
-    
+
     WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
     realAdd(&ip, const_1, &temp1, &ctxtTvm);
     WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
-    
+
     // Check for zero denominator (should not happen for valid ip, but check anyway)
     if(decNumberIsZero((decNumber *)&lnBase)) {
       return tvmRangeError(0);
     }
-    
+
     realDivide(&lnRatio, &lnBase, npper, &ctxtTvm);
     return 0;
   }
-  
+
   // Case 2: PMT ≠ 0, ip ≠ 0
   // Calculate A = -FV*ip + PMT*(1+ip*p)
   realMultiply(fv, &ip, &temp1, &ctxtTvm);
@@ -354,39 +354,39 @@ int calculateNPPER(const real_t *pv,
   realAdd(&temp2, const_1, &temp2, &ctxtTvm);
   realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
   realAdd(&temp1, &temp2, &a, &ctxtTvm);
-  
+
   // Calculate B = PV*ip + PMT*(1+ip*p)
   realMultiply(pv, &ip, &temp1, &ctxtTvm);
   realMultiply(&ip, p, &temp2, &ctxtTvm);
   realAdd(&temp2, const_1, &temp2, &ctxtTvm);
   realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
   realAdd(&temp1, &temp2, &b, &ctxtTvm);
-  
+
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&b)) {
     return tvmRangeError(0);
   }
-  
+
   // Calculate ratio = A / B
   realDivide(&a, &b, &ratio, &ctxtTvm);
-  
+
   // Check for non-positive argument to ln
   if(!realIsPositive(&ratio)) {
     return tvmRangeError(3);  // No solution
   }
-  
+
   // NPPER = ln(A/B) / ln(1+ip)
   WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
   realAdd(&ip, const_1, &temp1, &ctxtTvm);
   WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
-  
+
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&lnBase)) {
     return tvmRangeError(0);
   }
-  
+
   realDivide(&lnRatio, &lnBase, npper, &ctxtTvm);
-  
+
   return 0;
 }
 
@@ -408,19 +408,19 @@ int calculatePPER(const real_t *pv,
   ensureTvmContext();
   real_t ic, temp1, temp2, lnBase, lnTarget, ratio;
   real_t ip_effective;
-  
+
   // Check for zero compounding frequency
   if(decNumberIsZero((decNumber *)compoundPerYear)) {
     return tvmRangeError(6);
   }
-  
+
   // Calculate ic = (I%/a / 100) / CPER/a
   realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
   realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
-  
+
   // Calculate effective interest rate ip from the TVM parameters
   // For PMT = 0 (simple compound interest): ip = (-FV/PV)^(1/NPPER) - 1
-  
+
   if(decNumberIsZero((decNumber *)pmt)) {
     // Simple case: compound interest only
     if(decNumberIsZero((decNumber *)pv)) {
@@ -429,15 +429,15 @@ int calculatePPER(const real_t *pv,
     if(decNumberIsZero((decNumber *)npper)) {
       return tvmRangeError(2);
     }
-    
+
     // ip = (-FV/PV)^(1/NPPER) - 1
     realDivide(fv, pv, &temp1, &ctxtTvm);
     realSetNegativeSign(&temp1);
-    
+
     if(!realIsPositive(&temp1)) {
       return tvmRangeError(3);
     }
-    
+
     realDivide(const_1, npper, &temp2, &ctxtTvm);
     {
       real_t temp_ln;
@@ -445,7 +445,7 @@ int calculatePPER(const real_t *pv,
       realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtTvm);
       WP34S_ExpM1(&temp_ln, &ip_effective, &ctxtTvm);
     }
-    
+
   } else {
     // Complex case: with payments
     // This requires solving the full TVM equation for ip, which is iterative
@@ -453,45 +453,45 @@ int calculatePPER(const real_t *pv,
     // For now, we'll return an error indicating this limitation
     return tvmRangeError(3);  // Use I%/a solver first for payment cases
   }
-  
+
   // Check if ic ≈ 0
   if(realCompareAbsLessThan(&ic, const_1e_37)) {
     // When ic ≈ 0, any PPER/a works (indeterminate)
     return tvmRangeError(3);
   }
-  
+
   // Check if ip ≈ ic (special case: PPER/a = CPER/a)
   realSubtract(&ip_effective, &ic, &temp1, &ctxtTvm);
   if(realCompareAbsLessThan(&temp1, const_1e_37)) {
     realCopy(compoundPerYear, paymentPerYear);
     return 0;
   }
-  
+
   // General case: PPER/a = CPER/a * ln(1 + ic) / ln(1 + ip)
   realAdd(&ic, const_1, &temp1, &ctxtTvm);
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
   WP34S_Ln1P(&ic, &lnBase, &ctxtTvm);
-  
+
   realAdd(&ip_effective, const_1, &temp1, &ctxtTvm);
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
   WP34S_Ln1P(&ip_effective, &lnTarget, &ctxtTvm);
-  
+
   if(decNumberIsZero((decNumber *)&lnTarget)) {
     return tvmRangeError(0);
   }
-  
+
   // PPER/a = CPER/a * ln(1+ic) / ln(1+ip)
   realDivide(&lnBase, &lnTarget, &ratio, &ctxtTvm);
   realMultiply(compoundPerYear, &ratio, paymentPerYear, &ctxtTvm);
-  
+
   if(!realIsPositive(paymentPerYear)) {
     return tvmRangeError(3);
   }
-  
+
   return 0;
 }
 
@@ -515,12 +515,12 @@ int calculateCPER(const real_t *pv,
   real_t delta;
   int iterations = 0;
   const int maxIterations = 100;
-  
+
   // Check for zero payment frequency
   if(decNumberIsZero((decNumber *)paymentPerYear)) {
     return tvmRangeError(5);
   }
-  
+
   // Calculate effective interest rate per payment period (ip)
   if(decNumberIsZero((decNumber *)pmt)) {
     // Simple case: compound interest only
@@ -530,15 +530,15 @@ int calculateCPER(const real_t *pv,
     if(decNumberIsZero((decNumber *)npper)) {
       return tvmRangeError(2);
     }
-    
+
     // ip = (-FV/PV)^(1/NPPER) - 1
     realDivide(fv, pv, &temp1, &ctxtTvm);
     realSetNegativeSign(&temp1);
-    
+
     if(!realIsPositive(&temp1)) {
       return tvmRangeError(3);
     }
-    
+
     realDivide(const_1, npper, &temp2, &ctxtTvm);
     {
       real_t temp_ln;
@@ -546,28 +546,28 @@ int calculateCPER(const real_t *pv,
       realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtTvm);
       WP34S_ExpM1(&temp_ln, &ip, &ctxtTvm);
     }
-    
+
   } else {
     // Complex case - use I%/a solver first
     return tvmRangeError(9);
   }
-  
+
   // Iterative solution for CPER/a
   // Equation: (1 + (I%/a/100)/CPER)^(CPER/PPER) - 1 = ip
-  
+
   stringToReal("1e-36", &tolerance, &ctxtTvm);
-  
+
   // Initial guess: CPER/a = PPER/a
   realCopy(paymentPerYear, compoundPerYear);
-  
+
   for(iterations = 0; iterations < maxIterations; iterations++) {
     // ic = (I%/a / 100) / CPER/a
     realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
     realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
-    
+
     // exponent = CPER/a / PPER/a
     realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtTvm);
-    
+
     // test_ip = (1 + ic)^exponent - 1
     {
       real_t temp_exp;
@@ -578,12 +578,12 @@ int calculateCPER(const real_t *pv,
 
     // error = test_ip - ip
     realSubtract(&test_ip, &ip, &error_val, &ctxtTvm);
-    
+
     // Check convergence
     if(realCompareAbsLessThan(&error_val, &tolerance)) {
       return 0;
     }
-    
+
     {
       // Newton-Raphson update with damping
       real_t temp2;
@@ -597,7 +597,7 @@ int calculateCPER(const real_t *pv,
       realCopy(paymentPerYear, compoundPerYear);
     }
   }
-  
+
   // Failed to converge
   return tvmRangeError(3);
 }
@@ -612,7 +612,7 @@ int solveTvmVariable51(uint16_t variable) {
   real_t fv, iA, nPer, pperA, cperA, pmt, pv, p;
   real_t result;
   int error = 0;
-  
+
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);     // Future value
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);     // Interest percentage per annum
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);   // Number of periods
@@ -626,43 +626,43 @@ int solveTvmVariable51(uint16_t variable) {
   } else {
     int32ToReal(1, &p);  // BEGIN mode: p=1
   }
-  
+
   switch(variable) {
     case RESERVED_VARIABLE_PV:
       error = calculatePV(&fv, &iA, &nPer, &pperA, &pmt, &cperA, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)      );     // Present value
       break;
-      
+
     case RESERVED_VARIABLE_FV:
       error = calculateFV(&pv, &iA, &nPer, &pperA, &pmt, &cperA, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV)      );     // Future value
       break;
-      
+
     case RESERVED_VARIABLE_PMT:
       error = calculatePMT(&pv, &fv, &iA, &nPer, &pperA, &cperA, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT)     );    // Payment
       break;
-      
+
     case RESERVED_VARIABLE_NPPER:
       error = calculateNPPER(&pv, &fv, &iA, &pperA, &pmt, &cperA, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER)   );   // Number of periods
       break;
-      
+
     case RESERVED_VARIABLE_PPERONA:
       error = calculatePPER(&pv, &fv, &iA, &nPer, &pmt, &cperA, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA) );  // Payment periods per annum
       break;
-      
+
     case RESERVED_VARIABLE_CPERONA:
       error = calculateCPER(&pv, &fv, &iA, &nPer, &pperA, &pmt, &p, &result);
       if(!error) realToReal34(&result, REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA) );  // Compounding periods per annum
       break;
-            
+
     default:
       displayBugScreen(bugScreenNotForTvmVar);
       return 8;
   }
-  
+
   if(error != 0) {
     //Not stopping for an error, but letting it through to the old solver for erroring and/or solving
     //displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
@@ -721,13 +721,13 @@ void fnTvmVar(uint16_t variable) {
                 #endif //PC_BUILD
                 temporaryInformation = TI_SOLVER_VARIABLE;
                 return;   // Try analytic solution, if successful, return
-              } 
+              }
               else {
                 lastErrorCode = 0;  // Failure in analytical solver section, error is on the PC screen but continue to retry using the old solver without erroring
                 #if defined(PC_BUILD)
                   printf("Clearing analytical TVM error to continue to iterative solver\n");
                 #endif //PC_BUILD
-              } 
+              }
             }
           #endif //OPTION_TVM_FORMULAS
 
@@ -983,11 +983,15 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 
 
+void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
+  // Force recalculation of i when computing derivative
+  if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
+    tvmIKnown = false;
+  }
 
-void tvmEquation(calcRegister_t variable, real_t *ioVal) {
   ensureTvmContext();
   real_t fv, iA, nPer, pperA, cperA, pmt, pv;
-  real_t i1nPer, val, tmp, r;
+  real_t i1nPer, val, tmp, r, k;
   static real_t i;
 
   if(variable != RESERVED_VARIABLE_FV     ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);   }  //future value
@@ -1080,9 +1084,11 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal) {
   realAdd(&tmp, const_1, &i1nPer, &ctxtTvm);               // i1nPer = (1+i)^nPer
   if(getSystemFlag(FLAG_ENDPMT)) {
     realCopy(const_1, &val); // END mode
+    realCopy(const_1, &k);
   }
   else {
     realAdd(const_1, &i, &val, &ctxtTvm); // BEGIN mode
+    realCopy(&val, &k);
   }
 
   realMultiply(&val, &pmt, &val, &ctxtTvm);
@@ -1099,4 +1105,45 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal) {
   realCopy(&val, ioVal);
   //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   //convertRealToReal34ResultRegister(&val, REGISTER_X);
+
+
+if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
+  // Recompute i from the trial iA value in ioVal
+  real_t iA_trial;
+  realCopy(ioVal, &iA_trial);  // ioVal contains the trial I%/a
+  real_t i_trial;
+  realDivide(&iA_trial, const_100, &i_trial, &ctxtTvm);
+  realDivide(&i_trial, &pperA, &i_trial, &ctxtTvm);
+
+
+    // f'(i) = -PV*n*(1+i)^(n-1) + PMT*k*[-i*n*(1+i)^(n-1) - 1 + (1+i)^n]/i^2
+    real_t one_plus_i, i1nPer_m1, term1, term2, numerator, i_squared;
+
+    // (1+i)^(n-1) = (1+i)^n / (1+i)
+    realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+    realDivide(&i1nPer, &one_plus_i, &i1nPer_m1, &ctxtTvm);
+
+    // term1 = -PV * n * (1+i)^(n-1)
+    realMultiply(&pv, &nPer, &term1, &ctxtTvm);
+    realMultiply(&term1, &i1nPer_m1, &term1, &ctxtTvm);
+
+    // numerator = -i*n*(1+i)^(n-1) - 1 + (1+i)^n
+    realMultiply(&i, &nPer, &numerator, &ctxtTvm);
+    realMultiply(&numerator, &i1nPer_m1, &numerator, &ctxtTvm);
+    realChangeSign(&numerator);
+    realSubtract(&numerator, const_1, &numerator, &ctxtTvm);
+    realAdd(&numerator, &i1nPer, &numerator, &ctxtTvm);
+
+    // term2 = PMT*k*numerator/i^2
+    realMultiply(&i, &i, &i_squared, &ctxtTvm);
+    realDivide(&numerator, &i_squared, &term2, &ctxtTvm);
+    realMultiply(&term2, &pmt, &term2, &ctxtTvm);
+    realMultiply(&term2, &k, &term2, &ctxtTvm);
+
+    realAdd(&term1, &term2, derivative, &ctxtTvm);
+
+    // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
+    realDivide(derivative, const_100, derivative, &ctxtTvm);
+    realDivide(derivative, &pperA, derivative, &ctxtTvm);
+  }
 }
