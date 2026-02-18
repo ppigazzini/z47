@@ -248,8 +248,8 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
       else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
-      else if(FLAG_M <= opParam && opParam <= FLAG_W) { // Lettered flag from M to W
-        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_M + FLAG_K - FLAG_X + 1]);
+      else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_M + (FLAG_K - FLAG_X + 1)]);
       }
       else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
