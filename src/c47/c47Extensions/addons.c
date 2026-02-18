@@ -637,7 +637,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         break;
 
       case CM_PEM : {
-        if(pemCursorIsZerothStep) return;
+        if((pemCursorIsZerothStep) || isAtEndOfPrograms(currentStep)) return; // Don't try to edit step 000 or .END.
         //printf("**[DL]** currentLocalStepNumber %d\n",currentLocalStepNumber);fflush(stdout);
         int16_t i = 0;
         int16_t func = currentStep[i++];
