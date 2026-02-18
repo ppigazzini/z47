@@ -625,13 +625,14 @@ retryLevel:
       }
 
 
-// calculation
+      // calculation
       _executeSolverReal(variable, bp1, &fbp1, NULL);
 
       // Newton convergence check and divergence detection
       if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
-        static real_t prev_fx;
+        static real_t prev_fx, prev_x;
         static bool_t first_newton_iter = true;
+        static int stall_count = 0;
 
         // Is Newton diverging
         if(!first_newton_iter && realCompareAbsLessThan(&prev_fx, &fbp1)) {
@@ -639,11 +640,23 @@ retryLevel:
           currentMethod = SOLVER_METHOD_BRENT;
           newtonInitialized = false;
           first_newton_iter = true;
+          stall_count = 0;
+        }
+        else if(!first_newton_iter && realCompareEqual(&newton_x, &prev_x)) {
+          stall_count++;
+          if(stall_count >= 3) {
+            currentMethod = SOLVER_METHOD_BRENT;
+            newtonInitialized = false;
+            first_newton_iter = true;
+            stall_count = 0;
+          }
         }
         else {
           // Save current residual for next iteration
           realCopy(&fbp1, &prev_fx);
+          realCopy(&newton_x, &prev_x);
           first_newton_iter = false;
+          stall_count = 0;
 
           // Check convergence
           if(realCompareAbsLessThan(&fbp1, &tolAlmostZero)) {
@@ -657,89 +670,100 @@ retryLevel:
               clearSystemFlag(FLAG_SOLVING);
             }
             first_newton_iter = true;  // Reset for next solve
+            #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+              printf("END Iter %d (%s)  ", loop, methodName[currentMethod]);
+              printRealToConsole(&newton_x, "x=", "\n");
+            #endif
             return SOLVER_RESULT_NORMAL;
           }
-          // Not converged, continue Newton iterations
-          continue;
         }
       }
 
 
-      // Continue Brent
-      if(extendRange && (realIsNegative(&secantSlopeA) != realIsNegative(&secantSlopeB)) && !realIsZero(&secantSlopeA) && !realIsZero(&secantSlopeB)) {
-        extendRange = false;
-        extremum = (realIsNegative(&fbb) == realIsNegative(&fbp1));
-      }
-
-      if(!realIsSpecial(bp1) && !realIsSpecial(&fbp1)) {
-        if(extendRange) {
-          if((realIsNegative(&fbb) != realIsNegative(&fbp1)) || (realIsNegative(&fbb) != realIsNegative(&faa))) {
-            extendRange = false;
-            originallyLevel = false;
-          }
-          if((realIsNegative(&faa) == realIsNegative(&fbp1)) && realCompareAbsLessThan(&fbb, &fbp1)) {
-            extendRange = false;
-            originallyLevel = false;
-            extremum = true;
-          }
-        }
-        else if(realIsNegative(&faa) == realIsNegative(&fbp1)) {
-          realCopy(&bb, &aa);
-          realCopy(&fbb, &faa);
-        }
-        else {
-          extendRange = false;
-          extremum = false;
-          if(!realCompareEqual(&fbb, &faa)) {
-            originallyLevel = false;
-          }
-        }
-
-        if(realCompareAbsLessThan(&faa, &fbp1)) {
-          realCopy(bp1, &tmp); realCopy(&aa, bp1); realCopy(&tmp, &aa);
-          realCopy(&fbp1, &tmp); realCopy(&faa, &fbp1); realCopy(&tmp, &faa);
-          realCopy(&aa, &bb); realCopy(&faa, &fbb);
-        }
-
-        if(bp1 == &ss) {
-          realCopy(const_NaN, &bb2);
-        }
-        else {
-          realCopy(&bb1, &bb2);
-        }
-        realCopy(&bb, &bb1);
-        realCopy(&fbb, &fbb1);
-        realCopy(bp1, &bb);
-        realCopy(&fbp1, &fbb);
-        //printRealToConsole(&bb1,"PP: &b1=","  "); printRealToConsole(&bb,"&b=","\n");
-      }
-
-      else if(originallyLevel && (realIsInfinite(&bb) || realIsInfinite(&aa))) {
-        result = SOLVER_RESULT_CONSTANT;
-      }
-      else if(extendRange) {
-        extendRange = false;
-        originallyLevel = false;
-        extremum = true;
-      }
-      else if(realIsNegative(&faa) != realIsNegative(&fbb)) {
-        result = SOLVER_RESULT_SIGN_REVERSAL;
-      }
-      else {
-        result = SOLVER_RESULT_EXTREMUM;
-      }
-
+      // Calculate convergence flags (needed for exit conditions)
       bool_t bb_bb1_converged = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39);
       bool_t b1_b2_Equal = realCompareEqual(&bb1, &bb2);
       bool_t b_b1_Equal  = realCompareEqual(&bb,  &bb1);
-      fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
 
-      //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-      //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+      // Bracket update - only for Brent method
+      if(currentMethod != SOLVER_METHOD_NEWTON || !newtonInitialized) {
+        // Continue Brent
+        if(extendRange && (realIsNegative(&secantSlopeA) != realIsNegative(&secantSlopeB)) && !realIsZero(&secantSlopeA) && !realIsZero(&secantSlopeB)) {
+          extendRange = false;
+          extremum = (realIsNegative(&fbb) == realIsNegative(&fbp1));
+        }
 
-      if(result != SOLVER_RESULT_NORMAL) {
-        break;
+        if(!realIsSpecial(bp1) && !realIsSpecial(&fbp1)) {
+          if(extendRange) {
+            if((realIsNegative(&fbb) != realIsNegative(&fbp1)) || (realIsNegative(&fbb) != realIsNegative(&faa))) {
+              extendRange = false;
+              originallyLevel = false;
+            }
+            if((realIsNegative(&faa) == realIsNegative(&fbp1)) && realCompareAbsLessThan(&fbb, &fbp1)) {
+              extendRange = false;
+              originallyLevel = false;
+              extremum = true;
+            }
+          }
+          else if(realIsNegative(&faa) == realIsNegative(&fbp1)) {
+            realCopy(&bb, &aa);
+            realCopy(&fbb, &faa);
+          }
+          else {
+            extendRange = false;
+            extremum = false;
+            if(!realCompareEqual(&fbb, &faa)) {
+              originallyLevel = false;
+            }
+          }
+
+          if(realCompareAbsLessThan(&faa, &fbp1)) {
+            realCopy(bp1, &tmp); realCopy(&aa, bp1); realCopy(&tmp, &aa);
+            realCopy(&fbp1, &tmp); realCopy(&faa, &fbp1); realCopy(&tmp, &faa);
+            realCopy(&aa, &bb); realCopy(&faa, &fbb);
+          }
+
+          if(bp1 == &ss) {
+            realCopy(const_NaN, &bb2);
+          }
+          else {
+            realCopy(&bb1, &bb2);
+          }
+          realCopy(&bb, &bb1);
+          realCopy(&fbb, &fbb1);
+          realCopy(bp1, &bb);
+          realCopy(&fbp1, &fbb);
+          //printRealToConsole(&bb1,"PP: &b1=","  "); printRealToConsole(&bb,"&b=","\n");
+        }
+
+        else if(originallyLevel && (realIsInfinite(&bb) || realIsInfinite(&aa))) {
+          result = SOLVER_RESULT_CONSTANT;
+        }
+        else if(extendRange) {
+          extendRange = false;
+          originallyLevel = false;
+          extremum = true;
+        }
+        else if(realIsNegative(&faa) != realIsNegative(&fbb)) {
+          result = SOLVER_RESULT_SIGN_REVERSAL;
+        }
+        else {
+          result = SOLVER_RESULT_EXTREMUM;
+        }
+
+        fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
+
+        //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
+        //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+
+        if(result != SOLVER_RESULT_NORMAL) {
+          break;
+        }
       }
+
+
+      // End conditions
+
       if( (!realIsSpecial(&bb2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
         break;
@@ -754,6 +778,9 @@ retryLevel:
       }
 
     } while(true);
+   //==== ITER END ====
+
+
 
     #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
       printf("End iter %d  ", loop);

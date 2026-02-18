@@ -121,7 +121,7 @@ In: V2043=Real:"12"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-208.3333333333333333333333333333333"
 
 
-;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = -7.983364626771592300949999999999926E-34
+;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = iterate toward zero
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"480"
@@ -131,7 +131,7 @@ In: V2039=Real:"100000"
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983364626771592300949999999999926E-34"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983367983367983263960172E-34"
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
