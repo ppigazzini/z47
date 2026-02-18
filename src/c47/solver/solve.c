@@ -332,8 +332,8 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 #define ctxtSolver   ctxtReal39
 #define ctxtSolverHi ctxtReal39
 //The 39-digit solver tolerances must be lower in order to leverage the guard digits
-#define solverTvmTol "1E-36"  
-#define solverTvmZer "1E-37"  
+#define solverTvmTol -36  
+#define solverTvmZer (solverTvmTol - 1) 
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
@@ -353,9 +353,15 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
     stringToReal34("1e-34", &tol34AlmostZero);
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-      stringToReal(solverTvmTol, &tol, &ctxtReal39);
-      stringToReal(solverTvmZer, &tolAlmostZero, &ctxtReal39);
-      stringToReal(solverTvmTol, &minBracketSpacing, &ctxtReal39);
+
+      realCopy(const_1, &tol);
+      tol.exponent -= (significantDigits == 0 || significantDigits == 34) ? -solverTvmTol : significantDigits;
+
+      realCopy(const_1, &tolAlmostZero);
+      tolAlmostZero.exponent -= (significantDigits == 0 || significantDigits == 34) ? -solverTvmZer : (significantDigits - (solverTvmZer-solverTvmTol));
+
+      realCopy(const_1, &minBracketSpacing);
+      minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? -solverTvmTol : significantDigits;
     } else {
       convergenceTolerence(&tol);
       real34ToReal(&tol34AlmostZero, &tolAlmostZero);
