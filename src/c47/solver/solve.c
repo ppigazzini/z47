@@ -337,6 +337,15 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
+
+    typedef enum {
+      SOLVER_METHOD_BRENT,
+      SOLVER_METHOD_NEWTON
+    } solverMethod_t;
+    solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
+    real_t newton_x;
+    bool_t newtonInitialized = false;
+
     real34_t antiLevel34, tol34AlmostZero;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
     real_t fbp1, tmp, tolAlmostZero;
@@ -490,15 +499,24 @@ retryLevel:
     // =========== ITERATION START =============
     do {
       #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-        printf("Iter %d  ", loop);
-        printRealToConsole(&aa, "a=", " ");
-        printRealToConsole(&bb, "b=", "\n");
+        const char* methodName[] = {"BRENT", "NEWTON"};
+        printf("Iter %d (%s)  ", loop, methodName[currentMethod]);
+        if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+          printRealToConsole(&newton_x, "x=", "\n");
+        }
+        else {
+          printRealToConsole(&aa, "a=", " ");
+          printRealToConsole(&bb, "b=", "\n");
+        }
       #endif
 
       loop++;
       #if !defined (TESTSUITE_BUILD)
         if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          char ss[10];
+          strcpy(ss,"Iter: ");
+          ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
+          if(progressHalfSecUpdate_Integer(timed, ss,loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
             real34_t a34, b34, fa34, fb34;
             realToReal34(&aa, &a34); realToReal34(&bb, &b34);
             realToReal34(&faa, &fa34); realToReal34(&fbb, &fb34);
@@ -551,97 +569,85 @@ retryLevel:
       realAdd(&aa, &bb, &mm, &ctxtSolver);
       realMultiply(&mm, const_1on2, &mm, &ctxtSolver);
 
-      // next point
-      if(extendRange) {
-        if(realCompareEqual(&fbb, &faa)) {
-          realSubtract(&bb, &aa, &ss, &ctxtSolver);
-          if(realCompareAbsLessThan(&ss, &minBracketSpacing)) {
-            realCopy(&minBracketSpacing, &ss);
-            if(realCompareLessThan(&bb, &aa)) {
-              realSetNegativeSign(&ss);
-            }
-          }
-          if(realCompareAbsLessThan(const_1e6, &ss)) {
-            realMultiply(&ss, const_1e6, &ss, &ctxtSolver);
-          }
-          realSubtract(&aa, &ss, &aa, &ctxtSolver);
-          _executeSolverReal(variable, &aa, &faa, NULL);
-          //printRealToConsole(&bb1,"JJ3: f(&a=",")  "); printRealToConsole(&faa,"","\n");
-          //printRealToConsole(&bb,"JJ3: f(&b=",")  "); printRealToConsole(&fbb,"","\n");
 
-          realAdd(&bb, &ss, &ss, &ctxtSolver);
+      // Method selection: switch to Newton when bracket is tight enough (relative)
+      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
+         currentMethod != SOLVER_METHOD_NEWTON &&
+         loop >= 5) {
+        // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
+        real_t relativeWidth;
+        realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtReal39);
+        realSetPositiveSign(&relativeWidth);
+
+        if(realGetExponent(&relativeWidth) < -1) {  // < 10% relative
+          currentMethod = SOLVER_METHOD_NEWTON;
+          realCopy(&mm, &newton_x);
+          newtonInitialized = true;
         }
-        else if(!realCompareEqual(&bb, &aa)) {
-          realSubtract(&bb, &aa, &ss, &ctxtSolver);
-          realAdd(&ss, &bb, &ss, &ctxtSolver);
-        }
-        else if(realIsNegative(&fbb)) {
-          realMultiply(&bb, &minBracketSpacing, &ss, &ctxtSolver);
-          realSubtract(&bb, &ss, &ss, &ctxtSolver);
+      }
+
+
+      // next point - select based on current method
+      if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+        // Newton step: x_new = x - f(x)/f'(x)
+        real_t newton_trial, newton_fx, newton_deriv, newton_step;
+        realCopy(&newton_x, &newton_trial);
+        _executeSolverReal(variable, &newton_trial, &newton_fx, &newton_deriv);
+
+        // Check for Newton failure conditions
+        if(realIsZero(&newton_deriv) || realIsSpecial(&newton_fx)) {
+          currentMethod = SOLVER_METHOD_BRENT;
+          newtonInitialized = false;
+          bp1 = &mm;  // Fall back to bisection
         }
         else {
-          realMultiply(&bb, &minBracketSpacing, &ss, &ctxtSolver);
-          if(realCompareAbsLessThan(&ss, const_1e_32)) {
-            realCopy(&minBracketSpacing, &ss);
-            if(realCompareLessThan(&bb, &aa)) {
-              realSetNegativeSign(&ss);
-            }
-          }
-          if(realIsNegative(&fbb)) {
-            realSubtract(&bb, &ss, &ss, &ctxtSolver);
-          }
-          else {
-            realAdd(&bb, &ss, &ss, &ctxtSolver);
-          }
+          realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtReal39);
+          realSubtract(&newton_x, &newton_step, &newton_x, &ctxtReal39);
+          bp1 = &newton_x;
         }
-        bp1 = &ss;
       }
-      else if(realCompareEqual(&bb, &ss)) {
-        bp1 = &mm;
-      }
-      else if(!realIsSpecial(&ss) && ((realCompareLessThan(&bb, &ss) && realCompareLessThan(&ss, &mm)) || (realCompareLessThan(&mm, &ss) && realCompareLessThan(&ss, &mm)))) {
-        if(realCompareLessThan(&delta, &deltaB) && realCompareLessThan(&smb, &deltaB)) {
+      else {
+        if(extendRange) {
+          realSubtract(&bb, &aa, &tmp, &ctxtSolver);
+          realMultiply(&tmp, const_2, &tmp, &ctxtSolver);
+          realAdd(&bb, &tmp, &ss, &ctxtSolver);  // Use ss instead of b
+          bp1 = &ss;
+        }
+        else if(realCompareEqual(&bb, &ss)) {
+          bp1 = &mm;
+        }
+        else if(realCompareLessThan(&delta, &deltaB) && realCompareLessThan(&smb, &deltaB)) {
           bp1 = &ss;
         }
         else {
           bp1 = &mm;
         }
       }
-      else {
-        bp1 = &mm;
-      }
-      //printRealToConsole(bp1,"New point:","\n");
 
 
-
-      // calculation
+// calculation
       _executeSolverReal(variable, bp1, &fbp1, NULL);
 
+      // Newton convergence check and divergence detection
+      if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+        static real_t prev_fx;
+        static bool_t first_newton_iter = true;
 
-      // After Brent narrows bracket to 1e-3, switch to Newton-Raphson for faster final convergence
-      // Newton: x_new = x - f(x)/f'(x) converges quadratically vs Brent's linear bisection
-      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && realGetExponent(&bracketWidth) < -2 && loop >= 5) {
-        real_t newton_x, newton_fx, newton_deriv, newton_step, newton_trial;
+        // Is Newton diverging
+        if(!first_newton_iter && realCompareAbsLessThan(&prev_fx, &fbp1)) {
+          // got worse - fall back to Brent
+          currentMethod = SOLVER_METHOD_BRENT;
+          newtonInitialized = false;
+          first_newton_iter = true;
+        }
+        else {
+          // Save current residual for next iteration
+          realCopy(&fbp1, &prev_fx);
+          first_newton_iter = false;
 
-        // Start from current bracket midpoint
-        realAdd(&aa, &bb, &newton_x, &ctxtReal39);
-        realMultiply(&newton_x, const_1on2, &newton_x, &ctxtReal39);
-
-        for(int newton_iter = 0; newton_iter < 30; newton_iter++) {
-          // Use trial copy to prevent corruption: _executeSolverReal overwrites input with f(x)
-          realCopy(&newton_x, &newton_trial);
-          _executeSolverReal(variable, &newton_trial, &newton_fx, &newton_deriv);
-          
-          #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-            printf("Newton %d  x=", newton_iter);
-            printRealToConsole(&newton_x, "", " ");
-            printf("fx=");
-            printRealToConsole(&newton_fx, "", "\n");
-          #endif
-          
-          // Converged when |f(x)| < tolAlmostZero (scales with user's digit setting)
-          if(realCompareAbsLessThan(&newton_fx, &tolAlmostZero)) {
-            realToReal34(&newton_fx, resZ);
+          // Check convergence
+          if(realCompareAbsLessThan(&fbp1, &tolAlmostZero)) {
+            realToReal34(&fbp1, resZ);
             realToReal34(&newton_x, resY);
             realToReal34(&newton_x, resX);
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -650,16 +656,12 @@ retryLevel:
             if((--currentSolverNestingDepth) == 0) {
               clearSystemFlag(FLAG_SOLVING);
             }
+            first_newton_iter = true;  // Reset for next solve
             return SOLVER_RESULT_NORMAL;
           }
-          
-          if(realIsZero(&newton_deriv)) break;  // Newton failed, fall back to Brent
-          
-          // Newton step: Δx = f/f', then x_new = x - Δx
-          realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtReal39);
-          realSubtract(&newton_x, &newton_step, &newton_x, &ctxtReal39);
+          // Not converged, continue Newton iterations
+          continue;
         }
-        // Newton didn't converge in 30 iterations, continue with Brent
       }
 
 
