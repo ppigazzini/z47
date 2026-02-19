@@ -242,7 +242,7 @@ static inline bool is_comparable_register(uint16_t r) {
  *  Numeric comparison helpers
  * ========================================================================== */
 
-static inline void compare_reals_or_set_false(real_t *a, real_t *b, uint8_t mode) {
+static inline void compare_reals_to_temporaryInformation(real_t *a, real_t *b, uint8_t mode) {
   /* Real ordering/equality is invalid if any operand is NaN */
   if (realIsNaN(a) || realIsNaN(b)) {
     temporaryInformation = TI_FALSE;
@@ -253,28 +253,22 @@ static inline void compare_reals_or_set_false(real_t *a, real_t *b, uint8_t mode
   real_t diff;
   realCompare(a, b, &diff, &ctxtReal39);
 
-  const int cmp = realIsZero(&diff) ? 0 : (realIsNegative(&diff) ? -1 : 1);
+  const int cmp = realIsZero(&diff) ? 0 : realIsNegative(&diff) ? -1 : 1;
   cmpToResult(cmp, mode);
 }
 
-static inline void compare_complex_eq_only_or_set_false(real_t *aRe, real_t *aIm,
+static inline void compare_complex_to_temporaryInformation(real_t *aRe, real_t *aIm,
                                                        real_t *bRe, real_t *bIm,
                                                        uint8_t mode,
                                                        uint16_t regist_for_error) {
-  /* Complex numbers do not have a total ordering; only == and != are supported */
+  // Complex numbers do not have a total ordering; only == and != are supported 
   if (!mode_is_equality(mode)) {
     compareTypeError(regist_for_error);
     return;
   }
-
-  /* Complex equality is invalid if any component is NaN */
-  if (realIsNaN(aRe) || realIsNaN(bRe) || realIsNaN(aIm) || realIsNaN(bIm)) {
-    temporaryInformation = TI_FALSE;
-    return;
-  }
-
-  const bool eq = realCompareEqual(aRe, bRe) && realCompareEqual(aIm, bIm);
-  SET_TI_TRUE_FALSE(eq == (mode == COMPARE_MODE_EQUAL));
+  compare_reals_to_temporaryInformation(aRe, bRe, mode);
+  if (temporaryInformation!=TI_FALSE)
+    compare_reals_to_temporaryInformation(aIm, bIm, mode);
 }
 
 /* ============================================================================
@@ -403,9 +397,9 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       }
 
       if (isComplex) {
-        compare_complex_eq_only_or_set_false(&xReal, &xImag, &rReal, &rImag, mode, regist);
+        compare_complex_to_temporaryInformation(&xReal, &xImag, &rReal, &rImag, mode, regist);
       } else {
-        compare_reals_or_set_false(&xReal, &rReal, mode);
+        compare_reals_to_temporaryInformation(&xReal, &rReal, mode);
       }
     } break;
 
@@ -688,4 +682,3 @@ void fnIsConverged(uint16_t mode) {
     SET_TI_TRUE_FALSE(isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
   }
 }
-
