@@ -144,7 +144,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_COMPARE: {
-      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98 OR value 0 OR value 1
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
