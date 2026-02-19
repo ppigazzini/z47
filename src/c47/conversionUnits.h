@@ -153,6 +153,9 @@
     constFactorInchBanana,
     constFactorBananaInch,
 
+    constFactorErgJ,
+    constFactorFoeJ,
+
     constFactorEND              /* MUST be last */
   };
 
