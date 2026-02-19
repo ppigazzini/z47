@@ -8,6 +8,10 @@
 #include "c47.h"
 
 
+#define TVMDEBUG2 //only progress indicators
+
+
+
  // Create context for this module only
  static decContext ctxtTvm42;
  static inline void ensureTvmContext(void) {
@@ -18,13 +22,13 @@
  }
 
 
-#if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+#if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) // || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   #define ctxtTvm           ctxtReal39
   #define ctxtTvmHi         ctxtTvm42  // only some exp/log parts
   #define ctxtSolverTvmHi   ctxtTvm42  // only the exp/log parts
-  #define ctxtSolverTvmInv  ctxtTvm42  // only the inverting of i
+  #define ctxtSolverTvmInv  ctxtReal51  // only the inverting of i
 
-//very good set of options. 
+//very good set of options.
 //  #define ctxtTvm           ctxtReal39
 //  #define ctxtTvmHi         ctxtReal39  // only some exp/log parts
 //  #define ctxtSolverTvmHi   ctxtTvm42   // only the exp/log parts
@@ -696,6 +700,18 @@ int solveTvmVariable51(uint16_t variable) {
   TO_QSPI static const char bugScreenNotForTvm[] = "In function fnTvmVar: this variable is not intended for TVM application!";
 
 void fnTvmVar(uint16_t variable) {
+    #if defined (PC_BUILD) && defined (TVMDEBUG2)
+      printf("fnTvmVar solver starting with: ");
+      printRegisterToConsole(RESERVED_VARIABLE_NPPER, "N=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_IPONA, "I%/a=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_PV, "PV=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_PMT, "PMT=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_FV, "FV=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_PPERONA, "pp/a=", ", ");
+      printRegisterToConsole(RESERVED_VARIABLE_CPERONA, "cp/a=", ", ");
+      printf("END=%d\n", getSystemFlag(FLAG_ENDPMT));
+    #endif
+
     switch(variable) {
       case RESERVED_VARIABLE_FV:
       case RESERVED_VARIABLE_IPONA:
@@ -715,7 +731,7 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
           tvmIKnown = false;
- 
+
           {
             if(variable != RESERVED_VARIABLE_IPONA) {
               int err = solveTvmVariable51(variable);
@@ -995,7 +1011,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
 
   ensureTvmContext();
   real_t fv, iA, nPer, pperA, cperA, pmt, pv;
-  real_t i1nPer, val, tmp, r, k;
+  real_t val, r, k;
   static real_t i;
 
   if(variable != RESERVED_VARIABLE_FV     ) {real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);   }  //future value
@@ -1066,85 +1082,101 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     tvmIKnown = true;
   }
 
-  realChangeSign(&pv);
   // early return for i = 0: exact limit avoids 0/0 in annuity; f = -PV + n*PMT - FV (k -> 1 for both modes)
   if(realIsZero(&i)) {
     realMultiply(&nPer, &pmt, &val, &ctxtTvm);
     realAdd(&pv, &val, &val, &ctxtTvm);
     realSubtract(&val, &fv, &val, &ctxtTvm);
-    // result returned via ioVal; X-register write commented out (may be needed on solver abort)
     realCopy(&val, ioVal);
+    // result returned via ioVal; X-register write commented out (may be needed on solver abort)
     //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     //convertRealToReal34ResultRegister(&val, REGISTER_X);
     return;
   }
   {
-    // Converted to: (1+i)^nPer = exp(nPer * ln(1+i))
-    real_t temp;
-    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);                 // temp = ln(1 + i)
-    realMultiply(&temp, &nPer, &temp, &ctxtSolverTvmHi);     // temp = nPer * ln(1 + i)
-    WP34S_ExpM1(&temp, &tmp, &ctxtSolverTvmHi);              // tmp = (1+i)^nPer - 1
+    // Compute (1+i)^(-nPer) and 1-(1+i)^(-nPer) avoiding cancellation
+    real_t temp, neg_nPer, i1negN, oneMinusI1negN;
+    realCopy(&nPer, &neg_nPer);
+    realChangeSign(&neg_nPer);
+    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
+    realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
+
+    realExp(&temp, &i1negN, &ctxtSolverTvmHi);  // For FV term
+    WP34S_ExpM1(&temp, &oneMinusI1negN, &ctxtSolverTvmHi);  // For PMT term
+    realChangeSign(&oneMinusI1negN);  // oneMinusI1negN = 1-(1+i)^(-n)
+
+    // Save k for derivative
+    if(getSystemFlag(FLAG_ENDPMT)) {
+      realCopy(const_1, &k);
+    }
+    else {
+      real_t one_plus_i;
+      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      realCopy(&one_plus_i, &k);
+    }
+
+    // f(i) = PV + PMT * k * [1 - (1+i)^(-n)] / i + FV * (1+i)^(-n)
+    realCopy(&pv, &val);
+
+    real_t term2;
+    realCopy(&oneMinusI1negN, &term2);
+    realDivide(&term2, &i, &term2, &ctxtSolverTvmInv);
+    realMultiply(&term2, &k, &term2, &ctxtTvm);
+    realMultiply(&term2, &pmt, &term2, &ctxtTvm);
+    realAdd(&val, &term2, &val, &ctxtTvm);
+
+    real_t term3;
+    realMultiply(&fv, &i1negN, &term3, &ctxtTvm);
+    realAdd(&val, &term3, &val, &ctxtTvm);
   }
-  realAdd(&tmp, const_1, &i1nPer, &ctxtTvm);               // i1nPer = (1+i)^nPer
-  if(getSystemFlag(FLAG_ENDPMT)) {
-    realCopy(const_1, &val); // END mode
-    realCopy(const_1, &k);
-  }
-  else {
-    realAdd(const_1, &i, &val, &ctxtTvm); // BEGIN mode
-    realCopy(&val, &k);
-  }
-
-  realMultiply(&val, &pmt, &val, &ctxtTvm);
-
-  // divide tmp by i before sign flip: tmp/i = expm1(n*ln1p(i))/i -> n as i->0, no cancellation
-  realDivide(&tmp, &i, &tmp, &ctxtSolverTvmInv);              // increase digits to make sure 1/i for very small i will not loose digits.
-  realChangeSign(&tmp);
-  realMultiply(&val, &tmp, &val, &ctxtTvm);
-
-  realFMA(&pv, &i1nPer, &val, &val, &ctxtTvm);
-  realSubtract(&val, &fv, &val, &ctxtTvm);
-
-  // result returned via ioVal; X-register write commented out (may be needed on solver abort)
   realCopy(&val, ioVal);
+  // result returned via ioVal; X-register write commented out (may be needed on solver abort)
   //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   //convertRealToReal34ResultRegister(&val, REGISTER_X);
 
 
 if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
-  // Recompute i from the trial iA value in ioVal
-  real_t iA_trial;
-  realCopy(ioVal, &iA_trial);  // ioVal contains the trial I%/a
-  real_t i_trial;
-  realDivide(&iA_trial, const_100, &i_trial, &ctxtTvm);
-  realDivide(&i_trial, &pperA, &i_trial, &ctxtTvm);
+    real_t one_plus_i, one_plus_i_neg_N, one_plus_i_neg_N_m1;
+    real_t term1, term2, factor_deriv, i_squared;
 
-
-    // f'(i) = -PV*n*(1+i)^(n-1) + PMT*k*[-i*n*(1+i)^(n-1) - 1 + (1+i)^n]/i^2
-    real_t one_plus_i, i1nPer_m1, term1, term2, numerator, i_squared;
-
-    // (1+i)^(n-1) = (1+i)^n / (1+i)
     realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
-    realDivide(&i1nPer, &one_plus_i, &i1nPer_m1, &ctxtTvm);
 
-    // term1 = -PV * n * (1+i)^(n-1)
-    realMultiply(&pv, &nPer, &term1, &ctxtTvm);
-    realMultiply(&term1, &i1nPer_m1, &term1, &ctxtTvm);
+    // Compute (1+i)^(-N) and (1+i)^(-N-1)
+    real_t temp, neg_nPer;
+    realCopy(&nPer, &neg_nPer);
+    realChangeSign(&neg_nPer);
+    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
+    realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
+    realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+    realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
 
-    // numerator = -i*n*(1+i)^(n-1) - 1 + (1+i)^n
-    realMultiply(&i, &nPer, &numerator, &ctxtTvm);
-    realMultiply(&numerator, &i1nPer_m1, &numerator, &ctxtTvm);
-    realChangeSign(&numerator);
-    realSubtract(&numerator, const_1, &numerator, &ctxtTvm);
-    realAdd(&numerator, &i1nPer, &numerator, &ctxtTvm);
+    // term1 = N * (1+i)^(-N-1) / i
+    realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, &ctxtTvm);
+    realDivide(&term1, &i, &term1, &ctxtSolverTvmInv);
 
-    // term2 = PMT*k*numerator/i^2
-    realMultiply(&i, &i, &i_squared, &ctxtTvm);
-    realDivide(&numerator, &i_squared, &term2, &ctxtTvm);
-    realMultiply(&term2, &pmt, &term2, &ctxtTvm);
-    realMultiply(&term2, &k, &term2, &ctxtTvm);
+    // term2 = [1 - (1+i)^(-N)] / i^2
+    real_t one_minus;
+    realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
+    realMultiply(&i, &i, &i_squared, &ctxtSolverTvmInv);
+    realDivide(&one_minus, &i_squared, &term2, &ctxtSolverTvmInv);
 
-    realAdd(&term1, &term2, derivative, &ctxtTvm);
+    // factor_deriv = term1 - term2
+    realSubtract(&term1, &term2, &factor_deriv, &ctxtTvm);
+
+    // For BEGIN: factor_deriv = factor_deriv * (1+i) + (1-(1+i)^(-N))/i
+    if(!getSystemFlag(FLAG_ENDPMT)) {
+      realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, &ctxtTvm);
+      real_t extra;
+      realDivide(&one_minus, &i, &extra, &ctxtSolverTvmInv);
+      realAdd(&factor_deriv, &extra, &factor_deriv, &ctxtTvm);
+    }
+
+    // derivative = PMT * factor_deriv - N * FV * (1+i)^(-N-1)
+    realMultiply(&pmt, &factor_deriv, derivative, &ctxtTvm);
+    real_t fv_term;
+    realMultiply(&nPer, &fv, &fv_term, &ctxtTvm);
+    realMultiply(&fv_term, &one_plus_i_neg_N_m1, &fv_term, &ctxtTvm);
+    realSubtract(derivative, &fv_term, derivative, &ctxtTvm);
 
     // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
     realDivide(derivative, const_100, derivative, &ctxtTvm);
