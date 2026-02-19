@@ -343,7 +343,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       SOLVER_METHOD_NEWTON
     } solverMethod_t;
     solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
-    real_t newton_x;
+    real_t newton_x, newton_fx_saved;
     bool_t newtonInitialized = false;
 
     real34_t antiLevel34, tol34AlmostZero;
@@ -497,7 +497,8 @@ retryLevel:
 
 
     // =========== ITERATION START =============
-    do {
+    do {  
+
       #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
         const char* methodName[] = {"BRENT", "NEWTON"};
         printf("Iter %d (%s)  ", loop, methodName[currentMethod]);
@@ -505,8 +506,10 @@ retryLevel:
           printRealToConsole(&newton_x, "x=", "\n");
         }
         else {
-          printRealToConsole(&aa, "a=", " ");
-          printRealToConsole(&bb, "b=", "\n");
+          printRealToConsole(&aa, "a=", ", fa=");
+          printRealToConsole(&faa, "", ", b=");
+          printRealToConsole(&bb, "", ", fb=");
+          printRealToConsole(&fbb, "", "\n");
         }
       #endif
 
@@ -558,10 +561,25 @@ retryLevel:
 
 
       real_t bracketWidth;
-      realSubtract(&bb, &bb1, &bracketWidth, &ctxtReal39);
+      realSubtract(&bb, &bb1, &bracketWidth, &ctxtSolver);
       realSetPositiveSign(&bracketWidth);
       if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
         absoluteBracketTight = (realGetExponent(&bracketWidth) <= -33);
+      }
+
+
+      // Switch to Newton when bracket is tight enough (10% relative)
+      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && 
+         currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
+        real_t relativeWidth;
+        realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
+        realSetPositiveSign(&relativeWidth);
+        if(realGetExponent(&relativeWidth) < -1) {
+          currentMethod = SOLVER_METHOD_NEWTON;
+          realAdd(&aa, &bb, &newton_x, &ctxtSolver);
+          realMultiply(&newton_x, const_1on2, &newton_x, &ctxtSolver);
+          newtonInitialized = true;
+        }
       }
 
 
@@ -576,7 +594,7 @@ retryLevel:
          loop >= 5) {
         // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
         real_t relativeWidth;
-        realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtReal39);
+        realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
         realSetPositiveSign(&relativeWidth);
 
         if(realGetExponent(&relativeWidth) < -1) {  // < 10% relative
@@ -601,8 +619,12 @@ retryLevel:
           bp1 = &mm;  // Fall back to bisection
         }
         else {
-          realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtReal39);
-          realSubtract(&newton_x, &newton_step, &newton_x, &ctxtReal39);
+          realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
+          realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
+          // Evaluate f at new point for convergence check
+          realCopy(&newton_x, &newton_trial);
+          _executeSolverReal(variable, &newton_trial, &newton_fx, NULL);
+          realCopy(&newton_fx, &newton_fx_saved);
           bp1 = &newton_x;
         }
       }
@@ -681,7 +703,7 @@ retryLevel:
 
 
       // Calculate convergence flags (needed for exit conditions)
-      bool_t bb_bb1_converged = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39);
+      bool_t bb_bb1_converged = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtSolver);
       bool_t b1_b2_Equal = realCompareEqual(&bb1, &bb2);
       bool_t b_b1_Equal  = realCompareEqual(&bb,  &bb1);
 
