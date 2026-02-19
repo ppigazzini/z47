@@ -458,7 +458,7 @@ TO_QSPI const int16_t menu_ConvA[]        = {
                                                     ITM_FT2toHA,              ITM_HAtoFT2,              ITM_FT2toM2,              ITM_M2toFT2,              ITM_HAtoKM2,              ITM_KM2toHA};
 TO_QSPI const int16_t menu_ConvE[]        = {
                                                     ITM_WHtoJ,                ITM_JtoWH,                ITM_CALtoJ,               ITM_JtoCAL,               ITM_BTUtoJ,               ITM_JtoBTU,
-                                                    ITM_EVtoJ,                ITM_JtoEV,                ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,
+                                                    ITM_EVtoJ,                ITM_JtoEV,                ITM_ERGtoJ,               ITM_JtoERG,               ITM_FoetoJ,               ITM_JtoFoe,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvFP[]        = {
                                                     ITM_MMHGtoPA,             ITM_PAtoMMHG,             ITM_INCHHGtoPA,           ITM_PAtoINCHHG,           ITM_LBFtoN,               ITM_NtoLBF,

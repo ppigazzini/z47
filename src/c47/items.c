@@ -4372,7 +4372,11 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2456 */  { addItemToBuffer,              ITM_Config,                   "",                                        "Config",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2457 */  { addItemToBuffer,              ITM_Stack,                    "",                                         "Stack",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
+/* 2658 */  UNIT_CONV(constFactorErgJ,       divide,   "erg" STD_RIGHT_ARROW "J" ,  "erg" STD_RIGHT_ARROW "J" ),
+/* 2659 */  UNIT_CONV(constFactorErgJ,     multiply,   "J"  STD_RIGHT_ARROW "erg",  "J"  STD_RIGHT_ARROW "erg"),
+/* 2660 */  UNIT_CONV(constFactorFoeJ,       divide,   "foe" STD_RIGHT_ARROW "J" ,  "foe" STD_RIGHT_ARROW "J" ),
+/* 2661 */  UNIT_CONV(constFactorFoeJ,     multiply,   "J"  STD_RIGHT_ARROW "foe",  "J"  STD_RIGHT_ARROW "foe"),
 
-/* 2647 */  { itemToBeCoded,                 NOPARAM,                     "",                                     "Last item",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2662 */  { itemToBeCoded,                 NOPARAM,                     "",                                     "Last item",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };
