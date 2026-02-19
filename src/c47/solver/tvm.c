@@ -8,28 +8,34 @@
 #include "c47.h"
 
 
-// Create context for this module only
-static decContext ctxtTvm42;
-static inline void ensureTvmContext(void) {
-  if(ctxtTvm42.digits == 0) {
-    ctxtTvm42 = ctxtReal39;
-    ctxtTvm42.digits = 42;
-  }
-}
+ // Create context for this module only
+ static decContext ctxtTvm42;
+ static inline void ensureTvmContext(void) {
+   if(ctxtTvm42.digits == 0) {
+     ctxtTvm42 = ctxtReal39;
+     ctxtTvm42.digits = 42;
+   }
+ }
 
 
-#if !defined(OPTION_TVM_FORMULAS) // DM42 normally here
-#define ctxtTvm           ctxtTvm42
-//#define ctxtTvmHi       ctxtTvm42  // not used in DM42 version
-#define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
-#define ctxtSolverTvmInv ctxtReal51  // only the inverting of i
+#if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+  #define ctxtTvm           ctxtReal39
+  #define ctxtTvmHi         ctxtTvm42  // only some exp/log parts
+  #define ctxtSolverTvmHi   ctxtTvm42  // only the exp/log parts
+  #define ctxtSolverTvmInv  ctxtTvm42  // only the inverting of i
 
+//very good set of options. 
+//  #define ctxtTvm           ctxtReal39
+//  #define ctxtTvmHi         ctxtReal39  // only some exp/log parts
+//  #define ctxtSolverTvmHi   ctxtTvm42   // only the exp/log parts
+//  #define ctxtSolverTvmInv  ctxtReal75  // only the inverting of i
 #else
+  #define ctxtTvm          ctxtReal51
+  #define ctxtTvmHi        ctxtReal51  // only some exp/log parts
+  #define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
+  #define ctxtSolverTvmInv ctxtReal75  // only the inverting of i
+#endif
 
-#define ctxtTvm          ctxtReal51
-#define ctxtTvmHi        ctxtReal51  // only some exp/log parts
-#define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
-#define ctxtSolverTvmInv ctxtReal75  // only the inverting of i
 
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   const char * const tvmErrorMessages[] = {
@@ -679,8 +685,6 @@ int solveTvmVariable51(uint16_t variable) {
 }
 
 
-#endif //OPTION_TVM_FORMULAS
-
 
 #if defined(TESTSUITE_BUILD)
   #define testing true
@@ -711,8 +715,8 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
           tvmIKnown = false;
-
-          #if defined(OPTION_TVM_FORMULAS)
+ 
+          {
             if(variable != RESERVED_VARIABLE_IPONA) {
               int err = solveTvmVariable51(variable);
               if( err == 0) {
@@ -729,7 +733,7 @@ void fnTvmVar(uint16_t variable) {
                 #endif //PC_BUILD
               }
             }
-          #endif //OPTION_TVM_FORMULAS
+          }
 
           switch(variable) {
             case RESERVED_VARIABLE_IPONA:
