@@ -2760,14 +2760,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 #define LRWidth 140
 
-static void displayLRtemporaryInformation(char *prefix, const char *label, bool_t prefixPre, bool_t prefixPost, int16_t *prefixWidth) {
-  //strcpy(prefix, getCurveFitModeFormula(lrChosen));
-  *prefix = '\0';
-  while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
+static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *prefix, const char *label, bool_t prefixPre, bool_t prefixPost, int16_t *prefixWidth) {
+   strcpy(prefix, prefix1);
+   strcat(prefix, getCurveFitModeFormula(lrChosen));
+   strcat(prefix, prefix2);
+     while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
     strcat(prefix, STD_SPACE_6_PER_EM);
   }
   strcat(prefix,label);
-  strcat(prefix, " =");
+  strcat(prefix, STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
   *prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
 }
 
@@ -3957,13 +3958,13 @@ static void displayLRtemporaryInformation(char *prefix, const char *label, bool_
           }
          else if (temporaryInformation == TI_LR_A0) {
             if(regist == REGISTER_X)
-              displayLRtemporaryInformation(prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
+              displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
          } else if (temporaryInformation == TI_LR_A1) {
             if(regist == REGISTER_X)
-              displayLRtemporaryInformation(prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
+              displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
          } else if (temporaryInformation == TI_LR_A2) {
             if(regist == REGISTER_X)
-              displayLRtemporaryInformation(prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
+              displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
          } 
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
@@ -3972,19 +3973,14 @@ static void displayLRtemporaryInformation(char *prefix, const char *label, bool_
 
             if(lrChosen == CF_CAUCHY_FITTING || lrChosen == CF_GAUSS_FITTING || lrChosen == CF_PARABOLIC_FITTING){
               if(regist == REGISTER_X) {
-                strcpy(prefix,getCurveFitModeFormula(lrChosen));
-                while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
-                  strcat(prefix,STD_SPACE_6_PER_EM);
-                }
-                strcat(prefix,"a" STD_SUB_0 " =");
-                prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
+                displayLRtemporaryInformation("", "", prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
               }
               else if(regist == REGISTER_Y) {
-                strcpy(prefix,"y = ");
+                strcpy(prefix,"y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
                   strcat(prefix,STD_SPACE_6_PER_EM);
                 }
-                strcat(prefix, "a" STD_SUB_1 " =");
+                strcat(prefix, "a" STD_SUB_1 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
               }
               else if(regist == REGISTER_Z) {
@@ -3995,21 +3991,15 @@ static void displayLRtemporaryInformation(char *prefix, const char *label, bool_
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
                   strcat(prefix,STD_SPACE_6_PER_EM);
                 }
-                strcat(prefix, "a" STD_SUB_2 " =");
+                strcat(prefix, "a" STD_SUB_2 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
               }
             }
             else {
-              if(regist == REGISTER_X) {
-                strcpy(prefix,"y = ");
-                strcat(prefix,getCurveFitModeFormula(lrChosen));
-                while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
-                  strcat(prefix,STD_SPACE_6_PER_EM);
+                if(regist == REGISTER_X) {
+                  displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, "", prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
                 }
-                strcat(prefix,"a" STD_SUB_0 " =");
-                prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
-              }
-              else if(regist == REGISTER_Y) {
+                else if(regist == REGISTER_Y) {
                 strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
                   strcat(prefix,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
@@ -4017,7 +4007,7 @@ static void displayLRtemporaryInformation(char *prefix, const char *label, bool_
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
                   strcat(prefix,STD_SPACE_6_PER_EM);
                 }
-                strcat(prefix, "a" STD_SUB_1 " =");
+                strcat(prefix, "a" STD_SUB_1 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
               }
             }
