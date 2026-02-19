@@ -2758,7 +2758,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     return true;
   }
 
+#define LRWidth 140
 
+static void displayLRtemporaryInformation(char *prefix, const char *label, bool_t prefixPre, bool_t prefixPost, int16_t *prefixWidth) {
+  //strcpy(prefix, getCurveFitModeFormula(lrChosen));
+  *prefix = '\0';
+  while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
+    strcat(prefix, STD_SPACE_6_PER_EM);
+  }
+  strcat(prefix,label);
+  strcat(prefix, " =");
+  *prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
+}
 
   #define RESTORE_T true
 
@@ -3944,10 +3955,18 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             #endif //DISCRIMINANT
           }
-
+         else if (temporaryInformation == TI_LR_A0) {
+            if(regist == REGISTER_X)
+              displayLRtemporaryInformation(prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
+         } else if (temporaryInformation == TI_LR_A1) {
+            if(regist == REGISTER_X)
+              displayLRtemporaryInformation(prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
+         } else if (temporaryInformation == TI_LR_A2) {
+            if(regist == REGISTER_X)
+              displayLRtemporaryInformation(prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
+         } 
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
-            #define LRWidth 140
             bool_t prefixPre = false;
             bool_t prefixPost = false;
 
