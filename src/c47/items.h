@@ -2755,7 +2755,11 @@
 #define ITM_FoetoJ                  2660
 #define ITM_JtoFoe                  2661
 
-#define LAST_ITEM                   2662
+#define ITM_LR_A0                   2662
+#define ITM_LR_A1                   2663
+#define ITM_LR_A2                   2664
+
+#define LAST_ITEM                   2665
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

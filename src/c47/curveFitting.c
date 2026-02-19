@@ -211,7 +211,7 @@ uint16_t minLRDataPoints(uint16_t selection) {
  *
  * \return void
  ***********************************************/
-void fnProcessLRfind(uint16_t curveFitting){
+static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   int32_t nn;
   real_t NN;
 
@@ -261,18 +261,37 @@ void fnProcessLRfind(uint16_t curveFitting){
     processCurvefitSelection(s, &RR, &SMI, &aa0, &aa1, &aa2);
     lrChosen = s;
 
-    temporaryInformation = TI_LR;
+    /* Set the TI */
+    if (resultType & (resultType - 1))
+      temporaryInformation = TI_LR;
+    else if (resultType & 1)
+      temporaryInformation = TI_LR_A0;
+    else if (resultType & 2)
+      temporaryInformation = TI_LR_A1;
+    else if (resultType & 4)
+      temporaryInformation = TI_LR_A2;
+
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
+      if (resultType & 4) {
+        liftStack();
+        setSystemFlag(FLAG_ASLIFT);
+        convertRealToResultRegister(&aa2, REGISTER_X, amNone);
+      }
+    } else if (resultType == 4) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      convertRealToResultRegister(&aa2, REGISTER_X, amNone);
+      convertRealToResultRegister(const_0, REGISTER_X, amNone);
     }
-    liftStack();
-    setSystemFlag(FLAG_ASLIFT);
-    convertRealToResultRegister(&aa1, REGISTER_X, amNone);
-    liftStack();
-    setSystemFlag(FLAG_ASLIFT);
-    convertRealToResultRegister(&aa0, REGISTER_X, amNone);
+    if (resultType & 2) {
+      liftStack();
+      setSystemFlag(FLAG_ASLIFT);
+      convertRealToResultRegister(&aa1, REGISTER_X, amNone);
+    }
+    if (resultType & 1) {
+      liftStack();
+      setSystemFlag(FLAG_ASLIFT);
+      convertRealToResultRegister(&aa0, REGISTER_X, amNone);
+    }
   }
   else {
     if(minLRDataPoints(s) == 65535) {
@@ -290,9 +309,9 @@ void fnProcessLRfind(uint16_t curveFitting){
 
 
 
-void fnProcessLR (uint16_t unusedButMandatoryParameter){
+void fnProcessLR (uint16_t resultType){
   if(checkMinimumDataPoints(const_2)) {
-    fnProcessLRfind(lrSelection);
+    fnProcessLRfind(lrSelection, resultType);
   }
 }
 
