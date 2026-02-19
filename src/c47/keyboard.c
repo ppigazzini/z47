@@ -1103,7 +1103,6 @@ endReturnTrue:
             //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
             if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && (item != ITM_INDIRECTION) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
-              tam.alpha = true;
               addStepInProgram(tamOperation());
               leaveTamModeIfEnabled();
             }
