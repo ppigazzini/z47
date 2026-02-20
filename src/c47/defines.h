@@ -128,6 +128,10 @@
   #define PACKAGE2_NODISTR
   #elif DMCP_PACKAGE == 3
   #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  // ## TEMPORARY additions for testing purposes ##
+  #define SAVE_SPACE_DM42_13GRF
+  #define SAVE_SPACE_DM42_13GRF_JM
+  // ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ##
   #endif
 
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)
