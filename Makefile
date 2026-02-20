@@ -336,5 +336,8 @@ dist_dmcp_pkg2: $(DIST_TESTPGMS_DM)
 	zip -r c47-dmcp-pkg2.zip $(DIST_DIR_DM)
 	rm -rf $(DIST_DIR_DM)
 
-dist_dmcp: dmcp_both dist_dmcp_pkg1 dist_dmcp_pkg2
+# Remove package 1 from automatic release compilation on gitlab, due the size exceedance on the gitlab compiler.
+# Temporary 'both' compile below:
+# dist_dmcp: dmcp_both dist_dmcp_pkg1 dist_dmcp_pkg2
+dist_dmcp: dmcp_both dist_dmcp_pkg2
 
