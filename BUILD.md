@@ -34,7 +34,7 @@ make dist_linux             - Create Linux distribution package
 make dist_dmcp5             - Create DM42n (DMCP5) distribution package
 make dist_dmcp5r47          - Create R47 (DMCP5) distribution package
 
-make dist_dmcp              - Create DM42 (DMCP) distribution package (builds BOTH package 1 and 2, producing two separate zip files)
+make dist_dmcp              - Create DM42 (DMCP) distribution package (builds BOTH package 1 and 2, producing two separate zip files). (Temporarily removed package 1 from this automatic release compilation on gitlab, due the size exceedance on the gitlab compiler).
 make dist_dmcp_pkg1         - Create DM42 (DMCP) distribution package for feature set PACKAGE1 (produces c47-dmcp-pkg1.zip)
 make dist_dmcp_pkg2         - Create DM42 (DMCP) distribution package for feature set PACKAGE2 (produces c47-dmcp-pkg2.zip)
 
