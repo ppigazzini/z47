@@ -7,7 +7,19 @@
 
 #include "c47.h"
 
-#if defined(OPTION_TVM_FORMULAS)
+
+
+
+
+#if !defined(OPTION_TVM_FORMULAS) // DM42 normally here
+#define ctxtTvm         ctxtReal39
+#define ctxtSolverTvmHi ctxtReal51  // only the exp/log parts
+
+#else
+
+#define ctxtTvm         ctxtReal51
+#define ctxtTvmHi       ctxtReal75  // only some exp/log parts
+#define ctxtSolverTvmHi ctxtReal75  // only the exp/log parts
 
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   const char * const tvmErrorMessages[] = {
@@ -19,7 +31,8 @@
     "TVM: Payment frequency cannot be zero",    // 5
     "TVM: Compound frequency cannot be zero",   // 6
     "TVM: Present value cannot be zero",        // 7
-    "TCM: Invalid variable requested"           // 8
+    "TCM: Invalid variable requested",          // 8
+    "TCM: Exit to proceed to old solver"        // 9
   };
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -51,11 +64,11 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
   }
   
   // ic = (I%/a / 100) / CPER/a
-  realDivide(iPercentPerYear, const_100, &ic, &ctxtReal51);
-  realDivide(&ic, compoundPerYear, &ic, &ctxtReal51);
+  realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
+  realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
   
   // When CPER/a = PPER/a, ip = ic (shortcut)
-  realSubtract(compoundPerYear, paymentPerYear, &temp, &ctxtReal51);
+  realSubtract(compoundPerYear, paymentPerYear, &temp, &ctxtTvm);
   if(decNumberIsZero((decNumber *)&temp)) {
     realCopy(&ic, ip);
     *error = 0;
@@ -63,12 +76,15 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
   }
   
   // exponent = CPER/a / PPER/a
-  realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtReal51);
+  realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtTvm);
   
   // ip = (1 + ic)^exponent - 1
-  realAdd(&ic, const_1, &temp, &ctxtReal51);
-  realPower(&temp, &exponent, ip, &ctxtReal51);
-  realSubtract(ip, const_1, ip, &ctxtReal51);
+  {
+    real_t temp2;
+    WP34S_Ln1P(&ic, &temp2, &ctxtTvmHi);                  // temp2 = ln(1 + ic)
+    realMultiply(&temp2, &exponent, &temp2, &ctxtTvmHi);  // temp2 = exponent * ln(1 + ic)
+    WP34S_ExpM1(&temp2, ip, &ctxtTvmHi);                  // ip = exp(exponent * ln(1 + ic)) - 1
+  }
 
   *error = 0;
 }
@@ -93,36 +109,39 @@ int calculatePV(const real_t *fv,
   // Check if ip ≈ 0
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // PV = -PMT*NPPER - FV
-    realMultiply(pmt, npper, &temp1, &ctxtReal51);
-    realAdd(&temp1, fv, pv, &ctxtReal51);
+    realMultiply(pmt, npper, &temp1, &ctxtTvm);
+    realAdd(&temp1, fv, pv, &ctxtTvm);
     realSetNegativeSign(pv);
     return 0;
   }
   
   // General case: ip ≠ 0
-  // Calculate (1 + ip)^(-NPPER)
-  realCopy(npper, &negNpper);
-  realSetNegativeSign(&negNpper);
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, &negNpper, &powerTerm, &ctxtReal51);
-  
+  {
+    // Calculate annuity factor: numerator: 1 - (1+ip)^(-NPPER)
+    realSubtract(const_0, npper, &negNpper, &ctxtTvm);
+    real_t temp2;
+    WP34S_Ln1P(&ip, &temp2, &ctxtTvm);                  // temp2 = ln(1 + ip)
+    realMultiply(&temp2, &negNpper, &temp2, &ctxtTvm);  // temp2 = -NPPER * ln(1 + ip)
+    realExp(&temp2, &powerTerm, &ctxtTvm);              // powerTerm = (1+ip)^(-NPPER)
+    WP34S_ExpM1(&temp2, &temp1, &ctxtTvm);              // temp1 = (1+ip)^(-NPPER) - 1
+    realChangeSign(&temp1);                                // temp1 = 1 - (1+ip)^(-NPPER)
+  }
   // Annuity factor = [1 - (1+ip)^(-NPPER)] / ip
-  realSubtract(const_1, &powerTerm, &temp1, &ctxtReal51);
-  realDivide(&temp1, &ip, &annuityFactor, &ctxtReal51);
+  realDivide(&temp1, &ip, &annuityFactor, &ctxtTvm);
   
   // Payment timing factor = (1 + ip*p)
-  realMultiply(&ip, p, &temp1, &ctxtReal51);
-  realAdd(&temp1, const_1, &temp2, &ctxtReal51);
+  realMultiply(&ip, p, &temp1, &ctxtTvm);
+  realAdd(&temp1, const_1, &temp2, &ctxtTvm);
   
   // PV from payments = (1 + ip*p) * PMT * annuityFactor
-  realMultiply(&temp2, pmt, &temp1, &ctxtReal51);
-  realMultiply(&temp1, &annuityFactor, &temp3, &ctxtReal51);
+  realMultiply(&temp2, pmt, &temp1, &ctxtTvm);
+  realMultiply(&temp1, &annuityFactor, &temp3, &ctxtTvm);
   
   // PV from FV = FV * (1+ip)^(-NPPER)
-  realMultiply(fv, &powerTerm, &temp1, &ctxtReal51);
+  realMultiply(fv, &powerTerm, &temp1, &ctxtTvm);
   
   // PV = -(payment part + FV part)
-  realAdd(&temp3, &temp1, pv, &ctxtReal51);
+  realAdd(&temp3, &temp1, pv, &ctxtTvm);
   realChangeSign(pv);
 
   return 0;
@@ -148,35 +167,39 @@ int calculateFV(const real_t *pv,
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // FV = -PV - PMT*NPPER
-    realMultiply(pmt, npper, &temp1, &ctxtReal51);
-    realAdd(pv, &temp1, fv, &ctxtReal51);
+    realMultiply(pmt, npper, &temp1, &ctxtTvm);
+    realAdd(pv, &temp1, fv, &ctxtTvm);
     realSetNegativeSign(fv);
     return 0;
   }
   
   // General case: ip ≠ 0
   // Calculate (1 + ip)^NPPER
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, npper, &powerTerm, &ctxtReal51);
-  
+  {
+    real_t temp_ln;
+    WP34S_Ln1P(&ip, &temp_ln, &ctxtTvm);                 // temp_ln = ln(1 + ip)
+    realMultiply(&temp_ln, npper, &temp_ln, &ctxtTvm);   // temp_ln = npper * ln(1 + ip)
+    realExp(&temp_ln, &powerTerm, &ctxtTvm);             // powerTerm = (1+ip)^npper
+    WP34S_ExpM1(&temp_ln, &temp2, &ctxtTvm);             // temp2 = (1+ip)^npper - 1
+  }
+
   // FV from PV = -PV * (1+ip)^NPPER
-  realMultiply(pv, &powerTerm, &temp1, &ctxtReal51);
+  realMultiply(pv, &powerTerm, &temp1, &ctxtTvm);
   realSetNegativeSign(&temp1);
   
   // Annuity factor = [(1+ip)^NPPER - 1] / ip
-  realSubtract(&powerTerm, const_1, &temp2, &ctxtReal51);
-  realDivide(&temp2, &ip, &annuityFactor, &ctxtReal51);
+  realDivide(&temp2, &ip, &annuityFactor, &ctxtTvm);
   
   // Payment timing factor = (1 + ip*p)
-  realMultiply(&ip, p, &temp2, &ctxtReal51);
-  realAdd(&temp2, const_1, &temp3, &ctxtReal51);
+  realFMA(&ip, p, const_1, &temp3, &ctxtTvm);
   
   // FV from payments = (1 + ip*p) * PMT * annuityFactor
-  realMultiply(&temp3, pmt, &temp2, &ctxtReal51);
-  realMultiply(&temp2, &annuityFactor, &temp3, &ctxtReal51);
-  
   // FV = PV part - payment part
-  realSubtract(&temp1, &temp3, fv, &ctxtReal51);
+  realMultiply(&temp3, pmt, &temp2, &ctxtTvm);
+  // fv = temp1 - (temp2 x &annuityFactor) = - ((temp2 x &annuityFactor) - temp1) = - [ (temp2 x &annuityFactor) + (-temp1) ] = - FMA[ temp2, &annuityFactor, - temp1 ]
+  realChangeSign(&temp1);
+  realFMA(&temp2, &annuityFactor, &temp1, fv, &ctxtTvm);
+  realChangeSign(fv);
   
   return 0;
 }
@@ -206,30 +229,35 @@ int calculatePMT(const real_t *pv,
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // PMT = -(PV + FV) / NPPER
-    realAdd(pv, fv, &temp1, &ctxtReal51);
-    realDivide(&temp1, npper, pmt, &ctxtReal51);
+    realAdd(pv, fv, &temp1, &ctxtTvm);
+    realDivide(&temp1, npper, pmt, &ctxtTvm);
     realSetNegativeSign(pmt);
     return 0;
   }
   
   // General case: ip ≠ 0
   // Calculate (1 + ip)^(-NPPER)
-  realCopy(npper, &negNpper);
-  realSetNegativeSign(&negNpper);
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  realPower(&temp1, &negNpper, &powerTerm, &ctxtReal51);
-  
+  realSubtract(const_0, npper, &negNpper, &ctxtTvm);
+   {
+    real_t temp_ln;
+    WP34S_Ln1P(&ip, &temp_ln, &ctxtTvm);                    // temp_ln = ln(1 + ip)
+    realMultiply(&temp_ln, &negNpper, &temp_ln, &ctxtTvm);  // temp_ln = -npper * ln(1 + ip)
+    realExp(&temp_ln, &powerTerm, &ctxtTvm);                // powerTerm = (1+ip)^(-npper)
+    WP34S_ExpM1(&temp_ln, &temp3, &ctxtTvm);                // temp3 = (1+ip)^(-npper) - 1
+    realChangeSign(&temp3);                                    // temp3 = 1 - (1+ip)^(-npper)
+  }
+
+
   // Numerator = -[PV + FV*(1+ip)^(-NPPER)] * ip
-  realMultiply(fv, &powerTerm, &temp1, &ctxtReal51);
-  realAdd(pv, &temp1, &temp2, &ctxtReal51);
-  realMultiply(&temp2, &ip, &numerator, &ctxtReal51);
+  realMultiply(fv, &powerTerm, &temp1, &ctxtTvm);
+  realAdd(pv, &temp1, &temp2, &ctxtTvm);
+  realMultiply(&temp2, &ip, &numerator, &ctxtTvm);
   realChangeSign(&numerator);
   
   // Denominator = (1+ip*p) * [1-(1+ip)^(-NPPER)]
-  realMultiply(&ip, p, &temp1, &ctxtReal51);
-  realAdd(&temp1, const_1, &temp2, &ctxtReal51);
-  realSubtract(const_1, &powerTerm, &temp3, &ctxtReal51);
-  realMultiply(&temp2, &temp3, &denominator, &ctxtReal51);
+  realMultiply(&ip, p, &temp1, &ctxtTvm);
+  realAdd(&temp1, const_1, &temp2, &ctxtTvm);
+  realMultiply(&temp2, &temp3, &denominator, &ctxtTvm);
   
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&denominator)) {
@@ -237,7 +265,7 @@ int calculatePMT(const real_t *pv,
   }
   
   // PMT = numerator / denominator
-  realDivide(&numerator, &denominator, pmt, &ctxtReal51);
+  realDivide(&numerator, &denominator, pmt, &ctxtTvm);
   
   return 0;
 }
@@ -268,8 +296,8 @@ int calculateNPPER(const real_t *pv,
     if(decNumberIsZero((decNumber *)pmt)) {
       return tvmRangeError(0);
     }
-    realAdd(pv, fv, &temp1, &ctxtReal51);
-    realDivide(&temp1, pmt, npper, &ctxtReal51);
+    realAdd(pv, fv, &temp1, &ctxtTvm);
+    realDivide(&temp1, pmt, npper, &ctxtTvm);
     realSetNegativeSign(npper);
     return 0;
   }
@@ -282,7 +310,7 @@ int calculateNPPER(const real_t *pv,
       return tvmRangeError(7);
     }
     
-    realDivide(fv, pv, &ratio, &ctxtReal51);
+    realDivide(fv, pv, &ratio, &ctxtTvm);
     realSetNegativeSign(&ratio);
     
     // Check for non-positive argument to ln
@@ -290,34 +318,34 @@ int calculateNPPER(const real_t *pv,
       return tvmRangeError(4);
     }
     
-    WP34S_Ln(&ratio, &lnRatio, &ctxtReal51);
-    realAdd(&ip, const_1, &temp1, &ctxtReal51);
-    WP34S_Ln(&temp1, &lnBase, &ctxtReal51);
+    WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
+    realAdd(&ip, const_1, &temp1, &ctxtTvm);
+    WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
     
     // Check for zero denominator (should not happen for valid ip, but check anyway)
     if(decNumberIsZero((decNumber *)&lnBase)) {
       return tvmRangeError(0);
     }
     
-    realDivide(&lnRatio, &lnBase, npper, &ctxtReal51);
+    realDivide(&lnRatio, &lnBase, npper, &ctxtTvm);
     return 0;
   }
   
   // Case 2: PMT ≠ 0, ip ≠ 0
   // Calculate A = -FV*ip + PMT*(1+ip*p)
-  realMultiply(fv, &ip, &temp1, &ctxtReal51);
+  realMultiply(fv, &ip, &temp1, &ctxtTvm);
   realSetNegativeSign(&temp1);
-  realMultiply(&ip, p, &temp2, &ctxtReal51);
-  realAdd(&temp2, const_1, &temp2, &ctxtReal51);
-  realMultiply(pmt, &temp2, &temp2, &ctxtReal51);
-  realAdd(&temp1, &temp2, &a, &ctxtReal51);
+  realMultiply(&ip, p, &temp2, &ctxtTvm);
+  realAdd(&temp2, const_1, &temp2, &ctxtTvm);
+  realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
+  realAdd(&temp1, &temp2, &a, &ctxtTvm);
   
   // Calculate B = PV*ip + PMT*(1+ip*p)
-  realMultiply(pv, &ip, &temp1, &ctxtReal51);
-  realMultiply(&ip, p, &temp2, &ctxtReal51);
-  realAdd(&temp2, const_1, &temp2, &ctxtReal51);
-  realMultiply(pmt, &temp2, &temp2, &ctxtReal51);
-  realAdd(&temp1, &temp2, &b, &ctxtReal51);
+  realMultiply(pv, &ip, &temp1, &ctxtTvm);
+  realMultiply(&ip, p, &temp2, &ctxtTvm);
+  realAdd(&temp2, const_1, &temp2, &ctxtTvm);
+  realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
+  realAdd(&temp1, &temp2, &b, &ctxtTvm);
   
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&b)) {
@@ -325,7 +353,7 @@ int calculateNPPER(const real_t *pv,
   }
   
   // Calculate ratio = A / B
-  realDivide(&a, &b, &ratio, &ctxtReal51);
+  realDivide(&a, &b, &ratio, &ctxtTvm);
   
   // Check for non-positive argument to ln
   if(!realIsPositive(&ratio)) {
@@ -333,16 +361,16 @@ int calculateNPPER(const real_t *pv,
   }
   
   // NPPER = ln(A/B) / ln(1+ip)
-  WP34S_Ln(&ratio, &lnRatio, &ctxtReal51);
-  realAdd(&ip, const_1, &temp1, &ctxtReal51);
-  WP34S_Ln(&temp1, &lnBase, &ctxtReal51);
+  WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
+  realAdd(&ip, const_1, &temp1, &ctxtTvm);
+  WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
   
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&lnBase)) {
     return tvmRangeError(0);
   }
   
-  realDivide(&lnRatio, &lnBase, npper, &ctxtReal51);
+  realDivide(&lnRatio, &lnBase, npper, &ctxtTvm);
   
   return 0;
 }
@@ -371,8 +399,8 @@ int calculatePPER(const real_t *pv,
   }
   
   // Calculate ic = (I%/a / 100) / CPER/a
-  realDivide(iPercentPerYear, const_100, &ic, &ctxtReal51);
-  realDivide(&ic, compoundPerYear, &ic, &ctxtReal51);
+  realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
+  realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
   
   // Calculate effective interest rate ip from the TVM parameters
   // For PMT = 0 (simple compound interest): ip = (-FV/PV)^(1/NPPER) - 1
@@ -387,16 +415,20 @@ int calculatePPER(const real_t *pv,
     }
     
     // ip = (-FV/PV)^(1/NPPER) - 1
-    realDivide(fv, pv, &temp1, &ctxtReal51);
+    realDivide(fv, pv, &temp1, &ctxtTvm);
     realSetNegativeSign(&temp1);
     
     if(!realIsPositive(&temp1)) {
       return tvmRangeError(3);
     }
     
-    realDivide(const_1, npper, &temp2, &ctxtReal51);
-    realPower(&temp1, &temp2, &ip_effective, &ctxtReal51);
-    realSubtract(&ip_effective, const_1, &ip_effective, &ctxtReal51);
+    realDivide(const_1, npper, &temp2, &ctxtTvm);
+    {
+      real_t temp_ln;
+      WP34S_Ln(&temp1, &temp_ln, &ctxtTvm);
+      realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtTvm);
+      WP34S_ExpM1(&temp_ln, &ip_effective, &ctxtTvm);
+    }
     
   } else {
     // Complex case: with payments
@@ -413,32 +445,32 @@ int calculatePPER(const real_t *pv,
   }
   
   // Check if ip ≈ ic (special case: PPER/a = CPER/a)
-  realSubtract(&ip_effective, &ic, &temp1, &ctxtReal51);
+  realSubtract(&ip_effective, &ic, &temp1, &ctxtTvm);
   if(realCompareAbsLessThan(&temp1, const_1e_37)) {
     realCopy(compoundPerYear, paymentPerYear);
     return 0;
   }
   
   // General case: PPER/a = CPER/a * ln(1 + ic) / ln(1 + ip)
-  realAdd(&ic, const_1, &temp1, &ctxtReal51);
+  realAdd(&ic, const_1, &temp1, &ctxtTvm);
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
-  WP34S_Ln(&temp1, &lnBase, &ctxtReal51);
+  WP34S_Ln1P(&ic, &lnBase, &ctxtTvm);
   
-  realAdd(&ip_effective, const_1, &temp1, &ctxtReal51);
+  realAdd(&ip_effective, const_1, &temp1, &ctxtTvm);
   if(!realIsPositive(&temp1)) {
     return tvmRangeError(4);
   }
-  WP34S_Ln(&temp1, &lnTarget, &ctxtReal51);
+  WP34S_Ln1P(&ip_effective, &lnTarget, &ctxtTvm);
   
   if(decNumberIsZero((decNumber *)&lnTarget)) {
     return tvmRangeError(0);
   }
   
   // PPER/a = CPER/a * ln(1+ic) / ln(1+ip)
-  realDivide(&lnBase, &lnTarget, &ratio, &ctxtReal51);
-  realMultiply(compoundPerYear, &ratio, paymentPerYear, &ctxtReal51);
+  realDivide(&lnBase, &lnTarget, &ratio, &ctxtTvm);
+  realMultiply(compoundPerYear, &ratio, paymentPerYear, &ctxtTvm);
   
   if(!realIsPositive(paymentPerYear)) {
     return tvmRangeError(3);
@@ -463,7 +495,7 @@ int calculateCPER(const real_t *pv,
                   real_t *compoundPerYear) {
   real_t ip, ic, temp1, temp2;
   real_t exponent, test_ip, error_val, tolerance;
-  real_t delta, damping;
+  real_t delta;
   int iterations = 0;
   const int maxIterations = 100;
   
@@ -483,61 +515,66 @@ int calculateCPER(const real_t *pv,
     }
     
     // ip = (-FV/PV)^(1/NPPER) - 1
-    realDivide(fv, pv, &temp1, &ctxtReal51);
+    realDivide(fv, pv, &temp1, &ctxtTvm);
     realSetNegativeSign(&temp1);
     
     if(!realIsPositive(&temp1)) {
       return tvmRangeError(3);
     }
     
-    realDivide(const_1, npper, &temp2, &ctxtReal51);
-    realPower(&temp1, &temp2, &ip, &ctxtReal51);
-    realSubtract(&ip, const_1, &ip, &ctxtReal51);
+    realDivide(const_1, npper, &temp2, &ctxtTvm);
+    {
+      real_t temp_ln;
+      WP34S_Ln(&temp1, &temp_ln, &ctxtTvm);
+      realMultiply(&temp_ln, &temp2, &temp_ln, &ctxtTvm);
+      WP34S_ExpM1(&temp_ln, &ip, &ctxtTvm);
+    }
     
   } else {
     // Complex case - use I%/a solver first
-    return tvmRangeError(3);
+    return tvmRangeError(9);
   }
   
   // Iterative solution for CPER/a
   // Equation: (1 + (I%/a/100)/CPER)^(CPER/PPER) - 1 = ip
   
-  stringToReal("1e-34", &tolerance, &ctxtReal51);
+  stringToReal("1e-36", &tolerance, &ctxtTvm);
   
   // Initial guess: CPER/a = PPER/a
   realCopy(paymentPerYear, compoundPerYear);
   
   for(iterations = 0; iterations < maxIterations; iterations++) {
     // ic = (I%/a / 100) / CPER/a
-    realDivide(iPercentPerYear, const_100, &ic, &ctxtReal51);
-    realDivide(&ic, compoundPerYear, &ic, &ctxtReal51);
+    realDivide(iPercentPerYear, const_100, &ic, &ctxtTvm);
+    realDivide(&ic, compoundPerYear, &ic, &ctxtTvm);
     
     // exponent = CPER/a / PPER/a
-    realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtReal51);
+    realDivide(compoundPerYear, paymentPerYear, &exponent, &ctxtTvm);
     
     // test_ip = (1 + ic)^exponent - 1
-    realAdd(&ic, const_1, &temp1, &ctxtReal51);
-    realPower(&temp1, &exponent, &test_ip, &ctxtReal51);
-    realSubtract(&test_ip, const_1, &test_ip, &ctxtReal51);
-    
+    {
+      real_t temp_exp;
+      WP34S_Ln1P(&ic, &temp_exp, &ctxtTvm);                    // temp_exp = ln(1 + ic)
+      realMultiply(&temp_exp, &exponent, &temp_exp, &ctxtTvm); // temp_exp = exponent * ln(1 + ic)
+      WP34S_ExpM1(&temp_exp, &test_ip, &ctxtTvm);              // test_ip = (1+ic)^exponent - 1
+    }
+
     // error = test_ip - ip
-    realSubtract(&test_ip, &ip, &error_val, &ctxtReal51);
+    realSubtract(&test_ip, &ip, &error_val, &ctxtTvm);
     
     // Check convergence
     if(realCompareAbsLessThan(&error_val, &tolerance)) {
       return 0;
     }
     
-    // Newton-Raphson update
-    // f(CPER) = (1 + I%/100/CPER)^(CPER/PPER) - 1 - ip
-    // f'(CPER) uses quotient and chain rules - complex
-    // Use simplified damped iteration instead
-    
-    realDivide(&error_val, &ip, &temp1, &ctxtReal51);
-    realMultiply(&temp1, const_1on2, &delta, &ctxtReal51);  // damping = 0.5
-    realSubtract(const_1, &delta, &damping, &ctxtReal51);
-    realMultiply(compoundPerYear, &damping, compoundPerYear, &ctxtReal51);
-    
+    {
+      // Newton-Raphson update with damping
+      real_t temp2;
+      realDivide(&error_val, &ip, &temp1, &ctxtTvm);
+      realMultiply(&temp1, const_1on2, &delta, &ctxtTvm);  // damping = 0.5
+      realSubtract(const_1, &delta, &temp2, &ctxtTvm);
+      realMultiply(compoundPerYear, &temp2, compoundPerYear, &ctxtTvm);
+    }
     // Keep CPER/a positive
     if(!realIsPositive(compoundPerYear)) {
       realCopy(paymentPerYear, compoundPerYear);
@@ -550,11 +587,11 @@ int calculateCPER(const real_t *pv,
 
 
 
-  TO_QSPI static const char bugScreenNotForTvmVar[] = "In function solveTvmVariable: this variable is not intended for TVM application!";
+  TO_QSPI static const char bugScreenNotForTvmVar[] = "In function solveTvmVariable51: this variable is not intended for TVM application!";
 
 
 // Solve for the specified TVM variable, returns: 0 on success, error code on failure
-int solveTvmVariable(uint16_t variable) {
+int solveTvmVariable51(uint16_t variable) {
   real_t fv, iA, nPer, pperA, cperA, pmt, pv, p;
   real_t result;
   int error = 0;
@@ -613,7 +650,7 @@ int solveTvmVariable(uint16_t variable) {
     //Not stopping for an error, but letting it through to the old solver for erroring and/or solving
     //displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function solveTvmVariable:", tvmErrorMessages[error], " Cannot compute TVM equation with current parameters", NULL);
+      moreInfoOnError("In function solveTvmVariable51:", tvmErrorMessages[error], " Cannot compute TVM equation with current parameters", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return error;
   }
@@ -660,13 +697,20 @@ void fnTvmVar(uint16_t variable) {
 
           #if defined(OPTION_TVM_FORMULAS)
             if(variable != RESERVED_VARIABLE_IPONA) {
-              if(solveTvmVariable(variable) == 0) {
+              int err = solveTvmVariable51(variable);
+              if( err == 0) {
                 #if defined(PC_BUILD)
                   printf("Success analytical TVM\n");
                 #endif //PC_BUILD
                 temporaryInformation = TI_SOLVER_VARIABLE;
-                return;   // Try analytic solution, if unsuccessful, do the standard solve anyway
-              }
+                return;   // Try analytic solution, if successful, return
+              } 
+              else {
+                lastErrorCode = 0;  // Failure in analytical solver section, error is on the PC screen but continue to retry using the old solver without erroring
+                #if defined(PC_BUILD)
+                  printf("Clearing analytical TVM error to continue to iterative solver\n");
+                #endif //PC_BUILD
+              } 
             }
           #endif //OPTION_TVM_FORMULAS
 
@@ -748,7 +792,7 @@ void fnTvmVar(uint16_t variable) {
           real34_t xx, yy;
 
           #define nIter 6
-          while(iter++ < nIter || !real34CompareEqual(&resX, &resY)) {
+          while(iter++ < nIter && !real34CompareEqual(&resX, &resY)) {
             real34Copy(&x, &xx);
             real34Copy(&y, &yy);
             #if defined(PC_BUILD)
@@ -863,9 +907,12 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
 
     iA.exponent -= 2; // iA = iA / 100
     realDivide(&iA, &cperA, &tmp, &ctxtReal39);
-    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
-    realPower(&tmp, &cperA, &tmp, &ctxtReal39);
-    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    {
+      real_t temp2;
+      WP34S_Ln1P(&tmp, &temp2, &ctxtTvm);              // temp2 = ln(1 + tmp)
+      realMultiply(&temp2, &cperA, &temp2, &ctxtTvm);  // temp2 = cperA * ln(1 + tmp)
+      WP34S_ExpM1(&temp2, &tmp, &ctxtTvm);             // tmp = exp(cperA * ln(1 + tmp)) - 1
+    }
     tmp.exponent += 2; // tmp = tmp * 100
 
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -960,45 +1007,60 @@ void tvmEquation(void) {
    */
 
   if((!tvmIKnown) || (tvmIChanges)) { // if i hasn't been found yet or i changes each time
-    realDivide(&iA, const_100, &i, &ctxtReal39);
-    realDivide(&i, &pperA, &i, &ctxtReal39);
+    realDivide(&iA, const_100, &i, &ctxtTvm);
+    realDivide(&i, &pperA, &i, &ctxtTvm);
     // i is now (iA / 100) / pperA.
     // This is the "normal" value of i when cperA = pperA.
 
-    realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
+    realDivide(&cperA, &pperA, &r, &ctxtTvm); // r = cperA / pperA
 
     if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
-      realDivide(&i, &r, &i, &ctxtReal39);
-      realAdd(&i, const_1, &i, &ctxtReal39);
-      realPower(&i, &r, &i, &ctxtReal39);
-      realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
+      realDivide(&i, &r, &i, &ctxtTvm);
+      {
+        // Converted to: (1+i)^r = exp(r * ln(1+i))
+        real_t temp;
+        WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);             // temp = ln(1 + i)
+        realMultiply(&temp, &r, &temp, &ctxtSolverTvmHi);    // temp = r * ln(1 + i)
+        WP34S_ExpM1(&temp, &i, &ctxtSolverTvmHi);            // i = exp(r * ln(1 + i)) - 1
+      } // i = (1 + (i/pperA)/r)^r - 1
     }
     tvmIKnown = true;
   }
 
   realChangeSign(&pv);
-
-  realAdd(&i, const_1, &i1nPer, &ctxtReal39);
-  realPower(&i1nPer, &nPer, &i1nPer, &ctxtReal39);
-
+  // early return for i = 0: exact limit avoids 0/0 in annuity; f = -PV + n*PMT - FV (k -> 1 for both modes)
+  if(realIsZero(&i)) {
+    realMultiply(&nPer, &pmt, &val, &ctxtTvm);
+    realAdd(&pv, &val, &val, &ctxtTvm);
+    realSubtract(&val, &fv, &val, &ctxtTvm);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    convertRealToReal34ResultRegister(&val, REGISTER_X);
+    return;
+  }
+  {
+    // Converted to: (1+i)^nPer = exp(nPer * ln(1+i))
+    real_t temp;
+    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);                 // temp = ln(1 + i)
+    realMultiply(&temp, &nPer, &temp, &ctxtSolverTvmHi);     // temp = nPer * ln(1 + i)
+    WP34S_ExpM1(&temp, &tmp, &ctxtSolverTvmHi);              // tmp = (1+i)^nPer - 1
+  }
+  realAdd(&tmp, const_1, &i1nPer, &ctxtTvm);               // i1nPer = (1+i)^nPer
   if(getSystemFlag(FLAG_ENDPMT)) {
     realCopy(const_1, &val); // END mode
   }
   else {
-    realAdd(const_1, &i, &val, &ctxtReal39); // BEGIN mode
+    realAdd(const_1, &i, &val, &ctxtTvm); // BEGIN mode
   }
 
-  realMultiply(&val, &pmt, &val, &ctxtReal39);
-  if(realCompareAbsLessThan(&i,const_1e_37)) {    //prevent infinity when i = 0, to continue work
-    realCopy(const_1e_37,&i);
-  }
-  realDivide(&val, &i, &val, &ctxtReal39);
+  realMultiply(&val, &pmt, &val, &ctxtTvm);
 
-  realSubtract(const_1, &i1nPer, &tmp, &ctxtReal39);
-  realMultiply(&val, &tmp, &val, &ctxtReal39);
+  // divide tmp by i before sign flip: tmp/i = expm1(n*ln1p(i))/i -> n as i->0, no cancellation
+  realDivide(&tmp, &i, &tmp, &ctxtSolverTvmHi);              // increase digits to make sure 1/i for very small i will not loose digits.
+  realChangeSign(&tmp);
+  realMultiply(&val, &tmp, &val, &ctxtTvm);
 
-  realFMA(&pv, &i1nPer, &val, &val, &ctxtReal39);
-  realSubtract(&val, &fv, &val, &ctxtReal39);
+  realFMA(&pv, &i1nPer, &val, &val, &ctxtTvm);
+  realSubtract(&val, &fv, &val, &ctxtTvm);
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&val, REGISTER_X);
