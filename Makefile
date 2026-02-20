@@ -315,8 +315,6 @@ dmcp_pkg1: build.dmcp1
 dmcp_pkg2: build.dmcp2
 	cd build.dmcp2 && ninja dmcp
 
-dmcp_both: dmcp_pkg1 dmcp_pkg2
-
 .PHONY: dist_dmcp_pkg1 dist_dmcp_pkg2
 dist_dmcp_pkg1: DIST_DIR_DM = $(DMCP_DIST_DIR)-pkg1
 dist_dmcp_pkg1: $(DIST_TESTPGMS_DM)
@@ -338,6 +336,8 @@ dist_dmcp_pkg2: $(DIST_TESTPGMS_DM)
 
 # Remove package 1 from automatic release compilation on gitlab, due the size exceedance on the gitlab compiler.
 # Temporary 'both' compile below:
+# dmcp_both: dmcp_pkg1 dmcp_pkg2
 # dist_dmcp: dmcp_both dist_dmcp_pkg1 dist_dmcp_pkg2
+dmcp_both: dmcp_pkg2
 dist_dmcp: dmcp_both dist_dmcp_pkg2
 
