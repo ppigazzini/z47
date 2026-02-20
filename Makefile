@@ -14,7 +14,6 @@ XVFB =
 FORCENEW_TESTPGMS =
 GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
 GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
-DMCP_PACKAGE = 2 # see defines.h for number x of PACKAGEx_... preprocessor variable
 
 $(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
 	rm -rf subprojects/gmp-6.2.1
@@ -252,15 +251,6 @@ dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp $(BUILD_PC)/res/testPgms/testPgms.bin $(BUILD_PC)/res/testPgms/testPgms.txt $(BUILD_PC)/res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
 
-dist_dmcp: DIST_DIR_DM = $(DMCP_DIST_DIR)
-dist_dmcp: dmcp $(DIST_TESTPGMS_DM)
-	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
-	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
-	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
-	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
-	zip -r c47-dmcp.zip $(DIST_DIR_DM)
-	rm -rf $(DIST_DIR_DM)
-
 dist_dmcp5: DIST_DIR_DM = $(DMCP5_DIST_DIR)
 dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 	cp build.dmcp5/src/c47-dmcp5/C47.pg5 $(DIST_DIR_DM)
@@ -296,3 +286,55 @@ dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
 	rm $(DMCP5R47_DIST_DIR)/DMCP5_flash_3.56.bin
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)
+
+#
+# DMCP package 1 and 2 separate builds
+#
+
+.PHONY: dmcp_pkg1 dmcp_pkg2 dmcp_both
+
+build.dmcp1:
+	meson setup build.dmcp1 \
+	  --cross-file=src/c47-dmcp/cross_arm_gcc.build \
+	  -DDMCPVERSION=dmcp \
+	  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
+	  -DDECNUMBER_FASTMUL=true \
+	  -DDMCP_PACKAGE=1
+
+build.dmcp2:
+	meson setup build.dmcp2 \
+	  --cross-file=src/c47-dmcp/cross_arm_gcc.build \
+	  -DDMCPVERSION=dmcp \
+	  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
+	  -DDECNUMBER_FASTMUL=true \
+	  -DDMCP_PACKAGE=2
+
+dmcp_pkg1: build.dmcp1
+	cd build.dmcp1 && ninja dmcp
+
+dmcp_pkg2: build.dmcp2
+	cd build.dmcp2 && ninja dmcp
+
+dmcp_both: dmcp_pkg1 dmcp_pkg2
+
+.PHONY: dist_dmcp_pkg1 dist_dmcp_pkg2
+dist_dmcp_pkg1: DIST_DIR_DM = $(DMCP_DIST_DIR)-pkg1
+dist_dmcp_pkg1: $(DIST_TESTPGMS_DM)
+	cp build.dmcp1/src/c47-dmcp/C47.pgm build.dmcp1/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
+	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp1/src/c47-dmcp/C47.map
+	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
+	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
+	zip -r c47-dmcp-pkg1.zip $(DIST_DIR_DM)
+	rm -rf $(DIST_DIR_DM)
+
+dist_dmcp_pkg2: DIST_DIR_DM = $(DMCP_DIST_DIR)-pkg2
+dist_dmcp_pkg2: $(DIST_TESTPGMS_DM)
+	cp build.dmcp2/src/c47-dmcp/C47.pgm build.dmcp2/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
+	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp2/src/c47-dmcp/C47.map
+	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
+	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
+	zip -r c47-dmcp-pkg2.zip $(DIST_DIR_DM)
+	rm -rf $(DIST_DIR_DM)
+
+dist_dmcp: dmcp_both dist_dmcp_pkg1 dist_dmcp_pkg2
+
