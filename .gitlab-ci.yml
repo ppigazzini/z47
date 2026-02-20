@@ -150,9 +150,9 @@ release:
       --assets-link \'{\"name\":\"C47 Firmware for DMCP5 (DM42n)\",\"url\":\"${PACKAGE_REGISTRY_URL}/c47-dmcp5-${CI_COMMIT_TAG}.zip\"}\'
       --assets-link \'{\"name\":\"R47 Firmware for DMCP5 (R47)\",\"url\":\"${PACKAGE_REGISTRY_URL}/r47-dmcp5-${CI_COMMIT_TAG}.zip\"}\'"
 
-      DMCP_ASSETLINKS=$(for f in c47-dmcp-pkg?.zip;
+      DMCP_ASSETLINKS="$(for f in c47-dmcp-pkg?.zip;
       do echo --assets-link \'{\"name\":\"C47 Firmware for DMCP  (DM42) - ${f:9:4}\",\"url\":\"${PACKAGE_REGISTRY_URL}/$(basename ${f} .zip)-${CI_COMMIT_TAG}.zip\"}\';
-      done)
+      done)"
 
       ASSETLINKS=${ASSETLINKS} ${DMCP_ASSETLINKS}
 
