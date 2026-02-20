@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.00b2.p1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 #define DEVPROFILES
 
 // Version 0.109.02.07b11   Public Release C47 & R47
@@ -19,6 +19,7 @@
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
+// Version 0.109.03.00b2    Public C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -115,8 +116,8 @@
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 
-//#define PACKAGE1_NOBESSEL_NOORTHO
-#define PACKAGE2_NODISTR
+#define PACKAGE1_NOBESSEL_NOORTHO
+//#define PACKAGE2_NODISTR
 //#define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
 
 
