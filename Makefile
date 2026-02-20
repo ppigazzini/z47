@@ -181,7 +181,7 @@ dist_install_PC: sim simr47
 	cp res/R47short.png $(DIST_DIR_PC)/res/
 	cp res/fonts/C47__StandardFont.ttf $(DIST_DIR_PC)/
 
-dist_testPgms_PC: testPgms dist_install_PC
+dist_testPgms_PC: dist_install_PC testPgms
 	mkdir -p $(DIST_DIR_PC)/res/testPgms/
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt $(DIST_DIR_PC)/res/testPgms/
 	cd $(DIST_DIR_PC) && $(XVFB) ./c47$(EXE) --writeexportall
