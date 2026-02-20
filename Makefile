@@ -14,6 +14,7 @@ XVFB =
 FORCENEW_TESTPGMS =
 GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
 GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
+DMCP_PACKAGE = 2
 
 $(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
 	rm -rf subprojects/gmp-6.2.1
@@ -24,7 +25,7 @@ clean: $(GMP_MESON_BUILD)
 	rm -f r47$(EXE)
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
 	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
-	rm -rf build build.sim build.dmcp build.dmcp5 build.rel build.rel.debug
+	rm -rf build build.sim build.dmcp build.dmcp.* build.dmcp5 build.rel build.rel.debug
 	rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
 	rm -rf PROGRAMS/ALLPGMS
 	rm -f src_files_stamp testPgms_stamp
@@ -71,7 +72,7 @@ build.rel.debug:
 	meson setup $(BUILD_PC) --buildtype=custom  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.dmcp:
-	meson setup build.dmcp  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true -DDMCP_PACKAGE=$(DMCP_PACKAGE)
+	meson setup build.dmcp.p$(DMCP_PACKAGE)  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true -DDMCP_PACKAGE=$(DMCP_PACKAGE)
 
 build.dmcp5:
 	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
@@ -93,7 +94,7 @@ simr47: $(BUILD_PC)
 	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 dmcp: build.dmcp
-	cd build.dmcp && ninja dmcp
+	cd build.dmcp.p$(DMCP_PACKAGE) && ninja dmcp
 
 dmcpr47: build.dmcp
 	cd build.dmcp && ninja dmcp_r47
@@ -221,19 +222,20 @@ dist_linux: dist_testPgms_PC
 	rm -rf $(LINUX_DIST_DIR)
 
 DIST_DIR_DM = $(DMCP_DIST_DIR)
-dist_install_DM: build.rel/wiki
-	mkdir -p $(DIST_DIR_DM)
-	mkdir -p $(DIST_DIR_DM)/resources
-	cp -r res/offimg/Egypt/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Norway/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Netherlands/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/From\ WP43/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/General/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/HP\ related/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/C47/. $(DIST_DIR_DM)/offimg
-	cp -r res/PROGRAMS $(DIST_DIR_DM)
-	cp -r res/STATE $(DIST_DIR_DM)
-	cp res/keymaps/keymap_DM42.bin $(DIST_DIR_DM)/resources
+PKG =
+dist_install_DM$(PKG): _DIST_DIR_DM = $(DIST_DIR_DM)$(if $(PKG),-pkg$(PKG),)
+dist_install_DM$(PKG): build.rel/wiki
+	mkdir -p $(_DIST_DIR_DM)/resources
+	cp -r res/offimg/Egypt/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/Norway/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/Netherlands/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/From\ WP43/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/General/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/HP\ related/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/C47/. $(_DIST_DIR_DM)/offimg
+	cp -r res/PROGRAMS $(_DIST_DIR_DM)
+	cp -r res/STATE $(_DIST_DIR_DM)
+	cp res/keymaps/keymap_DM42.bin $(_DIST_DIR_DM)/resources
 
 ifeq ($(FORCENEW_TESTPGMS),)
   DIST_TESTPGMS_DM = dist_testPgms_DM
@@ -241,12 +243,12 @@ else
   DIST_TESTPGMS_DM = dist_testPgms_forcenew_DM
 endif
 
-dist_testPgms_DM: dist_install_DM
+dist_testPgms_DM: dist_install_DM$(PKG)
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
 
-dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM
+dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM$(PKG)
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp $(BUILD_PC)/res/testPgms/testPgms.bin $(BUILD_PC)/res/testPgms/testPgms.txt $(BUILD_PC)/res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
@@ -288,56 +290,52 @@ dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
 	rm -rf $(DMCP5R47_DIST_DIR)
 
 #
-# DMCP package 1 and 2 separate builds
+# DMCP package 1, 2 and 3 separate builds
 #
 
-.PHONY: dmcp_pkg1 dmcp_pkg2 dmcp_both
+.PHONY: dmcp_pkg1 dmcp_pkg2 dmcp_pkg3 dmcp_pkgs_all
+.PHONY: dist_dmcp_pkg1 dist_dmcp_pkg2 dist_dmcp_pkg3
+.PHONY: dist_dmcp_pkgs_1_2 dist_dmcp_pkgs_small dist_dmcp_pkgs_all
 
-build.dmcp1:
-	meson setup build.dmcp1 \
+build.dmcp.p$(PKG): DMCP_PACKAGE = $(PKG)
+build.dmcp.p$(PKG):
+	meson setup build.dmcp.p$(PKG) \
 	  --cross-file=src/c47-dmcp/cross_arm_gcc.build \
 	  -DDMCPVERSION=dmcp \
 	  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
 	  -DDECNUMBER_FASTMUL=true \
-	  -DDMCP_PACKAGE=1
+	  -DDMCP_PACKAGE=$(PKG)
 
-build.dmcp2:
-	meson setup build.dmcp2 \
-	  --cross-file=src/c47-dmcp/cross_arm_gcc.build \
-	  -DDMCPVERSION=dmcp \
-	  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
-	  -DDECNUMBER_FASTMUL=true \
-	  -DDMCP_PACKAGE=2
+dmcp_pkg$(PKG): build.dmcp.p$(PKG)
+	cd build.dmcp.p$(PKG) && ninja dmcp
 
-dmcp_pkg1: build.dmcp1
-	cd build.dmcp1 && ninja dmcp
+dist_dmcp_pkg$(PKG): dmcp_pkg$(PKG)
+dist_dmcp_pkg$(PKG): _DIST_DIR_DM = $(DIST_DIR_DM)-pkg$(PKG)
+dist_dmcp_pkg$(PKG): _BUILD_DIR_DM = build.dmcp.p$(PKG)
+dist_dmcp_pkg$(PKG): dist_install_DM$(PKG) $(DIST_TESTPGMS_DM)
+	cp $(_BUILD_DIR_DM)/src/c47-dmcp/C47.pgm $(_BUILD_DIR_DM)/src/c47-dmcp/C47_qspi.bin $(_DIST_DIR_DM)
+	zip -r $(_DIST_DIR_DM)/resources/C47.map.zip $(_BUILD_DIR_DM)/src/c47-dmcp/C47.map
+	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(_DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
+	cp res/PACKAGES.md $(_DIST_DIR_DM)/PACKAGES.txt
+	zip -r c47-dmcp-pkg$(PKG).zip $(_DIST_DIR_DM)
+	rm -rf $(_DIST_DIR_DM)
 
-dmcp_pkg2: build.dmcp2
-	cd build.dmcp2 && ninja dmcp
+dmcp_pkgs_all:
+	$(MAKE) PKG=1 dmcp_pkg1
+	$(MAKE) PKG=2 dmcp_pkg2
+	$(MAKE) PKG=3 dmcp_pkg3
 
-.PHONY: dist_dmcp_pkg1 dist_dmcp_pkg2
-dist_dmcp_pkg1: DIST_DIR_DM = $(DMCP_DIST_DIR)-pkg1
-dist_dmcp_pkg1: $(DIST_TESTPGMS_DM)
-	cp build.dmcp1/src/c47-dmcp/C47.pgm build.dmcp1/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
-	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp1/src/c47-dmcp/C47.map
-	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
-	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
-	zip -r c47-dmcp-pkg1.zip $(DIST_DIR_DM)
-	rm -rf $(DIST_DIR_DM)
+dist_dmcp_pkgs_all:
+	$(MAKE) PKG=1 dist_dmcp_pkg1
+	$(MAKE) PKG=2 dist_dmcp_pkg2
+	$(MAKE) PKG=3 dist_dmcp_pkg3
 
-dist_dmcp_pkg2: DIST_DIR_DM = $(DMCP_DIST_DIR)-pkg2
-dist_dmcp_pkg2: $(DIST_TESTPGMS_DM)
-	cp build.dmcp2/src/c47-dmcp/C47.pgm build.dmcp2/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
-	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp2/src/c47-dmcp/C47.map
-	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
-	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
-	zip -r c47-dmcp-pkg2.zip $(DIST_DIR_DM)
-	rm -rf $(DIST_DIR_DM)
+dist_dmcp_pkgs_1_2:
+	$(MAKE) PKG=1 dist_dmcp_pkg1
+	$(MAKE) PKG=2 dist_dmcp_pkg2
 
-# Remove package 1 from automatic release compilation on gitlab, due the size exceedance on the gitlab compiler.
-# Temporary 'both' compile below:
-# dmcp_both: dmcp_pkg1 dmcp_pkg2
-# dist_dmcp: dmcp_both dist_dmcp_pkg1 dist_dmcp_pkg2
-dmcp_both: dmcp_pkg2
-dist_dmcp: dmcp_both dist_dmcp_pkg2
+dist_dmcp_pkgs_small:
+	$(MAKE) PKG=2 dist_dmcp_pkg2
+	$(MAKE) PKG=3 dist_dmcp_pkg3
 
+dist_dmcp: dist_dmcp_pkgs_small
