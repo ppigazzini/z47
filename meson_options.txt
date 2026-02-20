@@ -21,3 +21,9 @@ option('DECNUMBER_FASTMUL',
   value       : false,
   description : 'Set if use decnumber with enabled FASTMUL option'
 )
+
+option('DMCP_PACKAGE',
+  type        : 'string',
+  value       : '',
+  description : 'define variable acc. to defines.h to save space for DM42 dmcp builds'
+)
