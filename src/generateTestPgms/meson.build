@@ -3,7 +3,7 @@ generateTestPgms = executable('generateTestPgms',
   sources             : files('generateTestPgms.c') + generateTestPgms_src,
   c_args              : '-DGENERATE_TESTPGMS',
   include_directories : [decNumber_inc, c47_inc],
-  dependencies        : gtk_dep,
+  dependencies        : [gtk_dep, gmp_dep],
   native              : true
 )
 
