@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.01a-internal"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 #define DEVPROFILES
 
 // Version 0.109.02.07b11   Public Release C47 & R47
@@ -19,6 +19,7 @@
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
+// Version 0.109.03.00b2    Public C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -115,8 +116,8 @@
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 
-//#define PACKAGE1_NOBESSEL_NOORTHO
-#define PACKAGE2_NODISTR
+#define PACKAGE1_NOBESSEL_NOORTHO
+//#define PACKAGE2_NODISTR
 //#define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
 
 
@@ -1601,6 +1602,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_WOY_RULE                              121
 #define TI_MIJEQ                                 122
 #define TI_REGTYPE                               123
+#define TI_LR_A0                                 124
+#define TI_LR_A1                                 125
+#define TI_LR_A2                                 126
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
