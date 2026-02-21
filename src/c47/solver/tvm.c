@@ -41,20 +41,22 @@
 #endif
 
 
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  const char * const tvmErrorMessages[] = {
-    "TVM: Division by zero",                    // 0
-    "TVM: Invalid interest rate",               // 1
-    "TVM: Invalid number of periods",           // 2
-    "TVM: No solution exists",                  // 3
-    "TVM: Logarithm of non-positive number",    // 4
-    "TVM: Payment frequency cannot be zero",    // 5
-    "TVM: Compound frequency cannot be zero",   // 6
-    "TVM: Present value cannot be zero",        // 7
-    "TCM: Invalid variable requested",          // 8
-    "TCM: Exit to proceed to old solver"        // 9
-  };
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if defined (OPTION_TVM_FORMULAS)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    const char * const tvmErrorMessages[] = {
+      "TVM: Division by zero",                    // 0
+      "TVM: Invalid interest rate",               // 1
+      "TVM: Invalid number of periods",           // 2
+      "TVM: No solution exists",                  // 3
+      "TVM: Logarithm of non-positive number",    // 4
+      "TVM: Payment frequency cannot be zero",    // 5
+      "TVM: Compound frequency cannot be zero",   // 6
+      "TVM: Present value cannot be zero",        // 7
+      "TCM: Invalid variable requested",          // 8
+      "TCM: Exit to proceed to old solver"        // 9
+    };
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+
 
 static int tvmRangeError(int errorCode) {
   displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -687,6 +689,7 @@ int solveTvmVariable51(uint16_t variable) {
   setSystemFlag(FLAG_ASLIFT);
   return 0;
 }
+#endif //OPTION_TVM_FORMULAS
 
 
 
@@ -727,16 +730,19 @@ void fnTvmVar(uint16_t variable) {
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED || testing) {
           real34_t y, x, resZ, resY, resX;
+          real34Copy(const_0, &resZ);
+          real34Copy(const_0, &resY);
+          real34Copy(const_1, &resX);
           saveForUndo();
           thereIsSomethingToUndo = true;
           liftStack();
           tvmIKnown = false;
 
-          {
+          #if defined(OPTION_TVM_FORMULAS)
             if(variable != RESERVED_VARIABLE_IPONA) {
               int err = solveTvmVariable51(variable);
               if( err == 0) {
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined (TVMDEBUG2)
                   printf("Success analytical TVM\n");
                 #endif //PC_BUILD
                 temporaryInformation = TI_SOLVER_VARIABLE;
@@ -744,12 +750,12 @@ void fnTvmVar(uint16_t variable) {
               }
               else {
                 lastErrorCode = 0;  // Failure in analytical solver section, error is on the PC screen but continue to retry using the old solver without erroring
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined (TVMDEBUG2)
                   printf("Clearing analytical TVM error to continue to iterative solver\n");
                 #endif //PC_BUILD
               }
             }
-          }
+          #endif //OPTION_TVM_FORMULAS
 
           switch(variable) {
             case RESERVED_VARIABLE_IPONA:
@@ -832,16 +838,16 @@ void fnTvmVar(uint16_t variable) {
           while(iter++ < nIter && !real34CompareEqual(&resX, &resY)) {
             real34Copy(&x, &xx);
             real34Copy(&y, &yy);
-            #if defined(PC_BUILD)
+            #if defined (PC_BUILD) && defined (TVMDEBUG2)
               printReal34ToConsole(&x,"iter x:","\n");
               printReal34ToConsole(&y,"iter y:","\n");
             #endif //PC_BUILD
             uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
-            #if defined(PC_BUILD)
+            #if defined(PC_BUILD) && defined (TVMDEBUG2)
               printf("Solve iteration: iter=%u solveResult=%u\n",iter,solveResult);
             #endif //PC_BUILD
             if(solveResult == SOLVER_RESULT_NORMAL) {
-              #if defined(PC_BUILD)
+              #if defined(PC_BUILD)  && defined (TVMDEBUG2)
                 printReal34ToConsole(&resZ,"solver results: resZ:","\n");
                 printReal34ToConsole(&resY,"solver results: resY:","\n");
                 printReal34ToConsole(&resX,"solver results: resX:","\n");

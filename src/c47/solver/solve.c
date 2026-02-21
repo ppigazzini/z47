@@ -8,6 +8,11 @@
 
 #include "c47.h"
 
+
+#undef SOLVERDEBUG
+#define SOLVERDEBUG2 //only progress indicators
+
+
 void fnPgmSlv(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
@@ -325,8 +330,6 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 #endif //!TESTSUITE_BUILD
 
 
-#undef SOLVERDEBUG
-#define SOLVERDEBUG2 //only progress indicators
 
 //The solver converter to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the legacy callers
 #define ctxtSolver   ctxtReal39
@@ -343,17 +346,16 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       SOLVER_METHOD_NEWTON
     } solverMethod_t;
     solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
-    real_t newton_x, newton_fx_saved;
+    real_t newton_x;
     bool_t newtonInitialized = false;
 
-    real34_t antiLevel34, tol34AlmostZero;
+    real34_t antiLevel34;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
     real_t fbp1, tmp, tolAlmostZero;
     real_t *bp1 = &mm;
     bool_t extendRange = false;
     bool_t originallyLevel = false;
     bool_t extremum = false;
-    bool_t absoluteBracketTight = false;
     int result = SOLVER_RESULT_NORMAL;
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
@@ -363,7 +365,6 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     real_t prevResX;
     realCopy(const_NaN, &prevResX);
 
-    stringToReal34("1e-34", &tol34AlmostZero);
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
 
       realCopy(const_1, &tol);
@@ -376,7 +377,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
     } else {
       convergenceTolerence(&tol);
-      real34ToReal(&tol34AlmostZero, &tolAlmostZero);
+      stringToReal("1e-34", &tolAlmostZero, &ctxtSolver);
       realCopy(const_1e_32, &minBracketSpacing);
     }
 
@@ -563,35 +564,17 @@ retryLevel:
       real_t bracketWidth;
       realSubtract(&bb, &bb1, &bracketWidth, &ctxtSolver);
       realSetPositiveSign(&bracketWidth);
-      if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-        absoluteBracketTight = (realGetExponent(&bracketWidth) <= -33);
+
+      if(currentMethod != SOLVER_METHOD_NEWTON || !newtonInitialized) {
+        // bisection
+        realAdd(&aa, &bb, &mm, &ctxtSolver);
+        realMultiply(&mm, const_1on2, &mm, &ctxtSolver);
       }
-
-
-      // Switch to Newton when bracket is tight enough (10% relative)
-      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && 
-         currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
-        real_t relativeWidth;
-        realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
-        realSetPositiveSign(&relativeWidth);
-        if(realGetExponent(&relativeWidth) < -1) {
-          currentMethod = SOLVER_METHOD_NEWTON;
-          realAdd(&aa, &bb, &newton_x, &ctxtSolver);
-          realMultiply(&newton_x, const_1on2, &newton_x, &ctxtSolver);
-          newtonInitialized = true;
-        }
-      }
-
-
-      // bisection
-      realAdd(&aa, &bb, &mm, &ctxtSolver);
-      realMultiply(&mm, const_1on2, &mm, &ctxtSolver);
 
 
       // Method selection: switch to Newton when bracket is tight enough (relative)
       if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
-         currentMethod != SOLVER_METHOD_NEWTON &&
-         loop >= 5) {
+         currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
         // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
         real_t relativeWidth;
         realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
@@ -624,7 +607,6 @@ retryLevel:
           // Evaluate f at new point for convergence check
           realCopy(&newton_x, &newton_trial);
           _executeSolverReal(variable, &newton_trial, &newton_fx, NULL);
-          realCopy(&newton_fx, &newton_fx_saved);
           bp1 = &newton_x;
         }
       }
@@ -791,7 +773,7 @@ retryLevel:
         break;
       }
       if( !originallyLevel &&
-        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero || absoluteBracketTight) ) {
+        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         break;
       }
       if(loop > (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION ? 2000 : 10000)) {
