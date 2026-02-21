@@ -355,8 +355,10 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       SOLVER_METHOD_NEWTON
     } solverMethod_t;
     solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
-    real_t newton_x;
-    bool_t newtonInitialized = false;
+    #if defined(OPTION_TVM_NEWTON)
+      real_t newton_x;
+    #endif //OPTION_TVM_NEWTON
+      bool_t newtonInitialized = false;
 
     real34_t antiLevel34;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
@@ -513,7 +515,9 @@ retryLevel:
         const char* methodName[] = {"BRENT", "NEWTON"};
         printf("Iter %d (%s)  ", loop, methodName[currentMethod]);
         if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+          #if defined(OPTION_TVM_NEWTON)
             printRealToConsole(&newton_x, "x=", "\n");
+          #endif //OPTION_TVM_NEWTON
         }
         else {
           printRealToConsole(&aa, "  a=", ", fa=");
@@ -581,6 +585,7 @@ retryLevel:
       }
 
 
+      #if defined(OPTION_TVM_NEWTON)
       // Method selection: switch to Newton when bracket is tight enough (relative)
       if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
          currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
@@ -625,7 +630,10 @@ retryLevel:
           bp1 = &newton_x;
         }
       }
-      else {
+      else 
+      #endif //OPTION_TVM_NEWTON
+
+      {
         if(extendRange) {
           realSubtract(&bb, &aa, &tmp, &ctxtSolver);
           realMultiply(&tmp, const_2, &tmp, &ctxtSolver);
@@ -647,6 +655,7 @@ retryLevel:
       // calculation
       _executeSolverReal(variable, bp1, &fbp1, NULL);
 
+      #if defined(OPTION_TVM_NEWTON)
       // Newton convergence check and divergence detection
       if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
         static real_t prev_fx, prev_x;
@@ -697,6 +706,7 @@ retryLevel:
           }
         }
       }
+      #endif //OPTION_TVM_NEWTON
 
 
       // Calculate convergence flags (needed for exit conditions)

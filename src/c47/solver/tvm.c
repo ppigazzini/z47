@@ -1151,6 +1151,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
   //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   //convertRealToReal34ResultRegister(&val, REGISTER_X);
 
+  #if defined(OPTION_TVM_NEWTON)
     if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
       real_t one_plus_i, one_plus_i_neg_N, one_plus_i_neg_N_m1;
       real_t term1, term2, factor_deriv, i_squared;
@@ -1198,5 +1199,6 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realDivide(derivative, const_100, derivative, &ctxtTvm);
       realDivide(derivative, &pperA, derivative, &ctxtTvm);
     }
+  #endif //OPTION_TVM_NEWTON
 }
 
