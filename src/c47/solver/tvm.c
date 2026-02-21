@@ -8,6 +8,12 @@
 #include "c47.h"
 
 
+// This mdule as two control defines, controlled from defines.h:
+//   OPTION_TVM_FORMULAS
+//   OPTION_TVM_NEWTON
+
+
+#undef  TVMDEBUG2
 #define TVMDEBUG2 //only progress indicators
 
 
@@ -844,13 +850,13 @@ void fnTvmVar(uint16_t variable) {
             #endif //PC_BUILD
             uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
             #if defined(PC_BUILD) && defined (TVMDEBUG2)
-              printf("Solve iteration: iter=%u solveResult=%u\n",iter,solveResult);
+              printf("Overall solve iteration: iter=%u/%u solveResult=%u\n",iter, nIter, solveResult);
             #endif //PC_BUILD
             if(solveResult == SOLVER_RESULT_NORMAL) {
               #if defined(PC_BUILD)  && defined (TVMDEBUG2)
-                printReal34ToConsole(&resZ,"solver results: resZ:","\n");
-                printReal34ToConsole(&resY,"solver results: resY:","\n");
-                printReal34ToConsole(&resX,"solver results: resX:","\n");
+                printReal34ToConsole(&resZ,"  solver results: resZ:","\n");
+                printReal34ToConsole(&resY,"  solver results: resY:","\n");
+                printReal34ToConsole(&resX,"  solver results: resX:","\n");
               #endif //PC_BUILD
               reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
               real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
@@ -1145,52 +1151,52 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
   //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   //convertRealToReal34ResultRegister(&val, REGISTER_X);
 
+    if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
+      real_t one_plus_i, one_plus_i_neg_N, one_plus_i_neg_N_m1;
+      real_t term1, term2, factor_deriv, i_squared;
 
-if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
-    real_t one_plus_i, one_plus_i_neg_N, one_plus_i_neg_N_m1;
-    real_t term1, term2, factor_deriv, i_squared;
+      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
 
-    realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      // Compute (1+i)^(-N) and (1+i)^(-N-1)
+      real_t temp, neg_nPer;
+      realCopy(&nPer, &neg_nPer);
+      realChangeSign(&neg_nPer);
+      WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
+      realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
+      realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+      realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
 
-    // Compute (1+i)^(-N) and (1+i)^(-N-1)
-    real_t temp, neg_nPer;
-    realCopy(&nPer, &neg_nPer);
-    realChangeSign(&neg_nPer);
-    WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
-    realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
-    realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
-    realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
+      // term1 = N * (1+i)^(-N-1) / i
+      realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, &ctxtTvm);
+      realDivide(&term1, &i, &term1, &ctxtSolverTvmInv);
 
-    // term1 = N * (1+i)^(-N-1) / i
-    realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, &ctxtTvm);
-    realDivide(&term1, &i, &term1, &ctxtSolverTvmInv);
+      // term2 = [1 - (1+i)^(-N)] / i^2
+      real_t one_minus;
+      realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
+      realMultiply(&i, &i, &i_squared, &ctxtSolverTvmInv);
+      realDivide(&one_minus, &i_squared, &term2, &ctxtSolverTvmInv);
 
-    // term2 = [1 - (1+i)^(-N)] / i^2
-    real_t one_minus;
-    realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
-    realMultiply(&i, &i, &i_squared, &ctxtSolverTvmInv);
-    realDivide(&one_minus, &i_squared, &term2, &ctxtSolverTvmInv);
+      // factor_deriv = term1 - term2
+      realSubtract(&term1, &term2, &factor_deriv, &ctxtTvm);
 
-    // factor_deriv = term1 - term2
-    realSubtract(&term1, &term2, &factor_deriv, &ctxtTvm);
+      // For BEGIN: factor_deriv = factor_deriv * (1+i) + (1-(1+i)^(-N))/i
+      if(!getSystemFlag(FLAG_ENDPMT)) {
+        realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, &ctxtTvm);
+        real_t extra;
+        realDivide(&one_minus, &i, &extra, &ctxtSolverTvmInv);
+        realAdd(&factor_deriv, &extra, &factor_deriv, &ctxtTvm);
+      }
 
-    // For BEGIN: factor_deriv = factor_deriv * (1+i) + (1-(1+i)^(-N))/i
-    if(!getSystemFlag(FLAG_ENDPMT)) {
-      realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, &ctxtTvm);
-      real_t extra;
-      realDivide(&one_minus, &i, &extra, &ctxtSolverTvmInv);
-      realAdd(&factor_deriv, &extra, &factor_deriv, &ctxtTvm);
+      // derivative = PMT * factor_deriv - N * FV * (1+i)^(-N-1)
+      realMultiply(&pmt, &factor_deriv, derivative, &ctxtTvm);
+      real_t fv_term;
+      realMultiply(&nPer, &fv, &fv_term, &ctxtTvm);
+      realMultiply(&fv_term, &one_plus_i_neg_N_m1, &fv_term, &ctxtTvm);
+      realSubtract(derivative, &fv_term, derivative, &ctxtTvm);
+
+      // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
+      realDivide(derivative, const_100, derivative, &ctxtTvm);
+      realDivide(derivative, &pperA, derivative, &ctxtTvm);
     }
-
-    // derivative = PMT * factor_deriv - N * FV * (1+i)^(-N-1)
-    realMultiply(&pmt, &factor_deriv, derivative, &ctxtTvm);
-    real_t fv_term;
-    realMultiply(&nPer, &fv, &fv_term, &ctxtTvm);
-    realMultiply(&fv_term, &one_plus_i_neg_N_m1, &fv_term, &ctxtTvm);
-    realSubtract(derivative, &fv_term, derivative, &ctxtTvm);
-
-    // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
-    realDivide(derivative, const_100, derivative, &ctxtTvm);
-    realDivide(derivative, &pperA, derivative, &ctxtTvm);
-  }
 }
+
