@@ -1010,6 +1010,11 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
+  // printf("Context ctxtTvm         : %d digits\n", ctxtTvm.digits);
+  // printf("Context ctxtTvmHi       : %d digits\n", ctxtTvmHi.digits);
+  // printf("Context ctxtSolverTvmHi : %d digits\n", ctxtSolverTvmHi.digits);
+  // printf("Context ctxtSolverTvmInv: %d digits\n", ctxtSolverTvmInv.digits);
+
   // Force recalculation of i when computing derivative
   if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
     tvmIKnown = false;
