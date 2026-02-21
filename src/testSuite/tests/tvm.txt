@@ -131,16 +131,22 @@ In: V2039=Real:"100000"
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983367983367983874747921010624438E-34"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983367983367983559584199584195302E-34"
 ;
-; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984E-34
-; if tvm digit context is: 75 51 51 51: -7.983367983367983874747921010624438E-34
+; correct answer is:                    -7.983367983367983367983367983367983 7919926e-34 Python
+; Brent:
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 874747921010624438E-34
+; Newton:
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 559584199584195302E-34
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
 ;
-; correct answer is: -7.9833679833679833679833679833679837919926e-34 Python
-;                     -7.983367983367983367983367983367984E-34  All tvm=75, all solver=39
-;                     -7.983367983367983 874813995600624809E-34 All tvm=51, all solver=39
-;                     -7.983367983367983874747921010624438E-34  All tvm=51, except ctxtSolverTvmInv=75;  all solver=39
-;                     It does not help to make some of the TVM digits counts less. All 75 or all 51.
+;
+; Details:
+; With the Brent solver -7.983367983367983367983367983367984E-34  All tvm=75, all solver=39
+;                       -7.983367983367983 874813995600624809E-34 All tvm=51, all solver=39
+;                       -7.983367983367983874747921010624438E-34  All tvm=51, except ctxtSolverTvmInv=75;  all solver=39
+;                       It does not help to make some of the TVM digits counts less. All 75 or all 51.
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
