@@ -9,8 +9,23 @@
 #include "c47.h"
 
 
-#undef SOLVERDEBUG
+// This mdule as two control defines, controlled from defines.h:
+//   OPTION_TVM_FORMULAS
+//   OPTION_TVM_NEWTON
+
+
+#undef  SOLVERDEBUG
 #define SOLVERDEBUG2 //only progress indicators
+
+
+//The main real solver is converted to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the other legacy callers
+#define ctxtSolver   ctxtReal39
+#define ctxtSolverHi ctxtReal39
+//The 39-digit solver tolerances must be lower in order to leverage the guard digits
+#define solverTvmTol 34
+#define solverTvmZer (solverTvmTol + 1)
+
+
 
 
 void fnPgmSlv(uint16_t label) {
@@ -331,12 +346,6 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 
 
 
-//The solver converter to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the legacy callers
-#define ctxtSolver   ctxtReal39
-#define ctxtSolverHi ctxtReal39
-//The 39-digit solver tolerances must be lower in order to leverage the guard digits
-#define solverTvmTol 34
-#define solverTvmZer (solverTvmTol + 1)
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
@@ -425,7 +434,7 @@ retryLevel:
     }
     #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
       printf("Start %d  ", loop);
-      printRealToConsole(&aa, "a=", " ");
+      printRealToConsole(&aa, "  a=", " ");
       printRealToConsole(&bb, "b=", "\n");
     #endif
 
@@ -504,10 +513,10 @@ retryLevel:
         const char* methodName[] = {"BRENT", "NEWTON"};
         printf("Iter %d (%s)  ", loop, methodName[currentMethod]);
         if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
-          printRealToConsole(&newton_x, "x=", "\n");
+            printRealToConsole(&newton_x, "x=", "\n");
         }
         else {
-          printRealToConsole(&aa, "a=", ", fa=");
+          printRealToConsole(&aa, "  a=", ", fa=");
           printRealToConsole(&faa, "", ", b=");
           printRealToConsole(&bb, "", ", fb=");
           printRealToConsole(&fbb, "", "\n");
@@ -605,7 +614,7 @@ retryLevel:
           realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
           realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
           
-          #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+          #if (defined PC_BUILD) && (defined SOLVERDEBUG)
             printf("  Newton step %d: x=", loop);
             printRealToConsole(&newton_x, "", ", will eval to get fx\n");
           #endif
@@ -680,8 +689,8 @@ retryLevel:
               clearSystemFlag(FLAG_SOLVING);
             }
             first_newton_iter = true;  // Reset for next solve
-            #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-              printf("END Iter %d (%s)  ", loop, methodName[currentMethod]);
+            #if (defined PC_BUILD) && (defined SOLVERDEBUG)
+              printf("  Newton end Iter %d (%s)  ", loop, methodName[currentMethod]);
               printRealToConsole(&newton_x, "x=", "\n");
             #endif
             return SOLVER_RESULT_NORMAL;
@@ -804,7 +813,7 @@ retryLevel:
 
 
     #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-      printf("End iter %d  ", loop);
+      printf("Ended iter %d  ", loop);
       printRealToConsole(&aa, "a=", " ");
       printRealToConsole(&bb, "b=", "\n");
     #endif
