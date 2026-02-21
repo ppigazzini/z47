@@ -115,14 +115,20 @@
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
-
-#define PACKAGE1_NOBESSEL_NOORTHO
-//#define PACKAGE2_NODISTR
-//#define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
-
-
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
+
+  #undef PACKAGE1_NOBESSEL_NOORTHO
+  #undef PACKAGE2_NODISTR
+  #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+
+  #if DMCP_PACKAGE == 1
+  #define PACKAGE1_NOBESSEL_NOORTHO
+  #elif DMCP_PACKAGE == 2
+  #define PACKAGE2_NODISTR
+  #elif DMCP_PACKAGE == 3
+  #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #endif
 
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)
   //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
