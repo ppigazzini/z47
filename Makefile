@@ -14,6 +14,7 @@ XVFB =
 FORCENEW_TESTPGMS =
 GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
 GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
+DMCP_PACKAGE = 2 # see defines.h for number x of PACKAGEx_... preprocessor variable
 
 $(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
 	rm -rf subprojects/gmp-6.2.1
@@ -71,7 +72,7 @@ build.rel.debug:
 	meson setup $(BUILD_PC) --buildtype=custom  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.dmcp:
-	meson setup build.dmcp  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
+	meson setup build.dmcp  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true -DDMCP_PACKAGE=$(DMCP_PACKAGE)
 
 build.dmcp5:
 	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
