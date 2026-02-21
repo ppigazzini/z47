@@ -755,10 +755,21 @@ retryLevel:
           result = SOLVER_RESULT_EXTREMUM;
         }
 
-        fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
 
-        //printf("SOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-        //printf("bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+        // Stricter residual tolerance near zero
+        if(realCompareAbsLessThan(&bb, const_1e_16)) {
+          real_t tol1;
+          stringToReal("1e-120", &tol1, &ctxtSolver);
+          fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tol1);
+        } else {
+          fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
+        }
+
+        //printf("\nSOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
+        //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+        //printRealToConsole(&bb,"  bb="," ");
+        //printRealToConsole(&fbb,"fbb="," ");
+        //printRealToConsole(&tolAlmostZero,"tolAlmostZero=","\n");
 
         if(result != SOLVER_RESULT_NORMAL) {
           break;
