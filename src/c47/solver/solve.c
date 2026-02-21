@@ -582,7 +582,7 @@ retryLevel:
 
         if(realGetExponent(&relativeWidth) < -1) {  // < 10% relative
           currentMethod = SOLVER_METHOD_NEWTON;
-          realCopy(&mm, &newton_x);
+          realCopy(&bb, &newton_x);  // Use best point (smallest residual), not midpoint
           newtonInitialized = true;
         }
       }
@@ -604,6 +604,12 @@ retryLevel:
         else {
           realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
           realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
+          
+          #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+            printf("  Newton step %d: x=", loop);
+            printRealToConsole(&newton_x, "", ", will eval to get fx\n");
+          #endif
+
           // Evaluate f at new point for convergence check
           realCopy(&newton_x, &newton_trial);
           _executeSolverReal(variable, &newton_trial, &newton_fx, NULL);
