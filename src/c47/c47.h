@@ -125,7 +125,7 @@
     #endif //TESTSUITE_BUILD
   #endif // PC_BUILD || DMCP_BUILD || TESTSUITE_BUILD
 
-  #if defined(GENERATE_CATALOGS)
+  #if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
     #include <gmp.h>
 
     #include <gtk/gtk.h>
@@ -196,7 +196,7 @@
   #endif // GENERATE_TESTPGMS
 
   // Variables for the simulator
-  #if !defined(GENERATE_CATALOGS)
+  #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
     extern uint16_t lastI;
     extern uint16_t lastJ;
     extern int16_t lastFunc;
