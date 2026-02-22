@@ -338,4 +338,6 @@ dist_dmcp_pkgs_small:
 	$(MAKE) PKG=2 dist_dmcp_pkg2
 	$(MAKE) PKG=3 dist_dmcp_pkg3
 
-dist_dmcp: dist_dmcp_pkgs_small
+#dist_dmcp: dist_dmcp_pkgs_1_2
+#dist_dmcp: dist_dmcp_pkgs_small
+dist_dmcp: dist_dmcp_pkg2
