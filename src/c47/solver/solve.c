@@ -587,9 +587,15 @@ retryLevel:
 
       #if defined(OPTION_TVM_NEWTON)
       // Method selection: switch to Newton when bracket is tight enough (relative)
-      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
+      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && 
+         (variable == RESERVED_VARIABLE_IPONA || 
+          variable == RESERVED_VARIABLE_NPPER ||
+          variable == RESERVED_VARIABLE_PV ||
+          variable == RESERVED_VARIABLE_PMT ||
+          variable == RESERVED_VARIABLE_FV) &&
          currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
-        // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
+
+                 // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
         real_t relativeWidth;
         realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
         realSetPositiveSign(&relativeWidth);

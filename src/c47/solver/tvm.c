@@ -1151,13 +1151,11 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
   //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   //convertRealToReal34ResultRegister(&val, REGISTER_X);
 
-  #if defined(OPTION_TVM_NEWTON)
+#if defined(OPTION_TVM_NEWTON)
     if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
       real_t one_plus_i, one_plus_i_neg_N, one_plus_i_neg_N_m1;
       real_t term1, term2, factor_deriv, i_squared;
-
       realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
-
       // Compute (1+i)^(-N) and (1+i)^(-N-1)
       real_t temp, neg_nPer;
       realCopy(&nPer, &neg_nPer);
@@ -1166,20 +1164,16 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
       realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
       realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
-
       // term1 = N * (1+i)^(-N-1) / i
       realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, &ctxtTvm);
       realDivide(&term1, &i, &term1, &ctxtSolverTvmInv);
-
       // term2 = [1 - (1+i)^(-N)] / i^2
       real_t one_minus;
       realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
       realMultiply(&i, &i, &i_squared, &ctxtSolverTvmInv);
       realDivide(&one_minus, &i_squared, &term2, &ctxtSolverTvmInv);
-
       // factor_deriv = term1 - term2
       realSubtract(&term1, &term2, &factor_deriv, &ctxtTvm);
-
       // For BEGIN: factor_deriv = factor_deriv * (1+i) + (1-(1+i)^(-N))/i
       if(!getSystemFlag(FLAG_ENDPMT)) {
         realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, &ctxtTvm);
@@ -1187,18 +1181,69 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
         realDivide(&one_minus, &i, &extra, &ctxtSolverTvmInv);
         realAdd(&factor_deriv, &extra, &factor_deriv, &ctxtTvm);
       }
-
       // derivative = PMT * factor_deriv - N * FV * (1+i)^(-N-1)
       realMultiply(&pmt, &factor_deriv, derivative, &ctxtTvm);
       real_t fv_term;
       realMultiply(&nPer, &fv, &fv_term, &ctxtTvm);
       realMultiply(&fv_term, &one_plus_i_neg_N_m1, &fv_term, &ctxtTvm);
       realSubtract(derivative, &fv_term, derivative, &ctxtTvm);
-
       // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
       realDivide(derivative, const_100, derivative, &ctxtTvm);
       realDivide(derivative, &pperA, derivative, &ctxtTvm);
     }
+    
+    if(derivative != NULL && variable == RESERVED_VARIABLE_NPPER) {
+      // df/dN = (1+i)^(-N) * ln(1+i) * [PMT*k/i - FV]
+      real_t one_plus_i, one_plus_i_neg_N, ln1pi, pmt_term;
+      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      // Compute (1+i)^(-N)
+      real_t temp, neg_nPer;
+      realCopy(&nPer, &neg_nPer);
+      realChangeSign(&neg_nPer);
+      WP34S_Ln1P(&i, &ln1pi, &ctxtSolverTvmHi);
+      realMultiply(&ln1pi, &neg_nPer, &temp, &ctxtSolverTvmHi);
+      realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+      // pmt_term = PMT*k/i - FV
+      realDivide(&pmt, &i, &pmt_term, &ctxtSolverTvmInv);
+      realMultiply(&pmt_term, &k, &pmt_term, &ctxtTvm);
+      realSubtract(&pmt_term, &fv, &pmt_term, &ctxtTvm);
+      // derivative = (1+i)^(-N) * ln(1+i) * pmt_term
+      realMultiply(&one_plus_i_neg_N, &ln1pi, derivative, &ctxtTvm);
+      realMultiply(derivative, &pmt_term, derivative, &ctxtTvm);
+    }
+    
+    if(derivative != NULL && variable == RESERVED_VARIABLE_PV) {
+      // df/dPV = 1
+      realCopy(const_1, derivative);
+    }
+    
+    if(derivative != NULL && variable == RESERVED_VARIABLE_PMT) {
+      // df/dPMT = k * [1-(1+i)^(-N)]/i
+      real_t one_plus_i, one_plus_i_neg_N, one_minus;
+      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      // Compute (1+i)^(-N)
+      real_t temp, neg_nPer;
+      realCopy(&nPer, &neg_nPer);
+      realChangeSign(&neg_nPer);
+      WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
+      realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
+      realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+      // derivative = k * [1-(1+i)^(-N)]/i
+      realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
+      realDivide(&one_minus, &i, derivative, &ctxtSolverTvmInv);
+      realMultiply(derivative, &k, derivative, &ctxtTvm);
+    }
+    
+    if(derivative != NULL && variable == RESERVED_VARIABLE_FV) {
+      // df/dFV = (1+i)^(-N)
+      real_t temp, neg_nPer;
+      realCopy(&nPer, &neg_nPer);
+      realChangeSign(&neg_nPer);
+      WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
+      realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
+      realExp(&temp, derivative, &ctxtSolverTvmHi);
+    }
   #endif //OPTION_TVM_NEWTON
+
 }
 
