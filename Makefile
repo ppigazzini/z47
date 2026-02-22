@@ -343,4 +343,4 @@ dist_dmcp_pkgs_small:
 
 # this syntax is only needed, if target is not one of dist_dmcp_pkgs_* pre-defined targets
 dist_dmcp:
-	$(MAKE) PKG=2 dist_dmcp_pkg2
+	$(MAKE) PKG=4 dist_dmcp_pkg4
