@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+#include "reservedRegisterLookup.h"
+
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 
@@ -448,12 +450,12 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
-          moreInfoOnError("In function setRegisterDataInfo:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
+          moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
       #endif // PC_BUILD
     }
     else {
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterDataInfo");
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterTag");
       displayBugScreen(errorMessage);
     }
   }
@@ -471,19 +473,19 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
-          moreInfoOnError("In function setRegisterDataInfo:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
+          moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
       #endif // PC_BUILD
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterDataInfo:", "no local registers defined!", "", "");
+        moreInfoOnError("In function setRegisterTag:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
 
   else {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterDataInfo", regist, LAST_RESERVED_VARIABLE + 1);
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterTag", regist, LAST_RESERVED_VARIABLE + 1);
     displayBugScreen(errorMessage);
   }
 }
@@ -764,34 +766,20 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  uint8_t len = stringGlyphLength(variableName);
-
-  if(len < 1 || len > 7) {
-    return INVALID_VARIABLE;
-  }
-
-  int i;
   #if defined VERBOSE_REGISTERS
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
-  //printf("|%20s|%20s|\n",(char *)(allReservedVariables[0].reservedVariableName + 1), variableName);
-  for(/*int*/ i = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE; i < NUMBER_OF_RESERVED_VARIABLES; i++) {
-    if(compareString((char *)(allReservedVariables[i].reservedVariableName + 1), variableName, CMP_NAME) == 0) {
-      //return i + FIRST_RESERVED_VARIABLE;
-      goto found;
-    }
-  }
+
+  uint8_t len = stringGlyphLength(variableName);
+  const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
+
+  if (reg != NULL)
+    return reg->reg;
 
   #if defined VERBOSE_REGISTERS
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
-
-found:
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
-  #endif //VERBOSE_REGISTERS
-  return i + FIRST_RESERVED_VARIABLE;
 }
 
 
@@ -1035,7 +1023,7 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterMaxsetRegisterMaxDataLengthInBlocksDataLength:", "no named variables defined!", NULL, NULL);
+        moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1093,7 +1081,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterMaxStringLength:", "no named variables defined!", NULL, NULL);
+        moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1115,7 +1103,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterMaxStringLength:", "no local registers defined!", NULL, NULL);
+        moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1477,7 +1465,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_ISM) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uInt32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
+    int32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1816,7 +1804,17 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
             printf("[≈0 ");
           else {
             realToString(&tmpr, str);
-            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            if (strstr(str, "Infinity")) {
+                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
+                 while ((p = strstr(p, "Infinity"))) {
+                     *p = 0;
+                     q += sprintf(q, "%s∞", tmp);
+                     p += 8;
+                     strcpy(tmp, p);
+                 }
+                 strcpy(q, tmp);
+                }
+            }
             printf("[%s", str);
           }
           real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
@@ -1825,7 +1823,17 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
             printf(" i≈0] ");
           else {
             realToString(&tmpr, str);
-            sprintf(str, "%s", strstr(str, "Infinity") ? ({char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str; while((p=strstr(p,"Infinity"))){*p=0;q+=sprintf(q,"%s∞",tmp);p+=8;strcpy(tmp,p);} strcpy(q,tmp); str;}) : str);
+            if (strstr(str, "Infinity")) {
+                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
+                 while ((p = strstr(p, "Infinity"))) {
+                     *p = 0;
+                     q += sprintf(q, "%s∞", tmp);
+                     p += 8;
+                     strcpy(tmp, p);
+                 }
+                 strcpy(q, tmp);
+                }
+            }
             printf(" i%s] ", str);
           }
         }

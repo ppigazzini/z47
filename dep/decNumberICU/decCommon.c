@@ -575,6 +575,8 @@ static decFloat * decFinalize(decFloat *df, bcdnum *num,
 /*                                                                    */
 /* No error is possible, and no status will be set.                   */
 /* ------------------------------------------------------------------ */
+
+__attribute__((no_sanitize("address")))
 decFloat * decFloatFromBCD(decFloat *df, Int exp, const uByte *bcdar,
                            Int sig) {
   uInt encode, dpd;                     // work

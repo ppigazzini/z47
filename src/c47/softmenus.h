@@ -33,8 +33,7 @@ void     fnGetMenu              (uint16_t unusedButMandatoryParameter);
  */
 
 bool_t maxfgLines             (int16_t y);
-void   showKey                (const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
-void   greyOutBox             (int16_t x1, int16_t x2, int16_t y1, int16_t y2);
+void   showKey                (const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
 
 /**
  * Displays the current part of the displayed softmenu.

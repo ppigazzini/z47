@@ -271,7 +271,7 @@
 
     //set the R47/C47 mode for initial startup, and bear in mind a command line override
     if(calcModel == USER_R47) {
-      calcModel = USER_R47f_g;  //set the initial mode per sim starting exe file 
+      calcModel = USER_R47f_g;  //set the initial mode per sim starting exe file
     }
     if(calcModelNew != 255) {
       calcModel = calcModelNew; //set the initial mode if forced, override the default name from above
@@ -329,7 +329,7 @@
     }
 
 
-    //set the special user profule
+    //set the special user profile
     switch(config) {
       case 1: fnSetJM(0);   break;
       case 2: fnSetRJ(0);   break;

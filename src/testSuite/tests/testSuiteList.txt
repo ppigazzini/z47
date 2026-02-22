@@ -67,6 +67,7 @@ ulp
 neighb
 min
 max
+tvm
 
 changeSign
 sign
@@ -142,6 +143,8 @@ parallel_complexMatrix
 parallel_shortInteger
 parallel_real
 parallel_complex
+
+prime
 
 specialResults
 

@@ -7,7 +7,7 @@
 bool_t isRegInRange(uint16_t regist) {
   return (regist <= LAST_LETTERED_REGISTER) ||                                                           // r00 -> r99 and includes X -> K
     (FIRST_STAT_REGISTER  <= regist && regist <= LAST_STAT_REGISTER) ||                                  // M -> S
-    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||                                 // E -> W                                  
+    (FIRST_SPARE_REGISTER <= regist && regist <= LAST_SPARE_REGISTER) ||                                 // E -> W
     (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || // 7000 -> 7098
     (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||        // 256  -> 1999 *
     (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) ||                           // 2000 -> 2047 *
@@ -22,7 +22,7 @@ bool_t regInRange(uint16_t regist) {
     const char *regType;
     uint16_t offset;
     uint8_t  errorType = ERROR_OUT_OF_RANGE;
-    
+
     if(regist <= LAST_LETTERED_REGISTER) {
       regType = "Lettered register";
       offset = regist - FIRST_LETTERED_REGISTER;
@@ -150,7 +150,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
-          moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -158,7 +158,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     return false;
@@ -223,17 +223,33 @@ void fnStore(uint16_t regist) {
 
 
 void fn2Sto(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
-  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+  if((/*regist >= FIRST_GLOBAL_REGISTER && */regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
+    setSystemFlag(FLAG_ASLIFT);
+    copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+    copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fn3Sto(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
-  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
-  copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
+  if((/*regist >= FIRST_GLOBAL_REGISTER && */regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
+    setSystemFlag(FLAG_ASLIFT);
+    copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+    copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+    copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -403,6 +419,7 @@ void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
+  uint8_t compatibility_byte1 = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte2  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte3  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
@@ -459,7 +476,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(systemFlags0);
   storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
-  storeToDtConfigDescriptor(fgLN);
+  storeToDtConfigDescriptor(    compatibility_byte1);
   storeToDtConfigDescriptor(    compatibility_byte19);
   storeToDtConfigDescriptor(    compatibility_byte28);
   storeToDtConfigDescriptor(    compatibility_byte29);

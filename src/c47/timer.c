@@ -184,16 +184,15 @@ void fnTimerEndOfActivity(uint16_t param) {
                                 #if defined(DM42_POWERMARKS)
                                   powerMarkerMsF(1,10000);
                                 #endif //DM42_POWERMARKS
-                                  
-  if(skippedStackLines) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
-    if(calcMode == CM_PEM) {
-      screenUpdatingMode = SCRUPD_AUTO;
-    }
-    else {
-      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
-    }
-    refreshScreen(32);
+
+  if(skippedStackLines) {       //update screen after 1 or 2 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+    screenUpdatingMode = SCRUPD_AUTO;
     skippedStackLines = false;
+    refreshScreen(32);
+    //if(skippedStackLines) {
+    //  print_linestr("more skippedStackLines #######", false);
+    //  fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, skippedStackLines ? TO_KB_ACTV_MEDIUM/5 : TO_KB_ACTV_SHORT);
+    //}
   }
                                 #if defined(DM42_POWERMARKS)
                                   powerMarkerMsF(1,15000);
@@ -456,7 +455,7 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot recall %s to the stopwatch", getRegisterDataTypeName(regist, true, false));
-        moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function inputHelper:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
@@ -475,7 +474,7 @@ void fnSetCountDownTimerApp(uint16_t regist) {
     } else {
       fnResetTimerApp(NOPARAM);
       fnStopTimerApp();
-      remainingMsecCountdown = input;      
+      remainingMsecCountdown = input;
     }
   #endif // !TESTSUITE_BUILD
 }
