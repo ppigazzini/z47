@@ -14,7 +14,7 @@ XVFB =
 FORCENEW_TESTPGMS =
 GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
 GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
-DMCP_PACKAGE = 2 # see defines.h for number x of PACKAGEx_... preprocessor variable
+DMCP_PACKAGE = 4 # see defines.h for number x of PACKAGEx_... preprocessor variable
 
 $(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
 	rm -rf subprojects/gmp-6.2.1

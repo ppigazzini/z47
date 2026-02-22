@@ -465,7 +465,6 @@ void Sett(int16_t grp) {
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
       fnKeyExit(0);
       addItemToBuffer(ITM_EXIT1);
       getDateString(lastStateFileOpened);
@@ -481,7 +480,6 @@ void Sett(int16_t grp) {
       runFunction(ITM_SQUARE);
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(162);
-    #endif //SAVE_SPACE_DM42_21_HP35
   }
 
 
