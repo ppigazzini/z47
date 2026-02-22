@@ -2703,6 +2703,13 @@
 #define ITM_2618                    2618
 #define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
 
+
+// Before adding more, leave a gap in case we add additional distributions
+// Each distribution consumes five items
+
+#define PROBMENUSTART2 MNU_UNIFORM
+#define PROBMENUEND2   ITM_2619
+
 #define ITM_NDUP                    2620
 #define ITM_NSWAP                   2621
 #define ITM_NDROP                   2622
@@ -2743,13 +2750,16 @@
 #define ITM_Config                  2656
 #define ITM_Stack                   2657
 
-// Before adding more, leave a gap in case we add additional distributions
-// Each distribution consumes five items
+#define ITM_ERGtoJ                  2658
+#define ITM_JtoERG                  2659
+#define ITM_FoetoJ                  2660
+#define ITM_JtoFoe                  2661
 
-#define PROBMENUSTART2 MNU_UNIFORM
-#define PROBMENUEND2   ITM_2619
+#define ITM_LR_A0                   2662
+#define ITM_LR_A1                   2663
+#define ITM_LR_A2                   2664
 
-#define LAST_ITEM                   2658
+#define LAST_ITEM                   2665
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

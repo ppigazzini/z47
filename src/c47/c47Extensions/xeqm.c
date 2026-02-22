@@ -68,7 +68,7 @@ void fnXSWAP (uint16_t mode) {
           else { //EIM
             xCursor = stringGlyphLength(aimBuffer);
           }
-          refreshRegisterLine(REGISTER_X);        //make sure that the mulit line editor check is done
+          refreshRegisterLine(REGISTER_X);        //make sure that the multi line editor check is done
           last_CM = 253;
           refreshScreen(64);
         }
