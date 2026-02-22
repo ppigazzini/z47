@@ -31,9 +31,12 @@ make docs         - Build documentation
 make dist_windows - Create Windows distribution package
 make dist_macos   - Create macOS distribution package
 make dist_linux   - Create Linux distribution package
-make dist_dmcp    - Create DM42 (DMCP) distribution package
 make dist_dmcp5   - Create DM42n (DMCP5) distribution package
 make dist_dmcp5r47- Create R47 (DMCP5) distribution package
+make dist_dmcp    - Create DM42 (DMCP) distribution package (default package 2)
+make DMCP_PACKAGE=1 dmcp -  Create DM42 (DMCP) distribution package with feature set PPACKAGE1_NOBESSEL_NOORTHO
+make DMCP_PACKAGE=2 dmcp -  Create DM42 (DMCP) distribution package with feature set PACKAGE2_NODISTR
+make DMCP_PACKAGE=3 dmcp -  Create DM42 (DMCP) distribution package with feature set PACKAGE3_NOBESSEL_NOORTHO_NOFBR
 ```
 
 ## Utilities

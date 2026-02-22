@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.01a-internal"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 #define DEVPROFILES
 
 // Version 0.109.02.07b11   Public Release C47 & R47
@@ -19,6 +19,7 @@
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
+// Version 0.109.03.00b2    Public C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -116,10 +117,20 @@
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
+//THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
+  #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
 
-//#define PACKAGE1_NOBESSEL_NOORTHO
-//#define PACKAGE2_NODISTR
-#define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #undef PACKAGE1_NOBESSEL_NOORTHO
+  #undef PACKAGE2_NODISTR
+  #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+
+  #if DMCP_PACKAGE == 1
+  #define PACKAGE1_NOBESSEL_NOORTHO
+  #elif DMCP_PACKAGE == 2
+  #define PACKAGE2_NODISTR
+  #elif DMCP_PACKAGE == 3
+  #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #endif
 
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -187,7 +198,7 @@
     //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
 
-  //Large packages developed for R47/DM42n. Could arguably work on DM42.
+  //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
@@ -1614,6 +1625,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_WOY_RULE                              121
 #define TI_MIJEQ                                 122
 #define TI_REGTYPE                               123
+#define TI_LR_A0                                 124
+#define TI_LR_A1                                 125
+#define TI_LR_A2                                 126
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
