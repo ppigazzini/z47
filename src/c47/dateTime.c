@@ -388,7 +388,7 @@ void checkTimeRange(const real34_t *time34) {
 
 uint32_t getWeekOfYear(real34_t *jd) {
   real34_t dsow, sow, rdow;
-  
+
   uInt32ToReal34(modulo(((int32_t)julianDayToDayOfWeek(jd)) - firstDayOfWeek, 7), &dsow);
   real34Subtract(jd, &dsow, &sow);  // 1st day of the week containing the date
 
@@ -398,7 +398,7 @@ uint32_t getWeekOfYear(real34_t *jd) {
   real34_t y, m, d, j1;
   decomposeJulianDay(&rdow, &y, &m, &d);  // Get the correct year (may be different from the year of jd)
   composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
-  
+
   int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
   if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
     real34Add(&j1, const34_7, &j1);  // … skip to next week
@@ -473,7 +473,7 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "data type %s cannot be converted to date!", getRegisterDataTypeName(REGISTER_X, false, false));
-        moreInfoOnError("In function fnDateTimeToJulian:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnJulianToDateTime:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -911,7 +911,7 @@ void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "data type %s cannot be converted to time!", getRegisterDataTypeName(REGISTER_X, false, false));
-            moreInfoOnError("In function fnHRToTM:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnHRtoTM:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
           }

@@ -10,4 +10,5 @@
   void     fnRandom   (uint16_t unusedButMandatoryParameter);
   void     fnRandomI  (uint16_t unusedButMandatoryParameter);
   void     fnSeed     (uint16_t unusedButMandatoryParameter);
+  void realRandomU01(real_t *res);
 #endif // !RANDOM_H

@@ -108,7 +108,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
-      moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
@@ -240,7 +240,7 @@ done:
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
-      moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }

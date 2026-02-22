@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test test_asan dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms both_asan dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47 repeattest
 
 all: sim
 both: sim simr47
@@ -12,48 +12,89 @@ BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
 FORCENEW_TESTPGMS =
+GMP_MESON_BUILD  = subprojects/gmp-6.2.1/meson.build
+GMP_MESON_SOURCE = subprojects/packagefiles/gmp-6.2.1/meson.build
+DMCP_PACKAGE = 2
 
-clean:
+$(GMP_MESON_BUILD): $(GMP_MESON_SOURCE)
+	rm -rf subprojects/gmp-6.2.1
+
+clean: $(GMP_MESON_BUILD)
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
 	rm -f r47$(EXE)
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
 	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
-	rm -rf build build.sim build.dmcp build.dmcp5 build.rel build.rel.debug
+	rm -rf build build.sim build.dmcp build.dmcp.* build.dmcp5 build.rel build.rel.debug
 	rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
 	rm -rf PROGRAMS/ALLPGMS
+	rm -f src_files_stamp testPgms_stamp
 
 build.sim:
 	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true
+
+both_asan: clean
+ifeq ($(OS),Windows_NT)
+	@echo "Warning: AddressSanitizer not supported on Windows MinGW, building without ASAN"
+	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations"
+else
+	meson setup $(BUILD_PC) --buildtype=custom -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations" -Db_sanitize=address
+endif
+	cd $(BUILD_PC) && ninja sim
+	cd $(BUILD_PC) && ninja simr47
+	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./ 
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./ 
+ifneq ($(OS),Windows_NT)
+	@ASAN_OK=true; \
+	if ! otool -L ./c47 2>/dev/null | grep -q asan && ! ldd ./c47 2>/dev/null | grep -q asan; then \
+		echo "\033[1;31m"; \
+		echo "WARNING: ASAN NOT ENABLED IN c47! The c47 binary was not built with AddressSanitizer."; \
+		echo "\033[0m"; \
+		ASAN_OK=false; \
+	else \
+		echo "\033[1;32m ASAN successfully enabled in c47\033[0m"; \
+	fi; \
+	if ! otool -L ./r47 2>/dev/null | grep -q asan && ! ldd ./r47 2>/dev/null | grep -q asan; then \
+		echo "\033[1;31m"; \
+		echo "WARNING: ASAN NOT ENABLED IN r47! The r47 binary was not built with AddressSanitizer."; \
+		echo "\033[0m"; \
+		ASAN_OK=false; \
+	else \
+		echo "\033[1;32m ASAN successfully enabled in r47\033[0m"; \
+	fi; \
+	if [ "$$ASAN_OK" = "false" ]; then exit 1; fi
+endif
 
 build.rel:
 	meson setup $(BUILD_PC) --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.rel.debug:
-	meson setup $(BUILD_PC) --buildtype=custom -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
+	meson setup $(BUILD_PC) --buildtype=custom  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 build.dmcp:
-	meson setup build.dmcp --cross-file=src/c47-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
+	meson setup build.dmcp.p$(DMCP_PACKAGE)  --cross-file=src/c47-dmcp/cross_arm_gcc.build  -DDMCPVERSION=dmcp  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true -DDMCP_PACKAGE=$(DMCP_PACKAGE)
 
 build.dmcp5:
 	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) -DDECNUMBER_FASTMUL=true
 
 sim: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja sim
-	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	cp $(BUILD_PC)/src/c47-gtk/c47$(EXE) ./ 
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 simr47: $(BUILD_PC)
 	cd $(BUILD_PC) && ninja simr47
-	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./
-	cp $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
-	cp $(BUILD_PC)/src/generateConstants/constantPointers.* src/generated/
-	cp $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
+	cp $(BUILD_PC)/src/c47-gtk/r47$(EXE) ./ 
+	install -C $(BUILD_PC)/src/generateCatalogs/softmenuCatalogs.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.h src/generated/
+	install -C $(BUILD_PC)/src/generateConstants/constantPointers.c src/generated/
+	install -C $(BUILD_PC)/src/ttf2RasterFonts/rasterFontsData.c src/generated/
 
 dmcp: build.dmcp
-	cd build.dmcp && ninja dmcp
+	cd build.dmcp.p$(DMCP_PACKAGE) && ninja dmcp
 
 dmcpr47: build.dmcp
 	cd build.dmcp && ninja dmcp_r47
@@ -72,7 +113,34 @@ testPgms: build.sim
 	mkdir -p res/testPgms
 	cp $(BUILD_PC)/src/generateTestPgms/testPgms.bin res/testPgms/
 
-test: build.sim testPgms
+test: clean build.sim testPgms
+	cd $(BUILD_PC) && ninja test
+
+test_asan: clean testPgms
+	meson setup $(BUILD_PC)
+ifeq ($(OS),Windows_NT)
+	@echo "Warning: AddressSanitizer not supported on Windows MinGW, building without ASAN"
+	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations"
+else
+	meson setup $(BUILD_PC) --buildtype=custom -DRASPBERRY=`tools/onARaspberry` -DDECNUMBER_FASTMUL=true -Dc_args="-Wno-deprecated-declarations" -Db_sanitize=address
+endif
+	cd $(BUILD_PC) && ninja test
+
+# ----------------------------
+# Incremental repeattest
+
+# Stamp file updated if any .c or .h changes
+SRC_FILES := $(shell find src -name '*.c' -o -name '*.h')
+src_files_stamp: $(SRC_FILES)
+	touch $@
+
+testPgms_stamp: build.sim src_files_stamp
+	cd $(BUILD_PC) && ninja testPgms
+	mkdir -p res/testPgms
+	cp $(BUILD_PC)/src/generateTestPgms/testPgms.bin res/testPgms/
+	touch $@
+
+repeattest: build.sim testPgms_stamp
 	cd $(BUILD_PC) && ninja test
 
 build.rel/wiki: build.rel
@@ -154,19 +222,20 @@ dist_linux: dist_testPgms_PC
 	rm -rf $(LINUX_DIST_DIR)
 
 DIST_DIR_DM = $(DMCP_DIST_DIR)
-dist_install_DM: build.rel/wiki
-	mkdir -p $(DIST_DIR_DM)
-	mkdir -p $(DIST_DIR_DM)/resources
-	cp -r res/offimg/Egypt/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Norway/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/Netherlands/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/From\ WP43/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/General/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/HP\ related/. $(DIST_DIR_DM)/offimg
-	cp -r res/offimg/C47/. $(DIST_DIR_DM)/offimg
-	cp -r res/PROGRAMS $(DIST_DIR_DM)
-	cp -r res/STATE $(DIST_DIR_DM)
-	cp res/keymaps/keymap_DM42.bin $(DIST_DIR_DM)/resources
+PKG =
+dist_install_DM$(PKG): _DIST_DIR_DM = $(DIST_DIR_DM)$(if $(PKG),-pkg$(PKG),)
+dist_install_DM$(PKG): build.rel/wiki
+	mkdir -p $(_DIST_DIR_DM)/resources
+	cp -r res/offimg/Egypt/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/Norway/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/Netherlands/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/From\ WP43/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/General/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/HP\ related/. $(_DIST_DIR_DM)/offimg
+	cp -r res/offimg/C47/. $(_DIST_DIR_DM)/offimg
+	cp -r res/PROGRAMS $(_DIST_DIR_DM)
+	cp -r res/STATE $(_DIST_DIR_DM)
+	cp res/keymaps/keymap_DM42.bin $(_DIST_DIR_DM)/resources
 
 ifeq ($(FORCENEW_TESTPGMS),)
   DIST_TESTPGMS_DM = dist_testPgms_DM
@@ -174,23 +243,15 @@ else
   DIST_TESTPGMS_DM = dist_testPgms_forcenew_DM
 endif
 
-dist_testPgms_DM: dist_install_DM
+dist_testPgms_DM: dist_install_DM$(PKG)
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
 
-dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM
+dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM$(PKG)
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp $(BUILD_PC)/res/testPgms/testPgms.bin $(BUILD_PC)/res/testPgms/testPgms.txt $(BUILD_PC)/res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
-
-dist_dmcp: DIST_DIR_DM = $(DMCP_DIST_DIR)
-dist_dmcp: dmcp $(DIST_TESTPGMS_DM)
-	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
-	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
-	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
-	zip -r c47-dmcp.zip $(DIST_DIR_DM)
-	rm -rf $(DIST_DIR_DM)
 
 dist_dmcp5: DIST_DIR_DM = $(DMCP5_DIST_DIR)
 dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
@@ -198,6 +259,7 @@ dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DIST_DIR_DM)/resources
 	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/install_C47_on_DM42n.txt $(DIST_DIR_DM)
+	cp res/PACKAGES.md $(DIST_DIR_DM)/PACKAGES.txt
 	zip -r c47-dmcp5.zip $(DIST_DIR_DM)
 	rm -rf $(DIST_DIR_DM)
 
@@ -226,3 +288,59 @@ dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
 	rm $(DMCP5R47_DIST_DIR)/DMCP5_flash_3.56.bin
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)
+
+#
+# DMCP package 1, 2 and 3 separate builds
+#
+
+.PHONY: dmcp_pkg1 dmcp_pkg2 dmcp_pkg3 dmcp_pkgs_all
+.PHONY: dist_dmcp_pkg1 dist_dmcp_pkg2 dist_dmcp_pkg3
+.PHONY: dist_dmcp_pkgs_1_2 dist_dmcp_pkgs_small dist_dmcp_pkgs_all
+
+build.dmcp.p$(PKG): DMCP_PACKAGE = $(PKG)
+build.dmcp.p$(PKG):
+	meson setup build.dmcp.p$(PKG) \
+	  --cross-file=src/c47-dmcp/cross_arm_gcc.build \
+	  -DDMCPVERSION=dmcp \
+	  -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
+	  -DDECNUMBER_FASTMUL=true \
+	  -DDMCP_PACKAGE=$(PKG)
+
+dmcp_pkg$(PKG): build.dmcp.p$(PKG)
+	cd build.dmcp.p$(PKG) && ninja dmcp
+
+dist_dmcp_pkg$(PKG): dmcp_pkg$(PKG)
+dist_dmcp_pkg$(PKG): _DIST_DIR_DM = $(DIST_DIR_DM)-pkg$(PKG)
+dist_dmcp_pkg$(PKG): _BUILD_DIR_DM = build.dmcp.p$(PKG)
+dist_dmcp_pkg$(PKG): dist_install_DM$(PKG) $(DIST_TESTPGMS_DM)
+	cp $(_BUILD_DIR_DM)/src/c47-dmcp/C47.pgm $(_BUILD_DIR_DM)/src/c47-dmcp/C47_qspi.bin $(_DIST_DIR_DM)
+	zip -r $(_DIST_DIR_DM)/resources/C47.map.zip $(_BUILD_DIR_DM)/src/c47-dmcp/C47.map
+	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(_DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
+	cp res/PACKAGES.md $(_DIST_DIR_DM)/PACKAGES.txt
+	zip -r c47-dmcp-pkg$(PKG).zip $(_DIST_DIR_DM)
+	rm -rf $(_DIST_DIR_DM)
+
+dmcp_pkgs_all:
+	$(MAKE) PKG=1 dmcp_pkg1
+	$(MAKE) PKG=2 dmcp_pkg2
+	$(MAKE) PKG=3 dmcp_pkg3
+
+dist_dmcp_pkgs_all:
+	$(MAKE) PKG=1 dist_dmcp_pkg1
+	$(MAKE) PKG=2 dist_dmcp_pkg2
+	$(MAKE) PKG=3 dist_dmcp_pkg3
+
+dist_dmcp_pkgs_1_2:
+	$(MAKE) PKG=1 dist_dmcp_pkg1
+	$(MAKE) PKG=2 dist_dmcp_pkg2
+
+dist_dmcp_pkgs_small:
+	$(MAKE) PKG=2 dist_dmcp_pkg2
+	$(MAKE) PKG=3 dist_dmcp_pkg3
+
+#dist_dmcp: dist_dmcp_pkgs_1_2
+#dist_dmcp: dist_dmcp_pkgs_small
+
+# this syntax is only needed, if target is not one of dist_dmcp_pkgs_* pre-defined targets
+dist_dmcp:
+	$(MAKE) PKG=2 dist_dmcp_pkg2

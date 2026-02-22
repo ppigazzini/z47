@@ -160,7 +160,7 @@ static uint16_t _getKeyArg(uint16_t regist) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _getKeyArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return 0;
     }
@@ -184,6 +184,11 @@ void fnKey(uint16_t regist) {
   // no key was pressed
   if(lastKeyCode == 0) {
     temporaryInformation = TI_TRUE;
+    #if defined(PC_BUILD)
+      while(gtk_events_pending()) {
+        gtk_main_iteration();
+      }
+    #endif //PC_BUILD
   }
 
   // a key was pressed

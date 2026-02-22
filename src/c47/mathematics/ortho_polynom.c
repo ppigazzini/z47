@@ -13,7 +13,7 @@ static bool_t getOrthoPolyParam(calcRegister_t regist, real_t *val, realContext_
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Incompatible type for orthogonal polynomial.");
-      moreInfoOnError("In function fnOrthoPoly:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function getOrthoPolyParam:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }

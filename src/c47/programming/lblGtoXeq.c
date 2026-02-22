@@ -331,7 +331,7 @@ static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
-      moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _executeWithIndirectVariable:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
@@ -459,7 +459,9 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
     case PARAM_REGISTER:
     case PARAM_COMPARE: {
       if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
-        reallyRunFunction(op, regKStoC(opParam));
+        if(regInRange(regKStoC(opParam))) {
+          reallyRunFunction(op, regKStoC(opParam));
+        }
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         _getStringLabelOrVariableName(paramAddress);

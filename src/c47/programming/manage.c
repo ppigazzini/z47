@@ -812,13 +812,9 @@ void pemAlpha(int16_t item) {
     if(indexOfItems[item].func == addItemToBuffer) {
       int32_t len = stringByteLength(aimBuffer);
       item = numlockReplacements(0, item, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG);
-//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
       if(alphaCase == AC_LOWER) {
           if(ITM_A <= item && item <= ITM_Z) {
             item += (ITM_a - ITM_A);
-          }
-          else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
-            item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);
           }
       }
 
@@ -1347,13 +1343,9 @@ static void _pemCloseAngleInput(int item) {
 }
 
 void insertStepInProgram(const int16_t func) {
-                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "insertStepInProgram called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUG_PGM)
+                                  print_caller(NULL);
+                                #endif
 
   uint32_t opBytes = (func >= 128) ? 2 : 1;
 
@@ -1387,7 +1379,11 @@ void insertStepInProgram(const int16_t func) {
     pemCursorIsZerothStep = false;
     return;
   }
-  if(indexOfItems[func].func == addItemToBuffer || (!tam.mode && aimBuffer[0] != 0 && (func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT || (nimNumberPart == NP_INT_BASE && (func == ITM_1ONX || func == ITM_LOG10 || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
+  if(   indexOfItems[func].func == addItemToBuffer 
+     || (!tam.mode && aimBuffer[0] != 0 && (   func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT 
+                                            || (nimNumberPart == NP_INT_BASE && (   ( isR47FAM && (func == ITM_SQUAREROOTX || func == ITM_YX)) 
+                                                                                 || (!isR47FAM && (func == ITM_1ONX        || func == ITM_LOG10)) 
+                                                                                 || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
     pemAddNumber(func, true);
     return;
   }
@@ -1773,13 +1769,9 @@ void insertUserItemInProgram(int16_t func, char *funcParam) {
 #endif // PC_BUILD &&MONITOR_CLRSCR
 
 void addStepInProgram(int16_t func) {
-                                #if defined(PC_BUILD) && defined(DEBUG_PGM)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "addStepInProgram called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUG_PGM)
+                                  print_caller(NULL);
+                                #endif
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
     ++currentLocalStepNumber;

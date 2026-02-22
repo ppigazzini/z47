@@ -9,11 +9,11 @@
 
   void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
+  void     _executeItem(int16_t item, int keyCode);
   void     FN_handler();                                                                                          //JM LONGPRESS
   void     Shft_handler();                                                                                        //JM LONGPRESS f/g
   void     LongpressKey_handler();                                                                                //JM LONGPRESS CLX
   void     Shft_stop();                                                                                           //JM reset shift after  4s
-  void     clear_ul(void);                                                                                        //JMUL
   void     closeShowMenu(void);
   void     reallyClearStatusBar(uint8_t info);
 
@@ -95,12 +95,12 @@ char       letteredRegisterName(calcRegister_t regist);
       #define clearScreenStatusBar(cnt)               do { } while(0)
   #else //!TESTSUITE_BUILD
     #if defined(MONITOR_CLRSCR)
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul();                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
       #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate(); printf("CLEARSB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
     #else //!MONITOR_CLRSCR
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE); clear_ul();                 } while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                 } while(0)  //set last to undefined to force first refresh condition to be true
       #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
     #endif //MONITOR_CLRSCR
   #endif //!TESTSUITE_BUILD
@@ -155,7 +155,7 @@ char       letteredRegisterName(calcRegister_t regist);
   void     show_f_jm                          (void);
   void     show_g_jm                          (void);
   void     clear_fg_jm                        (void);
-  void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
+  void     underline_softkey                  (uint16_t xSoftkeyMask, uint16_t ySoftKey);
   void     force_refresh                      (uint8_t mode);
   void     force_SBrefresh                    (uint8_t mode);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);

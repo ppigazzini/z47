@@ -48,20 +48,36 @@ void fnRecall(uint16_t regist) {
 
 
 void fn2Rcl(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 1);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 0);
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 1);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 0);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fn3Rcl(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 2);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 1);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 0);
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 2);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 1);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 0);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -256,6 +272,7 @@ void fnRecallMax(uint16_t regist) {
 void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte00;    //for use in spare slots below
+    __attribute__((unused)) uint8_t compatibility_byte1;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte2 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte4 ;    //for use in spare slots below
@@ -312,7 +329,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(systemFlags0);
     recallFromDtConfigDescriptor(systemFlags1);
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
-    recallFromDtConfigDescriptor(fgLN);
+    recallFromDtConfigDescriptor(    compatibility_byte1);
     recallFromDtConfigDescriptor(    compatibility_byte19);
     recallFromDtConfigDescriptor(    compatibility_byte28);
     recallFromDtConfigDescriptor(    compatibility_byte29);
