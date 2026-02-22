@@ -10,7 +10,6 @@
 //*********************************
 
 #define VERSION1 "0.109.03.01a-internal"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
-#define DEVPROFILES
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -130,6 +129,8 @@
   #define PACKAGE2_NODISTR
   #elif DMCP_PACKAGE == 3
   #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #elif DMCP_PACKAGE == 4
+  #define PACKAGE3_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
   #endif
 
 
@@ -138,14 +139,14 @@
       //#define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
-      // #define SAVE_SPACE_DM42_14        //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
       // #define SAVE_SPACE_DM42_15        // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
       // #define SAVE_SPACE_DM42_16        //  2168 bytes // Without Norml distribution
       // #define SAVE_SPACE_DM42_17        //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-      // #define SAVE_SPACE_DM42_21_HP35   //   200 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
-    #undef OPTION_TVM_NEWTON               //  1024 bytes // Use additional newton raphson in the brent solver for tvm where possible
-      #define DEVPROFILES
+    #undef OPTION_TVM_NEWTON               //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
 
@@ -157,10 +158,10 @@
     #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define SAVE_SPACE_DM42_16             //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-      //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
       #define OPTION_TVM_FORMULAS          //  2320 bytes // Use analytical formulas where possible
-      #define OPTION_TVM_NEWTON            //  1024 bytes // Use additional newton raphson in the brent solver for tvm where possible
-      #define DEVPROFILES
+      #define OPTION_TVM_NEWTON            //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
 
@@ -172,10 +173,25 @@
       //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
       //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_21_HP35        //   200 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
-      #define OPTION_TVM_NEWTON            //  1024 bytes // Use additional newton raphson in the brent solver for tvm where possible
-    #undef DEVPROFILES
+      #define OPTION_TVM_NEWTON            //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+
+  #if defined(PACKAGE3_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
+    #undef OPTION_TVM_NEWTON               //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
 
@@ -193,7 +209,6 @@
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
-    //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
 
   //Large packages developed for DM42/DM42n. Could arguably work on DM42.
@@ -985,8 +1000,8 @@ typedef enum {
 // 137…249              113 undefined free registers: no possibility of indirect access
 //
 //                             SYSTEM_FLAG_NUMBER --> Used for system flag access                   250
-//                                  VALUE_0 --> Can't remember what this is!                        251
-//                                  VALUE_1 --> Can't remember what this is!                        252
+//                              VALUE_0 --> special "0." value in comparison ops                    251
+//                              VALUE_1 --> special "1." value in comparison ops                    252
 //                                           STRING_LABEL_VARIABLE                                  253
 //                                             INDIRECT_REGISTER                                    254
 //                                             INDIRECT_VARIABLE                                    255
