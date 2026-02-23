@@ -97,7 +97,7 @@ dmcp: build.dmcp
 	cd build.dmcp.p$(DMCP_PACKAGE) && ninja dmcp
 
 dmcpr47: build.dmcp
-	cd build.dmcp && ninja dmcp_r47
+	cd build.dmcp.p$(DMCP_PACKAGE) && ninja dmcp_r47
 
 dmcp5: build.dmcp5
 	cd build.dmcp5 && ninja dmcp5
@@ -265,9 +265,9 @@ dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 
 dist_dmcpr47: DIST_DIR_DM = $(DMCPR47_DIST_DIR)
 dist_dmcpr47: dmcpr47 $(DIST_TESTPGMS_DM)
-	cp build.dmcp/src/c47-dmcp/R47.pgm build.dmcp/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
+	cp build.dmcp.p$(DMCP_PACKAGE)/src/c47-dmcp/R47.pgm build.dmcp.p$(DMCP_PACKAGE)/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
 	cp res/keymaps/keymap_R47.bin $(DMCPR47_DIST_DIR)
-	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
+	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp.p$(DMCP_PACKAGE)/src/c47-dmcp/C47.map
 	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
 	rm -rf $(DMCPR47_DIST_DIR)
@@ -343,4 +343,4 @@ dist_dmcp_pkgs_small:
 
 # this syntax is only needed, if target is not one of dist_dmcp_pkgs_* pre-defined targets
 dist_dmcp:
-	$(MAKE) PKG=4 dist_dmcp_pkg4
+	$(MAKE) PKG=$(DMCP_PACKAGE) dist_dmcp_pkg$(DMCP_PACKAGE)
