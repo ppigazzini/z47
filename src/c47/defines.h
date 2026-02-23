@@ -120,6 +120,7 @@
   #undef PACKAGE1_NOBESSEL_NOORTHO
   #undef PACKAGE2_NODISTR
   #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+  #undef PACKAGE4_MINIMAL_MATH
 
   #if DMCP_PACKAGE == 1
   #define PACKAGE1_NOBESSEL_NOORTHO
@@ -128,10 +129,8 @@
   #elif DMCP_PACKAGE == 3
   #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
   #elif DMCP_PACKAGE == 4
-  #define PACKAGE3_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
+  #define PACKAGE4_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
   #endif
-
-
 
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
       //#define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
@@ -145,17 +144,6 @@
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
     #undef OPTION_TVM_NEWTON               //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
-  #endif
-
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR)
-    #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
-    #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO    //  0744 bytes // Without ORTHO MENU
-    #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
-  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
   #endif
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
@@ -172,7 +160,6 @@
       #define OPTION_TVM_NEWTON            //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
-
   #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
     #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
@@ -187,8 +174,7 @@
       #define OPTION_TVM_NEWTON            //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
-
-  #if defined(PACKAGE3_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
+  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
@@ -201,7 +187,6 @@
     #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
     #undef OPTION_TVM_NEWTON               //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
-
 
   //Options common to all hardware packages
   //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
