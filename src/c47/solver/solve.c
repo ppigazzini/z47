@@ -358,7 +358,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     #if defined(OPTION_TVM_NEWTON)
       real_t newton_x;
     #endif //OPTION_TVM_NEWTON
-      bool_t newtonInitialized = false;
+    bool_t newtonInitialized = false;
 
     real34_t antiLevel34;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
@@ -509,7 +509,7 @@ retryLevel:
 
 
     // =========== ITERATION START =============
-    do {  
+    do {
 
       #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
         const char* methodName[] = {"BRENT", "NEWTON"};
@@ -587,15 +587,15 @@ retryLevel:
 
       #if defined(OPTION_TVM_NEWTON)
       // Method selection: switch to Newton when bracket is tight enough (relative)
-      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && 
-         (variable == RESERVED_VARIABLE_IPONA || 
+      if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
+         (variable == RESERVED_VARIABLE_IPONA ||
           variable == RESERVED_VARIABLE_NPPER ||
           variable == RESERVED_VARIABLE_PV ||
           variable == RESERVED_VARIABLE_PMT ||
           variable == RESERVED_VARIABLE_FV) &&
          currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
 
-                 // Check relative bracket width: |bb - aa| / |bb| < 0.01 (1%)
+        // Check relative bracket width: |bb - aa| / |bb| < see below %
         real_t relativeWidth;
         realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
         realSetPositiveSign(&relativeWidth);
@@ -624,7 +624,7 @@ retryLevel:
         else {
           realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
           realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
-          
+
           #if (defined PC_BUILD) && (defined SOLVERDEBUG)
             printf("  Newton step %d: x=", loop);
             printRealToConsole(&newton_x, "", ", will eval to get fx\n");
@@ -636,7 +636,7 @@ retryLevel:
           bp1 = &newton_x;
         }
       }
-      else 
+      else
       #endif //OPTION_TVM_NEWTON
 
       {
