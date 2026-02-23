@@ -14,8 +14,10 @@
 //   OPTION_TVM_NEWTON
 
 
-#undef  SOLVERDEBUG
-#define SOLVERDEBUG2 //only progress indicators
+#define  SOLVERDEBUG // only progress indicators
+//#undef  SOLVERDEBUG 
+#define SOLVERDEBUG2 // more details
+#undef SOLVERDEBUG2 
 
 
 //The main real solver is converted to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the other legacy callers
@@ -418,7 +420,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(realCompareEqual(&bb, &aa)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
 retryLevel:
       if(--getOutOfLevel >= 0) {
-        #if (defined PC_BUILD) && (defined SOLVERDEBUG)
+        #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
           printf("Solver retry Level:%2i ",getOutOfLevel);
           printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
         #endif //PC_BUILD
@@ -625,11 +627,6 @@ retryLevel:
           realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
           realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
 
-          #if (defined PC_BUILD) && (defined SOLVERDEBUG)
-            printf("  Newton step %d: x=", loop);
-            printRealToConsole(&newton_x, "", ", will eval to get fx\n");
-          #endif
-
           // Evaluate f at new point for convergence check
           realCopy(&newton_x, &newton_trial);
           _executeSolverReal(variable, &newton_trial, &newton_fx, NULL);
@@ -704,7 +701,7 @@ retryLevel:
               clearSystemFlag(FLAG_SOLVING);
             }
             first_newton_iter = true;  // Reset for next solve
-            #if (defined PC_BUILD) && (defined SOLVERDEBUG)
+            #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
               printf("  Newton end Iter %d (%s)  ", loop, methodName[currentMethod]);
               printRealToConsole(&newton_x, "x=", "\n");
             #endif

@@ -13,8 +13,8 @@
 //   OPTION_TVM_NEWTON
 
 
+//#define TVMDEBUG2 //only progress indicators
 #undef  TVMDEBUG2
-#define TVMDEBUG2 //only progress indicators
 
 
 
