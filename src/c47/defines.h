@@ -122,6 +122,7 @@
   #undef PACKAGE1_NOBESSEL_NOORTHO
   #undef PACKAGE2_NODISTR
   #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+  #undef PACKAGE4_MINIMAL_MATH
 
   #if DMCP_PACKAGE == 1
   #define PACKAGE1_NOBESSEL_NOORTHO
@@ -130,7 +131,7 @@
   #elif DMCP_PACKAGE == 3
   #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
   #elif DMCP_PACKAGE == 4
-  #define PACKAGE3_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
+  #define PACKAGE4_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
   #endif
 
 
@@ -148,7 +149,6 @@
     #undef OPTION_TVM_FORMULAS             //  2328 bytes // Use analytical formulas where possible
     #undef OPTION_TVM_NEWTON               //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
-
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
@@ -179,8 +179,7 @@
       #define OPTION_TVM_NEWTON            //  1248 bytes // Use additional newton raphson in the brent solver for tvm where possible
   #endif
 
-
-  #if defined(PACKAGE3_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
+  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
@@ -1000,8 +999,8 @@ typedef enum {
 // 137…249              113 undefined free registers: no possibility of indirect access
 //
 //                             SYSTEM_FLAG_NUMBER --> Used for system flag access                   250
-//                              VALUE_0 --> special "0." value in comparison ops                    251
-//                              VALUE_1 --> special "1." value in comparison ops                    252
+//                                  VALUE_0 --> Can't remember what this is!                        251
+//                                  VALUE_1 --> Can't remember what this is!                        252
 //                                           STRING_LABEL_VARIABLE                                  253
 //                                             INDIRECT_REGISTER                                    254
 //                                             INDIRECT_VARIABLE                                    255
