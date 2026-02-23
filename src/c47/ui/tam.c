@@ -505,7 +505,7 @@
             tam.currentOperation = tam.function;
           }
 
-          else if(item >= ITM_dddVEL1 && item <= ITM_dddVEL3) {
+          else if((item >= ITM_STOVEL1 && item <= ITM_STOVEL3) || (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) {
             tam.currentOperation = item;
             switch(calcMode) {
               case CM_MIM: {
