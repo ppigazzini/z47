@@ -359,6 +359,8 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
     #if defined(OPTION_TVM_NEWTON)
       real_t newton_x;
+      bool_t newton_polish_mode = false;
+      int newton_polish_count = 0;
     #endif //OPTION_TVM_NEWTON
     bool_t newtonInitialized = false;
 
@@ -513,19 +515,30 @@ retryLevel:
     // =========== ITERATION START =============
     do {
 
-      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      #if (defined PC_BUILD) && ((defined SOLVERDEBUG) || (defined SOLVERDEBUG2))
         const char* methodName[] = {"BRENT", "NEWTON"};
-        printf("Iter %d (%s)  ", loop, methodName[currentMethod]);
         if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
           #if defined(OPTION_TVM_NEWTON)
-            printRealToConsole(&newton_x, "x=", "\n");
+            char str_x[200];
+            realToString(&newton_x, str_x);
+            printf("Iter %-4d (%-6s)  x=%s\n", loop, methodName[currentMethod], str_x);
           #endif //OPTION_TVM_NEWTON
         }
         else {
-          printRealToConsole(&aa, "  a=", ", fa=");
-          printRealToConsole(&faa, "", ", b=");
-          printRealToConsole(&bb, "", ", fb=");
-          printRealToConsole(&fbb, "", "\n");
+          char str_a[200], str_b[200];
+          #if defined(SOLVERDEBUG2)
+            char str_fa[200], str_fb[200];
+            realToString(&faa, str_fa);
+            realToString(&fbb, str_fb);
+          #endif
+          realToString(&aa, str_a);
+          realToString(&bb, str_b);
+          
+          printf("Iter %-4d (%-6s)  a=%-50s b=%s", loop, methodName[currentMethod], str_a, str_b);
+          #if defined(SOLVERDEBUG2)
+            printf("\n%65sfa=%-50s fb=%s", "", str_fa, str_fb);
+          #endif
+          printf("\n");
         }
       #endif
 
@@ -602,7 +615,32 @@ retryLevel:
         realDivide(&bracketWidth, &bb, &relativeWidth, &ctxtSolver);
         realSetPositiveSign(&relativeWidth);
 
-        if(realGetExponent(&relativeWidth) < -1) {  // < 10% relative
+        // Hand off to Newton when bracket is tight enough:
+        // Path 1 (bb >= -25): Normal case - use relative bracket width
+        //   - Condition A: Very tight bracket (<= 10% relative)
+        //   - Condition B: Moderate bracket (<= 1000% relative) AND tiny residual (<= 1e-10)
+        // Path 2 (bb < -25): Near-zero root - use absolute bracket width
+        //   - Absolute bracket must be <= 1e-35
+        bool_t handoff = false;
+        if(realGetExponentComp(&bb) >= -25) {
+          // Normal case: use relative width
+          if(realGetExponentComp(&relativeWidth) <= -1) {
+            handoff = true;  // Very tight relative bracket (<= 10%)
+          }
+          else if(realGetExponentComp(&relativeWidth) <= 1 &&
+                  realGetExponentComp(&fbb) <= -10) {
+            handoff = true;  // Moderate bracket (<= 1000%) + tiny residual
+          }
+        }
+        else {
+          // Near-zero root (bb < -25): use absolute bracket
+          if(realGetExponentComp(&bracketWidth) <= -35) {
+            handoff = true;  // Absolute bracket tight enough for Newton
+          }
+        }
+
+        //printf("realGetExponent(&relativeWidth) = %d  realGetExponent(&fbb)= %d handoff = %d\n",realGetExponent(&relativeWidth), realGetExponent(&fbb), handoff);
+        if(handoff) {
           currentMethod = SOLVER_METHOD_NEWTON;
           realCopy(&bb, &newton_x);  // Use best point (smallest residual), not midpoint
           newtonInitialized = true;
@@ -660,7 +698,15 @@ retryLevel:
 
       #if defined(OPTION_TVM_NEWTON)
       // Newton convergence check and divergence detection
-      if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+        if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
+          if(newton_polish_mode) {
+          newton_polish_count++;
+          if(newton_polish_count > 2) {
+            // Max 2 polish iterations - exit regardless
+            newton_polish_mode = false;
+            break;
+          }
+        }
         static real_t prev_fx, prev_x;
         static bool_t first_newton_iter = true;
         static int stall_count = 0;
@@ -674,23 +720,44 @@ retryLevel:
           stall_count = 0;
         }
         else if(!first_newton_iter && realCompareEqual(&newton_x, &prev_x)) {
-          stall_count++;
-          if(stall_count >= 3) {
-            currentMethod = SOLVER_METHOD_BRENT;
-            newtonInitialized = false;
+          // x stopped changing - is it converged or stalled?
+          real_t tol_converged;
+          realCopy(const_1, &tol_converged);
+          tol_converged.exponent = -37;
+
+          if(realCompareAbsLessThan(&fbp1, &tol_converged)) {
+            // Converged - exit now
+            realToReal34(&fbp1, resZ);
+            realToReal34(&newton_x, resY);
+            realToReal34(&newton_x, resX);
+            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
+            copySourceRegisterToDestRegister(REGISTER_X, variable);
+            if((--currentSolverNestingDepth) == 0) {
+              clearSystemFlag(FLAG_SOLVING);
+            }
             first_newton_iter = true;
             stall_count = 0;
+            return SOLVER_RESULT_NORMAL;
+          }
+          else {
+            // Real stall - residual still large
+            stall_count++;
+            if(stall_count >= 3) {
+              currentMethod = SOLVER_METHOD_BRENT;
+              newtonInitialized = false;
+              first_newton_iter = true;
+              stall_count = 0;
+            }
           }
         }
         else {
           // Save current residual for next iteration
           realCopy(&fbp1, &prev_fx);
           realCopy(&newton_x, &prev_x);
-          first_newton_iter = false;
           stall_count = 0;
-
-          // Check convergence
-          if(realCompareAbsLessThan(&fbp1, &tolAlmostZero)) {
+          // Check convergence only if Newton has actually run
+          if(!first_newton_iter && realCompareAbsLessThan(&fbp1, &tolAlmostZero)) {
             realToReal34(&fbp1, resZ);
             realToReal34(&newton_x, resY);
             realToReal34(&newton_x, resX);
@@ -707,6 +774,7 @@ retryLevel:
             #endif
             return SOLVER_RESULT_NORMAL;
           }
+          first_newton_iter = false;  // Mark that Newton has now run
         }
       }
       #endif //OPTION_TVM_NEWTON
@@ -813,7 +881,42 @@ retryLevel:
       }
       if( !originallyLevel &&
         ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
-        break;
+        #if defined(OPTION_TVM_NEWTON)
+          if(currentMethod == SOLVER_METHOD_BRENT &&
+             (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&
+             (variable == RESERVED_VARIABLE_IPONA ||
+              variable == RESERVED_VARIABLE_NPPER ||
+              variable == RESERVED_VARIABLE_PV ||
+              variable == RESERVED_VARIABLE_PMT ||
+              variable == RESERVED_VARIABLE_FV)) {
+            currentMethod = SOLVER_METHOD_NEWTON;
+            realCopy(&bb, &newton_x);
+            newtonInitialized = true;
+            newton_polish_mode = true;
+            newton_polish_count = 0;
+          }
+          // Don't break - Newton to polish
+          else if(newton_polish_mode && newton_polish_count > 0) {
+            // Polish done - compare results and keep the better one
+            // bb/fbb = Brent's last result, newton_x/fbp1 = Newton's polish result
+            if(realCompareAbsLessThan(&fbp1, &fbb)) {
+              // Newton improved - use Newton's result (already in registers)
+            } else {
+              // Newton made it worse - revert to Brent's result
+              realToReal34(&fbb, resZ);
+              realToReal34(&bb, resY);
+              realToReal34(&bb, resX);
+            }
+            newton_polish_mode = false;
+            newton_polish_count = 0;
+            break;
+
+          } else {
+            break;
+          }
+        #else
+          break;
+        #endif
       }
       if(loop > (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION ? 2000 : 10000)) {
         result = SOLVER_RESULT_OTHER_FAILURE;
@@ -822,6 +925,7 @@ retryLevel:
 
     } while(true);
    //==== ITER END ====
+
 
 
 
