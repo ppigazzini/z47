@@ -41,6 +41,29 @@
 #endif
 
 
+static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t *realContext) {
+  real_t v, w;
+
+  decNumberExp(exp, x, realContext);
+
+  // Code from WP34S_ExpM1 to get accurate result for e^x-1
+  realSubtract(exp, const_1, &v, realContext);
+  if(realIsZero(&v)) { // |x| is very little
+    realCopy(x, expm1);
+  }
+  else if(realCompareEqual(&v, const__1)) {
+    realCopy(const__1, expm1);
+  }
+  else if(realCompareAbsLessThan(x, const_1on10)) {
+    realMultiply(&v, x, &w, realContext);
+    WP34S_Ln(exp, &v, realContext);
+    realDivide(&w, &v, expm1, realContext);
+  }
+  else {
+    realCopy(&v, expm1);
+  }
+}
+
 #if defined (OPTION_TVM_FORMULAS)
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     const char * const tvmErrorMessages[] = {
@@ -66,28 +89,6 @@ static int tvmRangeError(int errorCode) {
   return errorCode;
 }
 
-static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t *realContext) {
-  real_t v, w;
-
-  decNumberExp(exp, x, realContext);
-
-  // Code from WP34S_ExpM1 to get accurate result for e^x-1
-  realSubtract(exp, const_1, &v, realContext);
-  if(realIsZero(&v)) { // |x| is very little
-    realCopy(x, expm1);
-  }
-  else if(realCompareEqual(&v, const__1)) {
-    realCopy(const__1, expm1);
-  }
-  else if(realCompareAbsLessThan(x, const_1on10)) {
-    realMultiply(&v, x, &w, realContext);
-    WP34S_Ln(exp, &v, realContext);
-    realDivide(&w, &v, expm1, realContext);
-  }
-  else {
-    realCopy(&v, expm1);
-  }
-}
 
 // Calculate effective interest rate per payment period
 // ip = (1 + ic)^(CPER/a / PPER/a) - 1 where ic = (I%/a / 100) / CPER/a
