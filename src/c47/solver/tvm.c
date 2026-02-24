@@ -133,39 +133,37 @@ int calculatePV(const real_t *fv,
   // Check if ip ≈ 0
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // PV = -PMT*NPPER - FV
-    realMultiply(pmt, npper, &temp1, &ctxtTvm);
-    realAdd(&temp1, fv, pv, &ctxtTvm);
+    realFMA(pmt, npper, fv, pv, &ctxtTvm);
     realSetNegativeSign(pv);
     return 0;
   }
 
   // General case: ip ≠ 0
-  {
     // Calculate annuity factor: numerator: 1 - (1+ip)^(-NPPER)
-    realSubtract(const_0, npper, &negNpper, &ctxtTvm);
-    real_t temp2;
-    WP34S_Ln1P(&ip, &temp2, &ctxtTvm);                  // temp2 = ln(1 + ip)
-    realMultiply(&temp2, &negNpper, &temp2, &ctxtTvm);  // temp2 = -NPPER * ln(1 + ip)
-    realExp(&temp2, &powerTerm, &ctxtTvm);              // powerTerm = (1+ip)^(-NPPER)
-    WP34S_ExpM1(&temp2, &temp1, &ctxtTvm);              // temp1 = (1+ip)^(-NPPER) - 1
-    realChangeSign(&temp1);                                // temp1 = 1 - (1+ip)^(-NPPER)
-  }
+  realCopy(npper, &negNpper);
+  realChangeSign(&negNpper);
+  WP34S_Ln1P(&ip, &temp2, &ctxtTvm);                  // temp2 = ln(1 + ip)
+  realMultiply(&temp2, &negNpper, &temp2, &ctxtTvm);  // temp2 = -NPPER * ln(1 + ip)
+  realExp(&temp2, &powerTerm, &ctxtTvm);              // powerTerm = (1+ip)^(-NPPER)
+  WP34S_ExpM1(&temp2, &temp1, &ctxtTvm);              // temp1 = (1+ip)^(-NPPER) - 1
+  realChangeSign(&temp1);                                // temp1 = 1 - (1+ip)^(-NPPER)
+
   // Annuity factor = [1 - (1+ip)^(-NPPER)] / ip
   realDivide(&temp1, &ip, &annuityFactor, &ctxtTvm);
 
+  // Possible loss of digits here could compute:
+  //    e^(ln1p(ip*p) + ln(PMT * annuityFactor))
+
   // Payment timing factor = (1 + ip*p)
-  realMultiply(&ip, p, &temp1, &ctxtTvm);
-  realAdd(&temp1, const_1, &temp2, &ctxtTvm);
+  realFMA(&ip, p, const_1, &temp2, &ctxtTvm);
 
   // PV from payments = (1 + ip*p) * PMT * annuityFactor
   realMultiply(&temp2, pmt, &temp1, &ctxtTvm);
   realMultiply(&temp1, &annuityFactor, &temp3, &ctxtTvm);
 
   // PV from FV = FV * (1+ip)^(-NPPER)
-  realMultiply(fv, &powerTerm, &temp1, &ctxtTvm);
-
   // PV = -(payment part + FV part)
-  realAdd(&temp3, &temp1, pv, &ctxtTvm);
+  realFMA(fv, &powerTerm, &temp3, pv, &ctxtTvm);
   realChangeSign(pv);
 
   return 0;
@@ -192,8 +190,7 @@ int calculateFV(const real_t *pv,
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // FV = -PV - PMT*NPPER
-    realMultiply(pmt, npper, &temp1, &ctxtTvm);
-    realAdd(pv, &temp1, fv, &ctxtTvm);
+    realFMA(pmt, npper, pv, fv, &ctxtTvm);
     realSetNegativeSign(fv);
     return 0;
   }
@@ -263,7 +260,8 @@ int calculatePMT(const real_t *pv,
 
   // General case: ip ≠ 0
   // Calculate (1 + ip)^(-NPPER)
-  realSubtract(const_0, npper, &negNpper, &ctxtTvm);
+  realCopy(npper, &negNpper);
+  realChangeSign(&negNpper);
    {
     real_t temp_ln;
     WP34S_Ln1P(&ip, &temp_ln, &ctxtTvm);                    // temp_ln = ln(1 + ip)
@@ -275,14 +273,12 @@ int calculatePMT(const real_t *pv,
 
 
   // Numerator = -[PV + FV*(1+ip)^(-NPPER)] * ip
-  realMultiply(fv, &powerTerm, &temp1, &ctxtTvm);
-  realAdd(pv, &temp1, &temp2, &ctxtTvm);
+  realFMA(fv, &powerTerm, pv, &temp2, &ctxtTvm);
   realMultiply(&temp2, &ip, &numerator, &ctxtTvm);
   realChangeSign(&numerator);
 
   // Denominator = (1+ip*p) * [1-(1+ip)^(-NPPER)]
-  realMultiply(&ip, p, &temp1, &ctxtTvm);
-  realAdd(&temp1, const_1, &temp2, &ctxtTvm);
+  realFMA(&ip, p, const_1, &temp2, &ctxtTvm);
   realMultiply(&temp2, &temp3, &denominator, &ctxtTvm);
 
   // Check for zero denominator
@@ -346,8 +342,7 @@ int calculateNPPER(const real_t *pv,
     }
 
     WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
-    realAdd(&ip, const_1, &temp1, &ctxtTvm);
-    WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
+    WP34S_Ln1P(&ip, &lnBase, &ctxtTvm);
 
     // Check for zero denominator (should not happen for valid ip, but check anyway)
     if(decNumberIsZero((decNumber *)&lnBase)) {
@@ -362,17 +357,13 @@ int calculateNPPER(const real_t *pv,
   // Calculate A = -FV*ip + PMT*(1+ip*p)
   realMultiply(fv, &ip, &temp1, &ctxtTvm);
   realSetNegativeSign(&temp1);
-  realMultiply(&ip, p, &temp2, &ctxtTvm);
-  realAdd(&temp2, const_1, &temp2, &ctxtTvm);
-  realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
-  realAdd(&temp1, &temp2, &a, &ctxtTvm);
+  realFMA(&ip, p, const_1, &temp2, &ctxtTvm);
+  realFMA(pmt, &temp2, &temp1, &a, &ctxtTvm);
 
   // Calculate B = PV*ip + PMT*(1+ip*p)
   realMultiply(pv, &ip, &temp1, &ctxtTvm);
-  realMultiply(&ip, p, &temp2, &ctxtTvm);
-  realAdd(&temp2, const_1, &temp2, &ctxtTvm);
-  realMultiply(pmt, &temp2, &temp2, &ctxtTvm);
-  realAdd(&temp1, &temp2, &b, &ctxtTvm);
+  //realFMA(&ip, p, const_1, &temp2, &ctxtTvm);
+  realFMA(pmt, &temp2, &temp1, &b, &ctxtTvm);
 
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&b)) {
@@ -389,8 +380,7 @@ int calculateNPPER(const real_t *pv,
 
   // NPPER = ln(A/B) / ln(1+ip)
   WP34S_Ln(&ratio, &lnRatio, &ctxtTvm);
-  realAdd(&ip, const_1, &temp1, &ctxtTvm);
-  WP34S_Ln(&temp1, &lnBase, &ctxtTvm);
+  WP34S_Ln1P(&ip, &lnBase, &ctxtTvm);
 
   // Check for zero denominator
   if(decNumberIsZero((decNumber *)&lnBase)) {
@@ -524,7 +514,6 @@ int calculateCPER(const real_t *pv,
   ensureTvmContext();
   real_t ip, ic, temp1, temp2;
   real_t exponent, test_ip, error_val, tolerance;
-  real_t delta;
   int iterations = 0;
   const int maxIterations = 100;
 
@@ -600,8 +589,8 @@ int calculateCPER(const real_t *pv,
       // Newton-Raphson update with damping
       real_t temp2;
       realDivide(&error_val, &ip, &temp1, &ctxtTvm);
-      realMultiply(&temp1, const_1on2, &delta, &ctxtTvm);  // damping = 0.5
-      realSubtract(const_1, &delta, &temp2, &ctxtTvm);
+      realChangeSign(&temp1);
+      realFMA(&temp1, const_1on2, const_1, &temp2, &ctxtTvm);
       realMultiply(compoundPerYear, &temp2, compoundPerYear, &ctxtTvm);
     }
     // Keep CPER/a positive
@@ -972,7 +961,7 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
 
 
 void fnEffToI(uint16_t unusedButMandatoryParameter) {
-  real_t iEFF, tmp, cperA, cperAInv;
+  real_t iEFF, tmp, cperA, t2;
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
     // iA = {[(EFF / 100 + 1) ^ (1/cperA) ] - 1 } 100 * cperA
 
@@ -985,11 +974,10 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
     thereIsSomethingToUndo = true;
 
     iEFF.exponent -= 2; // iEFF = iEFF / 100
-    realAdd(&iEFF, const_1, &tmp, &ctxtReal39);
+    WP34S_Ln1P(&iEFF, &tmp, &ctxtReal39);
 
-    realDivide(const_1, &cperA, &cperAInv, &ctxtReal39);
-    PowerReal(&tmp, &cperAInv, &tmp, &ctxtReal39);
-    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    realDivide(&tmp, &cperA, &t2, &ctxtReal39);
+    WP34S_ExpM1(&t2, &tmp, &ctxtReal39);
     tmp.exponent += 2; // tmp = tmp * 100
     realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
 
@@ -1095,8 +1083,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
 
   // early return for i = 0: exact limit avoids 0/0 in annuity; f = -PV + n*PMT - FV (k -> 1 for both modes)
   if(realIsZero(&i)) {
-    realMultiply(&nPer, &pmt, &val, &ctxtTvm);
-    realAdd(&pv, &val, &val, &ctxtTvm);
+    realFMA(&nPer, &pmt, &pv, &val, &ctxtTvm);
     realSubtract(&val, &fv, &val, &ctxtTvm);
     realCopy(&val, ioVal);
     // result returned via ioVal; X-register write commented out (may be needed on solver abort)
@@ -1121,9 +1108,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realCopy(const_1, &k);
     }
     else {
-      real_t one_plus_i;
-      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
-      realCopy(&one_plus_i, &k);
+      realAdd(const_1, &i, &k, &ctxtTvm);
     }
 
     // f(i) = PV + PMT * k * [1 - (1+i)^(-n)] / i + FV * (1+i)^(-n)
@@ -1133,12 +1118,8 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     realCopy(&oneMinusI1negN, &term2);
     realDivide(&term2, &i, &term2, &ctxtSolverTvmInv);
     realMultiply(&term2, &k, &term2, &ctxtTvm);
-    realMultiply(&term2, &pmt, &term2, &ctxtTvm);
-    realAdd(&val, &term2, &val, &ctxtTvm);
-
-    real_t term3;
-    realMultiply(&fv, &i1negN, &term3, &ctxtTvm);
-    realAdd(&val, &term3, &val, &ctxtTvm);
+    realFMA(&term2, &pmt, &val, &val, &ctxtTvm);
+    realFMA(&fv, &i1negN, &val, &val, &ctxtTvm);
   }
   realCopy(&val, ioVal);
   // result returned via ioVal; X-register write commented out (may be needed on solver abort)
@@ -1151,19 +1132,19 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       real_t term1, term2, factor_deriv, i_squared;
       realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
       // Compute (1+i)^(-N) and (1+i)^(-N-1)
-      real_t temp, neg_nPer;
+      real_t temp, neg_nPer, one_minus;
       realCopy(&nPer, &neg_nPer);
       realChangeSign(&neg_nPer);
       WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
       realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
       realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+      WP34S_ExpM1(&temp, &one_minus, &ctxtSolverTvmHi);
+      realChangeSign(&one_minus);
       realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
       // term1 = N * (1+i)^(-N-1) / i
       realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, &ctxtTvm);
       realDivide(&term1, &i, &term1, &ctxtSolverTvmInv);
       // term2 = [1 - (1+i)^(-N)] / i^2
-      real_t one_minus;
-      realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
       realMultiply(&i, &i, &i_squared, &ctxtSolverTvmInv);
       realDivide(&one_minus, &i_squared, &term2, &ctxtSolverTvmInv);
       // factor_deriv = term1 - term2
@@ -1179,8 +1160,8 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realMultiply(&pmt, &factor_deriv, derivative, &ctxtTvm);
       real_t fv_term;
       realMultiply(&nPer, &fv, &fv_term, &ctxtTvm);
-      realMultiply(&fv_term, &one_plus_i_neg_N_m1, &fv_term, &ctxtTvm);
-      realSubtract(derivative, &fv_term, derivative, &ctxtTvm);
+      realChangeSign(&fv_term);
+      realFMA(&fv_term, &one_plus_i_neg_N_m1, derivative, derivative, &ctxtTvm);
       // Scale derivative for I%/a variable: df/d(I%/a) = df/di × 1/(100×pperA)
       realDivide(derivative, const_100, derivative, &ctxtTvm);
       realDivide(derivative, &pperA, derivative, &ctxtTvm);
@@ -1188,8 +1169,8 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     
     if(derivative != NULL && variable == RESERVED_VARIABLE_NPPER) {
       // df/dN = (1+i)^(-N) * ln(1+i) * [PMT*k/i - FV]
-      real_t one_plus_i, one_plus_i_neg_N, ln1pi, pmt_term;
-      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      real_t one_plus_i_neg_N, ln1pi, pmt_term;
+
       // Compute (1+i)^(-N)
       real_t temp, neg_nPer;
       realCopy(&nPer, &neg_nPer);
@@ -1199,8 +1180,8 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
       // pmt_term = PMT*k/i - FV
       realDivide(&pmt, &i, &pmt_term, &ctxtSolverTvmInv);
-      realMultiply(&pmt_term, &k, &pmt_term, &ctxtTvm);
-      realSubtract(&pmt_term, &fv, &pmt_term, &ctxtTvm);
+      realChangeSign(&fv);
+      realFMA(&pmt_term, &k, &fv, &pmt_term, &ctxtTvm);
       // derivative = (1+i)^(-N) * ln(1+i) * pmt_term
       realMultiply(&one_plus_i_neg_N, &ln1pi, derivative, &ctxtTvm);
       realMultiply(derivative, &pmt_term, derivative, &ctxtTvm);
@@ -1213,17 +1194,17 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     
     if(derivative != NULL && variable == RESERVED_VARIABLE_PMT) {
       // df/dPMT = k * [1-(1+i)^(-N)]/i
-      real_t one_plus_i, one_plus_i_neg_N, one_minus;
-      realAdd(const_1, &i, &one_plus_i, &ctxtTvm);
+      real_t one_minus;
+
       // Compute (1+i)^(-N)
       real_t temp, neg_nPer;
       realCopy(&nPer, &neg_nPer);
       realChangeSign(&neg_nPer);
       WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
       realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
-      realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
       // derivative = k * [1-(1+i)^(-N)]/i
-      realSubtract(const_1, &one_plus_i_neg_N, &one_minus, &ctxtTvm);
+      WP34S_ExpM1(&temp, &one_minus, &ctxtSolverTvmHi);
+      realChangeSign(&one_minus);
       realDivide(&one_minus, &i, derivative, &ctxtSolverTvmInv);
       realMultiply(derivative, &k, derivative, &ctxtTvm);
     }
