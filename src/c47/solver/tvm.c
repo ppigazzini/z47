@@ -13,8 +13,8 @@
 //   OPTION_TVM_NEWTON
 
 
-//#define TVMDEBUG2 //only progress indicators
-#undef  TVMDEBUG2
+#define TVMDEBUG2 //only progress indicators
+//#undef  TVMDEBUG2
 
 
 
@@ -29,10 +29,10 @@
 
 
 #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) // || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-  #define ctxtTvm           ctxtReal39
+  #define ctxtTvm          ctxtReal39
   #define ctxtTvmHi         ctxtTvm42  // only some exp/log parts
   #define ctxtSolverTvmHi   ctxtTvm42  // only the exp/log parts
-  #define ctxtSolverTvmInv  ctxtReal51  // only the inverting of i
+  #define ctxtSolverTvmInv ctxtReal51  // only the inverting of i
 #else
   #define ctxtTvm          ctxtReal51
   #define ctxtTvmHi        ctxtReal51  // only some exp/log parts

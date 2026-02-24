@@ -894,9 +894,9 @@ retryLevel:
             newtonInitialized = true;
             newton_polish_mode = true;
             newton_polish_count = 0;
-          }
-          // Don't break - Newton to polish
-          else if(newton_polish_mode && newton_polish_count > 0) {
+            // Don't break - do Newton polish
+
+            } else if(newton_polish_mode && newton_polish_count > 0) {
             // Polish done - compare results and keep the better one
             // bb/fbb = Brent's last result, newton_x/fbp1 = Newton's polish result
             if(realCompareAbsLessThan(&fbp1, &fbb)) {
