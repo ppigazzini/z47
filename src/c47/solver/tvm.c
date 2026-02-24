@@ -66,6 +66,29 @@ static int tvmRangeError(int errorCode) {
   return errorCode;
 }
 
+static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t *realContext) {
+  real_t v, w;
+
+  decNumberExp(exp, x, realContext);
+
+  // Code from WP34S_ExpM1 to get accurate result for e^x-1
+  realSubtract(exp, const_1, &v, realContext);
+  if(realIsZero(&v)) { // |x| is very little
+    realCopy(x, expm1);
+  }
+  else if(realCompareEqual(&v, const__1)) {
+    realCopy(const__1, expm1);
+  }
+  else if(realCompareAbsLessThan(x, const_1on10)) {
+    realMultiply(&v, x, &w, realContext);
+    WP34S_Ln(exp, &v, realContext);
+    realDivide(&w, &v, expm1, realContext);
+  }
+  else {
+    realCopy(&v, expm1);
+  }
+}
+
 // Calculate effective interest rate per payment period
 // ip = (1 + ic)^(CPER/a / PPER/a) - 1 where ic = (I%/a / 100) / CPER/a
 static void calculateEffectiveRate(const real_t *iPercentPerYear,
@@ -144,8 +167,9 @@ int calculatePV(const real_t *fv,
   realChangeSign(&negNpper);
   WP34S_Ln1P(&ip, &temp2, &ctxtTvm);                  // temp2 = ln(1 + ip)
   realMultiply(&temp2, &negNpper, &temp2, &ctxtTvm);  // temp2 = -NPPER * ln(1 + ip)
-  realExp(&temp2, &powerTerm, &ctxtTvm);              // powerTerm = (1+ip)^(-NPPER)
-  WP34S_ExpM1(&temp2, &temp1, &ctxtTvm);              // temp1 = (1+ip)^(-NPPER) - 1
+  doubleExp(&temp2, &powerTerm, &temp1, &ctxtTvm);
+  //realExp(&temp2, &powerTerm, &ctxtTvm);              // powerTerm = (1+ip)^(-NPPER)
+  //WP34S_ExpM1(&temp2, &temp1, &ctxtTvm);              // temp1 = (1+ip)^(-NPPER) - 1
   realChangeSign(&temp1);                                // temp1 = 1 - (1+ip)^(-NPPER)
 
   // Annuity factor = [1 - (1+ip)^(-NPPER)] / ip
@@ -201,8 +225,9 @@ int calculateFV(const real_t *pv,
     real_t temp_ln;
     WP34S_Ln1P(&ip, &temp_ln, &ctxtTvm);                 // temp_ln = ln(1 + ip)
     realMultiply(&temp_ln, npper, &temp_ln, &ctxtTvm);   // temp_ln = npper * ln(1 + ip)
-    realExp(&temp_ln, &powerTerm, &ctxtTvm);             // powerTerm = (1+ip)^npper
-    WP34S_ExpM1(&temp_ln, &temp2, &ctxtTvm);             // temp2 = (1+ip)^npper - 1
+    doubleExp(&temp_ln, &powerTerm, &temp2, &ctxtTvm);
+    //realExp(&temp_ln, &powerTerm, &ctxtTvm);             // powerTerm = (1+ip)^npper
+    //WP34S_ExpM1(&temp_ln, &temp2, &ctxtTvm);             // temp2 = (1+ip)^npper - 1
   }
 
   // FV from PV = -PV * (1+ip)^NPPER
@@ -266,8 +291,9 @@ int calculatePMT(const real_t *pv,
     real_t temp_ln;
     WP34S_Ln1P(&ip, &temp_ln, &ctxtTvm);                    // temp_ln = ln(1 + ip)
     realMultiply(&temp_ln, &negNpper, &temp_ln, &ctxtTvm);  // temp_ln = -npper * ln(1 + ip)
-    realExp(&temp_ln, &powerTerm, &ctxtTvm);                // powerTerm = (1+ip)^(-npper)
-    WP34S_ExpM1(&temp_ln, &temp3, &ctxtTvm);                // temp3 = (1+ip)^(-npper) - 1
+    doubleExp(&temp_ln, &powerTerm, &temp3, &ctxtTvm);
+    //realExp(&temp_ln, &powerTerm, &ctxtTvm);                // powerTerm = (1+ip)^(-npper)
+    //WP34S_ExpM1(&temp_ln, &temp3, &ctxtTvm);                // temp3 = (1+ip)^(-npper) - 1
     realChangeSign(&temp3);                                    // temp3 = 1 - (1+ip)^(-npper)
   }
 
@@ -1099,8 +1125,9 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
     realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
 
-    realExp(&temp, &i1negN, &ctxtSolverTvmHi);  // For FV term
-    WP34S_ExpM1(&temp, &oneMinusI1negN, &ctxtSolverTvmHi);  // For PMT term
+    doubleExp(&temp, &i1negN, &oneMinusI1negN, &ctxtSolverTvmHi);
+    //realExp(&temp, &i1negN, &ctxtSolverTvmHi);  // For FV term
+    //WP34S_ExpM1(&temp, &oneMinusI1negN, &ctxtSolverTvmHi);  // For PMT term
     realChangeSign(&oneMinusI1negN);  // oneMinusI1negN = 1-(1+i)^(-n)
 
     // Save k for derivative
@@ -1137,8 +1164,9 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realChangeSign(&neg_nPer);
       WP34S_Ln1P(&i, &temp, &ctxtSolverTvmHi);
       realMultiply(&temp, &neg_nPer, &temp, &ctxtSolverTvmHi);
-      realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
-      WP34S_ExpM1(&temp, &one_minus, &ctxtSolverTvmHi);
+      doubleExp(&temp, &one_plus_i_neg_N, &one_minus, &ctxtSolverTvmHi);
+      //realExp(&temp, &one_plus_i_neg_N, &ctxtSolverTvmHi);
+      //WP34S_ExpM1(&temp, &one_minus, &ctxtSolverTvmHi);
       realChangeSign(&one_minus);
       realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, &ctxtTvm);
       // term1 = N * (1+i)^(-N-1) / i
