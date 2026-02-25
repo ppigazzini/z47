@@ -51,6 +51,7 @@ Loads test cases from tvm.txt and validates equation accuracy.
 # For 34-digit output precision with 51-digit internal arithmetic:
 # - Expected relative error: < 1e-32 (allows ~2 guard digits of error)
 # - Relative error of 1e-35 means 35+ correct digits
+# - Relative error floored at 1e-34 for exact results (one ULP of 34-digit input precision)
 # - Any error > 1e-32 indicates a precision problem in the calculation
 #
 # TEST FILE FORMAT:
