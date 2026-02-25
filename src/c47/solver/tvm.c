@@ -637,6 +637,7 @@ int calculateCPER(const real_t *pv,
 
 // Solve for the specified TVM variable, returns: 0 on success, error code on failure
 int solveTvmVariable51(uint16_t variable) {
+  ensureTvmContext();
   real_t fv, iA, nPer, pperA, cperA, pmt, pv, p;
   real_t result;
   int error = 0;
@@ -719,6 +720,7 @@ int solveTvmVariable51(uint16_t variable) {
   TO_QSPI static const char bugScreenNotForTvm[] = "In function fnTvmVar: this variable is not intended for TVM application!";
 
 void fnTvmVar(uint16_t variable) {
+    ensureTvmContext();
     #if defined (PC_BUILD) && defined (TVMDEBUG2)
       printf("fnTvmVar solver starting with: ");
       printRegisterToConsole(RESERVED_VARIABLE_NPPER, "N=", ", ");
@@ -988,6 +990,7 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
 
 
 void fnEffToI(uint16_t unusedButMandatoryParameter) {
+  ensureTvmContext();
   real_t iEFF, tmp, cperA, t2;
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
     // iA = {[(EFF / 100 + 1) ^ (1/cperA) ] - 1 } 100 * cperA
