@@ -37,7 +37,7 @@
   #define ctxtTvm          ctxtReal51
   #define ctxtTvmHi        ctxtReal51  // only some exp/log parts
   #define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
-  #define ctxtSolverTvmInv ctxtReal75  // only the inverting of i
+  #define ctxtSolverTvmInv ctxtReal51  // only the inverting of i
 #endif
 
 

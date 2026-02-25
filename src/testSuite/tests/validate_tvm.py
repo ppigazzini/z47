@@ -150,6 +150,11 @@ def validate_tvm(pv, fv, pmt, nper, i_percent, payment_per_year, compound_per_ye
     else:
         relative_error = abs(total / max_component)
     
+    # A relative error of exactly zero is meaningless for 34-digit inputs.
+    # Floor at 1e-34 (one ULP) to reflect the actual input precision limit.
+    if relative_error == 0:
+        relative_error = Decimal('1e-34')
+
     return total, max_component, relative_error
 
 def extract_endpmt_flag(line):
