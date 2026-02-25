@@ -14,7 +14,7 @@
 
 
 #define TVMDEBUG2 //only progress indicators
-//#undef  TVMDEBUG2
+#undef  TVMDEBUG2
 
 
 
@@ -722,7 +722,17 @@ int solveTvmVariable51(uint16_t variable) {
 void fnTvmVar(uint16_t variable) {
     ensureTvmContext();
     #if defined (PC_BUILD) && defined (TVMDEBUG2)
-      printf("fnTvmVar solver starting with: ");
+      printf("fnTvmVar solver starting with: variable = %d ", variable);
+      switch(variable){
+        case RESERVED_VARIABLE_FV      : printf("RESERVED_VARIABLE_FV     \n");break;
+        case RESERVED_VARIABLE_IPONA   : printf("RESERVED_VARIABLE_IPONA  \n");break;
+        case RESERVED_VARIABLE_NPPER   : printf("RESERVED_VARIABLE_NPPER  \n");break;
+        case RESERVED_VARIABLE_PPERONA : printf("RESERVED_VARIABLE_PPERONA\n");break;
+        case RESERVED_VARIABLE_CPERONA : printf("RESERVED_VARIABLE_CPERONA\n");break;
+        case RESERVED_VARIABLE_PMT     : printf("RESERVED_VARIABLE_PMT    \n");break;
+        case RESERVED_VARIABLE_PV      : printf("RESERVED_VARIABLE_PV     \n");break;
+        default:;
+      }
       printRegisterToConsole(RESERVED_VARIABLE_NPPER, "N=", ", ");
       printRegisterToConsole(RESERVED_VARIABLE_IPONA, "I%/a=", ", ");
       printRegisterToConsole(RESERVED_VARIABLE_PV, "PV=", ", ");
@@ -1028,10 +1038,23 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
+  // printf("tvmEquation start: variable = %d\n", variable);
+  // printRealToConsole(ioVal,"ioVal: "," derivative: ");
+  // if(derivative != NULL) printRealToConsole(ioVal,"ioVal: ","\n"); else printf("NULL\n");
   // printf("Context ctxtTvm         : %d digits\n", ctxtTvm.digits);
   // printf("Context ctxtTvmHi       : %d digits\n", ctxtTvmHi.digits);
   // printf("Context ctxtSolverTvmHi : %d digits\n", ctxtSolverTvmHi.digits);
   // printf("Context ctxtSolverTvmInv: %d digits\n", ctxtSolverTvmInv.digits);
+  // switch(variable){
+  //   case RESERVED_VARIABLE_FV      : printf("RESERVED_VARIABLE_FV     \n");break;
+  //   case RESERVED_VARIABLE_IPONA   : printf("RESERVED_VARIABLE_IPONA  \n");break;
+  //   case RESERVED_VARIABLE_NPPER   : printf("RESERVED_VARIABLE_NPPER  \n");break;
+  //   case RESERVED_VARIABLE_PPERONA : printf("RESERVED_VARIABLE_PPERONA\n");break;
+  //   case RESERVED_VARIABLE_CPERONA : printf("RESERVED_VARIABLE_CPERONA\n");break;
+  //   case RESERVED_VARIABLE_PMT     : printf("RESERVED_VARIABLE_PMT    \n");break;
+  //   case RESERVED_VARIABLE_PV      : printf("RESERVED_VARIABLE_PV     \n");break;
+  //   default:;
+  // }
 
   // Force recalculation of i when computing derivative
   if(derivative != NULL && variable == RESERVED_VARIABLE_IPONA) {
@@ -1119,8 +1142,20 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     // result returned via ioVal; X-register write commented out (may be needed on solver abort)
     //reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     //convertRealToReal34ResultRegister(&val, REGISTER_X);
+    #if defined(OPTION_TVM_NEWTON)
+    if(derivative != NULL) {
+      switch(variable) {
+        case RESERVED_VARIABLE_PMT:   realCopy(&nPer,   derivative); break;  // df/dPMT = N
+        case RESERVED_VARIABLE_PV:    realCopy(const_1,  derivative); break;  // df/dPV = 1
+        case RESERVED_VARIABLE_FV:    realCopy(const__1, derivative); break;  // df/dFV = -1
+        case RESERVED_VARIABLE_NPPER: realCopy(&pmt,    derivative); break;  // df/dN = PMT
+        default:                      realCopy(const_NaN,derivative); break;  // IPONA: NaN -> Brent fallback
+      }
+    }
+    #endif
     return;
   }
+
   {
     // Compute (1+i)^(-nPer) and 1-(1+i)^(-nPer) avoiding cancellation
     real_t temp, neg_nPer, i1negN, oneMinusI1negN;
