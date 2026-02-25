@@ -25,6 +25,16 @@ void fractionTolerence(real_t *tol)
 }
 
 
+// Helper to make the exponent -99999 when the input is 0
+// This is used where the exponent is used to determine convergence close to 0, hence 0 is seen as 10^-99999
+int32_t realGetExponentComp(const real_t *val) {
+  if(realIsZero(val)) {
+    return -999999;
+  }
+  return realGetExponent(val);
+}
+
+
 bool_t real34CompareAbsGreaterThan(const real34_t *number1, const real34_t *number2) {
   real34_t num1, num2;
 

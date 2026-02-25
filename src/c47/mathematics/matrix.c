@@ -5402,16 +5402,6 @@ static void printEigenvaluesComparison(const char *heading, const real_t *a, con
 
 
 
-// Helper to make the exponent -99999 when the input is 0
-// This is used where the exponent is used to determine convergence close to 0, hence 0 is seen as 10^-99999
-int32_t realGetExponentComp(const real_t *val) {
-  if(realIsZero(val)) {
-    return -999999;
-  }
-  return realGetExponent(val);
-}
-
-
 static void solveEigenBlock(real_t *a,real_t *eig,uint16_t size,int first_unconverged,int last_unconverged,bool_t is_real_symmetric,realContext_t *realContext) {
     int n = last_unconverged - first_unconverged + 1;
     if(n < 2 || n > 3) return;
