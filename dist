@@ -21,4 +21,14 @@ echo "📦 Building dist_dmcpr47..."
 make dist_dmcpr47
 
 echo "✅ All builds complete."
+echo "📦 Building dist_dmcp...package 1"
+make DMCP_PACKAGE=1 dist_dmcp
+
+echo "📦 Building dist_dmcp...package 2"
+make DMCP_PACKAGE=2 dist_dmcp
+
+echo "📦 Building dist_dmcp...package 3"
+make DMCP_PACKAGE=3 dist_dmcp
+
+echo "✅ All builds complete."
 

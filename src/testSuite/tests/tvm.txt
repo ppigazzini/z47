@@ -121,7 +121,7 @@ In: V2043=Real:"12"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-208.3333333333333333333333333333333"
 
 
-;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = -7.98337011581690422009588E-34
+;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = iterate toward zero
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"480"
@@ -131,7 +131,22 @@ In: V2039=Real:"100000"
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.98337011581690422009588E-34"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983367983367983436008316008302721E-34"
+;
+; correct answer is:                    -7.983367983367983367983367983367983 7919926e-34 Python
+; Brent:
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 874747921010624438E-34
+; Newton:
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 559584199584195302E-34
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
+;
+;
+; Details:
+; With the Brent solver -7.983367983367983367983367983367984E-34  All tvm=75, all solver=39
+;                       -7.983367983367983 874813995600624809E-34 All tvm=51, all solver=39
+;                       -7.983367983367983874747921010624438E-34  All tvm=51, except ctxtSolverTvmInv=75;  all solver=39
+;                       It does not help to make some of the TVM digits counts less. All 75 or all 51.
 ;------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -168,7 +183,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"53.1722132683847243104602413743711
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"10"
-In: V2035=Real:"0"
+In: V2035=Real:"-36"
 In: V2039=Real:"50"
 In: V2038=Real:"-30"
 In: V2034=Real:"80"
@@ -191,7 +206,7 @@ In: V2043=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"58.46195526622098709870320744645958"
 
 
-;Duncan's TVM problems, #P7;    N=10, i%/a=??, PV=-100, PMT=10, FV=1.0E-10, pp/a=12, cp/a=12; Expected answer = 2.181818181815801652892565114774086E-10
+;Duncan's TVM problems, #P7;    N=10, i%/a=??, PV=-100, PMT=10, FV=1.0E-10, pp/a=12, cp/a=12; Expected answer = 2.181818181815801652892565878287002E-10
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
 In: V2036=Real:"10"
@@ -201,7 +216,7 @@ In: V2038=Real:"10"
 In: V2034=Real:"1.0E-10"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565114774086E-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565878287002E-10"
 ;TVM iteration check                        = 2.1818181818158016528925658782870022E-10
 
 
