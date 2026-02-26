@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-TO_QSPI const char typeName[6][10 + 1][24 /* 21 characters + 1 sentinel + 2 padding */] = {
+TO_QSPI const char typeName[7][10 + 1][24 /* 21 characters + 1 sentinel + 2 padding */] = {
   {
     "???",
     "long integer",
@@ -104,6 +104,19 @@ TO_QSPI const char typeName[6][10 + 1][24 /* 21 characters + 1 sentinel + 2 padd
     STD_LEFT_SQUARE_BRACKET "a" STD_SUB_0 "(x+a" STD_SUB_1 ")" STD_SUP_2 "+a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET STD_SUP_MINUS STD_SUP_1,
     "a" STD_SUB_0 "e^" STD_LEFT_SQUARE_BRACKET  "(x-a" STD_SUB_1 ")" STD_SUP_2 "/a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET,
     "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x",
+    "???        "
+  },
+  {
+    "PGM_STOPPED    ",
+    "PGM_RUNNING    ",
+    "PGM_WAITING    ",
+    "PGM_PAUSED     ",
+    "PGM_KEY..PAUSED",
+    "PGM_RESUMING   ",
+    "PGM_SINGLE_STEP",
+    "PGM_UNDEFINED  ",
+    "???        ",
+    "???        ",
     "???        "
   },
 };
@@ -350,6 +363,18 @@ r |= ((jj & 0xF0F0) != 0) << 2;
 r |= ((jj & 0xCCCC) != 0) << 1;
 return r;
 }
+
+
+
+/********************************************//**
+ * \param[in] am uint16_t curvefitting mode
+ * \return char*          Name of the running mode
+ ***********************************************/
+const char * getRunningModeName(uint16_t mode) {
+    return typeName[6][mode];
+}
+
+
 
 /********************************************//**
  * \brief Returns the single name of a curvefitting mode, or ??? if multiple names are defined in bits
