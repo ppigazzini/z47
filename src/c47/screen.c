@@ -959,8 +959,7 @@ void execTimerApp(uint16_t timerType) {
 
         if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
           aimBuffer[0] = 0;
-          ++currentLocalStepNumber;
-          currentStep = findNextStep(currentStep);
+          fnSkip(1);
           refreshRegisterLine(REGISTER_T);
           if(JM_auto_longpress_enabled == ITM_NOP) {
             FN_timeouts_in_progress = false;
