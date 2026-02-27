@@ -959,13 +959,22 @@ void execTimerApp(uint16_t timerType) {
 
         if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
           aimBuffer[0] = 0;
-          ++currentLocalStepNumber;
-          currentStep = findNextStep(currentStep);
+          fnSkip(0);
           refreshRegisterLine(REGISTER_T);
+          if(JM_auto_longpress_enabled == ITM_NOP) {
+            FN_timeouts_in_progress = false;
+            fnTimerStop(TO_FN_LONG);
+            return; //do not restart timer
+          }
         }
         else if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && (isArrowDown(currentKeyCode))) {
           programRunStop = PGM_STOPPED;
           refreshRegisterLine(REGISTER_T);
+          if(JM_auto_longpress_enabled == ITM_NOP) {
+            FN_timeouts_in_progress = false;
+            fnTimerStop(TO_FN_LONG);
+            return; //do not restart timer
+          }
         }
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
