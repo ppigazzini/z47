@@ -484,9 +484,9 @@
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 #define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
-#define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
-#define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
-#define isShift(code)       ( isR47FAM && code == 10 ) || ( isR47FAM && code == 11 ) || (!isR47FAM && code == 27 ) // All shifts
+#define isArrowUp(code)   (( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 )) // UP
+#define isArrowDown(code) (( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 )) // DN
+#define isShift(code)     (( isR47FAM && code == 10 ) || ( isR47FAM && code == 11 ) || (!isR47FAM && code == 27 )) // All shifts
 
 //fnKeysManagement
 #define JM_ASSIGN        28
