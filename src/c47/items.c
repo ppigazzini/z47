@@ -354,6 +354,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
 #endif //TESTSUITE_BUILD
 
+    refreshStatusBar();
 
     //**RunFunction
     if(!itemNotAvail(func)) {
