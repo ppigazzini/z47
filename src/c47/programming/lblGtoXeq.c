@@ -292,6 +292,8 @@ void fnRunProgram(uint16_t unusedButMandatoryParameter) {
 
 void fnStopProgram(uint16_t unusedButMandatoryParameter) {
   programRunStop = PGM_WAITING;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//  refreshStatusBar();
 }
 
 
