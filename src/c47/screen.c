@@ -790,6 +790,12 @@ void execTimerApp(uint16_t timerType) {
 #endif // LONGPRESS_CFG
 
   void Shft_handler() {
+    if(isShift(currentKeyCode) && temporaryInformation != TI_NO_INFO && (shiftG || shiftF)) {
+      temporaryInformation = TI_NO_INFO;
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
+      refreshScreen(1311);
+    }
+
     if(Shft_LongPress_f_g) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         Shft_LongPress_f_g = false;
@@ -997,7 +1003,7 @@ void execTimerApp(uint16_t timerType) {
           } else
           if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-            refreshScreen(131);
+            refreshScreen(1312);
           }
           return;
         }
