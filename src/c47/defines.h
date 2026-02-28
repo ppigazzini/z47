@@ -486,6 +486,7 @@
 
 #define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
 #define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
+#define isShift(code)       ( isR47FAM && code == 10 ) || ( isR47FAM && code == 11 ) || (!isR47FAM && code == 27 ) // All shifts
 
 //fnKeysManagement
 #define JM_ASSIGN        28
