@@ -789,6 +789,15 @@ void execTimerApp(uint16_t timerType) {
   }
 #endif // LONGPRESS_CFG
 
+
+  static void clearShiftTemporaryIndications(bool_t condition) {
+    if(isShift(currentKeyCode) && (temporaryInformation != TI_NO_INFO) && condition) {
+      temporaryInformation = TI_NO_INFO;
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
+      refreshScreen(1311);
+    }
+  }
+
   void Shft_handler() {
     if(Shft_LongPress_f_g) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
@@ -819,21 +828,24 @@ void execTimerApp(uint16_t timerType) {
               closeNim();
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             }
+            //USER mode
             if(getSystemFlag(FLAG_USER) && (calcMode != CM_AIM) && (calcMode != CM_EIM) && !getSystemFlag(FLAG_ALPHA) && (item > 0)) {
-
               if((calcMode == CM_NIM  || (calcMode == CM_PEM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)))
                   && (item == ITM_HASH_JM || item == ITM_toINT )) {
-                  processKeyAction(item);
+                clearShiftTemporaryIndications(shiftG || shiftF);
+                processKeyAction(item);
               }
               else if(calcMode != CM_PEM && indexOfItems[item].func == addItemToBuffer) {
+                clearShiftTemporaryIndications(shiftG || shiftF);
                 addItemToNimBuffer(item);
               }
               else {
+                clearShiftTemporaryIndications((item != ITM_SNAP) && (shiftG || shiftF));
                 _executeItem(item,keyCode);
               }
-
             }
-            else {
+            else { //non-USER mode
+              clearShiftTemporaryIndications(shiftG || shiftF);
               char *funcParam = "";
               keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + 2;
               funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
@@ -899,7 +911,8 @@ void execTimerApp(uint16_t timerType) {
         }
       }
     }
-    else if(Shft_timeouts) {
+    else if(Shft_timeouts) { //fg longpress
+      clearShiftTemporaryIndications(shiftG);                     //clear TI when arriving here, when longpress is timed out, and clear while on g
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         fnTimerStop(TO_3S_CTFF);
         if(!shiftF && !shiftG) {
@@ -997,7 +1010,7 @@ void execTimerApp(uint16_t timerType) {
           } else
           if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-            refreshScreen(131);
+            refreshScreen(1312);
           }
           return;
         }
