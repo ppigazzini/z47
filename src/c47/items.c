@@ -352,9 +352,12 @@ bool_t isFunctionOldParam16(uint16_t func) {
       lastI = 0xFFFF;
       lastJ = 0xFFFF;
     }
-#endif //TESTSUITE_BUILD
+
 
     refreshStatusBar();
+
+#endif //TESTSUITE_BUILD
+
 
     //**RunFunction
     if(!itemNotAvail(func)) {
