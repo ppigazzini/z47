@@ -139,62 +139,62 @@
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
-    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
       //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
       //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
     #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use analytical formulas where possible
-    #undef OPTION_TVM_NEWTON               //  1864 bytes // Use additional newton raphson in the brent solver for tvm where possible
+    #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
+    #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
   #endif
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
-      //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-      //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+      //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without X.FN BESSEL
+      //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
       //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
       //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-      #define OPTION_TVM_FORMULAS          //  2280 bytes // Use analytical formulas where possible
-      #define OPTION_TVM_NEWTON            //  1864 bytes // Use additional newton raphson in the brent solver for tvm where possible
+      #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
+      #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
   #endif
 
 
   #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
     #define SAVE_SPACE_DM42_6              //  1352 bytes // Without ELEC functions
     #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
-    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
       //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
       //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
     #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use analytical formulas where possible
-    #define OPTION_TVM_NEWTON              //  1864 bytes // Use additional newton raphson in the brent solver for tvm where possible
+    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
-    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
     #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define SAVE_SPACE_DM42_16             //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
       //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #define OPTION_TVM_FORMULAS            //  2280 bytes // Use analytical formulas where possible
-    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use additional newton raphson in the brent solver for tvm where possible
+    #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
   #endif
 
 
