@@ -13,23 +13,17 @@ Func: fnJulianToDateTime
 ;=======================================
 ; jtodt(Long Integer) --> Date
 ;=======================================
-In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2299161" RY=Real:"0.0"
-Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2299161" RX=Time:"12:00:00"
-;RY=Date:"1582.1015"
-;Testsuite does not work for input one register and output 2 registers. Only X checked.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"2299161" RY=Real:"0.0"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2299161" RX=Time:"12:00:00" RY=Date:"1582.1015"
 
-In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2299160" RY=Real:"0.0"
-Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2299160" RX=Time:"12:00:00"
-;RY=Date:"1582.1004"
-;Testsuite does not work for input one register and output 2 registers. Only X checked.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"2299160" RY=Real:"0.0"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2299160" RX=Time:"12:00:00" RY=Date:"1582.1004"
 
 ;=======================================
 ; jtodt(Real) --> Date
 ;=======================================
-In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2299161.0"
-Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2299161.0" RX=Time:"12:00:00"
-;RY=Date:"1582.1015"
-;Testsuite does not work for input one register and output 2 registers. Only X checked.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"2299161.0"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2299161.0" RX=Time:"12:00:00" RY=Date:"1582.1015"
 
 
 
