@@ -6,6 +6,10 @@
 
   #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+  #if defined(LINUX)
+    #define _XOPEN_SOURCE                800 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
+  #endif // LINUX
+
   #include <assert.h>
   #include <ctype.h>
   #include <errno.h>
@@ -121,7 +125,7 @@
     #endif //TESTSUITE_BUILD
   #endif // PC_BUILD || DMCP_BUILD || TESTSUITE_BUILD
 
-  #if defined(GENERATE_CATALOGS)
+  #if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
     #include <gmp.h>
 
     #include <gtk/gtk.h>
@@ -192,7 +196,7 @@
   #endif // GENERATE_TESTPGMS
 
   // Variables for the simulator
-  #if !defined(GENERATE_CATALOGS)
+  #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
     extern uint16_t lastI;
     extern uint16_t lastJ;
     extern int16_t lastFunc;
@@ -291,6 +295,8 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
+  extern bool_t                 lastshiftF;
+  extern bool_t                 lastshiftG;
   extern bool_t                 showContent;
   extern bool_t                 rbr1stDigit;
   extern bool_t                 updateDisplayValueX;
@@ -468,6 +474,11 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern uint8_t                multiEdLines;
+  extern uint8_t                yMultiLineEdOffset;
+  extern uint8_t                xMultiLineEdOffset;
+  extern uint16_t               current_cursor_x;
+  extern uint16_t               current_cursor_y;
   extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
@@ -598,7 +609,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)

@@ -129,6 +129,8 @@ void resetShiftState(void) {
 
     refreshModeGui();
   }
+  lastshiftF = shiftF;
+  lastshiftG = shiftG;
 }
 
 
@@ -420,9 +422,11 @@ void resetKeytimers(void) {
 
     if(calcMode == CM_NORMAL && *result == ITM_UP1) {
       longpressDelayedkey1 = ITM_NOP;
+      //longpressDelayedkey2 & 3 disabled in LongpressKey_handler()
     }
     else if(calcMode == CM_NORMAL && *result == ITM_DOWN1) {
       longpressDelayedkey1 = ITM_NOP;
+      //longpressDelayedkey2 & 3 disabled in LongpressKey_handler()
     }
 
     else if(calcMode == CM_ASSIGN && *result == ITM_EXIT1) {

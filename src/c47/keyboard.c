@@ -470,9 +470,6 @@ static void executeFunction(const char *data, int16_t item_);
 
 
 
-bool_t lastshiftF = false;
-bool_t lastshiftG = false;
-
 #define lowercaseselected  (bool_t)((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)) // //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
   void processAimInput(int16_t item) {
@@ -1106,7 +1103,6 @@ endReturnTrue:
             //printf("tam.function=%d indexOfItems[tam.function].cat=%s  item=%d indexOfItems[item].cat=%s (indexOfItems[item].param & 0xff)=%d \n",tam.function, indexOfItems[tam.function].itemCatalogName, item, indexOfItems[item].itemCatalogName , (indexOfItems[item].param & 0xff));
             if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && (item != ITM_INDIRECTION) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
-              tam.alpha = true;
               addStepInProgram(tamOperation());
               leaveTamModeIfEnabled();
             }
@@ -1271,7 +1267,7 @@ endReturnTrue:
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
@@ -1288,12 +1284,9 @@ endReturnTrue:
 
             if(lastErrorCode == 0) {
               if(temporaryInformation == TI_VIEW_REGISTER) {
-                temporaryInformation = TI_NO_INFO;
                 updateMatrixHeightCache();
               }
-              else {
-                temporaryInformation = TI_NO_INFO;
-              }
+              temporaryInformation = TI_NO_INFO;
 
               if(programRunStop == PGM_WAITING) {
                 programRunStop = PGM_STOPPED;
@@ -1328,7 +1321,7 @@ endReturnTrue:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -1344,7 +1337,7 @@ endReturnTrue:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -1427,6 +1420,76 @@ endReturnTrue:
   #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
+  static void commonShiftProcessing(uint16_t shiftkey) {
+    switch(shiftkey) {
+      case KEY_fg:
+        Shft_LongPress_f_g = false;
+        Shft_timeouts = true;
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
+        if(getSystemFlag(FLAG_SHFT_4s)) {
+          fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
+        }
+        break;
+      case ITM_SHIFTf:
+      case ITM_SHIFTg:
+        Shft_LongPress_f_g = true;
+        if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+          fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
+        }
+        break;
+      default:;
+    }
+
+    if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
+
+    if(temporaryInformation == TI_VIEW_REGISTER) {
+      temporaryInformation = TI_NO_INFO;
+      updateMatrixHeightCache();
+    }
+//          if(temporaryInformation != TI_NO_INFO) {
+  //          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    //      }
+    
+    if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
+    if(programRunStop == PGM_WAITING) {
+      programRunStop = PGM_STOPPED;
+    }
+    lastErrorCode = 0;
+
+    switch(shiftkey) {
+      case KEY_fg:
+        fg_processing_jm();
+        break;
+      case ITM_SHIFTf:
+        shiftF = !shiftF;
+        shiftG = false;
+        break;
+      case ITM_SHIFTg:
+        shiftF = false;
+        shiftG = !shiftG;
+        break;
+      default:;
+    }
+    lastshiftF = shiftF;
+    lastshiftG = shiftG;
+
+    if(temporaryInformation != TI_NO_INFO && !shiftG && !shiftF) {
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_SHIFT_STATUS | SCRUPD_MANUAL_STACK);
+      temporaryInformation = TI_NO_INFO;
+      refreshScreen(1201);
+    }
+
+    if(SHOWMODE || currentMenu() == -MNU_SHOW) {
+      closeShowMenu();
+    }
+
+    showShiftState();
+    refreshModeGui();
+    screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
+  }
+
+
+
   static int16_t determineItem(const char *data) {
     delayCloseNim = false;
     int16_t result;
@@ -1478,7 +1541,8 @@ endReturnTrue:
                     #endif //PC_BUILD
 
 
-    if(SHOWMODE && (key->primary == KEY_fg || key->primary == ITM_SHIFTf)) { //before going into shift handling, send EXIT over to the key release
+    //before going into shift handling, send EXIT over to the key release
+    if(SHOWMODE && (key->primary == KEY_fg || key->primary == ITM_SHIFTf)) {
       shiftF = true;
       shiftG = false;
       lastItem = key->primary;
@@ -1487,128 +1551,32 @@ endReturnTrue:
       return ITM_NOP;
     }
 
-
-
-    // Shift f pressed and JM REMOVED shift g not active
-    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
-      Shft_LongPress_f_g = true;
-      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
+    //handle the shift button processing
+    if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {
+      if(((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf))) {
+        commonShiftProcessing(ITM_SHIFTf);
+        return ITM_NOP;
+      } else
+      if(((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg))) {
+        commonShiftProcessing(ITM_SHIFTg);
+        return ITM_NOP;
+      } else
+      if(((key->primary == KEY_fg     || ShiftOverride == KEY_fg))) {
+        commonShiftProcessing(KEY_fg);
+        return ITM_NOP;
       }
-      if(temporaryInformation == TI_VIEW_REGISTER) {
-        temporaryInformation = TI_NO_INFO;
-        updateMatrixHeightCache();
-      }
-      else {
-        //reconsider
-        temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
-      }
-      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
-      if(programRunStop == PGM_WAITING) {
-        programRunStop = PGM_STOPPED;
-      }
-      lastErrorCode = 0;
-
-      shiftF = !shiftF;
-      shiftG = false;
-      lastshiftF = shiftF;
-      lastshiftG = shiftG;
-      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
-        closeShowMenu();
-      }
-      showShiftState();
-      refreshModeGui();
-
-      screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
-      return ITM_NOP;
-    }
-    // Shift g pressed and JM REMOVED shift f not active
-    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
-      Shft_LongPress_f_g = true;
-      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
-      }
-      if(temporaryInformation == TI_VIEW_REGISTER) {
-        temporaryInformation = TI_NO_INFO;
-        updateMatrixHeightCache();
-      }
-      else {
-        //reconsider
-        temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
-      }
-      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
-      if(programRunStop == PGM_WAITING) {
-        programRunStop = PGM_STOPPED;
-      }
-      lastErrorCode = 0;
-
-      shiftF = false;
-      shiftG = !shiftG;
-      lastshiftF = shiftF;
-      lastshiftG = shiftG;
-      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
-        closeShowMenu();
-      }
-      showShiftState();
-      refreshModeGui();
-
-      screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
-      return ITM_NOP;
     }
 
-    // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
-    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
-      Shft_LongPress_f_g = false;
-      Shft_timeouts = true;
-      fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
-      if(getSystemFlag(FLAG_SHFT_4s)) {
-        fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
-      }
-      if(temporaryInformation == TI_VIEW_REGISTER || SHOWMODE) shiftKeyClearsError = true; //JM
-      if(temporaryInformation != TI_NO_INFO) {
-        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        if(temporaryInformation == TI_VIEW_REGISTER) {
-          temporaryInformation = TI_NO_INFO;
-          updateMatrixHeightCache();
-        }
-        else {
-          //reconsider
-          temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
-        }
-      }
-
+    //handle the shifts in graph mode
+    else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) { 
       if(lastErrorCode != 0) shiftKeyClearsError = true;
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      fg_processing_jm();
-
-      lastshiftF = shiftF;
-      lastshiftG = shiftG;
-      if(SHOWMODE || currentMenu() == -MNU_SHOW) {
-        closeShowMenu();
-      }
-      showShiftState();
-      refreshModeGui();
-
-      screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       return ITM_NOP;
     }
 
-    else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) {   //JM shifts
-      temporaryInformation = TI_NO_INFO;     //reconsider: Temporary commented out. This clears SHOW (and other TI's) when fg is pressed. That means SNAP and shiftEXP are not possible with SHOW
-
-      if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
-      if(programRunStop == PGM_WAITING) {
-        programRunStop = PGM_STOPPED;
-      }
-      lastErrorCode = 0;                                                                                                      //JM shifts
-      return ITM_NOP;
-    }
 
                     #if defined(PC_BUILD)
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary3: %d:",key->primary); jm_show_comment(tmp);
@@ -1739,161 +1707,6 @@ endReturnTrue:
   }
 
 
-  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
-    typedef struct {
-      uint8_t itm0;
-      uint8_t itm1;
-      uint8_t itm2;
-      uint8_t itm2a;
-      uint8_t itm3;
-      uint8_t itm4;
-    } circ_t;
-
-    uint8_t circPtr0 =  0;
-    uint8_t circPtr1 = 0;
-    uint8_t circPtr2 = 0;
-    uint8_t circPtr2a = 0;
-    uint8_t circPtr3 = 0;
-    uint8_t circPtr4 = 0;
-    TO_QSPI const circ_t circ[] = {               //Circular special command buffer - key numbers, arranged in columns for each command
-                                                  //       R47   R47
-                  {7 , 7 , 2 , 23, 2 , 2 },   //0    H  H  C  R  C  C
-                  {18, 20, 23, 23, 23, 23},   //1    P  P  4  4  4  4
-                  {30, 30, 18, 18, 18, 18},   //2    3  3  7  7  7  7
-                  {24, 24, 12, 12, 9 , 20},   //3    5  5  EN EN J  R
-                  {12, 12, 29, 29, 13, 9 },   //4    EN EN 2  2  M  J
-                  {28, 28, 33, 33, 32, 32},   //5    1  1  0  0  EX EX
-                  {20, 20, 29, 29, 12, 12},   //6    9  9  2  2  EN EN
-                  {18, 18, 30, 30, 32, 32},   //7    7  7  3  3  EX EX
-                  {29, 29, 32, 32, 0 , 0 },   //8    2  2  EX EX
-                  {32, 32, 12, 12, 0 , 0 },   //9    EX EX EN EN
-                  {12, 12, 32, 32, 0 , 0 },   //10   EN EN EX EX
-                  {32, 32, 0 , 0 , 0 , 0 },   //11   EX EX
-                  {0 , 0 , 0 , 0 , 0 , 0 },   //end
-                };
-
-    #if defined(DMCP_BUILD)
-    static void waitForTimer(void) {
-      if(!skippedStackLines) return;
-      int32_t i = 27;
-      while(i > 0) {
-        if(fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING || !skippedStackLines) break;
-        sys_delay(100);
-        i--;
-      }
-    }
-    #endif //DMCP_BUILD
-
-    bool_t checkNumber(uint8_t keyCode) {
-      if(calcModel == USER_C47) {
-        if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) {
-          circPtr0 = 0;
-        }
-        if(circ[circPtr0].itm0==keyCode) {
-          if(circ[++circPtr0].itm0==0) {
-            #if defined(DMCP_BUILD)
-              waitForTimer();
-              clearKeyBuffer();
-            #endif //DMCP_BUILD
-            fnSetHP35(0);
-            return true;
-          }
-        }
-        else {
-          circPtr0 = 0;
-        }
-        if((circPtr2 == 0 && circ[0].itm2==keyCode) || circPtr2 > nbrOfElements(circ)) {
-          circPtr2 = 0;
-        }
-        if(circ[circPtr2].itm2==keyCode) {
-          if(circ[++circPtr2].itm2==0) {
-            #if defined(DMCP_BUILD)
-              waitForTimer();
-              clearKeyBuffer();
-            #endif //DMCP_BUILD
-            fnSetC47(0);
-            return true;
-          }
-        }
-        else {
-          circPtr2 = 0;
-        }
-      }
-      if(isR47FAM) {
-        if((circPtr1 == 0 && circ[0].itm1==keyCode) || circPtr1 > nbrOfElements(circ)) {
-          circPtr1 = 0;
-        }
-        if(circ[circPtr1].itm1==keyCode) {
-          if(circ[++circPtr1].itm1==0) {
-            #if defined(DMCP_BUILD)
-              waitForTimer();
-              clearKeyBuffer();
-            #endif //DMCP_BUILD
-            fnSetHP35(0);
-            return true;
-          }
-        }
-        else {
-          circPtr1 = 0;
-        }
-        if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) {
-          circPtr2a = 0;
-        }
-        if(circ[circPtr2a].itm2a==keyCode) {
-          if(circ[++circPtr2a].itm2a==0) {
-            #if defined(DMCP_BUILD)
-              waitForTimer();
-              clearKeyBuffer();
-            #endif //DMCP_BUILD
-            fnSetC47(0);
-            return true;
-          }
-        }
-        else {
-          circPtr2a = 0;
-        }
-      }
-
-      if((circPtr3 == 0 && circ[0].itm3==keyCode) || circPtr3 > nbrOfElements(circ)) {
-        circPtr3 = 0;
-      }
-      if(circ[circPtr3].itm3==keyCode) {
-        if(circ[++circPtr3].itm3==0) {
-          #if defined(DMCP_BUILD)
-            waitForTimer();
-            clearKeyBuffer();
-          #endif //DMCP_BUILD
-          fnSetJM(0);
-          return true;
-        }
-      }
-      else {
-        circPtr3 = 0;
-      }
-      if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) {
-        circPtr4 = 0;
-      }
-      if(circ[circPtr4].itm4==keyCode) {
-        if(circ[++circPtr4].itm4==0) {
-          #if defined(DMCP_BUILD)
-            waitForTimer();
-            clearKeyBuffer();
-          #endif //DMCP_BUILD
-          fnSetRJ(0);
-          return true;
-        }
-      }
-      else {
-        circPtr4 = 0;
-      }
-      //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
-      return false;
-      }
-
-#endif //SAVE_SPACE_DM42_24_PROFILES
-
-
-
 
   #if defined(PC_BUILD)
     void btnClicked(GtkWidget *notUsed, gpointer data) {
@@ -1949,11 +1762,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
       currentKeyCode = keyCode;
 
-      #if !defined(SAVE_SPACE_DM42_24_PROFILES)
-        if(checkNumber((uint8_t)keyCode)) {
-          item = ITM_CLRMOD;
-        }
-      #endif //SAVE_SPACE_DM42_24_PROFILES
       asnKey[0] = ((uint8_t *)data)[0];
       asnKey[1] = ((uint8_t *)data)[1];
       asnKey[2] = 0;
@@ -2731,9 +2539,7 @@ RELEASE_END:
             // To TEST and investigate 2023-10-02
             // User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
 
-            printf("**[DL]** tamProcessInput(ITM_ENTER) currentMenu %d\n",currentMenu());fflush(stdout);
             tamProcessInput(ITM_ENTER);
-            printf("**[DL]**                            currentMenu %d\n",currentMenu());fflush(stdout);
             keyActionProcessed = true;
           }
           else if(calcMode == CM_NIM) {                             //JMvv
@@ -3285,7 +3091,7 @@ RELEASE_END:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", label);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
@@ -3300,7 +3106,7 @@ RELEASE_END:
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", var);
-                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                          moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }

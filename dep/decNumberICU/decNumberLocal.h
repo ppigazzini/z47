@@ -134,7 +134,7 @@
       return _BIN2CHAR + 4 * n;
   }
 #else
-  static uint8_t table_replacement_result[5];
+  static uint8_t table_replacement_result[16];
   static __attribute__ ((unused)) const uint8_t *DPD2BCD8(int n) {
       uint8_t *const res = table_replacement_result;
 

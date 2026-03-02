@@ -52,6 +52,8 @@ bool_t                 printerIconEnabled;
 bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;
+bool_t                 lastshiftF = false;
+bool_t                 lastshiftG = false;
 bool_t                 showContent;
 bool_t                 rbr1stDigit;
 bool_t                 updateDisplayValueX;
@@ -220,6 +222,11 @@ uint8_t               DM_Cycling = 0;
 int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
+uint8_t                multiEdLines = 0;
+uint8_t                yMultiLineEdOffset = 0;
+uint8_t                xMultiLineEdOffset = 0;
+uint16_t               current_cursor_x = 0;
+uint16_t               current_cursor_y = 0;
 int16_t                alphaCursor;                  //DL
 int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR

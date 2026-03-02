@@ -839,7 +839,7 @@ overRange:
            exponent < -(int32_t)displayFormatDigits ||                                           //allow zero digits .00...1 to track n
          #else
            ((displayFormat == DF_SF) && (exponent < (getSystemFlag(FLAG_ENGOVR) ? -2 : -3))) ||  //in SIG & ENGOVR,  allow 2 zero digits .001 then jump, in SIG & !ENGOVR, allow 3 zero digits .0001 then jump
-           ((displayFormat != DF_SF) && (exponent < -(int32_t)(checkHP ? 10+1 : displayHasNDigits))) ||
+           ((displayFormat != DF_SF) && (exponent < -(int32_t)(displayFormatDigits))) ||
          #endif //SIG_VARIABLE_JUMP
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
@@ -1863,7 +1863,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
     displayString[j+1] = 0;
   }
 
-  if( stringWidth(displayString, &numericFont, false, true) + 
+  if( stringWidth(displayString, &numericFont, false, true) +
       stringWidth(STD_SUB_0 STD_SUB_0, &numericFont, false, true) +
       stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
       <= width) {
@@ -1871,7 +1871,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
     addBaseNumber(displayString, dispBase);
   }
   else
-  if( stringWidth(displayString, &standardFont, false, true) + 
+  if( stringWidth(displayString, &standardFont, false, true) +
       stringWidth(STD_SUB_0 STD_SUB_0, &standardFont, false, true) +
       stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
       <= width) {
@@ -1881,7 +1881,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
   else {
     fontForShortInteger = &tinyFont;
     #define lastTinyCharIfTooLong 256
-    if( stringWidth(displayString, &tinyFont, true, true) + 
+    if( stringWidth(displayString, &tinyFont, true, true) +
         stringWidth(STD_SUB_0 STD_SUB_0, &tinyFont, true, true) //+
         //stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &tinyFont, false, true)
         >= width * 4) {
@@ -3078,7 +3078,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       // Add the character(s)
       tmpString[*dest] = errorMessage[*source];
       int bytesToAdd = 1;
-      
+
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
         bytesToAdd = 2;
@@ -3088,19 +3088,19 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       }
       tmpString[++*dest] = 0;
       (*source)++;
-      
+
       // Check width validity
       int16_t currentWidth = stringWidth(tmpString + dCounter, fontToUse, true, true);
       int16_t allowedWidth = maxWidth - (dCounter == 0 ? 0 : Width_0);
-      
+
       if(currentWidth >= allowedWidth) {
         // Width exceeded - remove added character(s) and break
         *dest -= bytesToAdd;
         *source -= bytesToAdd;
         tmpString[*dest] = 0;
         break;
-      }      
-      // Width is valid    
+      }
+      // Width is valid
 
       #if defined(MONITOR_SHOW)
         printf("dCounter = %d, Width_0 =%d, %s : Width=%d <> %d\n", dCounter, Width_0, tmpString + dCounter, currentWidth, allowedWidth);
@@ -3168,14 +3168,14 @@ void realToSci(real_t* num, char* dispString) {
    if(realGetExponent(num) > 672 || num->digits > 672 ) { //tighten up the spacing if it gets to a longer string
      sep = STD_SPACE_FIGURE;
    }
-    
+
     exp = realGetExponent(num);
     realToString(num, dispString + 1500);
     if(realIsZero(num)) {
       sprintf(dispString, "0%s0", radix);
       return;
     }
-    
+
     neg = ((dispString + 1500)[0] == '-');
     p = (dispString + 1500) + neg;
 
@@ -3198,8 +3198,8 @@ void realToSci(real_t* num, char* dispString) {
     while(*p && *p != 'E' && i < 1000) {        // add seps
       if(*p >= '0' && *p <= '9') {
         if(d > 0 && d % sepGroup == 0 && !GROUPRIGHT_DISABLED) {
-          dispString[mi++] = sep[0]; 
-          if(sep[0] & 0x80 && sep[1] && sep[1] != '\1') dispString[mi++] = sep[1]; 
+          dispString[mi++] = sep[0];
+          if(sep[0] & 0x80 && sep[1] && sep[1] != '\1') dispString[mi++] = sep[1];
         }
         dispString[mi++] = *p;
         i++;
@@ -3207,17 +3207,17 @@ void realToSci(real_t* num, char* dispString) {
       }
       p++;
     }
-    
+
     // Remove trailing zeros and separators from the right, until first non-zero or decimal is reached
-    while( mi > 1 && 
-          ((dispString[mi-1] == '0') || 
-           (dispString[mi-2] == sep[0] && sep[1] != '\0' && sep[1] != '\1' && dispString[mi-1] == sep[1]) || 
+    while( mi > 1 &&
+          ((dispString[mi-1] == '0') ||
+           (dispString[mi-2] == sep[0] && sep[1] != '\0' && sep[1] != '\1' && dispString[mi-1] == sep[1]) ||
            (dispString[mi-1] == sep[0] && sep[1] != '\0' && sep[1] != '\1' && dispString[mi  ] == sep[1])
           )
          ) mi--;
     if(mi > 0 && (dispString[mi-1] == radix[0] && (radix[1] == '\0' || radix[1] == '\1' || (radix[1] != '\0' && radix[1] != '\1' && dispString[mi-1] == radix[1])) )) mi--;
     if(mi > 1 && (dispString[mi-2] == radix[0] && (                                        (radix[1] != '\0' && radix[1] != '\1' && dispString[mi-1] == radix[1])) )) mi -= 2;
-    
+
     dispString[mi] = '\0';
     char tt[32];
     exponentToDisplayString(exp, tt, NULL, false);
@@ -3367,7 +3367,7 @@ void fnC47Show(uint16_t fnShow_param) {
         case 93:
         case 96:
         case REGISTER_X:
-        case REGISTER_T: 
+        case REGISTER_T:
           selection = dtXFN;
           break;
         default:;
@@ -3465,7 +3465,7 @@ goBreak1:
                   tmpString[+ (numberOfLines-1)*SHOWLineSize + ii] = 0;
                   ii = stringPrevNumberGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);
                 }
-            }    
+            }
 
             xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii, STD_ELLIPSIS, 2);        // * Ellipsis needes 6perEM space to line up with two digitss
             ii += 2;                                                                        // *
@@ -3895,7 +3895,7 @@ goBreak1:
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, showRegis);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "cannot SHOW %s%s", tmpString + 2100, getRegisterDataTypeName(showRegis, true, false));
-          moreInfoOnError("In function fnShow:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function fnC47Show:", errorMessage, NULL, NULL);
         #endif
         return;
     }

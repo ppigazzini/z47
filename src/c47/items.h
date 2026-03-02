@@ -1010,12 +1010,12 @@
 #define ITM_US                       979
 #define ITM_NEG_EXCLAMATION_MARK     980
 #define ITM_ex                       981
-#define ITM_Max                      982
-#define ITM_Min                      983
-#define ITM_Config                   984
-#define ITM_Stack                    985
-#define ITM_dddEL                    986
-#define ITM_dddIJ                    987
+#define ITM_0982                     982
+#define ITM_0983                     983
+#define ITM_0984                     984
+#define ITM_0985                     985
+#define ITM_0986                     986
+#define ITM_0987                     987
 #define ITM_0P                       988
 #define ITM_1P                       989
 #define ITM_EXPONENT                 990
@@ -2557,8 +2557,8 @@
 #define ITM_STOVEL1                 2485
 #define ITM_STOVEL2                 2486
 #define ITM_STOVEL3                 2487
-#define ITM_dddVEL                  2488
-#define ITM_dddIX                   2489
+#define ITM_2488                    2488
+#define ITM_2489                    2489
 #define ITM_V10                     2490
 #define ITM_V01                     2491
 #define ITM_CPXexV                  2492
@@ -2703,11 +2703,6 @@
 #define ITM_2618                    2618
 #define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
 
-#define ITM_NDUP                    2620
-#define ITM_NSWAP                   2621
-#define ITM_NDROP                   2622
-#define ITM_MATX_A_1                2623
-#define ITM_3R3P                    2624
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
@@ -2715,7 +2710,56 @@
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2625
+#define ITM_NDUP                    2620
+#define ITM_NSWAP                   2621
+#define ITM_NDROP                   2622
+#define ITM_MATX_A_1                2623
+#define ITM_3R3P                    2624
+
+#define MNU_DEV                     2625
+#define ITM_SetHP35                 2626
+#define ITM_SetC47                  2627
+#define ITM_SetJM                   2628
+#define ITM_SetRJ                   2629
+#define ITM_2630                    2630
+#define ITM_2631                    2631
+#define ITM_2632                    2632
+#define ITM_2633                    2633
+#define ITM_2634                    2634
+#define ITM_2635                    2635
+#define ITM_2636                    2636
+#define ITM_2637                    2637
+#define MNU_TAMSTO_TVM              2638
+#define MNU_TAMRCL_TVM              2639
+#define ITM_STORCL_NPPER            2640
+#define ITM_STORCL_IPonA            2641
+#define ITM_STORCL_PV               2642
+#define ITM_STORCL_FV               2643
+#define ITM_STORCL_PMT              2644
+#define ITM_STORCL_PPERonA          2645
+#define ITM_STORCL_CPERonA          2646
+#define ITM_dddVEL1                 2647
+#define ITM_dddVEL2                 2648
+#define ITM_dddVEL3                 2649
+#define ITM_dddVEL                  2650
+#define ITM_dddIX                   2651
+#define ITM_dddEL                   2652
+#define ITM_dddIJ                   2653
+#define ITM_Max                     2654
+#define ITM_Min                     2655
+#define ITM_Config                  2656
+#define ITM_Stack                   2657
+
+#define ITM_ERGtoJ                  2658
+#define ITM_JtoERG                  2659
+#define ITM_FoetoJ                  2660
+#define ITM_JtoFoe                  2661
+
+#define ITM_LR_A0                   2662
+#define ITM_LR_A1                   2663
+#define ITM_LR_A2                   2664
+
+#define LAST_ITEM                   2665
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

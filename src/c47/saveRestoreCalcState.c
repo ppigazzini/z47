@@ -455,6 +455,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+
     saveStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
     saveStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
@@ -627,6 +629,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
+    saveStateValue(&multiEdLines,                   sizeof(multiEdLines),                                        "multiEdLines",                   "uint8");   //JM ^^
+    saveStateValue(&current_cursor_x,               sizeof(current_cursor_x  ),                                   "current_cursor_x",              "uint16");   //JM ^^
+    saveStateValue(&current_cursor_y,               sizeof(current_cursor_y  ),                                   "current_cursor_y",              "uint16");   //JM ^^
+    saveStateValue(&xMultiLineEdOffset,             sizeof(xMultiLineEdOffset),                                   "xMultiLineEdOffset",            "uint8");   //JM ^^
+    saveStateValue(&yMultiLineEdOffset,             sizeof(yMultiLineEdOffset),                                   "yMultiLineEdOffset",            "uint8");   //JM ^^
     saveStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     saveStateValue(&overrideShowBottomLine,         sizeof(overrideShowBottomLine),                              "overrideShowBottomLine",         "uint8");   //JM ^^
     saveStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
@@ -1006,6 +1013,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    restoreStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+
     lastI = 0;
     lastJ = 0;
     restoreStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
@@ -1220,6 +1229,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     IrFractionsCurrentStatus = CF_NORMAL;
     restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
+    restoreStateValue(&multiEdLines,                   sizeof(multiEdLines),                                        "multiEdLines",                   "uint8");   //JM ^^
+    restoreStateValue(&current_cursor_x,               sizeof(current_cursor_x  ),                                  "current_cursor_x",               "uint16");   //JM ^^
+    restoreStateValue(&current_cursor_y,               sizeof(current_cursor_y  ),                                  "current_cursor_y",               "uint16");   //JM ^^
+    restoreStateValue(&xMultiLineEdOffset,             sizeof(xMultiLineEdOffset),                                  "xMultiLineEdOffset",             "uint8");   //JM ^^
+    restoreStateValue(&yMultiLineEdOffset,             sizeof(yMultiLineEdOffset),                                  "yMultiLineEdOffset",             "uint8");   //JM ^^
     restoreStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     restoreStateValue(&overrideShowBottomLine,         sizeof(overrideShowBottomLine),                              "overrideShowBottomLine",         "uint8");   //JM ^^
     restoreStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
