@@ -392,7 +392,6 @@ void Sett(int16_t grp) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
     #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
@@ -466,7 +465,6 @@ void Sett(int16_t grp) {
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
       fnKeyExit(0);
       addItemToBuffer(ITM_EXIT1);
       getDateString(lastStateFileOpened);
@@ -482,7 +480,6 @@ void Sett(int16_t grp) {
       runFunction(ITM_SQUARE);
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(162);
-    #endif //SAVE_SPACE_DM42_21_HP35
   }
 
 
@@ -497,7 +494,6 @@ void fnSetC47(uint16_t unusedButMandatoryParameter) {
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(167);
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -545,6 +541,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     screenUpdatingMode = SCRUPD_AUTO;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     showShiftState();
     refreshModeGui();
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
@@ -854,7 +852,7 @@ void fnRoundingMode(uint16_t RM) {
   }
   else {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fnRoundingMode", RM, "RM");
-    sprintf(errorMessage + strlen(errorMessage), "Must be from 0 to 6");
+    strcat(errorMessage, "Must be from 0 to 6");
     displayBugScreen(errorMessage);
   }
 }
@@ -1133,7 +1131,7 @@ void fnClAll(uint16_t confirmation) {
 
 
 void addTestPrograms(void) {
-  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(16000));
+  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(19000));
 
   resizeProgramMemory(TO_BLOCKS(numberOfBytesForTheTestPrograms));
   firstDisplayedStep            = beginOfProgramMemory;
@@ -1643,6 +1641,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
+    lastshiftF = false;
+    lastshiftG = false;
     secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
@@ -1732,6 +1732,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;
+    yMultiLineEdOffset = 0;
+    xMultiLineEdOffset = 0;
+    current_cursor_x = 0;
+    current_cursor_y = 0;
     lastT_cursorPos = 0;
 
 

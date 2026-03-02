@@ -388,7 +388,7 @@ void checkTimeRange(const real34_t *time34) {
 
 uint32_t getWeekOfYear(real34_t *jd) {
   real34_t dsow, sow, rdow;
-  
+
   uInt32ToReal34(modulo(((int32_t)julianDayToDayOfWeek(jd)) - firstDayOfWeek, 7), &dsow);
   real34Subtract(jd, &dsow, &sow);  // 1st day of the week containing the date
 
@@ -398,7 +398,7 @@ uint32_t getWeekOfYear(real34_t *jd) {
   real34_t y, m, d, j1;
   decomposeJulianDay(&rdow, &y, &m, &d);  // Get the correct year (may be different from the year of jd)
   composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
-  
+
   int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
   if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
     real34Add(&j1, const34_7, &j1);  // … skip to next week
@@ -437,23 +437,23 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       break;
     }
     case dtReal34: {
-      liftStack();
+      liftStack(); // After a stack lift, X is a real 34 of random value
       real34Add(REGISTER_REAL34_DATA(REGISTER_Y), const34_1on2, REGISTER_REAL34_DATA(REGISTER_Y));       //handle 0.5 offset
       copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_X);
 
       //Get IP in Y
-      reallocateRegister(REGISTER_Y, dtDate, 0, amNone);
-      real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_Y), DEC_ROUND_DOWN);
+      reallocateRegister(REGISTER_Y, dtDate, 0, amNone); // after this, content of Y is random
+      real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y), DEC_ROUND_DOWN);
 
       //Get FP in x
       real_t y, x,cc;
-      int32ToReal(3600*100*24*10, &cc);                              // 3600*100*24*10 rounds time up or down to 0.001 seconds
+      int32ToReal(3600*24*1000, &cc);                                // 3600*24*1000 rounds time up or down to 0.001 seconds
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);            // IP
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);            // Org
       realSubtract(&x, &y, &x, &ctxtReal39);                         // FP = Org - IP
-      realMultiply(&x, &cc, &x, &ctxtReal39);                        // (3600*100*24*10*(FP))          //round seconds to 0.001s
-      realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39);   // round (3600*100*24*10*(FP))
-      realDivide  (&x, &cc, &x, &ctxtReal39);                        // (round (3600*100*24*10*(FP))) / (3600*100*24*10)
+      realMultiply(&x, &cc, &x, &ctxtReal39);                        // (3600*24*10000*(FP))          //round seconds to 0.001s
+      realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39);   // round (3600*24*1000*(FP))
+      realDivide  (&x, &cc, &x, &ctxtReal39);                        // (round (3600*24*1000*(FP))) / (3600*24*1000)
 
       //Convert date to Y
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_Y), &date);
@@ -463,8 +463,8 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       //Convert x to time to X
       real_t tmp;
       int32ToReal(24*3600, &tmp);
-      realMultiply(&tmp, &x, &tmp, &ctxtReal39);                      // tmp is now seconds
-      reallocateRegister(REGISTER_X, dtTime, 0, amNone);    // this must be in front of the next line, otherwise accuracy is gone
+      realMultiply(&tmp, &x, &tmp, &ctxtReal39);                     // tmp is now seconds
+      reallocateRegister(REGISTER_X, dtTime, 0, amNone);             // this must be in front of the next line, otherwise accuracy is gone
       convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       break;
     }
@@ -473,7 +473,7 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "data type %s cannot be converted to date!", getRegisterDataTypeName(REGISTER_X, false, false));
-        moreInfoOnError("In function fnDateTimeToJulian:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnJulianToDateTime:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -911,7 +911,7 @@ void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "data type %s cannot be converted to time!", getRegisterDataTypeName(REGISTER_X, false, false));
-            moreInfoOnError("In function fnHRToTM:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnHRtoTM:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
           }
