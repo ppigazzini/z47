@@ -554,3 +554,58 @@ Func: fnTvmVar(2035)
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2039=Real:"5" V2038=Real:"-0.8" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"9.605856411493579387948674983875140"
 
+
+
+
+;=== TVM Internal sign tests ===
+
+In: FL_ENDPMT=1
+
+;Test S1: Solve FV - negative PV, PMT=0, general case
+;NPPER=10, i%/a=5, PV=-1000, PMT=0, FV=??, pp/a=1, cp/a=1
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"5" V2039=Real:"-1000" V2038=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"1628.894626777441406250000000000000"
+
+;Test S2: Solve FV - negative PV with PMT, general case
+;NPPER=12, i%/a=12, PV=-1000, PMT=-50, FV=??, pp/a=12, cp/a=12
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"-1000" V2038=Real:"-50" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"1760.950180791818323967206000000000"
+
+;Test S3: Solve PV - i%/a=0, PMT negative, ip=0 branch
+;NPPER=10, i%/a=0, PV=??, PMT=-100, FV=0, pp/a=1, cp/a=1
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"0" V2038=Real:"-100" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"1000"
+
+;Test S4: Solve PV - i%/a=0, PMT and FV both negative, ip=0 branch
+;NPPER=5, i%/a=0, PV=??, PMT=-200, FV=-500, pp/a=1, cp/a=1
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"5" V2035=Real:"0" V2038=Real:"-200" V2034=Real:"-500" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"1500"
+
+;Test S5: Solve PMT - i%/a=0, PV+FV negative, ip=0 branch
+;NPPER=10, i%/a=0, PV=-2000, PMT=??, FV=500, pp/a=1, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"0" V2039=Real:"-2000" V2034=Real:"500" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"150"
+
+;Test S6: Solve PMT - i%/a=0, PV+FV negative, ip=0 branch
+;NPPER=20, i%/a=0, PV=-3000, PMT=??, FV=1000, pp/a=1, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"20" V2035=Real:"0" V2039=Real:"-3000" V2034=Real:"1000" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"100"
+
+;Test S7: Solve NPPER - i%/a=0, (PV+FV)/PMT negative, ip=0 branch
+;NPPER=??, i%/a=0, PV=-1000, PMT=100, FV=0, pp/a=1, cp/a=1
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"0" V2039=Real:"-1000" V2038=Real:"100" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"10"
+
+;Test S8: Solve NPPER - PMT=0, standard sign convention PV<0 FV>0, PMT=0 branch
+;NPPER=??, i%/a=5, PV=-1000, PMT=0, FV=2000, pp/a=1, cp/a=1
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"5" V2039=Real:"-1000" V2038=Real:"0" V2034=Real:"2000" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"14.20669908289047413032023363185645"
+
