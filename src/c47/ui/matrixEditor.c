@@ -569,8 +569,10 @@ void showMatrixEditor() {
 void mimEnter(bool_t commit) {
   bool_t realChanged = false;
   int cols = openMatrixMIMPointer.header.matrixColumns;
+#if defined(OPTION_VECTOR_EDIT)
   int rows = openMatrixMIMPointer.header.matrixRows;
   int tag  = openMatrixMIMPointer.header.mtag;
+#endif //OPTION_VECTOR_EDIT
   int16_t row = getIRegisterAsInt(true);
   int16_t col = getJRegisterAsInt(true);
 
@@ -608,6 +610,7 @@ void mimEnter(bool_t commit) {
       }
 
       if(realChanged) {
+#if defined(OPTION_VECTOR_EDIT)
         if(isMatrixVector(rows, cols)) {
           if(isMatrix2dVectorPOL(rows, cols, tag)) {
             real_t magnitude, theta;
@@ -639,7 +642,10 @@ void mimEnter(bool_t commit) {
           } else {
             real34Copy(&real34tmp, real34Ptr);
           }
-        } else {
+        }
+        else 
+#endif //OPTION_VECTOR_EDIT
+        {
           real34Copy(&real34tmp, real34Ptr);
         }
       }
@@ -1002,10 +1008,13 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 
 
 static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+#if defined(OPTION_VECTOR_PH2)
   real_t aa,bb,cc;
   decContext c = ctxtReal39;
   c.digits = 26; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
+#endif //OPTION_VECTOR_PH2
 
+#if defined(OPTION_VECTOR_PH2)
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
     switch(j) {
@@ -1038,9 +1047,12 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     //printRealToConsole(&aa,"POL aa=","\n");
     //printRealToConsole(&bb,"POL bb=","\n");
   } else {
+#endif //OPTION_VECTOR_PH2
     real34Copy(&matrix->matrixElements[ii],element);
     //printReal34ToConsole(element," RECT =","\n");
+#if defined(OPTION_VECTOR_PH2)
   }
+#endif //OPTION_VECTOR_PH2
 }
 
 
