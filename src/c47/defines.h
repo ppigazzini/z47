@@ -61,6 +61,9 @@
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
 
+#undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST TO REMOVE TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
+#define OPTION_VECTOR_PH1              //                   // 2D 3D vector conversions
+#define OPTION_VECTOR_PH2              //                   // 2D 3D vector swaps; display TI for vector
 
 
 #if defined(DMCP_BUILD)
@@ -114,6 +117,10 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
+      #undef  OPTION_VECTOR_PH1        //             // Vector phase 1
+      #undef  OPTION_VECTOR_PH2        //             // Vector phase 2
+
+
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -150,6 +157,7 @@
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
     #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #undef OPTION_VECTOR_PH2               //             // Vector phase 2
   #endif
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
@@ -165,6 +173,7 @@
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
       #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
       #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+      #define OPTION_VECTOR_PH2            //             // Vector phase 2
   #endif
 
 
@@ -181,6 +190,7 @@
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #undef  OPTION_VECTOR_PH2              //             // Vector phase 2
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
@@ -219,6 +229,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+    #define OPTION_VECTOR_PH1          //             // Vector phase 1
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL

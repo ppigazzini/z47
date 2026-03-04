@@ -7801,7 +7801,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 //   Note: "undefined°" indicates angles that are mathematically indeterminate but can be set to any value by convention (chosen to be 0°)
 
 
-
+#if defined(OPTION_VECTOR_PH2)
 void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y, z;
     _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
@@ -8001,3 +8001,21 @@ void fnComplexToVector (uint16_t opType) {
   #endif // !TESTSUITE_BUILD
 }
 
+#else //OPTION_VECTOR_PH2
+
+void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay) {;}
+void convertSPHto3D(real_t *r, real_t *th1, real_t *th2, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {;}
+void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am, decContext *ctxtRealDisplay) {;}
+void convertCYLto3D(real_t *r, real_t *th1, real_t *z, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {;}
+void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay) {;}
+void convertPOLto2D(real_t *r, real_t *th1, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {;}
+// void V3err(void) {;}
+bool_t VtoAngleMode(angularMode_t angleMode) {
+return false;
+}
+void V3RectoToSph(uint16_t am) {;}
+void V3RectoToCyl(uint16_t am) {;}
+void fnComplexToVector (uint16_t opType) {;}
+
+
+#endif //OPTION_VECTOR_PH2

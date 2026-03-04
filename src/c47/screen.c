@@ -2548,6 +2548,7 @@ void createSubstrings(uint8_t number) {
   }
 
 
+#if defined(OPTION_VECTOR_PH2)
   void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     #define e0  "i"            // "x"
     #define e1  "j"            // "y"
@@ -2578,6 +2579,7 @@ void createSubstrings(uint8_t number) {
     }
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
+#endif //OPTION_VECTOR_PH2
 
 
 
@@ -4908,9 +4910,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             else if(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE) {
               inputRegName(prefix, &prefixWidth);
             }
+
+#if defined(OPTION_VECTOR_PH2)
             else if(displayVector && isRegisterMatrixVector(regist)) {
               tiVector(regist, prefix,  &prefixWidth);
             }
+#endif //OPTION_VECTOR_PH2
 
             showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T));
             if(lastErrorCode != 0) {

@@ -1565,6 +1565,7 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
 
 
 void fnExchangeStkToMx(uint16_t opType) {
+#if defined(OPTION_VECTOR_PH1)
   switch(opType) {
     case ITM_stkexV2:{
       if(isRegisterMatrix2dVector(REGISTER_X)) {
@@ -1608,10 +1609,12 @@ void fnExchangeStkToMx(uint16_t opType) {
     }
     default:break;
   }
+#endif //OPTION_VECTOR_PH1
 }
 
 
 void fnConvertStkToMx(uint16_t constVector) {
+#if defined(OPTION_VECTOR_PH1)
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
   real34Matrix_t matrix;
@@ -1728,6 +1731,7 @@ void fnConvertStkToMx(uint16_t constVector) {
     setVectorRegisterAngularMode(REGISTER_X, ang3Dy);
     setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
   }
+#endif //OPTION_VECTOR_PH1
 }
 
 
@@ -1747,6 +1751,7 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     return;
   }
 
+#if defined(OPTION_VECTOR_PH1)
   int ang2Dx = amNone;
   int ang3Dx = amNone;
   int ang3Dy = amNone;
@@ -1760,6 +1765,7 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
   if(isRegisterMatrix3dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL)) {
     ang3Dy = getRegisterAngularMode(REGISTER_X) & amAngleMask;
   }
+#endif //OPTION_VECTOR_PH1
   copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
   if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
     linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
@@ -1811,6 +1817,7 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     }
   }
 
+#if defined(OPTION_VECTOR_PH1)
   if(param == VECT_CR_yx && ang2Dx != amNone) {
     real_t theta, magnitude;
     real34ToReal(&matrix.matrixElements[0], &magnitude);
@@ -1834,6 +1841,7 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     realToReal34(&theta2    , &matrix.matrixElements[2]);
     realToReal34(&theta    , &matrix.matrixElements[1]);
   }
+#endif //OPTION_VECTOR_PH1
 
   for (int i = 0; i < elements; i++) {
     uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
@@ -1849,6 +1857,7 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     }
     adjustResult(rg, false, false, rg, -1, -1);
   }
+#if defined(OPTION_VECTOR_PH1)
   if(param == VECT_CR_yx && ang2Dx != amNone) { //POL
     setRegisterAngularMode(REGISTER_X, ang2Dx);
   }
@@ -1859,8 +1868,8 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
   if(param == VECT_CR_zyx && ang3Dy != amNone && ang3Dx == amNone) { //CYL
     setRegisterAngularMode(REGISTER_Y, ang3Dy);
   }
+#endif // OPTION_VECTOR_PH1
 }
-
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
