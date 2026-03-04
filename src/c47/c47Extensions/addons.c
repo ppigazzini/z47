@@ -1533,7 +1533,7 @@ TO_QSPI static const struct {
 } vecCreate[] = {
 
 //            type          r  c   x   y   z     xdef      ydef      zdef
-/* 1 */ [ VECT_CR_xyz ] = { 3, 1,  0,  1,  2,   V_COPY,   V_COPY,   V_COPY },     // 3x1 vector created from xyz FOR ELEC menu
+/* 1 */ [ 0           ] = { 0, 0,  0,  0,  0,        0,        0,        0 },     // Not used
 /* 2 */ [ VECT_CR_zyx ] = { 1, 3,  0,  1,  2,   V_COPY,   V_COPY,   V_COPY },     // 1x3 vector created from zyx FOR MATX menu
 /* 3 */ [ VECT_CR_100 ] = { 1, 3,  0,  1,  2,   V_D0  ,   V_D0  ,   V_D1   },     // V_DEF1x3 unity vectors 100
 /* 4 */ [ VECT_CR_010 ] = { 1, 3,  0,  1,  2,   V_D0  ,   V_D1  ,   V_D0   },     // V_DEF1x3 unity vectors 010
@@ -1551,17 +1551,19 @@ TO_QSPI static const struct {
   };
 
 
-static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
-  if(d == V_COPY) {
-    if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
-      return false;
+#if (defined(OPTION_VECTOR_PH1) || defined(OPTION_VECTOR_PH2))
+  static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
+    if(d == V_COPY) {
+      if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
+        return false;
+      }
     }
+    else if(d <= V_D1) {
+      realCopy(d == V_D1 ? const_1 : const_0, &x[p].r);
+    }
+    return true;
   }
-  else if(d <= V_D1) {
-    realCopy(d == V_D1 ? const_1 : const_0, &x[p].r);
-  }
-  return true;
-}
+#endif //OPTION_VECTOR_PH1 OPTION_VECTOR_PH2
 
 
 void fnExchangeStkToMx(uint16_t opType) {

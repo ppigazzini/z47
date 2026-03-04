@@ -430,3 +430,8 @@ Added QRNZ to NUM font
      U+25c8 STD_DIA_ON      \xa5\xc8
 
 
+2026-03-04 Change the rho glyph to straighten out the stem
+     U+03c1 STD_rho
+
+     
+

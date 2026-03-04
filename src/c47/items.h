@@ -2341,8 +2341,8 @@
 #define SFL_FGLNLIM                 2285 // The SFL item names are not used
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
 #define SFL_FGGR                    2287 // The SFL item names are not used
-#define SFL_2288                    2288 // The SFL item names are not used
-#define SFL_2289                    2289 // The SFL item names are not used
+#define SFL_3DPHYS                  2288 // The SFL item names are not used
+#define SFL_3DXYZ                   2289 // The SFL item names are not used
 #define SFL_2290                    2290 // The SFL item names are not used
 #define SFL_2291                    2291 // The SFL item names are not used
 #define SFL_2292                    2292 // The SFL item names are not used

@@ -2549,32 +2549,30 @@ void createSubstrings(uint8_t number) {
 
 
 #if defined(OPTION_VECTOR_PH2)
+  static inline const char  *e0(void) { return getSystemFlag(FLAG_3DXYZ) ? "x"       : "i";       }
+  static inline const char  *e1(void) { return getSystemFlag(FLAG_3DXYZ) ? "y"       : "j";       }
+  static inline const char  *e2(void) { return getSystemFlag(FLAG_3DXYZ) ? "z"       : "k";       }
+  static inline const char *_e0(void) { return getSystemFlag(FLAG_3DXYZ) ? STD_SUB_x : STD_SUB_i; }
+  static inline const char *_e1(void) { return getSystemFlag(FLAG_3DXYZ) ? STD_SUB_y : STD_SUB_j; }
+  static inline const char *_e2(void) { return getSystemFlag(FLAG_3DXYZ) ? STD_SUB_z : STD_SUB_k; }
+  #define  interspace STD_SPACE_HAIR
   void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
-    #define e0  "i"            // "x"
-    #define e1  "j"            // "y"
-    #define e2  "k"            // "z"
-    #define er  "r"            // "r"
-    #define erh STD_rho        // "r"
-    #define _e0 STD_SUB_i      // STD_SUB_x
-    #define _e1 STD_SUB_j      // STD_SUB_y
-    #define _e2 STD_SUB_k      // STD_SUB_z
-
     prefix[0] = 0;
     *prefixWidth = 0;
     if(isRegisterMatrix3dVector(regist)) {
       if(getVectorRegisterPolarMode(regist) == amPolarSPH) {
-        strcpy(prefix, "[" erh STD_SPACE_4_PER_EM STD_theta_m _e0 _e1 STD_SPACE_4_PER_EM STD_phi_m _e2 "]");  //[rho th_xy phi_z]
+        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s%s]", STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());     // [rho th_xy phi_z]
       } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
-        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_theta_m _e0 _e1 STD_SPACE_4_PER_EM e2 "]");              //[r th_xy z]
+        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
       } else {
-        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 STD_SPACE_4_PER_EM e2 "]");                               //[x y z]
+        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", e0(), interspace, e1(), interspace, e2());                                               // [x y z]
       }
-    } 
+    }
     else if(isRegisterMatrix2dVector(regist)) {
       if(getVectorRegisterPolarMode(regist) != amPolar) {
-        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 "]");
+        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s]", e0(), interspace, e1());
       } else {
-        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_theta_m _e0 _e1  "]");
+        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1());
       }
     }
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;

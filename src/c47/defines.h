@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.01b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.01a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -118,8 +118,8 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
-      #undef  OPTION_VECTOR_PH1        //             // Vector phase 1
-      #undef  OPTION_VECTOR_PH2        //             // Vector phase 2
+      #undef  OPTION_VECTOR_PH1        //  2672 bytes // Vector phase 1
+      #undef  OPTION_VECTOR_PH2        //  6948 bytes // Vector phase 2
 
 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -158,7 +158,8 @@
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
     #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef OPTION_VECTOR_PH2               //             // Vector phase 2
+    #undef OPTION_VECTOR_PH1               //  2672 bytes // Vector phase 1
+    #undef OPTION_VECTOR_PH2               //  6948 bytes // Vector phase 2
   #endif
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
@@ -174,7 +175,8 @@
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
       #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
       #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-      #define OPTION_VECTOR_PH2            //             // Vector phase 2
+    #undef OPTION_VECTOR_PH1               //  2672 bytes // Vector phase 1
+    #undef OPTION_VECTOR_PH2               //  6948 bytes // Vector phase 2
   #endif
 
 
@@ -191,7 +193,8 @@
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_VECTOR_PH2              //             // Vector phase 2
+    #undef  OPTION_VECTOR_PH1              //  2672 bytes // Vector phase 1
+    #undef  OPTION_VECTOR_PH2              //  6948 bytes // Vector phase 2
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
@@ -207,6 +210,8 @@
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #undef  OPTION_VECTOR_PH1              //  2672 bytes // Vector phase 1
+    #undef  OPTION_VECTOR_PH2              //  6948 bytes // Vector phase 2
   #endif
 
 
@@ -230,7 +235,6 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-    #define OPTION_VECTOR_PH1          //             // Vector phase 1
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -792,8 +796,10 @@
 #define FLAG_FGLNLIM                          0x8062
 #define FLAG_FGLNFUL                          0x8063
 #define FLAG_FGGR                             0x8064
+#define FLAG_3DPHYS                           0x8065
+#define FLAG_3DXYZ                            0x8066
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+28+6+3 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+39 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
