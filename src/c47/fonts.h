@@ -410,6 +410,11 @@
 #define STD_u_CIRC2                   "\x83\xA2"
 
 #define STD_L_ma                      "\x84\x50" //0450
+#define STD_B_ast_n                   "\x84\x51" //045x
+#define STD_G_d_min1                  "\x84\x52" //045x
+#define STD_S_1_ast                   "\x84\x53" //045x
+#define STD_S_k_ast                   "\x84\x54" //045x
+#define STD_EQUALS_SH                 "\x84\x55" //045x
 
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
