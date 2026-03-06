@@ -439,4 +439,7 @@ Added QRNZ to NUM font
      U+2296 STD_SUB_alpha Raise glyph. Subscript alpha to align with other subscripts
      U+2297 STD_SUB_delta Raise glyph. Subscript delta to align with other subscripts
 
+   On STD font & Tiny font:
+     U+238C STD_UNDO      Move UNDO from U+21CD to U+238C (HELM SYMBOL)
+
 
