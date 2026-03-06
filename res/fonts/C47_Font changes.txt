@@ -442,4 +442,7 @@ Added QRNZ to NUM font
    On STD font & Tiny font:
      U+238C STD_UNDO      Move UNDO from U+21CD to U+238C (HELM SYMBOL)
 
+   Add STD font:
+     U+0450 STD_L_ma      Add glyph for the Lma function
+    
 
