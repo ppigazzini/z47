@@ -526,7 +526,7 @@
 #define STD_BST                       "\xa1\xc9"
 #define STD_SST                       "\xa1\xcb"
 #define STD_HAMBURGER                 "\xa1\xcc"
-#define STD_UNDO                      "\xa1\xcd"
+#define STD_UNDO                      "\xa3\x8c"
 #define STD_HOLLOW_UP_ARROW           "\xa1\xe7"
 #define STD_HOLLOW_DOWN_ARROW         "\xa1\xe9"
 #define STD_COMPLEMENT                "\xa2\x01"
