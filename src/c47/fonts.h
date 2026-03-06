@@ -409,6 +409,8 @@
 #define STD_z_CIRC                    "\x83\x8D"
 #define STD_u_CIRC2                   "\x83\xA2"
 
+#define STD_L_ma                      "\x84\x50" //0450
+
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
 #define STD_SUP_BOLD_g                "\x9D\x4D"
