@@ -430,3 +430,13 @@ Added QRNZ to NUM font
      U+25c8 STD_DIA_ON      \xa5\xc8
 
 
+2026-03-04 
+   On STD font:
+     U+03c1 STD_rho Change the rho glyph to straighten out the stem
+
+2026-03-05
+   On STD font:
+     U+2296 STD_SUB_alpha Raise glyph. Subscript alpha to align with other subscripts
+     U+2297 STD_SUB_delta Raise glyph. Subscript delta to align with other subscripts
+
+
