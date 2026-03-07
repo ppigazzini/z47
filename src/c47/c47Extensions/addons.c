@@ -2026,7 +2026,6 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       fnToHr(0); //covers time
       setRegisterAngularMode(REGISTER_X, amDegree);
       fnCvtFromCurrentAngularMode(AMODE);
-      //fnAngularMode(AMODE);                             Remove updating of ADM to the same mode
     }
 
     if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -2048,7 +2047,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
 
-        if(calcMode == CM_NORMAL) {         //convert longint, and strip all angles to real.
+        if(calcMode == CM_NORMAL) {                       //convert longint, and strip all angles to real.
           fnToReal(0);
         }
         else if(calcMode == CM_NIM) {
@@ -2056,7 +2055,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
         }
 
         uint16_t currentAngularModeOld = currentAngularMode;
-        fnAngularMode(AMODE);
+        currentAngularMode = AMODE;
         fnCvtFromCurrentAngularMode(currentAngularMode);
         currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode (set in fnCvtFromCurrentAngularMode())
       }
