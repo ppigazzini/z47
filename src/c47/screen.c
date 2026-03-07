@@ -1840,6 +1840,11 @@ return res;
 
 
   bool_t checkHalfSec(void) {
+    #if defined(PC_BUILD)
+      while (gtk_events_pending()) {
+        gtk_main_iteration();
+      }
+    #endif //PC_BUILD
     if(!getSystemFlag(FLAG_MONIT)) {
       return false;
     }
