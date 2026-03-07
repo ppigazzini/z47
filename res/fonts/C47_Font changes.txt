@@ -447,7 +447,7 @@ Added QRNZ to NUM font
 
 2026-03-06
    On STD font:
-     U+0451 STD_N_ASTERISK Add glyph and B*ₙ=|B₂ₙ|         Item 1417 for B*n: "B" STD_B_ast_n "=|B" STD_SUB_2 STD_SUB_n "|"
+     U+0451 STD_N_ASTERISK Add glyph *ₙ                    Item 1417 for B*n: "B" STD_B_ast_n "=|B" STD_SUB_2 STD_SUB_n "|"
      U+0452 STD_D_MINUS1   Add glyph _d^-1                 Item 1479 for inverse G function g_d^-1: "g" STD_SUB_d STD_SUP_MINUS STD_SUP_1
      U+0453 STD_1_ASTERISK Add glyph _1^*                  Item 2412 for unitary divisor function: sigma STD_SUB_1 STD_SUP_ASTERISK
      U+0454 STD_K_ASTERISK Add glyph _k^*                  Item 2413 for unitary divisor function: sigma STD_SUB_k STD_SUP_ASTERISK
