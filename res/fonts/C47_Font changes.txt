@@ -443,14 +443,22 @@ Added QRNZ to NUM font
      U+238C STD_UNDO      Move UNDO from U+21CD to U+238C (HELM SYMBOL)
 
    Add STD font:
-     U+0450 STD_L_ma      Add glyph for the Lma function
+     U+0450 STD_M_ALPHA   Add glyph for the Lma function
 
 2026-03-06
    On STD font:
-     U+0451 STD_B_ast_n   Add glyph and B*ₙ=|B₂ₙ|         Item 1417 for B*n: "B" STD_B_ast_n "=|B" STD_SUB_2 STD_SUB_n "|"
-     U+0452 STD_G_d_min1  Add glyph _d^-1                 Item 1479 for inverse G function g_d^-1: "g" STD_SUB_d STD_SUP_MINUS STD_SUP_1
-     U+0453 STD_S_1_ast   Add glyph _1^*                  Item 2412 for unitary divisor function: sigma STD_SUB_1 STD_SUP_ASTERISK
-     U+0454 STD_S_k_ast   Add glyph _k^*                  Item 2413 for unitary divisor function: sigma STD_SUB_k STD_SUP_ASTERISK
-     U+0455 STD_EQUALS_SH Add glyph short equals
+     U+0451 STD_N_ASTERISK Add glyph and B*ₙ=|B₂ₙ|         Item 1417 for B*n: "B" STD_B_ast_n "=|B" STD_SUB_2 STD_SUB_n "|"
+     U+0452 STD_D_MINUS1   Add glyph _d^-1                 Item 1479 for inverse G function g_d^-1: "g" STD_SUB_d STD_SUP_MINUS STD_SUP_1
+     U+0453 STD_1_ASTERISK Add glyph _1^*                  Item 2412 for unitary divisor function: sigma STD_SUB_1 STD_SUP_ASTERISK
+     U+0454 STD_K_ASTERISK Add glyph _k^*                  Item 2413 for unitary divisor function: sigma STD_SUB_k STD_SUP_ASTERISK
+     U+0455 STD_EQUALS_SH  Add glyph short equals
 
-    
+2026-03-06
+   On STD font:
+     U+0456 STD_P_2        Add glyph ^2_p
+     U+0457 STD_TRI_LHB_2  Add glyph ^2_◭
+     U+0458 STD_TRI_RHB_2  Add glyph ^2_◮
+     U+25ED STD_TRI_LHB    Add glyph  ◭  
+     U+25EE STD_TRI_RHB    Add glyph  ◮  
+
+

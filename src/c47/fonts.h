@@ -409,12 +409,18 @@
 #define STD_z_CIRC                    "\x83\x8D"
 #define STD_u_CIRC2                   "\x83\xA2"
 
-#define STD_L_ma                      "\x84\x50" //0450
-#define STD_B_ast_n                   "\x84\x51" //045x
-#define STD_G_d_min1                  "\x84\x52" //045x
-#define STD_S_1_ast                   "\x84\x53" //045x
-#define STD_S_k_ast                   "\x84\x54" //045x
-#define STD_EQUALS_SH                 "\x84\x55" //045x
+#define STD_M_ALPHA                   "\x84\x50" //0450
+#define STD_N_ASTERISK                "\x84\x51" //0451
+#define STD_D_MINUS1                  "\x84\x52" //0452
+#define STD_1_ASTERISK                "\x84\x53" //0453
+#define STD_K_ASTERISK                "\x84\x54" //0454
+#define STD_EQUALS_SH                 "\x84\x55" //0455
+#define STD_P_2                       "\x84\x56" //0456
+#define STD_TRI_LHB_2                 "\x84\x57" //0457
+#define STD_TRI_RHB_2                 "\x84\x58" //0458
+
+#define STD_TRI_LHB                   "\xa5\xed" //25ED ◭ UP-POINTING TRIANGLE WITH LEFT HALF BLACK
+#define STD_TRI_RHB                   "\xa5\xee" //25EE ◮ UP-POINTING TRIANGLE WITH RIGHT HALF BLACK
 
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
