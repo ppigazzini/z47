@@ -1173,12 +1173,10 @@ void strReplace(char *haystack, const char *needle, const char *newNeedle) {
     needleLg = strlen(needle);
     needleLocation = strstr(haystack, needle);
     str = malloc(strlen(needleLocation + needleLg) + 1);
-    #if defined(PC_BUILD) && !defined(GENERATE_CATALOGS)
-      if(str == NULL) {
-        moreInfoOnError("In function strReplace:", "error allocating memory for str!", NULL, NULL);
-        exit(1);
-      }
-    #endif // PC_BUILD && !GENERATE_CATALOGS
+    if(str == NULL) {
+      printf("In function strReplace: error allocating memory for str!\n");
+      exit(1);
+    }
 
     strcpy(str, needleLocation + needleLg);
     *strstr(haystack, needle) = 0;
