@@ -1663,6 +1663,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_LR_A0                                 124
 #define TI_LR_A1                                 125
 #define TI_LR_A2                                 126
+#define TI_VECTOR                                127 // the number may change but not the sequence
+#define TI_VECTORCOMP_3DSPH                      128 // the number may change but not the sequence
+#define TI_VECTORCOMP_3DCYL                      129 // the number may change but not the sequence
+#define TI_VECTORCOMP_3DRECT                     130 // the number may change but not the sequence
+#define TI_VECTORCOMP_2DPOLAR                    131 // the number may change but not the sequence
+#define TI_VECTORCOMP_2DRECT                     132 // the number may change but not the sequence
+
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -2036,6 +2043,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               )
 #define inputAngleMode3r(r)                  ((registerIsNoAngle(r+1) && registerIsNoAngle(r+2)) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 #define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
+#define registerIsAngle(r)                   ( getRegisterDataType(r  ) == dtReal34 && !registerIsNoAngle(r))
 #define inputIsNoAngle3r(r)                  ( registerIsNoAngle(r  )   || !registerIsNoAngle(r+1)  || !registerIsNoAngle(r+2))
 #define inputAngleError3r(r)                 (!registerIsNoAngle(r+1)   || !registerIsNoAngle(r+2))
 #define isXFNregisterValid3r(r)              ((getRegisterDataType(r  ) == dtReal34 || getRegisterDataType(r  ) == dtLongInteger) &&\
@@ -2150,7 +2158,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
-#define VECT_CR_xyz 1
+#define VECT_CR_AUT 0
+#define VECT_CR_zxy 1
 #define VECT_CR_zyx 2
 #define VECT_CR_100 3
 #define VECT_CR_010 4
@@ -2158,7 +2167,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define VECT_CR_yx  6
 #define VECT_CR_10  7
 #define VECT_CR_01  8
-#define VECT_yx_zyx 0x62
+//#define VECT_yx_zyx 0x62
 
 #define V_D0        0
 #define V_D1        1

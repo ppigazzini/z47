@@ -635,10 +635,10 @@ void mimEnter(bool_t commit) {
             realToReal34(&theta,     &openMatrixMIMPointer.realMatrix.matrixElements[1]);
           } else
           if(isMatrix3dVectorSPH(rows, cols, tag)) {
-//add code for CYL editing           //
+//add code for SPH editing           //
           } else
           if(isMatrix3dVectorCYL(rows, cols, tag)) {
-//add code for SPH editing           //
+//add code for CYL editing           //
           } else {
             real34Copy(&real34tmp, real34Ptr);
           }
@@ -1017,12 +1017,22 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
 #if defined(OPTION_VECTOR_PH2)
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
-    switch(j) {
-      case 0: realToReal34(&aa,element); break;
-      case 1: realToReal34(&bb,element); break;
-      case 2: realToReal34(&cc,element); break;
-      default:;
+    if(getSystemFlag(FLAG_3DPHYS)) {
+      switch(j) {
+        case 0: realToReal34(&aa,element); break;
+        case 1: realToReal34(&cc,element); break;
+        case 2: realToReal34(&bb,element); break;
+        default:;
+      }
+    } else {
+      switch(j) {
+        case 0: realToReal34(&aa,element); break;
+        case 1: realToReal34(&bb,element); break;
+        case 2: realToReal34(&cc,element); break;
+        default:;
+      }
     }
+
     //printRealToConsole(&aa,"SPH aa=","\n");
     //printRealToConsole(&bb,"SPH bb=","\n");
     //printRealToConsole(&cc,"SPH cc=","\n");
