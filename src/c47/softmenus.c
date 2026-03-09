@@ -156,9 +156,13 @@ TO_QSPI const int16_t menu_MATX[]        = {
 #endif //USER_C47
 
 
-TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_CPXtoV,               ITM_VtoCPX,            ITM_STKtoV3,                 ITM_V3toSTK,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_REGtoVEC,                ITM_VECtoREG,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL /*_VECtoSTK*/, ITM_NULL,                    ITM_NULL                      };
+//TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_REGtoVEC,             ITM_VECtoREG,          ITM_STKtoV3,                 ITM_V3toSTK,
+//                                             ITM_CPXtoV,                    ITM_VtoCPX,                 ITM_NULL,                 ITM_NULL,              ITM_STKtoV3_M,               ITM_V3toSTK_M,
+//                                             ITM_stkexV2,                   ITM_stkexV3,                ITM_3DPHYS,               ITM_3DXYZ,             ITM_STKtoV3_P,               ITM_V3toSTK_P                 };
+
+TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_REGtoVEC,             ITM_VECtoREG,          ITM_STKtoV3,                 ITM_V3toSTK,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_CPXtoV,                    ITM_VtoCPX,                 ITM_NULL,                 ITM_NULL,              ITM_3DPHYS,                  ITM_3DXYZ                    };
 
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?

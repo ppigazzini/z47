@@ -102,6 +102,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_USER_R47fg_bk,    USER_R47fg_bk,          CB_JC},  //SetSetting
   {ITM_USER_R47fg_g,     USER_R47fg_g,           CB_JC},  //SetSetting
 
+  {ITM_3DPHYS,           FLAG_3DPHYS,            CB_JC},  //SetSetting
+  {ITM_3DXYZ,            FLAG_3DXYZ,             CB_JC},  //SetSetting
   {ITM_G_DOUBLETAP,      FLAG_G_DOUBLETAP,       CB_JC},  //SetSetting
   {ITM_SHTIM,            FLAG_SHFT_4s,           CB_JC},  //SetSetting
 
@@ -275,7 +277,9 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_BCD,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGGR
+  FLAG_FGGR,
+  FLAG_3DPHYS,
+  FLAG_3DXYZ
 };
 
 

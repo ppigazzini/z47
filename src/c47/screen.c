@@ -2564,22 +2564,82 @@ void createSubstrings(uint8_t number) {
   void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     prefix[0] = 0;
     *prefixWidth = 0;
-    if(isRegisterMatrix3dVector(regist)) {
-      if(getVectorRegisterPolarMode(regist) == amPolarSPH) {
-        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s%s]", STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());     // [rho th_xy phi_z]
+    if(temporaryInformation == TI_VECTORCOMP_3DSPH && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components SPH
+      if(getSystemFlag(FLAG_3DPHYS)) {
+        switch(regist) {
+          case REGISTER_Z: {snprintf(prefix, 50, "[%s  ] =",        STD_rho);                          break;}
+          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s ] =",      STD_phi_m, _e2());                 break;}
+          case REGISTER_X: {snprintf(prefix, 50, "[  %s%s%s] =",    STD_theta_m, _e0(), _e1());        break;}
+          default:;
+        }
+      } else {
+        switch(regist) {
+          case REGISTER_Z: {snprintf(prefix, 50, "[%s  ] =",        STD_rho);                          break;}
+          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s%s ] =",    STD_theta_m, _e0(), _e1());        break;}
+          case REGISTER_X: {snprintf(prefix, 50, "[  %s%s] =",      STD_phi_m, _e2());                 break;}
+          default:;
+        }
+      }
+    }
+
+    else if(temporaryInformation == TI_VECTORCOMP_3DCYL && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components CYL
+      switch(regist) {
+        case REGISTER_Z: {snprintf(prefix, 50, "[r  ] =");                                             break;}
+        case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s%s ] =", STD_theta_m, _e0(), _e1());             break;}
+        case REGISTER_X: {snprintf(prefix, 50, "[  %s] =",     e2());                                  break;}
+        default:;
+      }
+    }
+
+    else if(temporaryInformation == TI_VECTORCOMP_3DRECT && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components RECT
+      switch(regist) {
+        case REGISTER_Z: {snprintf(prefix, 50, "[%s  ] =",  e0());                                     break;}
+        case REGISTER_Y: {snprintf(prefix, 50, "[ %s ] =",  e1());                                     break;}
+        case REGISTER_X: {snprintf(prefix, 50, "[  %s] =",  e2());                                     break;}
+        default:;
+      }
+    }
+
+    else if(temporaryInformation == TI_VECTORCOMP_2DPOLAR && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Y) {   //2D Components POLAR
+      switch(regist) {
+        case REGISTER_Y: {snprintf(prefix, 50, "[r ] =");                                             break;}
+        case REGISTER_X: {snprintf(prefix, 50, "[ %s%s%s] =", STD_theta_m, _e0(), _e1());             break;}
+        default:;
+      }
+    }
+
+    else if(temporaryInformation == TI_VECTORCOMP_2DRECT && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Y) {   //2D Components RECT
+      switch(regist) {
+        case REGISTER_Y: {snprintf(prefix, 50, "[%s ] =", e0());                                      break;}
+        case REGISTER_X: {snprintf(prefix, 50, "[ %s] =", e1());                                      break;}
+        default:;
+      }
+    }
+
+    else if(isRegisterMatrix3dVector(regist)) {
+      if(getVectorRegisterPolarMode(regist) == amPolarSPH) {  //3D
+        if(getSystemFlag(FLAG_3DPHYS)) {
+          snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());   // [rho phi_z th_xy] PHYS
+        } else {
+          snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());   // [rho th_xy phi_z]          
+        }
       } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
         snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
       } else {
         snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", e0(), interspace, e1(), interspace, e2());                                               // [x y z]
       }
     }
-    else if(isRegisterMatrix2dVector(regist)) {
+
+    else if(isRegisterMatrix2dVector(regist)) {               //2D
       if(getVectorRegisterPolarMode(regist) != amPolar) {
         snprintf(prefix, SCREEN_WIDTH, "[%s%s%s]", e0(), interspace, e1());
       } else {
         snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1());
       }
     }
+
+    else return;
+
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
 #endif //OPTION_VECTOR_PH2
@@ -4372,6 +4432,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_REGTYPE) {
             _displayRegType(regist, prefix, &prefixWidth);
           }
+#if defined(OPTION_VECTOR_PH2)
+          else if(temporaryInformation >= TI_VECTORCOMP_3DSPH && temporaryInformation <= TI_VECTORCOMP_2DRECT) {
+            tiVector(regist, prefix, &prefixWidth);
+          }
+#endif //OPTION_VECTOR_PH2
 
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
@@ -4914,8 +4979,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               inputRegName(prefix, &prefixWidth);
             }
 
+
 #if defined(OPTION_VECTOR_PH2)
-            else if(displayVector && isRegisterMatrixVector(regist)) {
+            //alternative not permanantly displayed
+            //            else if(temporaryInformation == TI_VECTOR && displayVector && isRegisterMatrixVector(regist)) {
+            //              tiVector(regist, prefix,  &prefixWidth);
+            //            }
+            else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI
               tiVector(regist, prefix,  &prefixWidth);
             }
 #endif //OPTION_VECTOR_PH2
