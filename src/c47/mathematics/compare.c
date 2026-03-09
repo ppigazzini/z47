@@ -538,7 +538,8 @@ static void almostEqualMatrix(uint16_t regist) {
     break; \
   }
 
-static void almostEqualScalar(uint16_t regist) {
+
+static void almostEqualScalar(uint16_t regist, const uint16_t test) {
   struct snap_t {
       uint8_t t;
       real34_t r, i;
@@ -548,6 +549,32 @@ static void almostEqualScalar(uint16_t regist) {
   SNAPREAL(REGISTER_X, snap1);
   SNAPREAL(regist, snap2);
 
+  switch(test) {
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
+      roundCplx();
+      break;
+
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):
+      roundReal();
+      break;
+
+    case type_pair_u8(dtShortInteger, dtComplex34):
+    case type_pair_u8(dtShortInteger, dtReal34):
+    case type_pair_u8(dtLongInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtReal34):
+    // cast short/long Int to real34t
+
+    case type_pair_u8(dtTime, dtTime):
+      roundTime();
+      break;
+  }
+/*
   switch(getRegisterDataType(REGISTER_X)) {
     case dtComplex34: 
       roundCplx();
@@ -569,8 +596,10 @@ static void almostEqualScalar(uint16_t regist) {
      compareTypeError(regist);
      return;
   }
+  */
   if(regist != TEMP_REGISTER_1) {
     fnSwapX(regist);
+    /*
     switch(getRegisterDataType(REGISTER_X)) {
       case dtComplex34: 
         roundCplx();
@@ -592,6 +621,32 @@ static void almostEqualScalar(uint16_t regist) {
         fnSwapX(regist);
         compareTypeError(regist);
         return;
+    }
+    */
+      switch(test) {
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtShortInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtComplex34):
+      roundCplx();
+      break;
+
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtShortInteger, dtReal34): 
+    case type_pair_u8(dtLongInteger, dtReal34):
+      roundReal();
+      break;
+
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):  
+    // cast short/long Int to real34t
+
+    case type_pair_u8(dtTime, dtTime):
+      roundTime();
+      break;
     }
     fnSwapX(regist);
   }
@@ -634,7 +689,8 @@ void fnXAlmostEqual(uint16_t regist) {
   case type_pair_u8(dtShortInteger, dtReal34):
   case type_pair_u8(dtLongInteger, dtComplex34):
   case type_pair_u8(dtLongInteger, dtReal34):
-    almostEqualScalar(regist);
+  case type_pair_u8(dtTime, dtTime):
+    almostEqualScalar(regist, test);
     break;
 
   case type_pair_u8(dtShortInteger, dtShortInteger):
