@@ -517,7 +517,7 @@ static void almostEqualMatrix(uint16_t regist) {
   #endif // !TESTSUITE_BUILD
 }
 
-#define SNAPREAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
+#define SNAPVAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
   { \
   case dtComplex34: \
     real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
@@ -527,14 +527,28 @@ static void almostEqualMatrix(uint16_t regist) {
     real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
     real34Copy(const34_0, &s.i); \
     break; \
+  case dtLongInteger: \
+    getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
+    break; \
+  case dtShortInteger: \
+    getRegisterAsRawShortInt(REGISTER_X, &s.siVal, &s.siBase); \
+    break; \
   }
 
-#define RESTOREREAL(reg, s) switch(s.t) \
+#define RESTOREVAL(reg, s) switch(s.t) \
   { \
   case dtComplex34: \
     real34Copy(&s.i,REGISTER_IMAG34_DATA(reg)); \
   case dtReal34: \
     real34Copy(&s.r,REGISTER_REAL34_DATA(reg)); \
+    break; \
+  case dtLongInteger: \
+    convertLongIntegerToLongIntegerRegister(s.li,reg); \
+    longIntegerFree(s.li); \
+    break; \
+  case dtShortInteger: \
+    *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal; \
+    setRegisterShortIntegerBase(reg,s.siBase); \
     break; \
   }
 
@@ -543,11 +557,14 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
   struct snap_t {
       uint8_t t;
       real34_t r, i;
+      longInteger_t li;
+      uint64_t siVal;
+      uint32_t siBase;
     } snap1, snap2;
 
   // Snapshot real values before rounding
-  SNAPREAL(REGISTER_X, snap1);
-  SNAPREAL(regist, snap2);
+  SNAPVAL(REGISTER_X, snap1);
+  SNAPVAL(regist, snap2);
 
   switch(test) {
     case type_pair_u8(dtComplex34, dtComplex34):
@@ -568,12 +585,14 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
     case type_pair_u8(dtShortInteger, dtComplex34):
     case type_pair_u8(dtShortInteger, dtReal34):
       convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      roundReal();
       break;
 
     //ret20260309: when LI vs Real or Complex, cast to real
     case type_pair_u8(dtLongInteger, dtComplex34):
     case type_pair_u8(dtLongInteger, dtReal34):
       convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      roundReal();
       break;
 
     case type_pair_u8(dtTime, dtTime):
@@ -601,12 +620,14 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
       case type_pair_u8(dtComplex34, dtShortInteger):
       case type_pair_u8(dtReal34, dtShortInteger):
         convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        roundReal();
         break;
 
       //ret20260309: when LI vs Real or Complex, cast to real
       case type_pair_u8(dtComplex34, dtLongInteger):
       case type_pair_u8(dtReal34, dtLongInteger):  
         convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        roundReal();
         break;
 
       case type_pair_u8(dtTime, dtTime):
@@ -625,8 +646,8 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
 
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-  RESTOREREAL(REGISTER_X, snap1);
-  RESTOREREAL(regist, snap2);
+  RESTOREVAL(REGISTER_X, snap1);
+  RESTOREVAL(regist, snap2);
   #pragma GCC diagnostic pop
 }
 
