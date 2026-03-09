@@ -564,89 +564,59 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
       roundReal();
       break;
 
+    //ret20260309: when SI vs Real or Complex, cast to real
     case type_pair_u8(dtShortInteger, dtComplex34):
     case type_pair_u8(dtShortInteger, dtReal34):
+      convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      break;
+
+    //ret20260309: when LI vs Real or Complex, cast to real
     case type_pair_u8(dtLongInteger, dtComplex34):
     case type_pair_u8(dtLongInteger, dtReal34):
-    // cast short/long Int to real34t
+      convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      break;
 
     case type_pair_u8(dtTime, dtTime):
       roundTime();
       break;
   }
-/*
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtComplex34: 
-      roundCplx();
-      break;
-
-    case dtReal34: 
-      roundReal();
-      break;
-    
-    case dtShortInteger:
-    case dtLongInteger:
-      break;
-
-    case dtTime: 
-     roundTime();
-     break;
-
-    default:
-     compareTypeError(regist);
-     return;
-  }
-  */
   if(regist != TEMP_REGISTER_1) {
     fnSwapX(regist);
-    /*
-    switch(getRegisterDataType(REGISTER_X)) {
-      case dtComplex34: 
+    switch(test) {
+      case type_pair_u8(dtComplex34, dtComplex34):
+      case type_pair_u8(dtReal34, dtComplex34):
+      case type_pair_u8(dtShortInteger, dtComplex34):
+      case type_pair_u8(dtLongInteger, dtComplex34):
         roundCplx();
         break;
-      
-      case dtReal34: 
+
+      case type_pair_u8(dtComplex34, dtReal34):
+      case type_pair_u8(dtReal34, dtReal34):
+      case type_pair_u8(dtShortInteger, dtReal34): 
+      case type_pair_u8(dtLongInteger, dtReal34):
         roundReal();
         break;
-      
-      case dtShortInteger:
-      case dtLongInteger:
+
+      //ret20260309: when SI vs Real or Complex, cast to real
+      case type_pair_u8(dtComplex34, dtShortInteger):
+      case type_pair_u8(dtReal34, dtShortInteger):
+        convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
         break;
 
-      case dtTime: // dtTime
+      //ret20260309: when LI vs Real or Complex, cast to real
+      case type_pair_u8(dtComplex34, dtLongInteger):
+      case type_pair_u8(dtReal34, dtLongInteger):  
+        convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        break;
+
+      case type_pair_u8(dtTime, dtTime):
         roundTime();
         break;
 
       default:
-        fnSwapX(regist);
-        compareTypeError(regist);
-        return;
-    }
-    */
-      switch(test) {
-    case type_pair_u8(dtComplex34, dtComplex34):
-    case type_pair_u8(dtReal34, dtComplex34):
-    case type_pair_u8(dtShortInteger, dtComplex34):
-    case type_pair_u8(dtLongInteger, dtComplex34):
-      roundCplx();
-      break;
-
-    case type_pair_u8(dtComplex34, dtReal34):
-    case type_pair_u8(dtReal34, dtReal34):
-    case type_pair_u8(dtShortInteger, dtReal34): 
-    case type_pair_u8(dtLongInteger, dtReal34):
-      roundReal();
-      break;
-
-    case type_pair_u8(dtComplex34, dtShortInteger):
-    case type_pair_u8(dtComplex34, dtLongInteger):
-    case type_pair_u8(dtReal34, dtShortInteger):
-    case type_pair_u8(dtReal34, dtLongInteger):  
-    // cast short/long Int to real34t
-
-    case type_pair_u8(dtTime, dtTime):
-      roundTime();
-      break;
+          fnSwapX(regist);
+          compareTypeError(regist);
+          return;
     }
     fnSwapX(regist);
   }
