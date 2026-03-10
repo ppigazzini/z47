@@ -2157,7 +2157,7 @@
 #define MNU_TRG_C47_MORE            2103
 #define ITM_2104                    2104
 #define ITM_2105                    2105
-#define ITM_2106                    2106
+#define MNU_VECT                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
@@ -2540,7 +2540,7 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_CONCAT                  2473
+#define ITM_M_CONCAT                2473
 
 #define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475

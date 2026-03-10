@@ -129,29 +129,35 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_MATX[]        = {
-                                             ITM_M_NEW,                     ITM_M_INV,                  ITM_M_DET,                ITM_M_TRANSP,          ITM_SIM_EQ,                  ITM_M_EDI,
-                                             ITM_ENORM,                     ITM_UNITV,                  ITM_RSUM,                 ITM_RNORM,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_SIM_EQ,           -MNU_VECCONV,                -MNU_VECT,
+                                             ITM_M_DIM,                     ITM_M_DIM_GR,               ITM_M_EDIN,               ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+
+                                             ITM_NULL,                      ITM_NULL,                   ITM_M_INV,                ITM_M_DET,            -MNU_VECCONV,                -MNU_VECT,
+                                             ITM_ENORM,                     ITM_RNORM,                  ITM_RSUM,                 ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_M_RR,                      ITM_M_DIM_GR,               ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
-                                             ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,
+                                             ITM_M_CONCAT,                  ITM_M_RR,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_INDEX,
+                                             ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS                 };
 
+
+TO_QSPI const int16_t menu_VECT[]        = {
 #if (CALCMODEL == USER_R47)
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_CLSTK,
-                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,          -MNU_VECCONV,                 ITM_CLSTK,
-                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001                      };
 #else //USER_C47
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_DRG,
-                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,               ITM_V10,                     ITM_V01,
+                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,          -MNU_VECCONV,                 ITM_DRG,
-                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001                      };
 #endif //USER_C47
 
@@ -1082,8 +1088,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 171 */  {.menuItem = -MNU_DEV,         .numItems = sizeof(menu_Dev           )/sizeof(int16_t), .softkeyItem = menu_Dev            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 171 */  {.menuItem = -MNU_TAMSTO_TVM,  .numItems = sizeof(menu_TamStoTVM     )/sizeof(int16_t), .softkeyItem = menu_TamStoTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 171 */  {.menuItem = -MNU_TAMRCL_TVM,  .numItems = sizeof(menu_TamRclTVM     )/sizeof(int16_t), .softkeyItem = menu_TamRclTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 172 */  {.menuItem = -MNU_VECT,        .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 
-/* 172 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 173 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -2029,6 +2036,7 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading
          item == ITM_SIM_EQ    ||
          item == ITM_DELITM    ||
          item == ITM_M_EDI     ||
+         item == ITM_M_EDIN    ||
          item == ITM_CLKp2     ||
          item == ITM_BITSp2;
          /*item == ITM_PLOT_CENTRL ||  CENTRL does not bring up a new menu - it is the same menu therefore not inverted */
