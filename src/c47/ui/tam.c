@@ -268,6 +268,17 @@
         return;
       }
     }
+
+    else if(tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_CNORM || item == ITM_RNORM || item == ITM_ENORM || item == ITM_INFINITY)) {
+      switch(item) {
+        case ITM_CNORM:    tam.value = pNorm_1_CNORM   ; forceTry = true; break;
+        case ITM_ENORM:    tam.value = pNorm_2_ENORM   ; forceTry = true; break;
+        case ITM_RNORM:    tam.value = pNorm_inf_RNORM ; forceTry = true; break;
+        case ITM_INFINITY: tam.value = pNorm_inf_RNORM ; forceTry = true; break;
+        default:;
+      }
+    }
+
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
         if(stringByteLength(aimBuffer) != 0) {
@@ -324,6 +335,9 @@
         if(tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB) {
           if(tam.function == ITM_DENMAX2) {
             showSoftmenu(-MNU_TAMNONREGMAX);
+          }
+          else if(tam.function == ITM_PNORM) {
+            showSoftmenu(-MNU_TAMNORM);
           }
           else {
             showSoftmenu(-MNU_TAMNONREG);
@@ -673,7 +687,6 @@
           } else {
             tam.value = indexOfItems[item].param;
             tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
-printf("tam.value: %d\n",tam.value);
             forceTry = true;
             // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
             // when determining if this is valid
@@ -1109,6 +1122,12 @@ printf("tam.value: %d\n",tam.value);
     tam.keyInputFinished = false;
 
     switch(tam.mode) {
+      case TM_VALUE_NORM:                                                //Changing over to TM_VALUE, used to add the menu buttons for inf, CNORM, RNORM, ENORM
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMNORM);
+        }
+        tam.mode = TM_VALUE;
+        break;
       case TM_VALUE_MAX:                                                 //Changing over to TM_VALUE, only used to add the max button for 0
         if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAMNONREGMAX);

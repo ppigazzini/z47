@@ -109,7 +109,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnEllipticPi",           fnEllipticPi          },
   {"fnErf",                  fnErf                 },
   {"fnErfc",                 fnErfc                },
-  {"fnEuclideanNorm",        fnEuclideanNorm       },
+  {"fnPNorm",                fnPNorm               },
   {"fnEulersFormula",        fnEulersFormula       },
   {"fnExp",                  fnExp                 },
   {"fnExpM1",                fnExpM1               },
@@ -252,7 +252,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRound",                fnRound               },
   {"fnRoundi",               fnRoundi              },
   {"fnRowSum",               fnRowSum              },
-  {"fnRowNorm",              fnRowNorm             },
   {"fnRR",                   fnRr                  },
   {"fnRRC",                  fnRrc                  },
 

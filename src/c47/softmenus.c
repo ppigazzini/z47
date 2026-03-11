@@ -133,31 +133,31 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_DIM,                     ITM_M_DIM_GR,               ITM_M_EDIN,               ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_NULL,                      ITM_NULL,                   ITM_M_INV,                ITM_M_DET,            -MNU_VECCONV,                -MNU_VECT,
-                                             ITM_ENORM,                     ITM_RNORM,                  ITM_RSUM,                 ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_RSUM,                      ITM_CSUM,                   ITM_M_INV,                ITM_M_DET,            -MNU_VECCONV,                -MNU_VECT,
+                                             ITM_PNORM,                     ITM_NULL,                   ITM_NULL,                 ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_M_CONCAT,                  ITM_M_RR,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_INDEX,
+                                             ITM_M_CONCAT,                  ITM_M_RR,                   ITM_M_CC,                 ITM_NULL,              ITM_NULL,                    ITM_INDEX,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS                 };
 
 
 TO_QSPI const int16_t menu_VECT[]        = {
 #if (CALCMODEL == USER_R47)
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_CLSTK,
-                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,          -MNU_VECCONV,                 ITM_CLSTK,
-                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001                      };
 #else //USER_C47
                                              ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,          -MNU_VECCONV,                 ITM_DRG,
-                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,          -MNU_VECCONV,                 ITM_DRG,
-                                             ITM_ENORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001                      };
 #endif //USER_C47
 
@@ -690,6 +690,9 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              SFL_BCD,                       SFL_TOPHEX,                 SFL_LEAD0,                SFL_OVERFLOW,          SFL_CARRY,                   -MNU_FLG                      };
 
+TO_QSPI const int16_t menu_TamNorm[]     = { ITM_INDIRECTION,               ITM_INFINITY,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_RNORM,                ITM_CNORM,             ITM_ENORM,                   ITM_NULL                      };
+
 TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 TO_QSPI const int16_t menu_TamNonRegTrk[]= { ITM_INDIRECTION,               ITM_YY_TRACK,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
                                              ITM_NULL,                      ITM_YY_OFF,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
@@ -1089,8 +1092,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 171 */  {.menuItem = -MNU_TAMSTO_TVM,  .numItems = sizeof(menu_TamStoTVM     )/sizeof(int16_t), .softkeyItem = menu_TamStoTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 171 */  {.menuItem = -MNU_TAMRCL_TVM,  .numItems = sizeof(menu_TamRclTVM     )/sizeof(int16_t), .softkeyItem = menu_TamRclTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 172 */  {.menuItem = -MNU_VECT,        .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 173 */  {.menuItem = -MNU_TAMNORM,     .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
-/* 173 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 174 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
