@@ -7,19 +7,18 @@ void fnChangeBase(uint16_t base) {
   bool_t sign;
   uint64_t val;
 
-  if (base < 2 || base > 16) {
+  if(base < 2 || base > 16) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "base = %" PRIu16 "! The base must be fron 2 to 16.", base);
       moreInfoOnError("In function fnChangeBase:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-
-  if (!getRegisterAsShortInt(REGISTER_X, &sign, &val, NULL, NULL))
-    return;
-  convertUInt64ToShortIntegerRegister(sign, val, base, REGISTER_X);
-  lastIntegerBase = base;                //JMNIM
-  fnRefreshState();             //JM
+  else if(getRegisterAsShortInt(REGISTER_X, &sign, &val, NULL, NULL)) {
+    convertUInt64ToShortIntegerRegister(sign, val, base, REGISTER_X);
+    lastIntegerBase = base;                //JMNIM
+    fnRefreshState();             //JM
+  }
 }
 
 
