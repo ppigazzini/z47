@@ -177,88 +177,244 @@ static void cmpToResult(int result, uint8_t mode) {
   }
 }
 
+/* ============================================================================
+ *  Type-pair helpers (replaces GLUE2 / GLUE2X / GLUE2Y)
+ *  - Encodes two 8-bit type IDs into one 16-bit key:
+ *      low byte  = left operand type (REGISTER_X)
+ *      high byte = right operand type (regist)
+ *  IMPORTANT: This assumes dtXXX values fit into 0..255. If not, use 16+16.
+ * ========================================================================== */
+#define type_pair_u8(lo, hi) ((uint16_t)lo | ((uint16_t)hi << 8))
+#define type_lo_u8(p) ((uint8_t)(p & 0xFFu))
+#define type_hi_u8(p) ((uint8_t)(p >> 8))
+
+/* Normalize any comparator output into -1 / 0 / +1 */
+static inline int cmp_sign(int v) { return (v > 0) - (v < 0); }
+
+static inline bool mode_is_equality(uint8_t mode) {
+  return (mode == COMPARE_MODE_EQUAL) || (mode == COMPARE_MODE_NOT_EQUAL);
+}
+
+/* ============================================================================
+ *  Register eligibility helpers (precondition)
+ *  Goal: replace the hard-to-read compound boolean with readable helpers.
+ * ========================================================================== */
+
+static inline bool in_range_inclusive(uint16_t v, uint16_t lo, uint16_t hi) {
+  return (v >= lo) && (v <= hi);
+}
+
+static inline bool is_local_register(uint16_t r) {
+  /* Assumption: currentNumberOfLocalRegisters is a COUNT -> upper bound exclusive */
+  const uint16_t first = FIRST_LOCAL_REGISTER;
+  const uint16_t end_exclusive =
+      (uint16_t)(FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
+  return (r >= first) && (r < end_exclusive);
+}
+
+static inline bool is_named_variable(uint16_t r) {
+  /* Assumption: numberOfNamedVariables is a COUNT.
+     If it is already an inclusive max index, adjust accordingly. */
+  if (numberOfNamedVariables == 0) return false;
+  const uint16_t lo = FIRST_NAMED_VARIABLE;
+  const uint16_t hi =
+      (uint16_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+  return in_range_inclusive(r, lo, hi);
+}
+
+static inline bool is_reserved_variable(uint16_t r) {
+  return in_range_inclusive(r, FIRST_RESERVED_VARIABLE, LAST_RESERVED_VARIABLE);
+}
+
+static inline bool is_lettered_register(uint16_t r) {
+  return in_range_inclusive(r, FIRST_LETTERED_REGISTER , LAST_LETTERED_REGISTER);
+}
+
+static inline bool is_comparable_register(uint16_t r) {
+  return is_local_register(r) ||
+         is_named_variable(r) ||
+         is_reserved_variable(r) ||
+         is_lettered_register(r) ||
+         (r == TEMP_REGISTER_1);
+}
+
+/* ============================================================================
+ *  Numeric comparison helpers
+ * ========================================================================== */
+
+static inline void compare_reals_to_temporaryInformation(real_t *a, real_t *b, uint8_t mode) {
+  /* Real ordering/equality is invalid if any operand is NaN */
+  if (realIsNaN(a) || realIsNaN(b)) {
+    temporaryInformation = TI_FALSE;
+    return;
+  }
+
+  /* realCompare stores the sign of (a ? b) into diff */
+  real_t diff;
+  realCompare(a, b, &diff, &ctxtReal39);
+
+  const int cmp = realIsZero(&diff) ? 0 : realIsNegative(&diff) ? -1 : 1;
+  cmpToResult(cmp, mode);
+}
+
+static inline void compare_complex_to_temporaryInformation(real_t *aRe, real_t *aIm,
+                                                       real_t *bRe, real_t *bIm,
+                                                       uint8_t mode,
+                                                       uint16_t regist_for_error) {
+  // Complex numbers do not have a total ordering; only == and != are supported 
+  if (!mode_is_equality(mode)) {
+    compareTypeError(regist_for_error);
+    return;
+  }
+  compare_reals_to_temporaryInformation(aRe, bRe, mode);
+  if (temporaryInformation!=TI_FALSE)
+    compare_reals_to_temporaryInformation(aIm, bIm, mode);
+}
+
+/* ============================================================================
+ *  Main compare function
+ * ========================================================================== */
 static void compareRegisters(uint16_t regist, uint8_t mode) {
-  if((regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) || (FIRST_NAMED_VARIABLE <= regist && regist <= FIRST_NAMED_VARIABLE + numberOfNamedVariables) || (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) || (regist == TEMP_REGISTER_1)) {
-    const uint32_t typeX = getRegisterDataType(REGISTER_X);
-    const uint32_t typeR = getRegisterDataType(regist);
+  /* Precondition: only proceed for valid/comparable registers regardless types */
+  if (!is_comparable_register(regist)) {
+    // TODO: raiser a proper error
+    return;
+  }
+  /* Encode type pair */
+  const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
+  const uint8_t rType = (uint8_t)getRegisterDataType(regist);
+  const uint16_t test = type_pair_u8(xType, rType);
 
-    if(typeX == dtString || typeR == dtString) {
-      if(typeX != typeR) {
-        compareTypeError(regist);
-      }
-      else {
-        cmpToResult(compareString(REGISTER_STRING_DATA(REGISTER_X), REGISTER_STRING_DATA(regist), CMP_EXTENSIVE), mode);
-      }
-    }
-    else if(typeX == dtConfig || typeR == dtConfig) {
-      if(typeX != typeR) {
-        compareTypeError(regist);
-      }
-      else if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-        compareTypeError(regist);
-      }
-      else {
-        cmpToResult(memcmp(REGISTER_CONFIG_DATA(REGISTER_X), REGISTER_CONFIG_DATA(regist), CONFIG_SIZE_IN_BLOCKS), mode);
-      }
-    }
-    else if(typeX == dtReal34Matrix || typeX == dtComplex34Matrix || typeR == dtReal34Matrix || typeR == dtComplex34Matrix) {
-      if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-        compareTypeError(regist);
-      }
-      else if(regist == TEMP_REGISTER_1) {
-        compareMatrix01(regist, mode, typeX);
-      }
-      else if((typeX != dtReal34Matrix && typeX != dtComplex34Matrix) || (typeR != dtReal34Matrix && typeR != dtComplex34Matrix)) {
-        compareTypeError(regist);
-      }
-      else {
-        compareMatrices(regist, mode, typeX, typeR);
-      }
-    }
-    else if((typeX == dtShortInteger || typeX == dtLongInteger) && (typeR == dtShortInteger || typeR == dtLongInteger)) {
-      longInteger_t xInt, rInt;
+  real_t xReal, xImag, rReal, rImag;
 
-      if(getRegisterAsLongInt(REGISTER_X, xInt, NULL) && getRegisterAsLongInt(regist, rInt, NULL)) {
+  switch (test) {
+
+    /* ------------------------------------------------------------------------
+     * String vs String
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtString, dtString): {
+      const int c = compareString(REGISTER_STRING_DATA(REGISTER_X),
+                                  REGISTER_STRING_DATA(regist),
+                                  CMP_EXTENSIVE);
+      cmpToResult(c, mode);
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Config vs Config (equality only)
+     * NOTE: memcmp is safe only if configs are canonical byte blobs (no padding).
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtConfig, dtConfig): {
+      if (!mode_is_equality(mode)) {
+        compareTypeError(regist);
+        break;
+      }
+      int c = memcmp(REGISTER_CONFIG_DATA(REGISTER_X),
+                     REGISTER_CONFIG_DATA(regist),
+                     CONFIG_SIZE_IN_BLOCKS);
+      cmpToResult(cmp_sign(c), mode);
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Matrix vs Matrix (equality only)
+     * Supports same-type matrices and (optionally) real/complex matrix mix.
+     * We forward both types to compareMatrices so it can decide how to handle it.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtReal34Matrix,    dtReal34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
+    /* Optional mixed matrix equality support (enable if compareMatrices supports it) */
+    case type_pair_u8(dtReal34Matrix,    dtComplex34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtReal34Matrix): {
+      if (!mode_is_equality(mode)) {
+        compareTypeError(regist);
+        break;
+      }
+
+      /* TEMP_REGISTER_1 has a specialized path in the original code.
+         If the matrix types differ, use the generic path (it receives both types). */
+      if (regist == TEMP_REGISTER_1 && xType == rType) {
+        compareMatrix01(regist, mode, xType);
+      } else {
+        compareMatrices(regist, mode, xType, rType);
+      }
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Integer pairs (short/long mix)
+     * Use big-int comparison to avoid precision loss.
+     * IMPORTANT: initialize to NULL to avoid freeing uninitialized values.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtShortInteger, dtShortInteger):
+    case type_pair_u8(dtLongInteger,  dtLongInteger):
+    case type_pair_u8(dtShortInteger, dtLongInteger):
+    case type_pair_u8(dtLongInteger,  dtShortInteger): {
+      longInteger_t xInt;
+      longInteger_t rInt;
+
+      if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
+        compareTypeError(REGISTER_X);
+      } else if (!getRegisterAsLongInt(regist, rInt, NULL)) {
+        compareTypeError(regist);
+      } else {
         cmpToResult(longIntegerCompare(xInt, rInt), mode);
       }
+
       longIntegerFree(xInt);
       longIntegerFree(rInt);
-    }
-    else {
-      real_t xReal, xImag, rReal, rImag;
-      bool cmplx = false;
+    } break;
 
-      if(!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &cmplx) || !getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &cmplx)) {
-        return;
+    /* ------------------------------------------------------------------------
+     * (complex, real) x (complex, real, shortI, longI)
+     * short & long integers will be casted as real
+     * Rule:
+     *  - If any operand is truly complex (imag != 0), only == and != are supported.
+     *  - If both are effectively real (imag == 0), allow full real comparison.
+     * ---------------------------------------------------------------------- */
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
+
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):
+
+    case type_pair_u8(dtShortInteger, dtComplex34):
+    case type_pair_u8(dtShortInteger, dtReal34):
+    case type_pair_u8(dtLongInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtReal34): {
+      bool isComplex = false;
+
+      // Note: getRegisterAsComplexOrAnyReal sets isComplex to true or leaves it unchanged,
+      // effectively implementing a logical OR.
+      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &isComplex)) {
+        compareTypeError(REGISTER_X);
+        break;
       }
-      if(cmplx) {
-        if(mode != COMPARE_MODE_EQUAL && mode != COMPARE_MODE_NOT_EQUAL) {
-          compareTypeError(regist);
-        }
-        else if(realIsNaN(&xReal) || realIsNaN(&rReal) || realIsNaN(&xImag) || realIsNaN(&rImag)) {
-          temporaryInformation = TI_FALSE;
-        }
-        else {
-          SET_TI_TRUE_FALSE((realCompareEqual(&xReal, &rReal) && realCompareEqual(&xImag, &rImag)) == (mode == COMPARE_MODE_EQUAL));
-        }
+      if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &isComplex)) {
+        compareTypeError(regist);
+        break;
       }
-      else {
-        if(realIsNaN(&xReal) || realIsNaN(&rReal)) {
-          temporaryInformation = TI_FALSE;
-        }
-        else {
-          realCompare(&xReal, &rReal, &xImag, &ctxtReal39);
-          cmpToResult(realIsZero(&xImag) ? 0 : realIsNegative(&xImag) ? -1 : 1, mode);
-        }
+
+      if (isComplex) {
+        compare_complex_to_temporaryInformation(&xReal, &xImag, &rReal, &rImag, mode, regist);
+      } else {
+        compare_reals_to_temporaryInformation(&xReal, &rReal, mode);
       }
-    }
-  }
-  #if defined(PC_BUILD)
-    else {
+    } break;
+
+    /* ------------------------------------------------------------------------
+     * Unsupported combinations
+     * ---------------------------------------------------------------------- */
+    default:
+      compareTypeError(regist);
+#if defined(PC_BUILD)
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
-      moreInfoOnError("In function compareRegisters:", errorMessage, "is not defined!", NULL);
-    }
-  #endif // PC_BUILD
+      moreInfoOnError("In function compareRegisters:", errorMessage,
+                      "is not defined!", NULL);
+#endif
+      break;
+  }
 }
 
 void fnXLessThan(uint16_t regist) {
@@ -361,85 +517,184 @@ static void almostEqualMatrix(uint16_t regist) {
   #endif // !TESTSUITE_BUILD
 }
 
-static void almostEqualScalar(uint16_t regist) {
-  real34_t val1r, val1i, val2r, val2i;
-
-  real34Copy(const34_0, &val1i);
-  real34Copy(const34_0, &val2i);
-
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
-    real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), &val1i);
+#define SNAPVAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
+  { \
+  case dtComplex34: \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
+    real34Copy(REGISTER_IMAG34_DATA(reg), &s.i); \
+    break; \
+  case dtReal34: \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
+    real34Copy(const34_0, &s.i); \
+    break; \
+  case dtLongInteger: \
+    getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
+    break; \
+  case dtShortInteger: \
+    getRegisterAsRawShortInt(REGISTER_X, &s.siVal, &s.siBase); \
+    break; \
   }
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &val1r);
-  if(getRegisterDataType(regist) == dtComplex34) {
-    real34Copy(REGISTER_IMAG34_DATA(regist), &val2i);
-  }
-  real34Copy(REGISTER_REAL34_DATA(regist), &val2r);
 
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtComplex34: {
+#define RESTOREVAL(reg, s) switch(s.t) \
+  { \
+  case dtComplex34: \
+    real34Copy(&s.i,REGISTER_IMAG34_DATA(reg)); \
+  case dtReal34: \
+    real34Copy(&s.r,REGISTER_REAL34_DATA(reg)); \
+    break; \
+  case dtLongInteger: \
+    convertLongIntegerToLongIntegerRegister(s.li,reg); \
+    longIntegerFree(s.li); \
+    break; \
+  case dtShortInteger: \
+    *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal; \
+    setRegisterShortIntegerBase(reg,s.siBase); \
+    break; \
+  }
+
+
+static void almostEqualScalar(uint16_t regist, const uint16_t test) {
+  struct snap_t {
+      uint8_t t;
+      real34_t r, i;
+      longInteger_t li;
+      uint64_t siVal;
+      uint32_t siBase;
+    } snap1, snap2;
+
+  // Snapshot real values before rounding
+  SNAPVAL(REGISTER_X, snap1);
+  SNAPVAL(regist, snap2);
+
+  switch(test) {
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
       roundCplx();
       break;
-    }
-    case dtReal34: {
+
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):
       roundReal();
       break;
-    }
-    default: { /* dtTime */
-     roundTime();
-     break;
-    }
+
+    //ret20260309: when SI vs Real or Complex, cast to real
+    case type_pair_u8(dtShortInteger, dtComplex34):
+    case type_pair_u8(dtShortInteger, dtReal34):
+      convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      roundReal();
+      break;
+
+    //ret20260309: when LI vs Real or Complex, cast to real
+    case type_pair_u8(dtLongInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtReal34):
+      convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+      roundReal();
+      break;
+
+    case type_pair_u8(dtTime, dtTime):
+      roundTime();
+      break;
   }
   if(regist != TEMP_REGISTER_1) {
     fnSwapX(regist);
-    switch(getRegisterDataType(REGISTER_X)) {
-      case dtComplex34: {
+    switch(test) {
+      case type_pair_u8(dtComplex34, dtComplex34):
+      case type_pair_u8(dtReal34, dtComplex34):
+      case type_pair_u8(dtShortInteger, dtComplex34):
+      case type_pair_u8(dtLongInteger, dtComplex34):
         roundCplx();
         break;
-      }
-      case dtReal34: {
+
+      case type_pair_u8(dtComplex34, dtReal34):
+      case type_pair_u8(dtReal34, dtReal34):
+      case type_pair_u8(dtShortInteger, dtReal34): 
+      case type_pair_u8(dtLongInteger, dtReal34):
         roundReal();
         break;
-      }
-      default: { /* dtTime */
+
+      //ret20260309: when SI vs Real or Complex, cast to real
+      case type_pair_u8(dtComplex34, dtShortInteger):
+      case type_pair_u8(dtReal34, dtShortInteger):
+        convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        roundReal();
+        break;
+
+      //ret20260309: when LI vs Real or Complex, cast to real
+      case type_pair_u8(dtComplex34, dtLongInteger):
+      case type_pair_u8(dtReal34, dtLongInteger):  
+        convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        roundReal();
+        break;
+
+      case type_pair_u8(dtTime, dtTime):
         roundTime();
         break;
-      }
+
+      default:
+          fnSwapX(regist);
+          compareTypeError(regist);
+          return;
     }
     fnSwapX(regist);
   }
 
   compareRegisters(regist, COMPARE_MODE_EQUAL);
 
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
-    real34Copy(&val1i, REGISTER_IMAG34_DATA(REGISTER_X));
-  }
-  real34Copy(&val1r, REGISTER_REAL34_DATA(REGISTER_X));
-  if(getRegisterDataType(regist) == dtComplex34) {
-    real34Copy(&val2i, REGISTER_IMAG34_DATA(regist));
-  }
-  real34Copy(&val2r, REGISTER_REAL34_DATA(regist));
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+  RESTOREVAL(REGISTER_X, snap1);
+  RESTOREVAL(regist, snap2);
+  #pragma GCC diagnostic pop
 }
 
+
 void fnXAlmostEqual(uint16_t regist) {
-  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-      almostEqualMatrix(regist);
-    }
-    else {
-      compareTypeError(regist);
-    }
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtTime) {
-    if(getRegisterDataType(regist) == dtReal34 || getRegisterDataType(regist) == dtComplex34 || getRegisterDataType(regist) == dtTime) {
-      almostEqualScalar(regist);
-    }
-    else {
-      compareTypeError(regist);
-    }
-  }
-  else {
+  /* Encode type pair */
+  const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
+  const uint8_t rType = (uint8_t)getRegisterDataType(regist);
+  const uint16_t test = type_pair_u8(xType, rType);
+  switch(test) 
+  {
+  case type_pair_u8(dtReal34Matrix, dtReal34Matrix):
+  case type_pair_u8(dtReal34Matrix, dtComplex34Matrix):
+  case type_pair_u8(dtComplex34Matrix, dtReal34Matrix):
+  case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
+    almostEqualMatrix(regist);
+    break;
+
+  case type_pair_u8(dtComplex34, dtComplex34):
+  case type_pair_u8(dtComplex34, dtReal34):
+  case type_pair_u8(dtComplex34, dtShortInteger):
+  case type_pair_u8(dtComplex34, dtLongInteger):
+
+  case type_pair_u8(dtReal34, dtComplex34):
+  case type_pair_u8(dtReal34, dtReal34):
+  case type_pair_u8(dtReal34, dtShortInteger):
+  case type_pair_u8(dtReal34, dtLongInteger):
+
+  case type_pair_u8(dtShortInteger, dtComplex34):
+  case type_pair_u8(dtShortInteger, dtReal34):
+  case type_pair_u8(dtLongInteger, dtComplex34):
+  case type_pair_u8(dtLongInteger, dtReal34):
+  case type_pair_u8(dtTime, dtTime):
+    almostEqualScalar(regist, test);
+    break;
+
+  case type_pair_u8(dtShortInteger, dtShortInteger):
+  case type_pair_u8(dtShortInteger, dtLongInteger):  
+  case type_pair_u8(dtLongInteger, dtShortInteger):
+  case type_pair_u8(dtLongInteger, dtLongInteger):
+    // No need to round
+    compareRegisters(regist, COMPARE_MODE_EQUAL);
+    break;
+
+  default:
     compareTypeError(regist);
+    break;
   }
 }
 
@@ -474,4 +729,3 @@ void fnIsConverged(uint16_t mode) {
     SET_TI_TRUE_FALSE(isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
   }
 }
-
