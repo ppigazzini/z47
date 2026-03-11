@@ -972,11 +972,6 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 }
 
 
-void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(saveLastX())
-    _fnEuclideanNorm(NOPARAM);
-}
-
 
 void fnVectorDist(uint16_t unusedParamButMandatory) {
   fnSubtract(NOPARAM);
@@ -1058,7 +1053,7 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
 }
 
 
-void fnRowNorm(uint16_t unusedParamButMandatory) {
+static void _rowNorm(uint16_t unusedParamButMandatory) {
   if(!saveLastX()) {
     return;
   }
@@ -1116,6 +1111,19 @@ void fnRowNorm(uint16_t unusedParamButMandatory) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
+
+
+
+void fnPNorm(uint16_t param) {
+  switch(param) {
+    case pNorm_1_CNORM  : /*columnNorm*/ break;
+    case pNorm_2_ENORM  : if(saveLastX()) {_fnEuclideanNorm(NOPARAM);} break;
+    case pNorm_inf_RNORM: _rowNorm(NOPARAM); break;
+    default:;
+  }
+}
+
+
 
 
 void fnVectorAngle(uint16_t unusedParamButMandatory) {

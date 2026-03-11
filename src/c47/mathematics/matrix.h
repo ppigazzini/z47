@@ -63,7 +63,8 @@
    *
    * \param[in] unusedParamButMandatory
    */
-  void       fnEuclideanNorm                (uint16_t unusedParamButMandatory);
+
+  void       fnPNorm                        (uint16_t unusedParamButMandatory);
   void       fnVectorDist                   (uint16_t unusedParamButMandatory);
   void       convert3DtoSPH                 (const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay);
   void       convertSPHto3D                 (real_t *r, real_t *th1, real_t *th2, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay);
@@ -78,13 +79,6 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnRowSum                       (uint16_t unusedParamButMandatory);
-
-  /**
-   * Row norm of matrix X.
-   *
-   * \param[in] unusedParamButMandatory
-   */
-  void       fnRowNorm                      (uint16_t unusedParamButMandatory);
 
 
   /**

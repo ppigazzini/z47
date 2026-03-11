@@ -535,6 +535,15 @@
 //*************************
 //* Other defines         *
 //*************************
+
+//pNorm defines
+
+//#define pNorm_0_         0
+  #define pNorm_1_CNORM    1
+  #define pNorm_2_ENORM    2
+  #define pNorm_inf_RNORM  4
+
+
 #define CHARS_PER_LINE                            80 // Used in the flag browser application
 
 #define NUMERIC_FONT_HEIGHT                       36 // In pixel. Used in the font browser application
@@ -1511,7 +1520,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_MENU                                10017
 #define TM_LBLONLY                             10018
 #define TM_VARONLY                             10019
-#define TM_CMP                                 10020 // TM_CMP must be the last in this list
+#define TM_VALUE_NORM                          10020
+#define TM_CMP                                 10021 // TM_CMP must be the last in this list
 
 // gamma function type
 #define GAMMA_XYLOWER                              0
