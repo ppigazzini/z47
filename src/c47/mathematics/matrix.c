@@ -987,26 +987,28 @@ void fnVectorDist(uint16_t unusedParamButMandatory) {
 
 
 
-void fnRowSum(uint16_t unusedParamButMandatory) {
+// isRow == 1: row sum (result column vector); isRow == 0: column sum (result row vector)
+void fnRowColSum(uint16_t isRow) {
   if(!saveLastX()) {
     return;
   }
-
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t x, res;
     real_t sum, elem;
+    uint16_t outerLimit, innerLimit, cols;
     linkToRealMatrixRegister(REGISTER_X, &x);
-
-    if(realMatrixInit(&res, x.header.matrixRows, 1)) {
-      for(uint16_t i = 0; i < x.header.matrixRows; ++i) {
+    cols       = x.header.matrixColumns;
+    outerLimit = isRow ? x.header.matrixRows : cols;
+    innerLimit = isRow ? cols                : x.header.matrixRows;
+    if(realMatrixInit(&res, isRow ? outerLimit : 1, isRow ? 1 : outerLimit)) {
+      for(uint16_t i = 0; i < outerLimit; ++i) {
         realZero(&sum);
-        for(uint16_t j = 0; j < x.header.matrixColumns; ++j) {
-          real34ToReal(&x.matrixElements[i * x.header.matrixColumns + j], &elem);
+        for(uint16_t j = 0; j < innerLimit; ++j) {
+          real34ToReal(&x.matrixElements[isRow ? i * cols + j : j * cols + i], &elem);
           realAdd(&sum, &elem, &sum, &ctxtReal39);
         }
         realToReal34(&sum, &res.matrixElements[i]);
       }
-
       convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
       realMatrixFree(&res);
     }
@@ -1014,28 +1016,31 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1e");
-        moreInfoOnError("In function fnRowSum:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnRowColSum:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x, res;
     real_t sumr, sumi, elem;
+    uint16_t outerLimit, innerLimit, cols, idx;
     linkToComplexMatrixRegister(REGISTER_X, &x);
-
-    if(complexMatrixInit(&res, x.header.matrixRows, 1)) {
-      for(uint16_t i = 0; i < x.header.matrixRows; ++i) {
+    cols       = x.header.matrixColumns;
+    outerLimit = isRow ? x.header.matrixRows : cols;
+    innerLimit = isRow ? cols                : x.header.matrixRows;
+    if(complexMatrixInit(&res, isRow ? outerLimit : 1, isRow ? 1 : outerLimit)) {
+      for(uint16_t i = 0; i < outerLimit; ++i) {
         realZero(&sumr); realZero(&sumi);
-        for(uint16_t j = 0; j < x.header.matrixColumns; ++j) {
-          real34ToReal(VARIABLE_REAL34_DATA(&x.matrixElements[i * x.header.matrixColumns + j]), &elem);
+        for(uint16_t j = 0; j < innerLimit; ++j) {
+          idx = isRow ? i * cols + j : j * cols + i;
+          real34ToReal(VARIABLE_REAL34_DATA(&x.matrixElements[idx]), &elem);
           realAdd(&sumr, &elem, &sumr, &ctxtReal39);
-          real34ToReal(VARIABLE_IMAG34_DATA(&x.matrixElements[i * x.header.matrixColumns + j]), &elem);
+          real34ToReal(VARIABLE_IMAG34_DATA(&x.matrixElements[idx]), &elem);
           realAdd(&sumi, &elem, &sumi, &ctxtReal39);
         }
         realToReal34(&sumr, VARIABLE_REAL34_DATA(&res.matrixElements[i]));
         realToReal34(&sumi, VARIABLE_IMAG34_DATA(&res.matrixElements[i]));
       }
-
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       complexMatrixFree(&res);
     }
@@ -1043,7 +1048,7 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2f");
-        moreInfoOnError("In function fnRowSum:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnRowColSum:",errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
@@ -1051,12 +1056,12 @@ void fnRowSum(uint16_t unusedParamButMandatory) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if defined(PC_BUILD)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-      moreInfoOnError("In function fnRowSum:", errorMessage, "is not a matrix.", "");
+      moreInfoOnError("In function fnRowColSum:", errorMessage, "is not a matrix.", "");
     #endif // PC_BUILD
   }
-
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
+
 
 
 // pParam == pNorm_inf_RNORM: rowNorm; pParam == pNorm_1_CNORM: columnNorm
