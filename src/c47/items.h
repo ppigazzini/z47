@@ -2763,13 +2763,21 @@
 #define ITM_3DXYZ                   2666
 #define ITM_STKtoV3                 2667
 #define ITM_V3toSTK                 2668
-#define ITM_PNORM                   2669
-#define ITM_CNORM                   2670
-#define ITM_CSUM                    2671
-#define MNU_TAMNORM                 2672
-#define ITM_M_CC                    2673
 
-#define LAST_ITEM                   2674
+#define ITM_PNORM                   2669
+#define ITM_NNZ                     2670
+#define ITM_CNORM                   2671
+#define ITM_2672                    2672
+#define ITM_2673                    2673
+#define ITM_2674                    2674
+#define ITM_CSUM                    2675
+#define MNU_TAMNORM                 2676
+#define ITM_M_CC                    2677
+#define ITM_2678                    2678
+#define ITM_2679                    2679
+#define ITM_2680                    2680
+
+#define LAST_ITEM                   2681
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

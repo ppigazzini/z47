@@ -269,8 +269,9 @@
       }
     }
 
-    else if(tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_CNORM || item == ITM_RNORM || item == ITM_ENORM || item == ITM_INFINITY)) {
+    else if(tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_NNZ || item == ITM_CNORM || item == ITM_RNORM || item == ITM_ENORM || item == ITM_INFINITY)) {
       switch(item) {
+        case ITM_NNZ:      tam.value = pNorm_0_NNZ     ; forceTry = true; break;
         case ITM_CNORM:    tam.value = pNorm_1_CNORM   ; forceTry = true; break;
         case ITM_ENORM:    tam.value = pNorm_2_ENORM   ; forceTry = true; break;
         case ITM_RNORM:    tam.value = pNorm_inf_RNORM ; forceTry = true; break;

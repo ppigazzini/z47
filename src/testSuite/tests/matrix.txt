@@ -127,6 +127,19 @@ In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 
 
+;=======================================
+; number of non-zero elements
+;=======================================
+Func:  fnPNorm(0) ;pNorm_0_NNZ
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
 
 ;=======================================
 ; Row sum
