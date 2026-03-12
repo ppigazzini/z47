@@ -1295,6 +1295,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnGetMatrix                 (uint16_t unusedButMandatoryParameter) {}
   void fnPutMatrix                 (uint16_t unusedButMandatoryParameter) {}
   void fnSwapRows                  (uint16_t unusedButMandatoryParameter) {}
+  void fnSwapColumns               (uint16_t unusedButMandatoryParameter) {}
   void fnSimultaneousLinearEquation(uint16_t unusedButMandatoryParameter) {}
   void fnEditLinearEquationMatrixA (uint16_t unusedButMandatoryParameter) {}
   void fnEditLinearEquationMatrixB (uint16_t unusedButMandatoryParameter) {}
@@ -4392,7 +4393,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2670 */  { itemToBeCoded/*fnPNorm*/,     pNorm_1_CNORM,               "CNORM",                                       "CNORM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2671 */  { itemToBeCoded/*fnColSum*/,    NOPARAM,                     "CSUM",                                        "CSUM",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2672 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNorm",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2673 */  { itemToBeCoded/*fnSwapRows*/,  NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2673 */  { fnSwapColumns,                NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
 /* 2673 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
