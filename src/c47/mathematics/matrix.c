@@ -123,11 +123,11 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
 
 
 #if !defined(TESTSUITE_BUILD)
-  static bool_t swapRowsReal(real34Matrix_t *matrix) {
-    real_t ry, rx, rrows;
+  static bool_t _swapReal(real34Matrix_t *matrix, bool_t isRow) {
+    real_t ry, rx, rlimit;
     uint16_t a, b;
 
-    int32ToReal(matrix->header.matrixRows, &rrows);
+    int32ToReal(isRow ? matrix->header.matrixRows : matrix->header.matrixColumns, &rlimit);
 
     if((!getArg(REGISTER_Y, &ry)) || (!getArg(REGISTER_X, &rx))) {
       return false;
@@ -135,17 +135,18 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
 
     a = realToInt32C47(&ry);
     b = realToInt32C47(&rx);
-    if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
+    if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rlimit) && realCompareLessEqual(&ry, &rlimit)) {
       if(!realCompareEqual(&ry, &rx)) {
-      realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        if(isRow) realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        else      realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
     }
       }
     else {
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "rows %" PRIu16 " and/or %" PRIu16 " out of range", a, b);
-          moreInfoOnError("In function swapRowsReal:", errorMessage, NULL, NULL);
+          sprintf(errorMessage, "%s %" PRIu16 " and/or %" PRIu16 " out of range", isRow ? "rows" : "columns", a, b);
+          moreInfoOnError("In function _swapReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
       return false;
@@ -154,11 +155,11 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     return true;
   }
 
-  static bool_t swapRowsComplex(complex34Matrix_t *matrix) {
-    real_t ry, rx, rrows;
+  static bool_t _swapComplex(complex34Matrix_t *matrix, bool_t isRow) {
+    real_t ry, rx, rlimit;
     uint16_t a, b;
 
-    int32ToReal(matrix->header.matrixRows, &rrows);
+    int32ToReal(isRow ? matrix->header.matrixRows : matrix->header.matrixColumns, &rlimit);
 
     if((!getArg(REGISTER_Y, &ry)) || (!getArg(REGISTER_X, &rx))) {
       return false;
@@ -166,17 +167,18 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
 
     a = realToInt32C47(&ry);
     b = realToInt32C47(&rx);
-    if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
+    if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rlimit) && realCompareLessEqual(&ry, &rlimit)) {
       if(!realCompareEqual(&ry, &rx)) {
-        complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        if(isRow) complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        else      complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
       }
     }
     else {
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "rows %" PRIu16 " and/or %" PRIu16 " out of range", a, b);
-          moreInfoOnError("In function swapRowsComplex:", errorMessage, NULL, NULL);
+          sprintf(errorMessage, "%s %" PRIu16 " and/or %" PRIu16 " out of range", isRow ? "rows" : "columns", a, b);
+          moreInfoOnError("In function swapComplex:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
       return false;
@@ -185,6 +187,10 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     return true;
   }
 
+  static bool_t swapRowsReal      (real34Matrix_t *matrix)    { return _swapReal   (matrix, true);  }
+  static bool_t swapColumnsReal   (real34Matrix_t *matrix)    { return _swapReal   (matrix, false); }
+  static bool_t swapRowsComplex   (complex34Matrix_t *matrix) { return _swapComplex(matrix, true);  }
+  static bool_t swapColumnsComplex(complex34Matrix_t *matrix) { return _swapComplex(matrix, false); }
 
 
   static bool_t getMatrixReal(real34Matrix_t *matrix) {
@@ -1209,6 +1215,12 @@ void fnPutMatrix(uint16_t unusedParamButMandatory) {
 void fnSwapRows(uint16_t unusedParamButMandatory) {
   #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix(swapRowsReal, swapRowsComplex);
+  #endif // !TESTSUITE_BUILD
+}
+
+void fnSwapColumns(uint16_t unusedParamButMandatory) {
+  #if !defined(TESTSUITE_BUILD)
+  callByIndexedMatrix(swapColumnsReal, swapColumnsComplex);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -3325,10 +3337,11 @@ void complex_LU_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
 }
 
 
-/* Swap 2 rows */
-void realMatrixSwapRows(const real34Matrix_t *matrix, real34Matrix_t *res, uint16_t a, uint16_t b) {
+/* Swap 2 rows / cols*/
+static void _realMatrixSwap(const real34Matrix_t *matrix, real34Matrix_t *res, uint16_t a, uint16_t b, bool_t isRow) {
   const uint16_t rows = matrix->header.matrixRows;
   const uint16_t cols = matrix->header.matrixColumns;
+  const uint16_t limit = isRow ? rows : cols;
   uint16_t i;
   real34_t t;
 
@@ -3336,11 +3349,13 @@ void realMatrixSwapRows(const real34Matrix_t *matrix, real34Matrix_t *res, uint1
     copyRealMatrix(matrix, res);
   }
   if(res->matrixElements) {
-    if((a < rows) && (b < rows) && (a != b)) {
-      for(i = 0; i < cols; i++) {
-        real34Copy(&res->matrixElements[a * cols + i], &t);
-        real34Copy(&res->matrixElements[b * cols + i], &res->matrixElements[a * cols + i]);
-        real34Copy(&t,                                 &res->matrixElements[b * cols + i]);
+    if((a < limit) && (b < limit) && (a != b)) {
+      for(i = 0; i < (isRow ? cols : rows); i++) {
+        uint16_t ia = isRow ? a * cols + i : i * cols + a;
+        uint16_t ib = isRow ? b * cols + i : i * cols + b;
+        real34Copy(&res->matrixElements[ia], &t);
+        real34Copy(&res->matrixElements[ib], &res->matrixElements[ia]);
+        real34Copy(&t,                       &res->matrixElements[ib]);
       }
     }
   }
@@ -3348,16 +3363,16 @@ void realMatrixSwapRows(const real34Matrix_t *matrix, real34Matrix_t *res, uint1
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
-      moreInfoOnError("In function realMatrixSwapRows:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _realMatrixSwap:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
 
-#if !defined(TESTSUITE_BUILD)
-void complexMatrixSwapRows(const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b) {
+static void _complexMatrixSwap(const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b, bool_t isRow) {
   const uint16_t rows = matrix->header.matrixRows;
   const uint16_t cols = matrix->header.matrixColumns;
+  const uint16_t limit = isRow ? rows : cols;
   uint16_t i;
   real34_t t;
 
@@ -3365,14 +3380,16 @@ void complexMatrixSwapRows(const complex34Matrix_t *matrix, complex34Matrix_t *r
     copyComplexMatrix(matrix, res);
   }
   if(res->matrixElements) {
-    if((a < rows) && (b < rows) && (a != b)) {
-      for(i = 0; i < cols; i++) {
-        real34Copy(VARIABLE_REAL34_DATA(&res->matrixElements[a * cols + i]), &t);
-        real34Copy(VARIABLE_REAL34_DATA(&res->matrixElements[b * cols + i]), VARIABLE_REAL34_DATA(&res->matrixElements[a * cols + i]));
-        real34Copy(&t,                                                       VARIABLE_REAL34_DATA(&res->matrixElements[b * cols + i]));
-        real34Copy(VARIABLE_IMAG34_DATA(&res->matrixElements[a * cols + i]), &t);
-        real34Copy(VARIABLE_IMAG34_DATA(&res->matrixElements[b * cols + i]), VARIABLE_IMAG34_DATA(&res->matrixElements[a * cols + i]));
-        real34Copy(&t,                                                       VARIABLE_IMAG34_DATA(&res->matrixElements[b * cols + i]));
+    if((a < limit) && (b < limit) && (a != b)) {
+      for(i = 0; i < (isRow ? cols : rows); i++) {
+        uint16_t ia = isRow ? a * cols + i : i * cols + a;
+        uint16_t ib = isRow ? b * cols + i : i * cols + b;
+        real34Copy(VARIABLE_REAL34_DATA(&res->matrixElements[ia]), &t);
+        real34Copy(VARIABLE_REAL34_DATA(&res->matrixElements[ib]), VARIABLE_REAL34_DATA(&res->matrixElements[ia]));
+        real34Copy(&t,                                             VARIABLE_REAL34_DATA(&res->matrixElements[ib]));
+        real34Copy(VARIABLE_IMAG34_DATA(&res->matrixElements[ia]), &t);
+        real34Copy(VARIABLE_IMAG34_DATA(&res->matrixElements[ib]), VARIABLE_IMAG34_DATA(&res->matrixElements[ia]));
+        real34Copy(&t,                                             VARIABLE_IMAG34_DATA(&res->matrixElements[ib]));
       }
     }
   }
@@ -3380,11 +3397,16 @@ void complexMatrixSwapRows(const complex34Matrix_t *matrix, complex34Matrix_t *r
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
-      moreInfoOnError("In function complexMatrixSwapRows:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _complexMatrixSwap:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
-#endif // !TESTSUITE_BUILD
+
+void realMatrixSwapRows      (const real34Matrix_t    *matrix, real34Matrix_t    *res, uint16_t a, uint16_t b) { _realMatrixSwap   (matrix, res, a, b, true);  }
+void realMatrixSwapColumns   (const real34Matrix_t    *matrix, real34Matrix_t    *res, uint16_t a, uint16_t b) { _realMatrixSwap   (matrix, res, a, b, false); }
+void complexMatrixSwapRows   (const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b) { _complexMatrixSwap(matrix, res, a, b, true);  }
+void complexMatrixSwapColumns(const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b) { _complexMatrixSwap(matrix, res, a, b, false); }
+
 
 
 /* Determinant */

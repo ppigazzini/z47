@@ -117,6 +117,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnSwapRows                     (uint16_t unusedParamButMandatory);
+  void       fnSwapColumns                  (uint16_t unusedParamButMandatory);
 
   /**
    * Initialize simultaneous linear equation solver.
@@ -376,6 +377,7 @@
 
   void     WP34S_LU_decomposition         (const real34Matrix_t *matrix, real34Matrix_t *lu, uint16_t *p);
   void     realMatrixSwapRows             (const real34Matrix_t *matrix, real34Matrix_t *res, uint16_t a, uint16_t b);
+  void     realMatrixSwapColumns          (const real34Matrix_t *matrix, real34Matrix_t *res, uint16_t a, uint16_t b);
   void     detRealMatrix                  (const real34Matrix_t *matrix, real34_t *res);
   void     invertRealMatrix               (const real34Matrix_t *matrix, real34Matrix_t *res);
   void     divideRealMatrix               (const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res);
@@ -386,6 +388,7 @@
 
   void     complex_LU_decomposition       (const complex34Matrix_t *matrix, complex34Matrix_t *lu, uint16_t *p);
   void     complexMatrixSwapRows          (const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b);
+  void     complexMatrixSwapColumns       (const complex34Matrix_t *matrix, complex34Matrix_t *res, uint16_t a, uint16_t b);
   void     detComplexMatrix               (const complex34Matrix_t *matrix, real34_t *res_r, real34_t *res_i);
   void     invertComplexMatrix            (const complex34Matrix_t *matrix, complex34Matrix_t *res);
   void     divideComplexMatrix            (const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res);
