@@ -251,9 +251,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRollUp",               fnRollUp              },
   {"fnRound",                fnRound               },
   {"fnRoundi",               fnRoundi              },
-  {"fnRowSum",               fnRowSum              },
+  {"fnRowColSum",            fnRowColSum           },
   {"fnRR",                   fnRr                  },
-  {"fnRRC",                  fnRrc                  },
+  {"fnRRC",                  fnRrc                 },
 
   {"fnSign",                 fnSign                },
   {"fnSin",                  fnSin                 },

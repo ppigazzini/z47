@@ -1287,7 +1287,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnLuDecomposition           (uint16_t unusedButMandatoryParameter) {}
   void fnDeterminant               (uint16_t unusedButMandatoryParameter) {}
   void fnInvertMatrix              (uint16_t unusedButMandatoryParameter) {}
-  void fnRowSum                    (uint16_t unusedButMandatoryParameter) {}
+  void fnRowColSum                 (uint16_t unusedButMandatoryParameter) {}
   void fnColSum                    (uint16_t unusedButMandatoryParameter) {}
   void fnPNorm                     (uint16_t unusedButMandatoryParameter) {}
   void fnVectorAngle               (uint16_t unusedButMandatoryParameter) {}
@@ -3271,7 +3271,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1575 */  { fnExpM1,                      NOPARAM,                     STD_EulerE STD_SUP_BOLD_x "-1",                STD_EulerE STD_SUP_BOLD_x "-1",                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1576 */  { fnExportProgram,              TM_LBLONLY,                  "XPORTP",                                      "XPORTP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1577 */  { fnRsd,                        TM_VALUE,                    "RSD",                                         "RSD",                                         (1 << TAM_MAX_BITS) |    34, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
-/* 1578 */  { fnRowSum,                     NOPARAM,                     "RSUM",                                        "RSUM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 1578 */  { fnRowColSum,                  1,                           "RSUM",                                        "RSUM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1579 */  { fnReturn,                     1,                           "RTN.SKP",                                     "RTN.SKP",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1580 */  { fnRegClr,                     NOPARAM,                     "R-CLR",                                       "R-CLR",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1581 */  { fnRegCopy,                    NOPARAM,                     "R-COPY",                                      "R-COPY",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -4391,7 +4391,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2668 */  { fnConvertMxToStk,             VECT_CR_AUT,                 STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2669 */  { fnPNorm,                      TM_VALUE_NORM,               "||" SEP "x" SEP "||" STD_SUB_p,               "||" SEP "x" SEP "||" STD_SUB_p,                (0 << TAM_MAX_BITS) |     4, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 /* 2670 */  { fnPNorm,                      pNorm_1_CNORM,               "CNORM",                                       "CNORM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2671 */  { itemToBeCoded/*fnColSum*/,    NOPARAM,                     "CSUM",                                        "CSUM",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2671 */  { fnRowColSum,                  0,                           "CSUM",                                        "CSUM",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2672 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNorm",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2673 */  { fnSwapColumns,                NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 

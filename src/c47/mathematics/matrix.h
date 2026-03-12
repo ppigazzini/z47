@@ -78,7 +78,7 @@
    *
    * \param[in] unusedParamButMandatory
    */
-  void       fnRowSum                       (uint16_t unusedParamButMandatory);
+  void       fnRowColSum                    (uint16_t unusedParamButMandatory);
 
 
   /**
