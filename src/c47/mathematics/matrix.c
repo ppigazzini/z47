@@ -139,8 +139,8 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       if(!realCompareEqual(&ry, &rx)) {
         if(isRow) realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
         else      realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
-    }
       }
+    }
     else {
       #if !defined(TESTSUITE_BUILD)
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -1064,9 +1064,11 @@ void fnRowColSum(uint16_t isRow) {
 
 
 
-// pParam == pNorm_inf_RNORM: rowNorm; pParam == pNorm_1_CNORM: columnNorm
+// pParam == pNorm_0_NNZ     : count of non-zero elements (whole matrix/vector)
+// pParam == pNorm_inf_RNORM : rowNorm; 
+// pParam == pNorm_1_CNORM   : columnNorm
 static void _row_columnNorm(uint16_t pParam) {
-  if(pParam != pNorm_inf_RNORM && pParam != pNorm_1_CNORM) {
+  if(pParam != pNorm_inf_RNORM && pParam != pNorm_1_CNORM && pParam != pNorm_0_NNZ) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if defined(PC_BUILD)
       sprintf(errorMessage, "pParam %" PRIu32, pParam);
@@ -1074,8 +1076,53 @@ static void _row_columnNorm(uint16_t pParam) {
     #endif // PC_BUILD
     return;
   }
-  bool_t isRow = (pParam == pNorm_inf_RNORM);
 
+  if(pParam == pNorm_0_NNZ) {
+    if(!saveLastX()) {
+      return;
+    }
+    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      real34Matrix_t x;
+      real_t nnz;
+      uint16_t nnzi = 0;
+      linkToRealMatrixRegister(REGISTER_X, &x);
+      uint16_t n = x.header.matrixRows * x.header.matrixColumns;
+      for(uint16_t k = 0; k < n; ++k) {
+        if(!real34IsZero(&x.matrixElements[k])) {
+          nnzi++;
+        }
+      }
+      uInt32ToReal(nnzi, &nnz);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      convertRealToReal34ResultRegister(&nnz, REGISTER_X);
+    }
+    else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+      complex34Matrix_t x;
+      real_t nnz;
+      uint16_t nnzi = 0;
+      linkToComplexMatrixRegister(REGISTER_X, &x);
+      uint16_t n = x.header.matrixRows * x.header.matrixColumns;
+      for(uint16_t k = 0; k < n; ++k) {
+        if(!real34IsZero(VARIABLE_REAL34_DATA(&x.matrixElements[k])) || !real34IsZero(VARIABLE_IMAG34_DATA(&x.matrixElements[k]))) {
+          nnzi++;
+        }
+      }
+      uInt32ToReal(nnzi, &nnz);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      convertRealToReal34ResultRegister(&nnz, REGISTER_X);
+    }
+    else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+        moreInfoOnError("In function _row_columnNorm:", errorMessage, "is not a matrix.", "");
+      #endif // PC_BUILD
+    }
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    return;
+  }
+
+  bool_t isRow = (pParam == pNorm_inf_RNORM);
   if(!saveLastX()) {
     return;
   }
@@ -1085,8 +1132,8 @@ static void _row_columnNorm(uint16_t pParam) {
     uint16_t outerLimit, innerLimit, cols, idx;
     linkToRealMatrixRegister(REGISTER_X, &x);
     cols = x.header.matrixColumns;
-    outerLimit = isRow ? x.header.matrixRows    : cols;
-    innerLimit = isRow ? cols                   : x.header.matrixRows;
+    outerLimit = isRow ? x.header.matrixRows : cols;
+    innerLimit = isRow ? cols                : x.header.matrixRows;
     realZero(&norm);
     for(uint16_t i = 0; i < outerLimit; ++i) {
       realZero(&sum);
@@ -1109,8 +1156,8 @@ static void _row_columnNorm(uint16_t pParam) {
     uint16_t outerLimit, innerLimit, cols, idx;
     linkToComplexMatrixRegister(REGISTER_X, &x);
     cols = x.header.matrixColumns;
-    outerLimit = isRow ? x.header.matrixRows    : cols;
-    innerLimit = isRow ? cols                   : x.header.matrixRows;
+    outerLimit = isRow ? x.header.matrixRows : cols;
+    innerLimit = isRow ? cols                : x.header.matrixRows;
     realZero(&norm);
     for(uint16_t i = 0; i < outerLimit; ++i) {
       realZero(&sum);
@@ -1142,9 +1189,10 @@ static void _row_columnNorm(uint16_t pParam) {
 
 void fnPNorm(uint16_t param) {
   switch(param) {
-    case pNorm_1_CNORM  : _row_columnNorm(param); break;
-    case pNorm_2_ENORM  : if(saveLastX()) {_fnEuclideanNorm(NOPARAM);} break;
+    case pNorm_0_NNZ    : 
+    case pNorm_1_CNORM  :
     case pNorm_inf_RNORM: _row_columnNorm(param); break;
+    case pNorm_2_ENORM  : if(saveLastX()) {_fnEuclideanNorm(NOPARAM);} break;
     default:;
   }
 }

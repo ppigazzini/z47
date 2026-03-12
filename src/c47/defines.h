@@ -538,7 +538,7 @@
 
 //pNorm defines
 
-//#define pNorm_0_         0
+  #define pNorm_0_NNZ      0
   #define pNorm_1_CNORM    1
   #define pNorm_2_ENORM    2
   #define pNorm_inf_RNORM  4

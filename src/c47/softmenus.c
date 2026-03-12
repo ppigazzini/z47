@@ -691,7 +691,7 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              SFL_BCD,                       SFL_TOPHEX,                 SFL_LEAD0,                SFL_OVERFLOW,          SFL_CARRY,                   -MNU_FLG                      };
 
 TO_QSPI const int16_t menu_TamNorm[]     = { ITM_INDIRECTION,               ITM_INFINITY,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_RNORM,                ITM_CNORM,             ITM_ENORM,                   ITM_NULL                      };
+                                             ITM_NULL,                      ITM_NNZ,                    ITM_RNORM,                ITM_CNORM,             ITM_ENORM,                   ITM_NULL                      };
 
 TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 TO_QSPI const int16_t menu_TamNonRegTrk[]= { ITM_INDIRECTION,               ITM_YY_TRACK,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
