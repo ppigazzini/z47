@@ -362,8 +362,8 @@
   void     _multiplyComplexMatrix         (const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext);
   void     multiplyComplexMatrices        (const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
 
-  void     euclideanNormRealMatrix        (const real34Matrix_t *matrix, real34_t *res);
-  void     euclideanNormComplexMatrix     (const complex34Matrix_t *matrix, real34_t *res);
+  void     euclideanNormRealMatrix        (const real34Matrix_t *matrix, uint16_t pParam, real34_t *res);
+  void     euclideanNormComplexMatrix     (const complex34Matrix_t *matrix, uint16_t pParam, real34_t *res);
 
   uint16_t realVectorSize                 (const real34Matrix_t *matrix);
   void     dotRealVectors                 (const real34Matrix_t *y, const real34Matrix_t *x, real34_t *res);

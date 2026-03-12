@@ -128,6 +128,20 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 
 
 ;=======================================
+; Euclidean (aka Frobenius) norm, p = 9
+;=======================================
+Func: fnPNorm(9) ;pNorm_2_ENORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"6.135060358359295905752434408356624651512"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"16.61630178335188287687597789600111822202"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
 ; number of non-zero elements
 ;=======================================
 Func:  fnPNorm(0) ;pNorm_0_NNZ
@@ -173,7 +187,7 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 ;=======================================
 ; Row norm
 ;=======================================
-Func: fnPNorm(4) ;pNorm_inf_RNORM
+Func: fnPNorm(9999) ;pNorm_inf_RNORM
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"11"
 

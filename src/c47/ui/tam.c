@@ -819,6 +819,12 @@
       }
     }
     else if(!tam.alpha && !forcedVar) {
+
+      // Allow the exceptional large value through if pressed by a button
+      if(forceTry && tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_RNORM || item == ITM_INFINITY)) {
+        max2 = pNorm_inf_RNORM + 1;
+      }
+
       // Check whether it is possible to add any more digits: if not, execute the function
       if((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2) && ((tam.mode != TM_MENU) || tam.indirect)) {
         int16_t value = tam.value;
