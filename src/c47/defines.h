@@ -541,7 +541,7 @@
   #define pNorm_0_NNZ      0
   #define pNorm_1_CNORM    1
   #define pNorm_2_ENORM    2
-  #define pNorm_inf_RNORM  4
+  #define pNorm_inf_RNORM  9999
 
 
 #define CHARS_PER_LINE                            80 // Used in the flag browser application

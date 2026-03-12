@@ -941,14 +941,14 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
 
 
 
-static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
+static void _fnEuclideanNorm(uint16_t pParam) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t matrix;
     real34_t sum;
 
     linkToRealMatrixRegister(REGISTER_X, &matrix);
 
-    euclideanNormRealMatrix(&matrix, &sum);
+    euclideanNormRealMatrix(&matrix, pParam, &sum);
 
     // `matrix` invalidates here
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -960,7 +960,7 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
     linkToComplexMatrixRegister(REGISTER_X, &matrix);
 
-    euclideanNormComplexMatrix(&matrix, &sum);
+    euclideanNormComplexMatrix(&matrix, pParam, &sum);
 
     // `matrix` invalidates here
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -981,7 +981,7 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
 void fnVectorDist(uint16_t unusedParamButMandatory) {
   fnSubtract(NOPARAM);
-  _fnEuclideanNorm(NOPARAM);
+  _fnEuclideanNorm(2);
 }
 
 
@@ -1192,8 +1192,12 @@ void fnPNorm(uint16_t param) {
     case pNorm_0_NNZ    : 
     case pNorm_1_CNORM  :
     case pNorm_inf_RNORM: _row_columnNorm(param); break;
-    case pNorm_2_ENORM  : if(saveLastX()) {_fnEuclideanNorm(NOPARAM);} break;
-    default:;
+    case pNorm_2_ENORM  :
+    default: if(param >= 2 && param <= 9) {
+               if(saveLastX()) {
+                 _fnEuclideanNorm(param);
+               } 
+             }
   }
 }
 
@@ -2928,43 +2932,42 @@ void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t
 
 
 /* Euclidean (Frobenius) norm */
-static void _euclideanNormRealMatrix(const real34Matrix_t *matrix, real_t *res, realContext_t *realContext) {
-  real_t elem;
-
+static void _euclideanNormRealMatrix(const real34Matrix_t *matrix, uint16_t pParam, real_t *res, realContext_t *realContext) {
+  real_t elem, pReal, pInv;
+  uInt32ToReal(pParam, &pReal);
+  realDivide(const_1, &pReal, &pInv, realContext);
   realZero(res);
   for(int i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns; ++i) {
     real34ToReal(&matrix->matrixElements[i], &elem);
-    real_t temp_result1;
-    realFMA(&elem, &elem, res, &temp_result1, realContext);
-    realCopy(&temp_result1, res);
+    realSetPositiveSign(&elem);
+    realPower(&elem, &pReal, &elem, realContext);
+    realAdd(res, &elem, res, realContext);
   }
-  realSquareRoot(res, res, realContext);
+  realPower(res, &pInv, res, realContext);
 }
 
 
-void euclideanNormRealMatrix(const real34Matrix_t *matrix, real34_t *res) {
+void euclideanNormRealMatrix(const real34Matrix_t *matrix, uint16_t pParam, real34_t *res) {
   real_t sum;
 
-  _euclideanNormRealMatrix(matrix, &sum, &ctxtReal39);
+  _euclideanNormRealMatrix(matrix, pParam, &sum, &ctxtReal39);
   realToReal34(&sum, res);
 }
 
 
-void euclideanNormComplexMatrix(const complex34Matrix_t *matrix, real34_t *res) {
-  real_t elem, sum;
-
+void euclideanNormComplexMatrix(const complex34Matrix_t *matrix, uint16_t pParam, real34_t *res) {
+  real_t elem, imag, pReal, pInv, sum;
+  uInt32ToReal(pParam, &pReal);
+  realDivide(const_1, &pReal, &pInv, &ctxtReal39);
   realZero(&sum);
   for(int i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns; ++i) {
     real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[i]), &elem);
-    real_t temp_result2;
-    realFMA(&elem, &elem, &sum, &temp_result2, &ctxtReal39);
-    realCopy(&temp_result2, &sum);
-    real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i]), &elem);
-    real_t temp_result3;
-    realFMA(&elem, &elem, &sum, &temp_result3, &ctxtReal39);
-    realCopy(&temp_result3, &sum);
+    real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i]), &imag);
+    complexMagnitude(&elem, &imag, &elem, &ctxtReal39);
+    realPower(&elem, &pReal, &elem, &ctxtReal39);
+    realAdd(&sum, &elem, &sum, &ctxtReal39);
   }
-  realSquareRoot(&sum, &sum, &ctxtReal39);
+  realPower(&sum, &pInv, &sum, &ctxtReal39);
   realToReal34(&sum, res);
 }
 
@@ -3141,9 +3144,9 @@ void vectorAngle(const real34Matrix_t *y, const real34Matrix_t *x, real34_t *rad
 
   if(elements == 2 || elements == 3) {
     _dotRealVectors(y, x, &a, &ctxtReal39);
-    _euclideanNormRealMatrix(y, &b, &ctxtReal39);
+    _euclideanNormRealMatrix(y, 2, &b, &ctxtReal39);
     realDivide(&a, &b, &a, &ctxtReal39);
-    _euclideanNormRealMatrix(x, &b, &ctxtReal39);
+    _euclideanNormRealMatrix(x, 2, &b, &ctxtReal39);
     realDivide(&a, &b, &a, &ctxtReal39);
     WP34S_Acos(&a, &a, &ctxtReal39);
     realToReal34(&a, radians);
@@ -7902,7 +7905,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 #if defined(OPTION_VECTOR_PH2)
 void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y, z;
-    _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
+    _euclideanNormRealMatrix(matrix, 2, r, &ctxtReal39);
 
     real34ToReal(&matrix->matrixElements[0], &x);
     real34ToReal(&matrix->matrixElements[1], &y);
@@ -7994,7 +7997,7 @@ void convertCYLto3D(real_t *r, real_t *th1, real_t *z, uint8_t am, real34Matrix_
 
 void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y;
-    _euclideanNormRealMatrix(matrix, r, ctxtRealDisplay);
+    _euclideanNormRealMatrix(matrix, 2, r, ctxtRealDisplay);
 
     real34ToReal(&matrix->matrixElements[0], &x);
     real34ToReal(&matrix->matrixElements[1], &y);
