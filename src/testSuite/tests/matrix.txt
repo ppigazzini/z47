@@ -157,6 +157,22 @@ In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 
 
+;=======================================
+; Column norm
+;=======================================
+Func: fnPNorm(1) ;pNorm_1_CNORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"12"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"31.90896640883435579535213782491314"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+
 
 ;=======================================
 ; Vector angle
