@@ -144,7 +144,7 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 }
 
 
-static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
+static void decodeOp(uint8_t *paramAddress, uint16_t opCode, const char *op, uint16_t paramMode, uint16_t tamMax) {
 uint8_t  opParam   = *(uint8_t *)(paramAddress++);
 
   switch(paramMode) {
@@ -345,7 +345,11 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
           getIndirectVariable(paramAddress, op);
         }
         else {
-          sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+          if(opCode == ITM_PNORM && (opParam * 256) + *(paramAddress) == pNorm_inf_RNORM) {
+            sprintf(tmpString, "%s %s", op, STD_INFINITY "\0");
+          } else {
+            sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+          }
         }
       }
       break;
@@ -392,9 +396,9 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
 
     case PARAM_KEYG_KEYX: {
       uint8_t *secondParam = findKey2ndParam(paramAddress - 3);
-      decodeOp(secondParam + 1, indexOfItems[*secondParam].itemCatalogName, PARAM_LABEL, indexOfItems[*secondParam].tamMinMax & TAM_MAX_MASK);
+      decodeOp(secondParam + 1, *secondParam, indexOfItems[*secondParam].itemCatalogName, PARAM_LABEL, indexOfItems[*secondParam].tamMinMax & TAM_MAX_MASK);
       xcopy(tmpString + TMP_STR_LENGTH / 2, tmpString, stringByteLength(tmpString) + 1);
-      decodeOp(paramAddress - 1, op, PARAM_NUMBER_8, 21);
+      decodeOp(paramAddress - 1, *secondParam, op, PARAM_NUMBER_8, 21);
       tmpString[stringByteLength(tmpString) + 1] = 0;
       tmpString[stringByteLength(tmpString)    ] = ' ';
       xcopy(tmpString + stringByteLength(tmpString), tmpString + TMP_STR_LENGTH / 2, stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1);
@@ -865,7 +869,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         else {
           if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
         }
-        decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+        decodeOp(step, op, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       }
     }
   }
