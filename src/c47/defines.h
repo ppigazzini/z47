@@ -202,10 +202,10 @@
     #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
       //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_VECTOR                  //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
-    #define OPTION_ELEC                    //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
+    #undef  OPTION_ELEC                    //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
   #endif
 
 
