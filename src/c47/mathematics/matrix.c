@@ -1193,11 +1193,9 @@ void fnPNorm(uint16_t param) {
     case pNorm_1_CNORM  :
     case pNorm_inf_RNORM: _row_columnNorm(param); break;
     case pNorm_2_ENORM  :
-    default: if(param >= 2 && param <= 9) {
-               if(saveLastX()) {
-                 _fnEuclideanNorm(param);
-               } 
-             }
+    default: if(saveLastX()) {
+               _fnEuclideanNorm(param);
+             } 
   }
 }
 
