@@ -985,9 +985,9 @@ void mimRestore(void) {
   }
 }
 
-//replaced all the tag with mtag
 
 static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
+#if defined(OPTION_VECTOR)
   if((getTagAngularMode(matrix->header.mtag)) != amNone) {
     if(isMatrix3dVector(rows,cols)) {
       if((is3dVectorPolarSPH(matrix->header.mtag)) && (j == 1 || j ==2)) {
@@ -1003,18 +1003,17 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
       }
     }
   }
+#endif //OPTION_VECTOR
 }
 
 
 
 static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
   real_t aa,bb,cc;
   decContext c = ctxtReal39;
   c.digits = 26; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
-#endif //OPTION_VECTOR_PH2
 
-#if defined(OPTION_VECTOR_PH2)
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
     if(getSystemFlag(FLAG_3DPHYS)) {
@@ -1057,12 +1056,13 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     //printRealToConsole(&aa,"POL aa=","\n");
     //printRealToConsole(&bb,"POL bb=","\n");
   } else {
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
+
     real34Copy(&matrix->matrixElements[ii],element);
     //printReal34ToConsole(element," RECT =","\n");
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
   }
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
 }
 
 
@@ -1198,14 +1198,18 @@ smallFont:
   baseWidth += 3;
 
   char endChar[6];
-  strcpy(endChar, (isMatrix3dVectorCYL(rows, cols, matrix->header.mtag)) ? \
-                    "]" STD_SPACE_HAIR STD_SUP_c : \
-                  (isMatrix3dVectorSPH(rows, cols, matrix->header.mtag)) ? \
-                    "]" STD_SPACE_HAIR STD_SUP_s : \
-                  (isMatrix2dVectorPOL(rows, cols, matrix->header.mtag)) ? \
-                    "]" STD_SPACE_HAIR STD_SUP_p : \
-                    "]");
-//printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
+  endChar[0] = 0;
+  #if defined(OPTION_VECTOR)
+    strcpy(endChar, (isMatrix3dVectorCYL(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_c : \
+                    (isMatrix3dVectorSPH(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_s : \
+                    (isMatrix2dVectorPOL(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_p : \
+                      "]");
+  //printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
+  #endif //OPTION_VECTOR
+
 
   if(!regXposition && prefixWidth > 0) {
     X_POS = prefixWidth;

@@ -20,7 +20,6 @@ make dist_dmcp5r47
 echo "📦 Building dist_dmcpr47..."
 make dist_dmcpr47
 
-echo "✅ All builds complete."
 echo "📦 Building dist_dmcp...package 1"
 make DMCP_PACKAGE=1 dist_dmcp
 

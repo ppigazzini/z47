@@ -44,7 +44,7 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
     }
     return;
   }
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
   else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix){
     if(isRegisterMatrix3dVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, 
@@ -58,7 +58,7 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
       return;
     }
   } 
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
 
 
 

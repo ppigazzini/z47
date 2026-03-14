@@ -2553,7 +2553,7 @@ void createSubstrings(uint8_t number) {
   }
 
 
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
   static inline const char  *e0(void) { return getSystemFlag(FLAG_3DXYZ) ? "x"       : "i";       }
   static inline const char  *e1(void) { return getSystemFlag(FLAG_3DXYZ) ? "y"       : "j";       }
   static inline const char  *e2(void) { return getSystemFlag(FLAG_3DXYZ) ? "z"       : "k";       }
@@ -2642,7 +2642,7 @@ void createSubstrings(uint8_t number) {
 
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
 
 
 
@@ -4432,11 +4432,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_REGTYPE) {
             _displayRegType(regist, prefix, &prefixWidth);
           }
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
           else if(temporaryInformation >= TI_VECTORCOMP_3DSPH && temporaryInformation <= TI_VECTORCOMP_2DRECT) {
             tiVector(regist, prefix, &prefixWidth);
           }
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
 
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
@@ -4980,7 +4980,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
 
 
-#if defined(OPTION_VECTOR_PH2)
+#if defined(OPTION_VECTOR)
             //alternative not permanantly displayed
             //            else if(temporaryInformation == TI_VECTOR && displayVector && isRegisterMatrixVector(regist)) {
             //              tiVector(regist, prefix,  &prefixWidth);
@@ -4988,7 +4988,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI
               tiVector(regist, prefix,  &prefixWidth);
             }
-#endif //OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR
 
             showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T));
             if(lastErrorCode != 0) {
