@@ -1521,6 +1521,7 @@ void fn_cnst_op_A(uint16_t option) {
 
 
 
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
 TO_QSPI static const struct {
     unsigned rows  : 2;
     unsigned cols  : 2;
@@ -1551,7 +1552,6 @@ TO_QSPI static const struct {
   };
 
 
-#if (defined(OPTION_VECTOR_PH1) || defined(OPTION_VECTOR_PH2))
   static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
     if(d == V_COPY) {
       if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
@@ -1563,11 +1563,11 @@ TO_QSPI static const struct {
     }
     return true;
   }
-#endif //OPTION_VECTOR_PH1 OPTION_VECTOR_PH2
+#endif //OPTION_VECTOR || OPTION_ELEC
 
 
 void fnExchangeStkToMx(uint16_t opType) {
-#if defined(OPTION_VECTOR_PH1)
+#if defined(OPTION_VECTOR)
   switch(opType) {
     case ITM_stkexV2:{
       if(isRegisterMatrix2dVector(REGISTER_X)) {
@@ -1611,12 +1611,12 @@ void fnExchangeStkToMx(uint16_t opType) {
     }
     default:break;
   }
-#endif //OPTION_VECTOR_PH1
+#endif //OPTION_VECTOR
 }
 
 
 void fnConvertStkToMx(uint16_t constVector1) {
-#if defined(OPTION_VECTOR_PH1)
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
   real34Matrix_t matrix;
@@ -1752,11 +1752,12 @@ void fnConvertStkToMx(uint16_t constVector1) {
     setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
     temporaryInformation = TI_VECTOR;
   }
-#endif //OPTION_VECTOR_PH1
+#endif //OPTION_VECTOR || OPTION_ELEC
 }
 
 
 void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower nibble, then try the vector type in higher nibble unless high nibble = 0
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
   uint16_t Xrows, Xcols;
@@ -1773,7 +1774,6 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
   }
 
 
-#if defined(OPTION_VECTOR_PH1)
   int ang2Dx = amNone;
   int ang3Dx = amNone;
   int ang3Dy = amNone;
@@ -1789,7 +1789,6 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     ang3Dy = getRegisterAngularMode(REGISTER_X) & amAngleMask;
   }
 
-#endif //OPTION_VECTOR_PH1
   copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
   if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
     linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
@@ -1853,7 +1852,6 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     }
   }
 
-#if defined(OPTION_VECTOR_PH1)
   if(param == VECT_CR_yx && ang2Dx != amNone) {
     real_t theta, magnitude;
     real34ToReal(&matrix.matrixElements[0], &magnitude);
@@ -1884,7 +1882,6 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
       realToReal34(&theta , &matrix.matrixElements[1]);
     }
   }
-#endif //OPTION_VECTOR_PH1
 
   for (int i = 0; i < elements; i++) {
     uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
@@ -1900,7 +1897,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     }
     adjustResult(rg, false, false, rg, -1, -1);
   }
-#if defined(OPTION_VECTOR_PH1)
+
   if(param == VECT_CR_yx && ang2Dx != amNone) { //POL
     setRegisterAngularMode(REGISTER_X, ang2Dx);
     temporaryInformation = TI_VECTORCOMP_2DPOLAR;
@@ -1921,7 +1918,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     setRegisterAngularMode(REGISTER_Y, ang3Dy);
     temporaryInformation = TI_VECTORCOMP_3DRECT;
   }
-#endif // OPTION_VECTOR_PH1
+#endif //OPTION_VECTOR || OPTION_ELEC
 }
 
 //Rounding

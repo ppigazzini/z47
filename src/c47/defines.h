@@ -31,7 +31,6 @@
 #undef SAVE_SPACE_DM42_1
 #undef SAVE_SPACE_DM42_3
 #undef SAVE_SPACE_DM42_4
-#undef SAVE_SPACE_DM42_6
 #undef SAVE_SPACE_DM42_8
 #undef SAVE_SPACE_DM42_8ASN
 #undef SAVE_SPACE_DM42_8F
@@ -61,10 +60,10 @@
 #define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
+#define OPTION_ELEC                    //                   // ELEC functions
+#define OPTION_VECTOR                  //                   // 2D 3D vector conversions; vector swaps; display TI for vector
 
-#undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST TO REMOVE TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
-#define OPTION_VECTOR_PH1              //                   // 2D 3D vector conversions
-#define OPTION_VECTOR_PH2              //                   // 2D 3D vector swaps; display TI for vector
+#undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST, TO REMOVE, TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
 
 
 #if defined(DMCP_BUILD)
@@ -90,7 +89,6 @@
 //The byte counts are never accurate and depending on build system. Consider general info.
 //THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
-      #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
       #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
       #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
       #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
@@ -118,8 +116,8 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
-      #undef  OPTION_VECTOR_PH1        //  2672 bytes // Vector phase 1
-      #undef  OPTION_VECTOR_PH2        //  6948 bytes // Vector phase 2
+      #undef  OPTION_VECTOR            //  10k ? bytes// Vector
+      #undef  OPTION_ELEC              //  2k ?  bytes// ELEC functions
 
 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -146,8 +144,7 @@
 
 
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
-      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
-      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
@@ -156,14 +153,13 @@
       //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
     #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
-    #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef OPTION_VECTOR_PH1               //  2672 bytes // Vector phase 1
-    #undef OPTION_VECTOR_PH2               //  6948 bytes // Vector phase 2
+    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #undef  OPTION_VECTOR                  //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  OPTION_ELEC                    //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
   #endif
 
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
-      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
       //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without X.FN BESSEL
       //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without X.FN ORTHO MENU
@@ -175,13 +171,12 @@
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
       #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
       #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef OPTION_VECTOR_PH1               //  2672 bytes // Vector phase 1
-    #undef OPTION_VECTOR_PH2               //  6948 bytes // Vector phase 2
+    #undef  OPTION_VECTOR                  //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+      #define OPTION_ELEC                  //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
   #endif
 
 
   #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
-    #define SAVE_SPACE_DM42_6              //  1352 bytes // Without ELEC functions
     #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
@@ -192,13 +187,12 @@
     #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
-    #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_VECTOR_PH1              //  2672 bytes // Vector phase 1
-    #undef  OPTION_VECTOR_PH2              //  6948 bytes // Vector phase 2
+    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #undef  OPTION_VECTOR                  //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  OPTION_ELEC                    //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
-      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
@@ -210,8 +204,8 @@
       //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_VECTOR_PH1              //  2672 bytes // Vector phase 1
-    #undef  OPTION_VECTOR_PH2              //  6948 bytes // Vector phase 2
+    #undef  OPTION_VECTOR                  //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #define OPTION_ELEC                    //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving is VECTOR is in
   #endif
 
 
