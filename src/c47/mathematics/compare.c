@@ -310,7 +310,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       }
       int c = memcmp(REGISTER_CONFIG_DATA(REGISTER_X),
                      REGISTER_CONFIG_DATA(regist),
-                     CONFIG_SIZE_IN_BLOCKS);
+                     TO_BYTES(CONFIG_SIZE_IN_BLOCKS));
       cmpToResult(cmp_sign(c), mode);
     } break;
 
