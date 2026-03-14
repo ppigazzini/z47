@@ -2130,7 +2130,7 @@ void checkExpectedOutParameter(char *p) {
   }
 
   //Checking rounding mode
-  else if(strcmp(l, "RM") == 0) {
+  else if(strcmp(l, "RMODE") == 0) {
     if(r[0] >= '0' && r[0] <= '9' && r[1] == 0) {
       uint16_t rm = atoi(r);
 
