@@ -303,24 +303,21 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
   int32_t exponentUNlimit = 0;
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
   bool_t flag2To10_baseunit_integer = false;
-  real_t tmp4, tmpIp, tmpFp;
+  real_t tmpIp, tmpFp;
   real34_t real34bak;
   real34Copy(real34, &real34bak);
   if(flag2To10 && displayFormat == DF_UN) {
     real_t x, xx;
     real34ToReal(real34, &x);
-    int32ToReal(1024, &tmp4);
 
-    if(!realCompareAbsLessThan(&x, &tmp4)) {
-
+    if(!realCompareAbsLessThan(&x, const_1024)) {
       //x = e^[ ln real34 / ln1024 ]
-      bool_t neg = false;
-      if(realIsNegative(&x)) {
+      bool_t neg = realIsNegative(&x);
+      if(neg) {
         realSetPositiveSign(&x);
-        neg = true;
       }
 
-      realCopy(&x,&xx);
+      realCopy(&x, &xx);
 
       //get log base 1024 of real34
       decContext c = ctxtReal39;
@@ -352,15 +349,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       // fact = IP§ / IP = (1000/1024)^IP(log base1024 of Real34)
       // new Real34 = Real34 fact
 
-      real_t tmp3, fact;
-      int32ToReal(1000, &tmp3);
-      int32ToReal(1024, &tmp4);
-      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
+      realDivide(const_1000, const_1024, &x, &ctxtReal39); // X = 1000 / 1024
       //printRealToConsole(&fact, "factor = ", "\n");
-      realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
-      //printRealToConsole(&tmp3, "factor^IP = ", "\n");
+      realPower(&x, &tmpIp, &x, &ctxtReal39);              // x = (1000/1024) ^ tmpIp
+      //printRealToConsole(&x, "factor^IP = ", "\n");
       //printRealToConsole(&xx, "xx = ", "\n");
-      realMultiply(&xx, &tmp3, &x, &ctxtReal39);
+      realMultiply(&xx, &x, &x, &ctxtReal39);
       //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
@@ -2668,17 +2662,14 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
   if(!ignoreTDisp) {
     switch(timeDisplayFormatDigits) {
       case 0: {
-        int32ToReal(86400, &value);
-        if((!sign) && (!getSystemFlag(FLAG_TDM24)) && realCompareLessThan(&real, &value)) {
-          isValid12hTime = true;
+        isValid12hTime = (!sign) && (!getSystemFlag(FLAG_TDM24)) && realCompareLessThan(&real, const_86400);
+        if(realCompareAbsLessThan(&h, const_100)) {
+          bDigits = 0;
         }
-        for(bDigits = 0; bDigits < (isValid12hTime ? 14 : 16); ++bDigits) {
-          if(realCompareAbsLessThan(&h, const_100)) {
-            break;
-          }
-          ++value.exponent;
+        else {
+          bDigits = 16 - 2*isValid12hTime;
         }
-        tDigits = isValid12hTime ? 13 : 15;
+        tDigits = 15 - 2*isValid12hTime;
         isValid12hTime = false;
         goto do_rounding;
       }
@@ -2716,18 +2707,16 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
   realDivideRemainder(&m, const_60, &m, &ctxtReal39);
   // 12-hour time
   if((!getSystemFlag(FLAG_TDM24)) && (!sign)) {
-    int32ToReal(24, &value);
-    if(realCompareLessThan(&h, &value)) {
+    if(realCompareLessThan(&h, const_24)) {
       isValid12hTime = true;
-      int32ToReal(12, &value);
-      if(realCompareGreaterEqual(&h, &value)) {
+      if(realCompareGreaterEqual(&h, const_12)) {
         isAfternoon = true;
-        if(!realCompareLessEqual(&h, &value)) {
-          realSubtract(&h, &value, &h, &ctxtReal39);
+        if(!realCompareLessEqual(&h, const_12)) {
+          realSubtract(&h, const_12, &h, &ctxtReal39);
         }
       }
       else if(realIsZero(&h)) {
-        realAdd(&h, &value, &h, &ctxtReal39);
+        realAdd(&h, const_12, &h, &ctxtReal39);
       }
     }
   }

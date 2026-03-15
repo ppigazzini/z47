@@ -251,8 +251,8 @@ void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 // ComplexMatrix     7.0 (7.0 for RECT, 7.1-7.5 for POLAR)
 // ShortInteger      8.bb (8.02 for binary, 8.16 for Hex)
 // Config            9
-//   
-//   
+//
+//
 // For Real, Complex and ComplexMatrix, if it is an angle, add the following:
 // No angle or RECT   0
 // MultPi      0.1
@@ -291,14 +291,14 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     case dtComplex34      : {
       real34_t rr;
       int exportValue = (dtp == dtShortInteger) ? dtp*100 + (dam & 0x1F) : dtp*10 + 5 - (dam & 0x07); // BASE 8.16 for HEX; Angle: 1.3 for Degrees
-      uInt32ToReal34(exportValue,&rr);
+      uInt32ToReal34(exportValue, &rr);
       setSystemFlag(FLAG_ASLIFT); // 5
       liftStack();
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       if(dtp == dtShortInteger) {
-        real34Multiply(&rr,const34_1on10,&rr);
+        real34Multiply(&rr, const34_1on10, &rr);
       }
-      real34Multiply(&rr,const34_1on10,REGISTER_REAL34_DATA(REGISTER_X));
+      real34Multiply(&rr, const34_1on10,REGISTER_REAL34_DATA(REGISTER_X));
       setSystemFlag(FLAG_ASLIFT);
       break;
     }

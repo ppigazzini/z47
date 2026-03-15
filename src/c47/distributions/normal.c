@@ -397,8 +397,7 @@
         realMultiply(&s, const_2, &s, realContext);
         realAdd(&s, const_1, &s, realContext);
         realMultiply(&r, &s, &r, realContext);
-        int32ToReal(6, &s);
-        realDivide(&r, &s, &r, realContext);
+        realDivide(&r, const_6, &r, realContext);
         realMultiply(&p, const_1on2, &s, realContext);
         realMultiply(&s, &q, &s, realContext);
         realMultiply(&s, &q, &s, realContext);

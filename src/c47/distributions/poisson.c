@@ -114,13 +114,12 @@
    * Returns a normal approximation in X.
    */
   void WP34S_normal_moment_approx(const real_t *prob, const real_t *var, const real_t *mean, real_t *res, realContext_t *realContext) {
-    real_t p, q, r;
+    real_t p, q;
 
     WP34S_qf_q_est(prob, &p, NULL, realContext);
     realMultiply(&p, &p, &q, realContext);
     realSubtract(&q, const_1, &q, realContext);
-    int32ToReal(6, &r);
-    realDivide(&q, &r, &q, realContext);
+    realDivide(&q, const_6, &q, realContext);
     realDivide(&q, var, &q, realContext);
     realAdd(&p, &q, &p, realContext);
     realMultiply(&p, var, &p, realContext);
