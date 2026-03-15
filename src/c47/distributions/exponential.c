@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17B)
   void fnExponentialP  (uint16_t unusedButMandatoryParameter){}
   void fnExponentialL  (uint16_t unusedButMandatoryParameter){}
   void fnExponentialR  (uint16_t unusedButMandatoryParameter){}
@@ -179,4 +179,4 @@
     realChangeSign(res);
   }
 
-#endif //SAVE_SPACE_DM42_15
+#endif //SAVE_SPACE_DM42_17B

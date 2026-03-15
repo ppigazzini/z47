@@ -2414,10 +2414,78 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_SIGMApk:
     #endif //SAVE_SPACE_DM42_12PRIME
 
+
+
+    #ifdef SAVE_SPACE_DM42_17B    // cauchy, chi, expo, logis, t, weibull
+      case  -MNU_CAUCH   :
+      case  ITM_CAUCHP  :
+      case  ITM_CAUCH   :
+      case  ITM_CAUCHU  :
+      case  ITM_CAUCHM1 :
+      case  -MNU_CHI2    :
+      case  ITM_chi2Px  :
+      case  ITM_chi2x   :
+      case  ITM_chi2ux  :
+      case  ITM_chi2M1  :
+      case  -MNU_EXPON   :
+      case  ITM_EXPONP  :
+      case  ITM_EXPON   :
+      case  ITM_EXPONU  :
+      case  ITM_EXPONM1 :
+      case  -MNU_WEIBL   :
+      case  ITM_WEIBLP  :
+      case  ITM_WEIBL   :
+      case  ITM_WEIBLU  :
+      case  ITM_WEIBLM1 :
+      case  -MNU_LOGIS   :
+      case  ITM_LOGISP  :
+      case  ITM_LOGIS   :
+      case  ITM_LOGISU  :
+      case  ITM_LOGISM1 :
+      case  -MNU_T       :
+      case  ITM_TPX     :
+      case  ITM_TX      :
+      case  ITM_TUX     :
+      case  ITM_TM1P    :
+    #endif //SAVE_SPACE_DM42_17B
+
+
+    #ifdef SAVE_SPACE_DM42_17C   // Gev, Pareto, Uniform, Discr Uniform
+      case -MNU_GEV       :
+      case ITM_GEVP      :
+      case ITM_GEV       :
+      case ITM_GEVU      :
+      case ITM_GEVM1     :
+      case -MNU_PARETO    :
+      case ITM_PARETOP   :
+      case ITM_PARETOL   :
+      case ITM_PARETOU   :
+      case ITM_PARETOM1  :
+      case ITM_PARETO2P  :
+      case ITM_PARETO2L  :
+      case ITM_PARETO2U  :
+      case ITM_PARETO2M1 :
+      case -MNU_UNIFORM    : 
+      case ITM_UNIFORMP   : 
+      case ITM_UNIFORML   : 
+      case ITM_UNIFORMU   : 
+      case ITM_UNIFORMI   : 
+      case -MNU_DISUNIFORM : 
+      case ITM_DISUNIFORMP: 
+      case ITM_DISUNIFORML: 
+      case ITM_DISUNIFORMU: 
+      case ITM_DISUNIFORMI: 
+    #endif //SAVE_SPACE_DM42_17C
+
     #ifdef SAVE_SPACE_DM42_16
       case -MNU_NORML :
       case ITM_NORMLP :      case ITM_NORML  :      case ITM_NORMLU :      case ITM_NORMLM1:
       case ITM_LGNRMP :      case ITM_LGNRM  :      case ITM_LGNRMU :      case ITM_LGNRMM1:
+      case -MNU_STDNORML  :
+      case ITM_STDNORMLP :
+      case ITM_STDNORML  :
+      case ITM_STDNORMLU :
+      case ITM_STDNORMLM1:
     #endif //SAVE_SPACE_DM42_16
 
     #ifdef SAVE_SPACE_DM42_17
