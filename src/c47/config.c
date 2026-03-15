@@ -349,7 +349,7 @@ void Sett(int16_t grp) {
         case RESERVED_VARIABLE_PV     :
         case RESERVED_VARIABLE_PPERONA:
         case RESERVED_VARIABLE_CPERONA: {
-            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
+            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp], &realt);
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
@@ -363,7 +363,7 @@ void Sett(int16_t grp) {
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
               printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             #endif //PC_BUILD
-            SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            SetSetting(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             break;
           }
 
@@ -371,7 +371,7 @@ void Sett(int16_t grp) {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
-          forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
+          forceSystemFlag(Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
           break;
           }
 
@@ -379,7 +379,7 @@ void Sett(int16_t grp) {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
-          fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          fnSetGapChar(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           }
         default:break;
       }

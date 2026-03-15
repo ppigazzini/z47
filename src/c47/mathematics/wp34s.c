@@ -1645,8 +1645,7 @@ void WP34S_GammaP(const real_t *x, const real_t *a, real_t *res, realContext_t *
   }
   if(realIsNegative(&z)) {
     /* Deal with a difficult case by using the other expansion */
-    int32ToReal(9000, &z);
-    if(realCompareGreaterThan(a, &z)) {
+    if(realCompareGreaterThan(a, const_9000)) {
       realCopy(const_995on1000, &z);
       realMultiply(a, &z, &z, realContext);
       if(realCompareGreaterThan(x, &z)) {
