@@ -212,8 +212,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
   realDivide(const_2, &r, &r, realContext);
   realMultiply(&p, &p, &s, realContext);
   realSubtract(&s, const_3, &s, realContext);
-  int32ToReal(6, &q);
-  realDivide(&s, &q, &s, realContext);
+  realDivide(&s, const_6, &s, realContext);
   realAdd(&s, &r, &q, realContext);
   realSquareRoot(&q, &q, realContext);
   realMultiply(&q, &p, &q, realContext);

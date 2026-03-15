@@ -446,14 +446,15 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y), DEC_ROUND_DOWN);
 
       //Get FP in x
-      real_t y, x,cc;
-      int32ToReal(3600*24*1000, &cc);                                // 3600*24*1000 rounds time up or down to 0.001 seconds
+      real_t y, x;
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);            // IP
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);            // Org
       realSubtract(&x, &y, &x, &ctxtReal39);                         // FP = Org - IP
-      realMultiply(&x, &cc, &x, &ctxtReal39);                        // (3600*24*10000*(FP))          //round seconds to 0.001s
+      realMultiply(&x, const_86400, &x, &ctxtReal39);                // (3600*24*(FP))          // round seconds
+      x.exponent += 3;                                               // x = x * 1000            // to 0.001s
       realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39);   // round (3600*24*1000*(FP))
-      realDivide  (&x, &cc, &x, &ctxtReal39);                        // (round (3600*24*1000*(FP))) / (3600*24*1000)
+      realDivide  (&x, const_86400, &x, &ctxtReal39);                // (round (3600*24*1000*(FP))) / (3600*24)
+      x.exponent -= 3;                                               // x = x / 1000
 
       //Convert date to Y
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_Y), &date);
@@ -462,8 +463,7 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
 
       //Convert x to time to X
       real_t tmp;
-      int32ToReal(24*3600, &tmp);
-      realMultiply(&tmp, &x, &tmp, &ctxtReal39);                     // tmp is now seconds
+      realMultiply(const_86400, &x, &tmp, &ctxtReal39);              // tmp is now seconds
       reallocateRegister(REGISTER_X, dtTime, 0, amNone);             // this must be in front of the next line, otherwise accuracy is gone
       convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       break;
@@ -520,9 +520,7 @@ void fnDateTimeToJulian(uint16_t unusedButMandatoryParameter) {
       convertReal34ToLongIntegerRegister(&jd34, REGISTER_Y, DEC_ROUND_DOWN);                      //Y is truncated date in real
       convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
       timeToReal34(3);                                                                            //X is now Real seconds
-      real34_t tmp;
-      int32ToReal34 (3600*24,&tmp);
-      real34Divide  (REGISTER_REAL34_DATA(REGISTER_X), &tmp, REGISTER_REAL34_DATA(REGISTER_X));   //X is now in days
+      real34Divide  (REGISTER_REAL34_DATA(REGISTER_X), const34_86400, REGISTER_REAL34_DATA(REGISTER_X));   //X is now in days
       real34Add     (REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X));
       real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), const34_1on2, REGISTER_REAL34_DATA(REGISTER_X));                      //handle 0.5 offset
       adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);

@@ -1469,13 +1469,13 @@ currentKeyCode = 255;
 
       setSystemFlag(FLAG_ASLIFT);
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      int32ToReal34(mv+rand()%4-2,REGISTER_REAL34_DATA(REGISTER_X));
+      int32ToReal34(mv + rand()%4 - 2, REGISTER_REAL34_DATA(REGISTER_X));
       // reading 1 has additional +0 to +3 variance to the said random number
 
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      int32ToReal34(mv+rand()%4-2,REGISTER_REAL34_DATA(REGISTER_X));
+      int32ToReal34(mv + rand()%4 - 2, REGISTER_REAL34_DATA(REGISTER_X));
       // reading 2 has additional +0 to +3 variance to the said random number
 
       runFunction(ITM_SIGMAPLUS);
