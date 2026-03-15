@@ -15,7 +15,12 @@ static void arctanReal(void) {
 
   if(realIsInfinite(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(realIsPositive(&x) ? const_90 : const__90, &x);
+      if(realIsNegative(&x)) {
+        realMinus(const_90, &x, &ctxtReal39);
+      }
+      else {
+        realCopy(const_90, &x);
+      }
       convertAngleFromTo(&x, amDegree, currentAngularMode, &ctxtReal39);
   }
   else {

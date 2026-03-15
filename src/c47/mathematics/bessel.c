@@ -176,8 +176,10 @@ static void u_k(uint32_t k, const real_t *coeff/*array*/, const real_t *t_r, con
   real_t t_n_r, t_n_i, tmp_r, tmp_i;
   uint32_t i;
 
-  realCopy(t_r, &t_n_r), realCopy(t_i, &t_n_i);
-  realCopy(const_0, res_r), realCopy(const_0, res_i);
+  realCopy(t_r, &t_n_r);
+  realCopy(t_i, &t_n_i);
+  realZero(res_r);
+  realZero(res_i);
   for(i = 1; i < k; ++i) {
     mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
   }
@@ -205,9 +207,8 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
         realCopy(even ? const_1 : const_0, res_r), realCopy(const_0, res_i);
         realCopy(nu, &nu_k);
 
-        int32ToReal(24, &tmp);
-        realDivide(const_3, &tmp, &coeff_current[0], realContext);
-        realDivide(const_5, &tmp, &coeff_current[1], realContext);
+        realDivide(const_3, const_24, &coeff_current[0], realContext);
+        realDivide(const_5, const_24, &coeff_current[1], realContext);
         realChangeSign(&coeff_current[1]);
         for(i = 2; i < NUMBER_OF_COEFF; ++i) {
           realZero(&coeff_current[i]);

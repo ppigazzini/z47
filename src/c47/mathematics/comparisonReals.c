@@ -7,20 +7,17 @@
 
 #include "c47.h"
 
-void convergenceTolerence(real_t *tol)
-{
+void convergenceTolerence(real_t *tol) {
   realCopy(const_1, tol);
   tol->exponent -= (significantDigits == 0 || significantDigits >= 32) ? 32 : significantDigits;
 }
 
-void irfractionTolerence(int32_t ii, real_t *tol)
-{
-  int32ToReal((int32_t)ii,tol);
+void irfractionTolerence(int32_t ii, real_t *tol) {
+  int32ToReal((int32_t)ii, tol);
   tol->exponent -= ((fractionDigits == 0 || fractionDigits >= 34) ? 34 : fractionDigits);
 }
 
-void fractionTolerence(real_t *tol)
-{
+void fractionTolerence(real_t *tol) {
   irfractionTolerence(2, tol);
 }
 
@@ -319,7 +316,7 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 
 //   #if defined FUTURE_USE_IRFRAC
 //   // realCompareRoundedEqualConstant
-//   
+//
 //   // Compares number to constant (2pi) at appropriate precision to avoid comparing a dirty rounding digit.
 //   // If both operands have equal digit counts and both fit within 1071 digits, compares at full
 //   // precision (no rounding occurs). If lengths differ, both are rounded to one digit less than the
@@ -327,9 +324,9 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //   // match (accounting for trailing zeros stripped by decNumber). If nn == 0, compares all input
 //   // digits. Returns false for an input number +-5 digits longer/shorter than the target, allowing
 //   // for up to 5 trailing zeros either side. Returns true if equal, false otherwise.
-//   
+//
 //   // This portion identifies pi(1034) and if found, extends pi precision to 2139 digits.
-//   
+//
 //   // Test: Using XPI, and adding and subtracting 1 ULP to verify recognition
 //   //
 //   // pi(1034)-Delta: is NOT recognized
@@ -351,28 +348,28 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //   //   R02 = -1.238094855978690282734422681276932E-1000 <=== note the last digit
 //   //   R01 = 6283185307179586476925286766559005768394338798...398
 //   //   R00 = 1E-999
-//   
-//   
+//
+//
 //   bool_t realCompareRoundedEqualConstant(const real_t *number, const real_t *constant, int32_t nn) {
 //     int32_t checkDigits = (nn > 0) ? nn : number->digits;
-//   
+//
 //     if(abs(number->digits - checkDigits) > 5) {
 //       return false;
 //     }
-//   
+//
 //     if(realGetExponent(number) != realGetExponent(constant)) {
 //       return false;
 //     }
-//   
+//
 //     real1071_t pii, n1;
 //     realContext_t c = ctxtReal75;
-//   
+//
 //     // Extract constant at appropriate precision
 //     int32_t piPrecision = (number->digits == checkDigits && checkDigits <= 1071) ? checkDigits : 1071;
 //     c.digits = piPrecision;
 //     realPlus(constant, (real_t *)&pii, &c);
 //     realGetCoefficient((real_t *)&pii, tmpString);
-//   
+//
 //     // Check trailing zeros if needed
 //     if(number->digits < checkDigits) {
 //       for(int32_t i = number->digits; i < min(checkDigits, number->digits + 3); i++) {
@@ -384,7 +381,7 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //     } else if(nn > 0 && number->digits > checkDigits) {
 //       return false;
 //     }
-//   
+//
 //     // Extract input at appropriate precision
 //     if(number->digits == checkDigits && checkDigits <= 1071) {
 //       realGetCoefficient(number, tmpString + TMP_STR_LENGTH/2);
@@ -395,7 +392,7 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //       realPlus(number, (real_t *)&n1, &c);
 //       realGetCoefficient((real_t *)&n1, tmpString + TMP_STR_LENGTH/2);
 //     }
-//   
+//
 //     // Compare strings
 //     int32_t compareDigits = min(checkDigits, c.digits);
 //     for(int32_t i = 0; i < compareDigits; i++) {
@@ -403,7 +400,7 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //         return false;
 //       }
 //     }
-//   
+//
 //     return true;
 //   }
 //   #endif //!FUTURE_USE_IRFRAC

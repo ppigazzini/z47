@@ -141,7 +141,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
 // ** Check for trivial fractions
   bool_t validResult = false;
   real_t factorOfOneOnDenMax, checkPoint;
-  uInt32ToReal(denMax,&factorOfOneOnDenMax);
+  uInt32ToReal(denMax, &factorOfOneOnDenMax);
 
   //check if the fraction is lower than 0.5/DMX
   realDivide(const_1on2,&factorOfOneOnDenMax,&checkPoint,&ctxtReal39);
