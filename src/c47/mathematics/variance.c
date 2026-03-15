@@ -203,30 +203,30 @@ void fnCoefficientDetermination(uint16_t unusedButMandatoryParameter){  //r
 
 void fnStatSMI(real_t *SMI){
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t RR,SXY,SX,SY,RR2,SX2,SY2,UU,SS,TT;
+  real_t RR, SXY, SX, SY, RR2, SX2, SY2, UU, SS, TT;
   if(checkMinimumDataPoints(const_2)) {
-    fnStatR(&RR,&SXY,&SX,&SY);
-    realMultiply(&SX,&SX,&SX2,realContext);               //   --> sx^2
-    realMultiply(&SY,&SY,&SY2,realContext);               //   --> sy^2
-    realMultiply(&RR,&RR,&RR2,realContext);               //   --> r^2
-    realSubtract(const_1,&RR2,&SS,realContext);           //  sqrt[ (1-r^2) / (r^2.SY2 - SX^2) * SX2.SY2 ]
+    fnStatR(&RR, &SXY,    &SX,  &SY);
+    realMultiply(&SX,     &SX,  &SX2, realContext);       //   --> sx^2
+    realMultiply(&SY,     &SY,  &SY2, realContext);       //   --> sy^2
+    realMultiply(&RR,     &RR,  &RR2, realContext);       //   --> r^2
+    realSubtract(const_1, &RR2, &SS,  realContext);       //  sqrt[ (1-r^2) / (r^2.SY2 - SX^2) * SX2.SY2 ]
 
-    realMultiply(&RR2,&SY2,&TT,realContext);
-    realAdd     (&TT,&SX2,&TT,realContext);
-    realDivide  (&SS,&TT,&UU,realContext);
-    realMultiply(&UU,&SX2,&UU,realContext);
-    realMultiply(&UU,&SY2,&UU,realContext);               //  --> smi2
-    realSquareRoot(&UU, SMI, &ctxtReal39);
+    realMultiply(&RR2,&SY2, &TT, realContext);
+    realAdd     (&TT, &SX2, &TT, realContext);
+    realDivide  (&SS, &TT,  &UU, realContext);
+    realMultiply(&UU, &SX2, &UU, realContext);
+    realMultiply(&UU, &SY2, &UU, realContext);            //  --> smi2
+    realSquareRoot(&UU,     SMI, &ctxtReal39);
   }
 }
 
 void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
-  real_t SMI,RR,aa0,aa1,aa2,n30;
-  uInt32ToReal(30,&n30);
+  real_t SMI, RR, aa0, aa1, aa2, n30;
+  uInt32ToReal(30, &n30);
   if(checkMinimumDataPoints(&n30)) {
     lrChosen = CF_ORTHOGONAL_FITTING;                      //force to ORTHOF only
     lrSelection = CF_ORTHOGONAL_FITTING;
-    processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);
+    processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -245,7 +245,7 @@ void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
  ***********************************************/
 bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t RR,MX,SX,SY,RR2,MX2,SX2,SY2,UU,SS,TT,aa0,aa1,aa2,SMI;
+  real_t RR, MX, SX, SY, RR2, MX2, SX2, SY2, UU, SS, TT, aa0, aa1, aa2, SMI;
 
   //LINF:   SA0 & SA1: RR2, n, Sy, Sx, Sx^2, Mx^2
   //EXPF:   new value for SY2, SY and use REX
@@ -254,9 +254,9 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   //ORTOF:  new values same as LINF
 
   if(checkMinimumDataPoints(const_2)) {
-    realCopy(const_0,&aa0);
-    realCopy(const_0,&aa1);
-    realCopy(const_0,&aa2);
+    realCopy(const_0, &aa0);
+    realCopy(const_0, &aa1);
+    realCopy(const_0, &aa2);
 
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;

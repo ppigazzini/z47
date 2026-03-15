@@ -126,8 +126,8 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
     if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
-      int32ToReal(0,&res);
-      int32ToReal(0,&acc);
+      realZero(&res);
+      realZero(&acc);
       goto done;
     }
 

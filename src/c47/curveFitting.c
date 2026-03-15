@@ -222,7 +222,7 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     printf("Processing for best fit: %s\n",getCurveFitModeNames(curveFitting));
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  realCopy(const__4,&RRMAX);
+  realCopy(const__4, &RRMAX);
   uint16_t s = 0;       // default
   uint16_t ix, jx;      // only a single graph can be evaluated at once, so retain the single lowest bit, and clear the higher order bits.
   jx = 0;
@@ -235,10 +235,10 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
 
       if(nn >= (int32_t)minLRDataPoints(jx)) {
         processCurvefitSelection(jx,&RR,&SMI, &aa0, &aa1, &aa2);
-        realMultiply(&RR,&RR,&RR2,&ctxtReal39);
+        realMultiply(&RR, &RR, &RR2, &ctxtReal39);
 
         if(realCompareGreaterThan(&RR2, &RRMAX) && realCompareLessEqual(&RR2, const_1)) { // Only consider L.R. models where R^2<=1
-          realCopy(&RR2,&RRMAX);
+          realCopy(&RR2, &RRMAX);
           s = jx;
         }
       }
@@ -301,7 +301,7 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      uInt32ToReal((uint32_t)minLRDataPoints(s),&NN);
+      uInt32ToReal((uint32_t)minLRDataPoints(s), &NN);
       checkMinimumDataPoints(&NN);              //Report an error
     }
   }
