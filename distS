@@ -1,0 +1,1 @@
+./dist 2>&1 | awk '/📦 Building/{pkg=$0} /^flash +[0-9]/{print pkg; print}'

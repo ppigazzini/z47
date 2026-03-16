@@ -149,7 +149,7 @@
 
 
 
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)       // PACKAGE 1 = +560 SAME AS PACKAGE 3 -- NO OPTION BUT TO REMOVE 8F FONT BR
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)       // PACKAGE 1 = +528 SAME AS PACKAGE 3 -- NO OPTION BUT TO REMOVE 8F FONT BR
     #define SAVE_SPACE_DM42_8F                 //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
@@ -161,13 +161,13 @@
          // #define SAVE_SPACE_DM42_17C        //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #define SAVE_SPACE_DM42_22_EDIT1           //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_ELEC                        //  5102 bytes // ELEC    5102 saving if VECTOR is not in
+    #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+    #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
   #endif
 
-  #if defined(PACKAGE2_NODISTR)                // PACKAGE 2 = +360
+  #if defined(PACKAGE2_NODISTR)                // PACKAGE 2 = +3616
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
          // #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without X.FN BESSEL
          // #define SAVE_SPACE_DM42_12ORTHO    //  0744 bytes // Without X.FN ORTHO MENU
@@ -179,31 +179,31 @@
     #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-         // #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
             #define OPTION_TVM_FORMULAS        //  2280 bytes // Use TVM analytical formulas where possible
             #define OPTION_TVM_NEWTON          //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-            #define OPTION_ELEC                //  5102 bytes // ELEC    5102 saving if VECTOR is not in
+            #define OPTION_ELEC                //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+    #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
   #endif
 
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 +560
-    #define SAVE_SPACE_DM42_8F                 //  1216 bytes // Without Font Browsers
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 +2744
+         // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
          // #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
          // #define SAVE_SPACE_DM42_15         //     0 bytes // Without Remove DIST menu
          // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without Norml, StdNrmal & LogNrml distributions
-         // #define SAVE_SPACE_DM42_17         //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-         // #define SAVE_SPACE_DM42_17B        //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
          // #define SAVE_SPACE_DM42_17C        //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-    #define SAVE_SPACE_DM42_22_EDIT1           //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_ELEC                        //  5102 bytes // ELEC    5102 saving if VECTOR is not in
+            #define OPTION_VECTOR              //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+            #define OPTION_ELEC                //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
   #endif
 
-  #if defined(PACKAGE4_MINIMAL_MATH)           // PACKAGE 4 FOR GITLAB PIPELINE COMPILE +18224
+  #if defined(PACKAGE4_MINIMAL_MATH)           // PACKAGE 4 FOR GITLAB PIPELINE COMPILE +21384
       //  #define SAVE_SPACE_DM42_8F           //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
@@ -215,10 +215,10 @@
     #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
-         // #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_ELEC                        //  5102 bytes // ELEC    5102 saving if VECTOR is not in
+    #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
   #endif
 
 
@@ -233,6 +233,7 @@
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+    #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
 
@@ -241,9 +242,8 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-      #undef  OPTION_VECTOR            //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
-                                       //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
