@@ -176,7 +176,7 @@
   void WP34S_Cdfu_T(const real_t *x, const real_t *nu, real_t *res, realContext_t *realContext) {
     real_t xn;
 
-    realMultiply(x, const__1, &xn, realContext);
+    realMinus(x, &xn, realContext);
     cdf_t(&xn, nu, res, realContext);
   }
 
@@ -197,7 +197,7 @@
     realSquareRoot(nu, &p, realContext);
     loops = 7;
     realAdd(&p, const_7, &p, realContext);
-    realMultiply(nu, const__1, &q, realContext);
+    realMinus(nu, &q, realContext);
     realPower(&p, &q, &p, realContext);
     realMultiply(&p, const_1on4, &a, realContext);
     if(realCompareLessEqual(&reg0, &a)) {

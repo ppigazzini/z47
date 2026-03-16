@@ -814,8 +814,8 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
       realDivide  (const_1, &FF, aa2, realContext);
 
       //        a1 = -G/(2.0) * a2;
-      realDivide(  &GG,     const__1,   &TT, realContext);
-      realDivide(  &TT,     const_2,    &TT, realContext);
+      realDivide(  &GG,     const_2,    &TT, realContext);
+      realChangeSign(&TT);
       realMultiply(&TT,     aa2,        aa1, realContext);
 
       //GAUSS  a0 = exp (H - F * a1 * a1); //maxy;
