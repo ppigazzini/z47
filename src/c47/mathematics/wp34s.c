@@ -411,9 +411,9 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
   if(doEpsilon) {
     sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
     stringToReal(tmpEpsilon, (real_t*)epsilon, realContext);
-      //-- create const_1on10 equivalent for 1071 precision, temporary use of z - up to for loop below
-//    uInt32ToReal(10, (real_t*)z);
-//    realDivide(const_1, (real_t*)z, (real_t*)z, realContext);
+    //-- create const_1on10 equivalent for 1071 precision, temporary use of z - up to for loop below
+    //uInt32ToReal(10, (real_t*)z);
+    //realDivide(const_1, (real_t*)z, (real_t*)z, realContext);
   }
 
 
@@ -1770,7 +1770,7 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
     realAdd(&apb, &m, &u, realContext);
     realMultiply(&t, &u, &w, realContext);
     realMultiply(&w, x, &t, realContext);
-    realMultiply(&t, const__1, &w, realContext); // w = -(a+m)*(apb+m)*x
+    realMinus(&t, &w, realContext);              // w = -(a+m)*(apb+m)*x
     realAdd(a, &m2, &t, realContext);
     realAdd(&ap1, &m2, &u, realContext);
     realMultiply(&t, &u, &v, realContext);       // v = (a+m2)*(ap1+m2)
@@ -1906,7 +1906,7 @@ static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, 
   int32ToReal(-1, &reg6);
   realZero(&p);
   do { // zeta_loop
-    realMultiply(reg1, const__1, &q, realContext);
+    realMinus(reg1, &q, realContext);
     realPower(&reg0, &q, &q, realContext);
     realMultiply(&reg5, &q, &q, realContext);
     realChangeSign(&reg6);
@@ -2019,7 +2019,7 @@ void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realCon
     // Newton iteration for W+1
     do { //LamW0_wp1_newton
       // FILL and x close to -1/e
-      realMultiply(&q, const__1, &p, realContext);
+      realMinus(&q, &p, realContext);
       WP34S_ExpM1(&p, &p, realContext);
       realMultiply(&p, &reg0, &p, realContext);
       realMultiply(&p, const_eE, &p, realContext);
@@ -2041,9 +2041,9 @@ void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realCon
   }
   else {// LamW0_normal
     if(negativeBranch) {// LamW0_smallx
-      realMultiply(&reg0, const__1, &q, realContext);
+      realMinus(&reg0, &q, realContext);
       WP34S_Ln(&q, &q, realContext);
-      realMultiply(&q, const__1, &r, realContext);
+      realMinus(&q, &r, realContext);
       WP34S_Ln(&r, &r, realContext);
       realSubtract(&q, &r, &q, realContext);
     }

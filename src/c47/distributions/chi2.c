@@ -225,7 +225,7 @@
         realSubtract(&t, const_1, &t, realContext);
         realMultiply(&q, &t, &q, realContext);
         realChangeSign(&q);
-        realMultiply(&reg0, const__1, &t, realContext);
+        realMinus(&reg0, &t, realContext);
         WP34S_Ln1P(&t, &t, realContext);
         realAdd(&q, &t, &q, realContext);
         realMultiply(k, const_1on2, &t, realContext);

@@ -176,7 +176,7 @@
       return;
     }
 
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);       // ln(1 - p0)
     realMultiply(&p, r, &p, realContext);  // ln((1 - p0) ^ r)
 
