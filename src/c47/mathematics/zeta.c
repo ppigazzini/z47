@@ -49,12 +49,15 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
       }
     #endif //!TESTSUITE_BUILD
 
-    realMultiply(reg6, const__1, &q, realContext); realMultiply(reg7, const__1, &p, realContext);
+    realMinus(reg6, &q, realContext);
+    realMinus(reg7, &p, realContext);
     PowerComplex(&reg0, const_0, &q, &p, &s, &r, realContext);
     realChangeSign(reg5);
     realMultiply(reg4, reg5, &p, realContext);
-    realMultiply(&p, &r, &r, realContext); realMultiply(&p, &s, &s, realContext);
-    realAdd(&reg8, &s, &reg8, realContext); realAdd(&reg9, &r, &reg9, realContext);
+    realMultiply(&p, &r, &r, realContext);
+    realMultiply(&p, &s, &s, realContext);
+    realAdd(&reg8, &s, &reg8, realContext);
+    realAdd(&reg9, &r, &reg9, realContext);
     realMultiply(&reg0, const_2, &p, realContext);
     realMultiply(&p, &reg0, &p, realContext);
     realSubtract(&p, &reg0, &p, realContext);
@@ -69,11 +72,12 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
     realAdd(reg4, &p, reg4, realContext);
     realSubtract(&reg0, const_1, &reg0, realContext);
   } while(realCompareGreaterThan(&reg0, const_0));
-  realDivide(&reg8, reg4, &reg8, realContext); realDivide(&reg9, reg4, &reg9, realContext);
+  realDivide(&reg8, reg4, &reg8, realContext);
+  realDivide(&reg9, reg4, &reg9, realContext);
   realSubtract(const_1, reg6, &p, realContext);
   realMultiply(const_ln2, &p, &p, realContext);
   WP34S_ExpM1(&p, &reg1, realContext);
-  realMultiply(reg7, const__1, &p, realContext);
+  realMinus(reg7, &p, realContext);
   realMultiply(&p, const_ln2, &p, realContext);
   realPolarToRectangular(const_1, &p, &q, &p, realContext);
   realSubtract(&q, const_1, &r, realContext);

@@ -76,12 +76,19 @@ void realRandomU01(real_t *res) {
   real_t t;
 
   uInt32ToReal(boundedRand(100000000),  res);
+
   uInt32ToReal(boundedRand(100000000),  &t);
-  realFMA(const_1e8, res, &t, res, &ctxtReal39);
+  res->exponent += 8;
+  realAdd(res, &t, res, &ctxtReal39);
+
   uInt32ToReal(boundedRand(1000000000), &t);
-  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  res->exponent += 9;
+  realAdd(res, &t, res, &ctxtReal39);
+
   uInt32ToReal(boundedRand(1000000000), &t);
-  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  res->exponent += 9;
+  realAdd(res, &t, res, &ctxtReal39);
+
   res->exponent -= 34;
 }
 
