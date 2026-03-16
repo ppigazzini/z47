@@ -179,7 +179,7 @@
       realZero(res);
       return;
     }
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realSubtract(n, x, &q, realContext);
     realMultiply(&p, &q, &p, realContext);

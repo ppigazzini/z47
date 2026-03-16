@@ -148,7 +148,7 @@ static void deriv_default_h(real_t *h) {
       return;
   }
   undo();
-  realMultiply(h, const_1e_16, h, &ctxtReal39);
+  h->exponent -= 16;
 }
 
 

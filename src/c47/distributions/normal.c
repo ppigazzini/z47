@@ -305,7 +305,7 @@
     bool_t isSmall = false;
 
     // qf_q_int_est
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     realAdd(&p, const_1, &p, realContext);
     if(realCompareLessThan(x, &p)) {
       isSmall = true;
@@ -332,7 +332,7 @@
       realAdd(&q, &r, &q, realContext);
     }
     else { // qf_q_mid
-      realMultiply(&p, const__1, &q, realContext);
+      realMinus(&p, &q, realContext);
       realAdd(&q, const_1on2, &q, realContext);
       realSquareRoot(const_2pi, &r, realContext);
       realMultiply(&q, &r, &q, realContext);
