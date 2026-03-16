@@ -116,7 +116,7 @@
       realZero(res);
       return;
     }
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realMultiply(x, &p, &p, realContext);
     realExp(&p, &p, realContext);
@@ -152,7 +152,7 @@
     }
     realToIntegralValue(x, &p, DEC_ROUND_FLOOR, realContext);
     realAdd(&p, const_1, &p, realContext);
-    realMultiply(p0, const__1, &q, realContext);
+    realMinus(p0, &q, realContext);
     WP34S_Ln1P(&q, &q, realContext);
     realMultiply(&p, &q, &p, realContext);
     WP34S_ExpM1(&p, res, realContext);
@@ -166,9 +166,9 @@
       realZero(res);
       return;
     }
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
-    realMultiply(p0, const__1, &q, realContext);
+    realMinus(p0, &q, realContext);
     WP34S_Ln1P(&q, &q, realContext);
     realDivide(&p, &q, &p, realContext);
     realSubtract(&p, const_1, &p, realContext);

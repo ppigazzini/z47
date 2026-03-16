@@ -6330,14 +6330,9 @@ if(iteration % 20 == 0) {
       sumOfSubSupDiagonalAll("", eig, NULL, size, size, DIAG, &diag_sum, true, realContext);
       // avg_diag = diag_sum / size
       realCopy(&diag_sum, &avg_diag);
-      for(int i = 0; i < size; i++) {
-        realDivide(&avg_diag, const_10, &avg_diag, realContext);  // Divide by size (~14 ≈ 10)
-      }
-      // rel_threshold = avg_diag * 1e-10 (10 digits of relative convergence)
+      avg_diag.exponent -= size;  // Divide by size (~14 ≈ 10)
       realCopy(&avg_diag, &rel_threshold);
-      for(int i = 0; i < 10; i++) {
-        realDivide(&rel_threshold, const_10, &rel_threshold, realContext);
-      }
+      rel_threshold.exponent -= 10;
     #endif //POST_QR_RELATIVE_BLOCK_CHECK
 
 

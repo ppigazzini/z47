@@ -164,7 +164,7 @@
     /* (-ln(1-p) ^ (1/k)) * J */
     real_t p, q;
 
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realChangeSign(&p);
     realDivide(const_1, t, &q, realContext);
