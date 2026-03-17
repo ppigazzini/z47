@@ -563,6 +563,14 @@ void mimEnter(bool_t commit) {
   int16_t col = getJRegisterAsInt(true);
 
   if(aimBuffer[0] != 0) {
+    #if defined(IR_PRINTING)
+      if(aimBuffer[0] == '+') {
+        printTraceString(aimBuffer+1,LINE_NOLF);
+      }
+      else {
+        printTraceString(aimBuffer,LINE_NOLF);
+      }
+    #endif //IR_PRINTING
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
 
@@ -613,7 +621,7 @@ void mimEnter(bool_t commit) {
           real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
       }
     }
-
+    
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
     hideCursor();
@@ -759,6 +767,9 @@ void mimAddNumber(int16_t item) {
               real34Copy(const34_1, VARIABLE_IMAG34_DATA(elm));
             }
           }
+          #if defined(IR_PRINTING)
+            printTrace(lastFunc,item);
+          #endif //IR_PRINTING
           return;
         }
       break;

@@ -666,7 +666,8 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
   FLAG_FGGR,
-  FLAG_TRACE
+  FLAG_TRACE,
+  FLAG_NORM
 };
 
 

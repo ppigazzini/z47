@@ -53,6 +53,4 @@
    * \return operation code
    */
   int16_t tamOperation (void);
-  
-  void _tamUpdateBuffer(bool in_progress);
 #endif // !TAM_H

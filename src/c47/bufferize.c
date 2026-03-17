@@ -963,21 +963,33 @@ typedef struct {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
           refreshScreen(51);
+          #if defined(IR_PRINTING)
+            printTrace(item,item);
+          #endif //IR_PRINTING
         }
         else if(item == ITM_LEFT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
           refreshScreen(52);
+          #if defined(IR_PRINTING)
+            printTrace(item,item);
+          #endif //IR_PRINTING
         }
         else if(item == ITM_UP_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
           refreshScreen(53);
+          #if defined(IR_PRINTING)
+            printTrace(item,item);
+          #endif //IR_PRINTING
         }
         else if(item == ITM_DOWN_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
           refreshScreen(54);
+          #if defined(IR_PRINTING)
+            printTrace(item,item);
+          #endif //IR_PRINTING
         }
 
         if((int16_t)item < 0) {
@@ -2865,6 +2877,10 @@ typedef struct {
   //      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK);
   //    }
     }
+    
+    #if defined(IR_PRINTING)
+      printTraceX(LINE_NOLF);
+    #endif //IR_PRINTING
   }
 
 

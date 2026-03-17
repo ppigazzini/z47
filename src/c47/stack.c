@@ -186,9 +186,6 @@ void fnSwapXY(uint16_t unusedButMandatoryParameter) {
 
   globalRegister[REGISTER_X] = globalRegister[REGISTER_Y];
   globalRegister[REGISTER_Y] = savedRegisterHeader;
-  #if defined(IR_PRINTING)
-    print_traceX();
-  #endif //IR_PRINTING
 }
 
 void fnShuffle(uint16_t regist_order) {

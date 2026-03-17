@@ -9,6 +9,35 @@
   #define RETURN_IF_PRINT_OFF if (!getSystemFlag(FLAG_PRTACT)) return
   #define BREAK_IF_EXIT  if (key_pop() == KEY_EXIT) break
 
+  //
+  // Alias table for instruction names to get nice prints
+  //
+  TO_QSPI const nameAlias_t NamesAlias[] = {
+  //             item             name     
+  /*   36 */  { ITM_XexY,        "X<>Y"                               },
+  /*   60 */  { ITM_YX,          "Y^X"                                },
+  /*   61 */  { ITM_SQUAREROOTX, STD_SQUARE_ROOT "X"                  },
+  /*   62 */  { ITM_CUBEROOT,    STD_SUP_3 STD_SQUARE_ROOT "X"        },
+  /*   63 */  { ITM_XTHROOT,     STD_SUP_x STD_SQUARE_ROOT "Y"        },
+  /*   64 */  { ITM_2X,          "2^X"                                },
+  /*   65 */  { ITM_EXP,         "E^X"                                },
+  /*   67 */  { ITM_10x,         "10^X"                               },
+  /*  127 */  { ITM_Xex,         "X<>"                                },
+  /*  981 */  { ITM_ex,          "<>"                                 },
+  /* 1539 */  { ITM_M_RR,        "M.R<>R"                             },   
+  /* 1570 */  { ITM_REexIM,      "Re<>Im"                             },  
+  /* 1575 */  { ITM_EX1,         "e^X-1"                              }, 
+  /* 1625 */  { ITM_Tex,         "T<>"                                },
+  /* 1650 */  { ITM_Yex,         "Y<>"                                },
+  /* 1651 */  { ITM_Zex,         "Z<>"                                },  
+  /* 1679 */  { ITM_M1X,         "(-1)^X"                             },
+  /* 1694 */  { ITM_SHUFFLE,     "<>"                                 },
+  /* 1725 */  { ITM_RS,          "RUN"                                },
+  /* 1794 */  { ITM_SQRT1PX2,    STD_SQUARE_ROOT "(1+x^2)"            },
+  /* 1816 */  { ITM_EE_EXP_TH,   "E^iX"                               },
+  
+  /*      */  { LAST_ITEM,       ""                                   }
+  };
 
   //
   // HP-82240 Roman-8 to Unicode table
@@ -611,13 +640,19 @@ void prepare_new_line(void) {
  */
 void print( uint8_t c ) { // prints a single character
   const print_modes_t mode = printerState.print_mode;
-  // Serial mode code removed for DM42
+
   if ( c == '\n' && ( mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS ) ) {
     // better LF for graphics printing
     sendByteIR( 0x04 );
-    return;
   }
-  sendByteIR( c );
+  else {
+    sendByteIR( c );
+  }
+  // Reset the CL_DROP timer to avoid missing double press on <- when tracing the CLX instruction
+  if(fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING) {
+    fnTimerStart(TO_CL_DROP, TO_CL_DROP, JM_CLRDROP_TIMER);
+  }
+
 }
 
 
@@ -1033,10 +1068,11 @@ void print_justified_left( const char *buff )
 //
 
 static void _realStringToPrint(char *realString, int16_t max_len) {
-  uint16_t i, j, pos, expLen;
+  uint16_t i, j, k, pos, expLen;
   uint16_t len = strlen(realString);
   char *from, *to;
 
+  k = 0;
   if(stringGlyphLength(realString) > max_len){        // if string too long for printer
     for(i = 0; i < len; i++) {
       if((realString[i] == 'e') || (realString[i] == 'E')) {
@@ -1053,6 +1089,11 @@ static void _realStringToPrint(char *realString, int16_t max_len) {
       }
       else if(realString[i] & 0x80) { // Two-byte unicode character
         i++;
+      }
+      k++;
+      if(k >= max_len) {
+        realString[i+1] = 0;
+        break;
       }
     }
   }
@@ -1163,7 +1204,7 @@ static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realSt
 //
 
 static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag34, uint16_t tagAngle, uint16_t tagPolar, char *realString) {
-  int16_t max_len = 16;
+  int16_t max_len = 17;
   real_t real, imagIc;
   real34_t real34, imag34;
 
@@ -1212,7 +1253,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 //  Print a single register
 //
 void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where ) {
-  int16_t max_len = (where == LINE_FULL ? 16 : 10);
+  int16_t max_len = ((where == LINE_FULL) || (where == LINE_NOLF) ? 17 : 10);
 
   if ( label != NULL ) {
     print_line( label, 0 );
@@ -1309,16 +1350,29 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
       break;
   }
 
-  if (( label == NULL ) && (where == LINE_FULL)) {     // for PRX
+  if (( label == NULL ) && ((where == LINE_FULL) || (where == LINE_NOLF))) {     // Padding for PRX
     uint16_t i, padding;
     uint16_t glen = stringGlyphLength(tmpString);
-    if(glen > 18) {
-      padding = (glen <= 24 ? 18 + 24 - glen : 18 - (glen % 24));
-      for(i=0; i < padding; i++) {
-        strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
+    if(where == LINE_FULL) {
+      if(glen > 17) {
+        padding = (glen <= 24 ? 17 + 24 - glen : 17 - (glen % 24));
+        for(i=0; i < padding; i++) {
+          strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
+        }
+      }
+      strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42       
+    }
+    else if(where == LINE_NOLF) {
+      if(glen < 17) {
+        padding = 17 - glen;
+        for(i = strlen(tmpString)+padding; i >= padding; i--) {
+          tmpString[i] = tmpString[i-padding];
+        }
+        for(i = 0; i < padding; i++) {
+          tmpString[i] = ' ';
+        }
       }
     }
-    strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
   }
 
   switch (where) {
@@ -1328,6 +1382,9 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
       break;
     case LINE_LEFT:
       print_justified_left( tmpString );
+      break;
+    case LINE_NOLF:
+      print_line( tmpString, 0 );
       break;
     default:
       print_justified( tmpString );
@@ -1366,7 +1423,17 @@ void print_lf() {
 void cmdprint( uint16_t arg, printArgument_t op )
 {
   char buff[ 4 ];
-  RETURN_IF_PRINT_OFF;
+  
+  if (!getSystemFlag(FLAG_PRTACT)) {
+    if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
+      displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "Printing is disabled");
+        moreInfoOnError("In function cmdprint:", errorMessage, NULL, NULL);
+      #endif // PC_BUILD
+    }
+    return;
+  }
 
   switch ( op ) {
 
@@ -1497,120 +1564,356 @@ void cmdprintwidth(enum nilop op)
 {
   setX_int_sgn(buffer_width(Alpha), 0);
 }
-
-//
-//  Turn printing on or off
-//
-void print_on_off (enum nilop op) {
-  if (op == OP_PRINT_ON) {
-    printerState.print_on = 1;
-  }
-  else if (op == OP_PRINT_OFF) {
-    printerState.print_on = 0;
-  }
-}
-
-//
-//  Set printing modes
-//
-void cmdprintmode( unsigned int arg, enum rarg op )
-{
-  if ( op == RARG_PMODE ) {
-    printerState.print_mode = arg;
-  }
-  else if ( op == RARG_PDELAY ) { // DM42 replacement
-    printer_set_delay(arg*100); // arg is still in ticks, so convert to ms.
-  }
-  else if ( op == RARG_DBLSP ) {
-    printerState.print_blank_line = arg;
-  }
-}
 */
+
+//
+//  Trace error function
+//
+void printTraceErrorFunction  (int16_t func,  char *errorString) {
+
+  if((calcMode != CM_NORMAL) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) return;  // do Trace only in normal mode
+
+  if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+    nameAlias(func, tmpString);
+    strcat(tmpString, " ");
+    strcat(tmpString, errorString);
+    print_justified(tmpString);
+    leaveTamModeIfEnabled();
+
+    #if defined(PC_BUILD)
+      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+    #endif // PC_BUILD
+  }
+}
+
+//
+//  Trace errors
+//
+void printTraceError  (char *errorString) {
+  if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+    print_line( errorString, 1 );
+
+    #if defined(PC_BUILD)
+      printf("**[DL]** Trace: %s\n",errorString);fflush(stdout);
+    #endif // PC_BUILD
+  }
+}
 
 //
 //  Trace the X register
 //
-void print_traceX()
-{
-    if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
-       print_reg(REGISTER_X, NULL, false, LINE_FULL );  // Print register X without name header
-    }
+void printTraceX(uint16_t where) {
+  if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
+    print_reg(REGISTER_X, NULL, false, where );  // Print register X without name header
+
+    #if defined(PC_BUILD)
+      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+    #endif // PC_BUILD
+  }
 }
 
+//
+//  Trace a string
+//
+void printTraceString(char *string, uint16_t where) {
+  int16_t lenInBytes = stringByteLength(string) + 1;
 
-//
-//  Trace an instruction
-//
-void print_trace(int16_t func, uint16_t param)
-{
-    if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
-     if(func < 0) {  
-       print_justified(indexOfItems[-func].itemSoftmenuName);   // Menu
-     }
-     else { 
-       print_justified(indexOfItems[func].itemCatalogName);    // Function
-     }
-    }
+  if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
+    reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(lenInBytes), amNone);
+    xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), string, lenInBytes);
+    print_reg(TEMP_REGISTER_1, NULL, false, where );  // Print register X without name header
+
+    #if defined(PC_BUILD)
+      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+    #endif // PC_BUILD
+  }
 }
 
-/*
 //
-//  Trace an instruction
+//  Trace the temporary information
 //
-void print_trace( opcode op, int phase )
-{
-  char buffer[ 16 ];
-  const char *p;
+void printTraceTI() {
+  if(calcMode != CM_NORMAL) return;  // do Trace only in normal mode
 
-  if ( (Tracing || op == RARG( RARG_SF, T_FLAG )) && getSystemFlag(FLAG_PRTACT)) {
-    //
-    //  We trace when flag T has been set and printing is on
-    //
-    if (op == (OP_SPEC | OP_CHS)) {
-      if (CmdLineLength > 0)
-	return;
-    }
-    else if (op >= (OP_SPEC | OP_EEX) && op <= (OP_SPEC | OP_F))
-      return;
-    else if (op == (OP_SPEC | OP_CLX)) {
-      if (CmdLineLength || (phase==1 && printerColumn==0))
-	return;
-      op = OP_NIL | OP_rCLX;
-    }
-    else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
-      return;
-
-    // Format the command
-    p = prt( op, buffer );
-
-    if ( phase == 0 ) {
-      // Left part of print
-      if ( CmdLineLength ) {
-	process_cmdline();
+  if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+    if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) { // Not executing a program instruction
+      tmpString[0] = 0;
+      switch(temporaryInformation) {
+        case TI_FALSE:
+          sprintf(tmpString, "false");
+          break;
+        case TI_TRUE:
+          sprintf(tmpString, "true" );
+          break;
       }
-      print_tab( 0 );
-      print_line( prt( op, buffer ), 0 );
-      print_line( " ", 0 );
-    }
-    else {
-      // right part of print
-      print_reg( regX_idx,
-		 op == TRACE_DATA_ENTRY ? ">>>" :
-		 printerColumn == 0     ? ( !Tracing ? p : "***"  ) :
-		 CNULL,
-		 0 );
-      if ( State2.wascomplex ) {
-	print_reg( regY_idx, "cpx", 0 );
+      if(tmpString[0] != 0) {
+        print_line( tmpString, 1 );
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+        #endif // PC_BUILD
       }
     }
   }
 }
+
+void _getRegisterLabel(uint16_t registerNo, char *label) {
+        label[0] = 0;
+        if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
+          label[0] = letteredRegisterName((calcRegister_t)registerNo);
+          label[1] = 0;
+        }
+        else if(registerNo < REGISTER_X) {
+          sprintf(label, "R%02d", registerNo);
+        }
+        else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
+          sprintf(label, "R.%03d", registerNo-100);
+        }
+        else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
+          sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
+        }
+        else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
+          sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+        }
+}
+
+//
+//  PROMPT printing
+//
+void printPrompt(uint16_t regist) {
+  if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
+    if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
+      print_reg(regist, NULL, false, LINE_LEFT );  // Print register left justified without name header
+      #if defined(PC_BUILD)
+        printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+      #endif // PC_BUILD
+    }
+  }
+}
+
+//
+//  VIEW and AVIEW printing
+//
+void printViewAview(uint16_t func, uint16_t regist) {
+  if(getSystemFlag(FLAG_PRTACT)) {   // Man, Trace or Norm mode and printer active
+    if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
+      if(func == ITM_VIEW) {
+        char label[16];
+        _getRegisterLabel(regist, label);
+        print_reg(regist, label, true, LINE_LEFT );  // Print register left justified with name header
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s=%s\n",label,tmpString);fflush(stdout);
+        #endif // PC_BUILD
+      }
+      else {
+        print_reg(regist, NULL, false, LINE_LEFT );  // Print register left justified without name header
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+        #endif // PC_BUILD
+      }
+    }
+  }
+  else {
+    if(getSystemFlag(FLAG_PRTEN) && (programRunStop == PGM_RUNNING)) { // Stop in a program if PRTEN and not PRTACT
+      fnStopProgram(NOPARAM);
+    }
+  }
+}
+
+//
+//  Trace an instruction
+//
+void printTrace(int16_t func, uint16_t param) {
+  char traceBuffer[32];
+
+  //printf("**[DL]** printTrace func %d param %d\n",func,param);fflush(stdout);
+  printerState.trace_done = true;
+  if(((calcMode != CM_NORMAL) && (calcMode != CM_MIM)) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) return;  // Trace only in normal mode
+
+  if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM))&& getSystemFlag(FLAG_PRTACT)) {    // Trace or Norm mode and printer active
+    if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) { // Not executing a program instruction
+      if(func < 0) {   // Menu
+        if(func == -MNU_DYNAMIC) {
+          print_justified(userMenus[currentUserMenu].menuName);    // User Menu
+          #if defined(PC_BUILD)
+            printf("**[DL]** Trace: %s\n",userMenus[currentUserMenu].menuName);fflush(stdout);
+          #endif // PC_BUILD
+        }
+        else {
+          print_justified(indexOfItems[-func].itemSoftmenuName);   // Predefined Menu
+          #if defined(PC_BUILD)
+            printf("**[DL]** Trace: %s\n",indexOfItems[-func].itemSoftmenuName);fflush(stdout);
+          #endif // PC_BUILD
+        }
+      }
+      else if (func != ITM_PRINTERADV) {           // Function (don't trace printer ADV)
+        char buffer[16];
+        xcopy(buffer, tmpString, 16);    // Save tmpString content for dynamic menus
+        nameAlias(func, tmpString);
+        if((indexOfItems[func].func != addItemToBuffer) && (indexOfItems[func].param != NOPARAM) && ((indexOfItems[func].status & PTP_STATUS) != PTP_NONE)) {
+          traceBuffer[0] = 0;
+          if(tam.indirect) {
+            strcat(tmpString, " " STD_RIGHT_ARROW);
+            param = tam.value0;
+          }
+          if((tam.mode == TM_VALUE) & !tam.indirect) {   // Needs to be the first if to correctly catch values
+            uint16_t tamMax = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
+            if(tamMax <= 9) {
+              sprintf(traceBuffer, " %u", param);
+            }
+            else if(tamMax <= 99) {
+              sprintf(traceBuffer, " %02u", param);
+            }
+            else if(tamMax <= 999) {
+              sprintf(traceBuffer, " %03u", param);
+            }
+            else {
+              sprintf(traceBuffer, " %04u", param);
+            }
+          }
+          else if((func == ITM_OPEN_MENU) && !tam.indirect) {
+            if(param == MNU_DYNAMIC) {
+              sprintf(traceBuffer, " " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, buffer);
+            }
+            else {
+              sprintf(traceBuffer, " " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, indexOfItems[tam.value].itemCatalogName);
+            }
+          }
+          else if(tam.mode == TM_SHUFFLE) {
+            sprintf(traceBuffer, " %c%c%c%c", shuffleReg[ param & 0x03      ],
+                                              shuffleReg[(param & 0x0c) >> 2],
+                                              shuffleReg[(param & 0x30) >> 4],
+                                              shuffleReg[(param & 0xc0) >> 6]);
+          }
+          else if((param >= FIRST_NAMED_VARIABLE) && (param <= LAST_NAMED_VARIABLE)) {
+            if(!tam.indirect) strcat(tmpString," ");
+            strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
+            strcat(tmpString, (char *)allNamedVariables[param - FIRST_NAMED_VARIABLE].variableName + 1);
+            strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
+          }
+          else if((param >= FIRST_NAMED_RESERVED_VARIABLE) && (param <= LAST_RESERVED_VARIABLE)) {
+            if(!tam.indirect) strcat(tmpString," ");
+            strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
+            strcat(tmpString, (char *)allReservedVariables[param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+            strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
+          }
+          else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !tam.indirect) {
+            if(param < 99) { // Local label from 00 to 99
+              sprintf(traceBuffer, " %02u", param);
+            }
+            else if(param <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
+              sprintf(traceBuffer, " %c", 'A' + (param - 100));
+            }
+            else if(param <= LAST_LOCAL_LABEL) { // Local label from a to l
+              sprintf(traceBuffer, " %c", 'a' + (param - FIRST_LC_LOCAL_LABEL));
+            }
+            else if((param >= FIRST_LABEL) && (param <= LAST_LABEL)) { // Alpha labels
+              strcat(tmpString, " " STD_LEFT_SINGLE_QUOTE);
+              uint16_t strLength = stringByteLength(tmpString);
+              xcopy(tmpString + strLength, labelList[param - FIRST_LABEL].labelPointer + 1, *(labelList[param - FIRST_LABEL].labelPointer));
+              tmpString[strLength + *(labelList[param - FIRST_LABEL].labelPointer)] = 0;
+              strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
+            }
+          }
+          else if((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
+            if(param < FLAG_X) { // Global flag from 00 to 99
+              sprintf(traceBuffer, " %02u", param);
+            }
+            else if(FLAG_X <= param && param <= FLAG_K) { // Lettered flag from X to K
+              sprintf(traceBuffer, " %c", registerFlagLetters[param - FLAG_X]);
+            }
+            else if(param <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
+              sprintf(traceBuffer, " .%02d", param - FIRST_LOCAL_FLAG);
+            }
+            else if(param < FLAG_M) { // Local flag from .32 to .98 are illegal
+              sprintf(traceBuffer, " %02u", param);
+            }
+            else if(param <= FLAG_W) { // Lettered flag from M to S and E to W
+              sprintf(traceBuffer, " %c", registerFlagLetters[param - FLAG_M + (FLAG_K - FLAG_X + 1)]);
+            }
+            else if(param & 0x8000) { // System flag
+              param &= 0x3fff;
+              if(param < 64) {
+                sprintf(traceBuffer, " " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, indexOfItems[param + SFL_TDM24].itemSoftmenuName);
+              }
+              else {
+                sprintf(traceBuffer, " " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, indexOfItems[param + SFL_MONIT - 64].itemSoftmenuName);
+              }
+            }
+          }
+          else if((tam.mode == TM_CMP) && (param == TEMP_REGISTER_1) && !tam.indirect) {
+            sprintf(traceBuffer, real34IsZero(REGISTER_REAL34_DATA(TEMP_REGISTER_1)) ? " 0." : " 1.");
+          }
+          else {
+            if(param < 99) { // Global register from 00 to 99
+              if(!tam.indirect) strcat(tmpString," ");
+              sprintf(traceBuffer, "%02u", param);
+            }
+            else if(param <= REGISTER_K) { // Lettered register from X to K
+              if(!tam.indirect) strcat(tmpString," ");
+              sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_X + param - REGISTER_X].itemSoftmenuName);
+            }
+            else if(param <= REGISTER_W) { // Lettered register from M to S and E to W
+              if(!tam.indirect) strcat(tmpString," ");
+              sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_M + param - REGISTER_M].itemSoftmenuName);
+            }
+            else if((param >= FIRST_LOCAL_REGISTER) && (param <= LAST_LOCAL_REGISTER)) { // Local register from .00 to .98
+              if(!tam.indirect) strcat(tmpString," ");
+              sprintf(traceBuffer, ".%02d", param - FIRST_LOCAL_REGISTER);
+            }
+          }
+          strcat(tmpString, traceBuffer);
+        }
+        uint16_t width = stringGlyphLength( tmpString ) * 7 - 1;
+        if ( printerColumn + width > PAPER_WIDTH ) {
+          print_advance (0);
+        }
+        print_justified(tmpString);
+
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+        #endif // PC_BUILD
+      }
+    }
+    else if(getSystemFlag(FLAG_TRACE)) {  // Program running or single stepping - Trace mode only
+      decodeOneStep_ALIAS(currentStep);
+      if(func == ITM_LBL) {
+        print_advance( 0 ); // Skip one line before printing the label
+        sprintf(traceBuffer, " %02d" , currentLocalStepNumber);
+        strcat(traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
+        strcat(traceBuffer, tmpString);
+        print_justified(traceBuffer);     // Current step & step number
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n",traceBuffer);fflush(stdout);
+        #endif // PC_BUILD
+      }
+      else {
+        print_justified(tmpString);    // Current step
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+        #endif // PC_BUILD
+      }
+    }
+  }
+}
+
+
+void nameAlias(uint16_t op, char *nameOp) {
+  uint16_t i = 0;
+  while(NamesAlias[i].item != LAST_ITEM) {
+    if(NamesAlias[i].item == op) {
+      strcpy(nameOp,NamesAlias[i].name);
+      return;
+    }
+    i++;
+  }
+  strcpy(nameOp,indexOfItems[op].itemCatalogName);
+}    
+
 
 //
 //  Print a program listing
 //  Start at the PC location
 //
-*/
 void printProgram(void) {
   #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -1618,10 +1921,6 @@ void printProgram(void) {
     //
     uint16_t line, firstLine;
     uint8_t *step, *nextStep;
-//    uint16_t numberOfSteps = getNumberOfSteps();
-//    char asciiString[448];           //cannot use errorMessage buffer in disk write operations
-//                                     //solution is to use a local variable of sufficient length to contain a step string.
-
     RETURN_IF_PRINT_OFF;
     advance_if_trace();
 
@@ -1633,8 +1932,11 @@ void printProgram(void) {
     lastProgramListEnd       = false;
 
     // Time and date header line
+    if(getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) {   // TRACE or NORM mode
+      print_lf();
+    }
     if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-       print_line( " ", 0 );          // add a space before the header
+      print_line( " ", 0 );          // add a space before the header
     }
     getTimeString(tmpString);
     print_line( tmpString, 0 );
@@ -1647,11 +1949,7 @@ void printProgram(void) {
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
          print_line( " ", 0 );          // add a space before the first line
       }
-      //sprintf(tmpString, "0000: { Prgm #%" PRIu16 "/%" PRIu16 ": %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, numberOfPrograms, _getProgramSize(), numberOfSteps, numberOfSteps == 1 ? "" : "s");
       sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
-      //stringCopy(tmpString + stringByteLength(tmpString), " \\par");
-      //stringCopy(tmpString + stringByteLength(tmpString), "\n");
-      //ioFileWrite(tmpString, strlen(tmpString));
       print_line( tmpString, 1 );
       firstLine = 1;
     }
@@ -1660,12 +1958,7 @@ void printProgram(void) {
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
-/*
-    int8_t  indent;
-    bool_t  newLine;
-    int8_t  addnextLineIndent = 0;
-    int16_t lastCommandFound = 0;
-*/
+
     bool_t  isLabel;
     bool_t  startOfLine = true;
 
@@ -1700,12 +1993,8 @@ void printProgram(void) {
       }
 
       //Decode instruction
-      if(printerState.print_mode == PMODE_DEFAULT) {
-        decodeOneStep_PRINT42S(step);
-      }
-      else {
-        decodeOneStep(step);
-      }
+      decodeOneStep_ALIAS(step);
+
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
         if ( printerColumn + stringGlyphLength(tmpString)*7 > PAPER_WIDTH + 2 ) {
           print_advance (0);
@@ -1744,7 +2033,7 @@ void printProgram(void) {
 // PRINTER FUNCTIONS
 //********************************************************
 
-// Printer On
+// Printer On/Off
 void fnP_PrinterOnOff(uint16_t op) {
   #if !defined(TESTSUITE_BUILD)
     //#if defined(IR_PRINTING)
@@ -1757,6 +2046,26 @@ void fnP_PrinterOnOff(uint16_t op) {
         printerState.print_on    = false;
         clearSystemFlag(FLAG_PRTACT);
         fnClearFlag(FLAG_PRTEN);
+      }
+    //#endif //IR_PRINTING
+  #endif //TESTSUITE_BUILD
+}
+
+// Printer Mode
+void fnP_PrinterMode(uint16_t mode) {
+  #if !defined(TESTSUITE_BUILD)
+    //#if defined(IR_PRINTING)
+      if(mode == MAN) {
+        fnClearFlag(FLAG_NORM);
+        fnClearFlag(FLAG_TRACE);
+      }
+      else if(mode == NORM) {
+        fnSetFlag(FLAG_NORM);
+        fnClearFlag(FLAG_TRACE);
+      }
+      else if(mode == TRACE) {
+        fnClearFlag(FLAG_NORM);
+        fnSetFlag(FLAG_TRACE);
       }
     //#endif //IR_PRINTING
   #endif //TESTSUITE_BUILD
@@ -1917,6 +2226,16 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
     #if defined(IR_PRINTING)
       char label[16];
 
+      if (!getSystemFlag(FLAG_PRTACT)) {
+        if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
+          displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if defined(PC_BUILD)
+            sprintf(errorMessage, "Printing is disabled");
+            moreInfoOnError("In function fnP_User:", errorMessage, NULL, NULL);
+          #endif // PC_BUILD
+        }
+        return;
+      }
       // Print User variables
       calcRegister_t variable;
       bool_t userVariableFound = false;
@@ -2009,7 +2328,7 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
 void fnP_Alpha(uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
-    #if defined(IR_PRINTING)
+    #if defined(IR_PRINTING)       
       if (getRegisterDataType(registerNo) == dtString) {
         print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
       }
@@ -2044,9 +2363,10 @@ void fnP_Alpha(uint16_t registerNo) {
 
 void fnP_Regs (uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
+
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
-      char label[16];
+      char label[16];     
       label[0] = 0;
       if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
         label[0] = letteredRegisterName((calcRegister_t)registerNo);
@@ -2127,6 +2447,14 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
       if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
       #if defined(IR_PRINTING)
         uint16_t regist;
+        if(!getSystemFlag(FLAG_PRTEN) && ((programRunStop == PGM_RUNNING) || (programRunStop == PGM_SINGLE_STEP))) {
+          displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if defined(PC_BUILD)
+            sprintf(errorMessage, "Printing is disabled");
+            moreInfoOnError("In function fnP_Sigma:", errorMessage, NULL, NULL);
+          #endif // PC_BUILD
+          return;
+        }      
         for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
           convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
           print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL );
@@ -2175,7 +2503,7 @@ void fnP_All_Regs(uint16_t option) {
   bool_t exited;
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(IR_PRINTING)
+    #if defined(IR_PRINTING)      
       switch(option) {
         case PRN_ALL:
           exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers

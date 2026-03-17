@@ -39,10 +39,18 @@ void fnP_Tab          (uint16_t column);
 void fnP_User         (uint16_t unusedButMandatoryParameter);
 void fnP_LCD          (uint16_t unusedButMandatoryParameter);
 void fnP_PrinterOnOff (uint16_t op);
+void fnP_PrinterMode  (uint16_t mode);
 void printProgram     ();
 
 // Print routines
-void print_trace      (int16_t func, uint16_t param);
-void print_traceX     ();
+void printTrace       (int16_t func, uint16_t param);
+void printTraceX      (uint16_t where);
+void printTraceErrorFunction  (int16_t func,  char *errorString);
+void printTraceError  (char *errorString); 
+void printTraceTI     ();
+void printTraceString (char *string, uint16_t where);
+void printPrompt      (uint16_t regist);
+void printViewAview   (uint16_t func, uint16_t regist);
+void nameAlias        (uint16_t op, char *nameOp);
 
 #endif // PRINT_H
