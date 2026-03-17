@@ -57,6 +57,7 @@ const char *getRegisterDataTypeName       (calcRegister_t regist, bool_t article
 const char *getRegisterTagName            (calcRegister_t regist, bool_t padWithBlanks);
 const char *getShortIntegerModeName       (uint16_t im);
 const char *getAngularModeName            (angularMode_t angularMode);
+const char *getRunningModeName            (uint16_t mode);
 const char *getCurveFitModeName           (uint16_t selection);
 const char *getCurveFitModeNames          (uint16_t selection);
 const char *getCurveFitModeFormula        (uint16_t selection);

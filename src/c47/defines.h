@@ -9,8 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
-#define DEVPROFILES
+#define VERSION1 "0.109.03.01b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -19,6 +18,9 @@
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
+// Version 0.109.03.00b2    Public C47 & R47
+// Version 0.109.03.01b0    Public C47 & R47
+// Version 0.109.03.01b1    Public C47 & R47 bugfix version TVM
 
 
 #if !defined(CALCMODEL)
@@ -53,11 +55,14 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
-#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
-#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
-#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
-#define OPTION_XFN_1000
+
 #define LONGPRESS_CFG
+#define OPTION_CUBIC_159               //                   // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED AT ALL // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits.
+#define OPTION_EIGEN_159               //                   // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+#define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
+#define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
+#define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
 
 #if defined(WIN32)
     #define IR_PRINTING  // Enable IR printing for on Windows simulator
@@ -83,12 +88,8 @@
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
-//The byte savings below determined by compiling on Mac on 2024-06-04 using:
-//C compiler for the host machine: ccache arm-none-eabi-gcc (gcc 12.3.1 "arm-none-eabi-gcc (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626")
-//C linker for the host machine: arm-none-eabi-gcc ld.bfd 12.3
-//C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
-//C linker for the build machine: cc ld64 820.1
 
+//The byte counts are never accurate and depending on build system. Consider general info.
 //THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
       #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
@@ -112,50 +113,119 @@
       #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  LONGPRESS_CFG
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-      #undef LONGPRESS_CFG
+      #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
+      #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
-
-//#define PACKAGE1_NOBESSEL_NOORTHO
-#define PACKAGE2_NODISTR
-
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+
+  #undef PACKAGE1_NOBESSEL_NOORTHO
+  #undef PACKAGE2_NODISTR
+  #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+  #undef PACKAGE4_MINIMAL_MATH
+
+  #if DMCP_PACKAGE == 1
+  #define PACKAGE1_NOBESSEL_NOORTHO
+  #elif DMCP_PACKAGE == 2
+  #define PACKAGE2_NODISTR
+  #elif DMCP_PACKAGE == 3
+  #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #elif DMCP_PACKAGE == 4
+  #define PACKAGE4_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
+  #endif
+
+
+
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+      //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
+    #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+      //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without X.FN BESSEL
+      //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
+      #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
+    #define SAVE_SPACE_DM42_6              //  1352 bytes // Without ELEC functions
+    #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+      //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+    #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_16             //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+
+  //Options common to all hardware packages
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
-  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
-  #endif
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-  #if defined(PACKAGE2_NODISTR)
-    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-  #endif
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    //#define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
-    //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+
+  //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
@@ -410,15 +480,7 @@
   #define SIMULATOR_ON_SCREEN_KEYBOARD 1
 #endif // PC_BUILD && !RASPBERRY
 
-
-#if defined(LINUX)
-  #define _XOPEN_SOURCE                700 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
-#endif // LINUX
-
-
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
-
-
 
 //Norm_Key_00_VAR, using -1 output for not applicable, purposely out of range
 #define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 10 :       calcModel == USER_R47fg_bk ? 11 : -1)
@@ -429,8 +491,9 @@
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 #define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
-#define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
-#define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
+#define isArrowUp(code)   (( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 )) // UP
+#define isArrowDown(code) (( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 )) // DN
+#define isShift(code)     (( isR47FAM && code == 10 ) || ( isR47FAM && code == 11 ) || (!isR47FAM && code == 27 )) // All shifts
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -1637,6 +1700,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_WOY_RULE                              121
 #define TI_MIJEQ                                 122
 #define TI_REGTYPE                               123
+#define TI_LR_A0                                 124
+#define TI_LR_A1                                 125
+#define TI_LR_A2                                 126
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1797,7 +1863,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     239 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     242 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)

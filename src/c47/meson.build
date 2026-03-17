@@ -233,6 +233,12 @@ generateCatalogs_src = files(
   'sort.c'
 )
 
+generateTestPgms_src = files(
+  'items.c',
+  'c47.c'
+)
+
+
 c47_inc = include_directories('.', '../generated')
 
 vcs_h = vcs_tag(

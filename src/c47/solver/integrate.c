@@ -108,7 +108,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
-      moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
@@ -126,8 +126,8 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
     if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
-      int32ToReal(0,&res);
-      int32ToReal(0,&acc);
+      realZero(&res);
+      realZero(&acc);
       goto done;
     }
 
@@ -240,7 +240,7 @@ done:
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
-      moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
@@ -550,8 +550,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   // compute precision parameters ************************
   // [rewritten here for WP43]
   // [1e-34 -34 bpa2 bma2]
-  realMultiply(acc, const_1on10, &eps, realContext);
-  realMultiply(&eps, &eps, &eps, realContext);
+  realMultiply(acc, acc, &eps, realContext);
+  eps.exponent -= 2;
   //if(realCompareAbsLessThan(&eps, const_1e_32)) {
   //  realCopy(const_1e_32, &eps); // save epsilon = 10^-37
   //}
@@ -812,7 +812,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   else { // yes, assume result is OK
     realCopy(&x, &tmp);
   }
-  realCopy(&z, &x); realCopy(&tmp, &y); // stack: 0-err-... or ss-err-...
+  realCopy(&z, &x);
+  realCopy(&tmp, &y); // stack: 0-err-... or ss-err-...
   // done with bad results  ******************************
   //  exit  **********************************************
   // DEI_exit::

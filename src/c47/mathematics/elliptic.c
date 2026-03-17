@@ -438,10 +438,12 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
     ArctanComplex(lambda, lambdaI, lambda, lambdaI, realContext);
 
     if(realIsZero(&cot2Lambda) && realIsZero(&cot2LambdaI)) {
-      realCopy(const__1, mu); realCopy(const_0, muI);
+      realCopy(const__1, mu);
+      realCopy(const_0, muI);
     }
     else {
-      realFMA(&tan2Phi, &cot2Lambda, const__1, mu, realContext); realMultiply(&tan2Phi, &cot2LambdaI, muI, realContext);
+      realFMA(&tan2Phi, &cot2Lambda, const__1, mu, realContext);
+      realMultiply(&tan2Phi, &cot2LambdaI, muI, realContext);
     }
     realDivide(mu, m, mu, realContext); realDivide(muI, m, muI, realContext);
     sqrtComplex(mu, muI, mu, muI, realContext);
@@ -1400,7 +1402,7 @@ void fnEllipticE(uint16_t unusedButMandatoryParameter) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot calculate K(m) for m > 1 if CPXRES is not set");
-      moreInfoOnError("In function fnEllipticK:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function fnEllipticE:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
@@ -1502,7 +1504,7 @@ void fnEllipticEphi(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "E(φ|m) cannot return complex result without CPXRES set");
-        moreInfoOnError("In function fnEllipticFphi:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnEllipticEphi:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
@@ -1534,7 +1536,7 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ζ(φ|m) cannot return complex result without CPXRES set");
-        moreInfoOnError("In function fnEllipticFphi:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnJacobiZeta:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }

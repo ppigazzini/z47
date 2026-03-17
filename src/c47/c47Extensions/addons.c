@@ -66,7 +66,7 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
 
   if(base <= 1 || base >= 17) {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", base, "base");
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", base, "base");
     displayBugScreen(errorMessage);
     base = 10;
   }
@@ -92,7 +92,7 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
       number &= ~shortIntegerSignBit;
     }
     else {
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToString", shortIntegerMode, "shortIntegerMode");
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", shortIntegerMode, "shortIntegerMode");
       displayBugScreen(errorMessage);
     }
 
@@ -637,7 +637,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         break;
 
       case CM_PEM : {
-        if(pemCursorIsZerothStep) return;
+        if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) return; // Don't try to edit step 000 or END or .END.
         //printf("**[DL]** currentLocalStepNumber %d\n",currentLocalStepNumber);fflush(stdout);
         int16_t i = 0;
         int16_t func = currentStep[i++];
@@ -1825,7 +1825,6 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       fnToHr(0); //covers time
       setRegisterAngularMode(REGISTER_X, amDegree);
       fnCvtFromCurrentAngularMode(AMODE);
-      //fnAngularMode(AMODE);                             Remove updating of ADM to the same mode
     }
 
     if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -1839,7 +1838,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
 
-        if(calcMode == CM_NORMAL) {         //convert longint, and strip all angles to real.
+        if(calcMode == CM_NORMAL) {                       //convert longint, and strip all angles to real.
           fnToReal(0);
         }
         else if(calcMode == CM_NIM) {
@@ -1847,7 +1846,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
         }
 
         uint16_t currentAngularModeOld = currentAngularMode;
-        fnAngularMode(AMODE);
+        currentAngularMode = AMODE;
         fnCvtFromCurrentAngularMode(currentAngularMode);
         currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode (set in fnCvtFromCurrentAngularMode())
       }
@@ -2140,7 +2139,7 @@ double convert_to_double(calcRegister_t regist) { //Convert from X register to d
 
 void timeToReal34(uint16_t hms) { //always 24 hour time;
   calcRegister_t regist = REGISTER_X;
-  real34_t real34, value34, tmp34, h34, m34, s34;
+  real34_t real34, value34, h34, m34, s34;
   int32_t sign;
   uint32_t digits, tDigits = 0u, bDigits;
   bool_t isValid12hTime = false; //, isAfternoon = false;
@@ -2150,12 +2149,11 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
 
   // Pre-rounding
   int32ToReal34(10, &value34);
-  int32ToReal34(10, &tmp34);
   for(bDigits = 0; bDigits < (isValid12hTime ? 14 : 16); ++bDigits) {
     if(real34CompareAbsLessThan(&h34, &value34)) {
       break;
     }
-    real34Multiply(&value34, &tmp34, &value34);
+    real34Multiply(&value34, const34_10, &value34);
   }
   tDigits = (isValid12hTime ? 14 : 16);
   isValid12hTime = false;
@@ -2181,39 +2179,29 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
   //real34ToIntegralValue(&real34, &s34, DEC_ROUND_DOWN);
   real34Copy(&real34, &s34);
   real34Subtract(&real34, &s34, &real34); // Fractional part
-  int32ToReal34(60, &value34);
   // Minutes
-  real34Divide(&s34, &value34, &m34);
+  real34Divide(&s34, const34_60, &m34);
   real34ToIntegralValue(&m34, &m34, DEC_ROUND_DOWN);
-  real34DivideRemainder(&s34, &value34, &s34);
+  real34DivideRemainder(&s34, const34_60, &s34);
   // Hours
-  real34Divide(&m34, &value34, &h34);
+  real34Divide(&m34, const34_60, &h34);
   real34ToIntegralValue(&h34, &h34, DEC_ROUND_DOWN);
-  real34DivideRemainder(&m34, &value34, &m34);
+  real34DivideRemainder(&m34, const34_60, &m34);
 
+  real34_t *ptr;
   switch(hms) {
-    case 0: //h
-      int32ToReal34(sign ? -1 : +1, &value34);
-      real34Multiply(&h34, &value34, &h34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&h34, REGISTER_REAL34_DATA(regist));
-      break;
+    case 0:  ptr = &h34; break; // h
+    case 1:  ptr = &m34; break; // m
+    case 2:  ptr = &s34; break; // s
+    default: ptr = NULL; // should not happen, but in dateTime.c, function fnDateTimeToJulian(…) makes following call: timeToReal34(3), is that correct
+  }
 
-    case 1: //m
-      int32ToReal34(sign ? -1 : +1, &value34);
-      real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&m34, REGISTER_REAL34_DATA(regist));
-      break;
-
-    case 2: //s
-      int32ToReal34(sign ? -1 : +1, &value34);
-      real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&s34, REGISTER_REAL34_DATA(regist));
-      break;
-
-    default: ;
+  reallocateRegister(regist, dtReal34, 0, amNone);
+  if(ptr) {
+    real34Copy(ptr, REGISTER_REAL34_DATA(regist));
+    if(sign) {
+      real34ChangeSign(REGISTER_REAL34_DATA(regist));
+    }
   }
 }
 
@@ -2221,7 +2209,7 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
 void dms34ToReal34(uint16_t dms) {
   real34_t angle34;
   calcRegister_t regist = REGISTER_X;
-  real34_t value34, d34, m34, s34, fs34;
+  real34_t d34, m34, s34, fs34;
   real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
 
   uint32_t m, s, fs;
@@ -2231,7 +2219,7 @@ void dms34ToReal34(uint16_t dms) {
 
   real34ToReal(&angle34, &temp);
 
-  sign = realIsNegative(&temp) ? -1 : 1;
+  sign = 1 - 2*realIsNegative(&temp);
   realSetPositiveSign(&temp);
 
   // Get the degrees
@@ -2270,39 +2258,36 @@ void dms34ToReal34(uint16_t dms) {
     realAdd(&degrees, const_1, &degrees, &ctxtReal39);
   }
 
+  real34_t *ptr;
   switch(dms)  {
     case 0: //d
-      int32ToReal34(sign, &value34);
       realToReal34(&degrees, &d34);
-      real34Multiply(&d34, &value34, &d34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&d34, REGISTER_REAL34_DATA(regist));
+      ptr = &d34;
       break;
 
     case 1: //m
       int32ToReal34(m, &m34);
-      int32ToReal34(sign, &value34);
-      real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&m34, REGISTER_REAL34_DATA(regist));
+      ptr = &m34;
       break;
 
     case 2: //s
       int32ToReal34(fs, &fs34);
-      int32ToReal34(100, &value34);
-      real34Divide(&fs34, &value34, &fs34);
+      real34Divide(&fs34, const34_100, &fs34);
 
       int32ToReal34(s, &s34);
       real34Add(&s34, &fs34, &s34);
 
-      int32ToReal34(sign, &value34);
-      real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Copy(&s34, REGISTER_REAL34_DATA(regist));
+      ptr = &s34;
       break;
 
-    default: ;
+    default: ptr = NULL; // cannot happen
   }
+
+  if(sign == -1) {
+    real34ChangeSign(ptr);
+  }
+  reallocateRegister(regist, dtReal34, 0, amNone);
+  real34Copy(ptr, REGISTER_REAL34_DATA(regist));
 }
 
 
@@ -2311,7 +2296,7 @@ void notSexa(void) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, false, false));
-    moreInfoOnError("In function notSexagecimal:", errorMessage, NULL, NULL);
+    moreInfoOnError("In function notSexa:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
@@ -2406,50 +2391,47 @@ bool_t isValidTime(const real34_t *hour, const real34_t *minute, const real34_t 
   real34_t val;
 
   // second
-  real34ToIntegralValue(second, &val, DEC_ROUND_FLOOR), real34Subtract(second, &val, &val);
+  real34ToIntegralValue(second, &val, DEC_ROUND_FLOOR);
+  real34Subtract(second, &val, &val);
   if(!real34IsZero(&val)) {
     return false;
   }
 
-  int32ToReal34(0, &val), real34Compare(second, &val, &val);
-  if(real34ToInt32(&val) < 0) {
+  if(real34CompareLessThan(second, const34_0)) {
     return false;
   }
 
-  int32ToReal34(59, &val), real34Compare(second, &val, &val);
-  if(real34ToInt32(&val) > 0) {
+  if(real34CompareGreaterEqual(second, const34_60)) {
     return false;
   }
 
   // minute
-  real34ToIntegralValue(minute, &val, DEC_ROUND_FLOOR), real34Subtract(minute, &val, &val);
+  real34ToIntegralValue(minute, &val, DEC_ROUND_FLOOR);
+  real34Subtract(minute, &val, &val);
   if(!real34IsZero(&val)) {
     return false;
   }
 
-  int32ToReal34(0, &val), real34Compare(minute, &val, &val);
-  if(real34ToInt32(&val) < 0) {
+  if(real34CompareLessThan(minute, const34_0)) {
     return false;
   }
 
-  int32ToReal34(59, &val), real34Compare(minute, &val, &val);
-  if(real34ToInt32(&val) > 0) {
+  if(real34CompareGreaterEqual(minute, const34_60)) {
     return false;
   }
 
   // hour
-  real34ToIntegralValue(hour, &val, DEC_ROUND_FLOOR), real34Subtract(hour, &val, &val);
+  real34ToIntegralValue(hour, &val, DEC_ROUND_FLOOR);
+  real34Subtract(hour, &val, &val);
   if(!real34IsZero(&val)) {
     return false;
   }
 
-  int32ToReal34(0, &val), real34Compare(hour, &val, &val);
-  if(real34ToInt32(&val) < 0) {
+  if(real34CompareLessThan(hour, const34_0)) {
     return false;
   }
 
-  int32ToReal34(23, &val), real34Compare(hour, &val, &val);
-  if(real34ToInt32(&val) > 0) {
+  if(real34CompareGreaterEqual(hour, const34_24)) {
     return false;
   }
 
@@ -2562,10 +2544,11 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   int32_t maxden, ai, dd;
   if(denMax == 0 || denMax > MAX_DENMAX) {
     maxden = MAX_INTERNAL_DENMAX;
-  } else {
+  }
+  else {
     maxden = denMax;
   }
-  int32ToReal(maxden,&temp);
+  int32ToReal(maxden, &temp);
   realDivide(const_1on4,&temp,&temp,&ctxtReal_denom_finder);
   if(realCompareLessThan(&xx,&temp)) {
     //printf("Lower than 0.25/DMX, quitting before fraction loop.\n");  // Any value lower than 0.5/DMX will be deemed 0. Make the threshold 1/2 of 0.5/DMX
@@ -2589,7 +2572,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     m[1][1] = m[1][0];
     m[1][0] = t;
 
-    int32ToReal(ai,&temp);
+    int32ToReal(ai, &temp);
     realSubtract(&xx,&temp,&xx,&ctxtReal_denom_finder);
     //printf("                                               "); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {

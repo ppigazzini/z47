@@ -76,12 +76,19 @@ void realRandomU01(real_t *res) {
   real_t t;
 
   uInt32ToReal(boundedRand(100000000),  res);
+
   uInt32ToReal(boundedRand(100000000),  &t);
-  realFMA(const_1e8, res, &t, res, &ctxtReal39);
+  res->exponent += 8;
+  realAdd(res, &t, res, &ctxtReal39);
+
   uInt32ToReal(boundedRand(1000000000), &t);
-  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  res->exponent += 9;
+  realAdd(res, &t, res, &ctxtReal39);
+
   uInt32ToReal(boundedRand(1000000000), &t);
-  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  res->exponent += 9;
+  realAdd(res, &t, res, &ctxtReal39);
+
   res->exponent -= 34;
 }
 
@@ -123,7 +130,7 @@ static void doIntRandomI(void) {
   if(longIntegerCompareUInt(regX, 0xFFFFFFFE) >= 0) { // 2^32 - 2
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
+      moreInfoOnError("In function doIntRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     fnUndo(0);
     goto err3;

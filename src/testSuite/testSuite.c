@@ -285,7 +285,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnXXfn",                 fnXXfn                },
   {"fnXXfn_RSD",             fnXXfn_RSD            },
   {"fnXXfn_RDP",             fnXXfn_RDP            },
-
+  {"fnEffToI",               fnEffToI              },
+  {"fnEff",                  fnEff                 },
+  {"fnTvmVar",               fnTvmVar              },
   {"fnT_I",                  fnT_I                 },
   {"fnT_L",                  fnT_L                 },
   {"fnT_P",                  fnT_P                 },
@@ -603,6 +605,7 @@ void getString(char *str) {
 
 
 void setParameter(char *p) {
+  calcRegister_t regist = 0;
   char l[200], r[1400], real[200], imag[200], angMod[200]; //, letter;
   int32_t i;
   angularMode_t am = amDegree;
@@ -752,6 +755,14 @@ void setParameter(char *p) {
         }
         else {
           setSystemFlag(FLAG_TDM24);
+        }
+      }
+      else if(!strcmp(l+3, "ENDPMT")) {
+        if(r[0] == '0') {
+          clearSystemFlag(FLAG_ENDPMT);
+        }
+        else {
+          setSystemFlag(FLAG_ENDPMT);
         }
       }
       else {
@@ -958,9 +969,30 @@ void setParameter(char *p) {
     }
   }
 
+
+  //Setting a variable
+  else if(l[0] == 'V') {
+
+    //Variable V256-V3000
+    if(   (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)
+       || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] >= '0' && l[4] <= '9' && l[5] == 0)) {
+      regist = atoi(l + 1);
+      if(regist < 256 || regist > 3000) {
+        printf("\nMalformed variable setting. The number after V shall be from 256 to 3000.\n");
+        abortTest();
+      }
+    }
+
+    else {
+      printf("\nMalformed variable setting. After V there should be a number from 256 to 3000.\n");
+      abortTest();
+    }
+    goto var1;
+  }
+
+
   //Setting a register
   else if(l[0] == 'R') {
-    calcRegister_t regist = 0;
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
@@ -990,7 +1022,7 @@ void setParameter(char *p) {
       printf("\nMalformed register setting. After R there should be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
-
+var1:
     // find the : separating the data type and the value
     i = 0;
     while(r[i] != ':' && r[i] != 0) {
@@ -1741,6 +1773,7 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
 
 
 void checkExpectedOutParameter(char *p) {
+  calcRegister_t regist = 0;
   char l[2000], r[2000], real[200], imag[200], angMod[200], letter = 0;
   int32_t i;
   angularMode_t am = amDegree;
@@ -2098,7 +2131,7 @@ void checkExpectedOutParameter(char *p) {
   }
 
   //Checking rounding mode
-  else if(strcmp(l, "RM") == 0) {
+  else if(strcmp(l, "RMODE") == 0) {
     if(r[0] >= '0' && r[0] <= '9' && r[1] == 0) {
       uint16_t rm = atoi(r);
 
@@ -2142,9 +2175,30 @@ void checkExpectedOutParameter(char *p) {
     }
   }
 
+
+  //Setting a variable
+  else if(l[0] == 'V') {
+
+    //Variable V256-V3000
+    if(   (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)
+       || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] >= '0' && l[4] <= '9' && l[5] == 0)) {
+      regist = atoi(l + 1);
+      if(regist < 256 || regist > 3000) {
+        printf("\nMalformed variable setting. The number after V shall be from 256 to 3000.\n");
+        abortTest();
+      }
+    }
+
+    else {
+      printf("\nMalformed variable setting. After V there should be a number from 256 to 3000.\n");
+      abortTest();
+    }
+    goto var2;
+  }
+
+
   //Checking a register
   else if(l[0] == 'R') {
-    calcRegister_t regist = 0;
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
@@ -2175,7 +2229,7 @@ void checkExpectedOutParameter(char *p) {
       printf("\nMalformed register checking. After R there shall be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
-
+var2:
     // find the : separating the data type and the value
     i = 0;
     while(r[i] != ':' && r[i] != 0) {

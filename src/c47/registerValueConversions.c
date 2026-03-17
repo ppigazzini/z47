@@ -366,21 +366,19 @@ void convertComplexToResultRegisterRPangle(const real_t *real, const real_t *ima
 }
 
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
-  real34_t real34, value34;
+  real34_t real34;
   real34Copy(REGISTER_REAL34_DATA(source), &real34);
-  int32ToReal34(3600, &value34);
   reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  real34Divide(&real34, &value34, REGISTER_REAL34_DATA(destination));
+  real34Divide(&real34, const34_3600, REGISTER_REAL34_DATA(destination));
 }
 
 
 
 void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t destination) {
-  real34_t real34, value34;
+  real34_t real34;
   real34Copy(REGISTER_REAL34_DATA(source), &real34);
-  int32ToReal34(3600, &value34);
   reallocateRegister(destination, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
-  real34Multiply(&real34, &value34, REGISTER_REAL34_DATA(destination));
+  real34Multiply(&real34, const34_3600, REGISTER_REAL34_DATA(destination));
 }
 
 
@@ -393,7 +391,7 @@ void convertLongIntegerRegisterToTimeRegister(calcRegister_t source, calcRegiste
 
 
 void convertDateRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
-  real34_t y, m, d, j, val;
+  real34_t y, m, d, j;
   bool_t isNegative;
 
   internalDateToJulianDay(REGISTER_REAL34_DATA(source), &j);
@@ -402,16 +400,16 @@ void convertDateRegisterToReal34Register(calcRegister_t source, calcRegister_t d
   real34SetPositiveSign(&y);
 
   if(getSystemFlag(FLAG_YMD)) {
-    int32ToReal34(100, &val), real34Divide(&m, &val, &m);
-    int32ToReal34(10000, &val), real34Divide(&d, &val, &d);
+    real34Divide(&m, const34_100, &m);
+    real34Multiply(&d, const34_1e_4, &d);
   }
   else if(getSystemFlag(FLAG_MDY)) {
-    int32ToReal34(100, &val), real34Divide(&d, &val, &d);
-    int32ToReal34(1000000, &val), real34Divide(&y, &val, &y);
+    real34Divide(&d, const34_100, &d);
+    real34Divide(&y, const34_1e6, &y);
   }
   else if(getSystemFlag(FLAG_DMY)) {
-    int32ToReal34(100, &val), real34Divide(&m, &val, &m);
-    int32ToReal34(1000000, &val), real34Divide(&y, &val, &y);
+    real34Divide(&m, const34_100, &m);
+    real34Divide(&y, const34_1e6, &y);
   }
 
   reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -430,15 +428,17 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
   isNegative = real34IsNegative(REGISTER_REAL34_DATA(source));
   real34CopyAbs(REGISTER_REAL34_DATA(source), &part2);
-  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);            //Y D or M
-  real34Subtract(&part2, &part1, &part2);
-  int32ToReal34(100, &val), real34Multiply(&part2, &val, &part2);
+  real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN);      // Y D or M
 
+  real34Subtract(&part2, &part1, &part2);
+  real34Multiply(&part2, const34_100, &part2);
   real34Copy(&part2, &part3);
-  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);            //M M or D
+  real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN);      // M or D
+
   real34Subtract(&part3, &part2, &part3);
-  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val), real34Multiply(&part3, &val, &part3);  // dd yyyy or yyyy
-  real34ToIntegralValue(&part3, &part3, DEC_ROUND_DOWN);
+  int32ToReal34(getSystemFlag(FLAG_YMD) ? 100 : 10000, &val);
+  real34Multiply(&part3, &val, &part3);
+  real34ToIntegralValue(&part3, &part3, DEC_ROUND_DOWN);      // D or Y
 
   if(isNegative) {
     if(getSystemFlag(FLAG_YMD)) {
@@ -482,7 +482,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
       if(getSystemFlag(FLAG_YMD)) {
         if(real34IsZero(&part1)) {
           #if defined(DMCP_BUILD)
-            uInt32ToReal34(dateInfo.year,&part1);
+            uInt32ToReal34(dateInfo.year, &part1);
           #elif defined(PC_BUILD) // PC_BUILD
             uInt32ToReal34(timeInfo->tm_year + 1900,&part1);
           #endif // PC_BUILD
@@ -491,7 +491,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
       //FLAG_MDY //FLAG_DMY
       else if(real34IsZero(&part3)) {
         #if defined(DMCP_BUILD)
-          uInt32ToReal34(dateInfo.year,&part3);
+          uInt32ToReal34(dateInfo.year, &part3);
         #elif defined(PC_BUILD) // PC_BUILD
           uInt32ToReal34(timeInfo->tm_year + 1900,&part3);
         #endif // PC_BUILD
@@ -514,7 +514,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         else {
           yy += (thresholdYYHigh - thresholdYYHigh % 100) + 100;
         }
-        int32ToReal34((int32_t)yy,&part1);
+        int32ToReal34((int32_t)yy, &part1);
       }
     }
     //FLAG_MDY //FLAG_DMY
@@ -526,7 +526,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
       else {
         yy += (thresholdYYHigh - thresholdYYHigh % 100) + 100;
       }
-      int32ToReal34((int32_t)yy,&part3);
+      int32ToReal34((int32_t)yy, &part3);
     }
   }
 
@@ -559,8 +559,8 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     composeJulianDay(&part3, &part2, &part1, REGISTER_REAL34_DATA(destination));
   }
 
-  int32ToReal34(86400, &val), real34Multiply(REGISTER_REAL34_DATA(destination), &val, REGISTER_REAL34_DATA(destination));
-  int32ToReal34(43200, &val), real34Add(REGISTER_REAL34_DATA(destination), &val, REGISTER_REAL34_DATA(destination));
+  real34Multiply(REGISTER_REAL34_DATA(destination), const34_86400, REGISTER_REAL34_DATA(destination));
+  real34Add(REGISTER_REAL34_DATA(destination), const34_43200, REGISTER_REAL34_DATA(destination));
 }
 
 
@@ -1258,7 +1258,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, val); 
+      longIntegerAngleReduction(reg, currentAngularMode, val);
       // out of range error rolled into longIntegerAngleReduction as the longintegr is not accessible here except for converting again
       *xAngularMode = currentAngularMode;
       break;

@@ -15,19 +15,15 @@
 #define ITER_DSZ ((DEC_FLAG << 2) | 2)
 
 static void getIterParam(uint16_t regist, real34_t *fp, real34_t *target, real34_t *step) {
-  real34_t tmpval;
-
   if(getRegisterDataType(regist) == dtReal34) {
     real34ToIntegralValue(REGISTER_REAL34_DATA(regist), fp, DEC_ROUND_DOWN);
     real34Subtract(REGISTER_REAL34_DATA(regist), fp, fp);
     real34SetPositiveSign(fp);
-    int32ToReal34(1000, &tmpval);
-    real34Multiply(fp, &tmpval, target);
+    real34Multiply(fp, const34_1000, target);
     real34Copy(target, step);
     real34ToIntegralValue(target, target, DEC_ROUND_DOWN);
     real34Subtract(step, target, step);
-    int32ToReal34(100, &tmpval);
-    real34Multiply(step, &tmpval, step);
+    real34Multiply(step, const34_100, step);
     real34ToIntegralValue(step, step, DEC_ROUND_DOWN);
     if(real34IsZero(step)) {
       real34Copy(const34_1, step);

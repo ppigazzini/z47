@@ -91,7 +91,7 @@
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnGeometricI:", "the argument must be 0 < x < 1", NULL, NULL);
+          moreInfoOnError("In function fnPoissonI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
           convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -114,13 +114,12 @@
    * Returns a normal approximation in X.
    */
   void WP34S_normal_moment_approx(const real_t *prob, const real_t *var, const real_t *mean, real_t *res, realContext_t *realContext) {
-    real_t p, q, r;
+    real_t p, q;
 
     WP34S_qf_q_est(prob, &p, NULL, realContext);
     realMultiply(&p, &p, &q, realContext);
     realSubtract(&q, const_1, &q, realContext);
-    int32ToReal(6, &r);
-    realDivide(&q, &r, &q, realContext);
+    realDivide(&q, const_6, &q, realContext);
     realDivide(&q, var, &q, realContext);
     realAdd(&p, &q, &p, realContext);
     realMultiply(&p, var, &p, realContext);

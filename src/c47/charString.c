@@ -51,9 +51,9 @@ void convertDigits(char * refstr, char * outstr) {
       case 'i':
       case 'c':
       case 'k':
-      case 'x': 
-      case 'y': 
-      case 'a': 
+      case 'x':
+      case 'y':
+      case 'a':
       case 's': outstr[oo++] = STD_SUB_a[0]           ; outstr[oo++] = STD_SUB_a[1] + refstr[ii] - 'a'; break;
       case ':': outstr[oo++] = STD_RATIO[0]           ; outstr[oo++] = STD_RATIO[1]           ; break; //:
       case '+': outstr[oo++] = STD_SUB_PLUS[0]        ; outstr[oo++] = STD_SUB_PLUS[1]        ; break; //+
@@ -266,7 +266,7 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
                  "In function stringWidth: %d is an unexpected value returned by findGlyph!"
                "/n---------------------------------------------------------------------------\n", glyphId);
       #else // !GENERATE_CATALOGS
-        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "stringWidth", glyphId);
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "_calculateStringWidth", glyphId);
         displayBugScreen(errorMessage);
       #endif // GENERATE_CATALOGS
       *width = 0;
@@ -593,13 +593,13 @@ void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
         printf("%02X ", str[i]);
     }
     printf("; ");
-    
+
     printf("  Dec:   ");
     for (size_t i = 0; i < max_len; i++) {
         printf("%3d ", str[i]);
     }
     printf("; ");
-    
+
     printf("  Char:  ");
     for (size_t i = 0; i < max_len; i++) {
         if (str[i] >= 32 && str[i] < 127) {
@@ -859,6 +859,17 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_LEFT_RIGHT_ARROWS  ,       "><"},
               {STD_SUP_pir            ,       "pi"},
 
+              {STD_M_ALPHA            ,       "ma"},
+              {STD_N_ASTERISK         ,       "*n"},
+              {STD_D_MINUS1           ,       "d^-1"},
+              {STD_1_ASTERISK         ,       "1*"},
+              {STD_K_ASTERISK         ,       "k*"},
+              {STD_EQUALS_SH          ,       "="},
+              {STD_TRI_LHB_2          ,       "^2_LHB"},
+              {STD_TRI_RHB_2          ,       "^2_RHB"},
+              {STD_P_2                ,       "^2p"},
+              {STD_TRI_LHB            ,       "GAUSS_LHB"},
+              {STD_TRI_RHB            ,       "GAUSS_RHB"},
 };
 
 
@@ -1162,12 +1173,10 @@ void strReplace(char *haystack, const char *needle, const char *newNeedle) {
     needleLg = strlen(needle);
     needleLocation = strstr(haystack, needle);
     str = malloc(strlen(needleLocation + needleLg) + 1);
-    #if defined(PC_BUILD) && !defined(GENERATE_CATALOGS)
-      if(str == NULL) {
-        moreInfoOnError("In function strReplace:", "error allocating memory for str!", NULL, NULL);
-        exit(1);
-      }
-    #endif // PC_BUILD && !GENERATE_CATALOGS
+    if(str == NULL) {
+      printf("In function strReplace: error allocating memory for str!\n");
+      exit(1);
+    }
 
     strcpy(str, needleLocation + needleLg);
     *strstr(haystack, needle) = 0;
