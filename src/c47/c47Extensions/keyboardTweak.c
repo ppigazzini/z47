@@ -403,7 +403,19 @@ void resetKeytimers(void) {
       #else //TAMALPHA_f
         tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
       #endif //TAMALPHA_f
-      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && 
+            (LongPressM == RBX_M1234 || LongPressM == RBX_M124) &&  //any mathkeys
+            !((key_no == 12 /*ENTER*/|| key_no == 36 /*CAT*/) && (
+              tam.mode == TM_LABEL     ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_STORCL    ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_CMP       ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_KEY       ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_LBLONLY   ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_MENU      ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_INTEGRATE ||                             // block longpress ENTER and CAT for these TAM alpha modes TM mode not use, added anyway
+              tam.mode == TM_REGISTER                                 // block longpress ENTER and CAT for these TAM alpha modes
+              ))
+            )
         ) {
         if(!shiftF && !shiftG) {
           #if defined(TAMALPHA_f)

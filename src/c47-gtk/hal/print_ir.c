@@ -38,60 +38,57 @@ void setLineDelay(uint16_t delay) {
 //
 void sendByteIR( uint8_t c )
 {
-#if defined(INFRARED)
-  GError * error = NULL;
-  GSocket * socket;
-  GSocketAddress *gsockAddr;
+printf("**[DL]** sendByteIR c %d\n",c);fflush(stdout);
+#if defined(IR_PRINTING)
+  GError         * error = NULL;
+  GInetAddress   * udpAddress;
+  GSocketAddress * udpSocketAddress;
+  GSocket        * udpSocket;
   gssize size_sent;
   gchar buffer[8];
 
   buffer[0] = c;
-  printf("**[DL]** sendByteIR - start\n");fflush(stdout);
+  //printf("**[DL]** sendByteIR - start\n");fflush(stdout);
   //set_IO_annunciator();
 
-  //Creates socket udp ipv4
-  printf("**[DL]**  g_socket_new\n");fflush(stdout);
-  socket = g_socket_new(G_SOCKET_FAMILY_IPV4,
-                    G_SOCKET_TYPE_DATAGRAM,
-                    G_SOCKET_PROTOCOL_UDP,
-                    &error);
+  udpAddress = g_inet_address_new_from_string(UDPHOST);
+  guint16 udpPort = UDPPORT;
   g_assert(error == NULL);
-  if (socket == NULL) {
-    printf("ERROR\n");
+    
+  //Socket address used by the printer simulators (Christoph Giesselink HP82240B simulator or WP34S GTK printer simulator)
+  udpSocketAddress = g_inet_socket_address_new(udpAddress, udpPort);
+  if(udpSocketAddress == NULL){
+    printf("Error UDP socket address\n");
     exit(1);
   }
-  //sockaddr struct like
-  printf("**[DL]**  gsockAddr\n");fflush(stdout);
-  gsockAddr = G_SOCKET_ADDRESS(g_inet_socket_address_new(g_inet_address_new_from_string(UDPHOST), UDPPORT));
-
-  if(gsockAddr == NULL){
-    printf("Error socket\n");
-    exit(1);
-  }
-  //
-  printf("**[DL]**  g_socket_bind\n");fflush(stdout);
-  if (g_socket_bind (socket, gsockAddr, TRUE, &error) == FALSE){
-    printf("Error bind - domain: %d code: %d %s\n", error->domain, error->code, error->message);
-    g_error_free(error);
-    exit(1);
-  }
-
-  printf("**[DL]**  g_socket_send_to %c\n",(char) c);fflush(stdout);
-  size_sent = g_socket_send_to(socket, gsockAddr, buffer /* (const gchar *) &c */, 1, NULL, &error);
-  printf("**[DL]**  g_socket_send_to %lld byte\n", size_sent);fflush(stdout);
+    
+  //Creates socket UDP IPV4
+  udpSocket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, 17, &error);
   if(error != NULL) {
-    printf("Error g_socket_send_to - domain: %d code: %d %s\n", error->domain, error->code, error->message);
+    printf("Error g_socket_new - domain: %d code: %d %s\n", error->domain, error->code, error->message);
+    g_error_free(error);
+    exit(1);
+  }
+
+  //Connect socket
+  if (g_socket_connect(udpSocket, udpSocketAddress, NULL, &error) == FALSE) {
+    printf("Error g_socket_connect - domain: %d code: %d %s\n", error->domain, error->code, error->message);
+    g_error_free(error);
+    exit(1);
+  }
+
+  //Send character to the socket    
+  size_sent = g_socket_send(udpSocket, buffer, 1, NULL, &error);
+  if(error != NULL) {
+    printf("Error g_socket_send - domain: %d code: %d %s size_sent %lld\n", error->domain, error->code, error->message, size_sent);
     g_error_free(error);
   }
 
-  printf("**[DL]**  g_socket_close\n");fflush(stdout);
-  g_socket_close(socket, NULL);
-  //printf("Socket close %s\n", error->message);
+  //Close the socket
+  g_socket_close(udpSocket, NULL);
+  if(error != NULL) g_error_free(error);  
 
-  if(error != NULL) g_error_free(error);
-  printf("**[DL]** sendByteIR - end\n");fflush(stdout);
-
-#endif //INFRARED
+#endif //IR_PRINTING
 }
 
 void printer_advance_buf ( int what )

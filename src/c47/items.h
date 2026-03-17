@@ -2342,7 +2342,7 @@
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
 #define SFL_FGGR                    2287 // The SFL item names are not used
 #define SFL_PRTEN                   2288 // The SFL item names are not used
-#define SFL_2289                    2289 // The SFL item names are not used
+#define SFL_NORM                    2289 // The SFL item names are not used
 #define SFL_2290                    2290 // The SFL item names are not used
 #define SFL_2291                    2291 // The SFL item names are not used
 #define SFL_2292                    2292 // The SFL item names are not used
@@ -2734,12 +2734,14 @@
 #define ITM_PRINTERHP               2640
 #define ITM_PRINTERMARTEL           2641
 #define ITM_PRINTEROTHER            2642
-#define ITM_TRACE                   2643
-#define ITM_PRINTERDLAYQ            2644
-#define ITM_PRINTERON               2645
-#define ITM_PRINTEROFF              2646
+#define ITM_PRINTERDLAYQ            2643
+#define ITM_PRINTERON               2644
+#define ITM_PRINTEROFF              2645
+#define ITM_MAN                     2646
+#define ITM_NORM                    2647
+#define ITM_TRACE                   2648
 
-#define LAST_ITEM                   2647
+#define LAST_ITEM                   2649
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

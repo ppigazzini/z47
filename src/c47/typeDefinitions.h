@@ -101,13 +101,13 @@ typedef struct {
 
 
 /**
- * \struct names42s_t
+ * \struct nameAlias_t
  * Font description.
  */
 typedef struct {
   uint16_t  item;       ///< Item number
   char      name[16];    ///< 42s equivalent item name for printing
-} names42s_t;
+} nameAlias_t;
 
 
 /**
@@ -632,6 +632,7 @@ typedef struct {
   bool_t     dot;
   bool_t     indirect;
   int16_t    digitsSoFar;
+  int16_t    value0;       // to store the initial value for indirection
   int16_t    value;
   int16_t    min;
   int16_t    max;
@@ -662,6 +663,7 @@ typedef struct {
    */
 typedef struct {
   bool_t         print_on;	             ///< Printing on/off 
+  bool_t         trace_done;	         ///< Printing on/off 
   uint8_t        print_blank_line;	     ///< Print space between lines
   print_modes_t  print_mode;  	         ///< printer modes
   printerModel_t printer_model;          ///< printer model

@@ -655,7 +655,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
-    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                       "uint8");   //JM
+    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM  
+    saveStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL 
+    saveStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL 
+    saveStateValue(&printerState.delay,             sizeof(printerState.delay),                                  "printerState.delay",             "uint16");  //DL
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
@@ -1262,6 +1265,15 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
     calcModel = USER_C47;
     restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
+    printerState.print_on = false;
+    restoreStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL 
+    printerState.trace_done = false;
+    printerState.print_blank_line = 0;
+    printerState.print_mode = PMODE_DEFAULT;
+    printerState.printer_model = PRINTER_HP;
+    restoreStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL 
+    printerState.delay = getLineDelay();
+    restoreStateValue(&printerState.delay,             sizeof(printerState.delay),                                  "printerState.delay",             "uint16");  //DL
 
     if(backupVersion < 1014) {
       setLongPressFg(calcModel, -MNU_HOME);
@@ -3103,9 +3115,11 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstDayOfWeek"              ) == 0) { firstDayOfWeek        = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstWeekOfYearDay"          ) == 0) { firstWeekOfYearDay    = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "printerOn"                   ) == 0) { printerState.print_on         = toUint8(tmpString); }
+        #if defined(IR_PRINTING)
+          else if(strcmp(aimBuffer, "printerOn"                   ) == 0) { printerState.print_on = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerModel"                ) == 0) { printerState.printer_model    = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerLineDelay"            ) == 0) { printerState.delay    = toUint16(tmpString); setLineDelay(printerState.delay);}
+        #endif //IR_PRINTING
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) {
             if(loadedVersion < 10000012) {
               forceSystemFlag(FLAG_LARGELI, toUint8(tmpString) != 0);

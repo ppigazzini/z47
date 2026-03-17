@@ -2568,9 +2568,7 @@ RELEASE_END:
             // To TEST and investigate 2023-10-02
             // User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
 
-            printf("**[DL]** tamProcessInput(ITM_ENTER) currentMenu %d\n",currentMenu());fflush(stdout);
             tamProcessInput(ITM_ENTER);
-            printf("**[DL]**                            currentMenu %d\n",currentMenu());fflush(stdout);
             keyActionProcessed = true;
           }
           else if(calcMode == CM_NIM) {                             //JMvv
@@ -3398,6 +3396,10 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
+          #if defined(IR_PRINTING)
+            printTraceX(LINE_FULL);
+          #endif //IR_PRINTING
+          
           if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterB\n");

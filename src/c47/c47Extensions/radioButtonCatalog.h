@@ -64,6 +64,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_KY                  157 // KEYS LAYOUT
 #define RB_PRM                 158 // PRINTER MODEL
 #define RB_PRON                159 // PRINTER ON/OFF
+#define RB_PM                  160 // PRINTER MODE (MAN/NORM/TRACE)
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not
 #define JC_PROPER              165    // CB FractionType

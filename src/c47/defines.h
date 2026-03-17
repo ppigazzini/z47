@@ -539,7 +539,8 @@
 #define ERROR_SOLVER_ABORT                        60
 #define ERROR_RESERVED_VARIABLE_NAME              61
 #define ERROR_INVALID_TYPE_XFN                    62
-#define LAST_ERROR_MESSAGE                        62
+#define ERROR_PRINTING_DISABLED                   63
+#define LAST_ERROR_MESSAGE                        63
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -723,9 +724,10 @@
 #define FLAG_FGLNLIM                          0x8062
 #define FLAG_FGLNFUL                          0x8063
 #define FLAG_FGGR                             0x8064
-#define FLAG_PRTEN                            0x8065 //38
+#define FLAG_PRTEN                            0x8065
+#define FLAG_NORM                             0x8066 //39
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+38 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+39 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -755,8 +757,14 @@ typedef enum {
   LI_POSITIVE = 2  // Long integer sign +
 } longIntegerSign_t;
 
+
+// PRINTING
 #define PROFF   0
 #define PRON    1
+
+#define MAN     0
+#define NORM    1
+#define TRACE   2
 
 typedef enum {
   PRINT_BYTE,
@@ -786,9 +794,10 @@ typedef enum  {
 
 
 typedef enum  {
-	LINE_FULL = 0,
-	LINE_LEFT = 1,
-	LINE_RIGHT = 2
+	LINE_FULL  = 0,
+	LINE_LEFT  = 1,
+	LINE_RIGHT = 2,
+	LINE_NOLF  = 3
 } print_area_t;
 
 
@@ -899,14 +908,17 @@ typedef enum  {
 #define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
 
+// Function returns result in X - used to tracing
+#define RESULT_IN_X                          0x8000  // 1000 0000 0000 0000
+
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
 
 //Export/print type
-#define MODE_NRM 2
-#define MODE_RTF 1
-#define MODE_42S 3
+#define MODE_NRM   2
+#define MODE_RTF   1
+#define MODE_ALIAS 3
 
 
 // List of constants

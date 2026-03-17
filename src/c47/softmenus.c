@@ -643,11 +643,11 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
                                              ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERUSER,             ITM_PRINTERTAB,
-                                            -MNU_PRINTER,                   ITM_PRINTERON,              ITM_PRINTEROFF,           ITM_NULL,              ITM_NULL,                    ITM_TRACE,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
 
                                              ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_NULL,                    ITM_PRINTERADV,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                            -MNU_PRINTER,                   ITM_PRINTERON,              ITM_PRINTEROFF,           ITM_NULL,              ITM_NULL,                    ITM_TRACE                     };
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
 
 TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
 
@@ -3246,17 +3246,13 @@ void showSoftmenuCurrentPart(void) {
 
     #if defined(IR_PRINTING)
       if(!tam.mode) {
-        print_trace(id,NOPARAM);
+        printTrace(id,NOPARAM);
       }
     #endif //IR_PRINTING
 
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
       jm_show_comment(tmp);
-      if(!tam.mode) {
-        printf("**[DL]** Trace: %s %d in showSoftmenu\n",indexOfItems[id > 0 ? id : -id].itemSoftmenuName,NOPARAM);fflush(stdout);
-        printf("**[DL]**        tamBuffer %s\n",tamBuffer);fflush(stdout);
-      }
     #endif // PC_BUILD
 
     #if !defined(INLINE_TEST)
