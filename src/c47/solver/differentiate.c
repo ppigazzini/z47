@@ -61,7 +61,7 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
-        moreInfoOnError("In function fn1stDeriv:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function derivativeCommon:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -73,7 +73,7 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
-      moreInfoOnError("In function fn1stDeriv:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function derivativeCommon:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   if(!solving) {
@@ -148,7 +148,7 @@ static void deriv_default_h(real_t *h) {
       return;
   }
   undo();
-  realMultiply(h, const_1e_16, h, &ctxtReal39);
+  h->exponent -= 16;
 }
 
 

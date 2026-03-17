@@ -349,7 +349,7 @@ void Sett(int16_t grp) {
         case RESERVED_VARIABLE_PV     :
         case RESERVED_VARIABLE_PPERONA:
         case RESERVED_VARIABLE_CPERONA: {
-            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
+            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp], &realt);
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
@@ -363,7 +363,7 @@ void Sett(int16_t grp) {
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
               printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             #endif //PC_BUILD
-            SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            SetSetting(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             break;
           }
 
@@ -371,7 +371,7 @@ void Sett(int16_t grp) {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
-          forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
+          forceSystemFlag(Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
           break;
           }
 
@@ -379,7 +379,7 @@ void Sett(int16_t grp) {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
-          fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          fnSetGapChar(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           }
         default:break;
       }
@@ -465,7 +465,6 @@ void Sett(int16_t grp) {
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
-    #if !defined(SAVE_SPACE_DM42_21_HP35)
       fnKeyExit(0);
       addItemToBuffer(ITM_EXIT1);
       getDateString(lastStateFileOpened);
@@ -481,7 +480,6 @@ void Sett(int16_t grp) {
       runFunction(ITM_SQUARE);
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(162);
-    #endif //SAVE_SPACE_DM42_21_HP35
   }
 
 
@@ -854,7 +852,7 @@ void fnRoundingMode(uint16_t RM) {
   }
   else {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fnRoundingMode", RM, "RM");
-    sprintf(errorMessage + strlen(errorMessage), "Must be from 0 to 6");
+    strcat(errorMessage, "Must be from 0 to 6");
     displayBugScreen(errorMessage);
   }
 }
@@ -1133,7 +1131,7 @@ void fnClAll(uint16_t confirmation) {
 
 
 void addTestPrograms(void) {
-  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(16000));
+  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(19000));
 
   resizeProgramMemory(TO_BLOCKS(numberOfBytesForTheTestPrograms));
   firstDisplayedStep            = beginOfProgramMemory;

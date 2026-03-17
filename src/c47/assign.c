@@ -1088,21 +1088,32 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      xcopy(userMenus[numberOfUserMenus].menuName, name, sizeof(userMenus[0].menuName)); // Martin: changed size from stringByteLength(name) + 1 to sizeof(userMenus[0].menuName)
+      #ifdef PC_BUILD
+      if(name == NULL) {
+        abortf("The parameter name is NULL!\n");
+      }
+      if(stringByteLength(name) + 1 > (int32_t)sizeof(userMenus[0].menuName)) {
+        char tmp[1000];
+        sprintf(tmp, "The string \"name\" <%s> is too long (%" PRId32 "+1 bytes) to be copied to userMenus[numberOfUserMenus].menuName (%" PRIi32 " bytes)\n",
+                                           name,              stringByteLength(name),                                                    (int32_t)sizeof(userMenus[0].menuName));
+        abortf(tmp);
+      }
+      #endif // PC_PUILD
+      xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
       ++numberOfUserMenus;
     }
     else {
       displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "the name %s", name);
-        moreInfoOnError("In function fnAssign:", errorMessage, "is already in use!", NULL);
+        moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnAssign:", "the menu", name, "does not follow the naming convention");
+      moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }

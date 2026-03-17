@@ -170,7 +170,7 @@ void fnGoToColumn(uint16_t col) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", tmpRow, col);
-        moreInfoOnError("In function putGoToColumn:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -237,7 +237,7 @@ void _fnInsRow(bool_t add) {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
       sprintf(errorMessage, "works in MIM only");
-      moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnInsRow:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
     }
   #endif // !TESTSUITE_BUILD
@@ -268,7 +268,7 @@ void _fnInsCol(bool_t add) {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
       sprintf(errorMessage, "works in MIM only");
-      moreInfoOnError("In function fnInsCol:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _fnInsCol:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
     }
   #endif // !TESTSUITE_BUILD
@@ -1090,7 +1090,7 @@ if(toDisplay) {
         clearRegisterLine(REGISTER_X, true, true);
       }
   }
-}  
+}
   const uint16_t displayFormat1 = displayFormat;
   const uint8_t displayFormatDigits1 = displayFormatDigits;
 

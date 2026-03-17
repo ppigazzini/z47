@@ -455,6 +455,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+
     saveStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
     saveStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
     saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
@@ -1014,6 +1016,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    restoreStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+
     lastI = 0;
     lastJ = 0;
     restoreStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");

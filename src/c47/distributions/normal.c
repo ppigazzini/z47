@@ -70,7 +70,7 @@
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnLogNormalP:", "cannot calculate for x < 0", NULL, NULL);
+          moreInfoOnError("In function normalP:", "cannot calculate for x < 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
@@ -107,7 +107,7 @@
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnLogNormalP:", "cannot calculate for x < 0", NULL, NULL);
+          moreInfoOnError("In function normalL:", "cannot calculate for x < 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
@@ -138,7 +138,7 @@
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnLogNormalP:", "cannot calculate for x < 0", NULL, NULL);
+          moreInfoOnError("In function normalR:", "cannot calculate for x < 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
@@ -166,7 +166,7 @@
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnNormalI:", "the argument must be 0 < x < 1", NULL, NULL);
+          moreInfoOnError("In function normalI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
           convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -305,7 +305,7 @@
     bool_t isSmall = false;
 
     // qf_q_int_est
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     realAdd(&p, const_1, &p, realContext);
     if(realCompareLessThan(x, &p)) {
       isSmall = true;
@@ -332,7 +332,7 @@
       realAdd(&q, &r, &q, realContext);
     }
     else { // qf_q_mid
-      realMultiply(&p, const__1, &q, realContext);
+      realMinus(&p, &q, realContext);
       realAdd(&q, const_1on2, &q, realContext);
       realSquareRoot(const_2pi, &r, realContext);
       realMultiply(&q, &r, &q, realContext);
@@ -397,8 +397,7 @@
         realMultiply(&s, const_2, &s, realContext);
         realAdd(&s, const_1, &s, realContext);
         realMultiply(&r, &s, &r, realContext);
-        int32ToReal(6, &s);
-        realDivide(&r, &s, &r, realContext);
+        realDivide(&r, const_6, &r, realContext);
         realMultiply(&p, const_1on2, &s, realContext);
         realMultiply(&s, &q, &s, realContext);
         realMultiply(&s, &q, &s, realContext);

@@ -7,20 +7,20 @@
 ;   In:   specifies the input parameters
 ;   Out:  specifies the expected output values
 ;
-;   FL_n Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or name: 0 or 1
-;   IM   Integer Mode: 1COMPL, 2COMPL, UNSIGN or SIGNMT
-;   AM   Angular Mode: DEG, DMS, GRAD, RAD, MULTPI
-;   SS   Stack Size: 4 or 8
-;   WS   Word Size: 0 to 64 (0 is the same as 64)
-;   RM   Rounding mode: 0 to 6
-;   SD   Significant digits: 0 to 34
-;   EC   Error Code: 0=no error or form 1 to 28
-;   CM   Complex Mode: RECT or POLAR
-;   GAP  gap setting
-;   JG   The day Gregorian calendar was introduced: in JDN (2299161 in Europe)
-;   PGM  RPN programm to run
-;   Rn   Register n from 0 to 211
-;   Rx   Register x in A,B,C,D,I,J,K,L,T,X,Y,Z
+;   FL_n  Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or name: 0 or 1
+;   IM    Integer Mode: 1COMPL, 2COMPL, UNSIGN or SIGNMT
+;   AM    Angular Mode: DEG, DMS, GRAD, RAD, MULTPI
+;   SS    Stack Size: 4 or 8
+;   WS    Word Size: 0 to 64 (0 is the same as 64)
+;   RMODE Rounding mode: 0 to 6
+;   SD    Significant digits: 0 to 34
+;   EC    Error Code: 0=no error or form 1 to 28
+;   CM    Complex Mode: RECT or POLAR
+;   GAP   gap setting
+;   JG    The day Gregorian calendar was introduced: in JDN (2299161 in Europe)
+;   PGM   RPN programm to run
+;   Rn    Register n from 0 to 211
+;   Rx    Register x in A,B,C,D,I,J,K,L,T,X,Y,Z
 ;      type after equal sign: LonI is a  Long Integer
 ;                             Stri is a  String
 ;                             ShoI is a  Short Integer
@@ -67,6 +67,7 @@ ulp
 neighb
 min
 max
+tvm
 
 changeSign
 sign

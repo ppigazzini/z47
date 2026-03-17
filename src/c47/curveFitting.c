@@ -211,7 +211,7 @@ uint16_t minLRDataPoints(uint16_t selection) {
  *
  * \return void
  ***********************************************/
-void fnProcessLRfind(uint16_t curveFitting){
+static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   int32_t nn;
   real_t NN;
 
@@ -222,7 +222,7 @@ void fnProcessLRfind(uint16_t curveFitting){
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     printf("Processing for best fit: %s\n",getCurveFitModeNames(curveFitting));
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  realCopy(const__4,&RRMAX);
+  realCopy(const__4, &RRMAX);
   uint16_t s = 0;       // default
   uint16_t ix, jx;      // only a single graph can be evaluated at once, so retain the single lowest bit, and clear the higher order bits.
   jx = 0;
@@ -235,10 +235,10 @@ void fnProcessLRfind(uint16_t curveFitting){
 
       if(nn >= (int32_t)minLRDataPoints(jx)) {
         processCurvefitSelection(jx,&RR,&SMI, &aa0, &aa1, &aa2);
-        realMultiply(&RR,&RR,&RR2,&ctxtReal39);
+        realMultiply(&RR, &RR, &RR2, &ctxtReal39);
 
         if(realCompareGreaterThan(&RR2, &RRMAX) && realCompareLessEqual(&RR2, const_1)) { // Only consider L.R. models where R^2<=1
-          realCopy(&RR2,&RRMAX);
+          realCopy(&RR2, &RRMAX);
           s = jx;
         }
       }
@@ -261,18 +261,37 @@ void fnProcessLRfind(uint16_t curveFitting){
     processCurvefitSelection(s, &RR, &SMI, &aa0, &aa1, &aa2);
     lrChosen = s;
 
-    temporaryInformation = TI_LR;
+    /* Set the TI */
+    if (resultType & (resultType - 1))
+      temporaryInformation = TI_LR;
+    else if (resultType & 1)
+      temporaryInformation = TI_LR_A0;
+    else if (resultType & 2)
+      temporaryInformation = TI_LR_A1;
+    else if (resultType & 4)
+      temporaryInformation = TI_LR_A2;
+
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
+      if (resultType & 4) {
+        liftStack();
+        setSystemFlag(FLAG_ASLIFT);
+        convertRealToResultRegister(&aa2, REGISTER_X, amNone);
+      }
+    } else if (resultType == 4) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      convertRealToResultRegister(&aa2, REGISTER_X, amNone);
+      convertRealToResultRegister(const_0, REGISTER_X, amNone);
     }
-    liftStack();
-    setSystemFlag(FLAG_ASLIFT);
-    convertRealToResultRegister(&aa1, REGISTER_X, amNone);
-    liftStack();
-    setSystemFlag(FLAG_ASLIFT);
-    convertRealToResultRegister(&aa0, REGISTER_X, amNone);
+    if (resultType & 2) {
+      liftStack();
+      setSystemFlag(FLAG_ASLIFT);
+      convertRealToResultRegister(&aa1, REGISTER_X, amNone);
+    }
+    if (resultType & 1) {
+      liftStack();
+      setSystemFlag(FLAG_ASLIFT);
+      convertRealToResultRegister(&aa0, REGISTER_X, amNone);
+    }
   }
   else {
     if(minLRDataPoints(s) == 65535) {
@@ -282,7 +301,7 @@ void fnProcessLRfind(uint16_t curveFitting){
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      uInt32ToReal((uint32_t)minLRDataPoints(s),&NN);
+      uInt32ToReal((uint32_t)minLRDataPoints(s), &NN);
       checkMinimumDataPoints(&NN);              //Report an error
     }
   }
@@ -290,9 +309,9 @@ void fnProcessLRfind(uint16_t curveFitting){
 
 
 
-void fnProcessLR (uint16_t unusedButMandatoryParameter){
+void fnProcessLR (uint16_t resultType){
   if(checkMinimumDataPoints(const_2)) {
-    fnProcessLRfind(lrSelection);
+    fnProcessLRfind(lrSelection, resultType);
   }
 }
 
@@ -795,8 +814,8 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
       realDivide  (const_1, &FF, aa2, realContext);
 
       //        a1 = -G/(2.0) * a2;
-      realDivide(  &GG,     const__1,   &TT, realContext);
-      realDivide(  &TT,     const_2,    &TT, realContext);
+      realDivide(  &GG,     const_2,    &TT, realContext);
+      realChangeSign(&TT);
       realMultiply(&TT,     aa2,        aa1, realContext);
 
       //GAUSS  a0 = exp (H - F * a1 * a1); //maxy;

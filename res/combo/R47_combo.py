@@ -24,12 +24,15 @@ with open(path1, 'rb') as f1:
     data2 = f2.read()
     with open(output, 'wb') as f3:
       f3.write(data1)
-      pad1 = bytearray(addrData2 - len(data1))
+      pad1_len = max(0, addrData2 - len(data1))
+      pad1 = bytearray(pad1_len)
       f3.write(pad1)
       f3.write(data2)
-      pad2 = bytearray(2048 -24 -((addrData2 + len(data2)) % 2048))
+      remainder = (addrData2 + len(data2)) % 2048
+      pad2_len = (2048 - tailSize - remainder) % 2048
+      pad2 = bytearray(pad2_len)
       f3.write(pad2)
-      f3.close
+      f3.close()
     with open(output, 'rb') as f3:
       combo = f3.read()
       crc   = binascii.crc32(combo)

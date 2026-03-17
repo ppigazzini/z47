@@ -22,7 +22,7 @@ void incDecError(uint16_t regist, uint8_t flag) {
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "Cannot increment/decrement, incompatible type.");
-    moreInfoOnError("In function inc/dec:", errorMessage, NULL, NULL);
+    moreInfoOnError("In function incDecError:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
