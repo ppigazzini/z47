@@ -5778,6 +5778,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
     #if !defined(DMCP_BUILD)
       refreshLcd(NULL);
     #endif // !DMCP_BUILD
+
+    #if defined(REFRESH_ON_SCREEN_MONITOR)
+      char aaa[111];
+      sprintf(aaa,"Refresh #%d",source);
+      print_linestr(aaa, false);
+    #endif //DMCP_REFRESH
+
   }
 #endif // !TESTSUITE_BUILD
 
@@ -5993,6 +6000,9 @@ void fnClLcd(uint16_t unusedButMandatoryParameter) {
       screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
       lcd_fill_rect(x, 0, SCREEN_WIDTH - x, SCREEN_HEIGHT - y, LCD_SET_VALUE);
     }
+    #if defined(REFRESH_ON_SCREEN_MONITOR)
+      print_linestr("Start Refresh monitoring", true);
+    #endif //DMCP_REFRESH
   #endif // !TESTSUITE_BUILD
 }
 
