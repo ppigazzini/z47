@@ -2716,45 +2716,40 @@ void createSubstrings(uint8_t number) {
   }
 
 
-  void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
-    if(regist == REGISTER_X) {
-      real_t t;
-      getRegisterAsRealQuiet(REGISTER_X, &t);
-      int32_t ii = realToInt32C47(&t);
-      realMultiply(&t, const_100, &t, &ctxtReal39);
-      int32_t jj = realToInt32C47(&t) - 100*ii;
-      char sss[30];
-      sss[0]=0;
-      switch (ii) {
-        case 0 : strcpy(sss,"LongInteger"); break;
-        case 1 : strcpy(sss,"Real"); break;
-        case 2 : strcpy(sss,"Complex"); break;
-        case 3 : strcpy(sss,"Time"); break;
-        case 4 : strcpy(sss,"Date"); break;
-        case 5 : strcpy(sss,"String"); break;
-        case 6 : strcpy(sss,"RealMatrix"); break;
-        case 7 : strcpy(sss,"ComplexMatrix");  break;
-        case 8 : strcpy(sss,"ShortInteger"); break;
-        case 9 : strcpy(sss,"Config"); break;
-        default: break;
+void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+  TO_QSPI static const char typeName[][14]    = { "LongInteger", "Real", "Complex", "Time", "Date", "String", "RealMatrix", "ComplexMatrix", "ShortInteger", "Config" };
+  TO_QSPI static const char angleSuffix[][10] = { (", MUL" STD_pi), ", DMS", ", Degree", ", Grad", ", Radian" };
+  TO_QSPI static const char vecDim[][3]       = { "", "2D", "2D", "3D", "3D", "3D", "" };
+  TO_QSPI static const char vecMode[][6]      = { "", "RECT", "POLAR", "RECT", "SPH", "CYL", "" };
+  if(regist == REGISTER_X) {
+    real_t t;
+    getRegisterAsRealQuiet(REGISTER_X, &t);
+    int32_t ii = realToInt32C47(&t);
+    realMultiply(&t, const_1000, &t, &ctxtReal39);
+    int32_t jjj = realToInt32C47(&t) - 1000*ii;
+    int fp1 = jjj / 100;
+    int fp2 = (jjj / 10) % 10;
+    int fp3 = jjj % 10;
+    char sss[40];
+    strcpy(sss, (ii >= 0 && ii <= 9) ? typeName[ii] : "?");
+    if(ii == 8) {
+      strcat(sss, ", base");
+    } else if(ii == 6) {
+      if(fp1 >= 1 && fp1 <= 5) {
+        strcat(sss, ", "); strcat(sss, vecDim[fp1]);
+        strcat(sss, " "); strcat(sss, vecMode[fp1]);
+        if(fp2 >= 1) strcat(sss, angleSuffix[fp2 - 1]);
+        if(fp3) strcat(sss, ", col");
+      } else if(fp1 == 6) {
+        strcat(sss, fp3 ? ", col vector" : ", row vector");
       }
-      if(ii == 8) {
-        strcat(sss,", base");
-      } else {
-        switch (jj) {
-          case 10 : strcat(sss,", MUL" STD_pi); break;
-          case 20 : strcat(sss,", DMS"); break;
-          case 30 : strcat(sss,", Degree"); break;
-          case 40 : strcat(sss,", Grad"); break;
-          case 50 : strcat(sss,", Radian"); break;
-          default:break;
-        }
-      }
-      sprintf(prefix, "%s", sss);
-      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    } else {
+      if(fp1 >= 1 && fp1 <= 5) strcat(sss, angleSuffix[fp1 - 1]);
     }
+    sprintf(prefix, "%s", sss);
+    *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
-
+}
 
 
 static bool_t displayTrueFalse(calcRegister_t regist) {
