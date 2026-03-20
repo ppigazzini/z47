@@ -242,6 +242,9 @@
 
 
 //Testing and debugging
+  #define    REFRESH_ON_SCREEN_MONITOR  //refresh debug on actual screen. Shows the refresh source number. Works on hardware and sim.
+  #undef     REFRESH_ON_SCREEN_MONITOR
+
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
   #define    DM42_POWERMARKS
