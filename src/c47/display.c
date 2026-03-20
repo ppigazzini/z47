@@ -3910,6 +3910,7 @@ void _view(uint16_t regist) {
     currentViewRegister = regist;
     temporaryInformation = TI_VIEW_REGISTER;
     if(programRunStop == PGM_RUNNING) {
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
       refreshScreen(151);
 //      temporaryInformation = TI_NO_INFO;  //JM removed to signal to STOP, so that STOP does not clear the screen after VIEW
     }
