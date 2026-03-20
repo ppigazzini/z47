@@ -5630,6 +5630,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
     switch(currentMenu()) {
+      case -MNU_PARETO:
+      case -MNU_UNIFORM:
+      case -MNU_DISUNIFORM:
       case -MNU_GEV:
       case -MNU_BINOM:
       case -MNU_CAUCH:

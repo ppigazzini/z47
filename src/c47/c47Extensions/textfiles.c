@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-//#define DISPLOADING
-
 #include "c47.h"
 
 typedef struct {
@@ -153,125 +151,6 @@ void tmpString_csv_out(uint8_t nn) {
     export_append_line(CSV_STR);                    //Output append to CSV file
     export_append_line(CSV_NEWLINE);                //Output append to CSV file
   #endif // !TESTSUITE_BUILD
-}
-
-
-//**********************************************************************************************************
-#if !defined(TESTSUITE_BUILD)
-  int16_t export_string_to_file(const char line1[TMP_STR_LENGTH]) {
-    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C47_LOG.TXT"
-  }
-#endif // !TESTSUITE_BUILD
-
-
-//################################################################################################
-// OUTPUT is in TMPSTR
-void displaywords(char *line1) {  //Preprocessor and display
-  char bb[2];
-  char aa[2];
-  bool_t state_comments = false;
-  aa[1] = 0;
-  bb[1] = 0;
-  bb[0] = 0;
-
-  #if (VERBOSE_LEVEL >= 2)
-    print_linestr("Code:", true);
-  #endif // VERBOSE_LEVEL >= 2
-  //printf("4:%s\n", line1);
-
-  #if (VERBOSE_LEVEL >= 2)
-    char tmp[400];          //Messages
-    sprintf(tmp, " F: Displaywords: %lu bytes.\n", stringByteLength(line1));
-    print_linestr(tmp, false);
-    print_linestr(line1, false);
-  #endif // VERBOSE_LEVEL >= 2
-
-  if(line1[stringByteLength(line1)-1] != 32) {
-    strcat(line1, " ");
-  }
-
-  tmpString[0] = 32;
-  tmpString[1] =  0;
-
-  int16_t ix = 0;
-  while(line1[ix] != 0) {
-    aa[0] = line1[ix];
-    bb[0] = line1[ix+1];
-
-    if((aa[0]=='/' && bb[0]=='/') && state_comments == false) {         //start comment on double slash
-      state_comments = true;
-      ix++; //skip the second slash
-    }
-    else if(state_comments && (aa[0]==13 || aa[0]==10)) {    //stop comment mode at end of line
-      state_comments = false;
-      strcat(tmpString, " ");
-    }
-    else if(!state_comments) {                //proceed only if not comment mode
-      switch(aa[0]) {
-        case ' ':                         //remove all whitespace
-        case  8:
-        case 13:
-        case 10:
-        case ',': if(strlen(tmpString) != 0) {
-                    if(tmpString[strlen(tmpString)-1] != ' ') {
-                      strcat(tmpString, " ");
-                    }
-                  }
-                  break;
-        default: strcat(tmpString, aa);
-      }
-    }
-
-    ix++;
-  }
-  //printf("5:%s\n", line1);
-
-  #if defined(DISPLOADING)
-    char ll[50];
-    ll[0] = 0;
-  #endif // DISPLOADING
-  aa[0] = 0;
-  aa[1] = 0;                  //remove consequtive spaces
-  ix = 1;
-  line1[0] = 0;
-  while(tmpString[ix] != 0) {
-    aa[0] = tmpString[ix];
-    if(tmpString[ix-1] != ' ') {
-      strcat(line1, aa);
-      #if defined(DISPLOADING)
-        strcat(ll, aa);
-        if(strlen(ll) > 30 && aa[0] == ' ') {
-          #if (VERBOSE_LEVEL >= 2)
-            print_linestr(ll, false);
-          #endif
-          ll[0] = 0;
-        }
-      #endif // DISPLOADING
-    }
-    else {
-      if(aa[0] != ' ') {
-        strcat(line1, aa);
-        #if defined(DISPLOADING)
-          strcat(ll, aa);
-          if(strlen(ll) > 36) {
-            #if (VERBOSE_LEVEL >= 2)
-              print_linestr(ll, false);
-            #endif // VERBOSE_LEVEL >= 2
-            ll[0] = 0;
-          }
-        #endif // DISPLOADING
-      }
-    }
-    ix++;
-  }
-  #if defined(DISPLOADING)
-  if(ll[0] != 0) {
-    #if (VERBOSE_LEVEL >= 2)
-      print_linestr(ll, false);
-    #endif
-  }
-  #endif // DISPLOADING
-//printf("6:%s\n", line1);
 }
 
 
