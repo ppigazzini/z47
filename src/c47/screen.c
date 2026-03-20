@@ -5615,7 +5615,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
-
+                               //print_caller("refreshScreen ...");
                                printf("   refrsh(%5u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
