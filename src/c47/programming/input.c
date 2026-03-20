@@ -88,6 +88,8 @@ void fnPause(uint16_t dur) {
           key_pop();
           break;
         }
+        dmcpResetAutoOff(); //prevent auto off occurring within the pause, which causes an unrecoverable sleep and impossibility to switch calculator back on
+        fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, programRunStop == PGM_RUNNING ? PROGRAM_KB_ACTV : TO_KB_ACTV_MEDIUM); //prevent dying out of the activity timer
         sys_delay(100);
       }
     #else // !DMCP_BUILD  PC_BUILD
@@ -188,6 +190,9 @@ void fnKey(uint16_t regist) {
       while(gtk_events_pending()) {
         gtk_main_iteration();
       }
+    #elif defined(DMCP_BUILD)
+        dmcpResetAutoOff(); //prevent auto off occurring within a GTO loop with KEY?, which causes an unrecoverable sleep and impossibility to switch calculator back on
+        fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, programRunStop == PGM_RUNNING ? PROGRAM_KB_ACTV : TO_KB_ACTV_MEDIUM); //prevent dying out of the activity timer
     #endif //PC_BUILD
   }
 
