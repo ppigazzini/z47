@@ -3,8 +3,6 @@
 
 #include "c47.h"
 
-//#define DISPLOADING
-
 void preventFilenameTimeout(void){
   uint32_t tmp__32;
   tmp__32 = getUptimeMs();
