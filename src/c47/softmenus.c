@@ -651,7 +651,7 @@ TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_
                                              ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERUSER,             ITM_PRINTERTAB,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
 
-                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_NULL,                    ITM_PRINTERADV,
+                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINT_ALL_ITEMS,         ITM_PRINTERADV,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
 

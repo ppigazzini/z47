@@ -40,6 +40,7 @@ void fnP_User         (uint16_t unusedButMandatoryParameter);
 void fnP_LCD          (uint16_t unusedButMandatoryParameter);
 void fnP_PrinterOnOff (uint16_t op);
 void fnP_PrinterMode  (uint16_t mode);
+void fnP_PrintAllItems(uint16_t unusedButMandatoryParameter);
 void printProgram     ();
 
 // Print routines

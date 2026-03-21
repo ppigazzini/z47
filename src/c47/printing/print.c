@@ -13,7 +13,7 @@
   // Alias table for instruction names to get nice prints
   //
   TO_QSPI const nameAlias_t NamesAlias[] = {
-  //             item             name     
+  //             item             name
   /*   36 */  { ITM_XexY,        "X<>Y"                               },
   /*   60 */  { ITM_YX,          "Y^X"                                },
   /*   61 */  { ITM_SQUAREROOTX, STD_SQUARE_ROOT "X"                  },
@@ -24,18 +24,18 @@
   /*   67 */  { ITM_10x,         "10^X"                               },
   /*  127 */  { ITM_Xex,         "X<>"                                },
   /*  981 */  { ITM_ex,          "<>"                                 },
-  /* 1539 */  { ITM_M_RR,        "M.R<>R"                             },   
-  /* 1570 */  { ITM_REexIM,      "Re<>Im"                             },  
-  /* 1575 */  { ITM_EX1,         "e^X-1"                              }, 
+  /* 1539 */  { ITM_M_RR,        "M.R<>R"                             },
+  /* 1570 */  { ITM_REexIM,      "Re<>Im"                             },
+  /* 1575 */  { ITM_EX1,         "e^X-1"                              },
   /* 1625 */  { ITM_Tex,         "T<>"                                },
   /* 1650 */  { ITM_Yex,         "Y<>"                                },
-  /* 1651 */  { ITM_Zex,         "Z<>"                                },  
+  /* 1651 */  { ITM_Zex,         "Z<>"                                },
   /* 1679 */  { ITM_M1X,         "(-1)^X"                             },
   /* 1694 */  { ITM_SHUFFLE,     "<>"                                 },
   /* 1725 */  { ITM_RS,          "RUN"                                },
   /* 1794 */  { ITM_SQRT1PX2,    STD_SQUARE_ROOT "(1+x^2)"            },
   /* 1816 */  { ITM_EE_EXP_TH,   "E^iX"                               },
-  
+
   /*      */  { LAST_ITEM,       ""                                   }
   };
 
@@ -377,7 +377,7 @@ void *xset(void *d, const char c, int n) {
 
   static bool_t _exitKeyPressed() {
     #if defined(DMCP_BUILD)
-    int key = C47PopKeyNoBuffer(!DISPLAY_WAIT_FOR_RELEASE) + 1;
+      int key = C47PopKeyNoBuffer(!DISPLAY_WAIT_FOR_RELEASE) + 1;
       if(key == 36 || key == 33 ) {  // R/S or EXIT
         key_pop();
         clearKeyBuffer();
@@ -689,32 +689,22 @@ void print_tab( uint16_t col ) // pixel-aligned column
     print_advance( 0 );
   }
   if ( printerColumn < col ) {
-    uint16_t i = col - printerColumn;
-    uint16_t j = i / 7;
-    i %= 7;
-    printerColumn = col;
+    uint16_t i, j;
+    i = (printerColumn + 1) % 7;
+    if(i > 0) i = 7 - i;
+    printerColumn += i;
     if ( i ) {
       sendByteIR( 27 );
       sendByteIR( i );
       while ( i-- )
 	    sendByteIR( 0 );
     }
+    j = (col - printerColumn) / 7;
     while ( j-- )
       sendByteIR( ' ' );
+    printerColumn = col;
   }
 }
-
-
-/*
-// Print a buffer from the given tab position and add a new line
-//
-static void print_string_from_tab(const char *s, int tab)
-{
-  print_tab(tab);
-  print_line(s, 1);
-}
-*/
-
 
 //
 //  Print a graphic sequence
@@ -873,7 +863,7 @@ static int buffer_width(const char *buff)
 static void wrap( int width ) {
   if ( printerColumn + width > PAPER_WIDTH ) {
     print_advance (0);
-    if ( width == 7 ) width = 5;
+    if ( width == 7 ) width = 6;
   }
   printerColumn += width;
 }
@@ -1031,15 +1021,15 @@ void print_line( const char *buff, int with_lf )
 void print_justified( const char *buff )
 {
   print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
-    : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1 
+                                        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
   uint16_t paperWidth = PAPER_WIDTH;
 
   if ( len >= paperWidth - printerColumn ) {
     len = paperWidth - printerColumn;
   }
   if ( len > 0 ) {
-    print_tab( paperWidth - len );
+    print_tab( paperWidth - len);
   }
   print_line( buff, 1 );
 }
@@ -1078,9 +1068,8 @@ static void _realStringToPrint(char *realString, int16_t max_len) {
       if((realString[i] == 'e') || (realString[i] == 'E')) {
         expLen = len - i;
         from   = &realString[i];
-        to     = realString;
         pos    = 1;
-        for(j = 0; j < max_len - expLen; j++) {             // Find the location to move the exponent to fit within max_len characters
+        for(j = 0; j < max_len - expLen - 1; j++) {             // Find the location to move the exponent to fit within max_len characters
           pos = stringNextGlyph(realString, pos);
         }
         to = &realString[pos];
@@ -1103,13 +1092,13 @@ static void _realStringToPrint(char *realString, int16_t max_len) {
 // Fit a real in a string for printing
 //
 
-static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realString) {
+static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realString,int16_t maxWidth) {
   uint8_t grpGroupingLeftOld  = grpGroupingLeft;
   uint8_t grpGroupingRightOld = grpGroupingRight;
 
   grpGroupingLeft  = 0;
   grpGroupingRight = 0;
-  real34ToDisplayString(real34, amMode, realString, &standardFont, PAPER_WIDTH-printerColumn, 16, true, false, true);
+  real34ToDisplayString(real34, amMode, realString, &standardFont, maxWidth, 16, true, false, true);
   grpGroupingRight = grpGroupingRightOld;
   grpGroupingLeft  = grpGroupingLeftOld;
   uint16_t i, j;
@@ -1229,7 +1218,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
   }
 
   // Real part
-  _real34ToPrintString(&real34, amNone, tmpString);
+  _real34ToPrintString(&real34, amNone, tmpString, max_len * 9);
   _realStringToPrint(tmpString,max_len);                 // Adjust the real part lenght (same as a standard real)
 
   // Separator
@@ -1245,15 +1234,20 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 
   // Imaginary part
   char * imaginaryPart = tmpString + strlen(tmpString);
-  _real34ToPrintString(&imag34, tagAngle, imaginaryPart);
+  _real34ToPrintString(&imag34, tagAngle, imaginaryPart,max_len * 9);
   _realStringToPrint(imaginaryPart,max_len);             // Adjust the imaginary part lenght (same as a standard real)
 }
 
 //
 //  Print a single register
 //
-void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where ) {
-  int16_t max_len = ((where == LINE_FULL) || (where == LINE_NOLF) ? 17 : 10);
+void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma ) {
+  int16_t max_len   = ((where == LINE_FULL) || (where == LINE_NOLF) ?  17 : 11);
+  int16_t max_width = ((where == LINE_FULL) || (where == LINE_NOLF) ? 153 : 99);
+  if(prSigma) {
+    max_len   -= 1;
+    max_width -= 9;
+  }
 
   if ( label != NULL ) {
     print_line( label, 0 );
@@ -1273,14 +1267,14 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
 
   switch(getRegisterDataType((calcRegister_t) regist)) {
     case dtString:
-      copyRegisterToClipboardString(regist, tmpString, true);
+      strcpy(tmpString,REGISTER_STRING_DATA(regist));
       if (where == LINE_FULL) {
         addChrBothSides(34,tmpString);   //Add quotes only for standard print reg, not for print XY
       }
       break;
 
     case dtReal34:
-      _real34ToPrintString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString);
+      _real34ToPrintString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, max_len * 9);
       _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
       break;
 
@@ -1309,7 +1303,7 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
           sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i, j);  //Matrix element
           print_line( tmpString, 0 );
           real34Reduce(real34++, &reduced);
-          _real34ToPrintString(&reduced, amNone, tmpString);
+          _real34ToPrintString(&reduced, amNone, tmpString, max_len * 9);
           _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
           print_justified( tmpString );
         }
@@ -1353,25 +1347,26 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
   if (( label == NULL ) && ((where == LINE_FULL) || (where == LINE_NOLF))) {     // Padding for PRX
     uint16_t i, padding;
     uint16_t glen = stringGlyphLength(tmpString);
-    if(where == LINE_FULL) {
-      if(glen > 17) {
-        padding = (glen <= 24 ? 17 + 24 - glen : 17 - (glen % 24));
-        for(i=0; i < padding; i++) {
-          strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
-        }
+    if((where == LINE_NOLF) && (glen < 17)) {
+      padding = 17 - glen;
+      for(i = strlen(tmpString)+padding; i >= padding; i--) {
+        tmpString[i] = tmpString[i-padding];
       }
-      strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42       
+      for(i = 0; i < padding; i++) {
+        tmpString[i] = ' ';
+      }
     }
-    else if(where == LINE_NOLF) {
-      if(glen < 17) {
-        padding = 17 - glen;
-        for(i = strlen(tmpString)+padding; i >= padding; i--) {
-          tmpString[i] = tmpString[i-padding];
-        }
-        for(i = 0; i < padding; i++) {
-          tmpString[i] = ' ';
-        }
+    
+    if(glen > 17) {
+      glen = glen % 24;
+      padding = (glen <= 17 ? 17 - glen : 24 - (glen - 17));
+      for(i=0; i < padding; i++) {
+        strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
       }
+    }
+    
+    if(where == LINE_FULL) {
+      strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
     }
   }
 
@@ -1423,7 +1418,7 @@ void print_lf() {
 void cmdprint( uint16_t arg, printArgument_t op )
 {
   char buff[ 4 ];
-  
+
   if (!getSystemFlag(FLAG_PRTACT)) {
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
       displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1604,7 +1599,7 @@ void printTraceError  (char *errorString) {
 //
 void printTraceX(uint16_t where) {
   if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
-    print_reg(REGISTER_X, NULL, false, where );  // Print register X without name header
+    print_reg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
 
     #if defined(PC_BUILD)
       printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
@@ -1621,7 +1616,7 @@ void printTraceString(char *string, uint16_t where) {
   if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(lenInBytes), amNone);
     xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), string, lenInBytes);
-    print_reg(TEMP_REGISTER_1, NULL, false, where );  // Print register X without name header
+    print_reg(TEMP_REGISTER_1, NULL, false, where, false );  // Print register X without name header
 
     #if defined(PC_BUILD)
       printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
@@ -1682,7 +1677,7 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 void printPrompt(uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
-      print_reg(regist, NULL, false, LINE_LEFT );  // Print register left justified without name header
+      print_reg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
       #if defined(PC_BUILD)
         printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
       #endif // PC_BUILD
@@ -1699,13 +1694,13 @@ void printViewAview(uint16_t func, uint16_t regist) {
       if(func == ITM_VIEW) {
         char label[16];
         _getRegisterLabel(regist, label);
-        print_reg(regist, label, true, LINE_LEFT );  // Print register left justified with name header
+        print_reg(regist, label, true, LINE_LEFT, false );  // Print register left justified with name header
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s=%s\n",label,tmpString);fflush(stdout);
         #endif // PC_BUILD
       }
       else {
-        print_reg(regist, NULL, false, LINE_LEFT );  // Print register left justified without name header
+        print_reg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
@@ -1719,13 +1714,37 @@ void printViewAview(uint16_t func, uint16_t regist) {
   }
 }
 
+
+//
+//  Print all items (test function)
+//
+void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
+  #if defined(PC_BUILD)
+    int32_t item;
+    currentKeyCode = 255;
+    if(getSystemFlag(FLAG_PRTACT)) {
+      sprintf(tmpString, "item catname  menuname");
+      print_line(tmpString,1);
+      for(item=1; item<LAST_ITEM; item++) {
+        sprintf(tmpString, "%4d ", item);
+        strcat(tmpString, indexOfItems[item].itemCatalogName);
+        print_line(tmpString,0);
+        print_tab( 97 );
+        sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
+        print_line(tmpString,1);
+        if(_exitKeyPressed()) break;
+      }
+      temporaryInformation = TI_PRINT_COMPLETE;
+    }
+  #endif //PC_BUILD
+}
+
 //
 //  Trace an instruction
 //
 void printTrace(int16_t func, uint16_t param) {
   char traceBuffer[32];
 
-  //printf("**[DL]** printTrace func %d param %d\n",func,param);fflush(stdout);
   printerState.trace_done = true;
   if(((calcMode != CM_NORMAL) && (calcMode != CM_MIM)) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) return;  // Trace only in normal mode
 
@@ -1907,7 +1926,7 @@ void nameAlias(uint16_t op, char *nameOp) {
     i++;
   }
   strcpy(nameOp,indexOfItems[op].itemCatalogName);
-}    
+}
 
 
 //
@@ -1919,8 +1938,10 @@ void printProgram(void) {
     ///////////////////////////////////////////////////////////////////////////////////////
     // For details, see fnPem(). This is a modified copy.
     //
+    currentKeyCode = 255;
     uint16_t line, firstLine;
     uint8_t *step, *nextStep;
+    currentKeyCode = 255;
     RETURN_IF_PRINT_OFF;
     advance_if_trace();
 
@@ -2225,6 +2246,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     #if defined(IR_PRINTING)
       char label[16];
+      currentKeyCode = 255;
 
       if (!getSystemFlag(FLAG_PRTACT)) {
         if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
@@ -2248,7 +2270,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
         }
         else {
           variable =  findNamedVariable(label);
-          print_reg(variable, label, true, LINE_FULL );
+          print_reg(variable, label, true, LINE_FULL, false );
           userVariableFound = true;
           if(_exitKeyPressed()) {
             return;
@@ -2310,6 +2332,7 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(IR_PRINTING)
+      return; // Not yet working for the 82240 printer
       setPrinterSBI(true);
       resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
       refreshScreen(80);
@@ -2328,7 +2351,7 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
 void fnP_Alpha(uint16_t registerNo) {
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
-    #if defined(IR_PRINTING)       
+    #if defined(IR_PRINTING)
       if (getRegisterDataType(registerNo) == dtString) {
         print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
       }
@@ -2366,7 +2389,7 @@ void fnP_Regs (uint16_t registerNo) {
 
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
-      char label[16];     
+      char label[16];
       label[0] = 0;
       if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
         label[0] = letteredRegisterName((calcRegister_t)registerNo);
@@ -2384,7 +2407,7 @@ void fnP_Regs (uint16_t registerNo) {
       else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
         sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       }
-      print_reg(registerNo, label, true, LINE_FULL );
+      print_reg(registerNo, label, true, LINE_FULL, false );
     #endif //IR_PRINTING
     }
     else {                             // Print to file
@@ -2443,6 +2466,7 @@ TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICA
 
 void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+    currentKeyCode = 255;
     if(statisticalSumsPointer != NULL) {
       if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
       #if defined(IR_PRINTING)
@@ -2454,10 +2478,13 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
             moreInfoOnError("In function fnP_Sigma:", errorMessage, NULL, NULL);
           #endif // PC_BUILD
           return;
-        }      
+        }
         for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
           convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
-          print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL );
+          print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL, true );
+          if(_exitKeyPressed()) {
+            return;
+          }
         }
       #endif //IR_PRINTING
       }
@@ -2475,6 +2502,7 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
 
 static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
   uint16_t regist;
+  currentKeyCode = 255;
   if(firstRegisterNo <= lastRegisterNo) {
     for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
       fnP_Regs (regist);
@@ -2495,6 +2523,7 @@ static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
       #endif //!TESTSUITE_BUILD
     }
   }
+  currentKeyCode = 255;
   return false;
 }
 
@@ -2503,7 +2532,7 @@ void fnP_All_Regs(uint16_t option) {
   bool_t exited;
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(IR_PRINTING)      
+    #if defined(IR_PRINTING)
       switch(option) {
         case PRN_ALL:
           exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
@@ -2531,7 +2560,7 @@ void fnP_All_Regs(uint16_t option) {
           break;
 
         case PRN_Xr:
-          print_reg(REGISTER_X, NULL, false, LINE_FULL );  // Print register X without name header
+          print_reg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
           break;
 
         case PRN_STK:
@@ -2553,8 +2582,8 @@ void fnP_All_Regs(uint16_t option) {
                 case dtString:
                 case dtDate:
                 case dtTime: {
-                  print_reg(REGISTER_X, NULL, false, LINE_LEFT );   // Print register X on the left half of the line
-                  print_reg(REGISTER_Y, NULL, false, LINE_RIGHT );  // Print register Y on the right half of the line
+                  print_reg(REGISTER_X, NULL, false, LINE_LEFT, false );   // Print register X on the left half of the line
+                  print_reg(REGISTER_Y, NULL, false, LINE_RIGHT, false );  // Print register Y on the right half of the line
                   return;
                 }
                 default: {
@@ -2578,18 +2607,18 @@ void fnP_All_Regs(uint16_t option) {
                 for(int i = 0; i < x.header.matrixRows; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
                   real34Copy(&x.matrixElements[i*2], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );    // Print row i col 1 on the left half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
                   real34Copy(&x.matrixElements[i*2+1], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );   // Print row i col 2 on the right half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
                 }
               }
               else if(x.header.matrixRows == 2) {
                 for(int i = 0; i < x.header.matrixColumns; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
                   real34Copy(&x.matrixElements[i], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );   // Print row 1 col i on the left half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
                   real34Copy(&x.matrixElements[i + x.header.matrixColumns], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );    // Print row 2 col i on the right half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
                 }
               }
               else {
@@ -2610,18 +2639,18 @@ void fnP_All_Regs(uint16_t option) {
                 for(int i = 0; i < xc.header.matrixRows; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
                   complex34Copy(&xc.matrixElements[i*2], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );    // Print row i col 1 on the left half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
                   complex34Copy(&xc.matrixElements[i*2+1], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );   // Print row i col 2 on the right half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
                 }
               }
               else if(xc.header.matrixRows == 2) {
                 for(int i = 0; i < xc.header.matrixColumns; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
                   complex34Copy(&xc.matrixElements[i], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT );   // Print row 1 col i on the left half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
                   complex34Copy(&xc.matrixElements[i + xc.header.matrixColumns], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT );    // Print row 2 col i on the right half of the line
+                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
                 }
               }
               else {
