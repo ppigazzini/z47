@@ -3086,6 +3086,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         displayTemporaryInformationOnX(prefix);
       }
 
+    #if defined(IR_PRINTING)
+      else if(temporaryInformation == TI_PRINT_COMPLETE && regist == REGISTER_X) {
+        sprintf(prefix, "Print completed");
+        displayTemporaryInformationOnX(prefix);
+      }
+    #endif //IR_PRINTING
+      
       else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
         sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);

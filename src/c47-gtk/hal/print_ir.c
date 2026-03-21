@@ -38,7 +38,6 @@ void setLineDelay(uint16_t delay) {
 //
 void sendByteIR( uint8_t c )
 {
-printf("**[DL]** sendByteIR c %d\n",c);fflush(stdout);
 #if defined(IR_PRINTING)
   GError         * error = NULL;
   GInetAddress   * udpAddress;
@@ -48,7 +47,6 @@ printf("**[DL]** sendByteIR c %d\n",c);fflush(stdout);
   gchar buffer[8];
 
   buffer[0] = c;
-  //printf("**[DL]** sendByteIR - start\n");fflush(stdout);
   //set_IO_annunciator();
 
   udpAddress = g_inet_address_new_from_string(UDPHOST);

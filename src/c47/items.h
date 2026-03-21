@@ -2770,8 +2770,9 @@
 #define ITM_MAN                     2673
 #define ITM_NORM                    2674
 #define ITM_TRACE                   2675
+#define ITM_PRINT_ALL_ITEMS         2676
 
-#define LAST_ITEM                   2676
+#define LAST_ITEM                   2677
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
