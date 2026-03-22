@@ -266,9 +266,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+    if(labelText && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
-        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL/TM_LBLONLY\n");
+        printf("       shortCutCommand: Returning, shortcut blocked in 'labelText'\n");
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
@@ -358,7 +358,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     }
 
     if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) return false;                     //exit directly, not allowing label entry
+    if(labelText) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -816,7 +816,7 @@ returnKeyReleasedFalse:
 
 //#define allowAltGrKey ((event->state & 16) == 16) this will also allow the actual involved AltGr shifts. Narrowing will make it more accurate but may exclude other non-standard bitmasks
 #define allowAltGrKey (C47SpecialKey_Valid_Pressed)
-#define tamArrows (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
+#define tamArrows (labelText || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
@@ -1115,7 +1115,6 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-//        ||((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
         ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )

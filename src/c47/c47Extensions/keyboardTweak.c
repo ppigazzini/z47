@@ -411,6 +411,7 @@ void resetKeytimers(void) {
               tam.mode == TM_CMP       ||                             // block longpress ENTER and CAT for these TAM alpha modes
               tam.mode == TM_KEY       ||                             // block longpress ENTER and CAT for these TAM alpha modes
               tam.mode == TM_LBLONLY   ||                             // block longpress ENTER and CAT for these TAM alpha modes
+              tam.mode == TM_SOLVE     ||                             // block longpress ENTER and CAT for these TAM alpha modes
               tam.mode == TM_MENU      ||                             // block longpress ENTER and CAT for these TAM alpha modes
               tam.mode == TM_INTEGRATE ||                             // block longpress ENTER and CAT for these TAM alpha modes TM mode not use, added anyway
               tam.mode == TM_REGISTER                                 // block longpress ENTER and CAT for these TAM alpha modes
