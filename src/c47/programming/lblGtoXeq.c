@@ -888,7 +888,6 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
-          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           }

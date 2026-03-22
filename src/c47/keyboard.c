@@ -1819,6 +1819,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif // VERBOSEKEYS
         if(programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
           if((item == ITM_RS || item == ITM_EXIT1) && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
+            screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
           }
