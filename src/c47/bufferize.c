@@ -2879,6 +2879,9 @@ typedef struct {
     }
     
     #if defined(IR_PRINTING)
+      #if defined(PC_BUILD)
+        printf("**[DL]** closeNim printTraceX\n");fflush(stdout);
+      #endif //PC_BUILD
       printTraceX(LINE_NOLF);
     #endif //IR_PRINTING
   }
