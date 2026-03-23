@@ -3368,6 +3368,9 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
           #if defined(IR_PRINTING)
+            #if defined(PC_BUILD)
+              printf("**[DL]** fnKeyEnter printTraceX\n");fflush(stdout);
+            #endif //PC_BUILD
             printTraceX(LINE_FULL);
           #endif //IR_PRINTING
           
