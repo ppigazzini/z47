@@ -379,7 +379,7 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     _selectProgram(label);
     if ((getSystemFlag(FLAG_PRTACT)) && (lastFunc == ITM_PRINTERPROG)) {     // If printer active and command is to print program then print to IR printer
     #if defined(IR_PRINTING)
-      printProgram();
+      printProgram(PROG, 0);
       temporaryInformation = TI_PRINT_COMPLETE;
     #endif //IR_PRINTING
     }

@@ -690,16 +690,17 @@ void print_tab( uint16_t col ) // pixel-aligned column
   }
   if ( printerColumn < col ) {
     uint16_t i, j;
-    i = (printerColumn + 1) % 7;
-    if(i > 0) i = 7 - i;
+    i = (col - 1 - printerColumn) % 7;
+    if ((i == 0) && (printerColumn == 0) && (col > 6)) i = 7;  // compensate for the first column being not printed
     printerColumn += i;
     if ( i ) {
       sendByteIR( 27 );
       sendByteIR( i );
-      while ( i-- )
+      while ( i-- ) {
 	    sendByteIR( 0 );
+      }
     }
-    j = (col - printerColumn) / 7;
+    j = (col - 1 - printerColumn) / 7;
     while ( j-- )
       sendByteIR( ' ' );
     printerColumn = col;
@@ -1021,7 +1022,7 @@ void print_line( const char *buff, int with_lf )
 void print_justified( const char *buff )
 {
   print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1 
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
                                         : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
   uint16_t paperWidth = PAPER_WIDTH;
 
@@ -1356,7 +1357,7 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
         tmpString[i] = ' ';
       }
     }
-    
+
     if(glen > 17) {
       glen = glen % 24;
       padding = (glen <= 17 ? 17 - glen : 24 - (glen - 17));
@@ -1364,7 +1365,7 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
         strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
       }
     }
-    
+
     if(where == LINE_FULL) {
       strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
     }
@@ -1418,6 +1419,7 @@ void print_lf() {
 void cmdprint( uint16_t arg, printArgument_t op )
 {
   char buff[ 4 ];
+  char *line;
 
   if (!getSystemFlag(FLAG_PRTACT)) {
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
@@ -1440,22 +1442,13 @@ void cmdprint( uint16_t arg, printArgument_t op )
     break;
 
   case PRINT_CHAR:
-/*
-    if(arg & 0x8000) {
-      //arg &= ~0x8000;
-      if(printerState.printer_model == PRINTER_HP) {
-        print_glyph8(arg, &printerFont8);
-      }
-      else if(printerState.printer_model == PRINTER_MARTEL) {
-        print_glyph24(arg, &standardFont);
-      }
-      break;
+    // Character printing, should depend on mode
+    line = buff;
+    if(arg & 0xff00) {
+      *line++ = (arg | 0x8000) >> 8;
     }
-*/
-    // Character printing, depending on mode
-    buff[ 0 ] = (arg | 0x8000) >> 8;
-    buff[ 1 ] = arg & 0xff;
-    buff[ 2 ] = '\0';
+    *line++ = arg & 0xff;
+    *line = '\0';
     print_line( buff, 0 );
     break;
 
@@ -1933,49 +1926,59 @@ void nameAlias(uint16_t op, char *nameOp) {
 //  Print a program listing
 //  Start at the PC location
 //
-void printProgram(void) {
+void printProgram(bool_t list, uint16_t lines) {
   #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For details, see fnPem(). This is a modified copy.
     //
     currentKeyCode = 255;
-    uint16_t line, firstLine;
+    uint16_t line, firstLine, lastLine;
     uint8_t *step, *nextStep;
     currentKeyCode = 255;
     RETURN_IF_PRINT_OFF;
     advance_if_trace();
 
     firstDisplayedLocalStepNumber = 0;
-    defineFirstDisplayedStep();
-
-    step                     = firstDisplayedStep;
+    if(!list) {
+      defineFirstDisplayedStep();
+      step = firstDisplayedStep;
+    }
+    else {
+      step = currentStep;
+    }
     programListEnd           = false;
     lastProgramListEnd       = false;
 
-    // Time and date header line
-    if(getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) {   // TRACE or NORM mode
-      print_lf();
-    }
-    if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-      print_line( " ", 0 );          // add a space before the header
-    }
-    getTimeString(tmpString);
-    print_line( tmpString, 0 );
-    print_line( " ", 0 );
-    getDateString(tmpString);
-    print_line( tmpString, 1 );
     print_lf();
 
-    if(firstDisplayedLocalStepNumber == 0) {
+    if(!list) {  // Print Program (pr_PROG)
+      // Time and date header line
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-         print_line( " ", 0 );          // add a space before the first line
+        print_line( " ", 0 );          // add a space before the header
       }
-      sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
+      getTimeString(tmpString);
+      print_line( tmpString, 0 );
+      print_line( " ", 0 );
+      getDateString(tmpString);
       print_line( tmpString, 1 );
-      firstLine = 1;
+      print_lf();
+
+      if(firstDisplayedLocalStepNumber == 0) {
+        if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+           print_line( " ", 0 );          // add a space before the first line
+        }
+        sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
+        print_line( tmpString, 1 );
+        firstLine = 1;
+      }
+      else {
+        firstLine = 0;
+      }
+      lastLine = 9999;
     }
-    else {
-      firstLine = 0;
+    else {       // Print listing (pr_LIST)
+      firstLine = currentLocalStepNumber;
+      lastLine = firstLine + lines - 1;
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
@@ -1983,14 +1986,14 @@ void printProgram(void) {
     bool_t  isLabel;
     bool_t  startOfLine = true;
 
-    for(line=firstLine; line<9999; line++) {
+    for(line=firstLine; line<=lastLine; line++) {
       nextStep = findNextStep(step);
       isLabel = (*step == ITM_LBL);
 
       //Line Number
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
         if(isLabel) {
-          if(line != 01) {
+          if((line != 01) && !startOfLine) {
             print_advance( 0 ); // Print pending line
           }
           print_advance( 0 ); // Skip one line before printing the label
@@ -2138,6 +2141,10 @@ void fnP_Advance(uint16_t unusedButMandatoryParameter) {
   #endif //TESTSUITE_BUILD
 }
 
+// Print program list
+void fnP_PrinterList(uint16_t lines) {
+  printProgram(LIST, lines);
+}
 
 // Print byte
 void fnP_Byte(uint16_t byte) {
