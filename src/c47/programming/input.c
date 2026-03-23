@@ -85,13 +85,11 @@ void monitorDmcpFlags(const char *sss) {
 */
 
 
-#define keySleep           true
-#define reFreshAfterSleep  true
 #if defined (DMCP_BUILD)
 // sleepTime = 0 : do not time out, sleep only. Until a key is pressed.
 // sleepTime = 1 : return without sleep, without timer, with no delay.
 // sleepTime > 1 : means number of ms sleeping. Or until a key is pressed.
-void goToSleepForMs(uint32_t sleepTime, bool_t refreshScr) {
+static void goToSleepForMs(uint32_t sleepTime) {
   if(sleepTime == 1) return;
   if(sleepTime > 1) {
     sys_timer_start(TIMER_IDX_REFRESH_SLEEP, sleepTime);
@@ -186,7 +184,7 @@ void fnPause(uint16_t dur) {
         if(dur == 99) {
           if(sys_current_ms() >= targetMs && !runningOnSimOrUSB) break;
           dmcpResetAutoOff();
-          goToSleepForMs(0, !reFreshAfterSleep);
+          goToSleepForMs(0);
         } else {
           dmcpResetAutoOff();            // Prevent auto off occurring within the delay, which causes an unrecoverable sleep and impossibility to switch calculator back on
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, programRunStop == PGM_RUNNING ? PROGRAM_KB_ACTV : TO_KB_ACTV_MEDIUM); //prevent dying out of the activity timer
