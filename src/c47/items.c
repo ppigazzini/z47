@@ -1415,6 +1415,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnP_PrinterOnOff           (uint16_t unusedButMandatoryParameter) {}
   void fnP_PrinterMode            (uint16_t unusedButMandatoryParameter) {}
   void fnP_PrintAllItems          (uint16_t unusedButMandatoryParameter) {}
+  void fnP_PrinterList            (uint16_t unusedButMandatoryParameter) {}
   void fnSetPrinter               (uint16_t unusedButMandatoryParameter) {}
   void fnToPolar2                 (uint16_t unusedButMandatoryParameter) {}
   void fnToRect2                  (uint16_t unusedButMandatoryParameter) {}
@@ -3449,7 +3450,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1714 */  { fnP_Regs,                     TM_REGISTER,                 STD_PRINTER "r",                               STD_PRINTER "r",                               (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 1715 */  { fnP_All_Regs,                 PRN_REGS,                    STD_PRINTER "REGS",                            STD_PRINTER "REGS",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1716 */  { fnP_All_Regs,                 PRN_STK,                     STD_PRINTER "STK",                             STD_PRINTER "STK",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 1717 */  { fnP_Tab,                      TM_VALUE,                    STD_PRINTER "TAB",                             STD_PRINTER "TAB",                             (0 << TAM_MAX_BITS) |   165, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
+/* 1717 */  { fnP_Tab,                      TM_VALUE,                    STD_PRINTER "TAB",                             STD_PRINTER "TAB",                             (0 << TAM_MAX_BITS) |   166, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
 /* 1718 */  { fnP_User,                     NOPARAM,                     STD_PRINTER "USER",                            STD_PRINTER "USER",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1719 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER "WIDTH",                           STD_PRINTER "WIDTH",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1720 */  { fnP_Sigma,                    NOPARAM,                     STD_PRINTER STD_SIGMA,                         STD_PRINTER STD_SIGMA,                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -4435,8 +4436,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2673 */  { fnP_PrinterMode,              MAN,                         "MAN",                                         "MAN",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2674 */  { fnP_PrinterMode,              NORM,                        "NORM",                                        "NORM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2675 */  { fnP_PrinterMode,              TRACE,                       "TRACE",                                       "TRACE",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2676 */  { fnP_PrintAllItems,            NOPARAM,                     STD_PRINTER "ITEMS",                           STD_PRINTER "ITEMS",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2676 */  { fnP_PrinterList,              TM_VALUE,                    STD_PRINTER "LIST",                            STD_PRINTER "LIST",                            (0 << TAM_MAX_BITS) |  9999, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2677 */  { fnP_PrintAllItems,            NOPARAM,                     STD_PRINTER "ITEMS",                           STD_PRINTER "ITEMS",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
-/* 2677 */  { itemToBeCoded,                 NOPARAM,                     "",                                     "Last item",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2678 */  { itemToBeCoded,                 NOPARAM,                     "",                                     "Last item",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };

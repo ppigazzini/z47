@@ -829,6 +829,9 @@ typedef enum {
 #define NORM    1
 #define TRACE   2
 
+#define PROG    false
+#define LIST    true
+
 typedef enum {
   PRINT_BYTE,
   PRINT_CHAR,
