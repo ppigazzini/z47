@@ -18,7 +18,7 @@ static void curtShoI(void) {
     realSetNegativeSign(&x);
   }
 
-  cubeRoot = realToInt32C47(&x);
+  cubeRoot = realToInt32C47(&x, NULL);
 
   if(cubeRoot >= 0) {
     *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_build_value((int64_t)cubeRoot, 0);

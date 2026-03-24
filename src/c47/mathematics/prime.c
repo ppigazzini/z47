@@ -687,7 +687,7 @@ static void _doFnEvPFacts     (uint16_t param) {
         if(!getRegisterAsReal(REGISTER_X, &x)) {
           goto abort;
         }
-        pwr = realToInt32C47(&x);
+        pwr = realToInt32C47(&x, NULL);
         fnDrop(NOPARAM);
       }
       else {

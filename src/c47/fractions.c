@@ -54,7 +54,7 @@ void fnDenMax(uint16_t D) {
   else {
     int32_t den;
 
-    den = realToInt32C47(&reX);
+    den = realToInt32C47(&reX, NULL);
 
     if(den == 1) {
       longInteger_t lgInt;
@@ -130,7 +130,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
                                                      //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
                                                      //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
   uint32_t ip;
-  ip = realToUint32C47(&temp0);
+  ip = realToUint32C47(&temp0, NULL);
   *intPart = ip;
   uInt32ToReal(*intPart, &temp3);
   realSubtract(&temp0, &temp3, &temp0, &ctxtReal34);
@@ -269,7 +269,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     else {
       // Start the continued fraction:
       realDivide(const_1, &y, &y, &ctxtReal39); // guaranteed safe; y >= 1/(2*denMax)
-      a = realToInt32C47(&y); // this is a1 in the continued fraction
+      a = realToInt32C47(&y, NULL); // this is a1 in the continued fraction
 
       if(a > (int32_t)denMax) { // return 1/denMax
         *numer = 1;
@@ -313,7 +313,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
             goto fracEnd;
           }
           realDivide(const_1, &yma, &y, &ctxtReal39);
-          a = realToInt32C47(&y); // first time in, this is a2 in the continued fraction.
+          a = realToInt32C47(&y, NULL); // first time in, this is a2 in the continued fraction.
           // work out new h, k;
           h = a*h_1 + h_2;
           k = a*k_1 + k_2;
@@ -467,7 +467,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     invalidOperation = 0;
     while(*denom < denMax && !realIsZero(&temp1) && !invalidOperation) {
       realDivide(const_1, &temp1, &temp1, &ctxtReal34);
-      ip = realToUint32C47(&temp1);
+      ip = realToUint32C47(&temp1, NULL);
       iPart[++i] = ip;
       uInt32ToReal(iPart[i], &temp3);
       invalidOperation = decContextGetStatus(&ctxtReal34) & DEC_Invalid_operation;
@@ -538,7 +538,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
 
     uInt32ToReal(denMax, &delta);
     realFMA(&delta, &temp0, const_1on2, &temp3, &ctxtReal34);
-    ip = realToUint32C47(&temp3);
+    ip = realToUint32C47(&temp3, NULL);
     *numer = ip;
   }
 
@@ -555,7 +555,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       if(denMax % i == 0) {
         uInt32ToReal(i, &temp4);
         realFMA(&temp4, &temp0, const_1on2, &temp3, &ctxtReal34);
-        ip = realToUint32C47(&temp3);
+        ip = realToUint32C47(&temp3, NULL);
         *numer = ip;
 
         uInt32ToReal(*numer, &temp3);

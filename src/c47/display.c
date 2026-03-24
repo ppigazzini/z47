@@ -332,7 +332,7 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get IP and FP of this
       realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c); // tmpIp = Integer Part log base1024 of Real34    = 1
-      int tmpx = realToInt32C47(&tmpIp);
+      int tmpx = realToInt32C47(&tmpIp, NULL);
       if(tmpx > exponentUNlimit1024max) {
         goto overRange;
       }
@@ -1721,9 +1721,9 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
     angleDms.exponent += 2; // angleDms = angleDms * 100
 
-    fs = realToUint32C47(&angleDms);
-    s  = realToUint32C47(&seconds);
-    m  = realToUint32C47(&minutes);
+    fs = realToUint32C47(&angleDms, NULL);
+    s  = realToUint32C47(&seconds, NULL);
+    m  = realToUint32C47(&minutes, NULL);
 
     if(fs >= 100) {
       fs -= 100;
@@ -2748,15 +2748,15 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
   if((!ignoreTDisp) && (timeDisplayFormatDigits == 1 || timeDisplayFormatDigits == 2 || (++tDigits) > (isValid12hTime ? 16 : 18))) {
     // Display Minutes
-    m32 = realToUint32C47(&m);
+    m32 = realToUint32C47(&m, NULL);
     sprintf(digitBuf, ":%02" PRIu32, m32);
     strcat(displayString, digitBuf);
   }
 
   else {
     // Display MM:SS
-    m32 = realToUint32C47(&m);
-    s32 = realToUint32C47(&s);
+    m32 = realToUint32C47(&m, NULL);
+    s32 = realToUint32C47(&s, NULL);
     sprintf(digitBuf, ":%02" PRIu32 ":%02" PRIu32, m32, s32);
     strcat(displayString, digitBuf);
 
@@ -2794,7 +2794,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
         strcat(displayString, tt);
       }
 
-      s32 = realToUint32C47(&value);
+      s32 = realToUint32C47(&value, NULL);
       sprintf(digitBuf, "%" PRIu32, s32);
       strcat(displayString, digitBuf);
       ++digits;
