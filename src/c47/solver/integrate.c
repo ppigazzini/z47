@@ -143,10 +143,10 @@ saveForUndo();
     int32_t digitsN = 0;
     WP34S_Ln(&acc, &digits, &ctxtReal39);
     realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-    digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+    digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
     #ifdef PC_BUILD
       printRealToConsole(&digits, "digits: ","\n");
-      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN, smallerEpsilon);
       printRealToConsole(&acc, "acc: ","\n");
       printRealToConsole(&llim, "llim: ","\n");
       printRealToConsole(&ulim, "ulim: ","\n");
@@ -165,9 +165,9 @@ saveForUndo();
       integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
         //#ifdef PC_BUILD
-        //  printf("nnn=%i\n",digitsN);
+        //  printf("nnn=%i\n", digitsN);
         //#endif
         //real_t tt;
         //int32ToReal(-digitsN, &tt);
@@ -193,9 +193,9 @@ saveForUndo();
       integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
         //#ifdef PC_BUILD
-        //  printf("nnn=%i\n",digitsN);
+        //  printf("nnn=%i\n", digitsN);
         //#endif
         //real_t tt;
         //int32ToReal(-digitsN, &tt);
@@ -622,7 +622,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         exitSignalled |= exitKeyWaiting();
         loop++;
         if(checkHalfSec()) {
-          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
+          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl, NULL));
           if(progressHalfSecUpdate_Integer(timed, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
             #if defined(PC_BUILD)
               printf("%s %i\n",tmps,loop);

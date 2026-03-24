@@ -215,7 +215,7 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   int32_t nn;
   real_t NN;
 
-  nn = realToInt32C47(SIGMA_N);
+  nn = realToInt32C47(SIGMA_N, NULL);
   realCopy(const_0, &aa0);
   realCopy(const_0, &aa1);
   realCopy(const_0, &aa2);

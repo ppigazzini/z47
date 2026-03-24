@@ -35,7 +35,7 @@ static void computePercentileSorted(real_t *data, uint16_t n, const real_t *p, r
   uInt32ToReal(n + 1, &d);
   realMultiply(&d, p, &t, &ctxtReal39);
   realToIntegralValue(&t, &d, DEC_ROUND_DOWN, &ctxtReal39);
-  k = realToInt32C47(&d);
+  k = realToInt32C47(&d, NULL);
 
   if(k >= n)
     realCopy(data + n - 1, percentile);

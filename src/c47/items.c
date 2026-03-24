@@ -346,8 +346,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
     // mark the previous I and J, when STOSEQ and RCLSEQ are being used
     real_t iir,jjr;
     if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
-      lastI=realToUint32C47(&iir);
-      lastJ=realToUint32C47(&jjr);
+      lastI=realToUint32C47(&iir, NULL);
+      lastJ=realToUint32C47(&jjr, NULL);
     } else {
       lastI = 0xFFFF;
       lastJ = 0xFFFF;
