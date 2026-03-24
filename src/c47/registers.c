@@ -2160,18 +2160,18 @@ static uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
     realSetPositiveSign(&x);
 
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    *s = realToInt32C47(&p);
+    *s = realToInt32C47(&p, NULL);
 
     realSubtract(&x, &p, &x, &ctxtReal39);
     x.exponent += 2;
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    *n = realToInt32C47(&p);
+    *n = realToInt32C47(&p, NULL);
 
     if(d) {
       realSubtract(&x, &p, &x, &ctxtReal39);
       x.exponent += 3;
       realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-      *d = realToInt32C47(&p);
+      *d = realToInt32C47(&p, NULL);
     }
 
     if(*s < REGISTER_X) { // global numbered registers

@@ -1090,17 +1090,24 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
     case dtComplex34:
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
-        if (realIsSpecial(&rval)) {
+        if(realIsSpecial(&rval)) {
           badDomainError(reg);
           return false;
         }
         *sign = realIsNegative(&rval);
         realSetPositiveSign(&rval);
         frac = !realIsAnInteger(&rval);
-        u64 = realToUint64C47(&rval);
+
+        //u64 = realToUint64C47(&rval);
+        real_t i;
+        realToIntegralValue(&rval, &i, DEC_ROUND_DOWN, &ctxtReal39); // After this call, it's guaranteed that i is an integer and i->exponent >= 0
+        decNumberQuantize(&i, &i, const_0, &ctxtReal39); // After this call, it's guaranteed that the value of i is not changed and i->exponent == 0 (const_0 is used only because it's exponent is 0)
+        u64 = decNumberToUInt64(&i, &ctxtReal39);
+
+
         of = (u64 & shortIntegerMask) != u64;
         if(!of)
-          switch (shortIntegerMode) {
+          switch(shortIntegerMode) {
             case SIM_UNSIGN:
               of = realCompareGreaterEqual(&rval, const_2p64);
               break;

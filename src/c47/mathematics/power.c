@@ -248,7 +248,7 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       if (realCompareAbsEqual(yReal, yImag)) {
         realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
         if (realIsZero(xImag) && realIsAnInteger(&xR)) {              // only compute md when exponent is integer
-          md = realToInt32C47(&xR);
+          md = realToInt32C47(&xR, NULL);
           if (md % 4 == 0) {
             doZeroingImag = true;
           } else if ((md-2) % 4 == 0) {
@@ -258,7 +258,7 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       } else if (realIsZero(yReal)) {
         realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
         if (realIsZero(xImag) && realIsAnInteger(&xR)) {              // only compute md when exponent is integer
-          md = realToInt32C47(&xR);
+          md = realToInt32C47(&xR, NULL);
           if (md % 2 == 0) {
             doZeroingImag = true;
           } else {

@@ -72,10 +72,14 @@
 //****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
 
 
-  int32_t  realToInt32C47 (const real_t *r);
-  uint32_t realToUint32C47(const real_t *r);
+  #if !defined(bool_t)
+    typedef bool bool_t;
+  #endif // bool_t
+
+  int32_t  realToInt32C47 (const real_t *r, bool_t *error);
+  uint32_t realToUint32C47(const real_t *r, bool_t *error);
   //int64_t  realToInt64C47 (const real_t *r);
-  uint64_t realToUint64C47(const real_t *r);
+  //uint64_t realToUint64C47(const real_t *r);
 
   #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                               \
                                                                   real34ChangeSign((real34_t *)((void *)(operand) + REAL34_SIZE_IN_BYTES)); \

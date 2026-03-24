@@ -43,7 +43,7 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   do { // zeta_loop
 
     #if !defined(TESTSUITE_BUILD)
-    int32_t loop = realToInt32C47(&reg0);
+    int32_t loop = realToInt32C47(&reg0, NULL);
       if(monitorExit(&loop, "Iter: ")) {
         break;
       }

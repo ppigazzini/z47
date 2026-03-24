@@ -133,8 +133,8 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       return false;
     }
 
-    a = realToInt32C47(&ry);
-    b = realToInt32C47(&rx);
+    a = realToInt32C47(&ry, NULL);
+    b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
       if(!realCompareEqual(&ry, &rx)) {
       realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
@@ -164,8 +164,8 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       return false;
     }
 
-    a = realToInt32C47(&ry);
-    b = realToInt32C47(&rx);
+    a = realToInt32C47(&ry, NULL);
+    b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
       if(!realCompareEqual(&ry, &rx)) {
         complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
@@ -201,8 +201,8 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       return false;
     }
 
-    a = realToInt32C47(&ry);
-    b = realToInt32C47(&rx);
+    a = realToInt32C47(&ry, NULL);
+    b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rcols) && realCompareLessEqual(&ry, &rrows)) {
       real34Matrix_t mat;
       fnDropY(NOPARAM);
@@ -253,8 +253,8 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       return false;
     }
 
-    a = realToInt32C47(&ry);
-    b = realToInt32C47(&rx);
+    a = realToInt32C47(&ry, NULL);
+    b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rcols) && realCompareLessEqual(&ry, &rrows)) {
       complex34Matrix_t mat;
       fnDropY(NOPARAM);

@@ -987,7 +987,7 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
       goto done;
     }
     realLog10(&real, &reall10, &ctxtReal39);
-    if(realToInt32C47(&reall10) < digits) {
+    if(realToInt32C47(&reall10, NULL) < digits) {
       displayFormat = DF_SF;
       displayFormatDigits = digits;
     } else {
@@ -1195,9 +1195,9 @@ currentKeyCode = 255;
      (plotStatMx[0]=='D' && drawMxN() >= 2) ||
      (plotStatMx[0]=='H' && statMxN() >= 3)) {
     switch(plotStatMx[0]) {
-      case 'S': numberOfPlotPoints = realToInt32C47(SIGMA_N); break;
-      case 'D': numberOfPlotPoints = drawMxN();               break;
-      case 'H': numberOfPlotPoints = statMxN();               break;
+      case 'S': numberOfPlotPoints = realToInt32C47(SIGMA_N, NULL); break;
+      case 'D': numberOfPlotPoints = drawMxN();                     break;
+      case 'H': numberOfPlotPoints = statMxN();                     break;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
@@ -1507,9 +1507,9 @@ void graphDrawLRline(uint16_t selection) {
     char tmpbuf[PLOT_TMP_BUF_SIZE];
 
     switch(plotStatMx[0]) {
-      case 'S': n = realToInt32C47(SIGMA_N); break;
-      case 'D': n = drawMxN();               break;
-      case 'H': n = statMxN();               break;
+      case 'S': n = realToInt32C47(SIGMA_N, NULL); break;
+      case 'D': n = drawMxN();                     break;
+      case 'H': n = statMxN();                     break;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
@@ -1837,9 +1837,9 @@ void fnPlotStat(uint16_t plotMode){
                                         (plotStatMx[0]=='H' && statMxN() >= 3) ) {
                                       int16_t cnt = 0;
                                       switch(plotStatMx[0]) {
-                                        case 'S': cnt = realToInt32C47(SIGMA_N); break;
-                                        case 'D': cnt = drawMxN();               break;
-                                        case 'H': cnt = statMxN();               break;
+                                        case 'S': cnt = realToInt32C47(SIGMA_N, NULL); break;
+                                        case 'D': cnt = drawMxN();                     break;
+                                        case 'H': cnt = statMxN();                     break;
                                         default: ;
                                       }
                                     printf("Stored values %i\n",cnt);
