@@ -216,9 +216,9 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   real_t NN;
 
   nn = realToInt32C47(SIGMA_N, NULL);
-  realCopy(const_0, &aa0);
-  realCopy(const_0, &aa1);
-  realCopy(const_0, &aa2);
+  realZero(&aa0);
+  realZero(&aa1);
+  realZero(&aa2);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     printf("Processing for best fit: %s\n",getCurveFitModeNames(curveFitting));
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -814,7 +814,7 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
       realDivide  (const_1, &FF, aa2, realContext);
 
       //        a1 = -G/(2.0) * a2;
-      realDivide(  &GG,     const_2,    &TT, realContext);
+      realMultiply(&GG,     const_1on2, &TT, realContext);
       realChangeSign(&TT);
       realMultiply(&TT,     aa2,        aa1, realContext);
 
@@ -1021,7 +1021,7 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
   float yf;
   real_t SS, TT, UU;
 
-  realCopy(const_0, YY);
+  realZero(YY);
   if(USEFLOAT == useREAL4) {
     realContextForecast = &ctxtReal4;
   }
@@ -1157,9 +1157,9 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
   if(!getRegisterAsReal(REGISTER_X, &XX))
     return;
 
-  realCopy(const_0, &aa0);
-  realCopy(const_0, &aa1);
-  realCopy(const_0, &aa2);
+  realZero(&aa0);
+  realZero(&aa1);
+  realZero(&aa2);
   if(checkMinimumDataPoints(const_2)) {
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;
@@ -1180,7 +1180,7 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
 void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2){
   real_t SS, TT, UU;
 
-  realCopy(const_0, XX);
+  realZero(XX);
   realContextForecast = &ctxtReal39;
   switch(orOrtho(selection)) {
     case CF_LINEAR_FITTING:
@@ -1248,8 +1248,8 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
         realAdd   (&SS,     &UU,     &SS, realContextForecast);      //This term could be Add due to plus and minus
       }
 
-      realDivide(&SS,       const_2, &SS, realContextForecast);
-      realDivide(&SS,       aa2,     XX,  realContextForecast);
+      realMultiply(&SS,     const_1on2, &SS, realContextForecast);
+      realDivide(  &SS,     aa2,        XX,  realContextForecast);
       temporaryInformation = TI_CALCX2;
       break;
     }
@@ -1296,9 +1296,9 @@ void fnXIsFny(uint16_t unusedButMandatoryParameter){
   if(!getRegisterAsReal(REGISTER_X, &YY))
     return;
 
-  realCopy(const_0, &aa0);
-  realCopy(const_0, &aa1);
-  realCopy(const_0, &aa2);
+  realZero(&aa0);
+  realZero(&aa1);
+  realZero(&aa2);
   if(checkMinimumDataPoints(const_2)) {
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;

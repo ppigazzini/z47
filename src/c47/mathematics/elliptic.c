@@ -36,7 +36,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           }
           if(realCompareLessThan(m, const_1e_32)) {
             WP34S_Cvt2RadSinCosTan(u, amRadian, sn, cn, NULL, realContext);
-            realCopy(const_1, dn);
+            realOne(dn);
             freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
             freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
             freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
@@ -69,9 +69,9 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           //else
             realDivide(&cos_umu, &sin_umu, &t, realContext);
           if(realIsZero(&sin_umu)) {
-            realCopy(const_0, sn);
-            realCopy(const_1, cn);
-            realCopy(const_1, dn);
+            realZero(sn);
+            realOne(cn);
+            realOne(dn);
             freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
             freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
             freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
@@ -80,7 +80,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           }
 
           realMultiply(mu(n), &t, c(n), realContext);
-          realCopy(const_1, d(n));
+          realOne(d(n));
 
           while(n > 0) {
             n--;
@@ -308,7 +308,7 @@ void ellipticKE(const real_t *m, real_t *k, real_t *ki, real_t *e, real_t *ei, r
         realCopy(const_plusInfinity, k);
       }
       if(e) {
-        realCopy(const_1, e);
+        realOne(e);
       }
     }
     else if(realCompareEqual(m, const_0)) {
@@ -439,7 +439,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
 
     if(realIsZero(&cot2Lambda) && realIsZero(&cot2LambdaI)) {
       realCopy(const__1, mu);
-      realCopy(const_0, muI);
+      realZero(muI);
     }
     else {
       realFMA(&tan2Phi, &cot2Lambda, const__1, mu, realContext);
@@ -527,7 +527,7 @@ static void _ellipticF_3(const real_t *phi, const real_t *m, real_t *res, real_t
   if(realIsZero(m)) {
     // Abramowitz & Stegun §17.4.19-20
     realCopy(phi, res);
-    realCopy(const_0, resi);
+    realZero(resi);
   }
   else if(realCompareGreaterThan(m, const_1)) {
     // Abramowitz & Stegun §17.4.15
@@ -544,7 +544,7 @@ static void _ellipticF_3(const real_t *phi, const real_t *m, real_t *res, real_t
   }
   else if(realIsPositive(m)) {
     _ellipticF_2(phi, m, res, realContext);
-    realCopy(const_0, resi);
+    realZero(resi);
   }
   else {
     // Abramowitz & Stegun §17.4.17
@@ -1226,18 +1226,22 @@ void ellipticPi(const real_t *n, const real_t *m, real_t *res, real_t *resi, rea
       realChangeSign(res); realChangeSign(resi);
     }
     else { // n = 1
-      realCopy(const_NaN, res); realCopy(const_0, resi); // unsigned infinity
+      realCopy(const_NaN, res);
+      realZero(resi); // unsigned infinity
     }
   }
   else if(realCompareEqual(m, const_1)) {
     if(realCompareLessThan(n, const_1)) {
-      realCopy(const_plusInfinity, res); realCopy(const_0, resi);
+      realCopy(const_plusInfinity, res);
+      realZero(resi);
     }
     else if(realCompareGreaterThan(n, const_1)) {
-      realCopy(const_minusInfinity, res); realCopy(const_0, resi);
+      realCopy(const_minusInfinity, res);
+      realZero(resi);
     }
     else { // n = 1
-      realCopy(const_NaN, res); realCopy(const_0, resi); // unsigned infinity
+      realCopy(const_NaN, res);
+      realZero(resi); // unsigned infinity
     }
   }
   else if(realCompareEqual(m, n)) {
@@ -1249,7 +1253,8 @@ void ellipticPi(const real_t *n, const real_t *m, real_t *res, real_t *resi, rea
     divComplexComplex(&e, &ei, &cos2Alpha, const_0, res, resi, realContext);
   }
   else if(realCompareEqual(m, const_1)) {
-    realCopy(const_NaN, res); realCopy(const_0, resi); // unsigned infinity
+    realCopy(const_NaN, res);
+    realZero(resi); // unsigned infinity
   }
   else if(realCompareGreaterThan(n, const_1)) {
     _ellipticPi_2(n, m, res, resi, realContext);
