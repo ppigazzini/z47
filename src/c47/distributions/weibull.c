@@ -130,7 +130,7 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsNegative(&p) || realIsZero(&p)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     if(realIsSpecial(&p)) {
@@ -151,7 +151,7 @@
       return;
     }
     if(realIsSpecial(&p)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     realPower(&p, t, &p, realContext);

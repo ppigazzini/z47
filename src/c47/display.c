@@ -510,7 +510,7 @@ overRange:
 
   if(checkHP) {
     // Forced rounding at 10 digits when HP35 selected, to not risk any guard digits or digit noise in the last digits, see 'decNumberPlus'
-    ctxtReal39.digits = min(10,displayHasNDigits);
+    ctxtReal39.digits = min(10, displayHasNDigits);
     realPlus(&value, &value, &ctxtReal39);
     ctxtReal39.digits = 39;
   }
@@ -2620,7 +2620,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     realCopy(const_60, &value);
   }
   else {
-    realCopy(const_1, &value);
+    realOne(&value);
     for(i = 3; i < timeDisplayFormatDigits; ++i) {
       --value.exponent;
       if(i == 5) {
@@ -2629,7 +2629,8 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     }
   }
   if(realCompareAbsLessThan(&real, const_1)) {
-    realCopy(const_1, &tmp), tmp.exponent -= 33;
+    realOne(&tmp);
+    tmp.exponent -= 33;
     realDivideRemainder(&real, &tmp, &tmp, &ctxtReal39);
   }
   else {

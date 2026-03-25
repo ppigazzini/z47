@@ -90,3 +90,16 @@ uint32_t realToUint32C47(const real_t *r, bool_t *error) {
   return (uint32_t)realToInt(r, magnitudeLimit, DEC_ROUND_DOWN, error);
 }
 
+void realZero(real_t *dn) {
+  dn->bits=0;
+  dn->exponent=0;
+  dn->digits=1;
+  dn->lsu[0]=0;
+}
+
+void realOne(real_t *dn) {
+  dn->bits=0;
+  dn->exponent=0;
+  dn->digits=1;
+  dn->lsu[0]=1;
+}

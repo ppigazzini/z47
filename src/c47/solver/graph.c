@@ -1268,13 +1268,13 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
   static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im) {
     if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
-      realCopy(const_0, res_re);
-      realCopy(const_0, res_im);
+      realZero(res_re);
+      realZero(res_im);
       return;
     }
     if(realIsZero(b_re) && realIsZero(b_im)) {
       stringToReal("1E30", res_re, ctxtSolver2);
-      realCopy(const_0, res_im);
+      realZero(res_im);
       return;
     }
     divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
@@ -1450,22 +1450,23 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     }
 
 
-    realCopy(const_0, &dXold.Real); realCopy(const_0, &dXold.Imag);
+    realZero(&dXold.Real);
+    realZero(&dXold.Imag);
     copyComplex(&dXold, &dYold);
     copyComplex(&dXold, &X2N);
     copyComplex(&dXold, &dX);
     // initial value for difference comparison must be larger than tolerance
-    stringToReal("1E-1", &dX.Real, ctxtSolver2);
+    realCopy(const_1on10, &dX.Real);
     copyComplex(&dX, &dY);
 
-    convertDoubleToReal(0.5f, &f, ctxtSolver2); // factor ()
+    realCopy(const_1on2, &f); // factor ()
 
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
     uint16_t signDig  = significantDigits ? significantDigits : 34;
 
-    realCopy(const_1, &tol);
+    realOne(&tol);
     tol.exponent -= signDig <= 4 ? 4 : (signDig > 32 ? 32 : signDig);
-    realCopy(const_1, &tolClose);
+    realOne(&tolClose);
     tolClose.exponent -= signDig <= 4 ? 3 : (signDig > 27 ? 27 : signDig - 1);
     fnSetSignificantDigits(34);
 
@@ -1490,7 +1491,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       if (realIsZero(&X2.Imag))
       //   realCopy(&temp0.Real, &X2.Imag);
         // X2.Imag.exponent -= 1;
-        realDivide(&X2.Real, const_3, &X2.Imag, ctxtSolver2);
+        realMultiply(&X2.Real, const_1on3, &X2.Imag, ctxtSolver2);
     }
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
@@ -1852,12 +1853,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     // Test if zeroed complex parts is better
     copyComplex(&cpxSlvBestX, &temp0);
     if (checkRealZeroTol(&temp0.Real, &tolClose)) {
-      realCopy(const_0, &temp0.Real);
+      realZero(&temp0.Real);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
     }
     copyComplex(&cpxSlvBestX, &temp0);
     if(checkRealZeroTol(&temp0.Imag, &tolClose)) {
-      realCopy(const_0, &temp0.Imag);
+      realZero(&temp0.Imag);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
     } else {   // consider conjugates if X not close to Real
       realChangeSign(&temp0.Imag);

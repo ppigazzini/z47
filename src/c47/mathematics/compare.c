@@ -96,18 +96,19 @@ static void compareMatrix01(uint16_t regist, uint8_t mode, uint32_t typeX) {
   const real34_t *const r = REGISTER_REAL34_DATA(regist);
 
   /* Check for zero and identity matricies */
-  if (typeX == dtReal34Matrix) {
+  if(typeX == dtReal34Matrix) {
     linkToRealMatrixRegister(REGISTER_X, &mReal);
-    for (i=k=0; i<mReal.header.matrixRows; i++)
-      for (j=0; j<mReal.header.matrixColumns; j++, k++)
-        if (!real34CompareEqual(&mReal.matrixElements[k], i==j ? r : const34_0))
+    for(i=k=0; i<mReal.header.matrixRows; i++)
+      for(j=0; j<mReal.header.matrixColumns; j++, k++)
+        if(!real34CompareEqual(&mReal.matrixElements[k], i==j ? r : const34_0))
           goto different;
-  } else {
+  }
+  else {
     linkToComplexMatrixRegister(REGISTER_X, &mCplx);
-    for (i=k=0; i<mCplx.header.matrixRows; i++)
-      for (j=0; j<mCplx.header.matrixColumns; j++, k++)
-        if (!real34CompareEqual(&mCplx.matrixElements[k].real, i==j ? r : const34_0)
-            || !real34IsZero((&mCplx.matrixElements[k].imag)))
+    for(i=k=0; i<mCplx.header.matrixRows; i++)
+      for(j=0; j<mCplx.header.matrixColumns; j++, k++)
+        if(!real34CompareEqual(&mCplx.matrixElements[k].real, i==j ? r : const34_0)
+           || !real34IsZero((&mCplx.matrixElements[k].imag)))
           goto different;
   }
   actualMode = COMPARE_MODE_EQUAL;
@@ -261,7 +262,7 @@ static inline void compare_complex_to_temporaryInformation(real_t *aRe, real_t *
                                                        real_t *bRe, real_t *bIm,
                                                        uint8_t mode,
                                                        uint16_t regist_for_error) {
-  // Complex numbers do not have a total ordering; only == and != are supported 
+  // Complex numbers do not have a total ordering; only == and != are supported
   if (!mode_is_equality(mode)) {
     compareTypeError(regist_for_error);
     return;
@@ -525,7 +526,7 @@ static void almostEqualMatrix(uint16_t regist) {
     break; \
   case dtReal34: \
     real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34Copy(const34_0, &s.i); \
+    real34Zero(&s.i); \
     break; \
   case dtLongInteger: \
     getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
@@ -611,7 +612,7 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
 
       case type_pair_u8(dtComplex34, dtReal34):
       case type_pair_u8(dtReal34, dtReal34):
-      case type_pair_u8(dtShortInteger, dtReal34): 
+      case type_pair_u8(dtShortInteger, dtReal34):
       case type_pair_u8(dtLongInteger, dtReal34):
         roundReal();
         break;
@@ -625,7 +626,7 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
 
       //ret20260309: when LI vs Real or Complex, cast to real
       case type_pair_u8(dtComplex34, dtLongInteger):
-      case type_pair_u8(dtReal34, dtLongInteger):  
+      case type_pair_u8(dtReal34, dtLongInteger):
         convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
         roundReal();
         break;
@@ -657,7 +658,7 @@ void fnXAlmostEqual(uint16_t regist) {
   const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
   const uint8_t rType = (uint8_t)getRegisterDataType(regist);
   const uint16_t test = type_pair_u8(xType, rType);
-  switch(test) 
+  switch(test)
   {
   case type_pair_u8(dtReal34Matrix, dtReal34Matrix):
   case type_pair_u8(dtReal34Matrix, dtComplex34Matrix):
@@ -685,7 +686,7 @@ void fnXAlmostEqual(uint16_t regist) {
     break;
 
   case type_pair_u8(dtShortInteger, dtShortInteger):
-  case type_pair_u8(dtShortInteger, dtLongInteger):  
+  case type_pair_u8(dtShortInteger, dtLongInteger):
   case type_pair_u8(dtLongInteger, dtShortInteger):
   case type_pair_u8(dtLongInteger, dtLongInteger):
     // No need to round

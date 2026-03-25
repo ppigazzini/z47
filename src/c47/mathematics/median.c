@@ -269,7 +269,7 @@ void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
     p.exponent -= 2; // p = p / 100
   }
   else if(!realIsNaN(&p)) {
-    realCopy(const_1, &p);
+    realOne(&p);
   }
   fnDrop(NOPARAM);
   doStatsOperation(&computePercentileUnsorted, const_1, &p, TI_PCTILEX_PCTILEY);

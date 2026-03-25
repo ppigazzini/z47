@@ -1493,10 +1493,10 @@ void fn_cnst_op_A(uint16_t option) {
   linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
 
   real_t const__rt3on2, const_rt3on2, const__1on2;
-  realDivide(const_rt3,const_2,&const_rt3on2,&ctxtReal39);
-  realDivide(const_rt3,const_2,&const__rt3on2,&ctxtReal39);
+  realMultiply(const_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
+  realMultiply(const_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
   realSetNegativeSign(&const__rt3on2);
-  realCopy(const_1on2,&const__1on2);
+  realCopy(const_1on2, &const__1on2);
   realSetNegativeSign(&const__1on2);
 
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));

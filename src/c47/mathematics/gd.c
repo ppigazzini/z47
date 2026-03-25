@@ -115,7 +115,7 @@ uint8_t InverseGudermannianReal(const real_t *x, real_t *res, realContext_t *rea
    */
   if(!realIsNaN(x) && realCompareAbsLessThan(x, const_piOn2)) {
     if(realIsZero(x)) {
-      realCopy(const_0, res);
+      realZero(res);
     }
     else {
       real_t sin, cos;
