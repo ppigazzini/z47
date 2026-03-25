@@ -197,8 +197,10 @@ static bool_t _checkConditionNumberOfAddSub(const real_t *operand1, const real_t
     return false;
   }
   else {
-    realDivide(res, operand1, &conditionNumber1, realContext); realSetPositiveSign(&conditionNumber1);
-    realDivide(res, operand2, &conditionNumber2, realContext); realSetPositiveSign(&conditionNumber2);
+    realDivide(res, operand1, &conditionNumber1, realContext);
+    realSetPositiveSign(&conditionNumber1);
+    realDivide(res, operand2, &conditionNumber2, realContext);
+    realSetPositiveSign(&conditionNumber2);
     if(realIsZero(operand1)) {
       conditionNumber = &conditionNumber2;
     }
@@ -313,16 +315,20 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
-        if(realCompareAbsLessThan(x1Imag, x3Imag))
+        if(realCompareAbsLessThan(x1Imag, x3Imag)) {
           realZero(x1Imag);
-        else
+        }
+        else {
           realZero(x3Imag);
+        }
       }
       else {
-        if(realCompareAbsLessThan(x2Imag, x3Imag))
+        if(realCompareAbsLessThan(x2Imag, x3Imag)) {
           realZero(x2Imag);
-        else
+        }
+        else {
           realZero(x3Imag);
+        }
       }
     }
   }
@@ -354,16 +360,16 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   real159_t const159_root3on2;
   realZero((real_t *)&const159_root3on2);
   realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
-  realDivide((real_t *)&const159_root3on2, const_2, (real_t *)&const159_root3on2, realContext);
+  realMultiply((real_t *)&const159_root3on2, const_1on2, (real_t *)&const159_root3on2, realContext);
 
   // Intermediate variables in 159-digit precision
   real159_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
 
-  realZero((real_t *)&qr); realZero((real_t *)&qi);
-  realZero((real_t *)&rr); realZero((real_t *)&ri);
+  realZero((real_t *)&qr);  realZero((real_t *)&qi);
+  realZero((real_t *)&rr);  realZero((real_t *)&ri);
   realZero((real_t *)&s1r); realZero((real_t *)&s1i);
   realZero((real_t *)&s2r); realZero((real_t *)&s2i);
-  realZero((real_t *)&ar); realZero((real_t *)&ai);
+  realZero((real_t *)&ar);  realZero((real_t *)&ai);
 
   // Compute q, r and the discriminant
   // This is done by scaling things up so that divisions are avoided until the final step.
@@ -402,7 +408,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   real159_t discrimR, discrimI;
   realZero((real_t *)&discrimR);
   realZero((real_t *)&discrimI);
-  
+
   // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
   mulComplexComplex((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
   mulComplexComplex((real_t *)&discrimR, (real_t *)&discrimI, (real_t *)&qr, (real_t *)&qi, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
@@ -460,16 +466,20 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
-        if(realCompareAbsLessThan(x1Imag, x3Imag))
+        if(realCompareAbsLessThan(x1Imag, x3Imag)) {
           realZero(x1Imag);
-        else
+        }
+        else {
           realZero(x3Imag);
+        }
       }
       else {
-        if(realCompareAbsLessThan(x2Imag, x3Imag))
+        if(realCompareAbsLessThan(x2Imag, x3Imag)) {
           realZero(x2Imag);
-        else
+        }
+        else {
           realZero(x3Imag);
+        }
       }
     }
   }
@@ -502,22 +512,22 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 // Trigonometric method -- not suitable until the new high digit count Trig WP34 SinCosTan
 //
-//   void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag, 
-//                                    const real_t *c1Real, const real_t *c1Imag, 
-//                                    const real_t *c0Real, const real_t *c0Imag, 
-//                                    real_t *rReal, real_t *rImag, 
-//                                    real_t *x1Real, real_t *x1Imag, 
-//                                    real_t *x2Real, real_t *x2Imag, 
-//                                    real_t *x3Real, real_t *x3Imag, 
+//   void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
+//                                    const real_t *c1Real, const real_t *c1Imag,
+//                                    const real_t *c0Real, const real_t *c0Imag,
+//                                    real_t *rReal, real_t *rImag,
+//                                    real_t *x1Real, real_t *x1Imag,
+//                                    real_t *x2Real, real_t *x2Imag,
+//                                    real_t *x3Real, real_t *x3Imag,
 //                                    realContext_t *realContext) {
-//   
+//
 //   // ALL intermediate variables as real159_t
 //   real159_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
 //   real159_t temp1, temp2, temp3, temp4;
 //   real159_t mag, angle;
-//   
+//
 //   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
-//   
+//
 //   // Initialize ALL intermediate variables
 //   realZero((real_t *)&qr)   ;    realZero((real_t *)&qi)   ;
 //   realZero((real_t *)&rr)   ;    realZero((real_t *)&ri)   ;
@@ -527,28 +537,28 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realZero((real_t *)&temp1);    realZero((real_t *)&temp2);
 //   realZero((real_t *)&temp3);    realZero((real_t *)&temp4);
 //   realZero((real_t *)&mag)  ;    realZero((real_t *)&angle);
-// 
+//
 //   // ===== q = (c - b^2 / 3) / 3 =====
 //   // 9q = (3c - b^2)
-//   
+//
 //   // rr+ri = 3*c1
 //   realMultiply(c1Real, const_3, (real_t *)&rr, realContext);
 //   realMultiply(c1Imag, const_3, (real_t *)&ri, realContext);
-//   
+//
 //   // qr+qi = c2^2 (complex square: (a+bi)^2 = a²-b² + 2abi)
 //   realMultiply(c2Real, c2Real, (real_t *)&temp1, realContext);  // a²
 //   realMultiply(c2Imag, c2Imag, (real_t *)&temp2, realContext);  // b²
 //   printf("realSubtract 000\n"); realSubtract((real_t *)&temp1, (real_t *)&temp2, (real_t *)&qr, realContext); // a²-b²
 //   realMultiply(c2Real, c2Imag, (real_t *)&temp1, realContext);  // ab
 //   realAdd((real_t *)&temp1, (real_t *)&temp1, (real_t *)&qi, realContext); // 2ab
-//   
+//
 //   // qr+qi = rr+ri - (qr+qi) = 3c - b²
 //   printf("realSubtract 001\n"); realSubtract((real_t *)&rr, (real_t *)&qr, (real_t *)&qr, realContext);
 //   printf("realSubtract 002\n"); realSubtract((real_t *)&ri, (real_t *)&qi, (real_t *)&qi, realContext);
-// 
+//
 //   // ===== r = (b c - 3 d) / 6 - b^3 / 27 =====
 //   // 54r = 9(b c - 3 d) - 2 b^3
-//   
+//
 //   // rr+ri = c2 * c1 (complex multiply manually)
 //   realMultiply(c2Real, c1Real, (real_t *)&temp1, realContext);
 //   realMultiply(c2Imag, c1Imag, (real_t *)&temp2, realContext);
@@ -556,26 +566,26 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realMultiply(c2Real, c1Imag, (real_t *)&temp1, realContext);
 //   realMultiply(c2Imag, c1Real, (real_t *)&temp2, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&ri, realContext);
-//   
+//
 //   // ar+ai = 3*c0
 //   realMultiply(c0Real, const_3, (real_t *)&ar, realContext);
 //   realMultiply(c0Imag, const_3, (real_t *)&ai, realContext);
-//   
+//
 //   // rr+ri = rr+ri - (ar+ai)
 //   printf("realSubtract 004\n"); realSubtract((real_t *)&rr, (real_t *)&ar, (real_t *)&rr, realContext);
 //   printf("realSubtract 005\n"); realSubtract((real_t *)&ri, (real_t *)&ai, (real_t *)&ri, realContext);
-//   
+//
 //   // rr+ri = 9 * (rr+ri)
 //   realMultiply((real_t *)&rr, const_9, (real_t *)&rr, realContext);
 //   realMultiply((real_t *)&ri, const_9, (real_t *)&ri, realContext);
-//   
+//
 //   // ar+ai = c2^2 (already computed above as temp for qr+qi, recalculate)
 //   realMultiply(c2Real, c2Real, (real_t *)&temp1, realContext);
 //   realMultiply(c2Imag, c2Imag, (real_t *)&temp2, realContext);
 //   printf("realSubtract 006\n"); realSubtract((real_t *)&temp1, (real_t *)&temp2, (real_t *)&ar, realContext);
 //   realMultiply(c2Real, c2Imag, (real_t *)&temp1, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp1, (real_t *)&ai, realContext);
-//   
+//
 //   // ar+ai = (ar+ai) * c2 = c2^3 (complex multiply)
 //   realMultiply((real_t *)&ar, c2Real, (real_t *)&temp1, realContext);
 //   realMultiply((real_t *)&ai, c2Imag, (real_t *)&temp2, realContext);
@@ -585,25 +595,25 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&temp4, realContext);
 //   realCopy((real_t *)&temp3, (real_t *)&ar);
 //   realCopy((real_t *)&temp4, (real_t *)&ai);
-//   
+//
 //   // ar+ai = 2 * (ar+ai)
 //   realAdd((real_t *)&ar, (real_t *)&ar, (real_t *)&ar, realContext);
 //   realAdd((real_t *)&ai, (real_t *)&ai, (real_t *)&ai, realContext);
-//   
+//
 //   // rr+ri = rr+ri - (ar+ai)
 //   printf("realSubtract 008\n"); realSubtract((real_t *)&rr, (real_t *)&ar, (real_t *)&rr, realContext);
 // printRealToConsole((real_t *)&ri,"(real_t *)&ri:","\n");
 //   printf("realSubtract 009\n"); realSubtract((real_t *)&ri, (real_t *)&ai, (real_t *)&ri, realContext);
-// 
+//
 //   // ===== discriminant = q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916 =====
-//   
+//
 //   // rReal+rImag = qr+qi squared (complex square)
 //   realMultiply((real_t *)&qr, (real_t *)&qr, (real_t *)&temp1, realContext);
 //   realMultiply((real_t *)&qi, (real_t *)&qi, (real_t *)&temp2, realContext);
 //   printf("realSubtract 010\n"); realSubtract((real_t *)&temp1, (real_t *)&temp2, rReal, realContext);
 //   realMultiply((real_t *)&qr, (real_t *)&qi, (real_t *)&temp1, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp1, rImag, realContext);
-//   
+//
 //   // rReal+rImag = (rReal+rImag) * (qr+qi) = q^3 (complex multiply)
 //   realMultiply(rReal, (real_t *)&qr, (real_t *)&temp1, realContext);
 //   realMultiply(rImag, (real_t *)&qi, (real_t *)&temp2, realContext);
@@ -613,59 +623,59 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&temp4, realContext);
 //   realCopy((real_t *)&temp3, rReal);
 //   realCopy((real_t *)&temp4, rImag);
-//   
+//
 //   // rReal+rImag = 4 * (rReal+rImag)
 //   realMultiply(rReal, const_4, rReal, realContext);
 //   realMultiply(rImag, const_4, rImag, realContext);
-//   
+//
 //   // ar+ai = rr+ri squared (complex square)
 //   realMultiply((real_t *)&rr, (real_t *)&rr, (real_t *)&temp1, realContext);
 //   realMultiply((real_t *)&ri, (real_t *)&ri, (real_t *)&temp2, realContext);
 //   printf("realSubtract 012\n"); realSubtract((real_t *)&temp1, (real_t *)&temp2, (real_t *)&ar, realContext);
 //   realMultiply((real_t *)&rr, (real_t *)&ri, (real_t *)&temp1, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp1, (real_t *)&ai, realContext);
-//   
+//
 //   // rReal+rImag = rReal+rImag + ar+ai
 //   realAdd(rReal, (real_t *)&ar, rReal, realContext);
 //   realAdd(rImag, (real_t *)&ai, rImag, realContext);
-//   
+//
 //   // rReal+rImag = (rReal+rImag) / 2916 (complex divide by real)
 //   realDivide(rReal, const_2916, rReal, realContext);
 //   realDivide(rImag, const_2916, rImag, realContext);
-// 
+//
 //   // ===== Scale r back: rr+ri = rr+ri / 54 =====
 //   realDivide((real_t *)&rr, const_54, (real_t *)&rr, realContext);
 //   realDivide((real_t *)&ri, const_54, (real_t *)&ri, realContext);
-// 
+//
 //   // ===== s1+s2 = cbrt(r ± sqrt(discriminant)) =====
-//   
+//
 //   // s1r+s1i = sqrt(rReal+rImag) using polar form
 //   // mag = sqrt(rReal² + rImag²)
 //   realMultiply(rReal, rReal, (real_t *)&temp1, realContext);
 //   realMultiply(rImag, rImag, (real_t *)&temp2, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
-//   
+//
 //   // angle = atan2(rImag, rReal) / 2
 //   WP34S_Atan2(rReal, rImag, (real_t *)&angle, realContext);
-//   realDivide((real_t *)&angle, const_2, (real_t *)&angle, realContext);
-//   
+//   realMultiply((real_t *)&angle, const_1on2, (real_t *)&angle, realContext);
+//
 //   // mag = sqrt(mag)
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
-//   
+//
 //   // s1r+s1i = mag * (cos(angle) + i*sin(angle))
 //   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&s1r, (real_t *)&s1i, NULL, realContext);
 //   realMultiply((real_t *)&s1r, (real_t *)&mag, (real_t *)&s1r, realContext);
 //   realMultiply((real_t *)&s1i, (real_t *)&mag, (real_t *)&s1i, realContext);
-//   
+//
 //   // s2r+s2i = rr+ri - (s1r+s1i)
 //   printf("realSubtract 012\n"); realSubtract((real_t *)&rr, (real_t *)&s1r, (real_t *)&s2r, realContext);
 //   printf("realSubtract 013\n"); realSubtract((real_t *)&ri, (real_t *)&s1i, (real_t *)&s2i, realContext);
-//   
+//
 //   // s1r+s1i = rr+ri + (s1r+s1i)
 //   realAdd((real_t *)&rr, (real_t *)&s1r, (real_t *)&s1r, realContext);
 //   realAdd((real_t *)&ri, (real_t *)&s1i, (real_t *)&s1i, realContext);
-//   
+//
 //   // s1r+s1i = cbrt(s1r+s1i) using polar form
 //   // mag = (s1r² + s1i²)^(1/6)
 //   realMultiply((real_t *)&s1r, (real_t *)&s1r, (real_t *)&temp1, realContext);
@@ -673,38 +683,38 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext); // sqrt = ^(1/2)
 //   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext); // ^(1/3) => total ^(1/6)
-//   
+//
 //   // angle = atan2(s1i, s1r) / 3
 //   WP34S_Atan2((real_t *)&s1r, (real_t *)&s1i, (real_t *)&angle, realContext);
 //   realDivide((real_t *)&angle, const_3, (real_t *)&angle, realContext);
-//   
+//
 //   // s1r+s1i = mag * (cos(angle) + i*sin(angle))
 //   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
 //   realMultiply((real_t *)&temp1, (real_t *)&mag, (real_t *)&s1r, realContext);
 //   realMultiply((real_t *)&temp2, (real_t *)&mag, (real_t *)&s1i, realContext);
-//   
+//
 //   // s2r+s2i = cbrt(s2r+s2i) using polar form (same process)
 //   realMultiply((real_t *)&s2r, (real_t *)&s2r, (real_t *)&temp1, realContext);
 //   realMultiply((real_t *)&s2i, (real_t *)&s2i, (real_t *)&temp2, realContext);
 //   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
 //   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext);
-//   
+//
 //   WP34S_Atan2((real_t *)&s2r, (real_t *)&s2i, (real_t *)&angle, realContext);
 //   realDivide((real_t *)&angle, const_3, (real_t *)&angle, realContext);
-//   
+//
 //   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
 //   realMultiply((real_t *)&temp1, (real_t *)&mag, (real_t *)&temp3, realContext);
 //   realMultiply((real_t *)&temp2, (real_t *)&mag, (real_t *)&temp4, realContext);
 //   realCopy((real_t *)&temp3, (real_t *)&s2r);
 //   realCopy((real_t *)&temp4, (real_t *)&s2i);
-// 
+//
 //   // ===== Compute roots =====
-//   
+//
 //   // qr+qi = s1+s2
 //   realAdd((real_t *)&s1r, (real_t *)&s2r, (real_t *)&qr, realContext);
 //   realAdd((real_t *)&s1i, (real_t *)&s2i, (real_t *)&qi, realContext);
-//   
+//
 //   // rr+ri = (s1-s2) * i*sqrt(3)/2
 //   printf("realSubtract 014\n"); realSubtract((real_t *)&s1r, (real_t *)&s2r, (real_t *)&temp1, realContext);
 //   printf("realSubtract 015\n"); realSubtract((real_t *)&s1i, (real_t *)&s2i, (real_t *)&temp2, realContext);
@@ -714,35 +724,35 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realMultiply((real_t *)&temp2, (real_t *)&const159_root3on2, (real_t *)&rr, realContext);
 //   realChangeSign((real_t *)&rr);
 //   realMultiply((real_t *)&temp1, (real_t *)&const159_root3on2, (real_t *)&ri, realContext);
-//   
+//
 //   // x2Real+x2Imag = c2 / 3
 //   realDivide(c2Real, const_3, x2Real, realContext);
 //   realDivide(c2Imag, const_3, x2Imag, realContext);
-//   
+//
 //   // x1 = qr+qi - (x2)
 //   printf("realSubtract 016\n"); realSubtract((real_t *)&qr, x2Real, x1Real, realContext);
 //   printf("realSubtract 017\n"); realSubtract((real_t *)&qi, x2Imag, x1Imag, realContext);
-//   
+//
 //   // temp = (qr+qi) / 2
 //   realDivide((real_t *)&qr, const_2, (real_t *)&qr, realContext);
 //   realDivide((real_t *)&qi, const_2, (real_t *)&qi, realContext);
-//   
+//
 //   // x3 = temp + x2
 //   realAdd((real_t *)&qr, x2Real, x3Real, realContext);
 //   realAdd((real_t *)&qi, x2Imag, x3Imag, realContext);
-//   
+//
 //   // x3 = -x3
 //   realChangeSign(x3Real);
 //   realChangeSign(x3Imag);
-//   
+//
 //   // x2 = x3 + (rr+ri)
 //   realAdd(x3Real, (real_t *)&rr, x2Real, realContext);
 //   realAdd(x3Imag, (real_t *)&ri, x2Imag, realContext);
-//   
+//
 //   // x3 = x3 - (rr+ri)
 //   printf("realSubtract 018\n"); realSubtract(x3Real, (real_t *)&rr, x3Real, realContext);
 //   printf("realSubtract 019\n"); realSubtract(x3Imag, (real_t *)&ri, x3Imag, realContext);
-// 
+//
 //   // ===== Force real outputs when appropriate =====
 //   if(realIn) {
 //     if(realIsZero(rReal) || realIsNegative(rImag)) {

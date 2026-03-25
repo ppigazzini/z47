@@ -155,11 +155,11 @@
     // cdfu_poisson_xout
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     WP34S_GammaP(lambda, &p, res, realContext, false, true);
@@ -182,11 +182,11 @@
 
     // cdf_poisson
     if(realCompareLessThan(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     realAdd(x, const_1, &p, realContext);

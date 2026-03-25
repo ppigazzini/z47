@@ -257,7 +257,8 @@
       realChangeSign(&q);
       realAdd(&p, &q, &q, realContext);
       //SHOW_CONVERGENCE
-      realCopy(const_1, &r); r.exponent -= 32 /*14*/;
+      realOne(&r);
+      r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&q, &p, &r, realContext)) {
         realCopy(&q, res);
         goto qf_t_exit;

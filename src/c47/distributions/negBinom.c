@@ -158,7 +158,7 @@
       return false;
     }
     if((!realIsPositive(r)) || (!realIsAnInteger(r))) {
-      realCopy(const_0, res);
+      realZero(res);
       return false;
     }
     return true;
@@ -202,7 +202,7 @@
     }
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
 

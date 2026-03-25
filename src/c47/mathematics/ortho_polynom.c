@@ -29,7 +29,7 @@ void fnOrthoPoly(uint16_t kind) {
     return;
   }
   if(getOrthoPolyParam(REGISTER_X, &x, &ctxtReal39) && getOrthoPolyParam(REGISTER_Y, &y, &ctxtReal39)) {
-    realCopy(const_0, &z);
+    realZero(&z);
     if((kind != ORTHOPOLY_LAGUERRE_L_ALPHA) || getOrthoPolyParam(REGISTER_Z, &z, &ctxtReal39)) {
       if(realIsSpecial(&y) || realIsNegative(&y) || (!realIsAnInteger(&y)) || realCompareLessEqual(&z, const__1)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

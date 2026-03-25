@@ -113,7 +113,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       realCopy(const_root2on2, cosOut);
     }
     if(tanOut != NULL) {
-      realCopy(const_1, tanOut);
+      realOne(tanOut);
     }
   }
   else { // angle < 90
@@ -923,7 +923,7 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
     // The threshold for overflow is 205! (i.e. 204! is within range and 205! isn't).
     if(realIsAnInteger(xin) && realCompareLessEqual(xin, const_205)) {
       realSubtract(xin, const_1, &x, realContext); // x = xin - 1
-      realCopy(const_1, res);
+      realOne(res);
       while(realCompareGreaterEqual(&x, const_2)) {
         realMultiply(res, &x, res, realContext);
         realSubtract(&x, const_1, &x, realContext);
@@ -1623,7 +1623,7 @@ void WP34S_GammaP(const real_t *x, const real_t *a, real_t *res, realContext_t *
   if(realIsInfinite(x)) {
     if(upper) {
       if(regularised) {
-        realCopy(const_1, res);
+        realOne(res);
         return;
       }
 
@@ -1713,7 +1713,8 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
 static void check_low(real_t *d) {
   real_t real_1e_32;
 
-  realCopy(const_1, &real_1e_32); real_1e_32.exponent -= 32;
+  realOne(&real_1e_32);
+  real_1e_32.exponent -= 32;
   if(realCompareAbsLessThan(d, &real_1e_32)) {
     realCopy(d, &real_1e_32);
   }
@@ -1744,7 +1745,7 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
   realAdd(a, const_1, &ap1, realContext);        // ap1 = 1+a
   realSubtract(a, const_1, &am1, realContext);   // am1 = a-1
   realAdd(a, b, &apb, realContext);              // apb = a+b
-  realCopy(const_1, &c);                         // c = 1
+  realOne(&c);                                   // c = 1
   realDivide(x, &ap1, &t, realContext);
   realMultiply(&t, &apb, &u, realContext);
   realSubtract(const_1, &u, &t, realContext);    // t = 1-apb*x/ap1
@@ -1822,7 +1823,7 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   realDivide(&t, &u, &v, realContext);         // u = (a+1)/(a+b+2)
   if(realCompareLessThan(x, &v)) {
     if(limit) {
-      realCopy(const_0, res);
+      realZero(res);
     }
     else {
       betacf(a, b, x, &t, realContext);
@@ -1832,7 +1833,7 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   }
   else {
     if(limit) {
-      realCopy(const_1, res);
+      realOne(res);
     }
     else {
       betacf(b, a, &y, &t, realContext);
@@ -2101,31 +2102,40 @@ void WP34S_ComplexLambertW(const real_t *xReal, const real_t *xImag, real_t *res
   real_t pr, pi, qr, qi, zr, zi, wr, wi, tr, ti;
 
   realCopy(xReal, &zr), realCopy(xImag, &zi);
-  realCopy(const_1, &wr), realCopy(const_1, &wi);
-  realAdd(xReal, const_1, &pr, realContext), realCopy(xImag, &pi);
+  realOne(&wr);
+  realOne(&wi);
+  realAdd(xReal, const_1, &pr, realContext);
+  realCopy(xImag, &pi);
   if(realIsZero(&zi) && realIsNegative(&zr) && realCompareGreaterEqual(&zr, const__1)) {
     // Close to -1/e, the series is very slow to converge
-    realCopy(const_1, &pr);
+    realOne(&pr);
     realCopy(realIsNegative(&pi) ? const__1 : const_1, &pi);
   }
   else if(!realIsZero(&pr) || !realIsZero(&pi)) {
     lnComplex(&pr, &pi, &pr, &pi, realContext);
-    realCopy(&pr, &wr), realCopy(&pi, &wi);
+    realCopy(&pr, &wr);
+    realCopy(&pi, &wi);
   }
   while(1) { // LamW_cloop
     expComplex(&pr, &pi, &qr, &qi, realContext);
-    realCopy(&qr, &tr), realCopy(&qi, &ti);
+    realCopy(&qr, &tr);
+    realCopy(&qi, &ti);
     mulComplexComplex(&qr, &qi, &wr, &wi, &qr, &qi, realContext);
-    realAdd(&tr, &qr, &tr, realContext), realAdd(&ti, &qi, &ti, realContext);
-    realSubtract(&qr, &zr, &qr, realContext), realSubtract(&qi, &zi, &qi, realContext);
+    realAdd(&tr, &qr, &tr, realContext);
+    realAdd(&ti, &qi, &ti, realContext);
+    realSubtract(&qr, &zr, &qr, realContext);
+    realSubtract(&qi, &zi, &qi, realContext);
     divComplexComplex(&qr, &qi, &tr, &ti, &qr, &qi, realContext);
-    realSubtract(&wr, &qr, &wr, realContext), realSubtract(&wi, &qi, &wi, realContext);
+    realSubtract(&wr, &qr, &wr, realContext);
+    realSubtract(&wi, &qi, &wi, realContext);
     if(WP34S_ComplexAbsError(&wr, &wi, &pr, &pi, const_1e_37, realContext)) {
       break;
     }
-    realCopy(&wr, &pr), realCopy(&wi, &pi);
+    realCopy(&wr, &pr);
+    realCopy(&wi, &pi);
   }
-  realCopy(&wr, resReal), realCopy(&wi, resImag);
+  realCopy(&wr, resReal);
+  realCopy(&wi, resImag);
 }
 
 
@@ -2164,7 +2174,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
     return;
   }
   if(realIsZero(rN)) {
-    realCopy(const_1, res);
+    realOne(res);
     return;
   }
   // Here we are free from the limitation of ISG since the code is ported to C.
@@ -2172,17 +2182,17 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
   //  realCopy(const_NaN, res);
   //  return;
   //}
-  realCopy(const_1, &rT0);
+  realOne(&rT0);
   // Now initialise everything else
   realCopy(const_2, &i);
   realCopy(const_2, &d);
-  realCopy(const_1, &c);
-  realCopy(const_1, &b);
+  realOne(&c);
+  realOne(&b);
   realCopy(rX, &rT1);
   realMultiply(rX, const_2, &a, realContext);
 
   // We must initialise this too
-  realCopy(const_0, &incB);
+  realZero(&incB);
 
   switch(kind) {
   /**************************************************************************/
@@ -2222,7 +2232,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
       realSubtract(&rT1, rX, &rT1, realContext);
       ortho_allinc:
       incA = true;
-      realCopy(const_1, &incB);
+      realOne(&incB);
       incC = true;
       break;
     }
@@ -2231,7 +2241,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
   /* Hermite's He (Hn)                                                      */
     case ORTHOPOLY_HERMITE_HE: {
       realCopy(rX, &a);
-      realCopy(const_1, &incB);
+      realOne(&incB);
       break;
     }
 

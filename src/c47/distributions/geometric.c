@@ -128,11 +128,11 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     realSubtract(const_1, p0, &q, realContext);
@@ -143,11 +143,11 @@
     real_t p, q;
 
     if(realCompareLessThan(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     realToIntegralValue(x, &p, DEC_ROUND_FLOOR, realContext);
