@@ -114,8 +114,6 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
 
   // create 159 constants
   real159_t const159_1on3, const159_root3on2;
-  realZero((real_t *)&const159_1on3);
-  realZero((real_t *)&const159_root3on2);
   // 1/3 = 1 ÷ 3
   realDivide(const_1, const_3, (real_t *)&const159_1on3, realContext);
   // sqrt(3)/2 = sqrt(3) ÷ 2
@@ -126,15 +124,15 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   real159_t x3r, x3i, temp1r, temp1i, temp2r, temp2i, numr, numi, denomr, denomi, quotr, quoti;
   real159_t temp, denom_mag;
 
-  realZero((real_t *)&xr); realZero((real_t *)&xi);
-  realZero((real_t *)&zr); realZero((real_t *)&zi);
-  realZero((real_t *)&x3r); realZero((real_t *)&x3i);
+  realZero((real_t *)&xr);     realZero((real_t *)&xi);
+  realZero((real_t *)&zr);     realZero((real_t *)&zi);
+  realZero((real_t *)&x3r);    realZero((real_t *)&x3i);
   realZero((real_t *)&temp1r); realZero((real_t *)&temp1i);
   realZero((real_t *)&temp2r); realZero((real_t *)&temp2i);
-  realZero((real_t *)&numr); realZero((real_t *)&numi);
+  realZero((real_t *)&numr);   realZero((real_t *)&numi);
   realZero((real_t *)&denomr); realZero((real_t *)&denomi);
-  realZero((real_t *)&quotr); realZero((real_t *)&quoti);
-  realZero((real_t *)&temp); realZero((real_t *)&denom_mag);
+  realZero((real_t *)&quotr);  realZero((real_t *)&quoti);
+  realZero((real_t *)&temp);   realZero((real_t *)&denom_mag);
 
   realCopy(zReal, (real_t *)&zr);
   realCopy(zImag, (real_t *)&zi);
@@ -293,7 +291,7 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy(const_1on2, (real_t *)&omega_r);
   realChangeSign((real_t *)&omega_r); // -1/2
   realSquareRoot(const_3, (real_t *)&omega_i, realContext);
-  realDivide((real_t *)&omega_i, const_2, (real_t *)&omega_i, realContext); // sqrt(3)/2
+  realMultiply((real_t *)&omega_i, const_1on2, (real_t *)&omega_i, realContext); // sqrt(3)/2
   //realToString((real_t *)&omega_r, dbg); printf("DEBUG curtComplex159: omega_r = %s\n", dbg);
   //realToString((real_t *)&omega_i, dbg); printf("DEBUG curtComplex159: omega_i = %s\n", dbg);
 

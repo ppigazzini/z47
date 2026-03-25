@@ -484,7 +484,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_0) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-        real34Copy(const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        real34Zero(REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_1) {

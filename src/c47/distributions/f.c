@@ -155,11 +155,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
 
@@ -175,11 +175,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
 

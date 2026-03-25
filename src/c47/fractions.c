@@ -126,9 +126,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
 
   real_t posr, delta, temp3;
   realCopy(&temp0, &posr);
-  realPlus(const_9999, &delta, &ctxtReal34);         // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
-                                                     //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
-                                                     //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
+  realCopy(const_9999, &delta); // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
+                                //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
+                                //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
   uint32_t ip;
   ip = realToUint32C47(&temp0, NULL);
   *intPart = ip;

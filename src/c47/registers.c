@@ -1800,39 +1800,43 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
           uint32_t offset = (r * mat.header.matrixRows + c) * 2;
           real34ToReal(&mat.matrixElements + offset, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Real part
-          if (realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50)
             printf("[≈0 ");
           else {
             realToString(&tmpr, str);
-            if (strstr(str, "Infinity")) {
-                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
-                 while ((p = strstr(p, "Infinity"))) {
-                     *p = 0;
-                     q += sprintf(q, "%s∞", tmp);
-                     p += 8;
-                     strcpy(tmp, p);
-                 }
-                 strcpy(q, tmp);
-                }
+            if(strstr(str, "Infinity")) {
+              char tmp[256];
+              strcpy(tmp, str);
+              char *p = tmp;
+              char *q = str;
+              while((p = strstr(p, "Infinity"))) {
+                *p = 0;
+                q += sprintf(q, "%s∞", tmp);
+                p += 8;
+                strcpy(tmp, p);
+              }
+              strcpy(q, tmp);
             }
             printf("[%s", str);
           }
           real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Imag part
-          if (realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50)
             printf(" i≈0] ");
           else {
             realToString(&tmpr, str);
-            if (strstr(str, "Infinity")) {
-                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
-                 while ((p = strstr(p, "Infinity"))) {
-                     *p = 0;
-                     q += sprintf(q, "%s∞", tmp);
-                     p += 8;
-                     strcpy(tmp, p);
-                 }
-                 strcpy(q, tmp);
-                }
+            if(strstr(str, "Infinity")) {
+              char tmp[256];
+              strcpy(tmp, str);
+              char *p = tmp;
+              char *q = str;
+              while ((p = strstr(p, "Infinity"))) {
+                *p = 0;
+                q += sprintf(q, "%s∞", tmp);
+                p += 8;
+                strcpy(tmp, p);
+              }
+              strcpy(q, tmp);
             }
             printf(" i%s] ", str);
           }
@@ -1840,9 +1844,6 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         printf("\n");
       }
     }
-
-
-
 
     else {
       printf("%s", before);

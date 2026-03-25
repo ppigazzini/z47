@@ -82,13 +82,13 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsPositive(&y)) && (realCompareLessThan(&x, const_0) && (!realIsInfinite(&x))))
       ) {
       telltale += 1;
-      realCopy(const_0, &o);
+      realZero(&o);
     }
 
     //1
     if(((realCompareGreaterEqual(&y, const_0) || (realIsInfinite(&y) && realIsPositive(&y))) && realIsInfinite(&x))) {
       telltale += 2;
-      realCopy(const_1, &o);
+      realOne(&o);
     }
 
     //inf

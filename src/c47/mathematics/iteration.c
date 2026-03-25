@@ -30,8 +30,8 @@ static void getIterParam(uint16_t regist, real34_t *fp, real34_t *target, real34
     }
   }
   else {
-    real34Copy(const34_0, fp);
-    real34Copy(const34_0, target);
+    real34Zero(fp);
+    real34Zero(target);
     real34Copy(const34_1, step);
   }
 }
