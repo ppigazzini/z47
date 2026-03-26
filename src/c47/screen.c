@@ -335,7 +335,12 @@ typedef struct {
         sprintf(string, "In function copyRegisterXToClipboard, the data type %" PRIu32 " is unknown! Please try to reproduce and submit a bug.", getRegisterDataType(regist));
     }
 
-    stringToUtf8(string, (uint8_t *)clipboardString);
+    if(forPrinter) {
+      strcpy(clipboardString, string);
+    }
+    else {
+      stringToUtf8(string, (uint8_t *)clipboardString);
+    }
   }
 #endif // PC_BUILD || DMCP_BUILD                              //JMCSV
 

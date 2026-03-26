@@ -805,8 +805,8 @@ void print_glyph24(uint16_t charCode, const font_t *font) {
       // Drawing the columns of the glyph
       int32_t bit = 7;
       //row_scaled = (row + (row >> 1)) % 25;      // Scale 1.5
-      row_scaled = ((row >> 1) + (row >> 2));      // Scale  .75
-      //row_scaled = row;                          // Scale 1
+      //row_scaled = ((row >> 1) + (row >> 2));    // Scale  .75
+      row_scaled = row;                          // Scale 1
       for(col=0; col<glyph->colsGlyph; col++) {
         if(bit == 7) {
           byte = *(data++);
@@ -877,10 +877,11 @@ void print_line( const char *buff, int with_lf )
   const int mode = printerState.print_mode;
   uint8_t c;
 //  unsigned short int posns[ 257 ];
-  unsigned char pattern[ 6 ];	// Rows
+//  unsigned char pattern[ 6 ];	// Rows
+//  unsigned char i, j, m = 0;
   unsigned char graphic[ PAPER_WIDTH ];	// Columns
   unsigned char glen = 0;
-  unsigned char i, j, m, w = 0;
+  unsigned char w = 0;
 
   // Show Print SBI
   setPrinterSBI(true);
@@ -896,8 +897,8 @@ void print_line( const char *buff, int with_lf )
 	    // merge small spaces
 	     continue;
         }
-        if( c & 0x80 ) {
-          uint16_t charCode = c << 8 | *( (const unsigned char *) buff++ );
+        if( c & 0x80 ) {  // Unicode
+          uint16_t charCode = (c << 8) | *( (const unsigned char *) buff++ );
           c = charMap(charCode);
           if(c == 0) {  // Not in the 82240 roman character set, need to print graphic
             if(printerState.printer_model == PRINTER_HP) {
@@ -921,48 +922,17 @@ void print_line( const char *buff, int with_lf )
 	      wrap( w );
 	      sendByteIR( c );
         }
-/*
-        i = c < ' ' ? printer_chars[ c - 1 ]
-	      : c > 126 ? printer_chars[ c - 127 + 31 ]
-	      : c;
-#ifdef INCLUDE_C_LOCK
-        if (C_LOCKED && POLAR_DISPLAY && c == 160) { // pass angle char through untranslated
-	    i = c;
-        }
-#endif
-        if ( i != 0 ) {
-	    // Use printer character set
-	      w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-	      print_graphic( glen, graphic );
-	      glen = 0;
-	      wrap( w );
-	      sendByteIR( i );
-        }
-        else {
-	    // graphic printing of characters unknown to the printer
-	      w = 6;
-	      if ( printerColumn > 0 && printerColumn < PAPER_WIDTH ) {
-	      // Add horizontal spacing
-	        graphic[ glen++ ] = 0;
-	        ++printerColumn;
-	        if ( printerColumn == 161 ) {
-	          w = 5;
-	        }
-	      }
-	      goto graphic_print;
-        }
-*/
         break;
 
+/*
       case PMODE_SMALLGRAPHICS:		// Small font
         c += 256;
-        /* fallthrough */
+        // fallthrough
 
       case PMODE_GRAPHICS:			// Standard font
         //graphic_print:
         // Spit out the character as a graphic
 #ifdef INCLUDE_C_LOCK
-/*
         if ( ((C_LOCKED) && (POLAR_DISPLAY)) && c == (256+'<') ) {
 	      w = 4;
 	      pattern[0] = 8;
@@ -975,7 +945,6 @@ void print_line( const char *buff, int with_lf )
         else {
 	      unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
         }
-*/
 #else
         //unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
 #endif
@@ -1004,6 +973,7 @@ void print_line( const char *buff, int with_lf )
 	      m <<= 1;
         }
         break;
+*/
     }
   }
   print_graphic( glen, graphic );
@@ -1341,7 +1311,6 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
 
     default:
       copyRegisterToClipboardString(regist, tmpString, true);
-
       break;
   }
 

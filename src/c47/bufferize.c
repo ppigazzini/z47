@@ -1089,6 +1089,12 @@ typedef struct {
       return;
     }
 
+    #if defined(IR_PRINTING)
+      if(calcMode == CM_NIM) {
+        lastItem = item;
+      }
+    #endif // IR_PRINTING
+
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
     }
@@ -1802,6 +1808,9 @@ typedef struct {
         screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
         closeNim();
         if(calcMode != CM_NIM && lastErrorCode == 0) {
+          #if defined(IR_PRINTING)
+            printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+          #endif //IR_PRINTING
           setSystemFlag(FLAG_ASLIFT);
           if(item == ITM_EXIT1) {
             #if defined(DEBUGUNDO)
@@ -1920,6 +1929,10 @@ typedef struct {
             setRegisterAngularMode(REGISTER_X, amDMS);
 
             setSystemFlag(FLAG_ASLIFT);
+            #if defined(IR_PRINTING)
+              printTraceX(LINE_NOLF);
+              printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+            #endif //IR_PRINTING
             return;
           }
         }
@@ -1959,6 +1972,10 @@ typedef struct {
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
+              #if defined(IR_PRINTING)
+                printTraceX(LINE_NOLF);
+                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+              #endif //IR_PRINTING
             }
             else {
               #if defined(DEBUGUNDO)
@@ -1983,6 +2000,7 @@ typedef struct {
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
+
           if(calcMode != CM_NIM && lastErrorCode == 0 && getRegisterDataType(REGISTER_X) != dtTime) {
             if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
               convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
@@ -1991,6 +2009,10 @@ typedef struct {
             hmmssInRegisterToSeconds(REGISTER_X);
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
+              #if defined(IR_PRINTING)
+                printTraceX(LINE_NOLF);
+                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+              #endif //IR_PRINTING
             }
             else {
               #if defined(DEBUGUNDO)
@@ -2009,6 +2031,10 @@ typedef struct {
           done = true;
           closeNim();
           fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
+          #if defined(IR_PRINTING)
+            printTrace(ITM_DMS2,NOPARAM);
+            printTraceX(LINE_FULL);
+          #endif //IR_PRINTING
         }
         break;
       }
@@ -2033,6 +2059,10 @@ typedef struct {
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
+              #if defined(IR_PRINTING)
+                printTraceX(LINE_NOLF);
+                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+              #endif //IR_PRINTING
             }
             else {
               undo();
@@ -2584,7 +2614,7 @@ typedef struct {
       pemCloseNumberInput();
       return;
     }
-    
+
     bool_t delayedShortIntegerCHS = false;
     //#if defined(PC_BUILD)
     //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);
@@ -2877,12 +2907,15 @@ typedef struct {
   //      screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK);
   //    }
     }
-    
+
     #if defined(IR_PRINTING)
-      #if defined(PC_BUILD)
-        printf("**[DL]** closeNim printTraceX\n");fflush(stdout);
-      #endif //PC_BUILD
-      printTraceX(LINE_NOLF);
+      if((lastItem != ITM_ms) && (lastItem != ITM_dotD) && (lastItem != ITM_DRG)) {  // Avoid double tracing for functions changing X after closeNim
+        #if defined(PC_BUILD)
+          printf("**[DL]** closeNim printTraceX lastItem %d\n",lastItem);fflush(stdout);
+        #endif //PC_BUILD
+        printTraceX(LINE_NOLF);
+      }
+      lastItem = 0;
     #endif //IR_PRINTING
   }
 
