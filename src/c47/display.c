@@ -2813,8 +2813,18 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
 
 void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) { // [n×n Matrix]
-  matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
-  sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
+  #if defined(OPTION_VECTOR)
+    if(isRegisterMatrix2dVector(regist)) {
+      sprintf(displayString, "[2D Vector]%s", getVectorRegisterPolarMode(regist) == amPolar ? STD_SPACE_HAIR STD_SUP_p : "");
+    } else
+    if(isRegisterMatrix3dVector(regist)) {
+      sprintf(displayString, "[3D Vector]%s", getVectorRegisterPolarMode(regist) == amPolarSPH ? STD_SPACE_HAIR STD_SUP_s : getVectorRegisterPolarMode(regist) == amPolarCYL ? STD_SPACE_HAIR STD_SUP_c : "");
+    } else 
+  #endif //OPTION_VECTOR
+  {
+    matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+    sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
+  }
 }
 
 

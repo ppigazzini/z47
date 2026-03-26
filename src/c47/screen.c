@@ -4980,7 +4980,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             //            else if(temporaryInformation == TI_VECTOR && displayVector && isRegisterMatrixVector(regist)) {
             //              tiVector(regist, prefix,  &prefixWidth);
             //            }
-            else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI
+            else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI in X
               tiVector(regist, prefix,  &prefixWidth);
             }
 #endif //OPTION_VECTOR
@@ -5009,8 +5009,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
             char preserveErrorMessage[ERROR_MESSAGE_LENGTH];
             xcopy(preserveErrorMessage,errorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
-            if(!vectorToDisplayString(regist, tmpString)) {                  //   errorMessage string used
-              real34MatrixToDisplayString(regist, tmpString);
+            if ((regist == REGISTER_Z || regist == REGISTER_T) && !runningOnSimOrUSB) {
+                real34MatrixToDisplayString(regist, tmpString);
+            }
+            else if (!vectorToDisplayString(regist, tmpString)) {
+                real34MatrixToDisplayString(regist, tmpString);
             }
             xcopy(errorMessage,preserveErrorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
 
