@@ -1323,6 +1323,7 @@ uint16_t searchMsg(uint16_t idStr) {
 void fnShowVersion(uint16_t option) {  //KEYS VERSION LOADED
   strcpy(errorMessage, indexOfMsgs[searchMsg(option)].itemName);
   temporaryInformation = TI_KEYS;
+  screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 }
 
 
