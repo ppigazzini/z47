@@ -2457,17 +2457,21 @@ RELEASE_END:
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
             refreshScreen(120);
           }
           else if(lastErrorCode != 0) {
             lastErrorCode = 0;
-            screenUpdatingMode = SCRUPD_AUTO;
             refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
+            screenUpdatingMode = SCRUPD_AUTO;
             refreshScreen(139);
             keyActionProcessed = true;
           }
-          else if(temporaryInformation == TI_NO_INFO && softmenuStack[0].softmenuId == 0) {
+          else if(temporaryInformation == TI_NO_INFO && 
+                   ( (softmenuStack[0].softmenuId == 0) || 
+                     ((programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) && (item == ITM_RS || item == ITM_EXIT1)) 
+                   )
+                 ) {
             //Test to see if the statusbar flicker speed is hig enough. Exit only refreshes the statusbar when MyM is up and no TI
             screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             refreshScreen(140);
