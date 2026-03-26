@@ -1008,11 +1008,15 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 
 
 
-static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle, uint16_t digits) {
 #if defined(OPTION_VECTOR)
+  bool_t is2d    = isMatrix2dVector(rows, cols);
+  bool_t is3d    = isMatrix3dVector(rows, cols);
+  if(!is2d && !is3d) goto noPolarVector;
+
   real_t aa,bb,cc;
   decContext c = ctxtReal39;
-  c.digits = 26; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
+  c.digits = digits + 3; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19); for vector element, at least two elements in vector, so no mor ethan 10+5 digits possible
 
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
@@ -1056,6 +1060,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     //printRealToConsole(&aa,"POL aa=","\n");
     //printRealToConsole(&bb,"POL bb=","\n");
   } else {
+noPolarVector:
 #endif //OPTION_VECTOR
 
     real34Copy(&matrix->matrixElements[ii],element);
@@ -1137,13 +1142,15 @@ smallFont:
     Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
   }
 
-  bool_t allowIntegerDisplay = (matrix->header.mtag == amNone) || !is3dVectorPolarSPH(matrix->header.mtag) || !(is3dVectorPolarCYL(matrix->header.mtag) || is2dVectorPolar(matrix->header.mtag));
+  bool_t allowIntegerDisplay = !(isMatrixVector(maxRows, maxCols) && (is3dVectorPolarSPH(matrix->header.mtag) || is3dVectorPolarCYL(matrix->header.mtag) || is2dVectorPolar(matrix->header.mtag)));
   for(int j = 0; j < maxCols; j++) {
     allElementsInColAreIntegers[j] = allowIntegerDisplay;
-    for(int i = 0; i < maxRows; i++) {
-      if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) || isMatrix3dVectorSPH(rows, cols, matrix->header.mtag) || isMatrix3dVectorCYL(rows, cols, matrix->header.mtag) ) {
-        allElementsInColAreIntegers[j]=false;
-        break;
+    if(allElementsInColAreIntegers[j]) {
+      for(int i = 0; i < maxRows; i++) {
+        if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) ){
+          allElementsInColAreIntegers[j]=false;
+          break;
+        }
       }
     }
   }
@@ -1277,10 +1284,10 @@ int16_t colX = 0;
         uint8_t toBeAngle = amNone;
         displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
         real34_t element;
-        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle);
 
-        real34ToDisplayString(&element, toBeAngle,                                   tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
-//jmold real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], amNone, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+        if(displayFormat != DF_ALL) digits = 15;
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle, digits);
+        real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], digits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
 
         if(toDisplay) {
           if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
@@ -1349,8 +1356,16 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   const int16_t exponentOutOfRange = 0x4000;
   bool_t noFix = false; const int16_t dspDigits = displayFormatDigits;
 
+  uint16_t startDigitCountDown = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10);
+  if(isMatrix3dVector(rows, cols)) {
+    startDigitCountDown = 5;
+  }
+  else if(isMatrix2dVector(rows, cols)) {
+    startDigitCountDown = 7;
+  }
+
   begin:
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = startDigitCountDown; k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }
@@ -1369,12 +1384,13 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 
         uint8_t toBeAngle = amNone;
         displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
-        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle);
+        uint16_t calcDigits = displayFormat == DF_ALL ? k : 15;
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle, calcDigits);
 
         bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
 
-        if(allElementsInColAreIntegers[j] && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
+        if(allElementsInColAreIntegers[j]){ // && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
         } else {
@@ -1383,7 +1399,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         }
 
         
-        real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+        real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, calcDigits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;
@@ -1398,7 +1414,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7)) ) {  //STD_CROSS
               rPadWidth[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
@@ -1736,7 +1752,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_r[j] < rPadWidth_r[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_r[j] = rPadWidth_r[i * MATRIX_MAX_COLUMNS + j];
@@ -1766,7 +1782,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_i[j] < rPadWidth_i[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_i[j] = rPadWidth_i[i * MATRIX_MAX_COLUMNS + j];
