@@ -537,8 +537,8 @@ TO_QSPI const int16_t menu_ConvChef[]       = {
                                                     ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_PINTLQtoML,           ITM_MLtoPINTLQ,           ITM_QTUStoML,             ITM_MLtoQTUS                    };
 
 TO_QSPI const int16_t menu_ConvTemp[]       = {
-                                                    ITM_CtoF,                 ITM_FtoC,                 ITM_CtoK,                 ITM_KtoC,                 ITM_RAtoK,                ITM_KtoRA,                 
-                                                    ITM_RAtoF,                ITM_FtoRA,                ITM_EVKBtoK,              ITM_KtoEVKB,              ITM_FtoK,                 ITM_KtoF,                  
+                                                    ITM_CtoF,                 ITM_FtoC,                 ITM_CtoK,                 ITM_KtoC,                 ITM_FtoK,                 ITM_KtoF,
+                                                    ITM_RAtoF,                ITM_FtoRA,                ITM_RAtoK,                ITM_KtoRA,                ITM_EVKBtoK,              ITM_KtoEVKB,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL                        };
 
 //---------//---------//---------//---------//---------
