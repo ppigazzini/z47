@@ -1800,39 +1800,43 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
           uint32_t offset = (r * mat.header.matrixRows + c) * 2;
           real34ToReal(&mat.matrixElements + offset, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Real part
-          if (realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50)
             printf("[≈0 ");
           else {
             realToString(&tmpr, str);
-            if (strstr(str, "Infinity")) {
-                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
-                 while ((p = strstr(p, "Infinity"))) {
-                     *p = 0;
-                     q += sprintf(q, "%s∞", tmp);
-                     p += 8;
-                     strcpy(tmp, p);
-                 }
-                 strcpy(q, tmp);
-                }
+            if(strstr(str, "Infinity")) {
+              char tmp[256];
+              strcpy(tmp, str);
+              char *p = tmp;
+              char *q = str;
+              while((p = strstr(p, "Infinity"))) {
+                *p = 0;
+                q += sprintf(q, "%s∞", tmp);
+                p += 8;
+                strcpy(tmp, p);
+              }
+              strcpy(q, tmp);
             }
             printf("[%s", str);
           }
           real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Imag part
-          if (realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50)
             printf(" i≈0] ");
           else {
             realToString(&tmpr, str);
-            if (strstr(str, "Infinity")) {
-                {char tmp[256]; strcpy(tmp, str); char *p = tmp; char *q = str;
-                 while ((p = strstr(p, "Infinity"))) {
-                     *p = 0;
-                     q += sprintf(q, "%s∞", tmp);
-                     p += 8;
-                     strcpy(tmp, p);
-                 }
-                 strcpy(q, tmp);
-                }
+            if(strstr(str, "Infinity")) {
+              char tmp[256];
+              strcpy(tmp, str);
+              char *p = tmp;
+              char *q = str;
+              while ((p = strstr(p, "Infinity"))) {
+                *p = 0;
+                q += sprintf(q, "%s∞", tmp);
+                p += 8;
+                strcpy(tmp, p);
+              }
+              strcpy(q, tmp);
             }
             printf(" i%s] ", str);
           }
@@ -1840,9 +1844,6 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         printf("\n");
       }
     }
-
-
-
 
     else {
       printf("%s", before);
@@ -2160,18 +2161,18 @@ static uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
     realSetPositiveSign(&x);
 
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    *s = realToInt32C47(&p);
+    *s = realToInt32C47(&p, NULL);
 
     realSubtract(&x, &p, &x, &ctxtReal39);
     x.exponent += 2;
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    *n = realToInt32C47(&p);
+    *n = realToInt32C47(&p, NULL);
 
     if(d) {
       realSubtract(&x, &p, &x, &ctxtReal39);
       x.exponent += 3;
       realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-      *d = realToInt32C47(&p);
+      *d = realToInt32C47(&p, NULL);
     }
 
     if(*s < REGISTER_X) { // global numbered registers

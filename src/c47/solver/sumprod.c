@@ -37,7 +37,7 @@
           real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           uint32_t x = 0;
-          if(real34CompareGreaterEqual(&ai34,const34_0)) {
+          if(real34CompareGreaterEqual(&ai34, const34_0)) {
             x = showString("+", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           }
           else {
@@ -70,7 +70,7 @@
     fnToReal(NOPARAM);
     real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &counter); //Loopfrom
     realCopy(prod ? const_1 : const_0, &resultR);           //Initialize real accumulator
-    realCopy(const_0, &resultRi);                           //Initialize complex accumulator
+    realZero(&resultRi);                                    //Initialize complex accumulator
 
     real34Subtract(&loopTo, &counter, &rLoop);              //calculate the remaining iteration counter
     if(!real34IsZero(&loopStep)) {

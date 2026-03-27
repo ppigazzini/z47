@@ -8,7 +8,7 @@
 #include "c47.h"
 
 void convergenceTolerence(real_t *tol) {
-  realCopy(const_1, tol);
+  realOne(tol);
   tol->exponent -= (significantDigits == 0 || significantDigits >= 32) ? 32 : significantDigits;
 }
 

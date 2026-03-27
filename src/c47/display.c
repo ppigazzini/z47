@@ -332,7 +332,7 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get IP and FP of this
       realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c); // tmpIp = Integer Part log base1024 of Real34    = 1
-      int tmpx = realToInt32C47(&tmpIp);
+      int tmpx = realToInt32C47(&tmpIp, NULL);
       if(tmpx > exponentUNlimit1024max) {
         goto overRange;
       }
@@ -510,7 +510,7 @@ overRange:
 
   if(checkHP) {
     // Forced rounding at 10 digits when HP35 selected, to not risk any guard digits or digit noise in the last digits, see 'decNumberPlus'
-    ctxtReal39.digits = min(10,displayHasNDigits);
+    ctxtReal39.digits = min(10, displayHasNDigits);
     realPlus(&value, &value, &ctxtReal39);
     ctxtReal39.digits = 39;
   }
@@ -1722,9 +1722,9 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t modeIn, char *disp
     realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
     angleDms.exponent += 2; // angleDms = angleDms * 100
 
-    fs = realToUint32C47(&angleDms);
-    s  = realToUint32C47(&seconds);
-    m  = realToUint32C47(&minutes);
+    fs = realToUint32C47(&angleDms, NULL);
+    s  = realToUint32C47(&seconds, NULL);
+    m  = realToUint32C47(&minutes, NULL);
 
     if(fs >= 100) {
       fs -= 100;
@@ -2621,7 +2621,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     realCopy(const_60, &value);
   }
   else {
-    realCopy(const_1, &value);
+    realOne(&value);
     for(i = 3; i < timeDisplayFormatDigits; ++i) {
       --value.exponent;
       if(i == 5) {
@@ -2630,7 +2630,8 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     }
   }
   if(realCompareAbsLessThan(&real, const_1)) {
-    realCopy(const_1, &tmp), tmp.exponent -= 33;
+    realOne(&tmp);
+    tmp.exponent -= 33;
     realDivideRemainder(&real, &tmp, &tmp, &ctxtReal39);
   }
   else {
@@ -2749,15 +2750,15 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
   if((!ignoreTDisp) && (timeDisplayFormatDigits == 1 || timeDisplayFormatDigits == 2 || (++tDigits) > (isValid12hTime ? 16 : 18))) {
     // Display Minutes
-    m32 = realToUint32C47(&m);
+    m32 = realToUint32C47(&m, NULL);
     sprintf(digitBuf, ":%02" PRIu32, m32);
     strcat(displayString, digitBuf);
   }
 
   else {
     // Display MM:SS
-    m32 = realToUint32C47(&m);
-    s32 = realToUint32C47(&s);
+    m32 = realToUint32C47(&m, NULL);
+    s32 = realToUint32C47(&s, NULL);
     sprintf(digitBuf, ":%02" PRIu32 ":%02" PRIu32, m32, s32);
     strcat(displayString, digitBuf);
 
@@ -2795,7 +2796,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
         strcat(displayString, tt);
       }
 
-      s32 = realToUint32C47(&value);
+      s32 = realToUint32C47(&value, NULL);
       sprintf(digitBuf, "%" PRIu32, s32);
       strcat(displayString, digitBuf);
       ++digits;
@@ -3920,6 +3921,7 @@ void _view(uint16_t regist) {
     currentViewRegister = regist;
     temporaryInformation = TI_VIEW_REGISTER;
     if(programRunStop == PGM_RUNNING) {
+      screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
       refreshScreen(151);
 //      temporaryInformation = TI_NO_INFO;  //JM removed to signal to STOP, so that STOP does not clear the screen after VIEW
     }

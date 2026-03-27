@@ -266,9 +266,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+    if(labelText && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
-        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL/TM_LBLONLY\n");
+        printf("       shortCutCommand: Returning, shortcut blocked in 'labelText'\n");
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
@@ -358,7 +358,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     }
 
     if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) return false;                     //exit directly, not allowing label entry
+    if(labelText) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -816,7 +816,7 @@ returnKeyReleasedFalse:
 
 //#define allowAltGrKey ((event->state & 16) == 16) this will also allow the actual involved AltGr shifts. Narrowing will make it more accurate but may exclude other non-standard bitmasks
 #define allowAltGrKey (C47SpecialKey_Valid_Pressed)
-#define tamArrows (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
+#define tamArrows (labelText || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
@@ -1001,6 +1001,65 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
       if(shortCutCommand(w, event->keyval, '*'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "26", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+
+      if((event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) || (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z)) {
+        switch(event->keyval) {
+          case GDK_KEY_X:                         addItemToBuffer(ITM_REG_X); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Y:                         addItemToBuffer(ITM_REG_Y); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Z:                         addItemToBuffer(ITM_REG_Z); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_T:                         addItemToBuffer(ITM_REG_T); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_A:                         addItemToBuffer(ITM_REG_A); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_B:                         addItemToBuffer(ITM_REG_B); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_C:                         addItemToBuffer(ITM_REG_C); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_D:                         addItemToBuffer(ITM_REG_D); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_L:                         addItemToBuffer(ITM_REG_L); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_I:                         addItemToBuffer(ITM_REG_I); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_J:                         addItemToBuffer(ITM_REG_J); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_K:                         addItemToBuffer(ITM_REG_K); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_M:                         addItemToBuffer(ITM_REG_M); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_N:                         addItemToBuffer(ITM_REG_N); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_P:                         addItemToBuffer(ITM_REG_P); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Q:                         addItemToBuffer(ITM_REG_Q); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_R:                         addItemToBuffer(ITM_REG_R); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_S:                         addItemToBuffer(ITM_REG_S); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_E:                         addItemToBuffer(ITM_REG_E); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_F:                         addItemToBuffer(ITM_REG_F); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_G:                         addItemToBuffer(ITM_REG_G); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_H:                         addItemToBuffer(ITM_REG_H); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_O:                         addItemToBuffer(ITM_REG_O); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_U:                         addItemToBuffer(ITM_REG_U); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_V:                         addItemToBuffer(ITM_REG_V); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_W:                         addItemToBuffer(ITM_REG_W); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_X - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_X); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Y - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_Y); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Z - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_Z); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_T - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_T); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_A - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_A); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_B - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_B); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_C - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_C); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_D - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_D); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_L - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_L); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_I - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_I); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_J - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_J); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_K - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_K); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_M - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_M); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_N - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_N); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_P - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_P); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_Q - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_Q); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_R - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_R); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_S - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_S); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_E - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_E); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_F - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_F); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_G - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_G); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_H - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_H); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_O - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_O); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_U - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_U); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_V - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_V); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          case GDK_KEY_W - GDK_KEY_A + GDK_KEY_a: addItemToBuffer(ITM_REG_W); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+          default:;
+          }
+        }
+
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");
       #else
@@ -1056,7 +1115,6 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-//        ||((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
         ||(calcMode == CM_NORMAL && (tam.mode == TM_REGISTER || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR))
         ||(labelText )
       )
