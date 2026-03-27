@@ -72,10 +72,16 @@
 //****** added out of place not to clash with coming bf29e4a0 on TaylorMod-import-Mo...
 
 
-  int32_t  realToInt32C47 (const real_t *r);
-  uint32_t realToUint32C47(const real_t *r);
+  #if !defined(bool_t)
+    typedef bool bool_t;
+  #endif // bool_t
+
+  int32_t  realToInt32C47 (const real_t *r, bool_t *error);
+  uint32_t realToUint32C47(const real_t *r, bool_t *error);
   //int64_t  realToInt64C47 (const real_t *r);
-  uint64_t realToUint64C47(const real_t *r);
+  //uint64_t realToUint64C47(const real_t *r);
+  void     realZero       (real_t *r);
+  void     realOne        (real_t *r);
 
   #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                               \
                                                                   real34ChangeSign((real34_t *)((void *)(operand) + REAL34_SIZE_IN_BYTES)); \
@@ -165,7 +171,6 @@
   #define realSubtract(operand1, operand2, res, ctxt)            decNumberSubtract        (res, operand1, operand2, ctxt)
   #define realToReal34(source, destination)                      decQuadFromNumber        ((real34_t *)(destination), source, &ctxtReal34)
   #define realToString(source, destination)                      decNumberToString        ((real_t *)(source), destination)
-  #define realZero(destination)                                  decNumberZero            (destination)
   #define stringToReal(source, destination, ctxt)                decNumberFromString      (destination, source, ctxt)
   #define uInt32ToReal(source, destination)                      decNumberFromUInt32      (destination, source)
 #endif // !REALTYPE_H

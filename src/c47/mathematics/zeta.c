@@ -21,7 +21,8 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   realMultiply(&p, const_2, &p, realContext);
   WP34S_Ln1P(&p, &p, realContext);
   realAdd(&q, &p, &p, realContext);
-  realCopy(const_3, &q); q.exponent += 10;
+  realCopy(const_3, &q);
+  q.exponent += 10;
   WP34S_Ln(&q, &q, realContext);
   realAdd(&p, &q, &p, realContext);
   realSquareRoot(const_8, &q, realContext);
@@ -30,20 +31,22 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   realDivide(&p, &q, &p, realContext);
   realToIntegralValue(&p, &p, DEC_ROUND_DOWN, realContext);
   realAdd(&p, const_1, &p, realContext);
-  realMultiply(&p, const_2, &p, realContext); // for extra digits
-  realMultiply(&p, const_2, &p, realContext); // we have
-  realCopy(&p, &reg0); realCopy(const_1, &reg1);
-  realCopy(&p, &reg2); realCopy(const_1, &reg3);
-  realCopy(const_1, reg4);
+  realMultiply(&p, const_4, &p, realContext); // for extra digits we have
+  realCopy(&p, &reg0);
+  realOne(&reg1);
+  realCopy(&p, &reg2);
+  realOne(&reg3);
+  realOne(reg4);
   realPower(const__1, &p, &p, realContext);
   realChangeSign(&p);
   realCopy(&p, reg5);
-  realCopy(const_0, &reg8); realCopy(const_0, &reg9);
+  realZero(&reg8);
+  realZero(&reg9);
 
   do { // zeta_loop
 
     #if !defined(TESTSUITE_BUILD)
-    int32_t loop = realToInt32C47(&reg0);
+    int32_t loop = realToInt32C47(&reg0, NULL);
       if(monitorExit(&loop, "Iter: ")) {
         break;
       }

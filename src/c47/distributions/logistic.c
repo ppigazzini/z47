@@ -139,7 +139,7 @@
       return;
     }
     //if(!realIsPositive(&xx)) { // WP34S returns 0 wrongly when X <= 0
-    //  realCopy(const_0, res);
+    //  realZero(res);
     //  return;
     //}
     realChangeSign(&xx);
@@ -155,7 +155,7 @@
       return;
     }
     //if(!realIsPositive(&xx)) { // WP34S returns 0 wrongly when X <= 0
-    //  realCopy(const_0, res);
+    //  realZero(res);
     //  return;
     //}
     cdf_logit_common(&xx, res, realContext);

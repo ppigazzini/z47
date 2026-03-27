@@ -128,7 +128,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
     if(xflag==RESULT_TYPE_REAL) {
       _lnGammaReal(xReal, &gxReal, realContext);
-      realCopy(const_0, &gxImag);
+      realZero(&gxImag);
     }
     else {
       _lnGammaComplex(xReal, &gxReal, &gxImag, realContext);
@@ -136,7 +136,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
     if(yflag==RESULT_TYPE_REAL) {
       _lnGammaReal(yReal, &gyReal, realContext);
-      realCopy(const_0, &gyImag);
+      realZero(&gyImag);
     }
     else {
       _lnGammaComplex(yReal, &gyReal, &gyImag, realContext);
@@ -144,7 +144,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
     if(sflag==RESULT_TYPE_REAL) {
       _lnGammaReal(rReal, &gsReal, realContext);
-      realCopy(const_0, &gsImag);
+      realZero(&gsImag);
     }
     else {
       _lnGammaComplex(rReal, &gsReal, &gsImag, realContext);

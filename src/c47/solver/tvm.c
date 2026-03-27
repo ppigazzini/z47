@@ -1145,10 +1145,10 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     #if defined(OPTION_TVM_NEWTON)
     if(derivative != NULL) {
       switch(variable) {
-        case RESERVED_VARIABLE_PMT:   realCopy(&nPer,   derivative); break;  // df/dPMT = N
-        case RESERVED_VARIABLE_PV:    realCopy(const_1,  derivative); break;  // df/dPV = 1
+        case RESERVED_VARIABLE_PMT:   realCopy(&nPer,    derivative); break;  // df/dPMT = N
+        case RESERVED_VARIABLE_PV:    realOne( derivative);           break;  // df/dPV = 1
         case RESERVED_VARIABLE_FV:    realCopy(const__1, derivative); break;  // df/dFV = -1
-        case RESERVED_VARIABLE_NPPER: realCopy(&pmt,    derivative); break;  // df/dN = PMT
+        case RESERVED_VARIABLE_NPPER: realCopy(&pmt,     derivative); break;  // df/dN = PMT
         default:                      realCopy(const_NaN,derivative); break;  // IPONA: NaN -> Brent fallback
       }
     }
@@ -1171,7 +1171,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
 
     // Save k for derivative
     if(getSystemFlag(FLAG_ENDPMT)) {
-      realCopy(const_1, &k);
+      realOne(&k);
     }
     else {
       realAdd(const_1, &i, &k, &ctxtTvm);
@@ -1233,7 +1233,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realDivide(derivative, const_100, derivative, &ctxtTvm);
       realDivide(derivative, &pperA, derivative, &ctxtTvm);
     }
-    
+
     if(derivative != NULL && variable == RESERVED_VARIABLE_NPPER) {
       // df/dN = (1+i)^(-N) * ln(1+i) * [PMT*k/i - FV]
       real_t one_plus_i_neg_N, ln1pi, pmt_term;
@@ -1253,12 +1253,12 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realMultiply(&one_plus_i_neg_N, &ln1pi, derivative, &ctxtTvm);
       realMultiply(derivative, &pmt_term, derivative, &ctxtTvm);
     }
-    
+
     if(derivative != NULL && variable == RESERVED_VARIABLE_PV) {
       // df/dPV = 1
-      realCopy(const_1, derivative);
+      realOne(derivative);
     }
-    
+
     if(derivative != NULL && variable == RESERVED_VARIABLE_PMT) {
       // df/dPMT = k * [1-(1+i)^(-N)]/i
       real_t one_minus;
@@ -1275,7 +1275,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realDivide(&one_minus, &i, derivative, &ctxtSolverTvmInv);
       realMultiply(derivative, &k, derivative, &ctxtTvm);
     }
-    
+
     if(derivative != NULL && variable == RESERVED_VARIABLE_FV) {
       // df/dFV = (1+i)^(-N)
       real_t temp, neg_nPer;

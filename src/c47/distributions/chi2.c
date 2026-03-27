@@ -138,7 +138,7 @@
     real_t p, q, r, s;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
 
@@ -160,11 +160,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
 
@@ -177,11 +177,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
 
@@ -195,7 +195,7 @@
     int32_t loops;
 
     if(realCompareEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realZero(res);
     }
 
     realCopy(x, &reg0);
@@ -279,7 +279,8 @@
       realChangeSign(&r);
       realAdd(&q, &r, &p, realContext);
       // SHOW_CONVERGENCE
-      realCopy(const_1, &r); r.exponent -= 32 /*14*/;
+      realOne(&r);
+      r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&p, &q, &r, realContext)) {
         realCopy(&p, res);
         return;

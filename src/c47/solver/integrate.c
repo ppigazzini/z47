@@ -143,10 +143,10 @@ saveForUndo();
     int32_t digitsN = 0;
     WP34S_Ln(&acc, &digits, &ctxtReal39);
     realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-    digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+    digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
     #ifdef PC_BUILD
       printRealToConsole(&digits, "digits: ","\n");
-      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN, smallerEpsilon);
       printRealToConsole(&acc, "acc: ","\n");
       printRealToConsole(&llim, "llim: ","\n");
       printRealToConsole(&ulim, "ulim: ","\n");
@@ -165,9 +165,9 @@ saveForUndo();
       integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
         //#ifdef PC_BUILD
-        //  printf("nnn=%i\n",digitsN);
+        //  printf("nnn=%i\n", digitsN);
         //#endif
         //real_t tt;
         //int32ToReal(-digitsN, &tt);
@@ -193,9 +193,9 @@ saveForUndo();
       integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
         //#ifdef PC_BUILD
-        //  printf("nnn=%i\n",digitsN);
+        //  printf("nnn=%i\n", digitsN);
         //#endif
         //real_t tt;
         //int32ToReal(-digitsN, &tt);
@@ -610,8 +610,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   realCopy(const_2, &h); // h = 2
   do { // DEI_lvl_loop::
     realCopy(&z, &ss1); // update ss1
-    realCopy(const_0, &ssp); // ssp = 0
-    realCopy(const_1, &j); // j = 1
+    realZero(&ssp); // ssp = 0
+    realOne(&j); // j = 1
     realMultiply(&h, const_1on2, &h, realContext); // h /= 2
     realCopy(&h, &x); // X = t
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
@@ -622,7 +622,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         exitSignalled |= exitKeyWaiting();
         loop++;
         if(checkHalfSec()) {
-          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
+          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl, NULL));
           if(progressHalfSecUpdate_Integer(timed, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
             #if defined(PC_BUILD)
               printf("%s %i\n",tmps,loop);
@@ -750,7 +750,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     realAdd(&ss, &x, &ss, realContext); // ss += ssp
     if(!lg0) { // is level > 0 ----------------------------
       realCopy(&x, &z);
-      realCopy(const_1, &y); // no, add 1st series term
+      realOne(&y); // no, add 1st series term
       if(left) { // left?
         realChangeSign(&y);
       }
@@ -1190,7 +1190,7 @@ static real_t* exp_sinh_opt_d(calcRegister_t regist, const real_t* a, const real
       realSubtract(&lfl, &lfr, &h, realContext);
       realCopy(&lr, &r);
       if(!realIsZero(&h)) { // if last diff != 0, back up r by one step
-        realDivide(&r, const_2, &r, realContext);
+        realMultiply(&r, const_1on2, &r, realContext);
       }
       realSetPositiveSign(&lfl);
       realSetPositiveSign(&lfr);
@@ -1242,7 +1242,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
   realCopy(error, &eps);
 
   realZero(&c);
-  realCopy(const_1, &d);
+  realOne(&d);
   realCopy(const_2, &h);
 
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
@@ -1262,10 +1262,10 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
 
   if((!realIsInfinite(a)) && (!realIsInfinite(b))) {
     realAdd(a, b, &c, realContext);
-    realDivide(&c, const_2, &c, realContext);
+    realMultiply(&c, const_1on2, &c, realContext);
 
     realSubtract(b, a, &d, realContext);
-    realDivide(&d, const_2, &d, realContext);
+    realMultiply(&d, const_1on2, &d, realContext);
 
     realCopy(&c, &v);
   }
@@ -1309,7 +1309,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
     realZero(&fp);
     realZero(&fm);
 
-    realDivide(&h, const_2, &h, realContext);
+    realMultiply(&h, const_1on2, &h, realContext);
     realExp(&h, &eh, realContext);
     realCopy(&eh, &t);
 
@@ -1401,7 +1401,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
     }
 
     else {
-      realDivide(&t, const_2, &t, realContext);
+      realMultiply(&t, const_1on2, &t, realContext);
       do {
         real_t r, w, x;
 
@@ -1461,10 +1461,10 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
         }
         else { // Sinh-Sinh
           realSubtract(&r, realDivide(const_1, &r, &s2, realContext), &s1, realContext);
-          realDivide(&s1, const_2, &r, realContext); // r = (r-1/r)/2
+          realMultiply(&s1, const_1on2, &r, realContext); // r = (r-1/r)/2
 
           realAdd(&w, realDivide(const_1, &w, &s2, realContext), &s1, realContext);
-          realDivide(&s1, const_2, &w, realContext); // w = (w+1/w)/2
+          realMultiply(&s1, const_1on2, &w, realContext); // w = (w+1/w)/2
 
           realSubtract(&c, realMultiply(&d, &r, &s1, realContext), &x, realContext); // x = c-d*r; // d*r in s1
           DEI_xeq_user(regist, &x, &y, realContext);
@@ -1503,7 +1503,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
     // realDivide(&s2, realAdd(&s1, &eps, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+eps)
     realDivide(&s2, realAdd(&s1, &s2, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+abs(v)) - ND change
     if(realIsNaN(error)) {
-      realCopy(const_1, error); // only happens when v, s both zero
+      realOne(error); // only happens when v, s both zero
     }
   } while(realCompareGreaterThan( &s2, realMultiply(const_10, realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) && k <= maxlevel); // while abs(v) > 10*eps*abs(s)
   return;
