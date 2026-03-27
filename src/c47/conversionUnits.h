@@ -162,7 +162,7 @@
   void fnUnitConvert  (uint16_t multiplyDivide);
 
   // Temperature
-  void fnCvtTemp      (uint16_t mode);
+  void fnCvtTemp      (uint16_t ix);
 
   // ...
   void fnCvtRatioDb   (uint16_t tenOrTwenty);

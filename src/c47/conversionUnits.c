@@ -206,46 +206,28 @@ void fnUnitConvert(uint16_t arg) {
 //  {[(x - B) / C] * D} + E
 TO_QSPI static const real_t *cvtTempConsts[13][4] = {
   //   B              C             D             E
-  {const_0,       const_1,      const_1,      const_0      }, // 00 unused
-  {const_0,       const_1,      const_9on5,   const_32     }, // 01 CtoF
-  {const_32,      const_9on5,   const_1,      const_0      }, // 02 FtoC
-  {const_0,       const_1,      const_1,      const_273p15 }, // 03 CtoK
-  {const_273p15,  const_1,      const_1,      const_0      }, // 04 KtoC
-  {const_0,       const_9on5,   const_1,      const_0      }, // 05 RAtoK
-  {const_0,       const_1,      const_9on5,   const_0      }, // 06 KtoRA
-  {const_459p67,  const_1,      const_1,      const_0      }, // 07 RAtoF
-  {const_0,       const_1,      const_1,      const_459p67 }, // 08 FtoRA
-  {const_0,       const_kBeVK,  const_1,      const_0      }, // 09 EVKBtoK
-  {const_0,       const_1,      const_kBeVK,  const_0      }, // 10 KtoEVKB
-  {const_32,      const_9on5,   const_1,      const_273p15 }, // 11 FtoK
-  {const_273p15,  const_1,      const_9on5,   const_32     }, // 12 KtoF
+  {const_0,       const_1,      const_9on5,   const_32     }, // ITM_CtoF     ix =  0
+  {const_32,      const_9on5,   const_1,      const_0      }, // ITM_FtoC     ix =  1
+  {const_0,       const_1,      const_1,      const_273p15 }, // ITM_CtoK     ix =  2
+  {const_273p15,  const_1,      const_1,      const_0      }, // ITM_KtoC     ix =  3
+  {const_0,       const_9on5,   const_1,      const_0      }, // ITM_RAtoK    ix =  4
+  {const_0,       const_1,      const_9on5,   const_0      }, // ITM_KtoRA    ix =  5
+  {const_459p67,  const_1,      const_1,      const_0      }, // ITM_RAtoF    ix =  6
+  {const_0,       const_1,      const_1,      const_459p67 }, // ITM_FtoRA    ix =  7
+  {const_0,       const_kBeVK,  const_1,      const_0      }, // ITM_EVKBtoK  ix =  8
+  {const_0,       const_1,      const_kBeVK,  const_0      }, // ITM_KtoEVKB  ix =  9
+  {const_32,      const_9on5,   const_1,      const_273p15 }, // ITM_FtoK     ix = 10
+  {const_273p15,  const_1,      const_9on5,   const_32     }, // ITM_KtoF     ix = 11
 };
 
-void fnCvtTemp(uint16_t mode) {
+void fnCvtTemp(uint16_t ix) {
   real_t reX;
-  int ix = 0;
 
   if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {
     return;
-  }
-
-  switch(mode) {
-    case ITM_CtoF   : ix =  1; break;
-    case ITM_FtoC   : ix =  2; break;
-    case ITM_CtoK   : ix =  3; break;
-    case ITM_KtoC   : ix =  4; break;
-    case ITM_RAtoK  : ix =  5; break;
-    case ITM_KtoRA  : ix =  6; break;
-    case ITM_RAtoF  : ix =  7; break;
-    case ITM_FtoRA  : ix =  8; break;
-    case ITM_EVKBtoK: ix =  9; break;
-    case ITM_KtoEVKB: ix = 10; break;
-    case ITM_FtoK   : ix = 11; break;
-    case ITM_KtoF   : ix = 12; break;
-    default:;
   }
 
   //  (x - B) / C * D + E
