@@ -256,25 +256,38 @@ void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 // String            5          (integer)
 // Config            9          (integer)
 // ───────────────────────────────────────────────────────────────────────
-// Real Matrix       6          (integer)
-// 2D Vector RECT    6.1        +0.001 if column
-// 2D Vector POLAR   6.2x       x=angle suffix (see below); +0.001 if column
-// 3D Vector RECT    6.3        +0.001 if column
-// 3D Vector SPH     6.4x       x=angle suffix (see below); +0.001 if column
-// 3D Vector CYL     6.5x       x=angle suffix (see below); +0.001 if column
-// 1D or >3D row     6.6
-// 1D or >3D col     6.601
+// 6 Real Matrix    .  0rect    0rect     0nonVector/1row/2col : +0 is Rectangular suffix/10 (see below); +0 is Rectangular +PolRec/100; +T/1000 (see below)
+// 6 Real Matrix    .  0rect    2rect2D   0nonVector/1row/2col : +0 is Rectangular suffix/10 (see below); +2 is 2D Vector   +PolRec/100; +T/1000 (see below)
+// 6 Real Matrix    .  0rect    3rect3D   0nonVector/1row/2col : +0 is Rectangular suffix/10 (see below); +3 is 2D Vector   +PolRec/100; +T/1000 (see below)
+// 6 Real Matrix    .  +angle   2polar2D  0nonVector/1row/2col : +angle suffix/10 (see below); +2 is 2D vector Polar        +PolRec/100; +T/1000 (see below)
+// 6 Real Matrix    .  +angle   3SPH3D    0nonVector/1row/2col : +angle suffix/10 (see below); +3 is 3D vector Spherical    +PolRec/100; +T/1000 (see below)
+// 6 Real Matrix    .  +angle   4CYL3D    0nonVector/1row/2col : +angle suffix/10 (see below); +4 is 3D vector Cylindrical  +PolRec/100; +T/1000 (see below)
 // ───────────────────────────────────────────────────────────────────────
-// Complex Matrix    7.00–7.05  RECT=7.00; +angle suffix/100 (see below)
+// 7 Complex Matrix .  0rect    0rect     0nonVector/1row/2col : +0 is Rectangular suffix/10 (see below); +0 is Rectangular +PolRec/100; +T/1000 (see below)
+// 7 Complex Matrix .  +angle   1polar    0nonVector/1row/2col : +angle suffix/10 (see below); +1 is Polar                  +PolRec/100; +T/1000 (see below)
+// ───────────────────────────────────────────────────────────────────────
 // Short Integer     8.bb       bb=base (e.g. 02=binary, 16=hex)
 // ───────────────────────────────────────────────────────────────────────
-// Angle suffix (tenths for Real/Complex; hundredths for ComplexMatrix/vectors):
+
+// Angle suffix (tenths for Real/Complex AND for ComplexMatrix/vectors):
 //   RECT / no angle   +0
 //   Multi-Pi          +1
 //   DMS               +2
 //   Degrees           +3
 //   Grad              +4
 //   Radians           +5
+
+// PolRec suffix (hundredths for polar / rect options:
+// +0 is Rect
+// +1 is Polar    
+// +2 is 2D vector Polar      
+// +3 is 3D vector Spherical  
+// +4 is 3D vector Cylindrical
+
+// +T/1000 means 
+// T=0=Non-Vector
+// T=1=RowVector
+// T=2=ColumnVector
 
 
 static void _pushIntOut(int dtp) {
@@ -310,16 +323,25 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     case dtReal34Matrix:
     case dtConfig: {
       if(isRegisterMatrixVector(REGISTER_X)) {
-        int polarMode = getVectorRegisterPolarMode(REGISTER_X);
-        int polarOff  = (polarMode == amPolarCYL) ? 2 : (polarMode == amPolar || polarMode == amPolarSPH) ? 1 : 0;
-        polarOff     += isRegisterMatrix2dVector(REGISTER_X) ? 1 : isRegisterMatrix3dVector(REGISTER_X) ? 3 : 0;
-        int isCol     = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
-        uInt32ToReal34(dtp*1000 + 100*polarOff + 10*(5-(dam&0x07)) + isCol, &realOut);
+        int angle  = 5 - (dam & 0x07);                  // 0=RECT 1=MulPi 2=DMS 3=Deg 4=Grad 5=Rad
+        int isCol  = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+        int isRow  = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+        int T      = isCol ? 2 : isRow ? 1 : 0;         // 0=non-vec 1=row 2=col
+        int polRec;
+        if(isRegisterMatrix2dVector(REGISTER_X)) {
+          polRec = 2;                                    // 2D vector POLAR or RECT
+        } else if(isRegisterMatrix3dVector(REGISTER_X)) {
+          int polarMode = getVectorRegisterPolarMode(REGISTER_X);
+          polRec = (polarMode == amPolarCYL) ? 4 : 3;    // CYL=4, SPH/RECT=3
+        } else {
+          polRec = 0;                                    // 1D vector
+        }
+        uInt32ToReal34(dtp*1000 + 100*angle + 10*polRec + T, &realOut);
       } else if(dtp == dtReal34Matrix) {
         int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
         int isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
         if(isCol || isRow) {
-          uInt32ToReal34(dtp*1000 + 600 + isCol, &realOut);
+          uInt32ToReal34(dtp*1000 + (isCol ? 2 : 1), &realOut);  // 1D row/col: angle=0 polRec=0
         } else {
           _pushIntOut(dtp); break;
         }
@@ -331,21 +353,13 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
       break;
     }
     case dtComplex34Matrix: {
-      if(isRegisterMatrixVector(REGISTER_X)) {
-        int polarMode = getVectorRegisterPolarMode(REGISTER_X);
-        int polarOff  = (polarMode == amPolarCYL) ? 2 : (polarMode == amPolar || polarMode == amPolarSPH) ? 1 : 0;
-        polarOff     += isRegisterMatrix2dVector(REGISTER_X) ? 1 : isRegisterMatrix3dVector(REGISTER_X) ? 3 : 0;
-        int isCol     = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
-        uInt32ToReal34(dtp*1000 + 100*polarOff + 10*(5-(dam&0x07)) + isCol, &realOut);
-      } else {
-        int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
-        int isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
-        if(isCol || isRow) {
-          uInt32ToReal34(dtp*1000 + 600 + isCol, &realOut);
-        } else {
-          uInt32ToReal34(dtp*1000 + 10*(5-(dam&0x07)), &realOut);  // 0=RECT, 1..5=polar+angle
-        }
-      }
+      int isPolar = (dam & 0x07) != 5;                  // RECT=5; any other angle mode = polar
+      int angle   = isPolar ? (5 - (dam & 0x07)) : 0;   // 0=RECT 1=MulPi 2=DMS 3=Deg 4=Grad 5=Rad
+      int isCol   = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+      int isRow   = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+      int T       = isCol ? 2 : isRow ? 1 : 0;          // 0=non-vec 1=row 2=col
+      int polRec  = isPolar ? 1 : 0;                    // type 7: 0=RECT 1=POLAR only
+      uInt32ToReal34(dtp*1000 + 100*angle + 10*polRec + T, &realOut);
       real34Divide(&realOut, const34_1000, &realOut);
       _pushRealOut(&realOut);
       break;

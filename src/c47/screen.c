@@ -2718,47 +2718,45 @@ void createSubstrings(uint8_t number) {
 void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
   TO_QSPI static const char typeName[][14]    = { "LongInteger", "Real", "Complex", "Time", "Date", "String", "RealMatrix", "ComplexMatrix", "ShortInteger", "Config" };
   TO_QSPI static const char angleSuffix[][10] = { (", MUL" STD_pi), ", DMS", ", Degree", ", Grad", ", Radian" };
-  TO_QSPI static const char vecDim[][3]       = { "", "2D", "2D", "3D", "3D", "3D", "" };
-  TO_QSPI static const char coordMode[][6]    = { "", "RECT", "POLAR", "RECT", "SPH", "CYL", "" };
+  TO_QSPI static const char vecDim[][3]       = { "", "", "2D", "3D", "3D", "" };
+  TO_QSPI static const char coordMode[][6]    = { "RECT", "POLAR", "RECT", "RECT", "SPH", "CYL" };
   if(regist == REGISTER_X) {
     real_t t;
     getRegisterAsRealQuiet(REGISTER_X, &t);
     int32_t typeIdx = realToInt32C47(&t, NULL);           // integer part: data type
     realMultiply(&t, const_1000, &t, &ctxtReal39);
     int32_t subCode = realToInt32C47(&t, NULL) - 1000*typeIdx;
-    int vecSub =  subCode / 100;                          // vector geometry / polar offset
-    int angSub = (subCode / 10) % 10;                     // angle mode
-    int colSub =  subCode % 10;                           // column vector flag
+    int angSub  = subCode / 100;                          // angle: 0=RECT 1=MulPi 2=DMS 3=Deg 4=Grad 5=Rad
+    int polRec  = (subCode / 10) % 10;                    // type6: 0=1Dvec 2=2Dvec 3=3DSPH/RECT 4=3DCYL; type7: 0=RECT 1=POLAR
+    int vecType = subCode % 10;                           // 0=non-vector 1=row 2=col
     char typeStr[40];
     strcpy(typeStr, (typeIdx >= 0 && typeIdx <= 9) ? typeName[typeIdx] : "?");
     if(typeIdx == 8) {                                    // ShortInteger
       strcat(typeStr, ", base");
     } else if(typeIdx == 6) {                             // RealMatrix
-      if(vecSub >= 1 && vecSub <= 5) {
-        strcat(typeStr, ", "); strcat(typeStr, vecDim[vecSub]);
-        strcat(typeStr, " "); strcat(typeStr, coordMode[vecSub]);
-        if(angSub >= 1) strcat(typeStr, angleSuffix[angSub - 1]);
-        if(colSub) strcat(typeStr, ", col");
-      } else if(vecSub == 6) {
-        strcat(typeStr, colSub ? ", col vector" : ", row vector");
-      }
-    } else if(typeIdx == 7) {                             // ComplexMatrix
-      if(vecSub == 0) {                                   // plain matrix: angSub 0=RECT 1..5=polar+angle
-        strcat(typeStr, ", "); strcat(typeStr, angSub == 0 ? coordMode[1] : coordMode[2]);
+      if(polRec == 0 && vecType > 0) {                    // 1D row/col vector
+        strcat(typeStr, vecType == 2 ? ", col vector" : ", row vector");
+      } else if(polRec == 0 && vecType == 0) {            // plain non-vector matrix
+        // no suffix
+      } else if(polRec >= 2 && polRec <= 4) {             // 2D/3D vector
+        int modeIdx = polRec == 4 ? 5 : polRec == 3 ? (angSub == 0 ? 3 : 4) : (angSub == 0 ? 2 : 1);
+        strcat(typeStr, ", "); strcat(typeStr, vecDim[polRec]);
+        strcat(typeStr, " ");  strcat(typeStr, coordMode[modeIdx]);
         if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
-      } else if(vecSub >= 1 && vecSub <= 5) {
-        strcat(typeStr, ", "); strcat(typeStr, vecDim[vecSub]);
-        strcat(typeStr, " "); strcat(typeStr, coordMode[vecSub]);
-        if(angSub >= 1) strcat(typeStr, angleSuffix[angSub - 1]);
-        if(colSub) strcat(typeStr, ", col");
-      } else if(vecSub == 6) {
-        strcat(typeStr, colSub ? ", col vector" : ", row vector");
+        if(vecType == 2) strcat(typeStr, ", col");
       }
-    } else if(typeIdx == 2) {                             // Complex: vecSub 0=RECT 1..5=polar+angle
-      strcat(typeStr, ", "); strcat(typeStr, vecSub == 0 ? coordMode[1] : coordMode[2]);
-      if(vecSub >= 1 && vecSub <= 5) strcat(typeStr, angleSuffix[vecSub - 1]);
-    } else {                                              // Real and others: angle mode only
-      if(vecSub >= 1 && vecSub <= 5) strcat(typeStr, angleSuffix[vecSub - 1]);
+    } else if(typeIdx == 7) {                             // ComplexMatrix: polRec 0=RECT 1=POLAR only
+      if(vecType > 0) {                                   // 1D row/col vector
+        strcat(typeStr, vecType == 2 ? ", col vector" : ", row vector");
+      } else {
+        strcat(typeStr, ", "); strcat(typeStr, polRec == 0 ? coordMode[0] : coordMode[1]);
+        if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
+      }
+    } else if(typeIdx == 2) {                             // Complex: RECT or POLAR + angle
+      strcat(typeStr, ", "); strcat(typeStr, angSub == 0 ? coordMode[0] : coordMode[1]);
+      if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
+    } else {                                              // Real and others: angle suffix only
+      if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
     }
     sprintf(prefix, "%s", typeStr);
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
