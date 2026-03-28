@@ -2714,37 +2714,165 @@ void createSubstrings(uint8_t number) {
   }
 
 
+
+// GETTYPE display output phrases
+//
+// Value      Output phrase
+// ─────────────────────────────────
+// 0          LongInteger
+// ─────────────────────────────────
+// 1.0        Real
+// 1.1        Real, MUL π
+// 1.2        Real, DMS
+// 1.3        Real, Degree
+// 1.4        Real, Grad
+// 1.5        Real, Radian
+// ─────────────────────────────────
+// 2.0        Complex, RECT
+// 2.1        Complex, POLAR, MUL π
+// 2.2        Complex, POLAR, DMS
+// 2.3        Complex, POLAR, Degree
+// 2.4        Complex, POLAR, Grad
+// 2.5        Complex, POLAR, Radian
+// ─────────────────────────────────
+// 3          Time
+// 4          Date
+// 5          String
+// 9          Config
+// ─────────────────────────────────
+// 6          RealMatrix
+// 6.1        RealMatrix, 2D RECT
+// 6.101      RealMatrix, 2D RECT, col
+// 6.11       RealMatrix, 2D POLAR, MUL π
+// 6.111      RealMatrix, 2D POLAR, MUL π, col
+// 6.12       RealMatrix, 2D POLAR, DMS
+// 6.121      RealMatrix, 2D POLAR, DMS, col
+// 6.13       RealMatrix, 2D POLAR, Degree
+// 6.131      RealMatrix, 2D POLAR, Degree, col
+// 6.14       RealMatrix, 2D POLAR, Grad
+// 6.141      RealMatrix, 2D POLAR, Grad, col
+// 6.15       RealMatrix, 2D POLAR, Radian
+// 6.151      RealMatrix, 2D POLAR, Radian, col
+// 6.3        RealMatrix, 3D RECT
+// 6.301      RealMatrix, 3D RECT, col
+// 6.41       RealMatrix, 3D SPH, MUL π
+// 6.411      RealMatrix, 3D SPH, MUL π, col
+// 6.42       RealMatrix, 3D SPH, DMS
+// 6.421      RealMatrix, 3D SPH, DMS, col
+// 6.43       RealMatrix, 3D SPH, Degree
+// 6.431      RealMatrix, 3D SPH, Degree, col
+// 6.44       RealMatrix, 3D SPH, Grad
+// 6.441      RealMatrix, 3D SPH, Grad, col
+// 6.45       RealMatrix, 3D SPH, Radian
+// 6.451      RealMatrix, 3D SPH, Radian, col
+// 6.51       RealMatrix, 3D CYL, MUL π
+// 6.511      RealMatrix, 3D CYL, MUL π, col
+// 6.52       RealMatrix, 3D CYL, DMS
+// 6.521      RealMatrix, 3D CYL, DMS, col
+// 6.53       RealMatrix, 3D CYL, Degree
+// 6.531      RealMatrix, 3D CYL, Degree, col
+// 6.54       RealMatrix, 3D CYL, Grad
+// 6.541      RealMatrix, 3D CYL, Grad, col
+// 6.55       RealMatrix, 3D CYL, Radian
+// 6.551      RealMatrix, 3D CYL, Radian, col
+// 6.6        RealMatrix, row vector
+// 6.601      RealMatrix, col vector
+// ─────────────────────────────────
+// 7.0        ComplexMatrix, RECT
+// 7.01       ComplexMatrix, POLAR, MUL π
+// 7.02       ComplexMatrix, POLAR, DMS
+// 7.03       ComplexMatrix, POLAR, Degree
+// 7.04       ComplexMatrix, POLAR, Grad
+// 7.05       ComplexMatrix, POLAR, Radian
+// 7.1        ComplexMatrix, 2D RECT
+// 7.101      ComplexMatrix, 2D RECT, col
+// 7.11       ComplexMatrix, 2D POLAR, MUL π
+// 7.111      ComplexMatrix, 2D POLAR, MUL π, col
+// 7.12       ComplexMatrix, 2D POLAR, DMS
+// 7.121      ComplexMatrix, 2D POLAR, DMS, col
+// 7.13       ComplexMatrix, 2D POLAR, Degree
+// 7.131      ComplexMatrix, 2D POLAR, Degree, col
+// 7.14       ComplexMatrix, 2D POLAR, Grad
+// 7.141      ComplexMatrix, 2D POLAR, Grad, col
+// 7.15       ComplexMatrix, 2D POLAR, Radian
+// 7.151      ComplexMatrix, 2D POLAR, Radian, col
+// 7.3        ComplexMatrix, 3D RECT
+// 7.301      ComplexMatrix, 3D RECT, col
+// 7.41       ComplexMatrix, 3D SPH, MUL π
+// 7.411      ComplexMatrix, 3D SPH, MUL π, col
+// 7.42       ComplexMatrix, 3D SPH, DMS
+// 7.421      ComplexMatrix, 3D SPH, DMS, col
+// 7.43       ComplexMatrix, 3D SPH, Degree
+// 7.431      ComplexMatrix, 3D SPH, Degree, col
+// 7.44       ComplexMatrix, 3D SPH, Grad
+// 7.441      ComplexMatrix, 3D SPH, Grad, col
+// 7.45       ComplexMatrix, 3D SPH, Radian
+// 7.451      ComplexMatrix, 3D SPH, Radian, col
+// 7.51       ComplexMatrix, 3D CYL, MUL π
+// 7.511      ComplexMatrix, 3D CYL, MUL π, col
+// 7.52       ComplexMatrix, 3D CYL, DMS
+// 7.521      ComplexMatrix, 3D CYL, DMS, col
+// 7.53       ComplexMatrix, 3D CYL, Degree
+// 7.531      ComplexMatrix, 3D CYL, Degree, col
+// 7.54       ComplexMatrix, 3D CYL, Grad
+// 7.541      ComplexMatrix, 3D CYL, Grad, col
+// 7.55       ComplexMatrix, 3D CYL, Radian
+// 7.551      ComplexMatrix, 3D CYL, Radian, col
+// 7.6        ComplexMatrix, row vector
+// 7.601      ComplexMatrix, col vector
+// ─────────────────────────────────
+// 8.02       ShortInteger, base
+// 8.08       ShortInteger, base
+// 8.10       ShortInteger, base
+// 8.16       ShortInteger, base
+
+
 void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
   TO_QSPI static const char typeName[][14]    = { "LongInteger", "Real", "Complex", "Time", "Date", "String", "RealMatrix", "ComplexMatrix", "ShortInteger", "Config" };
   TO_QSPI static const char angleSuffix[][10] = { (", MUL" STD_pi), ", DMS", ", Degree", ", Grad", ", Radian" };
   TO_QSPI static const char vecDim[][3]       = { "", "2D", "2D", "3D", "3D", "3D", "" };
-  TO_QSPI static const char vecMode[][6]      = { "", "RECT", "POLAR", "RECT", "SPH", "CYL", "" };
+  TO_QSPI static const char coordMode[][6]    = { "", "RECT", "POLAR", "RECT", "SPH", "CYL", "" };
   if(regist == REGISTER_X) {
     real_t t;
     getRegisterAsRealQuiet(REGISTER_X, &t);
-    int32_t ii = realToInt32C47(&t, NULL);
+    int32_t typeIdx = realToInt32C47(&t, NULL);           // integer part: data type
     realMultiply(&t, const_1000, &t, &ctxtReal39);
-    int32_t jjj = realToInt32C47(&t, NULL) - 1000*ii;
-    int fp1 = jjj / 100;
-    int fp2 = (jjj / 10) % 10;
-    int fp3 = jjj % 10;
-    char sss[40];
-    strcpy(sss, (ii >= 0 && ii <= 9) ? typeName[ii] : "?");
-    if(ii == 8) {
-      strcat(sss, ", base");
-    } else if(ii == 6) {
-      if(fp1 >= 1 && fp1 <= 5) {
-        strcat(sss, ", "); strcat(sss, vecDim[fp1]);
-        strcat(sss, " "); strcat(sss, vecMode[fp1]);
-        if(fp2 >= 1) strcat(sss, angleSuffix[fp2 - 1]);
-        if(fp3) strcat(sss, ", col");
-      } else if(fp1 == 6) {
-        strcat(sss, fp3 ? ", col vector" : ", row vector");
+    int32_t subCode = realToInt32C47(&t, NULL) - 1000*typeIdx;
+    int vecSub =  subCode / 100;                          // vector geometry / polar offset
+    int angSub = (subCode / 10) % 10;                     // angle mode
+    int colSub =  subCode % 10;                           // column vector flag
+    char typeStr[40];
+    strcpy(typeStr, (typeIdx >= 0 && typeIdx <= 9) ? typeName[typeIdx] : "?");
+    if(typeIdx == 8) {                                    // ShortInteger
+      strcat(typeStr, ", base");
+    } else if(typeIdx == 6) {                             // RealMatrix
+      if(vecSub >= 1 && vecSub <= 5) {
+        strcat(typeStr, ", "); strcat(typeStr, vecDim[vecSub]);
+        strcat(typeStr, " "); strcat(typeStr, coordMode[vecSub]);
+        if(angSub >= 1) strcat(typeStr, angleSuffix[angSub - 1]);
+        if(colSub) strcat(typeStr, ", col");
+      } else if(vecSub == 6) {
+        strcat(typeStr, colSub ? ", col vector" : ", row vector");
       }
-    } else {
-      if(fp1 >= 1 && fp1 <= 5) strcat(sss, angleSuffix[fp1 - 1]);
+    } else if(typeIdx == 7) {                             // ComplexMatrix
+      if(vecSub == 0) {                                   // plain matrix: angSub 0=RECT 1..5=polar+angle
+        strcat(typeStr, ", "); strcat(typeStr, angSub == 0 ? coordMode[1] : coordMode[2]);
+        if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
+      } else if(vecSub >= 1 && vecSub <= 5) {
+        strcat(typeStr, ", "); strcat(typeStr, vecDim[vecSub]);
+        strcat(typeStr, " "); strcat(typeStr, coordMode[vecSub]);
+        if(angSub >= 1) strcat(typeStr, angleSuffix[angSub - 1]);
+        if(colSub) strcat(typeStr, ", col");
+      } else if(vecSub == 6) {
+        strcat(typeStr, colSub ? ", col vector" : ", row vector");
+      }
+    } else if(typeIdx == 2) {                             // Complex: vecSub 0=RECT 1..5=polar+angle
+      strcat(typeStr, ", "); strcat(typeStr, vecSub == 0 ? coordMode[1] : coordMode[2]);
+      if(vecSub >= 1 && vecSub <= 5) strcat(typeStr, angleSuffix[vecSub - 1]);
+    } else {                                              // Real and others: angle mode only
+      if(vecSub >= 1 && vecSub <= 5) strcat(typeStr, angleSuffix[vecSub - 1]);
     }
-    sprintf(prefix, "%s", sss);
+    sprintf(prefix, "%s", typeStr);
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
 }

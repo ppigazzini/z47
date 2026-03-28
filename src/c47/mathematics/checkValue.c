@@ -246,28 +246,29 @@ void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 
 // GETTYPE return values
 //
-// Type              Value    Notes
-// ─────────────────────────────────────────────────────────────────────
-// Long Integer      0        (integer)
-// Real              1.0–1.5  RECT=1.0; +angle suffix/10 (see below)
-// Complex           2.0–2.5  RECT=2.0; +angle suffix/10 (see below)
-// Time              3        (integer)
-// Date              4        (integer)
-// String            5        (integer)
-// Config            9        (integer)
-// ─────────────────────────────────────────────────────────────────────
-// Real Matrix       6        (integer)
-// 2D Vector RECT    6.1      + 0.001 if column
-// 2D Vector POLAR   6.2x     x = angle suffix (see below)  + 0.001 if column
-// 3D Vector RECT    6.3      + 0.001 if column
-// 3D Vector SPH     6.4x     x = angle suffix (see below)  + 0.001 if column
-// 3D Vector CYL     6.5x     x = angle suffix (see below)  + 0.001 if column
+// Type              Value      Notes
+// ───────────────────────────────────────────────────────────────────────
+// Long Integer      0          (integer)
+// Real              1.0–1.5    RECT=1.0; +angle suffix/10 (see below)
+// Complex           2.0–2.5    RECT=2.0; +angle suffix/10 (see below)
+// Time              3          (integer)
+// Date              4          (integer)
+// String            5          (integer)
+// Config            9          (integer)
+// ───────────────────────────────────────────────────────────────────────
+// Real Matrix       6          (integer)
+// 2D Vector RECT    6.1        +0.001 if column
+// 2D Vector POLAR   6.2x       x=angle suffix (see below); +0.001 if column
+// 3D Vector RECT    6.3        +0.001 if column
+// 3D Vector SPH     6.4x       x=angle suffix (see below); +0.001 if column
+// 3D Vector CYL     6.5x       x=angle suffix (see below); +0.001 if column
 // 1D or >3D row     6.6
-// 1D or >3D column  6.601
-// Complex Matrix    7.0–7.5  RECT=7.0; +angle suffix/10 (see below)
-// Short Integer     8.bb     bb = base (e.g. 02=binary, 16=hex)
-// ─────────────────────────────────────────────────────────────────────
-// Angle suffix (tenths for Real/Complex/ComplexMatrix; hundredths for vectors):
+// 1D or >3D col     6.601
+// ───────────────────────────────────────────────────────────────────────
+// Complex Matrix    7.00–7.05  RECT=7.00; +angle suffix/100 (see below)
+// Short Integer     8.bb       bb=base (e.g. 02=binary, 16=hex)
+// ───────────────────────────────────────────────────────────────────────
+// Angle suffix (tenths for Real/Complex; hundredths for ComplexMatrix/vectors):
 //   RECT / no angle   +0
 //   Multi-Pi          +1
 //   DMS               +2
@@ -299,8 +300,8 @@ static void _pushRealOut(real34_t* rr) {
 void fnGetType(uint16_t unusedButMandatoryParameter) {
   real34_t realOut;
   const int dtp = getRegisterDataType(REGISTER_X);
-  int dam = getRegisterAngularMode(REGISTER_X);
 
+  int dam = getRegisterAngularMode(REGISTER_X);          // rad=0 grad=1 deg=2 dms=3 mulpi=4 rect=5
   switch(dtp) {
     case dtLongInteger:
     case dtTime:
@@ -309,11 +310,11 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     case dtReal34Matrix:
     case dtConfig: {
       if(isRegisterMatrixVector(REGISTER_X)) {
-        int pol   = getVectorRegisterPolarMode(REGISTER_X);
-        int pOff  = (pol == amPolarCYL) ? 2 : (pol == amPolar || pol == amPolarSPH) ? 1 : 0;
-        pOff     += isRegisterMatrix2dVector(REGISTER_X) ? 1 : isRegisterMatrix3dVector(REGISTER_X) ? 3 : 0;
-        int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
-        uInt32ToReal34(dtp*1000 + 100*pOff + 10*(5-(dam&0x07)) + isCol, &realOut);
+        int polarMode = getVectorRegisterPolarMode(REGISTER_X);
+        int polarOff  = (polarMode == amPolarCYL) ? 2 : (polarMode == amPolar || polarMode == amPolarSPH) ? 1 : 0;
+        polarOff     += isRegisterMatrix2dVector(REGISTER_X) ? 1 : isRegisterMatrix3dVector(REGISTER_X) ? 3 : 0;
+        int isCol     = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+        uInt32ToReal34(dtp*1000 + 100*polarOff + 10*(5-(dam&0x07)) + isCol, &realOut);
       } else if(dtp == dtReal34Matrix) {
         int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
         int isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
@@ -329,9 +330,26 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
       _pushRealOut(&realOut);
       break;
     }
-    case dtComplex34Matrix:
-      if(!(dam & 0x10)) dam = amNone;
-      /* FALL THROUGH */
+    case dtComplex34Matrix: {
+      if(isRegisterMatrixVector(REGISTER_X)) {
+        int polarMode = getVectorRegisterPolarMode(REGISTER_X);
+        int polarOff  = (polarMode == amPolarCYL) ? 2 : (polarMode == amPolar || polarMode == amPolarSPH) ? 1 : 0;
+        polarOff     += isRegisterMatrix2dVector(REGISTER_X) ? 1 : isRegisterMatrix3dVector(REGISTER_X) ? 3 : 0;
+        int isCol     = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+        uInt32ToReal34(dtp*1000 + 100*polarOff + 10*(5-(dam&0x07)) + isCol, &realOut);
+      } else {
+        int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+        int isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+        if(isCol || isRow) {
+          uInt32ToReal34(dtp*1000 + 600 + isCol, &realOut);
+        } else {
+          uInt32ToReal34(dtp*1000 + 10*(5-(dam&0x07)), &realOut);  // 0=RECT, 1..5=polar+angle
+        }
+      }
+      real34Divide(&realOut, const34_1000, &realOut);
+      _pushRealOut(&realOut);
+      break;
+    }
     case dtShortInteger:
     case dtReal34:
     case dtComplex34: {
