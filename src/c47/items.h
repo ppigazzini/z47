@@ -2098,7 +2098,7 @@
 #define ITM_ACTUSB                  2044
 #define MNU_CONVS                   2045
 #define MNU_CONVANG                 2046
-#define ITM_2047                    2047  //blank
+#define MNU_CONVTEMP                2047
 #define ITM_2048                    2048  //blank
 #define ITM_2049                    2049  //blank
 #define ITM_2050                    2050  //blank
@@ -2759,7 +2759,24 @@
 #define ITM_LR_A1                   2663
 #define ITM_LR_A2                   2664
 
-#define LAST_ITEM                   2665
+#define ITM_CtoK                    2665
+#define ITM_KtoC                    2666
+#define ITM_RAtoK                   2667
+#define ITM_KtoRA                   2668
+#define ITM_RAtoF                   2669
+#define ITM_FtoRA                   2670
+#define ITM_EVKBtoK                 2671
+#define ITM_KtoEVKB                 2672
+#define ITM_FtoK                    2673
+#define ITM_KtoF                    2674
+#define ITM_2675                    2675
+#define ITM_2676                    2676
+#define ITM_2677                    2677
+#define ITM_2678                    2678
+#define ITM_2679                    2679
+#define ITM_2680                    2680 //spares for the temp menu
+
+#define LAST_ITEM                   2681
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
