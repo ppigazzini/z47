@@ -7982,7 +7982,9 @@ void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
     WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
 
     convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
-    if(realIsZero(th1)) {realZero(th1);}
+    if(realIsZero(th1)) {
+      realZero(th1);
+    }
 }
 
 
@@ -8013,7 +8015,9 @@ void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_
 
     WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
     convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
-    if(realIsZero(th1)) {realZero(th1);}
+    if(realIsZero(th1)) {
+      realZero(th1);
+    }
 }
 
 void convertPOLto2D(real_t *r, real_t *th1, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
