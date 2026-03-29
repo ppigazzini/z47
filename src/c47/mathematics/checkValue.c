@@ -353,7 +353,7 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
       break;
     }
     case dtComplex34Matrix: {
-      int isPolar = (dam & 0x07) != 5;                  // RECT=5; any other angle mode = polar
+      int isPolar = getComplexRegisterPolarMode(REGISTER_X); //  (dam & 0x07) != 5;                  // RECT=5; any other angle mode = polar
       int angle   = isPolar ? (5 - (dam & 0x07)) : 0;   // 0=RECT 1=MulPi 2=DMS 3=Deg 4=Grad 5=Rad
       int isCol   = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
       int isRow   = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
