@@ -367,7 +367,8 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
     case dtShortInteger:
     case dtReal34:
     case dtComplex34: {
-      uint32_t v = (dtp == dtShortInteger) ? 10*(dtp*100 + (dam & 0x1F)) : 100*(dtp*10 + 5 - (dam & 0x07));
+      uint32_t v = (dtp == dtShortInteger) ? 10*(dtp*100 + (dam & 0x1F))  // 8.bb: bb=base, e.g. 8.16=hex
+                                           : 100*(dtp*10 + 5 - (dam & 0x07)); // 1.3=Degrees, 2.0=RECT etc.
       uInt32ToReal34(v, &realOut);
       real34Divide(&realOut, const34_1000, &realOut);
       _pushRealOut(&realOut);

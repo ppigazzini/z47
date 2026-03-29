@@ -2731,8 +2731,10 @@ void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) 
     int vecType = subCode % 10;                           // 0=non-vector 1=row 2=col
     char typeStr[40];
     strcpy(typeStr, (typeIdx >= 0 && typeIdx <= 9) ? typeName[typeIdx] : "?");
-    if(typeIdx == 8) {                                    // ShortInteger
-      strcat(typeStr, ", base");
+    if(typeIdx == 8) {                                    // ShortInteger: angSub*10+polRec = base
+      char baseSuffix[12];
+      sprintf(baseSuffix, ", base %d", angSub*10 + polRec);
+      strcat(typeStr, baseSuffix);
     } else if(typeIdx == 6) {                             // RealMatrix
       if(polRec == 0 && vecType > 0) {                    // 1D row/col vector
         strcat(typeStr, vecType == 2 ? ", col vector" : ", row vector");
@@ -2746,12 +2748,10 @@ void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) 
         if(vecType == 2) strcat(typeStr, ", col");
       }
     } else if(typeIdx == 7) {                             // ComplexMatrix: polRec 0=RECT 1=POLAR only
-      if(vecType > 0) {                                   // 1D row/col vector
-        strcat(typeStr, vecType == 2 ? ", col vector" : ", row vector");
-      } else {
-        strcat(typeStr, ", "); strcat(typeStr, polRec == 0 ? coordMode[0] : coordMode[1]);
-        if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
-      }
+      strcat(typeStr, ", "); strcat(typeStr, polRec == 0 ? coordMode[0] : coordMode[1]);
+      if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
+      if(vecType == 1) strcat(typeStr, ", row");
+      else if(vecType == 2) strcat(typeStr, ", col");
     } else if(typeIdx == 2) {                             // Complex: RECT or POLAR + angle
       strcat(typeStr, ", "); strcat(typeStr, angSub == 0 ? coordMode[0] : coordMode[1]);
       if(angSub >= 1 && angSub <= 5) strcat(typeStr, angleSuffix[angSub - 1]);
@@ -2762,6 +2762,124 @@ void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) 
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
 }
+
+
+/*
+#ifdef PC_BUILD
+void testDisplayRegType(uint16_t aaa) {
+  typedef struct {
+    uint32_t   val;        // code * 1000 as integer
+    const char *intended;
+  } testCase_t;
+
+  static const testCase_t cases[] = {
+    // Long Integer
+    {     0, "LongInteger"                                    },
+    // Real
+    {  1000, "Real"                                           },
+    {  1100, "Real" ", MUL" STD_pi                            },
+    {  1200, "Real, DMS"                                      },
+    {  1300, "Real, Degree"                                   },
+    {  1400, "Real, Grad"                                     },
+    {  1500, "Real, Radian"                                   },
+    // Complex
+    {  2000, "Complex, RECT"                                  },
+    {  2100, "Complex, POLAR" ", MUL" STD_pi                  },
+    {  2200, "Complex, POLAR, DMS"                            },
+    {  2300, "Complex, POLAR, Degree"                         },
+    {  2400, "Complex, POLAR, Grad"                           },
+    {  2500, "Complex, POLAR, Radian"                         },
+    // Time Date String Config
+    {  3000, "Time"                                           },
+    {  4000, "Date"                                           },
+    {  5000, "String"                                         },
+    {  9000, "Config"                                         },
+    // RealMatrix plain
+    {  6000, "RealMatrix"                                     },
+    // RealMatrix 1D
+    {  6001, "RealMatrix, row vector"                         },
+    {  6002, "RealMatrix, col vector"                         },
+    // RealMatrix 2D
+    {  6020, "RealMatrix, 2D RECT"                            },
+    {  6022, "RealMatrix, 2D RECT, col"                       },
+    {  6120, "RealMatrix, 2D POLAR" ", MUL" STD_pi            },
+    {  6122, "RealMatrix, 2D POLAR" ", MUL" STD_pi ", col"    },
+    {  6220, "RealMatrix, 2D POLAR, DMS"                      },
+    {  6320, "RealMatrix, 2D POLAR, Degree"                   },
+    {  6420, "RealMatrix, 2D POLAR, Grad"                     },
+    {  6520, "RealMatrix, 2D POLAR, Radian"                   },
+    {  6522, "RealMatrix, 2D POLAR, Radian, col"              },
+    // RealMatrix 3D RECT
+    {  6030, "RealMatrix, 3D RECT"                            },
+    {  6032, "RealMatrix, 3D RECT, col"                       },
+    // RealMatrix 3D SPH
+    {  6130, "RealMatrix, 3D SPH" ", MUL" STD_pi              },
+    {  6230, "RealMatrix, 3D SPH, DMS"                        },
+    {  6330, "RealMatrix, 3D SPH, Degree"                     },
+    {  6430, "RealMatrix, 3D SPH, Grad"                       },
+    {  6530, "RealMatrix, 3D SPH, Radian"                     },
+    {  6532, "RealMatrix, 3D SPH, Radian, col"                },
+    // RealMatrix 3D CYL
+    {  6140, "RealMatrix, 3D CYL" ", MUL" STD_pi              },
+    {  6240, "RealMatrix, 3D CYL, DMS"                        },
+    {  6340, "RealMatrix, 3D CYL, Degree"                     },
+    {  6440, "RealMatrix, 3D CYL, Grad"                       },
+    {  6540, "RealMatrix, 3D CYL, Radian"                     },
+    {  6542, "RealMatrix, 3D CYL, Radian, col"                },
+    // ComplexMatrix RECT
+    {  7000, "ComplexMatrix, RECT"                            },
+    {  7001, "ComplexMatrix, RECT, row"                       },
+    {  7002, "ComplexMatrix, RECT, col"                       },
+    // ComplexMatrix POLAR
+    {  7110, "ComplexMatrix, POLAR" ", MUL" STD_pi            },
+    {  7210, "ComplexMatrix, POLAR, DMS"                      },
+    {  7310, "ComplexMatrix, POLAR, Degree"                   },
+    {  7410, "ComplexMatrix, POLAR, Grad"                     },
+    {  7510, "ComplexMatrix, POLAR, Radian"                   },
+    {  7511, "ComplexMatrix, POLAR, Radian, row"              },
+    {  7512, "ComplexMatrix, POLAR, Radian, col"              },
+    // ShortInteger
+    {  8020, "ShortInteger, base 2"                           },
+    {  8160, "ShortInteger, base 16"                          }
+  };
+
+  int      n = sizeof(cases) / sizeof(cases[0]);
+  int      fails = 0;
+  char     actual[60];
+  int16_t  w;
+  char     codeStr[12];
+
+  printf("\n%-7s  %-44s  %-44s  %s\n",
+    "Code", "Intended", "Actual", "");
+  printf("%-7s  %-44s  %-44s  %s\n",
+    "-------", "--------------------------------------------",
+    "--------------------------------------------", "------");
+
+  for(int i = 0; i < n; i++) {
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+    uInt32ToReal34(cases[i].val, REGISTER_REAL34_DATA(REGISTER_X));
+    real34Divide(REGISTER_REAL34_DATA(REGISTER_X), const34_1000, REGISTER_REAL34_DATA(REGISTER_X));
+    actual[0] = 0; w = 0;
+    _displayRegType(REGISTER_X, actual, &w);
+
+    uint32_t v = cases[i].val;
+    if(v % 1000 == 0) sprintf(codeStr, "%u",     v/1000);
+    else              sprintf(codeStr, "%u.%03u", v/1000, v%1000);
+
+    int ok = strcmp(actual, cases[i].intended) == 0;
+    if(!ok) fails++;
+
+    char sss[100], ttt[100];
+    stringToASCII(cases[i].intended, sss);
+    stringToASCII(actual, ttt);
+    printf("%-7s  %-44s  %-44s  %s\n", codeStr, sss, ttt, ok ? "OK" : "FAIL");
+  }
+  printf("\n%d/%d passed\n", n - fails, n);
+}
+#endif // PC_BUILD
+*/
+
 
 
 
