@@ -1008,57 +1008,56 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 
 
 
-static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle, uint16_t digits) {
+static void extractVectorElement34(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle, uint16_t digits, real_t *aa, real_t *bb, real_t *cc) {
 #if defined(OPTION_VECTOR)
   bool_t is2d    = isMatrix2dVector(rows, cols);
   bool_t is3d    = isMatrix3dVector(rows, cols);
   if(!is2d && !is3d) goto noPolarVector;
 
-  real_t aa,bb,cc;
   decContext c = ctxtReal39;
   c.digits = digits + 3; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19); for vector element, at least two elements in vector, so no mor ethan 10+5 digits possible
 
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
-    convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
+    if(j == 0) convert3DtoSPH(matrix, aa,bb,cc, *toBeAngle, &c);   // Only do the expensive 3D conversion once, at the first element, j = 0; Store the results back to the caller storage aa, bb, cc and use cheap copying for bb and cc.
     if(getSystemFlag(FLAG_3DPHYS)) {
       switch(j) {
-        case 0: realToReal34(&aa,element); break;
-        case 1: realToReal34(&cc,element); break;
-        case 2: realToReal34(&bb,element); break;
+        case 0: realToReal34(aa,element); break;
+        case 1: realToReal34(cc,element); break;
+        case 2: realToReal34(bb,element); break;
         default:;
       }
     } else {
       switch(j) {
-        case 0: realToReal34(&aa,element); break;
-        case 1: realToReal34(&bb,element); break;
-        case 2: realToReal34(&cc,element); break;
+        case 0: realToReal34(aa,element); break;
+        case 1: realToReal34(bb,element); break;
+        case 2: realToReal34(cc,element); break;
         default:;
       }
     }
 
-    //printRealToConsole(&aa,"SPH aa=","\n");
-    //printRealToConsole(&bb,"SPH bb=","\n");
-    //printRealToConsole(&cc,"SPH cc=","\n");
+    //printRealToConsole(aa,"SPH aa=","\n");
+    //printRealToConsole(bb,"SPH bb=","\n");
+    //printRealToConsole(cc,"SPH cc=","\n");
   } else if((isMatrix3dVectorCYL(rows, cols, matrix->header.mtag))) {
-    convert3DtoCYL(matrix, &aa,&bb,&cc, *toBeAngle, &c);
+    if(j == 0) convert3DtoCYL(matrix, aa,bb,cc, *toBeAngle, &c);   // Only do the expensive 3D conversion once, at the first element, j = 0; Store the results back to the caller storage aa, bb, cc and use cheap copying for bb and cc.
     switch(j) {
-      case 0: realToReal34(&aa,element); break;
-      case 1: realToReal34(&bb,element); break;
-      case 2: realToReal34(&cc,element); break;
+      case 0: realToReal34(aa,element); break;
+      case 1: realToReal34(bb,element); break;
+      case 2: realToReal34(cc,element); break;
       default:;
     }
-    //printRealToConsole(&aa,"CYL aa=","\n");
-    //printRealToConsole(&bb,"CYL bb=","\n");
-    //printRealToConsole(&cc,"CYL cc=","\n");
+    //printRealToConsole(aa,"CYL aa=","\n");
+    //printRealToConsole(bb,"CYL bb=","\n");
+    //printRealToConsole(cc,"CYL cc=","\n");
   } else if((isMatrix2dVectorPOL(rows, cols, matrix->header.mtag))) {
-    convert2DtoPOL(matrix, &aa,&bb, *toBeAngle, &c);
+    if(j == 0) convert2DtoPOL(matrix, aa,bb, *toBeAngle, &c);      // Only do the expensive 2D conversion once, at the first element, j = 0; Store the results back to the caller storage aa & bb and use cheap copying for bb.
     switch(j) {
-      case 0: realToReal34(&aa,element); break;
-      case 1: realToReal34(&bb,element); break;
+      case 0: realToReal34(aa,element); break;
+      case 1: realToReal34(bb,element); break;
       default:;
     } 
-    //printRealToConsole(&aa,"POL aa=","\n");
-    //printRealToConsole(&bb,"POL bb=","\n");
+    //printRealToConsole(aa,"POL aa=","\n");
+    //printRealToConsole(bb,"POL bb=","\n");
   } else {
 noPolarVector:
 #endif //OPTION_VECTOR
@@ -1253,6 +1252,7 @@ if(toDisplay) {
   const uint8_t displayFormatDigits1 = displayFormatDigits;
 
 int16_t colX = 0;
+real_t aa, bb, cc;
 
   for(int i = 0; i < maxRows; i++) {
     if(toDisplay) {
@@ -1286,7 +1286,7 @@ int16_t colX = 0;
         real34_t element;
 
         if(displayFormat != DF_ALL) digits = 15;
-        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle, digits);
+        extractVectorElement34(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle, digits, &aa, &bb, &cc);
         real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], digits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
 
         if(toDisplay) {
@@ -1376,6 +1376,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 
     const uint16_t displayFormat1 = displayFormat;
     const uint8_t displayFormatDigits1 = displayFormatDigits;
+    real_t aa, bb, cc;
 
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
@@ -1385,7 +1386,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         uint8_t toBeAngle = amNone;
         displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
         uint16_t calcDigits = displayFormat == DF_ALL ? k : 15;
-        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle, calcDigits);
+        extractVectorElement34(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle, calcDigits, &aa, &bb, &cc);
 
         bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
