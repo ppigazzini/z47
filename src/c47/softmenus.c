@@ -143,7 +143,7 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 
 
 TO_QSPI const int16_t menu_MATX[]        = {
-                                             ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_SIM_EQ,            VECCONV1,                    VECT1,
+                                             ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_SIM_EQ,            ITM_NULL,                    VECT1,
                                              ITM_M_DIM,                     ITM_M_DIM_GR,               ITM_M_EDIN,               ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
@@ -158,21 +158,21 @@ TO_QSPI const int16_t menu_MATX[]        = {
 
 TO_QSPI const int16_t menu_VECT[]        = {
   #if (CALCMODEL == USER_R47)
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_CLSTK,
-                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
-
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,           VECCONV1,                    ITM_CLSTK,
                                              ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001
-  #else //USER_C47
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_DRG,
-                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001,
 
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_CLSTK,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01
+  #else //USER_C47
                                              ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,           VECCONV1,                    ITM_DRG,
                                              ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001,
+
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_DRG,
+                                             ITM_PNORM,                     ITM_VVDIST,                 ITM_VANGLE,               ITM_UNITV,             ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01
   #endif //USER_C47
                                           };
 
