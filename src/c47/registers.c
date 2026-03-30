@@ -1894,53 +1894,29 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     char str[1000];
 
     realToString(value, str);
-    printf("%sreal%" PRId32 " %s%s", before, value->digits, str, after);
+    printf("%s(%" PRId32 ") %s%s", before, value->digits, str, after);
+  }
 
-  /*  int32_t i, exponent, last;
 
-    if(realIsNaN(value)) {
-      printf("NaN");
-      return;
+
+  void printRealInfoToConsole(const real_t *value, const char *name) {
+    printRealToConsole(value, name, "\n");
+    printf("  ├─ digits           = %" PRIi32 "\n", value->digits);
+    printf("  ├─ exponent         = %" PRIi32 "\n", value->exponent);
+    printf("  ├─ digits per unit  = %" PRIi32 "\n", DECDPUN);
+    printf("  ├─ sNaN             = %s\n", (value->bits & DECSNAN) != 0 ? "yes" : "no");
+    printf("  ├─ NaN              = %s\n", (value->bits & DECNAN) != 0 ? "yes" : "no");
+    printf("  ├─ infinite         = %s\n", realIsInfinite(value) ? "yes" : "no");
+    printf("  ├─ sign             = %c\n", realIsNegative(value) ? '-' : '+');
+    printf("  └─ mantissa         =");
+
+    if(value->digits > 0) {
+      printf(" %u", value->lsu[(value->digits - 1) / DECDPUN]);
+      for(int32_t i=(value->digits - 1) / DECDPUN - 1 ; i>=0; i--) {
+        printf(" %03u", value->lsu[i]);
+      }
+      printf("\n");
     }
-
-    if(realIsNegative(value)) {
-      printf("-");
-    }
-
-    if(realIsInfinite(value)) {
-      printf("infinite");
-      return;
-    }
-
-    if(realIsZero(value)) {
-      printf("0");
-      return;
-    }
-
-    if(value->digits % DECDPUN) {
-      i = value->digits/DECDPUN;
-    }
-    else {
-      i = value->digits/DECDPUN - 1;
-    }
-
-    while(value->lsu[i] == 0) i--;
-    printf("%" PRIu16, value->lsu[i--]);
-
-    exponent = value->exponent;
-    last = 0;
-    while(exponent <= -DECDPUN && value->lsu[last] == 0) {
-      last++;
-      exponent += DECDPUN;
-    }
-
-    for(; i>=last; i--) {
-      printf(" %03" PRIu16, value->lsu[i]);
-    }
-
-    if(exponent != 0) {
-      printf(" e %" PRId32, exponent);
-    }*/
   }
 
 
