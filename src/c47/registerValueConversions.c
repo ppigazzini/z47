@@ -978,18 +978,6 @@ bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, b
   return ret;
 }
 
-
-bool_t getRegisterAsComplex34OrAnyReal34Quiet(calcRegister_t reg, real34_t *valr, real34_t *vali, bool_t *cmplx) {
-  real_t realValr, realVali;
-  if(getRegisterAsComplexOrAnyRealQuiet(reg, &realValr, &realVali, cmplx)) {
-    realToReal34(&realValr, valr);
-    realToReal34(&realVali, vali);
-    return true;
-  }
-  return false;
-}
-
-
 bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   const uint32_t t = getRegisterDataType(reg);
 

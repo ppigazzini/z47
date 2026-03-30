@@ -105,7 +105,6 @@
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx);
-  bool_t getRegisterAsComplex34OrAnyReal34Quiet(calcRegister_t reg, real34_t *valr, real34_t *vali, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);
   bool_t getRegisterAsAnyReal(calcRegister_t reg, real_t *val);
   bool_t getRegisterAsReal34Quiet(calcRegister_t reg, real34_t *val);
