@@ -64,35 +64,18 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
     compareTypeErrorX();
 }
 
-void fnCheckReIsZero (uint16_t unusedButMandatoryParameter) {
-  if (checkXisType(dtComplex34)) {
-    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
-  } else {
+void fnCheckForZero(uint16_t mode) {
+  real_t xReal, xImag;
+  bool_t cmplx;
+  if(!getRegisterAsComplexOrAnyRealQuiet(REGISTER_X, &xReal, &xImag, &cmplx))
     compareTypeErrorX();
-  }
-}
-
-void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
-  if (checkXisType(dtComplex34)) {
-    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
-  } else {
-    compareTypeErrorX();
-  }
-}
-
-void fnCheckReNotZero (uint16_t unusedButMandatoryParameter) {
-  if (checkXisType(dtComplex34)) {
-    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
-  } else {
-    compareTypeErrorX();
-  }
-}
-
-void fnCheckImNotZero (uint16_t unusedButMandatoryParameter) {
-  if (checkXisType(dtComplex34)) {
-    SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
-  } else {
-    compareTypeErrorX();
+    return;
+  switch(mode) {
+    case ITM_ISREZQ  : SET_TI_TRUE_FALSE(realIsZero(&xReal)); break;
+    case ITM_ISIMZQ  : SET_TI_TRUE_FALSE(realIsZero(&xImag)); break;
+    case ITM_ISRENZQ : SET_TI_TRUE_FALSE(!realIsZero(&xReal));break;
+    case ITM_ISIMNZQ : SET_TI_TRUE_FALSE(!realIsZero(&xImag));break;
+    default:;
   }
 }
 

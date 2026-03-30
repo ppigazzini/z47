@@ -343,7 +343,7 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_STRINGQ,                   ITM_NULL,                   ITM_REALMATQ,             ITM_COMPLEXMATQ,       ITM_NULL,                    ITM_CONFIGQ,
 
                                              ITM_FPQ,                       ITM_INTQ,                   ITM_ISREZQ,               ITM_ISIMZQ,            ITM_MATRIXQ,                 ITM_M_SQRQ,
-                                             ITM_EVEN,                      ITM_ODD,                    ITM_ISREQ,                ITM_ISIMQ,             ITM_ISVECT2DQ,               ITM_ISVECT3DQ,
+                                             ITM_EVEN,                      ITM_ODD,                    ITM_ISRENZQ,              ITM_ISIMNZQ,           ITM_ISVECT2DQ,               ITM_ISVECT3DQ,
                                              ITM_NUMBRQ,                    ITM_ANGLEQ,                 ITM_NANQ,                 ITM_INFQ,              ITM_SPECQ,                                                  };
 
 #if defined(OPTION_XFN_1000)

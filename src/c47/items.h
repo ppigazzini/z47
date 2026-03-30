@@ -2603,8 +2603,8 @@
 #define ITM_CONFIGQ                 2526
 #define ITM_ISREZQ                  2527
 #define ITM_ISIMZQ                  2528
-#define ITM_ISREQ                   2529
-#define ITM_ISIMQ                   2530
+#define ITM_ISRENZQ                 2529
+#define ITM_ISIMNZQ                 2530
 #define ITM_ISVECT2DQ               2531
 #define ITM_ISVECT3DQ               2532
 #define ITM_SI_Ki                   2533

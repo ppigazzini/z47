@@ -279,7 +279,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         }
       }
     }
-    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO && !GRAPHMODE){
+    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO){
       thereIsSomethingToUndo = false;
     }
 
@@ -552,13 +552,13 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(lastErrorCode != 0) {
       if(getSystemFlag(FLAG_IGN1ER)) {
-        if(thereIsSomethingToUndo) {
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED) {
           undo();
         }
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo &&
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED &&
           !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
@@ -857,10 +857,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckMinusZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrix               (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrixSquare         (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckReIsZero             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckImIsZero             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckForZero              (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
@@ -4234,10 +4231,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "matx?",                            STD_REAL_R "matx?",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "matx?",                         STD_COMPLEX_C "matx?",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2526 */  { fnCheckType,                  dtConfig,                    "Config?",                                     "Config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2527 */  { fnCheckReIsZero,              NOPARAM,                     "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2528 */  { fnCheckImIsZero,              NOPARAM,                     "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2529 */  { fnCheckReNotZero,             NOPARAM,                     "Re" STD_NOT_EQUAL "0?",                       "Re" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2530 */  { fnCheckImNotZero,             NOPARAM,                     "Im" STD_NOT_EQUAL "0?",                       "Im" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2527 */  { fnCheckForZero,               ITM_ISREZQ,                  "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2528 */  { fnCheckForZero,               ITM_ISIMZQ,                  "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2529 */  { fnCheckForZero,               ITM_ISRENZQ,                 "Re" STD_NOT_EQUAL "0?",                       "Re" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2530 */  { fnCheckForZero,               ITM_ISIMNZQ,                 "Im" STD_NOT_EQUAL "0?",                       "Im" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2531 */  { fnCheckIsVect2d,              NOPARAM,                     "VECT2D?",                                     "VECT2D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2532 */  { fnCheckIsVect3d,              NOPARAM,                     "VECT3D?",                                     "VECT3D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2533 */  { fnMultiplySI,                 210,                         STD_DOT "Ki",                                  STD_DOT "Ki",                                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM PRE UNIT
