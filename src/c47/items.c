@@ -279,7 +279,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         }
       }
     }
-    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO && !GRAPHMODE){
+    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO){
       thereIsSomethingToUndo = false;
     }
 
@@ -552,13 +552,13 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(lastErrorCode != 0) {
       if(getSystemFlag(FLAG_IGN1ER)) {
-        if(thereIsSomethingToUndo) {
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED) {
           undo();
         }
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo &&
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED &&
           !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
