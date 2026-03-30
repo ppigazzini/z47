@@ -49,6 +49,7 @@ char       letteredRegisterName(calcRegister_t regist);
    */
   gboolean drawScreen                         (GtkWidget *widget, cairo_t *cr, gpointer data);
   void     copyScreenToClipboard              (void);
+  void     copyMenuToClipboard                (void);
   void     copyRegisterXToClipboard           (void);
   void     copyStackRegistersToClipboard      (void);
   void     copyAllRegistersToClipboard        (void);
