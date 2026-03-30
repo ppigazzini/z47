@@ -340,6 +340,7 @@ void fnUndo(uint16_t unusedButMandatoryParameter) {
 
 void undo(void) {
   #if defined(DEBUGUNDO)
+    print_caller("UNDO");
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
