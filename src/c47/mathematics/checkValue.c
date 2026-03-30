@@ -64,40 +64,19 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
     compareTypeErrorX();
 }
 
-void fnCheckReIsZero (uint16_t unusedButMandatoryParameter) {
-  real34_t xReal34, xImag34;
+void fnCheckForZero(uint16_t mode) {
+  real_t xReal, xImag;
   bool_t cmplx;
-  if(!getRegisterAsComplex34OrAnyReal34Quiet(REGISTER_X, &xReal34, &xImag34, &cmplx))
+  if(!getRegisterAsComplexOrAnyRealQuiet(REGISTER_X, &xReal, &xImag, &cmplx))
     compareTypeErrorX();
     return;
-  SET_TI_TRUE_FALSE(real34IsZero(&xReal34));
-}
-
-void fnCheckImIsZero (uint16_t unusedButMandatoryParameter) {
-  real34_t xReal34, xImag34;
-  bool_t cmplx;
-  if(!getRegisterAsComplex34OrAnyReal34Quiet(REGISTER_X, &xReal34, &xImag34, &cmplx))
-    compareTypeErrorX();
-    return;
-  SET_TI_TRUE_FALSE(real34IsZero(&xImag34));
-}
-
-void fnCheckReNotZero (uint16_t unusedButMandatoryParameter) {
-  real34_t xReal34, xImag34;
-  bool_t cmplx;
-  if(!getRegisterAsComplex34OrAnyReal34Quiet(REGISTER_X, &xReal34, &xImag34, &cmplx))
-    compareTypeErrorX();
-    return;
-  SET_TI_TRUE_FALSE(!real34IsZero(&xReal34));
-}
-
-void fnCheckImNotZero (uint16_t unusedButMandatoryParameter) {
-  real34_t xReal34, xImag34;
-  bool_t cmplx;
-  if(!getRegisterAsComplex34OrAnyReal34Quiet(REGISTER_X, &xReal34, &xImag34, &cmplx))
-    compareTypeErrorX();
-    return;
-  SET_TI_TRUE_FALSE(!real34IsZero(&xImag34));
+  switch(mode) {
+    case ITM_ISREZQ  : SET_TI_TRUE_FALSE(realIsZero(&xReal)); break;
+    case ITM_ISIMZQ  : SET_TI_TRUE_FALSE(realIsZero(&xImag)); break;
+    case ITM_ISRENZQ : SET_TI_TRUE_FALSE(!realIsZero(&xReal));break;
+    case ITM_ISIMNZQ : SET_TI_TRUE_FALSE(!realIsZero(&xImag));break;
+    default:;
+  }
 }
 
 void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
