@@ -67,9 +67,10 @@ void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
 void fnCheckForZero(uint16_t mode) {
   real_t xReal, xImag;
   bool_t cmplx;
-  if(!getRegisterAsComplexOrAnyRealQuiet(REGISTER_X, &xReal, &xImag, &cmplx))
+  if(!getRegisterAsComplexOrAnyRealQuiet(REGISTER_X, &xReal, &xImag, &cmplx)) {
     compareTypeErrorX();
     return;
+  }
   switch(mode) {
     case ITM_ISREZQ  : SET_TI_TRUE_FALSE(realIsZero(&xReal)); break;
     case ITM_ISIMZQ  : SET_TI_TRUE_FALSE(realIsZero(&xImag)); break;
