@@ -2098,7 +2098,7 @@
 #define ITM_ACTUSB                  2044
 #define MNU_CONVS                   2045
 #define MNU_CONVANG                 2046
-#define ITM_2047                    2047  //blank
+#define MNU_CONVTEMP                2047
 #define ITM_2048                    2048  //blank
 #define ITM_2049                    2049  //blank
 #define ITM_2050                    2050  //blank
@@ -2603,8 +2603,8 @@
 #define ITM_CONFIGQ                 2526
 #define ITM_ISREZQ                  2527
 #define ITM_ISIMZQ                  2528
-#define ITM_ISREQ                   2529
-#define ITM_ISIMQ                   2530
+#define ITM_ISRENZQ                 2529
+#define ITM_ISIMNZQ                 2530
 #define ITM_ISVECT2DQ               2531
 #define ITM_ISVECT3DQ               2532
 #define ITM_SI_Ki                   2533
@@ -2759,25 +2759,43 @@
 #define ITM_LR_A1                   2663
 #define ITM_LR_A2                   2664
 
-#define ITM_3DPHYS                  2665
-#define ITM_3DXYZ                   2666
-#define ITM_STKtoV3                 2667
-#define ITM_V3toSTK                 2668
-
-#define ITM_PNORM                   2669
-#define ITM_NNZ                     2670
-#define ITM_CNORM                   2671
-#define ITM_2672                    2672
-#define ITM_2673                    2673
-#define ITM_2674                    2674
-#define ITM_CSUM                    2675
-#define MNU_TAMNORM                 2676
-#define ITM_M_CC                    2677
+#define ITM_CtoK                    2665
+#define ITM_KtoC                    2666
+#define ITM_RAtoK                   2667
+#define ITM_KtoRA                   2668
+#define ITM_RAtoF                   2669
+#define ITM_FtoRA                   2670
+#define ITM_EVKBtoK                 2671
+#define ITM_KtoEVKB                 2672
+#define ITM_FtoK                    2673
+#define ITM_KtoF                    2674
+#define ITM_2675                    2675
+#define ITM_2676                    2676
+#define ITM_2677                    2677
 #define ITM_2678                    2678
 #define ITM_2679                    2679
-#define ITM_2680                    2680
+#define ITM_2680                    2680 //spares for the temp menu
 
-#define LAST_ITEM                   2681
+#define ITM_3DPHYS                  2681
+#define ITM_3DXYZ                   2682
+#define ITM_STKtoV3                 2683
+#define ITM_V3toSTK                 2684
+
+#define ITM_PNORM                   2685
+#define ITM_NNZ                     2686
+#define ITM_CNORM                   2687
+#define ITM_2688                    2688
+#define ITM_2689                    2689
+#define ITM_2690                    2690
+#define ITM_CSUM                    2691
+#define MNU_TAMNORM                 2692
+#define ITM_M_CC                    2693
+#define ITM_2694                    2694
+#define ITM_2695                    2695
+#define ITM_2696                    2696
+
+
+#define LAST_ITEM                   2697
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

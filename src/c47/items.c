@@ -279,7 +279,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         }
       }
     }
-    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO && !GRAPHMODE){
+    else if(((indexOfItems[func].status & US_STATUS) == US_CANCEL) && calcMode != CM_NO_UNDO){
       thereIsSomethingToUndo = false;
     }
 
@@ -519,7 +519,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
           case -MNU_MISC :
           case -MNU_CONVHUM :
           case -MNU_CONVYMMV :
-          case -MNU_CONVCHEF : {
+          case -MNU_CONVCHEF :
+          case -MNU_CONVTEMP : {
             errorMessage[0]=0;
             strcat(errorMessage,indexOfItems[func].itemCatalogName);
             temporaryInformation = TI_NO_INFO;
@@ -551,13 +552,13 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(lastErrorCode != 0) {
       if(getSystemFlag(FLAG_IGN1ER)) {
-        if(thereIsSomethingToUndo) {
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED) {
           undo();
         }
         lastErrorCode = ERROR_NONE;
       }
       else {
-        if(thereIsSomethingToUndo &&
+        if(thereIsSomethingToUndo && (indexOfItems[func].status & US_STATUS) != US_UNCHANGED &&
           !((func == ITM_EIGVAL || func == ITM_EIGVEC) && lastErrorCode == ERROR_SOLVER_ABORT)) {
           undo();
         }
@@ -745,7 +746,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       #endif // PC_BUILD
     }
   }
-#endif // !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS && !GENERATE_TESTPGMS
 
 #if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
   void fnAsnViewer                 (uint16_t unusedButMandatoryParameter) {}
@@ -856,10 +857,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckMinusZero            (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrix               (uint16_t unusedButMandatoryParameter) {}
   void fnCheckMatrixSquare         (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckReIsZero             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckImIsZero             (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckReNotZero            (uint16_t unusedButMandatoryParameter) {}
-  void fnCheckImNotZero            (uint16_t unusedButMandatoryParameter) {}
+  void fnCheckForZero              (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect2d             (uint16_t unusedButMandatoryParameter) {}
   void fnCheckIsVect3d             (uint16_t unusedButMandatoryParameter) {}
   void fnRandom                    (uint16_t unusedButMandatoryParameter) {}
@@ -1000,8 +998,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCvtToCurrentAngularMode   (uint16_t unusedButMandatoryParameter) {}
   void fnCvtDbRatio                (uint16_t unusedButMandatoryParameter) {}
   void fnCvtRatioDb                (uint16_t unusedButMandatoryParameter) {}
-  void fnCvtCToF                   (uint16_t unusedButMandatoryParameter) {}
-  void fnCvtFToC                   (uint16_t unusedButMandatoryParameter) {}
+  void fnCvtTemp                   (uint16_t unusedButMandatoryParameter) {}
   void fnCvtFromCurrentAngularMode (uint16_t unusedButMandatoryParameter) {}
   void fnCvtDmsToCurrentAngularMode(uint16_t unusedButMandatoryParameter) {}
   void fnCvtHMSHR                  (uint16_t unusedButMandatoryParameter) {}
@@ -1553,7 +1550,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSetJM                    (uint16_t unusedButMandatoryParameter) {}
   void fnSetRJ                    (uint16_t unusedButMandatoryParameter) {}
 
-#endif // GENERATE_CATALOGS
+#endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
 
 #ifdef TESTSUITE_BUILD
   void fnDiskInfo                 (uint16_t unusedButMandatoryParameter) {}
@@ -1886,8 +1883,8 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 // Conversions
-/*  220 */  { fnCvtCToF,                    NOPARAM,                     STD_DEGREE "C" STD_RIGHT_ARROW STD_DEGREE "F", STD_DEGREE "C" STD_RIGHT_ARROW STD_DEGREE "F", (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/*  221 */  { fnCvtFToC,                    NOPARAM,                     STD_DEGREE "F" STD_RIGHT_ARROW STD_DEGREE "C", STD_DEGREE "F" STD_RIGHT_ARROW STD_DEGREE "C", (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/*  220 */  { fnCvtTemp,                          0,                     STD_DEGREE "C" STD_RIGHT_ARROW STD_DEGREE "F", STD_DEGREE "C" STD_RIGHT_ARROW STD_DEGREE "F", (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/*  221 */  { fnCvtTemp,                          1,                     STD_DEGREE "F" STD_RIGHT_ARROW STD_DEGREE "C", STD_DEGREE "F" STD_RIGHT_ARROW STD_DEGREE "C", (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*  222 */  { fnCvtDbRatio,                 10,                          "dB" STD_RIGHT_ARROW "pr",                     "dB" STD_RIGHT_ARROW,                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /*  223 */  UNIT_CONV(constFactorFt2Hectare, multiply,  "ft"  STD_SUP_2 STD_RIGHT_ARROW "ha",               "ft"  STD_SUP_2 STD_RIGHT_ARROW "ha"),
 /*  224 */  UNIT_CONV(constFactorFt2Hectare,   divide,  "ha" STD_RIGHT_ARROW "ft"  STD_SUP_2,               "ha" STD_RIGHT_ARROW "ft"  STD_SUP_2),
@@ -3161,7 +3158,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1465 */  { fnEqNew,                      NOPARAM,                     "EQ.NEW",                                      "NEW",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1466 */  { fnErf,                        NOPARAM,                     "erf",                                         "erf",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
 /* 1467 */  { fnErfc,                       NOPARAM,                     "erfc",                                        "erfc",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         | HG_ENABLED         },
-/* 1468 */  { fnRaiseError,                 TM_VALUE,                    "ERR",                                         "ERR",                                         (1 << TAM_MAX_BITS) | LAST_ERROR_MESSAGE, CAT_FNCT |SLS_ENABLED    | US_CANCEL    | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
+/* 1468 */  { fnRaiseError,                 TM_VALUE,                    "ERR",                                         "ERR",                            (1 << TAM_MAX_BITS) | LAST_ERROR_MESSAGE, CAT_FNCT |SLS_ENABLED    | US_CANCEL    | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },
 /* 1469 */  { fnExitAllMenus,               NOPARAM,                     "EXITALL",                                     "EXITall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1470 */  { fnExpt,                       NOPARAM,                     "EXPT",                                        "EXPT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1471 */  { fnGetFirstGregorianDay,       NOPARAM,                     "J/G?",                                        "J/G?",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -3744,7 +3741,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2044 */  { activateUSBdisk,              CONFIRMED,                   "ActUSB",                                      "ActUSB",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2045 */  { itemToBeCoded,                NOPARAM,                     "Speed:",                                      "Speed:",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2046 */  { itemToBeCoded,                NOPARAM,                     "Angle:",                                      "Angle:",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2047 */  { itemToBeCoded,                NOPARAM,                     "2047",                                        "2047",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2047 */  { itemToBeCoded,                NOPARAM,                     "Temp:",                                       "Temp:",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2048 */  { itemToBeCoded,                NOPARAM,                     "2048",                                        "2048",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2049 */  { itemToBeCoded,                NOPARAM,                     "2049",                                        "2049",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2050 */  { itemToBeCoded,                NOPARAM,                     "2050",                                        "2050",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
@@ -4235,10 +4232,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2524 */  { fnCheckType,                  dtReal34Matrix,              STD_REAL_R "matx?",                            STD_REAL_R "matx?",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2525 */  { fnCheckType,                  dtComplex34Matrix,           STD_COMPLEX_C "matx?",                         STD_COMPLEX_C "matx?",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2526 */  { fnCheckType,                  dtConfig,                    "Config?",                                     "Config?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2527 */  { fnCheckReIsZero,              NOPARAM,                     "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2528 */  { fnCheckImIsZero,              NOPARAM,                     "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2529 */  { fnCheckReNotZero,             NOPARAM,                     "Re" STD_NOT_EQUAL "0?",                       "Re" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2530 */  { fnCheckImNotZero,             NOPARAM,                     "Im" STD_NOT_EQUAL "0?",                       "Im" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2527 */  { fnCheckForZero,               ITM_ISREZQ,                  "Re" STD_EQUAL "0?",                           "Re" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2528 */  { fnCheckForZero,               ITM_ISIMZQ,                  "Im" STD_EQUAL "0?",                           "Im" STD_EQUAL "0?",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2529 */  { fnCheckForZero,               ITM_ISRENZQ,                 "Re" STD_NOT_EQUAL "0?",                       "Re" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2530 */  { fnCheckForZero,               ITM_ISIMNZQ,                 "Im" STD_NOT_EQUAL "0?",                       "Im" STD_NOT_EQUAL "0?",                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2531 */  { fnCheckIsVect2d,              NOPARAM,                     "VECT2D?",                                     "VECT2D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2532 */  { fnCheckIsVect3d,              NOPARAM,                     "VECT3D?",                                     "VECT3D?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2533 */  { fnMultiplySI,                 210,                         STD_DOT "Ki",                                  STD_DOT "Ki",                                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },//JM PRE UNIT
@@ -4382,26 +4379,45 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2660 */  UNIT_CONV(constFactorFoeJ,       divide,   "foe" STD_RIGHT_ARROW "J" ,  "foe" STD_RIGHT_ARROW "J" ),
 /* 2661 */  UNIT_CONV(constFactorFoeJ,     multiply,   "J"  STD_RIGHT_ARROW "foe",  "J"  STD_RIGHT_ARROW "foe"),
 
-/* 2662 */  { fnProcessLR,                  1,                           "LR:a0",                                       "LR:a0",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2663 */  { fnProcessLR,                  2,                           "LR:a1",                                       "LR:a1",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2664 */  { fnProcessLR,                  4,                           "LR:a2",                                       "LR:a2",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2665 */  { fnFlipFlag,                   FLAG_3DPHYS,                 "3DPHYS",                                      "3DPHYS",                                       (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2666 */  { fnFlipFlag,                   FLAG_3DXYZ,                  "3DXYZ",                                       "3DXYZ",                                        (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2667 */  { fnConvertStkToMx,             VECT_CR_AUT,                 "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2668 */  { fnConvertMxToStk,             VECT_CR_AUT,                 STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2669 */  { fnPNorm,                      TM_VALUE_NORM,               "||" SEP "x" SEP "||" STD_SUB_p,               "||" SEP "x" SEP "||" STD_SUB_p,                (0 << TAM_MAX_BITS) |     9, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
-/* 2670 */  { fnPNorm,                      pNorm_0_NNZ,                 "NNZ",                                         "NNZ",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2671 */  { fnPNorm,                      pNorm_1_CNORM,               "CNORM",                                       "CNORM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2672 */  { itemToBeCoded,                NOPARAM,                     "2672",                                        "2672",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2673 */  { itemToBeCoded,                NOPARAM,                     "2673",                                        "2673",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2674 */  { itemToBeCoded,                NOPARAM,                     "2674",                                        "2674",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2675 */  { fnRowColSum,                  0,                           "CSUM",                                        "CSUM",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2676 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNorm",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2677 */  { fnSwapColumns,                NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2678 */  { itemToBeCoded,                NOPARAM,                     "2678",                                        "2678",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2679 */  { itemToBeCoded,                NOPARAM,                     "2679",                                        "2679",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2680 */  { itemToBeCoded,                NOPARAM,                     "2680",                                        "2680",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2662 */  { fnProcessLR,                  1,                            "LR:a0",                                 "LR:a0",                                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2663 */  { fnProcessLR,                  2,                            "LR:a1",                                 "LR:a1",                                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2664 */  { fnProcessLR,                  4,                            "LR:a2",                                 "LR:a2",                                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
-/* 2681 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+
+/* 2665 */  { fnCvtTemp,                          2,    STD_DEGREE  "C" STD_RIGHT_ARROW "K"            ,        STD_DEGREE  "C" STD_RIGHT_ARROW "K"            ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2666 */  { fnCvtTemp,                          3,                "K" STD_RIGHT_ARROW STD_DEGREE "C" ,                    "K" STD_RIGHT_ARROW STD_DEGREE "C" ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2667 */  { fnCvtTemp,                          4,    STD_DEGREE  "R" STD_RIGHT_ARROW "K"            ,        STD_DEGREE  "R" STD_RIGHT_ARROW "K"            ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2668 */  { fnCvtTemp,                          5,                "K" STD_RIGHT_ARROW STD_DEGREE "R" ,                    "K" STD_RIGHT_ARROW STD_DEGREE "R" ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2669 */  { fnCvtTemp,                          6,    STD_DEGREE  "R" STD_RIGHT_ARROW STD_DEGREE "F" ,        STD_DEGREE  "R" STD_RIGHT_ARROW STD_DEGREE "F" ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2670 */  { fnCvtTemp,                          7,    STD_DEGREE  "F" STD_RIGHT_ARROW STD_DEGREE "R" ,        STD_DEGREE  "F" STD_RIGHT_ARROW STD_DEGREE "R" ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2671 */  { fnCvtTemp,                          8,   "eV/k" STD_SUB_B STD_RIGHT_ARROW "K"            ,       "eV/k" STD_SUB_B STD_RIGHT_ARROW "K"            ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2672 */  { fnCvtTemp,                          9,                "K" STD_RIGHT_ARROW "eV/k" STD_SUB_B,                   "K" STD_RIGHT_ARROW "eV/k" STD_SUB_B,      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2673 */  { fnCvtTemp,                         10,    STD_DEGREE  "F" STD_RIGHT_ARROW "K"            ,        STD_DEGREE  "F" STD_RIGHT_ARROW "K"            ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2674 */  { fnCvtTemp,                         11,                "K" STD_RIGHT_ARROW STD_DEGREE "F" ,                    "K" STD_RIGHT_ARROW STD_DEGREE "F" ,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2675 */  { itemToBeCoded,                NOPARAM,                    "2675",                                        "2675",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2676 */  { itemToBeCoded,                NOPARAM,                    "2676",                                        "2676",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2677 */  { itemToBeCoded,                NOPARAM,                    "2677",                                        "2677",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2678 */  { itemToBeCoded,                NOPARAM,                    "2678",                                        "2678",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2679 */  { itemToBeCoded,                NOPARAM,                    "2679",                                        "2679",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2680 */  { itemToBeCoded,                NOPARAM,                    "2680",                                        "2680",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+
+/* 2681 */  { fnFlipFlag,                   FLAG_3DPHYS,                 "3DPHYS",                                      "3DPHYS",                                       (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2682 */  { fnFlipFlag,                   FLAG_3DXYZ,                  "3DXYZ",                                       "3DXYZ",                                        (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2683 */  { fnConvertStkToMx,             VECT_CR_AUT,                 "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,     "zyx" STD_RIGHT_ARROW STD_v_BAR STD_SUB_3,      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2684 */  { fnConvertMxToStk,             VECT_CR_AUT,                 STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",     STD_v_BAR STD_SUB_3 STD_RIGHT_ARROW "zyx",      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2685 */  { fnPNorm,                      TM_VALUE_NORM,               "||" SEP "x" SEP "||" STD_SUB_p,               "||" SEP "x" SEP "||" STD_SUB_p,                (0 << TAM_MAX_BITS) |     9, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    | HG_ENABLED         },
+/* 2686 */  { fnPNorm,                      pNorm_0_NNZ,                 "NNZ",                                         "NNZ",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2687 */  { fnPNorm,                      pNorm_1_CNORM,               "CNORM",                                       "CNORM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2688 */  { itemToBeCoded,                NOPARAM,                     "2688",                                        "2688",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2689 */  { itemToBeCoded,                NOPARAM,                     "2689",                                        "2689",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2690 */  { itemToBeCoded,                NOPARAM,                     "2690",                                        "2690",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2691 */  { fnRowColSum,                  0,                           "CSUM",                                        "CSUM",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2692 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNorm",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2693 */  { fnSwapColumns,                NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2694 */  { itemToBeCoded,                NOPARAM,                     "2694",                                        "2694",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2695 */  { itemToBeCoded,                NOPARAM,                     "2695",                                        "2695",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2696 */  { itemToBeCoded,                NOPARAM,                     "2696",                                        "2696",                                         (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+
+/* 2697 */  { itemToBeCoded,                 NOPARAM,                     "",                                     "Last item",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 };
