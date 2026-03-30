@@ -2743,7 +2743,7 @@ void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) 
     char typeStr[40];
     strcpy(typeStr, (typeIdx >= 0 && typeIdx <= 9) ? typeName[typeIdx] : "?");
     if(typeIdx == 8) {                                    // ShortInteger: angSub*10+polRec = base
-      char baseSuffix[12];
+      char baseSuffix[24];
       sprintf(baseSuffix, ", base %d", angSub*10 + polRec);
       strcat(typeStr, baseSuffix);
     } else if(typeIdx == 6) {                             // RealMatrix
