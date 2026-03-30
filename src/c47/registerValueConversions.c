@@ -981,7 +981,7 @@ bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, b
 
 bool_t getRegisterAsComplex34OrAnyReal34Quiet(calcRegister_t reg, real34_t *valr, real34_t *vali, bool_t *cmplx) {
   real_t realValr, realVali;
-  if(getRegisterAsComplexOrAnyReal(reg, &realValr, &realVali, cmplx)) {
+  if(getRegisterAsComplexOrAnyRealQuiet(reg, &realValr, &realVali, cmplx)) {
     realToReal34(&realValr, valr);
     realToReal34(&realVali, vali);
     return true;
