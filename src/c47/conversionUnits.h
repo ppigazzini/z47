@@ -162,8 +162,7 @@
   void fnUnitConvert  (uint16_t multiplyDivide);
 
   // Temperature
-  void fnCvtCToF      (uint16_t unusedButMandatoryParameter);
-  void fnCvtFToC      (uint16_t unusedButMandatoryParameter);
+  void fnCvtTemp      (uint16_t ix);
 
   // ...
   void fnCvtRatioDb   (uint16_t tenOrTwenty);

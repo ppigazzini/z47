@@ -409,6 +409,9 @@ void generateAllConstants(void) {
   generateConstantArray39("bananamm",      "+178.0");
   generateConstantArray39("bananaInch",    "+7.007874015748031496062992125984251968503937007874015748");
   generateConstantArray39("InchToCm",      "+2.540000000000000000000000000000000000000000000000000000e+00"); // cm     = inch × 0.0254 × 1000 / 10
+  generateConstantArray39("273p15",        "+2.731500000000000000000000000000000000000000000000000000e+02"); // defined Temperature : 273.15                                // SI exact
+  generateConstantArray39("459p67",        "+4.596700000000000000000000000000000000000000000000000000e+02"); // defined Temperature : 459.67                                // 273.15 × 9/5 − 32 = 459.67 exactly
+  generateConstantArray39("kBeVK",         "+8.617333262145177433663659334080639201233039577582555108e-05"); // defined Temperature : exact: 1380649/16021766340            // both kB (J/K) = 1.380649×10⁻²³ and 1 eV = 1.602176634×10⁻¹⁹ J are SI-defined exact values
 
   generateConstantArray39("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
   generateConstantArray39("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");
