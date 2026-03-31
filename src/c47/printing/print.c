@@ -1206,7 +1206,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
   // Imaginary part
   char * imaginaryPart = tmpString + strlen(tmpString);
   _real34ToPrintString(&imag34, tagAngle, imaginaryPart,max_len * 9);
-  _realStringToPrint(imaginaryPart,max_len);             // Adjust the imaginary part lenght (same as a standard real)
+  _realStringToPrint(imaginaryPart,max_len + (tagPolar ? 1 : 0));             // Adjust the imaginary part length
 }
 
 //
