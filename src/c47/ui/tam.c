@@ -416,7 +416,7 @@
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_MENU));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE ||tam.mode == TM_MENU));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.keyInputFinished && tam.mode == TM_KEY);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && (tam.function == ITM_LBL || tam.function == ITM_GTOP));
       if(allowAlphaMode) {
@@ -617,7 +617,7 @@
     }
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
-    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE ||(tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
       tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
       forceTry = true;
       tryOoR = true;
@@ -627,7 +627,7 @@
               (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) &&
               !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
-        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
+        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           #define LOCAL_LABEL 0            // Local label from A to J
           #define ALPHA_LABEL 1            // Global single letters alpha labels
           static TO_QSPI const int16_t registerLookup[REGISTER_W - FIRST_LETTERED_REGISTER + 1][2] = {

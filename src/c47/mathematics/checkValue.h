@@ -18,10 +18,7 @@
   void fnCheckMinusZero     (uint16_t unusedButMandatoryParameter);
   void fnCheckMatrix        (uint16_t unusedButMandatoryParameter);
   void fnCheckMatrixSquare  (uint16_t unusedButMandatoryParameter);
-  void fnCheckReIsZero      (uint16_t unusedButMandatoryParameter);
-  void fnCheckImIsZero      (uint16_t unusedButMandatoryParameter);
-  void fnCheckReNotZero     (uint16_t unusedButMandatoryParameter);
-  void fnCheckImNotZero     (uint16_t unusedButMandatoryParameter);
+  void fnCheckForZero       (uint16_t mode);
   void fnCheckIsVect2d      (uint16_t unusedButMandatoryParameter);
   void fnCheckIsVect3d      (uint16_t unusedButMandatoryParameter);
 

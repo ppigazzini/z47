@@ -1267,7 +1267,7 @@ endReturnTrue:
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
@@ -1819,6 +1819,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif // VERBOSEKEYS
         if(programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
           if((item == ITM_RS || item == ITM_EXIT1) && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
+            screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
           }
@@ -2456,17 +2457,21 @@ RELEASE_END:
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+            screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_STATUSBAR);
             refreshScreen(120);
           }
           else if(lastErrorCode != 0) {
             lastErrorCode = 0;
-            screenUpdatingMode = SCRUPD_AUTO;
             refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
+            screenUpdatingMode = SCRUPD_AUTO;
             refreshScreen(139);
             keyActionProcessed = true;
           }
-          else if(temporaryInformation == TI_NO_INFO && softmenuStack[0].softmenuId == 0) {
+          else if(temporaryInformation == TI_NO_INFO && 
+                   ( (softmenuStack[0].softmenuId == 0) || 
+                     ((programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) && (item == ITM_RS || item == ITM_EXIT1)) 
+                   )
+                 ) {
             //Test to see if the statusbar flicker speed is hig enough. Exit only refreshes the statusbar when MyM is up and no TI
             screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             refreshScreen(140);

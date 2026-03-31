@@ -1493,10 +1493,10 @@ void fn_cnst_op_A(uint16_t option) {
   linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
 
   real_t const__rt3on2, const_rt3on2, const__1on2;
-  realDivide(const_rt3,const_2,&const_rt3on2,&ctxtReal39);
-  realDivide(const_rt3,const_2,&const__rt3on2,&ctxtReal39);
+  realMultiply(const_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
+  realMultiply(const_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
   realSetNegativeSign(&const__rt3on2);
-  realCopy(const_1on2,&const__1on2);
+  realCopy(const_1on2, &const__1on2);
   realSetNegativeSign(&const__1on2);
 
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));
@@ -2239,9 +2239,9 @@ void dms34ToReal34(uint16_t dms) {
   realSubtract(&temp, &seconds, &temp, &ctxtReal39);
   temp.exponent += 2; // temp = temp * 100
 
-  fs = realToUint32C47(&temp);
-  s  = realToUint32C47(&seconds);
-  m  = realToUint32C47(&minutes);
+  fs = realToUint32C47(&temp, NULL);
+  s  = realToUint32C47(&seconds, NULL);
+  m  = realToUint32C47(&minutes, NULL);
 
   if(fs >= 100) {
     fs -= 100;
@@ -2562,7 +2562,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   m[0][1] = m[1][0] = 0;
 
   /* loop finding terms until denom gets too big */
-  while(m[1][0] *  ( ai = realToInt32C47(&xx) ) + m[1][1] <= maxden) {
+  while(m[1][0] *  ( ai = realToInt32C47(&xx, NULL) ) + m[1][1] <= maxden) {
     //printf("  ai = %12i  condition:%8i<%6i ",ai, m[1][0] * ai + m[1][1], maxden ); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
@@ -2734,7 +2734,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal_find_multiple_of_irr);
     realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal_find_multiple_of_irr);
     realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal_find_multiple_of_irr);
-    multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
+    multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip, NULL));                        //numerator
 
     //See if the ip is out of range (use the Real check not the integer check to protect agains > 32 bit integer max)
     if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, const_10p9__1)) {   //reduce whole multiple range to 34-24 = 10 digits. Use 10p9__1 = 999 999 999. (was const_2p31__1 = 2 147 483 647)

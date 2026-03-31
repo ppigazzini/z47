@@ -247,6 +247,9 @@
 
 
 //Testing and debugging
+  #define    REFRESH_ON_SCREEN_MONITOR  //refresh debug on actual screen. Shows the refresh source number. Works on hardware and sim.
+  #undef     REFRESH_ON_SCREEN_MONITOR
+
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
   #define    DM42_POWERMARKS
@@ -1520,7 +1523,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1

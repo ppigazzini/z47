@@ -133,7 +133,7 @@
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
-        realCopy(const_1, &ans);
+        realOne(&ans);
       }
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

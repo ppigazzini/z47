@@ -202,14 +202,25 @@ void fnUnitConvert(uint16_t arg) {
     unitConversion(conversionFactors[idx], multiply, invert);
 }
 
-/********************************************//**
- * \brief Converts °Celcius to °Fahrenheit: (°Celcius * 1,8) + 32.
- * Refreshes the stack. This is the exact formula.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
+
+//  {[(x - B) / C] * D} + E
+TO_QSPI static const real_t *cvtTempConsts[13][4] = {
+  //   B              C             D             E
+  {const_0,       const_1,      const_9on5,   const_32     }, // ITM_CtoF     ix =  0
+  {const_32,      const_9on5,   const_1,      const_0      }, // ITM_FtoC     ix =  1
+  {const_0,       const_1,      const_1,      const_273p15 }, // ITM_CtoK     ix =  2
+  {const_273p15,  const_1,      const_1,      const_0      }, // ITM_KtoC     ix =  3
+  {const_0,       const_9on5,   const_1,      const_0      }, // ITM_RAtoK    ix =  4
+  {const_0,       const_1,      const_9on5,   const_0      }, // ITM_KtoRA    ix =  5
+  {const_459p67,  const_1,      const_1,      const_0      }, // ITM_RAtoF    ix =  6
+  {const_0,       const_1,      const_1,      const_459p67 }, // ITM_FtoRA    ix =  7
+  {const_0,       const_kBeVK,  const_1,      const_0      }, // ITM_EVKBtoK  ix =  8
+  {const_0,       const_1,      const_kBeVK,  const_0      }, // ITM_KtoEVKB  ix =  9
+  {const_32,      const_9on5,   const_1,      const_273p15 }, // ITM_FtoK     ix = 10
+  {const_273p15,  const_1,      const_9on5,   const_32     }, // ITM_KtoF     ix = 11
+};
+
+void fnCvtTemp(uint16_t ix) {
   real_t reX;
 
   if(!getRegisterAsReal(REGISTER_X, &reX))
@@ -219,34 +230,18 @@ void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  realFMA(&reX, const_9on5, const_32, &reX, &ctxtReal39);
+  //  (x - B) / C * D + E
 
-  convertRealToResultRegister(&reX, REGISTER_X, amNone);
-
-  adjustResult(REGISTER_X, false, false, -1, -1, -1);
-}
-
-
-
-/********************************************//**
- * \brief Converts °Fahrenheit to °Celcius: (°Fahrenheit - 32) / 1,8.
- * Refreshes the stack. This is the exact formula.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnCvtFToC(uint16_t unusedButMandatoryParameter) {
-  real_t reX;
-
-  if(!getRegisterAsReal(REGISTER_X, &reX))
-    return;
-
-  if(!saveLastX()) {
-    return;
-  }
-
-  realSubtract(&reX, const_32, &reX, &ctxtReal39);
-  realDivide(&reX, const_9on5, &reX, &ctxtReal39);
+  //printf("ix = %d\n",ix);
+  //printRealToConsole(cvtTempConsts[ix][0], "(x - "," ) \n");
+  //printRealToConsole(cvtTempConsts[ix][1], "/ "," \n");
+  //printRealToConsole(cvtTempConsts[ix][2], "x "," \n");
+  //printRealToConsole(cvtTempConsts[ix][3], "+ ","\n");
+  if(cvtTempConsts[ix][0] != const_0) {realSubtract(&reX, cvtTempConsts[ix][0], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][1] != const_1) {realDivide  (&reX, cvtTempConsts[ix][1], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][2] != const_1) {realMultiply(&reX, cvtTempConsts[ix][2], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][3] != const_0) {realAdd     (&reX, cvtTempConsts[ix][3], &reX, &ctxtReal39);}
+  //printRealToConsole(&reX, "Rex: ","\n");
 
   convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
