@@ -41,7 +41,7 @@
     realAdd(j, k, &xmin, &ctxtReal39);
     realSubtract(&xmin, i, &xmin, &ctxtReal39);
     if(realIsNegative(&xmin)) {
-      realCopy(const_0, &xmin);
+      realZero(&xmin);
     }
     realCopy(realCompareLessThan(k, j) ? k : j, &xmax);
 
@@ -180,7 +180,8 @@
     real_t a1, a2, a3, b1, b2, i, hypergeomPart, cvgTol;
     bool_t signHgp = false;
 
-    realCopy(const_1, &cvgTol), cvgTol.exponent -= realContext->digits - 2;
+    realOne(&cvgTol);
+    cvgTol.exponent -= realContext->digits - 2;
 
     // (n C (k+1)) ((N-n) C (K-k-1)) / (N C K)
     realCopy(n, &a), realAdd(x, const_1, &b, realContext);
@@ -191,7 +192,7 @@
     logCyxReal(&a, &b, &c, realContext), realSubtract(&binomPart, &c, &binomPart, realContext); // N C K
 
     // generalized hypergeometric function 3F2
-    realCopy(const_1, &a1);
+    realOne(&a1);
     realAdd(x, const_1, &a2, realContext);
     realAdd(&a2, const_1, &b1, realContext);
     realSubtract(&a2, n, &a3, realContext);
@@ -199,8 +200,8 @@
     realAdd(&b1, n0, &b2, realContext);
     realSubtract(&b2, k0, &b2, realContext);
     realSubtract(&b2, n, &b2, realContext);
-    realCopy(const_0, &hypergeomPart);
-    realCopy(const_1, &i);
+    realZero(&hypergeomPart);
+    realOne(&i);
 
     if(complementary) {
       realExp(&binomPart, &b, realContext);
@@ -254,7 +255,7 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realOne(res);
       return;
     }
     realSubtract(&p, const_1, &p, realContext);
@@ -294,7 +295,7 @@
 
     if(realCompareLessThan(x, &mode)) {
       realCopy(x, &i);
-      realCopy(const_0, &cdf);
+      realZero(&cdf);
       do {
         realCopy(&cdf, &cdf0);
         pdf_Hypergeometric(&i, k0, n, n0, &pdf, realContext);

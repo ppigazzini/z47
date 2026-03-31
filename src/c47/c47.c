@@ -1087,6 +1087,8 @@ int convertKeyCode(int key) {
         charKey[1]=0;
         resetShiftState();
         resetKeytimers();
+        CLR_ST(STAT_KEYUP_WAIT);
+        dmcpResetAutoOff();
         key = -1;
 
         keyBuffer_pop();

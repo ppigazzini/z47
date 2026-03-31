@@ -3,7 +3,7 @@ PROGRAM_FILE_FORMAT
 C47_program_file_version
 1
 PROGRAM
-594
+592
 1
 253
 7
@@ -572,6 +572,8 @@ PROGRAM
 112
 2
 0
+1
+1
 134
 18
 253
@@ -590,12 +592,8 @@ PROGRAM
 75
 69
 89
-1
-1
-77
-111
-2
-1
+38
+99
 133
 178
 255

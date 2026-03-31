@@ -390,13 +390,13 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
 
-      realCopy(const_1, &tol);
+      realOne(&tol);
       tol.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
 
-      realCopy(const_1, &tolAlmostZero);
+      realOne(&tolAlmostZero);
       tolAlmostZero.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmZer : (significantDigits + 1);
 
-      realCopy(const_1, &minBracketSpacing);
+      realOne(&minBracketSpacing);
       minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
     } else {
       convergenceTolerence(&tol);
@@ -408,7 +408,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     setSystemFlag(FLAG_SOLVING);
     clearSystemFlag(FLAG_INTING);
 
-    realCopy(const_0, &delta);
+    realZero(&delta);
 
     real34ToReal(y, &aa);
     real34ToReal(y, &bb1);
@@ -771,7 +771,7 @@ retryLevel:
         else if(!first_newton_iter && realCompareEqual(&newton_x, &prev_x)) {
           // x stopped changing - is it converged or stalled?
           real_t tol_converged;
-          realCopy(const_1, &tol_converged);
+          realOne(&tol_converged);
           tol_converged.exponent = -37;
 
           if(realCompareAbsLessThan(&fbp1, &tol_converged)) {

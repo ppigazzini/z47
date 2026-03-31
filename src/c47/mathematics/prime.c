@@ -687,7 +687,7 @@ static void _doFnEvPFacts     (uint16_t param) {
         if(!getRegisterAsReal(REGISTER_X, &x)) {
           goto abort;
         }
-        pwr = realToInt32C47(&x);
+        pwr = realToInt32C47(&x, NULL);
         fnDrop(NOPARAM);
       }
       else {
@@ -718,7 +718,7 @@ static void _doFnEvPFacts     (uint16_t param) {
         longIntegerInit(factor);
         longIntegerInit(tmp_prod);
         uInt32ToLongInteger(1u, prod);
-        realCopy(const_1,&prodR);
+        realOne(&prodR);
         #define sumTypeInteger 0
         #define sumTypeReal    1
         #define sumTypeComplex 2
@@ -755,7 +755,7 @@ static void _doFnEvPFacts     (uint16_t param) {
             }
             else if(getFlag(FLAG_CPXRES)) {
               if(sumType == sumTypeReal) {
-                realCopy(const_0,&prodI);
+                realZero(&prodI);
                 sumType = sumTypeComplex;
               }
               if(sumType == sumTypeComplex) {
@@ -875,8 +875,9 @@ static void doFnEvPFacts (uint16_t param) {
     longIntegerFree(z);
     longIntegerFree(y);
     longIntegerFree(x);
-  } else {
-  /* process M_SIGMA_0, M_SIGMA_1, M_SIGMA_k */
+  }
+  else {
+    /* process M_SIGMA_0, M_SIGMA_1, M_SIGMA_k */
     _doFnEvPFacts(param);
   }
 }
@@ -893,7 +894,7 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
   const uint32_t type = getRegisterDataType(reg);
   *isNegative = false;
 
-  if (type == dtReal34Matrix) {
+  if(type == dtReal34Matrix) {
     const matrixHeader_t *head = REGISTER_MATRIX_HEADER(reg);
     const uint16_t cols = head->matrixColumns;
     real34_t *elems = REGISTER_REAL34_MATRIX_ELEMENTS(reg);
@@ -901,28 +902,35 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
     bool_t mustBeOne = false;
     unsigned int i;
 
-    if (head->matrixRows != 2 || cols < 1)  // changed to allow single column, -1^1 or m^n
+    if(head->matrixRows != 2 || cols < 1) { // changed to allow single column, -1^1 or m^n
       return false;
+    }
     for (i = 0; i < cols; i++) {
       real34ToReal(elems + i + 0 * cols, &x);
-      if (!realIsAnInteger(&x))
+      if(!realIsAnInteger(&x)) {
         return false;
-      if (realCompareLessEqual(&x, const_0)) {// changed to allow any factor >= 1, to include 1^n
-        if (i != 0)
+      }
+      if(realCompareLessEqual(&x, const_0)) { // changed to allow any factor >= 1, to include 1^n
+        if(i != 0) {
           return false;
-        if (!realCompareEqual(&x, const__1))
+        }
+        if(!realCompareEqual(&x, const__1)) {
           return false;
+        }
         mustBeOne = true;
       }
 
       real34ToReal(elems + i + 1 * cols, &x);
-      if (!realIsAnInteger(&x))
+      if(!realIsAnInteger(&x)) {
         return false;
-      if (realCompareLessThan(&x, const_0))  // change to const_0 to allow n^0 (exponents ≥ 0). (0^0 per definition will not occur as 0 factor is not allowed).
+      }
+      if(realCompareLessThan(&x, const_0)) { // change to const_0 to allow n^0 (exponents ≥ 0). (0^0 per definition will not occur as 0 factor is not allowed).
         return false;
-      if (mustBeOne) {
-        if (!realCompareEqual(&x, const_1))
+      }
+      if(mustBeOne) {
+        if(!realCompareEqual(&x, const_1)) {
           return false;
+        }
         *isNegative = true;
         mustBeOne = false;
       }
@@ -1070,14 +1078,15 @@ void fnEvPFacts(uint16_t param) {
     case M_FACTORS  :  // 5
       if(lastErrorCode == 0) {
         doFnEvPFacts(param);
-      } else {
+      }
+      else {
         #if defined(PC_BUILD)
           printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);
         #endif
       }
       break;
     case M_PHI_EUL  :  // 6
-        fnEulPhi(NOPARAM);
+      fnEulPhi(NOPARAM);
       break;
     default:;
   }

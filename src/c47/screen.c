@@ -2528,8 +2528,8 @@ void createSubstrings(uint8_t number) {
     jji = lastJ;
     if(iii == 0xFFFF || jji == 0xFFFF) {
       bb = getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr);
-      iii=realToUint32C47(&iir);
-      jji=realToUint32C47(&jjr);
+      iii=realToUint32C47(&iir, NULL);
+      jji=realToUint32C47(&jjr, NULL);
     } else {
       bb = true;
     }
@@ -2576,7 +2576,7 @@ void createSubstrings(uint8_t number) {
                    break;
         case  1: strcpy(noo," =" );
                    if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
-                     if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t) == 200) {
+                     if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t, NULL) == 200) {
                       strcat(noo," (conjugates)");
                      }
                    }
@@ -2623,7 +2623,7 @@ void createSubstrings(uint8_t number) {
 
   #define noLine false
   static void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth, bool_t doLine) {
-    int32_t w = realToInt32C47(SIGMA_N);
+    int32_t w = realToInt32C47(SIGMA_N, NULL);
     if(regist == REGISTER_X) {
       sprintf(prefix, "%03" PRId32 " data point", w);
       if(w > 1) {
@@ -2641,9 +2641,9 @@ void createSubstrings(uint8_t number) {
     if(regist == REGISTER_X) {
       real_t t;
       getRegisterAsRealQuiet(REGISTER_X, &t);
-      int32_t ii = realToInt32C47(&t);
+      int32_t ii = realToInt32C47(&t, NULL);
       realMultiply(&t, const_100, &t, &ctxtReal39);
-      int32_t jj = realToInt32C47(&t) - 100*ii;
+      int32_t jj = realToInt32C47(&t, NULL) - 100*ii;
       char sss[30];
       sss[0]=0;
       switch (ii) {
@@ -4016,7 +4016,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
          } else if (temporaryInformation == TI_LR_A2) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
-         } 
+         }
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
             bool_t prefixPre = false;
@@ -5639,7 +5639,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
-
+                               //print_caller("refreshScreen ...");
                                printf("   refrsh(%5u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
@@ -5654,6 +5654,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
     switch(currentMenu()) {
+      case -MNU_PARETO:
+      case -MNU_UNIFORM:
+      case -MNU_DISUNIFORM:
       case -MNU_GEV:
       case -MNU_BINOM:
       case -MNU_CAUCH:
@@ -5799,6 +5802,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
     #if !defined(DMCP_BUILD)
       refreshLcd(NULL);
     #endif // !DMCP_BUILD
+
+    #if defined(REFRESH_ON_SCREEN_MONITOR)
+      char aaa[111];
+      sprintf(aaa,"Refresh #%d",source);
+      print_linestr(aaa, false);
+    #endif //DMCP_REFRESH
+
   }
 #endif // !TESTSUITE_BUILD
 
@@ -6014,6 +6024,9 @@ void fnClLcd(uint16_t unusedButMandatoryParameter) {
       screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
       lcd_fill_rect(x, 0, SCREEN_WIDTH - x, SCREEN_HEIGHT - y, LCD_SET_VALUE);
     }
+    #if defined(REFRESH_ON_SCREEN_MONITOR)
+      print_linestr("Start Refresh monitoring", true);
+    #endif //DMCP_REFRESH
   #endif // !TESTSUITE_BUILD
 }
 

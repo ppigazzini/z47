@@ -442,7 +442,7 @@ typedef struct {
         return false;
     }
     realAdd((real_t *)result, (real_t*)temporary, (real_t *)result, c);
-    realCopy(const_0, (real_t*)temporary);
+    realZero((real_t*)temporary);
     return true;
   }
 
@@ -532,11 +532,11 @@ printf("Dddd %d\n",registerNo);
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
     reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_T));
+    real34Zero(REGISTER_REAL34_DATA(REGISTER_T));
     reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_A));
+    real34Zero(REGISTER_REAL34_DATA(REGISTER_A));
     reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_B));
+    real34Zero(REGISTER_REAL34_DATA(REGISTER_B));
   }
 
 
@@ -686,7 +686,7 @@ printf("Dddd %d\n",registerNo);
     }
 
     real1071_t paramX, paramY, paramTemp;
-    realCopy(const_0,(real_t*)&paramX);
+    realZero((real_t*)&paramX);
     real_t tmpR;
 
     realContext_t c = ctxtReal75;
@@ -741,7 +741,7 @@ printf("Dddd %d\n",registerNo);
   //--------//NILADIC FUNCTIONS
         case ITM_pi_XFN: {
           realCopy(const1071_pi, (real_t *)&paramX);
-//          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
+//          realMultiply(const2139_2pi, const_1on2, (real_t*)&paramX, &c);
           break;
         }
   //--------//MONADIC FUNCTIONS
@@ -803,8 +803,8 @@ printf("Dddd %d\n",registerNo);
             #endif //DEBUG_XFN
 
             real1071_t aa,bb;
-            realCopy(const_0,(real_t*)&aa);
-            realCopy(const_0,(real_t*)&bb);
+            realZero((real_t*)&aa);
+            realZero((real_t*)&bb);
             if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); } else
             if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); } else
             if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
@@ -1000,7 +1000,7 @@ printf("Dddd %d\n",registerNo);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    realCopy(const_0, &tmpR);
+    realZero(&tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 

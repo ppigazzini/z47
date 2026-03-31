@@ -35,6 +35,7 @@ void fnVarMnu(uint16_t label) {
 #if defined(PC_BUILD)
   int32_t gTime = 0;
   bool_t  gRemoveTimer = false;
+  guint   gTimerId = 0;
   static gboolean gTimer(gpointer user_data) {
     gTime++;
     if(gRemoveTimer) {
@@ -46,78 +47,184 @@ void fnVarMnu(uint16_t label) {
   }
 #endif //PC_BUILD
 
+/*
+void monitorDmcpFlags(const char *sss) {
+  char statStr[40];
+  int32_t i = 0;
+  while(i < 9 && sss[i]) {
+    statStr[i] = sss[i];
+    i++;
+  }
+  statStr[i++] = '0' + programRunStop;
+  statStr[i++] = ST(STAT_CLEAN_RESET)      ? 'C' : '-';
+  statStr[i++] = ST(STAT_RUNNING)          ? 'R' : '-';
+  statStr[i++] = ST(STAT_SUSPENDED)        ? 'S' : '-';
+  statStr[i++] = ST(STAT_KEYUP_WAIT)       ? 'K' : '-';
+  statStr[i++] = ST(STAT_OFF)              ? 'O' : '-';
+  statStr[i++] = ST(STAT_SOFT_OFF)         ? 'o' : '-';
+  statStr[i++] = ST(STAT_MENU)             ? 'M' : '-';
+  statStr[i++] = ST(STAT_BEEP_MUTE)        ? 'B' : '-';
+  statStr[i++] = ST(STAT_SLOW_AUTOREP)     ? 'A' : '-';
+  statStr[i++] = ST(STAT_PGM_END)          ? 'P' : '-';
+  statStr[i++] = ST(STAT_CLK_WKUP_ENABLE)  ? 'E' : '-';
+  statStr[i++] = ST(STAT_CLK_WKUP_SECONDS) ? 's' : '-';
+  statStr[i++] = ST(STAT_CLK_WKUP_FLAG)    ? 'F' : '-';
+  statStr[i++] = ST(STAT_DMY)              ? 'D' : '-';
+  statStr[i++] = ST(STAT_CLK24)            ? '2' : '-';
+  statStr[i++] = ST(STAT_POWER_CHANGE)     ? 'W' : '-';
+  statStr[i++] = ST(STAT_YMD)              ? 'Y' : '-';
+  statStr[i++] = ST(STAT_ALPHA_TAB_Fn)     ? 'T' : '-';
+  statStr[i++] = ST(STAT_HW_BEEP)          ? 'b' : '-';
+  statStr[i++] = ST(STAT_HW_USB)           ? 'U' : '-';
+  statStr[i++] = ST(STAT_HW_IR)            ? 'I' : '-';
+  statStr[i++] = key_empty()               ? 'e' : 'E';
+  statStr[i++] = emptyKeyBuffer()          ? 'q' : 'Q';
+  statStr[i]   = 0;
+  print_linestr(statStr, false);
+}
+*/
+
+
+#if defined (DMCP_BUILD)
+// sleepTime = 0 : do not time out, sleep only. Until a key is pressed.
+// sleepTime = 1 : return without sleep, without timer, with no delay.
+// sleepTime > 1 : means number of ms sleeping. Or until a key is pressed.
+static void goToSleepForMs(uint32_t sleepTime) {
+  if(sleepTime == 1) return;
+  if(sleepTime > 1) {
+    sys_timer_start(TIMER_IDX_REFRESH_SLEEP, sleepTime);
+  }
+  CLR_ST(STAT_RUNNING);
+  CLR_ST(STAT_KEYUP_WAIT);
+  SET_ST(STAT_SUSPENDED);
+  //monitorDmcpFlags("Pre-slp1:");
+  do {
+    sys_sleep();
+  } while(!ST(STAT_PGM_END) && key_empty() && emptyKeyBuffer() && !ST(STAT_CLK_WKUP_FLAG));
+  CLR_ST(STAT_CLK_WKUP_FLAG);
+  CLR_ST(STAT_SUSPENDED);
+  SET_ST(STAT_RUNNING);
+  if(sleepTime > 1) {
+    sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
+  }
+}
+
+
+static bool_t pauseKeyExit(int key, uint8_t *prevStop) {
+  if((key == 36 || key == 33) && *prevStop == PGM_RUNNING) {
+    *prevStop = programRunStop = PGM_WAITING;
+  }
+  setLastKeyCode(key);
+  fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
+  wait_for_key_release(0);
+  key_pop();
+  return true;
+}
+
+#endif //DMCP_BUILD
+
+
 
 void fnPause(uint16_t dur) {
+  //print_linestr("start monitoring1", true);
+
   int32_t duration = dur;
-    if(duration == 99) {      //99 signifies infinity, which is 2 hours on battery, and (2^31-1)/10 seconds = 59652 hours on USB. Note that this is determined at the start of pause, not changing during timing
-      if(!runningOnSimOrUSB) {
-        duration = 2*60*60*10; //2 hours
-      }
-      else {
-        duration = 0x7FFFFFFF; //maximum counter value of 59652 hours
-      }
+  if(duration == 99) {          // 99 signifies infinity, which is 2 hours on battery, and (2^31-1)/10 seconds = 59652 hours on USB. Note that this is determined at the start of pause, not changing during timing
+    if(!runningOnSimOrUSB) {
+      duration = 2*60*60*10;    // 2 hours
     }
+    else {
+      duration = 0x7FFFFFFF;    // maximum counter value of 59652 hours
+    }
+  }
 
   #if !defined(TESTSUITE_BUILD)
     uint8_t previousProgramRunStop = programRunStop;
-    leaveTamModeIfEnabled();
-    if(duration != 0 || previousProgramRunStop != PGM_RUNNING) {
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      refreshScreen(11);
-    }
     programRunStop = PGM_PAUSED;
 
+
+    if(previousProgramRunStop != PGM_RUNNING) {
+      leaveTamModeIfEnabled();
+    }
+
     #if defined(DMCP_BUILD)
+      if(previousProgramRunStop != PGM_RUNNING && dur != 99) {
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        refreshScreen(12);
+      }
       lcd_refresh();
-      for(int32_t i = 0; i < duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
-        if(previousProgramRunStop != PGM_RUNNING) {
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-          refreshScreen(12);
-          lcd_refresh();
-        }
+      wait_for_key_release(0);
+      key_pop();
+      uint32_t targetMs = sys_current_ms() + (uint32_t)duration * 10;
+      for(int32_t i = 0; (dur == 99 ? true : i < duration) && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
         int key = key_pop();
         key = convertKeyCode(key);
         if(key > 0) {
-          if((key == 36 || key == 33) && previousProgramRunStop == PGM_RUNNING) { //JM R/S or EXIT
-            previousProgramRunStop = programRunStop = PGM_WAITING;
+          if(key == 28 || key == 11) {   // f key on C47 and R47. These keys will not work to continue the 'press any key!'
+            wait_for_key_release(0);
+            continue;
           }
-          setLastKeyCode(key);
-          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
-          wait_for_key_release(0);
-          key_pop();
-          break;
+          if(key == 99) {                // spurious code generated by dmcp screen dump, ignore
+            continue;
+          }
+          if(key == 44) {                // DISP for special SCREEN DUMP key code. To be 16 but shift decoding already done to 44 in DMCP
+            standardScreenDump();
+            lastItem = SCREENDUMP;
+            dmcpResetAutoOff();
+            resetShiftState();
+            resetKeytimers();
+            CLR_ST(STAT_KEYUP_WAIT);
+            wait_for_key_release(0);
+            { uint8_t outKey; while(!emptyKeyBuffer()) outKeyBuffer(&outKey); }
+            key_pop();
+            continue;
+          }
+          if(pauseKeyExit(key, &previousProgramRunStop)) break;
         }
-        sys_delay(100);
+        if(dur == 99) {
+          if(sys_current_ms() >= targetMs && !runningOnSimOrUSB) break;
+          dmcpResetAutoOff();
+          goToSleepForMs(0);
+        } else {
+          dmcpResetAutoOff();            // Prevent auto off occurring within the delay, which causes an unrecoverable sleep and impossibility to switch calculator back on
+          fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, programRunStop == PGM_RUNNING ? PROGRAM_KB_ACTV : TO_KB_ACTV_MEDIUM); //prevent dying out of the activity timer
+          sys_delay(100);
+        }
       }
+      if(dur != 0 && (dur == 99 || previousProgramRunStop != PGM_RUNNING)) {
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(1201);
+        lcd_refresh();
+      }
+
+
     #else // !DMCP_BUILD  PC_BUILD
-      gTime = 0;
-      gRemoveTimer = false;
-      g_timeout_add(100, (GSourceFunc) gTimer, NULL);
-      refreshLcd(NULL);
-      int32_t i = 1;
-      #if defined(PC_BUILD_TELLTALE)
-        printf("Start timing %3.1f s:", (float)(duration/10));
-      #endif //PC_BUILD_TELLTALE
-      while(gTime <= duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) {
-        g_main_context_iteration (g_main_context_default (), FALSE);
-        if(gTime == i) { //arrive here every 100ms, do nothing, just increment the coounter to trap the next 100ms
-          i++;
-          if(previousProgramRunStop != PGM_RUNNING) {
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-            refreshScreen(12);
-            refreshLcd(NULL);
-          }
-          #if defined(PC_BUILD_TELLTALE)
-            printf(".");
-          #endif //PC_BUILD_TELLTALE
-          fflush(stdout);
-        }
+      if(gTimerId != 0) {
+        g_source_remove(gTimerId);
+        gTimerId = 0;
       }
-      #if defined(PC_BUILD_TELLTALE)
-        printf("; Done timing %i/%i/%i\n", i, gTime, duration);
-      #endif //PC_BUILD_TELLTALE
-      gRemoveTimer = true;
+      if(duration == 0) {
+        g_main_context_iteration(g_main_context_default(), FALSE);
+      } else {
+        gTime = 0;
+        gRemoveTimer = false;
+
+        gTimerId = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
+        refreshLcd(NULL);
+        int32_t i = 1;
+        while(gTime <= duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) {
+          g_main_context_iteration (g_main_context_default (), duration == 0 ? FALSE : TRUE);
+          if(gTime == i) { //arrive here every 100ms, do nothing, just increment the counter to trap the next 100ms
+            i++;
+            if(previousProgramRunStop != PGM_RUNNING && programRunStop != PGM_PAUSED) {
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              refreshScreen(12);
+              refreshLcd(NULL);
+            }
+          }
+        }
+        gRemoveTimer = true;
+      } // duration == 0
     #endif // PC_BUILD
     if(programRunStop == PGM_WAITING) {
       previousProgramRunStop = PGM_WAITING;
@@ -188,6 +295,9 @@ void fnKey(uint16_t regist) {
       while(gtk_events_pending()) {
         gtk_main_iteration();
       }
+    #elif defined(DMCP_BUILD)
+      dmcpResetAutoOff(); //prevent auto off occurring within a GTO loop with KEY?, which causes an unrecoverable sleep and impossibility to switch calculator back on
+      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, programRunStop == PGM_RUNNING ? PROGRAM_KB_ACTV : TO_KB_ACTV_MEDIUM); //prevent dying out of the activity timer
     #endif //PC_BUILD
   }
 
