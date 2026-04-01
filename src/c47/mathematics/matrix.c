@@ -8060,9 +8060,10 @@ SPH_ret1:
     *valid2DRInput   = (*ang2Dx == amNone && *ang2Dy == amNone && constVector == VECT_CR_yx);
     *validSPHInput   = (*ang3Dx != amNone && *ang3Dy != amNone && *ang3Dz == amNone && (constVector == VECT_CR_zyx || constVector == VECT_CR_zxy));
     *validCYLInput   = (*ang3Dx == amNone && *ang3Dy != amNone && *ang3Dz == amNone && (constVector == VECT_CR_zyx || constVector == VECT_CR_zxy));
-    *valid3DRInput   = (*ang3Dx == amNone && *ang3Dy == amNone && *ang3Dz == amNone && (constVector == VECT_CR_zyx || constVector == VECT_CR_zxy));
-    //printf("ang2Dx=%u ang2Dy=%u ang3Dx=%u ang3Dy=%u ang3Dz=%u\n", *ang2Dx, *ang2Dy, *ang3Dx, *ang3Dy, *ang3Dz);
-    //printf("validPolar=%d valid2DR=%d validSPH=%d validCYL=%d valid3DR=%d\n", *validPolarInput, *valid2DRInput, *validSPHInput, *validCYLInput, *valid3DRInput);
+    *valid3DRInput   = (*ang3Dx == amNone && *ang3Dy == amNone && *ang3Dz == amNone);
+    // printf("\nconstVector = %d\n",constVector);
+    // printf("ang2Dx=    %2u ang2Dy=  %2u ang3Dx=  %2u ang3Dy=  %2u ang3Dz=  %2u\n", *ang2Dx, *ang2Dy, *ang3Dx, *ang3Dy, *ang3Dz);
+    // printf("validPolar=%2d valid2DR=%2d validSPH=%2d validCYL=%2d valid3DR=%2d\n", *validPolarInput, *valid2DRInput, *validSPHInput, *validCYLInput, *valid3DRInput);
     return (*validPolarInput || *valid2DRInput || *validSPHInput || *validCYLInput || *valid3DRInput);
   }
 
