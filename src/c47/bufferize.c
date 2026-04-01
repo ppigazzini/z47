@@ -2545,7 +2545,7 @@ typedef struct {
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
-        real34Zero(dest_i);
+        real34SetZero(dest_i);
       }
       else {
         real_t magnitude, theta;

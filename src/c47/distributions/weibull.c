@@ -113,7 +113,7 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsSpecial(&p) || realIsNegative(&p) || realIsZero(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realPower(&p, t, &q, realContext);
@@ -130,11 +130,11 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsNegative(&p) || realIsZero(&p)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsSpecial(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realPower(&p, t, &p, realContext);
@@ -147,11 +147,11 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsNegative(&p) || realIsZero(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(&p)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realPower(&p, t, &p, realContext);

@@ -13,12 +13,14 @@ void realLog10(const real_t *x, real_t *res, realContext_t *realContext) {
 void logxyReal(const real_t *denom) {
   real_t a, b;
 
-  if (!getRegisterAsReal(REGISTER_X, &a))
+  if(!getRegisterAsReal(REGISTER_X, &a)) {
     return;
+  }
 
   if(realIsZero(&a)) {
-    if(getSystemFlag(FLAG_SPCRES))
-      realCopy(const_minusInfinity, &a);
+    if(getSystemFlag(FLAG_SPCRES)) {
+      realSetMinusInfinity(&a);
+    }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -37,8 +39,9 @@ void logxyReal(const real_t *denom) {
       return;
     }
     else if(getFlag(FLAG_CPXRES)) {
-      if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)))
-        realCopy(const_plusInfinity, &a);
+      if(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X))) {
+        realSetPlusInfinity(&a);
+      }
       else {
         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
         realDivide(const_pi, denom, &a, &ctxtReal39);
@@ -47,7 +50,7 @@ void logxyReal(const real_t *denom) {
       }
     }
     else {
-      realCopy(const_NaN, &a);
+      realSetNaN(&a);
     }
   }
 
@@ -65,7 +68,7 @@ void logxyReal(const real_t *denom) {
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, &a);
+      realSetNaN(&a);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -83,13 +86,14 @@ void logxyReal(const real_t *denom) {
 void logxyCplx(const real_t *denom) {
   real_t a, b;
 
-  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
-      return;
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b)) {
+    return;
+  }
 
   if(realIsZero(&a) && realIsZero(&b)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_minusInfinity, &a);
-      realZero(&b);
+      realSetMinusInfinity(&a);
+      realSetZero(&b);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -112,19 +116,22 @@ void logxyCplx(const real_t *denom) {
 void logxyLonI(const real_t *denom) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
-  if (realIsNegative(&x) || realIsZero(&x)) {
+  }
+  if(realIsNegative(&x) || realIsZero(&x)) {
     logxyReal(denom);
     return;
   }
 
   WP34S_Ln(&x, &x, &ctxtReal39);
   realDivide(&x, denom, &x, &ctxtReal34);   /* Round using the 34 digit context */
-  if (!realIsAnInteger(&x))
+  if(!realIsAnInteger(&x)) {
     convertRealToResultRegister(&x, REGISTER_X, amNone);
-  else
+  }
+  else {
     convertRealToLongIntegerRegister(&x, REGISTER_X, DEC_ROUND_HALF_EVEN);
+  }
 }
 
 

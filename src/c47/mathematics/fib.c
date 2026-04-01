@@ -84,7 +84,7 @@ static uint8_t FibonacciComplex(const real_t *nReal, const real_t *nImag, real_t
   cosComplex(resReal, resImag, resReal, resImag, realContext);                       // res = COS(PI * n)
   mulComplexComplex(&bReal, &bImag, resReal, resImag, &bReal, &bImag, realContext);  // b   = PHI^(-n) * COS(PI * n)
   realSquareRoot(const_5, resReal, realContext);                                     // res = SQRT(5)
-  realZero(resImag);
+  realSetZero(resImag);
   realSubtract(&aReal, &bReal, &aReal, realContext);                                 // a   = PHI^(n) - PHI^(-n) * COS(PI * n)
   realSubtract(&aImag, &bImag, &aImag, realContext);
   divComplexComplex(&aReal, &aImag, resReal, resImag, resReal, resImag, realContext);// res = [ PHI^(n) - PHI^(-n) * COS(PI * n) ] / SQRT(5)

@@ -1449,7 +1449,7 @@ endReturnTrue:
 //          if(temporaryInformation != TI_NO_INFO) {
   //          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
     //      }
-    
+
     if(lastErrorCode != 0) shiftKeyClearsError = true;                                                                                         //JM shifts
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
@@ -1568,7 +1568,7 @@ endReturnTrue:
     }
 
     //handle the shifts in graph mode
-    else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) { 
+    else if((key->primary == KEY_fg || key->primary == ITM_SHIFTf || key->primary == ITM_SHIFTg) && (calcMode == CM_PLOT_STAT || calcMode == CM_LISTXY)) {
       if(lastErrorCode != 0) shiftKeyClearsError = true;
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
@@ -2467,9 +2467,9 @@ RELEASE_END:
             refreshScreen(139);
             keyActionProcessed = true;
           }
-          else if(temporaryInformation == TI_NO_INFO && 
-                   ( (softmenuStack[0].softmenuId == 0) || 
-                     ((programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) && (item == ITM_RS || item == ITM_EXIT1)) 
+          else if(temporaryInformation == TI_NO_INFO &&
+                   ( (softmenuStack[0].softmenuId == 0) ||
+                     ((programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) && (item == ITM_RS || item == ITM_EXIT1))
                    )
                  ) {
             //Test to see if the statusbar flicker speed is hig enough. Exit only refreshes the statusbar when MyM is up and no TI

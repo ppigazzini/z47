@@ -70,7 +70,7 @@
     fnToReal(NOPARAM);
     real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &counter); //Loopfrom
     realCopy(prod ? const_1 : const_0, &resultR);           //Initialize real accumulator
-    realZero(&resultRi);                                    //Initialize complex accumulator
+    realSetZero(&resultRi);                                    //Initialize complex accumulator
 
     real34Subtract(&loopTo, &counter, &rLoop);              //calculate the remaining iteration counter
     if(!real34IsZero(&loopStep)) {

@@ -73,7 +73,7 @@ void unitVectorRema(void) {
 
   linkToRealMatrixRegister(REGISTER_X, &matrix);
 
-  realZero(&sum);
+  realSetZero(&sum);
   for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns; ++i) {
     real34ToReal(&matrix.matrixElements[i], &elem);
     realMultiply(&elem, &elem, &elem, &ctxtReal39);
@@ -95,7 +95,7 @@ void unitVectorCxma(void) {
 
   linkToComplexMatrixRegister(REGISTER_X, &matrix);
 
-  realZero(&sum);
+  realSetZero(&sum);
   for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns; ++i) {
     real34ToReal(VARIABLE_REAL34_DATA(&matrix.matrixElements[i]), &real);
     realMultiply(&real, &real, &real, &ctxtReal39);

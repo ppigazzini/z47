@@ -110,13 +110,13 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
   realMultiply(alpha, alpha, &mu, realContext);
   realMultiply(&mu, const_4, &mu, realContext);
 
-  realOne(&p);
+  realSetOne(&p);
   realSubtract(&mu, const_1, &q, realContext);
   realMultiply(x, const_8, &z8, realContext);
   realDivide(&q, &z8, &q, realContext);
-  realOne(&k21);
+  realSetOne(&k21);
   realCopy(&q, &nm);
-  realOne(&qq);
+  realSetOne(&qq);
   for(k = 2; k < 1000; ++k) {
     #if !defined(TESTSUITE_BUILD)
       int32_t loop = k;
@@ -147,7 +147,7 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
       realSubtract(k % 2 ? &q : &p, &nm, k % 2 ? &q : &p, realContext);
     }
 
-    realOne(&tmp);
+    realSetOne(&tmp);
     tmp.exponent -= 73;
     if(WP34S_RelativeError(&p, &pp, &tmp, realContext) && WP34S_RelativeError(&q, &qq, &tmp, realContext)) {
       break;
@@ -180,8 +180,8 @@ static void u_k(uint32_t k, const real_t *coeff/*array*/, const real_t *t_r, con
 
   realCopy(t_r, &t_n_r);
   realCopy(t_i, &t_n_i);
-  realZero(res_r);
-  realZero(res_i);
+  realSetZero(res_r);
+  realSetZero(res_i);
   for(i = 1; i < k; ++i) {
     mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
   }
@@ -205,22 +205,22 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
   if((coeff_current = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
     if((coeff_deriv = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
       if((coeff_next = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
-        realZero(&prev_r);
-        realZero(&prev_i);
+        realSetZero(&prev_r);
+        realSetZero(&prev_i);
         realCopy(even ? const_1 : const_0, res_r);
-        realZero(res_i);
+        realSetZero(res_i);
         realCopy(nu, &nu_k);
 
         realDivide(const_3, const_24, &coeff_current[0], realContext);
         realDivide(const_5, const_24, &coeff_current[1], realContext);
         realChangeSign(&coeff_current[1]);
         for(i = 2; i < NUMBER_OF_COEFF; ++i) {
-          realZero(&coeff_current[i]);
+          realSetZero(&coeff_current[i]);
         }
 
         for(i = 0; i < NUMBER_OF_COEFF; ++i) {
-          realZero(&coeff_deriv[i]);
-          realZero(&coeff_next[i]);
+          realSetZero(&coeff_deriv[i]);
+          realSetZero(&coeff_next[i]);
         }
 
         for(i = 1; i < NUMBER_OF_COEFF; ++i) {
@@ -229,10 +229,12 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
            divComplexComplex(&tmp, &tmp2, &nu_k, const_0, &tmp, &tmp2, realContext);
            if((!realIsSpecial(&tmp)) && !realIsSpecial(&tmp2)) {
              int32ToReal((i % 2 == 1) ? odd : even, &coeff);
-             realMultiply(&tmp, &coeff, &tmp, realContext), realMultiply(&tmp2, &coeff, &tmp2, realContext);
-             realAdd(res_r, &tmp, res_r, realContext), realAdd(res_i, &tmp2, res_i, realContext);
+             realMultiply(&tmp, &coeff, &tmp, realContext);
+             realMultiply(&tmp2, &coeff, &tmp2, realContext);
+             realAdd(res_r, &tmp, res_r, realContext);
+             realAdd(res_i, &tmp2, res_i, realContext);
            }
-           realOne(&tmp);
+           realSetOne(&tmp);
            tmp.exponent -= 73;
            if(WP34S_RelativeError(res_r, &prev_r, &tmp, realContext) && WP34S_RelativeError(res_i, &prev_i, &tmp, realContext)) {
              break;
@@ -454,7 +456,7 @@ static void digamma(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsAnInteger(x) && realCompareGreaterThan(x, const_0)) {
     real_t a, ar;
     realMinus(const_gammaEM, res, realContext);
-    realOne(&a);
+    realSetOne(&a);
     while(realCompareLessThan(&a, x)) {
       realDivide(const_1, &a, &ar, realContext);
       realAdd(res, &ar, res, realContext);
@@ -462,7 +464,7 @@ static void digamma(const real_t *x, real_t *res, realContext_t *realContext) {
     }
   }
   else {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
 }
 
@@ -484,7 +486,7 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
   realDivide(&r, &q, &term, realContext);
   realCopy(&term, res);                        // first term in series
 
-  realZero(&m);
+  realSetZero(&m);
 
   for(n=0; n<1000; n++) {
     #if !defined(TESTSUITE_BUILD)
@@ -508,7 +510,7 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
     }
     realCopy(&q, res);
   }
-  realCopy(const_NaN, res);
+  realSetNaN(res);
   return;
 }
 #endif // !SAVE_SPACE_DM42_12BESSEL
@@ -518,15 +520,15 @@ void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContex
   real_t a, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   if(realIsZero(x)) {
     if(realIsZero(alpha)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
-    realZero(res);
+    realSetZero(res);
     return;
   }
   realCopy(alpha, &a);
@@ -580,17 +582,17 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   }
   in = realToInt32C47(n, NULL);
 
-  realMultiply(x, const_1on2, &xon2, realContext);      // xon2 = x/2
+  realMultiply(x, const_1on2, &xon2, realContext); // xon2 = x/2
   realPower(&xon2, n, &xon2n, realContext);        // xon2n = (x/2)^n
   realMultiply(&xon2, &xon2, &x2on4, realContext); // x2on4 = +/- x^2/4
 
   if(in > 0) {
     realSubtract(n, const_1, &v, realContext);     // v = n-k-1 = n-1
-    realZero(&k);
+    realSetZero(&k);
     WP34S_Gamma(n, &p, realContext);               // p = (n-1)!
     realCopy(&p, &s);
     realMultiply(&p, n, &nf, realContext);         // nf = n!  (for later)
-    realOne(&u);
+    realSetOne(&u);
     for(i = 1; i < in; i++) {
       realDivide(&p, &v, &t, realContext);
       realSubtract(&v, const_1, &v, realContext);
@@ -603,8 +605,8 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
     realDivide(&t, &xon2n, res, realContext);
   }
   else {
-    realZero(res);
-    realOne(&nf);
+    realSetZero(res);
+    realSetOne(&nf);
   }
 
   WP34S_BesselJ(n, x, &u, realContext);
@@ -618,7 +620,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   realAdd(n, const_1, &t, realContext);            // t = n+1
   digamma(&t, &u, realContext);                    // u = Psi(n+1)
   realSubtract(&u, const_egamma, &v, realContext); // v = psi(k+1) + psi(n+k+1)
-  realZero(&k);
+  realSetZero(&k);
   realCopy(n, &npk);
   realDivide(const_1, &nf, &p, realContext);       // p = (x^2/4)^k/(k!(n+k)!)
   realMultiply(&v, &p, &s, realContext);
@@ -665,15 +667,15 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
   real_t a, t, u, s, c, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   else if(realIsZero(x)) {
-    realCopy(const_minusInfinity, res);
+    realSetMinusInfinity(res);
     return;
   }
   else if(realIsInfinite(alpha) || realIsNegative(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   realCopy(alpha, &a);

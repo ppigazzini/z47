@@ -526,7 +526,7 @@ static void almostEqualMatrix(uint16_t regist) {
     break; \
   case dtReal34: \
     real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34Zero(&s.i); \
+    real34SetZero(&s.i); \
     break; \
   case dtLongInteger: \
     getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
