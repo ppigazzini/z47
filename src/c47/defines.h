@@ -2188,6 +2188,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define VECT_CR_yx  6
 #define VECT_CR_10  7
 #define VECT_CR_01  8
+#define M_CR_zyx    9
 //#define VECT_yx_zyx 0x62
 
 #define V_D0        0

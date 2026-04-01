@@ -2563,6 +2563,7 @@ void createSubstrings(uint8_t number) {
 
 
 #if defined(OPTION_VECTOR)
+  #define compact true
   static inline const char  *e0(void) { return getSystemFlag(FLAG_3DXYZ) ? "x"       : "i";       }
   static inline const char  *e1(void) { return getSystemFlag(FLAG_3DXYZ) ? "y"       : "j";       }
   static inline const char  *e2(void) { return getSystemFlag(FLAG_3DXYZ) ? "z"       : "k";       }
@@ -2570,7 +2571,7 @@ void createSubstrings(uint8_t number) {
   static inline const char *_e1(void) { return getSystemFlag(FLAG_3DXYZ) ? STD_SUB_y : STD_SUB_j; }
   static inline const char *_e2(void) { return getSystemFlag(FLAG_3DXYZ) ? STD_SUB_z : STD_SUB_k; }
   #define  interspace STD_SPACE_HAIR
-  void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+  void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth, bool_t shrt) {
     prefix[0] = 0;
     *prefixWidth = 0;
     if(temporaryInformation == TI_VECTORCOMP_3DSPH && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components SPH
@@ -2628,22 +2629,40 @@ void createSubstrings(uint8_t number) {
     else if(isRegisterMatrix3dVector(regist)) {
       if(getVectorRegisterPolarMode(regist) == amPolarSPH) {  //3D
         if(getSystemFlag(FLAG_3DPHYS)) {
-          snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());   // [rho phi_z th_xy] PHYS
+          if(shrt)
+            snprintf(prefix, 50, "%s%s%s", STD_rho, STD_phi_m, STD_theta_m);   // [rho phi_z th_xy] PHYS
+          else
+            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());   // [rho phi_z th_xy] PHYS
         } else {
-          snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());   // [rho th_xy phi_z]          
-        }
+          if(shrt)
+            snprintf(prefix, 50, "%s%s%s", STD_rho, STD_theta_m, STD_phi_m);   // [rho th_xy phi_z]          
+          else
+            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());   // [rho th_xy phi_z]          
+         }
       } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
-        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
+       if(shrt)
+          snprintf(prefix, SCREEN_WIDTH, "%s%s%s", "r", STD_theta_m, e2());                       // [r th_xy z]
+        else
+          snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
       } else {
-        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", e0(), interspace, e1(), interspace, e2());                                               // [x y z]
+       if(shrt)
+          snprintf(prefix, SCREEN_WIDTH, "%s%s%s", e0(), e1(), e2());                                               // [x y z]
+        else
+          snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", e0(), interspace, e1(), interspace, e2());                                               // [x y z]
       }
     }
 
     else if(isRegisterMatrix2dVector(regist)) {               //2D
       if(getVectorRegisterPolarMode(regist) != amPolar) {
-        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s]", e0(), interspace, e1());
+       if(shrt)
+          snprintf(prefix, SCREEN_WIDTH, "%s%s", e0(), e1());
+        else
+          snprintf(prefix, SCREEN_WIDTH, "[%s%s%s]", e0(), interspace, e1());
       } else {
-        snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1());
+        if(shrt)
+          snprintf(prefix, SCREEN_WIDTH, "%s%s", "r", STD_theta_m);
+        else
+          snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1());
       }
     }
 
@@ -4571,7 +4590,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
 #if defined(OPTION_VECTOR)
           else if(temporaryInformation >= TI_VECTORCOMP_3DSPH && temporaryInformation <= TI_VECTORCOMP_2DRECT) {
-            tiVector(regist, prefix, &prefixWidth);
+            tiVector(regist, prefix, &prefixWidth, !compact);
           }
 #endif //OPTION_VECTOR
 
@@ -5122,8 +5141,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             //            else if(temporaryInformation == TI_VECTOR && displayVector && isRegisterMatrixVector(regist)) {
             //              tiVector(regist, prefix,  &prefixWidth);
             //            }
-            else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI in X
-              tiVector(regist, prefix,  &prefixWidth);
+            
+            //else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI in X
+            //  tiVector(regist, prefix,  &prefixWidth);
+            //}
+            
+            //combined
+            else if(displayVector && isRegisterMatrixVector(regist)) {
+              tiVector(regist, prefix,  &prefixWidth, temporaryInformation != TI_VECTOR);
             }
 #endif //OPTION_VECTOR
 

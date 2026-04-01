@@ -438,6 +438,7 @@
   void       V3RectoToCyl                   (uint16_t am);
   bool_t     VtoAngleMode                   (angularMode_t angleMode);
   void       fnComplexToVector              (uint16_t unusedButMandatoryParameter);
+  bool_t     is_2D3D_Register_Ready         (uint32_t *ang2Dx, uint32_t *ang2Dy, uint32_t *ang3Dx, uint32_t *ang3Dy, uint32_t *ang3Dz, bool_t *validPolarInput, bool_t *valid2DRInput, bool_t *validSPHInput, bool_t *validCYLInput, bool_t *valid3DRInput, uint16_t constVector);
 
 
 #endif // !MATRIX_H
