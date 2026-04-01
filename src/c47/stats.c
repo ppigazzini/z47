@@ -286,12 +286,12 @@ void reLoadStatisticalSums(void) {
 void clearStatisticalSums(void) {
   if(statisticalSumsPointer != NULL) {
     for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS - 4; sum++) {
-      realZero(statisticalSumsPointer + sum);
+      realSetZero(statisticalSumsPointer + sum);
     }
-    realCopy(const_plusInfinity,  SIGMA_XMIN);
-    realCopy(const_plusInfinity,  SIGMA_YMIN);
-    realCopy(const_minusInfinity, SIGMA_XMAX);
-    realCopy(const_minusInfinity, SIGMA_YMAX);
+    realSetPlusInfinity(SIGMA_XMIN);
+    realSetPlusInfinity(SIGMA_YMIN);
+    realSetMinusInfinity(SIGMA_XMAX);
+    realSetMinusInfinity(SIGMA_YMAX);
   }
 }
 
@@ -312,8 +312,8 @@ void initStatisticalSums(void) {
 
 #if !defined(TESTSUITE_BUILD)
   static void calcMax(uint16_t maxOffset) {
-    realCopy(const_minusInfinity, SIGMA_XMAX);
-    realCopy(const_minusInfinity, SIGMA_YMAX);
+    realSetMinusInfinity(SIGMA_XMAX);
+    realSetMinusInfinity(SIGMA_YMAX);
 
     calcRegister_t regStats = findNamedVariable(statMx);
     if(regStats != INVALID_VARIABLE) {
@@ -332,8 +332,8 @@ void initStatisticalSums(void) {
 
 
   static void calcMin(uint16_t maxOffset) {
-    realCopy(const_plusInfinity,  SIGMA_XMIN);
-    realCopy(const_plusInfinity,  SIGMA_YMIN);
+    realSetPlusInfinity(SIGMA_XMIN);
+    realSetPlusInfinity(SIGMA_YMIN);
 
     calcRegister_t regStats = findNamedVariable(statMx);
     if(regStats != INVALID_VARIABLE) {
@@ -798,7 +798,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
       rows = histo.header.matrixRows;
       cols = histo.header.matrixColumns;
       realToReal34(s,       &histo.matrixElements[(rows-1) * cols    ]);
-      real34Zero(&histo.matrixElements[(rows-1) * cols + 1]);
+      real34SetZero(&histo.matrixElements[(rows-1) * cols + 1]);
       //printf(">>>>>HISTO rows=%d  cols=%d  ",rows, cols);
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols    ],"X:","  ");
       //printReal34ToConsole(&histo.matrixElements[(rows-1) * cols +1 ],"Y:","  \n");

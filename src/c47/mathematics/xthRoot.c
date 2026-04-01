@@ -82,13 +82,13 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsPositive(&y)) && (realCompareLessThan(&x, const_0) && (!realIsInfinite(&x))))
       ) {
       telltale += 1;
-      realZero(&o);
+      realSetZero(&o);
     }
 
     //1
     if(((realCompareGreaterEqual(&y, const_0) || (realIsInfinite(&y) && realIsPositive(&y))) && realIsInfinite(&x))) {
       telltale += 2;
-      realOne(&o);
+      realSetOne(&o);
     }
 
     //inf
@@ -96,7 +96,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsPositive(&y))          && (realCompareGreaterEqual(&x, const_0) && (!realIsInfinite(&x)))) // (y=+inf)  AND (0>= x > inf)
       ) {
       telltale += 4;
-      realCopy(const_plusInfinity, &o);
+      realSetPlusInfinity(&o);
     }
 
     //NaN
@@ -107,7 +107,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x))) // (y=-inf) AND (x is even > 0) [zero r means n/2 has no remainder, therefore even]
       ) {
       telltale += 8;
-      realCopy(const_NaN, &o);
+      realSetNaN(&o);
     }
 
     //-inf
@@ -115,7 +115,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
     realDivideRemainder(&r, const_2, &r, realContext);
     if((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x))) { // (y=-inf) AND (x is odd > 0) [zero r means (n+1)/2 has no remainder, therefore even]
       telltale += 16;
-      realCopy(const_minusInfinity, &o);
+      realSetMinusInfinity(&o);
     }
 
 

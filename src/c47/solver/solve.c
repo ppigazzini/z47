@@ -367,8 +367,8 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       int newton_iter_count = 0;
       bool_t newtonDisabled = false;
       real_t brent_best_x, brent_best_fx;
-      realCopy(const_NaN, &brent_best_x);
-      realCopy(const_NaN, &brent_best_fx);
+      realSetNaN(&brent_best_x);
+      realSetNaN(&brent_best_fx);
     #endif //OPTION_TVM_NEWTON
     bool_t newtonInitialized = false;
 
@@ -386,19 +386,19 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     bool_t fbIsAlmostZero = false;
     real_t minBracketSpacing;
     real_t prevResX;
-    realCopy(const_NaN, &prevResX);
+    realSetNaN(&prevResX);
 
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-
-      realOne(&tol);
+      realSetOne(&tol);
       tol.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
 
-      realOne(&tolAlmostZero);
+      realSetOne(&tolAlmostZero);
       tolAlmostZero.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmZer : (significantDigits + 1);
 
-      realOne(&minBracketSpacing);
+      realSetOne(&minBracketSpacing);
       minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
-    } else {
+    }
+    else {
       convergenceTolerence(&tol);
       stringToReal("1e-34", &tolAlmostZero, &ctxtSolver);
       realCopy(const_1e_32, &minBracketSpacing);
@@ -408,12 +408,12 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     setSystemFlag(FLAG_SOLVING);
     clearSystemFlag(FLAG_INTING);
 
-    realZero(&delta);
+    realSetZero(&delta);
 
     real34ToReal(y, &aa);
     real34ToReal(y, &bb1);
     real34ToReal(x, &bb);
-    realCopy(const_NaN, &bb2);
+    realSetNaN(&bb2);
 
 
     //determine the tolerance (ULP) with which levelness will be detected
@@ -440,7 +440,8 @@ retryLevel:
         real34ToReal(&antiLevel34, &antiLevel);
         if(real34IsPositive(&antiLevel34)) {
           realAdd(&bb, &antiLevel, &bb, &ctxtSolver);            //Add this value to the right hand starting value
-        } else {
+        }
+        else {
           realAdd(&aa, &antiLevel, &aa, &ctxtSolver);            //Add this value to the left hand starting value
           realAdd(&bb1, &antiLevel, &bb1, &ctxtSolver);          //Add this value to the left hand starting value
         }
@@ -506,8 +507,8 @@ retryLevel:
         clearSystemFlag(FLAG_SOLVING);
         setSystemFlag(FLAG_INTING);
       }
-      real34Zero(resZ);
-      real34Zero(resY);
+      real34SetZero(resZ);
+      real34SetZero(resY);
       realToReal34(realIsZero(&faa) ? &aa : &bb, resX);
 
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -637,8 +638,7 @@ retryLevel:
           if(realGetExponentComp(&relativeWidth) <= -2) {
             handoff = true;  // Very tight relative bracket (<= 10%)
           }
-          else if(realGetExponentComp(&relativeWidth) <= 1 &&
-                  realGetExponentComp(&fbb) <= -10) {
+          else if(realGetExponentComp(&relativeWidth) <= 1 && realGetExponentComp(&fbb) <= -10) {
             handoff = true;  // Moderate bracket (<= 1000%) + tiny residual
           }
         }
@@ -741,7 +741,8 @@ retryLevel:
                   clearSystemFlag(FLAG_SOLVING);
                 }
                 return SOLVER_RESULT_NORMAL;
-              } else {
+              }
+              else {
                 // Newton made it worse - revert to Brent's saved result
                 realToReal34(&brent_best_fx, resZ);
                 realToReal34(&brent_best_x, resY);
@@ -771,7 +772,7 @@ retryLevel:
         else if(!first_newton_iter && realCompareEqual(&newton_x, &prev_x)) {
           // x stopped changing - is it converged or stalled?
           real_t tol_converged;
-          realOne(&tol_converged);
+          realSetOne(&tol_converged);
           tol_converged.exponent = -37;
 
           if(realCompareAbsLessThan(&fbp1, &tol_converged)) {
@@ -873,7 +874,7 @@ retryLevel:
           }
 
           if(bp1 == &ss) {
-            realCopy(const_NaN, &bb2);
+            realSetNaN(&bb2);
           }
           else {
             realCopy(&bb1, &bb2);
@@ -906,7 +907,8 @@ retryLevel:
           real_t tol1;
           stringToReal("1e-120", &tol1, &ctxtSolver);
           fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tol1);
-        } else {
+        }
+        else {
           fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
         }
 
@@ -952,7 +954,8 @@ retryLevel:
             realCopy(&fbb, &brent_best_fx);
             // Don't break - do Newton polish
 
-            } else if(newton_polish_mode && newton_polish_count > 0) {
+            }
+            else if(newton_polish_mode && newton_polish_count > 0) {
             // Polish done - compare Newton result against saved Brent result
             newton_polish_mode = false;
             newton_polish_count = 0;
@@ -961,7 +964,8 @@ retryLevel:
               realToReal34(&fbp1, resZ);
               realToReal34(&newton_x, resY);
               realToReal34(&newton_x, resX);
-            } else {
+            }
+            else {
               // Newton made it worse - revert to saved Brent result
               realToReal34(&brent_best_fx, resZ);
               realToReal34(&brent_best_x, resY);
@@ -969,7 +973,8 @@ retryLevel:
             }
             goto solver_polish_exit;
 
-          } else {
+          }
+          else {
             break;
           }
         #else

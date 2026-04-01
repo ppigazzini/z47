@@ -33,7 +33,7 @@ static void arcsinhCplx(void) {
 
 uint8_t ArcsinhReal(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsInfinite(x)) {
-    realCopy(realIsNegative(x) ? const_minusInfinity : const_plusInfinity, res);
+    realCopy(x, res);
   }
   else {
     WP34S_ArcSinh(x, res, realContext);
