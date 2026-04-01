@@ -2776,26 +2776,45 @@
 #define ITM_2679                    2679
 #define ITM_2680                    2680 //spares for the temp menu
 
-#define ITM_3DPHYS                  2681
-#define ITM_3DXYZ                   2682
-#define ITM_STKtoV3                 2683
-#define ITM_V3toSTK                 2684
-
-#define ITM_PNORM                   2685
-#define ITM_NNZ                     2686
-#define ITM_CNORM                   2687
-#define ITM_2688                    2688
-#define ITM_2689                    2689
-#define ITM_2690                    2690
-#define ITM_CSUM                    2691
-#define MNU_TAMNORM                 2692
-#define ITM_M_CC                    2693
+#define MNU_PRINTER                 2681
+#define ITM_PRINTERALPHA            2682
+#define ITM_PRINTERHP               2683
+#define ITM_PRINTERMARTEL           2684
+#define ITM_PRINTEROTHER            2685
+#define ITM_PRINTERDLAYQ            2686
+#define ITM_PRINTERON               2687
+#define ITM_PRINTEROFF              2688
+#define ITM_MAN                     2689
+#define ITM_NORM                    2690
+#define ITM_TRACE                   2691
+#define ITM_PRINTERLIST             2692
+#define ITM_2693                    2693
 #define ITM_2694                    2694
 #define ITM_2695                    2695
 #define ITM_2696                    2696
+#define ITM_2697                    2697
+#define ITM_2698                    2698
+#define ITM_2699                    2699 //spares for the print menu
 
+#define ITM_3DPHYS                  2700
+#define ITM_3DXYZ                   2701
+#define ITM_STKtoV3                 2702
+#define ITM_V3toSTK                 2703
 
-#define LAST_ITEM                   2697
+#define ITM_PNORM                   2704
+#define ITM_NNZ                     2705
+#define ITM_CNORM                   2706
+#define ITM_2707                    2707
+#define ITM_2708                    2708
+#define ITM_2709                    2709
+#define ITM_CSUM                    2710
+#define MNU_TAMNORM                 2711
+#define ITM_M_CC                    2712
+#define ITM_2713                    2713
+#define ITM_2714                    2714
+#define ITM_2715                    2715 //spares for the matrix and vectors
+
+#define LAST_ITEM                   2716
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

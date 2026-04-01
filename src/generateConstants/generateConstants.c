@@ -71,6 +71,7 @@ void generateConstantArray39(char *name, char *value) {
 
   memset(&real39, 0, REAL39_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real39, &ctxtReal39);
+  realReduce((real_t *)&real39, (real_t *)&real39, &ctxtReal39);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
@@ -78,7 +79,6 @@ void generateConstantArray39(char *name, char *value) {
   emitConstant(name, "real_t", &real39, REAL39_SIZE_IN_BYTES, "const_");
   cntReal39++;
 }
-
 
 void generateConstantArray34(char *name, char *value) {
   real34_t real34;
@@ -89,6 +89,7 @@ void generateConstantArray34(char *name, char *value) {
 
   memset(&real34, 0, REAL34_SIZE_IN_BYTES);
   stringToReal34(value, &real34);
+  real34Reduce(&real34, &real34);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
@@ -96,7 +97,6 @@ void generateConstantArray34(char *name, char *value) {
   emitConstant(name, "real34_t", &real34, REAL34_SIZE_IN_BYTES, "const34_");
   cntReal34++;
 }
-
 
 void generateConstantArray51(char *name, char *value) {
   real51_t real51;
@@ -107,6 +107,7 @@ void generateConstantArray51(char *name, char *value) {
 
   memset(&real51, 0, REAL51_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real51, &ctxtReal51);
+  realReduce((real_t *)&real51, (real_t *)&real51, &ctxtReal51);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
@@ -114,7 +115,6 @@ void generateConstantArray51(char *name, char *value) {
   emitConstant(name, "real_t", &real51, REAL51_SIZE_IN_BYTES, "const_");
   cntReal51++;
 }
-
 
 void generateConstantArray75(char *name, char *value) {
   real_t real75;
@@ -125,6 +125,7 @@ void generateConstantArray75(char *name, char *value) {
 
   memset(&real75, 0, REAL_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real75, &ctxtReal75);
+  realReduce((real_t *)&real75, (real_t *)&real75, &ctxtReal75);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[13 - strlen(name)] = 0;
@@ -132,7 +133,6 @@ void generateConstantArray75(char *name, char *value) {
   emitConstant(name, "real_t", &real75, REAL_SIZE_IN_BYTES, "const_");
   cntReal75++;
 }
-
 
 void generateConstantArray6147(char *name, char *value) {
   real6147_t real6147;
@@ -143,6 +143,7 @@ void generateConstantArray6147(char *name, char *value) {
 
   memset(&real6147, 0, REAL6147_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real6147, &ctxtReal6147);
+  realReduce((real_t *)&real6147, (real_t *)&real6147, &ctxtReal6147);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
@@ -150,7 +151,6 @@ void generateConstantArray6147(char *name, char *value) {
   emitConstant(name, "real_t", &real6147, REAL6147_SIZE_IN_BYTES, "const6147_");
   cntReal6147++;
 }
-
 
 void generateConstantArray2139(char *name, char *value) {
   real2139_t real2139;
@@ -161,6 +161,7 @@ void generateConstantArray2139(char *name, char *value) {
 
   memset(&real2139, 0, REAL2139_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real2139, &ctxtReal2139);
+  realReduce((real_t *)&real2139, (real_t *)&real2139, &ctxtReal2139);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
@@ -178,6 +179,7 @@ void generateConstantArray1071(char *name, char *value) {
 
   memset(&real1071, 0, REAL1071_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real1071, &ctxtReal1071);
+  realReduce((real_t *)&real1071, (real_t *)&real1071, &ctxtReal1071);
 
   strcpy(whiteSpace, "                                        ");
   whiteSpace[9 - strlen(name)] = 0;
