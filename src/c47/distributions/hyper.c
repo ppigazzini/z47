@@ -41,7 +41,7 @@
     realAdd(j, k, &xmin, &ctxtReal39);
     realSubtract(&xmin, i, &xmin, &ctxtReal39);
     if(realIsNegative(&xmin)) {
-      realZero(&xmin);
+      realSetZero(&xmin);
     }
     realCopy(realCompareLessThan(k, j) ? k : j, &xmax);
 
@@ -78,7 +78,7 @@
         pdf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal39);
       }
       else {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -180,7 +180,7 @@
     real_t a1, a2, a3, b1, b2, i, hypergeomPart, cvgTol;
     bool_t signHgp = false;
 
-    realOne(&cvgTol);
+    realSetOne(&cvgTol);
     cvgTol.exponent -= realContext->digits - 2;
 
     // (n C (k+1)) ((N-n) C (K-k-1)) / (N C K)
@@ -192,7 +192,7 @@
     logCyxReal(&a, &b, &c, realContext), realSubtract(&binomPart, &c, &binomPart, realContext); // N C K
 
     // generalized hypergeometric function 3F2
-    realOne(&a1);
+    realSetOne(&a1);
     realAdd(x, const_1, &a2, realContext);
     realAdd(&a2, const_1, &b1, realContext);
     realSubtract(&a2, n, &a3, realContext);
@@ -200,8 +200,8 @@
     realAdd(&b1, n0, &b2, realContext);
     realSubtract(&b2, k0, &b2, realContext);
     realSubtract(&b2, n, &b2, realContext);
-    realZero(&hypergeomPart);
-    realOne(&i);
+    realSetZero(&hypergeomPart);
+    realSetOne(&i);
 
     if(complementary) {
       realExp(&binomPart, &b, realContext);
@@ -218,7 +218,7 @@
         break;
       }
 
-      signHgp = (realIsNegative(&a1) ? 1 : 0) ^ (realIsNegative(&a2) ? 1 : 0) ^ (realIsNegative(&a3) ? 1 : 0) ^ (realIsNegative(&b1) ? 1 : 0) ^ (realIsNegative(&b2) ? 1 : 0);
+      signHgp = realIsNegative(&a1) ^ realIsNegative(&a2) ^ realIsNegative(&a3) ^ realIsNegative(&b1) ^ realIsNegative(&b2);
       realCopyAbs(&a1, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
       realCopyAbs(&a2, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
       realCopyAbs(&a3, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
@@ -255,7 +255,7 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realSubtract(&p, const_1, &p, realContext);
@@ -287,7 +287,7 @@
     real_t mode, pdf, i, cdf, cdf0;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -295,7 +295,7 @@
 
     if(realCompareLessThan(x, &mode)) {
       realCopy(x, &i);
-      realZero(&cdf);
+      realSetZero(&cdf);
       do {
         realCopy(&cdf, &cdf0);
         pdf_Hypergeometric(&i, k0, n, n0, &pdf, realContext);
@@ -313,7 +313,7 @@
     real_t mean, var, s;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 

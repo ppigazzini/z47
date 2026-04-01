@@ -18,12 +18,12 @@ void sincpiComplex(const real_t *real, const real_t *imag, real_t *resReal, real
   realDivideRemainder(&rr, const_1, &rmdr, realContext);
 
   if(realIsZero(&rr) && realIsZero(&ii)) {
-    realOne(resReal);
-    realZero(resImag);
+    realSetOne(resReal);
+    realSetZero(resImag);
   }
   else if(realIsZero(&rmdr) && realIsZero(&ii)) {
-    realZero(resReal);
-    realZero(resImag);
+    realSetZero(resReal);
+    realSetZero(resImag);
   }
   else {
     real_t sina, cosa, sinhb, coshb, sinR, sinImag;

@@ -146,6 +146,9 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001                      };
 
 
+TO_QSPI const int16_t menu_VECT[]        = { };
+
+
 TO_QSPI const int16_t menu_VECCONV[]     = { ITM_STKtoV2,                   ITM_V2toSTK,                ITM_CPXtoV,               ITM_VtoCPX,            ITM_STKtoV3,                 ITM_V3toSTK,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_REGtoVEC,                ITM_VECtoREG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL /*_VECtoSTK*/, ITM_NULL,                    ITM_NULL                      };
@@ -680,6 +683,9 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              SFL_BCD,                       SFL_TOPHEX,                 SFL_LEAD0,                SFL_OVERFLOW,          SFL_CARRY,                   -MNU_FLG                      };
 
+TO_QSPI const int16_t menu_TamNorm[]     = { ITM_INDIRECTION,               ITM_INFINITY,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
+                                             ITM_NULL,                      ITM_NNZ,                    ITM_RNORM,                ITM_CNORM,             ITM_ENORM,                   ITM_NULL                      };
+
 TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 TO_QSPI const int16_t menu_TamNonRegTrk[]= { ITM_INDIRECTION,               ITM_YY_TRACK,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
                                              ITM_NULL,                      ITM_YY_OFF,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
@@ -1080,8 +1086,11 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 173 */  {.menuItem = -MNU_TAMRCL_TVM,  .numItems = sizeof(menu_TamRclTVM     )/sizeof(int16_t), .softkeyItem = menu_TamRclTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 174 */  {.menuItem = -MNU_CONVTEMP,    .numItems = sizeof(menu_ConvTemp      )/sizeof(int16_t), .softkeyItem = menu_ConvTemp       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 175 */  {.menuItem = -MNU_PRINTER,     .numItems = sizeof(menu_Printer       )/sizeof(int16_t), .softkeyItem = menu_Printer        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 176 */  {.menuItem = -MNU_VECT,        .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 177 */  {.menuItem = -MNU_TAMNORM,     .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
-/* 176 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 178 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+
 };
 
 

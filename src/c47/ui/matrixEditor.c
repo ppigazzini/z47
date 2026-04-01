@@ -607,7 +607,7 @@ void mimEnter(bool_t commit) {
         case NP_FRACTION_DENOMINATOR:
         case NP_HP32SII_DENOMINATOR:
           closeNimWithFraction(VARIABLE_REAL34_DATA(complex34Ptr));
-          real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
+          real34SetZero(VARIABLE_IMAG34_DATA(complex34Ptr));
           break;
         case NP_COMPLEX_INT_PART:
         case NP_COMPLEX_FLOAT_PART:
@@ -618,7 +618,7 @@ void mimEnter(bool_t commit) {
           break;
         default:
           stringToReal34(aimBuffer, VARIABLE_REAL34_DATA(complex34Ptr));
-          real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
+          real34SetZero(VARIABLE_IMAG34_DATA(complex34Ptr));
       }
     }
     
@@ -705,11 +705,11 @@ void mimAddNumber(int16_t item) {
         const int16_t col = getJRegisterAsInt(true);
 
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-          real34Zero(&openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+          real34SetZero(&openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
         }
         else {
-          real34Zero(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
-          real34Zero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
         setSystemFlag(FLAG_ASLIFT);
         return;
@@ -763,7 +763,7 @@ void mimAddNumber(int16_t item) {
               real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
             }
             else {
-              real34Zero(VARIABLE_REAL34_DATA(elm));
+              real34SetZero(VARIABLE_REAL34_DATA(elm));
               real34Copy(const34_1, VARIABLE_IMAG34_DATA(elm));
             }
           }
@@ -782,7 +782,7 @@ void mimAddNumber(int16_t item) {
         }
         else {
           realToReal34(const_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
-          real34Zero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
       }
       else if(nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[strlen(aimBuffer) - 1] == 'i') {
@@ -814,7 +814,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
   }
   else {
     real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], &re1);
-    real34Zero(&im1);
+    real34SetZero(&im1);
   }
 
   mimEnter(true);
@@ -827,7 +827,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
   }
   else {
     real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], &re);
-    real34Zero(&im);
+    real34SetZero(&im);
   }
   if(isComplex) {
     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
@@ -865,7 +865,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
     }
     else if(isComplex) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
-      real34Zero(                                  VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
+      real34SetZero(                                  VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) { // Convert to a complex matrix
       complex34Matrix_t cxma;

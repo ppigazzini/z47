@@ -155,12 +155,13 @@ finish1:
 static void powReal(void) {
   real_t y, x, res;
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   if(realIsInfinite(&y)) {
     if(realIsZero(&x)) {
-      realCopy(const_NaN, &res);
+      realSetNaN(&res);
     }
     else {
       if(realIsPositive(&x) && realIsAnInteger(&x)) {
@@ -168,7 +169,7 @@ static void powReal(void) {
         realCopy(realIsZero(&res) ? const_plusInfinity : const_minusInfinity, &res);
       }
       else {
-        realCopy(const_plusInfinity, &res);
+        realSetPlusInfinity(&res);
       }
     }
     goto finish;
@@ -207,22 +208,22 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
 
   if(realIsInfinite(yReal) || realIsInfinite(yImag)) {
     if(realIsZero(xReal) && realIsZero(xImag)) {
-      realCopy(const_NaN, rReal);
-      realCopy(const_NaN, rImag);
+      realSetNaN(rReal);
+      realSetNaN(rImag);
     }
     else {
-      realCopy(const_plusInfinity, rReal);
-      realCopy(const_plusInfinity, rImag);
+      realSetPlusInfinity(rReal);
+      realSetPlusInfinity(rImag);
     }
   }
   else if(realIsZero(yReal) && realIsZero(yImag)) {
     if(realIsZero(xReal)) {
-      realCopy(const_NaN, rReal);
-      realCopy(const_NaN, rImag);
+      realSetNaN(rReal);
+      realSetNaN(rImag);
     }
     else {
-      realZero(rReal);
-      realZero(rImag);
+      realSetZero(rReal);
+      realSetZero(rImag);
     }
   }
   else {
@@ -282,13 +283,13 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
     realExp(rReal, &tmp, realContext);
     realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
     if(doZeroingImag) {
-      realZero(rImag);
+      realSetZero(rImag);
     }
     else {
       realMultiply(&tmp, rImag, rImag, realContext);
     }
     if(doZeroingReal) {
-      realZero(rReal);
+      realSetZero(rReal);
     }
     else {
       realMultiply(&tmp, rReal, rReal, realContext);

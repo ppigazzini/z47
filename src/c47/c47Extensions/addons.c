@@ -353,7 +353,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 freeRegisterData(REGISTER_X);
                 setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
                 setRegisterDataType(REGISTER_X, dtReal34, amNone);
-                real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+                real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
                 hexDigits = 0;
                 nimNumberPart = NP_INT_10;
                 //clearRegisterLine(NIM_REGISTER_LINE, true, true);
@@ -429,7 +429,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               else {
                 setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
               }
-              real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+              real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
               //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
               hexDigits = 0;
               if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
@@ -527,7 +527,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               clearSystemFlag(FLAG_ALPHA);
               freeRegisterData(REGISTER_X);
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-              //real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+              //real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
               hexDigits = 0;
               if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
               xCursor = 1;
@@ -1510,10 +1510,10 @@ void fn_cnst_op_A(uint16_t option) {
 
   for (int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
-    real34Zero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    real34SetZero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     if(i != 0) {
       realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i*3]));
-      real34Zero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
+      real34SetZero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
     }
   }
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
