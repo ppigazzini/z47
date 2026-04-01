@@ -4399,6 +4399,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2678 */  { itemToBeCoded,                NOPARAM,                     "2678",                                        "2678",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2679 */  { itemToBeCoded,                NOPARAM,                     "2679",                                        "2679",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2680 */  { itemToBeCoded,                NOPARAM,                     "2680",                                        "2680",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+//spares for the temp menu ^^^
 
 /* 2681 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER,                                   STD_PRINTER,                                   (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2682 */  { itemToBeCoded,                TM_REGISTER,                 STD_PRINTER STD_alpha,                         STD_PRINTER STD_alpha,                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
@@ -4419,6 +4420,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2697 */  { itemToBeCoded,                NOPARAM,                     "2697",                                        "2697",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2698 */  { itemToBeCoded,                NOPARAM,                     "2698",                                        "2698",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2699 */  { itemToBeCoded,                NOPARAM,                     "2699",                                        "2699",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+//spares for the print menu ^^^
 
 /* 2700 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
