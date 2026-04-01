@@ -48,7 +48,8 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
         angle45 = const1071_piOn4;
         angle90 = const1071_piOn2;
         angle180 = const1071_pi;
-      } else {
+      }
+      else {
         angle45 = const_piOn4_75;
         angle90 = const_piOn2_75;
         angle180 = const_pi_75;
@@ -113,7 +114,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       realCopy(const_root2on2, cosOut);
     }
     if(tanOut != NULL) {
-      realOne(tanOut);
+      realSetOne(tanOut);
     }
   }
   else { // angle < 90
@@ -124,7 +125,8 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
     if(savedContextDigits >= 1071) {
       C47_WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
-    } else {
+    }
+    else {
       WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
     }
   }
@@ -176,13 +178,13 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
-     realCopy(const_NaN, sinOut);
+      realSetNaN(sinOut);
     }
     if(cosOut != NULL) {
-      realCopy(const_NaN, cosOut);
+      realSetNaN(cosOut);
     }
     if(tanOut != NULL) {
-      realCopy(const_NaN, tanOut);
+      realSetNaN(tanOut);
     }
    return;
   }
@@ -329,7 +331,7 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 
   if(tanOut != NULL) {
     if(sinOut == NULL || cosOut == NULL) {
-      realCopy(const_NaN, tanOut);
+      realSetNaN(tanOut);
     }
     else {
       if(swap) {
@@ -351,13 +353,13 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
-     realCopy(const_NaN, sinOut);
+     realSetNaN(sinOut);
     }
     if(cosOut != NULL) {
-      realCopy(const_NaN, cosOut);
+      realSetNaN(cosOut);
     }
     if(tanOut != NULL) {
-      realCopy(const_NaN, tanOut);
+      realSetNaN(tanOut);
     }
    return;
   }
@@ -387,7 +389,7 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
   }
   if(tanOut != NULL) {
     if(sinOut == NULL || cosOut == NULL) {
-      realCopy(const_NaN, tanOut);
+      realSetNaN(tanOut);
     }
     else {
       if(swap) {
@@ -420,7 +422,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
   *neg = realIsNegative((real_t*)x);
 
   if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
+    realSetNaN((real_t*)angle);
     return false;
   }
 
@@ -442,8 +444,8 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
   for(int n=0; n<TaylorIterationMax; n++) {
     if(!doEpsilon && realCompareLessEqual(a, const_1on10)) {
       break;
-    } else
-    if(doEpsilon && realCompareLessEqual((real_t*)a, const_1on10)){//  (real_t*)z)) {
+    }
+    else if(doEpsilon && realCompareLessEqual((real_t*)a, const_1on10)){//  (real_t*)z)) {
       break;
     }
 
@@ -590,7 +592,8 @@ static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *real
 void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
     C47do_WP34S_Atan(x, angle, realContext);
-  } else {
+  }
+  else {
     WP34S_Atan(x, angle, realContext);
   }
 }
@@ -606,7 +609,7 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
   const bool_t yNeg = realIsNegative((real_t*)y);
 
   if(realIsNaN((real_t*)x) || realIsNaN((real_t*)y)) {
-    realCopy(const_NaN, (real_t*)atan);
+    realSetNaN((real_t*)atan);
     return false;
   }
 
@@ -633,14 +636,14 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
           realCopy( _pi(realContext->digits), (real_t*)atan);
         }
         else {
-          realZero((real_t*)atan);
+          realSetZero((real_t*)atan);
         }
       }
       else if(xNeg) {
         realCopy( _pi(realContext->digits), (real_t*)atan);
       }
       else {
-        realZero((real_t*)atan);
+        realSetZero((real_t*)atan);
       }
     }
     return true;
@@ -677,7 +680,7 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
         }
       }
       else {
-        realZero((real_t*)atan);
+        realSetZero((real_t*)atan);
         if(yNeg) {
           realSetNegativeSign((real_t*)atan);
         }
@@ -703,7 +706,7 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
     }
   }
   else {
-    realZero((real_t*)t);
+    realSetZero((real_t*)t);
   }
 
   realAdd((real_t*)r, (real_t*)t, (real_t*)atan, realContext);
@@ -731,7 +734,8 @@ void C47do_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realConte
 void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
     C47do_WP34S_Atan2(y, x, atan, realContext);
-  } else {
+  }
+  else {
     WP34S_Atan2(y, x, atan, realContext);
   }
 }
@@ -739,12 +743,12 @@ void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext
 
 static bool_t doAsin(real_t *x, real_t *angle, real_t *abx, real_t *z, realContext_t *realContext) {
   if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
+    realSetNaN((real_t*)angle);
     return false;
   }
   realCopyAbs((real_t*)x, (real_t*)abx);
   if(realCompareGreaterThan((real_t*)abx, const_1)) {
-    realCopy(const_NaN, (real_t*)angle);
+    realSetNaN((real_t*)angle);
     return false;
   }
   // angle = 2*atan(x/(1+sqrt(1-x*x)))
@@ -776,7 +780,8 @@ static void C47do_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *real
 void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
     C47do_WP34S_Asin(x, angle, realContext);
-  } else {
+  }
+  else {
     WP34S_Asin(x, angle, realContext);
   }
 }
@@ -785,17 +790,17 @@ void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) 
 
 static bool_t doAcos(real_t *x, real_t *angle, real_t *abx, real_t *z, realContext_t *realContext) {
   if(realIsNaN((real_t*)x)) {
-    realCopy(const_NaN, (real_t*)angle);
+    realSetNaN((real_t*)angle);
     return false;
   }
   realCopyAbs((real_t*)x, (real_t*)abx);
   if(realCompareGreaterThan((real_t*)abx, const_1)) {
-    realCopy(const_NaN, (real_t*)angle);
+    realSetNaN((real_t*)angle);
     return false;
   }
   // angle = 2*atan((1-x)/sqrt(1-x*x))
   if(realCompareEqual((real_t*)x, const_1)) {
-    realZero((real_t*)angle);
+    realSetZero((real_t*)angle);
   }
   else {
     realMultiply((real_t*)x, (real_t*)x, (real_t*)z, realContext);
@@ -827,7 +832,8 @@ static void C47do_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *real
 void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
     C47do_WP34S_Acos(x, angle, realContext);
-  } else {
+  }
+  else {
     WP34S_Acos(x, angle, realContext);
   }
 }
@@ -844,7 +850,7 @@ static void WP34S_Calc_Gamma_LnGamma_Lanczos(const real_t *xin, real_t *res, boo
   }
 
   realSubtract(xin, const_1, &x, realContext);
-  realZero(&s);
+  realSetZero(&s);
   realAdd(&x, const_29, &t, realContext);
   for(k=28; k>=0; k--) {
     realDivide((real_t *)(gammaLanczosCoefficients + k), &t, &u, realContext);
@@ -887,18 +893,18 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
   // Check for special cases
   if(realIsSpecial(xin)) {
     if(realIsInfinite(xin) && realIsPositive(xin)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
 
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
 
   // Handle x approximately zero case
   if(realCompareAbsLessThan(xin, const_1e_24)) {
     if(realIsZero(xin)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return;
     }
     realDivide(const_1, xin, &x, realContext);
@@ -914,7 +920,7 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
     reflect = true;
     realSubtract(const_1, xin, &t, realContext); // t = 1 - xin
     if(realIsAnInteger(&t)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return;
     }
   }
@@ -923,7 +929,7 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
     // The threshold for overflow is 205! (i.e. 204! is within range and 205! isn't).
     if(realIsAnInteger(xin) && realCompareLessEqual(xin, const_205)) {
       realSubtract(xin, const_1, &x, realContext); // x = xin - 1
-      realOne(res);
+      realSetOne(res);
       while(realCompareGreaterEqual(&x, const_2)) {
         realMultiply(res, &x, res, realContext);
         realSubtract(&x, const_1, &x, realContext);
@@ -1001,21 +1007,21 @@ void WP34S_Ln(const real_t *xin, real_t *res, realContext_t *realContext) {
 
   if(realIsSpecial(xin)) {
     if(realIsNaN(xin) || realIsNegative(xin)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return;
     }
 
-    realCopy(const_plusInfinity, res);
+    realSetPlusInfinity(res);
     return;
   }
 
   if(realCompareLessEqual(xin, const_0)) {
     if(realIsNegative(xin)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return;
     }
 
-    realCopy(const_minusInfinity, res);
+    realSetMinusInfinity(res);
     return;
   }
 
@@ -1083,11 +1089,11 @@ void WP34S_Log(const real_t *xin, const real_t *base, real_t *res, realContext_t
 
   if(realIsSpecial(xin)) {
     if(realIsNaN(xin) || realIsNegative(xin)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return;
     }
 
-    realCopy(const_plusInfinity, res);
+    realSetPlusInfinity(res);
     return;
   }
 
@@ -1174,10 +1180,10 @@ void WP34S_SinhCosh(const real_t *x, real_t *sinhOut, real_t *coshOut, realConte
 
   if(realIsNaN(x)) {
     if(sinhOut != NULL) {
-      realCopy(const_NaN, sinhOut);
+      realSetNaN(sinhOut);
     }
     if(coshOut != NULL) {
-      realCopy(const_NaN, coshOut);
+      realSetNaN(coshOut);
     }
     return;
   }
@@ -1211,7 +1217,7 @@ void WP34S_SinhCosh(const real_t *x, real_t *sinhOut, real_t *coshOut, realConte
 
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsNaN(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
   else if(realCompareAbsGreaterThan(x, const_47)) { // equals 1 to 39 digits
     realCopy((realIsPositive(x) ? const_1 : const__1), res);
@@ -1260,7 +1266,7 @@ void WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext) {
   real_t y, z;
 
   if(realIsNaN(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
 
   // Not the obvious formula but more stable...
@@ -1332,8 +1338,8 @@ static void WP34S_CalcComplexLnGamma_Lanczos(const real_t *zReal, const real_t *
     realContext->digits = 51;
   }
 
-  realZero(&uReal);
-  realZero(&uImag);
+  realSetZero(&uReal);
+  realSetZero(&uImag);
   realAdd(zReal, const_29, &tReal, realContext);
   realCopy(zImag, &tImag);
   for(k=28; k>=0; k--) {
@@ -1372,23 +1378,23 @@ static void WP34S_ComplexGammaLnGamma(const real_t *zReal, const real_t *zImag, 
   // Check for special cases
   if(realIsSpecial(zReal) || realIsSpecial(zImag)) {
     if(realIsNaN(zReal) || realIsNaN(zImag)) {
-      realCopy(const_NaN, resReal);
-      realCopy(const_NaN, resImag);
+      realSetNaN(resReal);
+      realSetNaN(resImag);
     }
     else {
       if(realIsInfinite(zReal)) {
         if(realIsInfinite(zImag) || realIsNegative(zReal)) {
-          realCopy(const_NaN, resReal);
-          realCopy(const_NaN, resImag);
+          realSetNaN(resReal);
+          realSetNaN(resImag);
         }
         else {
-          realCopy(const_plusInfinity, resReal);
-          realZero(resImag);
+          realSetPlusInfinity(resReal);
+          realSetZero(resImag);
         }
       }
       else {
-        realZero(resReal);
-        realZero(resImag);
+        realSetZero(resReal);
+        realSetZero(resImag);
       }
     }
     return;
@@ -1399,8 +1405,8 @@ static void WP34S_ComplexGammaLnGamma(const real_t *zReal, const real_t *zImag, 
     reflect = true;
     realSubtract(const_1, zReal, &tReal, realContext);
     if(realIsZero(zImag) && realIsAnInteger(&tReal)) {
-      realCopy(const_NaN, resReal);
-      realCopy(const_NaN, resImag);
+      realSetNaN(resReal);
+      realSetNaN(resImag);
       return;
     }
     realSubtract(&tReal, const_1, &xReal, realContext);
@@ -1539,7 +1545,7 @@ static void gser(const real_t *a, const real_t *x, const real_t *gln, real_t *re
   int32_t i;
 
   if(realCompareLessEqual(x, const_0)) {
-    realZero(res);
+    realSetZero(res);
     return;
   }
   realCopy(a, &ap);
@@ -1579,10 +1585,10 @@ static void gcf(const real_t *a, const real_t *x, const real_t *gln, real_t *res
   realAdd(x, const_1, &t, realContext);
   realSubtract(&t, a, &b, realContext);    // b = (x+1) - a
   gcheckSmall(&b, realContext);
-  realCopy(const_plusInfinity, &c);
+  realSetPlusInfinity(&c);
   realDivide(const_1, &b, &d, realContext);
   realCopy(&d, &h);
-  realZero(&i);
+  realSetZero(&i);
   for(n=0; n<1000; n++) {
     realAdd(&i, const_1, &i, realContext);
     realSubtract(a, &i, &t, realContext);   // t = a-i
@@ -1616,14 +1622,14 @@ void WP34S_GammaP(const real_t *x, const real_t *a, real_t *res, realContext_t *
   real_t z, lga;
 
   if(realIsNegative(x) || realCompareLessEqual(a, const_0) || realIsNaN(x) || realIsNaN(a) || realIsInfinite(a)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
 
   if(realIsInfinite(x)) {
     if(upper) {
       if(regularised) {
-        realOne(res);
+        realSetOne(res);
         return;
       }
 
@@ -1631,7 +1637,7 @@ void WP34S_GammaP(const real_t *x, const real_t *a, real_t *res, realContext_t *
       return;
     }
 
-    realZero(res);
+    realSetZero(res);
     return;
   }
 
@@ -1641,7 +1647,7 @@ void WP34S_GammaP(const real_t *x, const real_t *a, real_t *res, realContext_t *
     WP34S_LnGamma(a, &lga, realContext);
   }
   else {
-    realZero(&lga);
+    realSetZero(&lga);
   }
   if(realIsNegative(&z)) {
     /* Deal with a difficult case by using the other expansion */
@@ -1713,7 +1719,7 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
 static void check_low(real_t *d) {
   real_t real_1e_32;
 
-  realOne(&real_1e_32);
+  realSetOne(&real_1e_32);
   real_1e_32.exponent -= 32;
   if(realCompareAbsLessThan(d, &real_1e_32)) {
     realCopy(d, &real_1e_32);
@@ -1745,14 +1751,14 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
   realAdd(a, const_1, &ap1, realContext);        // ap1 = 1+a
   realSubtract(a, const_1, &am1, realContext);   // am1 = a-1
   realAdd(a, b, &apb, realContext);              // apb = a+b
-  realOne(&c);                                   // c = 1
+  realSetOne(&c);                                // c = 1
   realDivide(x, &ap1, &t, realContext);
   realMultiply(&t, &apb, &u, realContext);
   realSubtract(const_1, &u, &t, realContext);    // t = 1-apb*x/ap1
   check_low(&t);
   realDivide(const_1, &t, &d, realContext);      // d = 1/t
   realCopy(&d, r);    // res = d
-  realZero(&m);
+  realSetZero(&m);
   for(i=0; i<500; i++) {
     realCopy(r, &oldr);
     realAdd(&m, const_1, &m, realContext);       // m = i+1
@@ -1798,7 +1804,7 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
 
   realCompare(const_1, x, &t, realContext);
   if(realIsNegative(x) || realIsNegative(&t)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
    return;
   }
 
@@ -1823,7 +1829,7 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   realDivide(&t, &u, &v, realContext);         // u = (a+1)/(a+b+2)
   if(realCompareLessThan(x, &v)) {
     if(limit) {
-      realZero(res);
+      realSetZero(res);
     }
     else {
       betacf(a, b, x, &t, realContext);
@@ -1833,7 +1839,7 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   }
   else {
     if(limit) {
-      realOne(res);
+      realSetOne(res);
     }
     else {
       betacf(b, a, &y, &t, realContext);
@@ -1849,7 +1855,7 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bn_star, realContext_t
   real_t p;
 
   if((!realIsAnInteger(x)) || realCompareLessThan(x, const_0)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   if(realIsZero(x)) {// Bn_0
@@ -1863,7 +1869,7 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bn_star, realContext_t
       return;
     }
     else if(realMultiply(x, const_1on2, &p, realContext), (!realIsAnInteger(&p))) { // Bn_odd
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realCopy(x, &p);
@@ -1905,7 +1911,7 @@ static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, 
   int32ToReal(1, &reg4);
   int32ToReal(1, &reg5);
   int32ToReal(-1, &reg6);
-  realZero(&p);
+  realSetZero(&p);
   do { // zeta_loop
     realMinus(reg1, &q, realContext);
     realPower(&reg0, &q, &q, realContext);
@@ -1988,7 +1994,7 @@ void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realCon
   bool_t converged = false;
 
   if(realIsSpecial(x)) {
-   realCopy(const_NaN, res);
+   realSetNaN(res);
    return;
   }
   if(realIsZero(x)) {
@@ -1996,7 +2002,7 @@ void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realCon
    return;
   }
   if(negativeBranch && realIsPositive(x)) {
-   realCopy(const_NaN, res);
+   realSetNaN(res);
    return;
   }
 
@@ -2102,13 +2108,13 @@ void WP34S_ComplexLambertW(const real_t *xReal, const real_t *xImag, real_t *res
   real_t pr, pi, qr, qi, zr, zi, wr, wi, tr, ti;
 
   realCopy(xReal, &zr), realCopy(xImag, &zi);
-  realOne(&wr);
-  realOne(&wi);
+  realSetOne(&wr);
+  realSetOne(&wi);
   realAdd(xReal, const_1, &pr, realContext);
   realCopy(xImag, &pi);
   if(realIsZero(&zi) && realIsNegative(&zr) && realCompareGreaterEqual(&zr, const__1)) {
     // Close to -1/e, the series is very slow to converge
-    realOne(&pr);
+    realSetOne(&pr);
     realCopy(realIsNegative(&pi) ? const__1 : const_1, &pi);
   }
   else if(!realIsZero(&pr) || !realIsZero(&pi)) {
@@ -2170,29 +2176,29 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
 
   // ortho_default
   if(realIsSpecial(rX) || (!realIsAnInteger(rN)) || realIsNegative(rN)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   if(realIsZero(rN)) {
-    realOne(res);
+    realSetOne(res);
     return;
   }
   // Here we are free from the limitation of ISG since the code is ported to C.
   //if(realCompareGreaterEqual(rN, const_1000)) {
-  //  realCopy(const_NaN, res);
+  //  realSetNaN(res);
   //  return;
   //}
-  realOne(&rT0);
+  realSetOne(&rT0);
   // Now initialise everything else
   realCopy(const_2, &i);
   realCopy(const_2, &d);
-  realOne(&c);
-  realOne(&b);
+  realSetOne(&c);
+  realSetOne(&b);
   realCopy(rX, &rT1);
   realMultiply(rX, const_2, &a, realContext);
 
   // We must initialise this too
-  realZero(&incB);
+  realSetZero(&incB);
 
   switch(kind) {
   /**************************************************************************/
@@ -2222,7 +2228,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
     case ORTHOPOLY_LAGUERRE_L_ALPHA: {
       // laguerre_common
       if(realIsSpecial(rParam) || realCompareLessEqual(rParam, const__1)) {
-        realCopy(const_NaN, res);
+        realSetNaN(res);
         return;
       }
       realAdd(&b, rParam, &b, realContext);
@@ -2232,7 +2238,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
       realSubtract(&rT1, rX, &rT1, realContext);
       ortho_allinc:
       incA = true;
-      realOne(&incB);
+      realSetOne(&incB);
       incC = true;
       break;
     }
@@ -2241,7 +2247,7 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
   /* Hermite's He (Hn)                                                      */
     case ORTHOPOLY_HERMITE_HE: {
       realCopy(rX, &a);
-      realOne(&incB);
+      realSetOne(&incB);
       break;
     }
 

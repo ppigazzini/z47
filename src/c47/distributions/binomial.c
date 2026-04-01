@@ -67,7 +67,7 @@
         WP34S_Pdf_Binomial(&val, &prob, &num, &ans, &ctxtReal39);
       }
       else {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -159,11 +159,11 @@
 
   bool_t binomial_param(const real_t *n, real_t *res) {
     if(realIsSpecial(n)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return false;
     }
     if(realIsNegative(n) || (!realIsAnInteger(n))) {
-      realZero(res);
+      realSetZero(res);
       return false;
     }
     return true;
@@ -176,7 +176,7 @@
       return;
     }
     if(realIsNegative(x) || realCompareGreaterThan(x, n)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realMinus(p0, &p, realContext);
@@ -202,12 +202,12 @@
     }
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realSubtract(&p, const_1, &p, realContext);
     if(realCompareGreaterThan(&p, n)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -230,11 +230,11 @@
     real_t p, q, r;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realCompareGreaterThan(x, n)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
 
@@ -251,7 +251,7 @@
       return;
     }
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
      return;
     }
     realMultiply(p0, n, &p, realContext);       // mean = np

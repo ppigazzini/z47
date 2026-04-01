@@ -17,7 +17,7 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
    */
   if(realIsZero(xReal) && realCompareEqual(xReal, yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, rReal);
+      realSetNaN(rReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -29,7 +29,8 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
   }
   else if(realIsZero(yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realCompareAbsGreaterThan(xReal, yReal) ? const_plusInfinity : const_minusInfinity),rReal);
+      realSetPlusInfinity(rReal);
+      rReal->bits |= DECNEG*realIsZero(xReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -41,8 +42,8 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
   }
   else {
     realSubtract(xReal, yReal, rReal, realContext);     // r = x - y
-    realDivide(rReal, yReal, rReal, realContext);       // r = (x - y)/y
-    rReal->exponent += 2;                               // r = r * 100
+    realDivide(rReal, yReal, rReal, realContext);       // r = (x - y) / y
+    rReal->exponent += 2;                               // r = (x - y) / y * 100
   }
 
   return true;
@@ -70,7 +71,7 @@ void fnDeltaPercent(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX())
     return;
 
-  realZero(&rReal);
+  realSetZero(&rReal);
   deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);

@@ -33,15 +33,15 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   realAdd(&p, const_1, &p, realContext);
   realMultiply(&p, const_4, &p, realContext); // for extra digits we have
   realCopy(&p, &reg0);
-  realOne(&reg1);
+  realSetOne(&reg1);
   realCopy(&p, &reg2);
-  realOne(&reg3);
-  realOne(reg4);
+  realSetOne(&reg3);
+  realSetOne(reg4);
   realPower(const__1, &p, &p, realContext);
   realChangeSign(&p);
   realCopy(&p, reg5);
-  realZero(&reg8);
-  realZero(&reg9);
+  realSetZero(&reg8);
+  realSetZero(&reg9);
 
   do { // zeta_loop
 
@@ -100,7 +100,7 @@ void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real
   if(realIsZero(xReal) && realIsZero(xImag)) {
     realCopy(const_1on2, resReal);
     realChangeSign(resReal);
-    realZero(resImag);
+    realSetZero(resImag);
     return;
   }
 

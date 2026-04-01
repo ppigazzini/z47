@@ -14,17 +14,17 @@ void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_
   if(realIsZero(imag)) {
     if(realIsInfinite(real) && realIsNegative(real)) {
       realCopy(const__1, resReal);
-      realZero(resImag);
+      realSetZero(resImag);
       return;
     }
     realExpM1(real, resReal, realContext);
-    realZero(resImag);
+    realSetZero(resImag);
     return;
   }
 
   if(realIsSpecial(real) || realIsSpecial(imag)) {
-    realCopy(const_NaN, resReal);
-    realCopy(const_NaN, resImag);
+    realSetNaN(resReal);
+    realSetNaN(resImag);
     return;
   }
 

@@ -460,7 +460,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     realCopy(&temp0, &temp1);
 
     if(realCompareAbsLessThan(&temp1, const_1e_6)) {
-      realZero(&temp1);
+      realSetZero(&temp1);
     }
 
     decContextClearStatus(&ctxtReal34, DEC_Invalid_operation);
@@ -474,7 +474,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       decContextClearStatus(&ctxtReal34, DEC_Invalid_operation);
       realSubtract(&temp1, &temp3, &temp1, &ctxtReal34);
       if(realCompareAbsLessThan(&temp1, const_1e_6)) {
-        realZero(&temp1);
+        realSetZero(&temp1);
       }
 
       *numer = 1;

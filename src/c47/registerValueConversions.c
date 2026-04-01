@@ -614,7 +614,7 @@ void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *source, complex3
     if(destination->matrixElements) {
       for(uint16_t i = 0; i < source->header.matrixRows * source->header.matrixColumns; ++i) {
         real34Copy(&source->matrixElements[i], VARIABLE_REAL34_DATA(&destination->matrixElements[i]));
-        real34Zero(VARIABLE_IMAG34_DATA(&destination->matrixElements[i]));
+        real34SetZero(VARIABLE_IMAG34_DATA(&destination->matrixElements[i]));
       }
     }
   }
@@ -936,7 +936,7 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
       return false;
     }
   }
-  realZero(i);
+  realSetZero(i);
   return true;
 }
 
@@ -966,7 +966,7 @@ bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t 
     default:
       return false;
   }
-  realZero(i);
+  realSetZero(i);
   return true;
 }
 

@@ -138,7 +138,7 @@
     real_t p, q, r, s;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -160,11 +160,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -177,11 +177,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
 
@@ -195,7 +195,7 @@
     int32_t loops;
 
     if(realCompareEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
     }
 
     realCopy(x, &reg0);
@@ -279,7 +279,7 @@
       realChangeSign(&r);
       realAdd(&q, &r, &p, realContext);
       // SHOW_CONVERGENCE
-      realOne(&r);
+      realSetOne(&r);
       r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&p, &q, &r, realContext)) {
         realCopy(&p, res);
@@ -288,7 +288,7 @@
       realCopy(&p, &q);
     } while(--loops > 0);
 
-    realCopy(const_NaN, res); // ERR 20
+    realSetNaN(res); // ERR 20
   }
 
 #endif //SAVE_SPACE_DM42_15
