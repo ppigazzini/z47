@@ -689,9 +689,15 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
                                              ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
-TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERXY,              ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
-                                            ITM_PRINTERCHAR,                ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
-                                            ITM_PRTACT,                     ITM_PRINTERADV,             ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
+TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
+                                             ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERLIST,             ITM_PRINTERTAB,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
+
+                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINTERUSER,             ITM_PRINTERADV,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
+
+TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -1114,11 +1120,12 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 171 */  {.menuItem = -MNU_DEV,         .numItems = sizeof(menu_Dev           )/sizeof(int16_t), .softkeyItem = menu_Dev            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 172 */  {.menuItem = -MNU_TAMSTO_TVM,  .numItems = sizeof(menu_TamStoTVM     )/sizeof(int16_t), .softkeyItem = menu_TamStoTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 173 */  {.menuItem = -MNU_TAMRCL_TVM,  .numItems = sizeof(menu_TamRclTVM     )/sizeof(int16_t), .softkeyItem = menu_TamRclTVM      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
-/* 174 */  {.menuItem = -MNU_VECT,        .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
-/* 175 */  {.menuItem = -MNU_TAMNORM,     .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 176 */  {.menuItem = -MNU_CONVTEMP,    .numItems = sizeof(menu_ConvTemp      )/sizeof(int16_t), .softkeyItem = menu_ConvTemp       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 174 */  {.menuItem = -MNU_CONVTEMP,    .numItems = sizeof(menu_ConvTemp      )/sizeof(int16_t), .softkeyItem = menu_ConvTemp       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 175 */  {.menuItem = -MNU_PRINTER,     .numItems = sizeof(menu_Printer       )/sizeof(int16_t), .softkeyItem = menu_Printer        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 176 */  {.menuItem = -MNU_VECT,        .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
+/* 177 */  {.menuItem = -MNU_TAMNORM,     .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
-/* 172 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 178 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

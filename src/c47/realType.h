@@ -118,6 +118,7 @@
   #define real34NextMinus(operand, res)                          decQuadNextMinus          ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34NextPlus(operand, res)                           decQuadNextPlus          ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34Plus(operand, res)                               decQuadPlus              ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
+  #define real34Reduce(operand, res)                             decQuadReduce            ((real34_t *)(res), (real34_t *)(operand), &ctxtReal34)
   #define real34SetNegativeSign(operand)                         ((real34_t *)(operand))->bytes[15] |= 0x80
   #define real34SetPositiveSign(operand)                         ((real34_t *)(operand))->bytes[15] &= 0x7F
   #define real34Subtract(operand1, operand2, res)                decQuadSubtract          ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
@@ -126,7 +127,6 @@
   #define real34ToReal(source, destination)                      decQuadToNumber          ((real34_t *)(source), destination)
   #define real34ToString(source, destination)                    decQuadToString          ((real34_t *)(source), destination)
   #define real34ToUInt32(source)                                 decQuadToUInt32          ((real34_t *)(source), &ctxtReal34, DEC_ROUND_DOWN)
-  #define real34Reduce(source, destination)                      decQuadReduce            (destination, source, &ctxtReal34)
   #define real34Zero(destination)                                decQuadZero              (destination)
   //#define real34Zero(destination)                                xcopy                    (destination, const34_0, REAL34_SIZE_IN_BYTES)
   /*#define real34Zero(destination)                                do { *(uint64_t *)(destination)     =   *(uint64_t *)const34_0;     \
@@ -165,6 +165,7 @@
   #define realPlus(operand, res, ctxt)                           decNumberPlus            (res, operand, ctxt)
   #define realPower(operand1, operand2, res, ctxt)               decNumberPower           (res, operand1, operand2, ctxt)
   #define realRescale(operand, res, acc, ctxt)                   decNumberRescale         (res, operand, acc, ctxt)
+  #define realReduce(operand, res, ctxt)                         decNumberReduce          (res, operand, ctxt)
   #define realSetNegativeSign(operand)                           (operand)->bits |= 0x80
   #define realSetPositiveSign(operand)                           (operand)->bits &= 0x7F
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (res, operand, ctxt)
