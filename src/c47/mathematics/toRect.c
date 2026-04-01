@@ -46,6 +46,7 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
     if(isRegisterMatrixVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, 0);
       setVectorRegisterAngularMode(REGISTER_X, amNone);
+        temporaryInformation = TI_VECTOR;
       return;
     }
   } 
