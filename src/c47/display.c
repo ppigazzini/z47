@@ -570,7 +570,7 @@ overRange:
       }
     }
     else if(exponent < -exponentLimit) {
-      real34Zero(&value34);
+      real34SetZero(&value34);
 
       bcd = (uint8_t *)(tmpString + 256 - MAX_DIGITS);
       memset(bcd, 0, MAX_DIGITS);
@@ -2621,7 +2621,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     realCopy(const_60, &value);
   }
   else {
-    realOne(&value);
+    realSetOne(&value);
     for(i = 3; i < timeDisplayFormatDigits; ++i) {
       --value.exponent;
       if(i == 5) {
@@ -2630,12 +2630,12 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
     }
   }
   if(realCompareAbsLessThan(&real, const_1)) {
-    realOne(&tmp);
+    realSetOne(&tmp);
     tmp.exponent -= 33;
     realDivideRemainder(&real, &tmp, &tmp, &ctxtReal39);
   }
   else {
-    realZero(&tmp);
+    realSetZero(&tmp);
   }
   if(realCompareAbsLessThan(&real, &value) || (ignoreTDisp && (!realIsZero(&tmp)))) {
     if(ignoreTDisp || (timeDisplayFormatDigits == 0)) {
@@ -2764,7 +2764,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
     // Display fractional part of seconds
     digits = 0u;
-    realZero(&value);
+    realSetZero(&value);
     while(1) {
       realSubtract(&real, &value, &real, &ctxtReal39);
       if(ignoreTDisp || (timeDisplayFormatDigits == 0)) {

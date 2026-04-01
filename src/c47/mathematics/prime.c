@@ -60,14 +60,15 @@ uint16_t smallPrimeList(uint16_t index) {
   uint16_t tt = 251;
   if(index < nbrOfElements(smallPrimes)) {
     return smallPrimes[index];
-  } else
-  if(index < smallPrimeListNumber) {
+  }
+  else if(index < smallPrimeListNumber) {
     uint16_t subIndex = index - nbrOfElements(smallPrimes);
     for(uint16_t ii = 0; ii <= subIndex && ii < nbrOfElements(smallPrimes2); ii++) {
       tt += smallPrimes2[ii];
     }
     return tt;
-  } else {
+  }
+  else {
     return 0;
   }
 }
@@ -533,12 +534,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
   //replaced the above with a faster integer only sequential prime elimination
   //check if the next odd number is a small prime
-  if (longIntegerCompareUInt(currentNumber, smallPrimeList(smallPrimeListNumber - 1) + 1) < 0) {
-    if (mpz_fits_ulong_p(currentNumber)) {
+  if(longIntegerCompareUInt(currentNumber, smallPrimeList(smallPrimeListNumber - 1) + 1) < 0) {
+    if(mpz_fits_ulong_p(currentNumber)) {
       longIntegerToUInt32(currentNumber, cn);
-      while (true) {
-        for (i = 0; i < smallPrimeListNumber; i++) {
-          if (smallPrimeList(i) == cn) {
+      while(true) {
+        for(i = 0; i < smallPrimeListNumber; i++) {
+          if(smallPrimeList(i) == cn) {
             uInt32ToLongInteger(cn, nextPrime);
             return;
           }
@@ -718,7 +719,7 @@ static void _doFnEvPFacts     (uint16_t param) {
         longIntegerInit(factor);
         longIntegerInit(tmp_prod);
         uInt32ToLongInteger(1u, prod);
-        realOne(&prodR);
+        realSetOne(&prodR);
         #define sumTypeInteger 0
         #define sumTypeReal    1
         #define sumTypeComplex 2
@@ -755,7 +756,7 @@ static void _doFnEvPFacts     (uint16_t param) {
             }
             else if(getFlag(FLAG_CPXRES)) {
               if(sumType == sumTypeReal) {
-                realZero(&prodI);
+                realSetZero(&prodI);
                 sumType = sumTypeComplex;
               }
               if(sumType == sumTypeComplex) {
@@ -1165,10 +1166,10 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
         linkToRealMatrixRegister(REGISTER_X, &matrix);
         uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
         uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
-        if (rows == 2 && cols >= 1) {
+        if(rows == 2 && cols >= 1) {
           // Only operate if factorisation matrix has two rows and at least one column
           longIntegerCopy(x, phi_x);
-          for (uint16_t j = 0;  j < cols; ++j) {
+          for(uint16_t j = 0; j < cols; ++j) {
             real34_t p = matrix.matrixElements[j];
             convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
             longIntegerInit(p_li_less_1);
@@ -1224,16 +1225,16 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
 // https://en.wikipedia.org/wiki/Shanks%27s_square_forms_factorization
 // jaymos 2025
 
-    const int multipliers[] = {
-        1, 3, 5, 7, 11, 13,
-        3*5, 3*7, 3*11, 3*13,
-        5*7, 5*11, 5*13,
-        7*11, 7*13,
-        11*13,
-        3*5*7, 3*5*11, 3*5*13,
-        3*7*11, 3*7*13, 3*11*13,
-        5*7*11, 5*7*13,
-        3*5*7*11
+    TO_QSPI const int multipliers[] = {
+      1, 3, 5, 7, 11, 13,
+      3*5, 3*7, 3*11, 3*13,
+      5*7, 5*11, 5*13,
+      7*11, 7*13,
+      11*13,
+      3*5*7, 3*5*11, 3*5*13,
+      3*7*11, 3*7*13, 3*11*13,
+      5*7*11, 5*7*13,
+      3*5*7*11
     };
 
     bool_t addFactorsToTSV = false;
@@ -1250,13 +1251,17 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
     // Fast perfect square check using 32-bit integer sqrt
     static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
         uint32_t r = (uint32_t)(sqrt((double)n));
-        if (r * r == n) {
-            if (sqrt_out) *sqrt_out = r;
-            return 1;
+        if(r * r == n) {
+          if(sqrt_out) {
+            *sqrt_out = r;
+          }
+          return 1;
         }
-        if ((r + 1) * (r + 1) == n) {
-            if (sqrt_out) *sqrt_out = r + 1;
-            return 1;
+        if((r + 1) * (r + 1) == n) {
+          if(sqrt_out) {
+            *sqrt_out = r + 1;
+          }
+          return 1;
         }
         return 0;
     }
@@ -1264,21 +1269,21 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
     // Check if a number is a perfect square using GMP
     // Efficient and correct: fast path for small numbers, fallback for large
     static int longIntegerIsPerfectSquareCheckAndDo(const longInteger_t n, longInteger_t r) {
-        if (mpz_fits_uint_p(n)) {
-            uint32_t small = (uint32_t)mpz_get_ui(n);
-            uint32_t sqrt_small;
-            if (is_perfect_square_uint32(small, &sqrt_small)) {
-                uInt32ToLongInteger(sqrt_small, r);
-                return 1;
-            }
-            return 0;
-        }
-        // GMP fallback for larger integers
-        if (longIntegerPerfectSquare(n)) {
-            longIntegerSquareRoot(n, r);
-            return 1;
+      if(mpz_fits_uint_p(n)) {
+        uint32_t small = (uint32_t)mpz_get_ui(n);
+        uint32_t sqrt_small;
+        if(is_perfect_square_uint32(small, &sqrt_small)) {
+          uInt32ToLongInteger(sqrt_small, r);
+          return 1;
         }
         return 0;
+      }
+      // GMP fallback for larger integers
+      if(longIntegerPerfectSquare(n)) {
+        longIntegerSquareRoot(n, r);
+        return 1;
+      }
+      return 0;
     }
 
 
@@ -1319,7 +1324,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
       }
 
       // Check if N is a perfect square
-      if (longIntegerIsPerfectSquareCheckAndDo(N, s)) {
+      if(longIntegerIsPerfectSquareCheckAndDo(N, s)) {
         longIntegerCopy(s, result);
         goto cleanup;
       }
@@ -1327,191 +1332,194 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
       // Calculate s = sqrt(N)
       longIntegerSquareRoot(N, s);
 
-      for (k = 0; k < nbrOfElements(multipliers); k++) {
-          // D = multiplier[k] * N  (just N here)
-          longIntegerMultiplyUInt(N, multipliers[k], D);
+      for(k = 0; k < nbrOfElements(multipliers); k++) {
+        // D = multiplier[k] * N  (just N here)
+        longIntegerMultiplyUInt(N, multipliers[k], D);
 
-          // Po = Pprev = P = sqrt(D)
-          longIntegerSquareRoot(D, Po);
-          longIntegerCopy(Po, Pprev);
-          longIntegerCopy(Po, P);
+        // Po = Pprev = P = sqrt(D)
+        longIntegerSquareRoot(D, Po);
+        longIntegerCopy(Po, Pprev);
+        longIntegerCopy(Po, P);
 
-          // Qprev = 1
-          uInt32ToLongInteger(1, Qprev);
+        // Qprev = 1
+        uInt32ToLongInteger(1, Qprev);
 
-          // Q = D - Po*Po
-          longIntegerMultiply(Po, Po, temp1);
-          longIntegerSubtract(D, temp1, Q);
-          if (longIntegerSign(Q) == 0) {
-              continue; // Q is zero; no factor found
-          }
+        // Q = D - Po*Po
+        longIntegerMultiply(Po, Po, temp1);
+        longIntegerSubtract(D, temp1, Q);
+        if(longIntegerSign(Q) == 0) {
+          continue; // Q is zero; no factor found
+        }
 
-          // LL = 2 * sqrt(2*s)
-          longIntegerMultiplyUInt(s, 2, temp1);
-          longIntegerSquareRoot(temp1, temp2);
-          longIntegerMultiplyUInt(temp2, 2, LL);
+        // LL = 2 * sqrt(2*s)
+        longIntegerMultiplyUInt(s, 2, temp1);
+        longIntegerSquareRoot(temp1, temp2);
+        longIntegerMultiplyUInt(temp2, 2, LL);
 
-          // BB = 3 * LL
-          longIntegerMultiplyUInt(LL, 3, BB);
+        // BB = 3 * LL
+        longIntegerMultiplyUInt(LL, 3, BB);
 
-          // Initialize i as longInteger_t for comparison with BB
-          uInt32ToLongInteger(2, ii);
+        // Initialize i as longInteger_t for comparison with BB
+        uInt32ToLongInteger(2, ii);
 
-          while (longIntegerCompare(ii, BB) < 0) {
-              #if !defined(TESTSUITE_BUILD)
-                loopp++;
-                if(checkHalfSec()) {
-                  keepFileNameAlive();
-                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                    _showProgress(&lastAdded, n);
-                    force_refresh(force);
-                  }
-                }
-                if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                  programRunStop = PGM_WAITING;
-                  break;
-                }
-              #endif //!TESTSUITE_BUILD
-
-
-           //Pollard simultaneous analysis - interject a few steps
-              //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
-              if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
-                PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
-                              #if defined(MONITOR_FACTORS)
-                                printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
-                                fflush(stdout);
-                              #endif //MONITOR_FACTORS
-                if(programRunStop == PGM_WAITING) goto Broken;
-                if (PollardResult.status == FACTORS_DONE) {
-                              #if defined(MONITOR_FACTORS)
-                                gmp_printf("   Pollard found factor: %Zd                    \n", pollardFactor);
-                              #endif //MONITOR_FACTORS
-                  longIntegerCopy(pollardFactor, result);
-                  goto cleanup;
-                } else if (PollardResult.status == FACTORS_FAIL) {
-                              #if defined(MONITOR_FACTORS)
-                                printf("   Pollard failed after %d attempts.                \n", PollardResult.attempts);
-                              #endif //MONITOR_FACTORS
-                }
-                instruction = PollardResult.status;
-              }
-              //Pollard end
-
-              // b = (Po + P) / Q
-              longIntegerAdd(Po, P, temp1);
-              longIntegerDivide(temp1, Q, b);
-
-              // P = b*Q - P
-              longIntegerMultiply(b, Q, temp1);
-              longIntegerSubtract(temp1, P, temp2);
-              longIntegerCopy(temp2, P);
-              // q = Q
-              longIntegerCopy(Q, q);
-              // Q = Qprev + b*(Pprev - P)
-              longIntegerSubtract(Pprev, P, temp1);
-              longIntegerMultiply(b, temp1, temp2);
-              longIntegerAdd(Qprev, temp2, Q);
-              // r = sqrt(Q)
-              longIntegerSquareRoot(Q, r);
-              // Check if i is even and r*r == Q
-              if (longIntegerIsEven(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
-                  break;
-              }
-
-              // Qprev = q; Pprev = P
-              longIntegerCopy(q, Qprev);
-              longIntegerCopy(P, Pprev);
-
-              // Increment i
-              longIntegerAddUInt(ii, 1, ii);
-          }
-
-          #if defined(MONITOR_FACTORS)
-            printf("\n");
-            fflush(stdout);
-          #endif //MONITOR_FACTORS
-
-          if (longIntegerCompare(ii, BB) >= 0) {
-              continue;
-          }
-
-          // b = (Po - P) / r
-          longIntegerSubtract(Po, P, temp1);
-          longIntegerDivide(temp1, r, b);
-
-          // Pprev = P = b*r + P
-          longIntegerMultiply(b, r, temp1);
-          longIntegerAdd(temp1, P, temp2);
-          longIntegerCopy(temp2, Pprev);
-          longIntegerCopy(temp2, P);
-
-          // Qprev = r
-          longIntegerCopy(r, Qprev);
-
-          // Q = (D - Pprev*Pprev) / Qprev
-          longIntegerMultiply(Pprev, Pprev, temp1);
-          longIntegerSubtract(D, temp1, temp2);
-          longIntegerDivide(temp2, Qprev, Q);
-
-          do {
-              #if !defined(TESTSUITE_BUILD)
-                loopp++;
-                if(checkHalfSec()) {
-                  keepFileNameAlive();
-                  if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-                    _showProgress(&lastAdded, n);
-                    force_refresh(force);
-                  }
-                }
-                if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
-                  progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                  programRunStop = PGM_WAITING;
-                  break;
-                }
-              #endif //!TESTSUITE_BUILD
-              // b = (Po + P) / Q
-              longIntegerAdd(Po, P, temp1);
-              longIntegerDivide(temp1, Q, b);
-
-              // Pprev = P
-              longIntegerCopy(P, Pprev);
-
-              // P = b*Q - P
-              longIntegerMultiply(b, Q, temp1);
-              longIntegerSubtract(temp1, P, P);
-
-              // q = Q
-              longIntegerCopy(Q, q);
-
-              // Q = Qprev + b*(Pprev - P)
-              longIntegerSubtract(Pprev, P, temp1);
-              longIntegerMultiply(b, temp1, temp2);
-              longIntegerAdd(Qprev, temp2, Q);
-
-              // Qprev = q
-              longIntegerCopy(q, Qprev);
-
-          } while (longIntegerCompare(P, Pprev) != 0);
-
-Broken:
+        while(longIntegerCompare(ii, BB) < 0) {
           #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, n);
+                force_refresh(force);
+              }
+            }
+            if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
+              progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              programRunStop = PGM_WAITING;
+              break;
+            }
+          #endif //!TESTSUITE_BUILD
+
+
+          //Pollard simultaneous analysis - interject a few steps
+          //printf("While: PollardIter %u : %s\n",PollardResult.status, pollard_status(PollardResult.status));
+          if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
+            PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
+                          #if defined(MONITOR_FACTORS)
+                            printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                            fflush(stdout);
+                          #endif //MONITOR_FACTORS
+            if(programRunStop == PGM_WAITING) {
+              goto Broken;
+            }
+            if(PollardResult.status == FACTORS_DONE) {
+                          #if defined(MONITOR_FACTORS)
+                            gmp_printf("   Pollard found factor: %Zd                    \n", pollardFactor);
+                          #endif //MONITOR_FACTORS
+              longIntegerCopy(pollardFactor, result);
+              goto cleanup;
+            }
+            else if(PollardResult.status == FACTORS_FAIL) {
+                          #if defined(MONITOR_FACTORS)
+                            printf("   Pollard failed after %d attempts.                \n", PollardResult.attempts);
+                          #endif //MONITOR_FACTORS
+            }
+            instruction = PollardResult.status;
+          }
+          //Pollard end
+
+          // b = (Po + P) / Q
+          longIntegerAdd(Po, P, temp1);
+          longIntegerDivide(temp1, Q, b);
+
+          // P = b*Q - P
+          longIntegerMultiply(b, Q, temp1);
+          longIntegerSubtract(temp1, P, temp2);
+          longIntegerCopy(temp2, P);
+          // q = Q
+          longIntegerCopy(Q, q);
+          // Q = Qprev + b*(Pprev - P)
+          longIntegerSubtract(Pprev, P, temp1);
+          longIntegerMultiply(b, temp1, temp2);
+          longIntegerAdd(Qprev, temp2, Q);
+          // r = sqrt(Q)
+          longIntegerSquareRoot(Q, r);
+          // Check if i is even and r*r == Q
+          if(longIntegerIsEven(ii) && longIntegerIsPerfectSquareCheckAndDo(Q, temp1)) {
+            break;
+          }
+
+          // Qprev = q; Pprev = P
+          longIntegerCopy(q, Qprev);
+          longIntegerCopy(P, Pprev);
+
+          // Increment i
+          longIntegerAddUInt(ii, 1, ii);
+        }
+
+        #if defined(MONITOR_FACTORS)
+          printf("\n");
+          fflush(stdout);
+        #endif //MONITOR_FACTORS
+
+        if(longIntegerCompare(ii, BB) >= 0) {
+          continue;
+        }
+
+        // b = (Po - P) / r
+        longIntegerSubtract(Po, P, temp1);
+        longIntegerDivide(temp1, r, b);
+
+        // Pprev = P = b*r + P
+        longIntegerMultiply(b, r, temp1);
+        longIntegerAdd(temp1, P, temp2);
+        longIntegerCopy(temp2, Pprev);
+        longIntegerCopy(temp2, P);
+
+        // Qprev = r
+        longIntegerCopy(r, Qprev);
+
+        // Q = (D - Pprev*Pprev) / Qprev
+        longIntegerMultiply(Pprev, Pprev, temp1);
+        longIntegerSubtract(D, temp1, temp2);
+        longIntegerDivide(temp2, Qprev, Q);
+
+        do {
+          #if !defined(TESTSUITE_BUILD)
+            loopp++;
+            if(checkHalfSec()) {
+              keepFileNameAlive();
+              if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+                _showProgress(&lastAdded, n);
+                force_refresh(force);
+              }
+            }
             if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
               progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
               programRunStop = PGM_WAITING;
               break;
             }
-          #endif //TESTSUITE_BUILD
+          #endif //!TESTSUITE_BUILD
+          // b = (Po + P) / Q
+          longIntegerAdd(Po, P, temp1);
+          longIntegerDivide(temp1, Q, b);
 
-          // r = gcd(N, Qprev)
-          longIntegerGcd(N, Qprev, r);
+          // Pprev = P
+          longIntegerCopy(P, Pprev);
 
-          // Check if r != 1 and r != N
-          if (longIntegerCompareUInt(r, 1) != 0 && longIntegerCompare(r, N) != 0) {
-              longIntegerCopy(r, result);
-              goto cleanup;
+          // P = b*Q - P
+          longIntegerMultiply(b, Q, temp1);
+          longIntegerSubtract(temp1, P, P);
+
+          // q = Q
+          longIntegerCopy(Q, q);
+
+          // Q = Qprev + b*(Pprev - P)
+          longIntegerSubtract(Pprev, P, temp1);
+          longIntegerMultiply(b, temp1, temp2);
+          longIntegerAdd(Qprev, temp2, Q);
+
+          // Qprev = q
+          longIntegerCopy(q, Qprev);
+
+        } while(longIntegerCompare(P, Pprev) != 0);
+
+Broken:
+        #if !defined(TESTSUITE_BUILD)
+          if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+            break;
           }
+        #endif //TESTSUITE_BUILD
+
+        // r = gcd(N, Qprev)
+        longIntegerGcd(N, Qprev, r);
+
+        // Check if r != 1 and r != N
+        if(longIntegerCompareUInt(r, 1) != 0 && longIntegerCompare(r, N) != 0) {
+          longIntegerCopy(r, result);
+          goto cleanup;
+        }
       }
 
       // No factor found
@@ -1546,51 +1554,50 @@ cleanup:
 
 
 bool delCol1RealMatrixX(void) {
-    real34Matrix_t mat;
-    linkToRealMatrixRegister(REGISTER_X, &mat);
-    uint16_t rows = mat.header.matrixRows;
-    uint16_t cols = mat.header.matrixColumns;
-    if (!mat.matrixElements || cols <= 1) return false;
+  real34Matrix_t mat;
+  linkToRealMatrixRegister(REGISTER_X, &mat);
+  uint16_t rows = mat.header.matrixRows;
+  uint16_t cols = mat.header.matrixColumns;
+  if(!mat.matrixElements || cols <= 1) {
+    return false;
+  }
 
-    // every element in column 0 is exactly 1.0 or 0.0
-    bool removeFirstCol = true;
-    for (uint16_t i = 0; i < rows; ++i) {
-        if (!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1) && !real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_0)) {
-            removeFirstCol = false;
-            break;
-        }
+  // every element in column 0 is exactly 1.0 or 0.0
+  bool removeFirstCol = true;
+  for(uint16_t i = 0; i < rows; ++i) {
+    if(!real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_1) && !real34CompareEqual(&mat.matrixElements[i * cols + 0], const34_0)) {
+      removeFirstCol = false;
+      break;
     }
-    if (!removeFirstCol) {
-        // nothing to delete, first column is all 1.0 or 0.0
-        return true;
-    }
-
-
-    // Build a temp matrix with one fewer column:
-    real34Matrix_t tmp;
-    if (!realMatrixInit(&tmp, rows, cols - 1)) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return false;
-    }
-    for (uint16_t i = 0; i < rows; i++) {
-        for (uint16_t j = 1; j < cols; j++) {
-            real34Copy(
-                &mat.matrixElements[i*cols + j],
-                &tmp.matrixElements[i*(cols-1) + (j-1)]
-            );
-        }
-    }
-    // Re-init the register and free old buffer
-    initMatrixRegister(REGISTER_X, rows, cols - 1, false);
-
-    // Copy the temp data back into the freshly-allocated register
-    real34_t *dest = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
-    size_t total = (size_t)rows * (cols - 1);
-    for (size_t k = 0; k < total; k++) {
-        real34Copy(&tmp.matrixElements[k], &dest[k]);
-    }
-    realMatrixFree(&tmp);
+  }
+  if(!removeFirstCol) {
+    // nothing to delete, first column is all 1.0 or 0.0
     return true;
+  }
+
+
+  // Build a temp matrix with one fewer column:
+  real34Matrix_t tmp;
+  if(!realMatrixInit(&tmp, rows, cols - 1)) {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    return false;
+  }
+  for(uint16_t i = 0; i < rows; i++) {
+    for(uint16_t j = 1; j < cols; j++) {
+      real34Copy(&mat.matrixElements[i*cols + j], &tmp.matrixElements[i*(cols-1) + (j-1)]);
+    }
+  }
+  // Re-init the register and free old buffer
+  initMatrixRegister(REGISTER_X, rows, cols - 1, false);
+
+  // Copy the temp data back into the freshly-allocated register
+  real34_t *dest = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
+  size_t total = (size_t)rows * (cols - 1);
+  for(size_t k = 0; k < total; k++) {
+    real34Copy(&tmp.matrixElements[k], &dest[k]);
+  }
+  realMatrixFree(&tmp);
+  return true;
 }
 
 
@@ -1598,8 +1605,7 @@ bool delCol1RealMatrixX(void) {
 
 #define MAX_FACTORS 110
 #define MAXIMUM_QUEUE_SIZE 100 // must be even. Worst well on 1000, which costs > 8000 bytes just for the empty longints
-typedef struct FactorAdder
-{
+typedef struct FactorAdder {
   uint16_t nExpons;
   uint16_t expons[MAX_FACTORS];
 } FactorAdder_t;
@@ -1917,7 +1923,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
   if(doSaveLastX && !saveLastX())
     goto abort;
 
-  real34Zero(&lastAdded);
+  real34SetZero(&lastAdded);
   FactorAdder_t faddr;
   initFactorAdder(&faddr);
 
@@ -1963,7 +1969,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     // first do a pre-run, to do small prime checking
     for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
       uint16_t smallP = smallPrimeList(i);
-      while (mpz_divisible_ui_p(currentNumber, smallP)) {
+      while(mpz_divisible_ui_p(currentNumber, smallP)) {
         #if !defined(TESTSUITE_BUILD)
           loopp++;
           if(checkHalfSec()) {
@@ -2047,11 +2053,11 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
             longInteger_t gcd;
             longIntegerInit(gcd);
             mpz_gcd_ui(gcd, currentNumber, root);
-            if (longIntegerCompareUInt(gcd, 1) > 0) {
+            if(longIntegerCompareUInt(gcd, 1) > 0) {
                 // Inject a trivial factor
-                if (!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
-                    longIntegerFree(gcd);
-                    goto cleanup;
+                if(!addFactor(gcd, REGISTER_X, &lastAdded, &faddr)) {
+                  longIntegerFree(gcd);
+                  goto cleanup;
                 }
                 mpz_divexact(currentNumber, currentNumber, gcd);
                 longIntegerFree(gcd);
@@ -2075,7 +2081,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
 
   longInteger_t current;
   longIntegerInit(current);
-  while (queue_start != queue_end) {
+  while(queue_start != queue_end) {
     longIntegerCopy(queue[queue_start], current);
     queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
                         #if defined(MONITOR_FACTORS)
@@ -2127,7 +2133,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
 
     // Attempt to find a factor using SQUFOF
     SQUFOF(factor, current, lastAdded);
-    if (longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
+    if(longIntegerCompareUInt(factor, 0) == 0 || longIntegerCompare(factor, current) == 0) {
       // SQUFOF failed; treat current as prime
                       #if defined(MONITOR_FACTORS)
                         printf("SQUFOF failed; treat current as prime: ");
@@ -2149,7 +2155,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     // Enqueue the factor and quotient for further factorization
     int next_end = (queue_end + 1) % MAXIMUM_QUEUE_SIZE;
     int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
-    if (next_next_end != queue_start) {
+    if(next_next_end != queue_start) {
                         #if defined(MONITOR_FACTORS)
                           printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
                           mpz_out_str(stdout, 10, factor);
@@ -2275,7 +2281,7 @@ void mpz_urandomm_pcg32(mpz_t rop, pcg32_random_t* rng, const mpz_t n) { // Get 
   mpz_t temp;
   mpz_init(temp);
   size_t bits_generated = 0;
-  while (bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
+  while(bits_generated < n_bits + 32) {  // Extra 32 bits for better distribution
       uint32_t random_val = pcg32_random_r(rng);
       mpz_mul_2exp(temp, temp, 32);
       mpz_add_ui(temp, temp, random_val);
@@ -2322,18 +2328,20 @@ factors_result_t pollard_step(pollard_t *self, longInteger_t factor, factors_sta
   result.total_iterations = self->iteration;
   result.attempts = self->attempt;
   // First-time or forced re-setup
-if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iteration >= maxIter)) {
-    if (self->attempt++ >= max_attempts) {
-      result.status = FACTORS_FAIL;
-      return result;
-    }
+if(instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iteration >= maxIter)) {
+  if(self->attempt++ >= max_attempts) {
+    result.status = FACTORS_FAIL;
+    return result;
+  }
 
   // Try different polynomial function based on attempt number
-  if (self->attempt % 3 == 0) {
+  if(self->attempt % 3 == 0) {
     uInt32ToLongInteger(1, self->c);      // f(x) = x² + 1
-  } else if (self->attempt % 3 == 1) {
+  }
+  else if(self->attempt % 3 == 1) {
     uInt32ToLongInteger(2, self->c);      // f(x) = x² + 2
-  } else {
+  }
+  else {
     mpz_urandomm_pcg32(self->c, &self->rng, self->n); // Random c
   }
     mpz_urandomm_pcg32(self->x, &self->rng, self->n);
@@ -2344,15 +2352,15 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
     return result;
   }
   // Perform up to `steps` iterations
-  if (instruction == FACTORS_ITERATE) {
-    for (int i = 0; i < steps; ++i) {
+  if(instruction == FACTORS_ITERATE) {
+    for(int i = 0; i < steps; ++i) {
 // Might be needed if an exit key is not caugt in the main iteration. I doubt though. If no complaints, this can be deleted. 2026-03-07
 //      if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
 //        progressHalfSecUpdate_Integer(force+1, "Interrupted1: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
 //        programRunStop = PGM_WAITING;
 //        break;
 //      }
-      if (++self->iteration >= maxIter) {
+      if(++self->iteration >= maxIter) {
         result.status = FACTORS_SETUP; // Too long without result — reseed
         break;
       }
@@ -2364,13 +2372,13 @@ if (instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->itera
       mpz_abs(self->tmp, self->tmp);
       longIntegerGcd(self->tmp, self->n, self->d);
       // Factor found!
-      if (longIntegerCompareUInt(self->d, 1) > 0 && longIntegerCompare(self->d, self->n) < 0) {
+      if(longIntegerCompareUInt(self->d, 1) > 0 && longIntegerCompare(self->d, self->n) < 0) {
         longIntegerCopy(self->d, factor);
         result.status = FACTORS_DONE;
         break;
       }
       // Fail — retry from new seed
-      if (longIntegerCompare(self->d, self->n) == 0) {
+      if(longIntegerCompare(self->d, self->n) == 0) {
         result.status = FACTORS_SETUP;
         break;
       }

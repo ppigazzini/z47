@@ -47,13 +47,13 @@ uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
 
   if(realIsZero(xImag)) {
     WP34S_Tanh(xReal, rReal, &ctxtReal39);
-    realZero(rImag);
+    realSetZero(rImag);
   }
   else {
     WP34S_Tanh(xReal, rReal, &ctxtReal39);
     WP34S_Cvt2RadSinCosTan(xImag, amRadian, &sina, &cosa, rImag, &ctxtReal39);
 
-    realOne(&denomReal);
+    realSetOne(&denomReal);
     realMultiply(rReal, rImag, &denomImag, &ctxtReal39);
 
     divComplexComplex(rReal, rImag, &denomReal, &denomImag, rReal, rImag, &ctxtReal39);

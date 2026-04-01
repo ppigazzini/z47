@@ -15,7 +15,8 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
   realCopy(SIGMA_X, rReal);    // r = Sum(x)
   if(realIsZero(rReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realIsPositive(rReal) ? const_plusInfinity : const_minusInfinity), rReal);
+      realSetPlusInfinity(rReal);
+      rReal->bits |= DECNEG*realIsNegative(rReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -41,8 +42,9 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
 static void percentSigmaReal(void) {
   real_t xReal, rReal;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal) || !percentSigma(&xReal, &rReal, &ctxtReal39))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !percentSigma(&xReal, &rReal, &ctxtReal39)) {
     return;
+  }
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
@@ -73,10 +75,12 @@ void fnPercentSigma(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX())
     return;
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix)
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     elementwiseRema(percentSigmaReal);
-  else
+  }
+  else {
     percentSigmaReal();
+  }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   temporaryInformation = TI_PERC;

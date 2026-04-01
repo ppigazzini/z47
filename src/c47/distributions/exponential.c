@@ -121,11 +121,11 @@
 
   void WP34S_Pdf_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realZero(res); /* Can only be infinite which has zero probability */
+      realSetZero(res); /* Can only be infinite which has zero probability */
       return;
     }
     realMultiply(x, lambda, res, realContext);
@@ -136,16 +136,16 @@
 
   void WP34S_Cdfu_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
     realMultiply(x, lambda, res, realContext);
     if(realCompareLessThan(res, const_0)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realChangeSign(res);
@@ -154,16 +154,16 @@
 
   void WP34S_Cdf_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
     realMultiply(x, lambda, res, realContext);
     if(realCompareLessThan(res, const_0)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realChangeSign(res);
