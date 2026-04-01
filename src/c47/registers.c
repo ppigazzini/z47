@@ -500,7 +500,7 @@ static bool_t initLocalRegisters(calcRegister_t r) {
     if(newMem) {
       setRegisterDataType(r, dtReal34, amNone);
       setRegisterDataPointer(r, newMem);
-      real34Zero(REGISTER_REAL34_DATA(r));
+      real34SetZero(REGISTER_REAL34_DATA(r));
     }
     else {
       isMemIssue = true;
@@ -514,8 +514,8 @@ static bool_t initLocalRegisters(calcRegister_t r) {
         setRegisterTag(r, currentAngularMode | amPolar);
       }
       setRegisterDataPointer(r, newMem);
-      real34Zero(REGISTER_REAL34_DATA(r));
-      real34Zero(REGISTER_IMAG34_DATA(r));
+      real34SetZero(REGISTER_REAL34_DATA(r));
+      real34SetZero(REGISTER_IMAG34_DATA(r));
     }
     else {
       isMemIssue = true;
@@ -909,7 +909,7 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
       // New variables are zero by default - although this might be immediately overridden, it might require an
       // initial value, such as when STO+
       regist = FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1;
-      real34Zero(REGISTER_REAL34_DATA(regist));
+      real34SetZero(REGISTER_REAL34_DATA(regist));
     }
     else {
       // Failed attempt to allocate a new named variable: there is not enough memory or the name is invalid.
@@ -1174,18 +1174,18 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
 void clearRegister(calcRegister_t regist) {
   if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {                       //JM defaults JMZERO
     if(getRegisterDataType(regist) == dtReal34) {
-      real34Zero(REGISTER_REAL34_DATA(regist));
+      real34SetZero(REGISTER_REAL34_DATA(regist));
       setRegisterTag(regist, amNone);
     }
     else{
       reallocateRegister(regist, dtReal34, 0, amNone);
-      real34Zero(REGISTER_REAL34_DATA(regist));
+      real34SetZero(REGISTER_REAL34_DATA(regist));
     }
   }                                                                             //JM defaults ^^
   else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {                                          //JM defaults vv
     if(getRegisterDataType(regist) == dtComplex34) {
-      real34Zero(REGISTER_REAL34_DATA(regist));
-      real34Zero(REGISTER_IMAG34_DATA(regist));
+      real34SetZero(REGISTER_REAL34_DATA(regist));
+      real34SetZero(REGISTER_IMAG34_DATA(regist));
       if(getSystemFlag(FLAG_POLAR)) {
         setRegisterTag(regist, currentAngularMode | amPolar);
       }
@@ -1200,8 +1200,8 @@ void clearRegister(calcRegister_t regist) {
       else {
         reallocateRegister(regist, dtComplex34, 0, amNone);
       }
-      real34Zero(REGISTER_REAL34_DATA(regist));
-      real34Zero(REGISTER_IMAG34_DATA(regist));
+      real34SetZero(REGISTER_REAL34_DATA(regist));
+      real34SetZero(REGISTER_IMAG34_DATA(regist));
     }
   }                                                                             //JM defaults ^^
   else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {                                             //JM defaults vv

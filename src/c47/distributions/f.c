@@ -155,11 +155,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -175,11 +175,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realOne(res);
+      realSetOne(res);
       return;
     }
 
@@ -261,7 +261,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
     f_nonnegative = true;
 
     r_iterations = 100;
-    realCopy(const_plusInfinity, &r_high);
+    realSetPlusInfinity(&r_high);
     realCopy(f_nonnegative ? const_0 : const_minusInfinity, &r_low);
 
     /* Initialisation done, now the main loop itself */
@@ -370,7 +370,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
       }
       // qf_newton_again
     } while(--r_iterations > 0);
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
 
     /* Finished.  For discrete distributions, there is a bit more to do */

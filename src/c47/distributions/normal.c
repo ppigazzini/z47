@@ -65,7 +65,7 @@
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -102,7 +102,7 @@
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -133,7 +133,7 @@
 
     if(checkParamNormal(type, &val, &mu, &sigma)) {
       if(logn && realIsZero(&val)) {
-        realOne(&ans);
+        realSetOne(&ans);
       }
       else if(logn && realIsNegative(&val)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

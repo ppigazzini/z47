@@ -22,15 +22,15 @@ static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, 
   realCopy(a, &aReal);
   realCopy(b, &bReal);
   if(mode==AGM_MODE_E) {
-    realOne(&cCoeff);
+    realSetOne(&cCoeff);
   }
   if(mode==AGM_MODE_STEP) {
     realCopy(&aReal, _a);
     realCopy(&bReal, _b);
   }
   if(mode==AGM_MODE_F) {
-    realCopy(const_plusInfinity, &prevDelta);
-    realZero(&z);
+    realSetPlusInfinity(&prevDelta);
+    realSetZero(&z);
     realDivide(c, const_pi, &cCoeff, realContext);
     realToIntegralValue(&cCoeff, &cCoeff, DEC_ROUND_DOWN, realContext);
     realDivideRemainder(c, const_pi, c, realContext);
@@ -95,7 +95,7 @@ static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const 
   realCopy(ar, &aReal); realCopy(ai, &aImag);
   realCopy(br, &bReal); realCopy(bi, &bImag);
   if(mode==AGM_MODE_E) {
-    realOne(&cCoeff);
+    realSetOne(&cCoeff);
   }
   if(mode==AGM_MODE_STEP) {
     realCopy(&aReal, _ar);

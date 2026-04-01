@@ -113,7 +113,7 @@
     real_t p;
 
     if(realIsNegative(x) || (!realIsAnInteger(x))) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realMinus(p0, &p, realContext);
@@ -128,11 +128,11 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realSubtract(const_1, p0, &q, realContext);
@@ -143,11 +143,11 @@
     real_t p, q;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realToIntegralValue(x, &p, DEC_ROUND_FLOOR, realContext);
@@ -163,7 +163,7 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realMinus(x, &p, realContext);
@@ -185,7 +185,7 @@
       case QF_DISCRETE_CDF_GEOMETRIC:      WP34S_Cdf_Geom(r, i, &q, &ctxtReal51);            break;
       case QF_DISCRETE_CDF_NEGBINOM:       cdf_NegBinomial2(r, i, j, &q, &ctxtReal51);       break;
       case QF_DISCRETE_CDF_HYPERGEOMETRIC: cdf_Hypergeometric2(r, i, j, k, &q, &ctxtReal75); break;
-      default:                             realZero(&q);
+      default:                             realSetZero(&q);
     }
     realAdd(&q, const_0, &q, realContext);
     if(realCompareLessThan(&q, p)) {

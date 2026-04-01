@@ -115,7 +115,7 @@ uint8_t InverseGudermannianReal(const real_t *x, real_t *res, realContext_t *rea
    */
   if(!realIsNaN(x) && realCompareAbsLessThan(x, const_piOn2)) {
     if(realIsZero(x)) {
-      realZero(res);
+      realSetZero(res);
     }
     else {
       real_t sin, cos;
@@ -124,10 +124,10 @@ uint8_t InverseGudermannianReal(const real_t *x, real_t *res, realContext_t *rea
        * InvGd(x) = Ln(Tan(x/2 + PI/4))
        * -PI/2 < x < PI/2
        */
-      realMultiply(x, const_1on2, res, realContext);       // r = x/2
-      realAdd(res, const_piOn4, res, realContext);    // r = x/2 + pi/4
+      realMultiply(x, const_1on2, res, realContext);                       // r = x/2
+      realAdd(res, const_piOn4, res, realContext);                         // r = x/2 + pi/4
       WP34S_Cvt2RadSinCosTan(res, amRadian, &sin, &cos, res, &ctxtReal39); // r = Tan(x/2 + pi/4)
-      WP34S_Ln(res, res, &ctxtReal39);                // r = Ln(Tan(x/2 + pi/4))
+      WP34S_Ln(res, res, &ctxtReal39);                                     // r = Ln(Tan(x/2 + pi/4))
 
       /*
        * InvGd(x) = ArcSinh(Tan(x))
