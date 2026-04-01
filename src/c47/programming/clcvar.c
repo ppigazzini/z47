@@ -20,13 +20,13 @@
 
       case dtReal34:
       case dtTime: {
-        real34Zero(REGISTER_REAL34_DATA(regist));
+        real34SetZero(REGISTER_REAL34_DATA(regist));
         break;
       }
 
       case dtComplex34: {
-        real34Zero(REGISTER_REAL34_DATA(regist));
-        real34Zero(REGISTER_IMAG34_DATA(regist));
+        real34SetZero(REGISTER_REAL34_DATA(regist));
+        real34SetZero(REGISTER_IMAG34_DATA(regist));
         break;
       }
 
@@ -45,7 +45,7 @@
         real34Matrix_t m;
         linkToRealMatrixRegister(regist, &m);
         for(uint32_t i = 0; i < m.header.matrixRows * m.header.matrixColumns; i++) {
-          real34Zero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
         }
         break;
       }
@@ -54,8 +54,8 @@
         complex34Matrix_t m;
         linkToComplexMatrixRegister(regist, &m);
         for(uint32_t i = 0; i < m.header.matrixRows * m.header.matrixColumns; i++) {
-          real34Zero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
-          real34Zero(VARIABLE_IMAG34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&m.matrixElements[i]));
         }
         break;
       }

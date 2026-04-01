@@ -27,7 +27,7 @@ static void do_stddev(const real_t *sumXX, const real_t *sumX, const real_t *num
   }
   realDivide(&tempReal1, p, &tempReal2, realContext);
   if(realIsNegative(&tempReal2) || realIsZero(&tempReal2)) {
-    realZero(&tempReal1);
+    realSetZero(&tempReal1);
   }
   else {
     realSquareRoot(&tempReal2, &tempReal1, realContext);
@@ -254,9 +254,9 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   //ORTOF:  new values same as LINF
 
   if(checkMinimumDataPoints(const_2)) {
-    realZero(&aa0);
-    realZero(&aa1);
-    realZero(&aa2);
+    realSetZero(&aa0);
+    realSetZero(&aa1);
+    realSetZero(&aa2);
 
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;

@@ -132,7 +132,7 @@ void roundReal(void) {
       stringToReal34(displayValueX, REGISTER_REAL34_DATA(REGISTER_X));
     }
     else { // FT_IMPROPER d/c
-      real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+      real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
     }
 
     slashPos = endOfIntegerPart++;

@@ -1146,10 +1146,10 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
     if(derivative != NULL) {
       switch(variable) {
         case RESERVED_VARIABLE_PMT:   realCopy(&nPer,    derivative); break;  // df/dPMT = N
-        case RESERVED_VARIABLE_PV:    realOne( derivative);           break;  // df/dPV = 1
+        case RESERVED_VARIABLE_PV:    realSetOne( derivative);        break;  // df/dPV = 1
         case RESERVED_VARIABLE_FV:    realCopy(const__1, derivative); break;  // df/dFV = -1
         case RESERVED_VARIABLE_NPPER: realCopy(&pmt,     derivative); break;  // df/dN = PMT
-        default:                      realCopy(const_NaN,derivative); break;  // IPONA: NaN -> Brent fallback
+        default:                      realSetNaN(derivative);         break;  // IPONA: NaN -> Brent fallback
       }
     }
     #endif
@@ -1171,7 +1171,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
 
     // Save k for derivative
     if(getSystemFlag(FLAG_ENDPMT)) {
-      realOne(&k);
+      realSetOne(&k);
     }
     else {
       realAdd(const_1, &i, &k, &ctxtTvm);
@@ -1256,7 +1256,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
 
     if(derivative != NULL && variable == RESERVED_VARIABLE_PV) {
       // df/dPV = 1
-      realOne(derivative);
+      realSetOne(derivative);
     }
 
     if(derivative != NULL && variable == RESERVED_VARIABLE_PMT) {
@@ -1286,6 +1286,5 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       realExp(&temp, derivative, &ctxtSolverTvmHi);
     }
   #endif //OPTION_TVM_NEWTON
-
 }
 

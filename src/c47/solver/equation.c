@@ -1286,8 +1286,8 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
     for(uint32_t i = 0; i < PARSER_OPERATOR_STACK_SIZE; ++i) {
       PARSER_OPERATOR_STACK[i] = 0;
     }
-    real34Zero(PARSER_LEFT_VALUE_REAL);
-    real34Zero(PARSER_LEFT_VALUE_IMAG);
+    real34SetZero(PARSER_LEFT_VALUE_REAL);
+    real34SetZero(PARSER_LEFT_VALUE_IMAG);
     for(uint32_t i = 0; i < PARSER_NUMERIC_STACK_SIZE; ++i) {
       realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2    ]);
       realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2 + 1]);

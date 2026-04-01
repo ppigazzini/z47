@@ -20,7 +20,7 @@ void linpol(const real_t *a, const real_t *b, const real_t *p, real_t *res) {
   real_t x;
 
   if(realIsNaN(a) || realIsNaN(b) || realIsNaN(p) || realIsInfinite(p)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
   else if(realIsInfinite(a)) {
     if(realIsInfinite(b)) {    // both infinite, either NaN or one of them
@@ -28,7 +28,7 @@ void linpol(const real_t *a, const real_t *b, const real_t *p, real_t *res) {
         realCopy(a, res);
       }
       else {
-        realCopy(const_NaN, res);
+        realSetNaN(res);
       }
     }
     else {
@@ -73,8 +73,8 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
   uint32_t dataTypeY, dataTypeZ;
   uint16_t dataTagY, dataTagZ;
 
-  realZero(&aImag);
-  realZero(&bImag);
+  realSetZero(&aImag);
+  realSetZero(&bImag);
 
   switch(getRegisterDataType(REGISTER_X)) {
     case dtReal34: {
@@ -234,10 +234,12 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
       if(isYangle && isZangle) {                                          // arrives here if both are angles
         if(dataTagY != dataTagZ) {
           dataTagY = currentAngularMode;
-        } else {
-          //   dataTagY will be used                                      //   arrives here if both are angles but the angle tags are not the same
         }
-      } else {                                                            // arrives here if both are not angles
+        else {
+          //   dataTagY will be used                                      // arrives here if both are angles but the angle tags are not the same
+        }
+      }
+      else {                                                              // arrives here if both are not angles
         dataTagY = amNone;
       }
       reallocateRegister(REGISTER_X, dtReal34, 0, dataTagY);   // use the type and tag of b (Y)
