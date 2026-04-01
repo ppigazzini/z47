@@ -222,7 +222,7 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
 //--------//--------//--------//--------//-------- pre-check on original x
     int32_t digits = realGetDigits(x);
     digits = (digits < c->digits) ? digits : c->digits;   // smaller of reported digits or context precision
-    if (digits <= 34) {                                   // if the data fits a real, assign the integer to 1
+    if(digits <= 34) {                                    // if the data fits a real, assign the integer to 1
       goto returnUnity;
     }
 
@@ -230,13 +230,15 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     real1071_t mantissa;
     realPlus((real_t*)x, (real_t*)&mantissa, c);          // Normalize to remove trailing zeros with full precision
     int32_t actualDigits = realGetDigits(&mantissa);      // Get actual significant digits after normalization
-    if (actualDigits <= 34) {                             // Fits in real34: integer = 1, fractional = original
+    if(actualDigits <= 34) {                              // Fits in real34: integer = 1, fractional = original
       goto returnUnity;
     }
 
 //--------//--------//--------//--------//-------- adjust mantissa to form integer 'mantissa'
     int32_t actualExponent = realGetExponent(&mantissa);  // For numbers with >34 digits: extract all significant digits as integer, up to 1000
-    if (actualDigits > maxAllowedDigits) actualDigits = maxAllowedDigits;
+    if(actualDigits > maxAllowedDigits) {
+      actualDigits = maxAllowedDigits;
+    }
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     mantissa.exponent += scaleAmount;
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
@@ -246,12 +248,12 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
 
     int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
-    for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
-        if(i == actualExponent && i <= 34) break;
-        tmpString[i] = '\0';
+    for(int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
+      if(i == actualExponent && i <= 34) break;
+      tmpString[i] = '\0';
     }
-    if (strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
-        strcpy(tmpString, "0");
+    if(strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
+      strcpy(tmpString, "0");
     }
 
     #if defined(DEBUG_XFN)
@@ -274,7 +276,6 @@ returnUnity:
       realToString((real_t *)fractionalPart, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 003: fractionalPart: %s\n", tmpString);
     #endif //DEBUG_XFN
     return;
-
 }
 
 
@@ -330,8 +331,8 @@ typedef struct {
 
 
   static const FunctionLookup* lookupFunction(int function_id) {
-    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
-      if (entry->function_id == function_id) {
+    for(const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
+      if(entry->function_id == function_id) {
         return entry;
       }
     }
@@ -362,11 +363,11 @@ typedef struct {
         return true;
       }
       longIntegerFree(lint);
-    } else
-    if(getRegisterDataType(registerNo) == dtReal34) {
-        if(getRegisterAsReal(registerNo, (real_t *)result)) {
-          return true;
-        }
+    }
+    else if(getRegisterDataType(registerNo) == dtReal34) {
+      if(getRegisterAsReal(registerNo, (real_t *)result)) {
+        return true;
+      }
     }
     displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -387,7 +388,8 @@ typedef struct {
         *angleMode = inputAngleMode3r(registerNo) == amNone ? currentAngularMode : inputAngleMode3r(registerNo);
         return true;
       }
-    } else {
+    }
+    else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input angle register");
@@ -409,7 +411,8 @@ typedef struct {
         *angleMode = inputAngleMode3r(registerNo);
         return true;
       }
-    } else {
+    }
+    else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input angle register");
@@ -442,7 +445,7 @@ typedef struct {
         return false;
     }
     realAdd((real_t *)result, (real_t*)temporary, (real_t *)result, c);
-    realZero((real_t*)temporary);
+    realSetZero((real_t*)temporary);
     return true;
   }
 
@@ -532,11 +535,11 @@ printf("Dddd %d\n",registerNo);
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
     reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_T));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_T));
     reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_A));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_A));
     reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_B));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_B));
   }
 
 
@@ -686,7 +689,7 @@ printf("Dddd %d\n",registerNo);
     }
 
     real1071_t paramX, paramY, paramTemp;
-    realZero((real_t*)&paramX);
+    realSetZero((real_t*)&paramX);
     real_t tmpR;
 
     realContext_t c = ctxtReal75;
@@ -697,13 +700,13 @@ printf("Dddd %d\n",registerNo);
 
     if(functionType == FT_NILADIC) {
       ; //no input needed, continue
-    } else
-    if(functionType == FT_SINGLEX) {
+    }
+    else if(functionType == FT_SINGLEX) {
       if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
         return;
       }
-    } else
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+    }
+    else if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
         return;
       }
@@ -715,7 +718,8 @@ printf("Dddd %d\n",registerNo);
       if(functionAngle == FORCEANG && angleMode == amNone) {
         angleMode = currentAngularMode;
       }
-    } else {
+    }
+    else {
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         location = 3;
       #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -732,7 +736,7 @@ printf("Dddd %d\n",registerNo);
         printf("Real is Special, forcing NaN output, bypassing calculations\n");
         realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX is Special = %s\n", tmpString);
       #endif //DEBUG_XFN
-      realCopy(const_NaN, (real_t *)&paramX);
+      realSetNaN((real_t *)&paramX);
     }
     else {
       switch(function) {
@@ -749,8 +753,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = amRadian;
             break;
-          } else
-          if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+          }
+          else if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);
           }
@@ -762,8 +766,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = amDegree;
             break;
-          } else
-          if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+          }
+          else if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);
           }
@@ -776,7 +780,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = currentAngularMode;
             break;
-          } else {
+          }
+          else {
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
               realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);
@@ -803,11 +808,11 @@ printf("Dddd %d\n",registerNo);
             #endif //DEBUG_XFN
 
             real1071_t aa,bb;
-            realZero((real_t*)&aa);
-            realZero((real_t*)&bb);
-            if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); } else
-            if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); } else
-            if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
+            realSetZero((real_t*)&aa);
+            realSetZero((real_t*)&bb);
+                 if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); }
+            else if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); }
+            else if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
             }
             break;
 
@@ -861,7 +866,8 @@ printf("Dddd %d\n",registerNo);
           if(angleMode == amRadian) {
 //            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
             mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
-          } else {
+          }
+          else {
             WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
           break;
@@ -992,7 +998,8 @@ printf("Dddd %d\n",registerNo);
     //Step 0: Prep the stack
     if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
         fnDrop3();
-    } else if(functionType == FT_SINGLEX) {
+    }
+    else if(functionType == FT_SINGLEX) {
         fnDrop(NOPARAM);
     }
 
@@ -1000,7 +1007,7 @@ printf("Dddd %d\n",registerNo);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    realZero(&tmpR);
+    realSetZero(&tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 

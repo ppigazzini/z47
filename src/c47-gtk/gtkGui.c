@@ -3381,7 +3381,7 @@ char sstmp[16];
       else if(key->keyLblAim == ITM_SHIFTg) {
         strcpy((char *)lbl, indexOfItems[ITM_SHIFTg].itemSoftmenuName);
       }
-      else if(key->keyLblAim == KEY_fg) {     
+      else if(key->keyLblAim == KEY_fg) {
         strcpy((char *)lbl, indexOfItems[KEY_fg].itemSoftmenuName);
       }
       else if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {

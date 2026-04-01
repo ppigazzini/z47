@@ -89,7 +89,7 @@ void curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
       PowerReal(&a, const_1on3, resReal, realContext);
       realSetNegativeSign(resReal);
     }
-    realZero(resImag);
+    realSetZero(resImag);
   }
   else {
     realRectangularToPolar(&a, &b, &a, &b, realContext);
@@ -124,22 +124,31 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   real159_t x3r, x3i, temp1r, temp1i, temp2r, temp2i, numr, numi, denomr, denomi, quotr, quoti;
   real159_t temp, denom_mag;
 
-  realZero((real_t *)&xr);     realZero((real_t *)&xi);
-  realZero((real_t *)&zr);     realZero((real_t *)&zi);
-  realZero((real_t *)&x3r);    realZero((real_t *)&x3i);
-  realZero((real_t *)&temp1r); realZero((real_t *)&temp1i);
-  realZero((real_t *)&temp2r); realZero((real_t *)&temp2i);
-  realZero((real_t *)&numr);   realZero((real_t *)&numi);
-  realZero((real_t *)&denomr); realZero((real_t *)&denomi);
-  realZero((real_t *)&quotr);  realZero((real_t *)&quoti);
-  realZero((real_t *)&temp);   realZero((real_t *)&denom_mag);
+  realSetZero((real_t *)&xr);
+  realSetZero((real_t *)&xi);
+  realSetZero((real_t *)&zr);
+  realSetZero((real_t *)&zi);
+  realSetZero((real_t *)&x3r);
+  realSetZero((real_t *)&x3i);
+  realSetZero((real_t *)&temp1r);
+  realSetZero((real_t *)&temp1i);
+  realSetZero((real_t *)&temp2r);
+  realSetZero((real_t *)&temp2i);
+  realSetZero((real_t *)&numr);
+  realSetZero((real_t *)&numi);
+  realSetZero((real_t *)&denomr);
+  realSetZero((real_t *)&denomi);
+  realSetZero((real_t *)&quotr);
+  realSetZero((real_t *)&quoti);
+  realSetZero((real_t *)&temp);
+  realSetZero((real_t *)&denom_mag);
 
   realCopy(zReal, (real_t *)&zr);
   realCopy(zImag, (real_t *)&zi);
 
   if(realIsZero((real_t *)&zr) && realIsZero((real_t *)&zi)) {
-    realZero(resReal);
-    realZero(resImag);
+    realSetZero(resReal);
+    realSetZero(resImag);
     return;
   }
 
@@ -175,12 +184,13 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   if(realIsZero((real_t *)&zi)) {
     if(realIsPositive((real_t *)&zr)) {
       realPower((real_t *)&zr, (real_t *)&const159_1on3, (real_t *)&xr, realContext);
-      realZero((real_t *)&xi);
-    } else {
+      realSetZero((real_t *)&xi);
+    }
+    else {
       realSetPositiveSign((real_t *)&zr);
       realPower((real_t *)&zr, (real_t *)&const159_1on3, (real_t *)&xr, realContext);
       realSetNegativeSign((real_t *)&xr);
-      realZero((real_t *)&xi);
+      realSetZero((real_t *)&xi);
       realSetPositiveSign((real_t *)&zr); // Restore sign
       realSetNegativeSign((real_t *)&zr);
     }
@@ -276,9 +286,12 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   // The three cube roots are: w, w*omega, w*omega^2
   // where omega = -1/2 + i*sqrt(3)/2
   real159_t w1r, w1i, w2r, w2i, w3r, w3i;
-  realZero((real_t *)&w1r); realZero((real_t *)&w1i);
-  realZero((real_t *)&w2r); realZero((real_t *)&w2i);
-  realZero((real_t *)&w3r); realZero((real_t *)&w3i);
+  realSetZero((real_t *)&w1r);
+  realSetZero((real_t *)&w1i);
+  realSetZero((real_t *)&w2r);
+  realSetZero((real_t *)&w2i);
+  realSetZero((real_t *)&w3r);
+  realSetZero((real_t *)&w3i);
 
   // w1 = current root
   realCopy((real_t *)&xr, (real_t *)&w1r);
@@ -286,8 +299,8 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
 
   // omega = -1/2 + i*sqrt(3)/2
   real159_t omega_r, omega_i;
-  realZero((real_t *)&omega_r);
-  realZero((real_t *)&omega_i);
+  realSetZero((real_t *)&omega_r);
+  realSetZero((real_t *)&omega_i);
   realCopy(const_1on2, (real_t *)&omega_r);
   realChangeSign((real_t *)&omega_r); // -1/2
   realSquareRoot(const_3, (real_t *)&omega_i, realContext);

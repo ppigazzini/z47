@@ -263,13 +263,13 @@ void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
 
   // Range saturate if out of scope and scale away percentage
   if(realIsNegative(&p)) {
-    realZero(&p);
+    realSetZero(&p);
   }
   else if(realCompareLessThan(&p, const_100)) {
     p.exponent -= 2; // p = p / 100
   }
   else if(!realIsNaN(&p)) {
-    realOne(&p);
+    realSetOne(&p);
   }
   fnDrop(NOPARAM);
   doStatsOperation(&computePercentileUnsorted, const_1, &p, TI_PCTILEX_PCTILEY);

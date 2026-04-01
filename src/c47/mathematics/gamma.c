@@ -9,16 +9,18 @@
 
 static int checkGammaDomain(const real_t *xReal, real_t *out) {
   if(realIsSpecial(xReal)) {
-    if (realIsNaN(xReal))
-      realCopy(const_NaN, out);
+    if(realIsNaN(xReal)) {
+      realSetNaN(out);
+    }
     else if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkGammaDomain:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    else
+    else {
       realCopy(realIsPositive(xReal) ? const_plusInfinity : const_NaN, out);
+    }
     return 0;
   }
   if(realCompareLessEqual(xReal, const_0) && realIsAnInteger(xReal)) {
@@ -29,7 +31,7 @@ static int checkGammaDomain(const real_t *xReal, real_t *out) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      realCopy(const_NaN, out);
+      realSetNaN(out);
     }
     return 0;
   }
@@ -39,11 +41,13 @@ static int checkGammaDomain(const real_t *xReal, real_t *out) {
 static void gammaReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
-  if (checkGammaDomain(&x, &x))
+  if(checkGammaDomain(&x, &x)) {
     WP34S_Gamma(&x, &x, &ctxtReal39);
+  }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -52,12 +56,14 @@ static void gammaReal(void) {
 static void lnGammaReal(void) {
   real_t xReal, xImag;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal)) {
     return;
+  }
   setRegisterAngularMode(REGISTER_X, amNone);
 
-  if (!checkGammaDomain(&xReal, &xReal))
+  if(!checkGammaDomain(&xReal, &xReal)) {
     goto end;
+  }
 
   if(realCompareLessEqual(&xReal, const_0)) { // x <= 0
     // x is negative and not an integer
@@ -98,8 +104,9 @@ end:
 static void gammaCplx(void) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
   WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
@@ -165,8 +172,9 @@ void complexLnGamma(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
 static void lnGammaCplx(void) {
   real_t zReal, zImag, rReal, rImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
   complexLnGamma(&zReal, &zImag, &rReal, &rImag, &ctxtReal39);
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }

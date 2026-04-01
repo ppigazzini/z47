@@ -1393,10 +1393,10 @@ void insertStepInProgram(const int16_t func) {
     pemCursorIsZerothStep = false;
     return;
   }
-  if(   indexOfItems[func].func == addItemToBuffer 
-     || (!tam.mode && aimBuffer[0] != 0 && (   func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT 
-                                            || (nimNumberPart == NP_INT_BASE && (   ( isR47FAM && (func == ITM_SQUAREROOTX || func == ITM_YX)) 
-                                                                                 || (!isR47FAM && (func == ITM_1ONX        || func == ITM_LOG10)) 
+  if(   indexOfItems[func].func == addItemToBuffer
+     || (!tam.mode && aimBuffer[0] != 0 && (   func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT
+                                            || (nimNumberPart == NP_INT_BASE && (   ( isR47FAM && (func == ITM_SQUAREROOTX || func == ITM_YX))
+                                                                                 || (!isR47FAM && (func == ITM_1ONX        || func == ITM_LOG10))
                                                                                  || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
     pemAddNumber(func, true);
     return;

@@ -118,7 +118,7 @@
   void WP34S_Pdf_Cauchy(const real_t *x, const real_t *x0, const real_t *gamma, real_t *res, realContext_t *realContext) {
     WP34S_cdf_cauchy_xform(x, x0, gamma, res, realContext);
     if(realIsSpecial(res)) {
-      realZero(res); /* Can only be infinite which has zero probability */
+      realSetZero(res); /* Can only be infinite which has zero probability */
       return;
     }
     realMultiply(res, res, res, realContext);
@@ -141,7 +141,7 @@
 
     WP34S_cdf_cauchy_xform(x, x0, gamma, &p, realContext);
     if(realIsSpecial(&p)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
     WP34S_Atan(&p, &p, realContext);
