@@ -2794,7 +2794,7 @@
 #define ITM_2696                    2696
 #define ITM_2697                    2697
 #define ITM_2698                    2698
-#define ITM_2699                    2699
+#define ITM_2699                    2699 //spares for the print menu
 
 #define LAST_ITEM                   2700
 
