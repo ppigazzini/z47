@@ -2776,7 +2776,27 @@
 #define ITM_2679                    2679
 #define ITM_2680                    2680 //spares for the temp menu
 
-#define LAST_ITEM                   2681
+#define MNU_PRINTER                 2681
+#define ITM_PRINTERALPHA            2682
+#define ITM_PRINTERHP               2683
+#define ITM_PRINTERMARTEL           2684
+#define ITM_PRINTEROTHER            2685
+#define ITM_PRINTERDLAYQ            2686
+#define ITM_PRINTERON               2687
+#define ITM_PRINTEROFF              2688
+#define ITM_MAN                     2689
+#define ITM_NORM                    2690
+#define ITM_TRACE                   2691
+#define ITM_PRINTERLIST             2692
+#define ITM_2693                    2693
+#define ITM_2694                    2694
+#define ITM_2695                    2695
+#define ITM_2696                    2696
+#define ITM_2697                    2697
+#define ITM_2698                    2698
+#define ITM_2699                    2699
+
+#define LAST_ITEM                   2700
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
@@ -2825,7 +2845,7 @@ void runFunction      (int16_t func);
 void itemToBeCoded    (uint16_t unusedButMandatoryParameter);
 
 /**
- * No OPeration.
+ * No OPeration.mak
  *
  * \param[in] unusedButMandatoryParameter
  */
