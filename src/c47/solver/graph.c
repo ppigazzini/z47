@@ -1268,13 +1268,13 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
   static void divFunctionComplex(const real_t *a_re, const real_t *a_im, const real_t *b_re, const real_t *b_im, real_t *res_re, real_t *res_im) {
     if(  (realIsZero(a_re) && realIsZero(a_im)) || realIsNaN(a_re) || realIsNaN(a_im) || realIsNaN(b_re) || realIsNaN(b_im)) {
-      realZero(res_re);
-      realZero(res_im);
+      realSetZero(res_re);
+      realSetZero(res_im);
       return;
     }
     if(realIsZero(b_re) && realIsZero(b_im)) {
       stringToReal("1E30", res_re, ctxtSolver2);
-      realZero(res_im);
+      realSetZero(res_im);
       return;
     }
     divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
@@ -1450,8 +1450,8 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     }
 
 
-    realZero(&dXold.Real);
-    realZero(&dXold.Imag);
+    realSetZero(&dXold.Real);
+    realSetZero(&dXold.Imag);
     copyComplex(&dXold, &dYold);
     copyComplex(&dXold, &X2N);
     copyComplex(&dXold, &dX);
@@ -1464,9 +1464,9 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     // set tolerance from significantDigits and use higher prcision in execute_rpn_function();
     uint16_t signDig  = significantDigits ? significantDigits : 34;
 
-    realOne(&tol);
+    realSetOne(&tol);
     tol.exponent -= signDig <= 4 ? 4 : (signDig > 32 ? 32 : signDig);
-    realOne(&tolClose);
+    realSetOne(&tolClose);
     tolClose.exponent -= signDig <= 4 ? 3 : (signDig > 27 ? 27 : signDig - 1);
     fnSetSignificantDigits(34);
 
@@ -1476,10 +1476,11 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     // check if an initial value is a solution
     if(checkRealZeroTol(&cpxSlvBestMagnitudeY, &tol)) {
       Y2IsZero = true;
-    } else {
+    }
+    else {
       subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
       // avoid equal Y as it causes double iterations
-      if (check2RealZeroTol(CPLX(temp1), &tol)) {
+      if(check2RealZeroTol(CPLX(temp1), &tol)) {
         addComplex(CPLX(X0), const_1e_6, const_0, CPLX(X0), ctxtSolver2);
         execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
         subComplex(CPLX(Y1), CPLX(Y0), CPLX(temp1), ctxtSolver2);  //dy=y1-y0
@@ -1488,10 +1489,11 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       divFunctionComplex( CPLX(temp0), CPLX(temp1), CPLX(temp0));  //dx/dy
       mulComplexComplex( CPLX(temp0), CPLX(Y1), CPLX(temp0), ctxtSolver2);  //deltaX = x1 - x2 = Y1 / (dy/dx) = Y1 x 1/(dy/dx) = Y1 x dx/dy
       subComplex(CPLX(X1), CPLX(temp0), CPLX(X2), ctxtSolver2);  //x2=x1-deltaX
-      if (realIsZero(&X2.Imag))
-      //   realCopy(&temp0.Real, &X2.Imag);
+      if(realIsZero(&X2.Imag)) {
+        // realCopy(&temp0.Real, &X2.Imag);
         // X2.Imag.exponent -= 1;
         realMultiply(&X2.Real, const_1on3, &X2.Imag, ctxtSolver2);
+      }
     }
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
@@ -1831,7 +1833,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                               printComplexToConsole(CPLX(Y1),"Y = ","\n");
                                         #endif // VERBOSE_SOLVER0
 
-      if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
+      if(ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
         convertComplexToResultRegister(CPLX(X1), REGISTER_X);
         convertComplexToResultRegister(CPLX(Y1), REGISTER_Y);
         fnP_All_Regs(PRN_XYr);
@@ -1852,15 +1854,16 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     bool_t conjugates = false;
     // Test if zeroed complex parts is better
     copyComplex(&cpxSlvBestX, &temp0);
-    if (checkRealZeroTol(&temp0.Real, &tolClose)) {
-      realZero(&temp0.Real);
+    if(checkRealZeroTol(&temp0.Real, &tolClose)) {
+      realSetZero(&temp0.Real);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
     }
     copyComplex(&cpxSlvBestX, &temp0);
     if(checkRealZeroTol(&temp0.Imag, &tolClose)) {
-      realZero(&temp0.Imag);
+      realSetZero(&temp0.Imag);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
-    } else {   // consider conjugates if X not close to Real
+    }
+    else {   // consider conjugates if X not close to Real
       realChangeSign(&temp0.Imag);
       execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
       conjugates = checkRealZeroTol(&magnitudeY, &tolClose);

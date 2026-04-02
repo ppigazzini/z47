@@ -17,7 +17,7 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
    */
   if(realCompareEqual(xReal, const_100) && realIsZero(yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, rReal);
+      realSetNaN(rReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -29,7 +29,8 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
   }
   else if(realCompareEqual(xReal, const_100)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realIsPositive(yReal) ? const_plusInfinity : const_minusInfinity), rReal);
+      realSetPlusInfinity(rReal);
+      rReal->bits |= DECNEG*realIsNegative(yReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

@@ -35,7 +35,7 @@ static void percentMRR() {
 
   if(realIsZero(&xReal) && realIsZero(&yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, &q);
+      realSetNaN(&q);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -47,7 +47,8 @@ static void percentMRR() {
   }
   else if(realIsZero(&yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realIsPositive(&xReal) ? const_plusInfinity : const_minusInfinity), &q);
+      realSetPlusInfinity(&q);
+      q.bits |= DECNEG*realIsNegative(&xReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -57,12 +58,13 @@ static void percentMRR() {
       return;
     }
   }
-
-  realDivide(&xReal, &yReal, &q, &ctxtReal75);        // q = x/y
-  realDivide(const_1, &zReal, &zReal, &ctxtReal75);   // z = 1/z
-  realPower(&q, &zReal, &q, &ctxtReal75);             // q = pow(x/y, 1/z)
-  realSubtract(&q, const_1, &q, &ctxtReal75);         // q = pow(x/y, 1/z) - 1
-  q.exponent += 2;                                    // q = 100 * ( pow(x/y, 1/z) - 1 )
+  else {
+    realDivide(&xReal, &yReal, &q, &ctxtReal75);        // q = x/y
+    realDivide(const_1, &zReal, &zReal, &ctxtReal75);   // z = 1/z
+    realPower(&q, &zReal, &q, &ctxtReal75);             // q = pow(x/y, 1/z)
+    realSubtract(&q, const_1, &q, &ctxtReal75);         // q = pow(x/y, 1/z) - 1
+    q.exponent += 2;                                    // q = 100 * ( pow(x/y, 1/z) - 1 )
+  }
 
   convertRealToResultRegister(&q, REGISTER_X, amNone);
 

@@ -93,7 +93,7 @@ end:
 //This section is not needed as only sqrt and qubert are using this helper function
 //  else { // fallthrough n is even and x < 1
 //    real_t x;
-//    if (!getRegisterAsReal(REGISTER_X, &x)) {
+//    if(!getRegisterAsReal(REGISTER_X, &x)) {
 //      return;
 //    }
 //    real_t nn;
@@ -127,11 +127,11 @@ void sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
   if(realIsZero(imag) && realIsNegative(real)) {
     realMinus(real, resImag, realContext);
     realSquareRoot(resImag, resImag, realContext);
-    realZero(resReal);
+    realSetZero(resReal);
   }
   else if(realIsZero(imag)) {
     realSquareRoot(real, resReal, realContext);
-    realZero(resImag);
+    realSetZero(resImag);
   }
   else {
     realRectangularToPolar(real, imag, resReal, resImag, realContext);
@@ -153,72 +153,77 @@ void sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
 void sqrtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   real159_t xr, xi, zr, zi;
   real159_t temp1, temp2, temp3, temp4, denom, mag;
-  
-  realZero((real_t *)&xr); realZero((real_t *)&xi);
-  realZero((real_t *)&zr); realZero((real_t *)&zi);
-  realZero((real_t *)&temp1); realZero((real_t *)&temp2);
-  realZero((real_t *)&temp3); realZero((real_t *)&temp4);
-  realZero((real_t *)&denom); realZero((real_t *)&mag);
-  
+
+  realSetZero((real_t *)&xr);
+  realSetZero((real_t *)&xi);
+  realSetZero((real_t *)&zr);
+  realSetZero((real_t *)&zi);
+  realSetZero((real_t *)&temp1);
+  realSetZero((real_t *)&temp2);
+  realSetZero((real_t *)&temp3);
+  realSetZero((real_t *)&temp4);
+  realSetZero((real_t *)&denom);
+  realSetZero((real_t *)&mag);
+
   // Copy inputs
   realCopy(zReal, (real_t *)&zr);
   realCopy(zImag, (real_t *)&zi);
-  
+
   if(realIsZero((real_t *)&zr) && realIsZero((real_t *)&zi)) {
-    realZero(resReal);
-    realZero(resImag);
+    realSetZero(resReal);
+    realSetZero(resImag);
     return;
   }
-  
+
   // Initial guess: x_0 based on |z|^(1/2)
   // mag = sqrt(zr² + zi²)
   realMultiply((real_t *)&zr, (real_t *)&zr, (real_t *)&temp1, realContext);
   realMultiply((real_t *)&zi, (real_t *)&zi, (real_t *)&temp2, realContext);
   realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&mag, realContext);
   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
-  
+
   // Initial guess: xr = sqrt((mag + zr)/2), xi = sign(zi)*sqrt((mag - zr)/2)
   realAdd((real_t *)&mag, (real_t *)&zr, (real_t *)&temp1, realContext);
   realDivideBy2((real_t *)&temp1, realContext);
   realSquareRoot((real_t *)&temp1, (real_t *)&xr, realContext);
-  
+
   realSubtract((real_t *)&mag, (real_t *)&zr, (real_t *)&temp2, realContext);
   realDivideBy2((real_t *)&temp2, realContext);
   realSquareRoot((real_t *)&temp2, (real_t *)&xi, realContext);
   if(realIsNegative((real_t *)&zi)) {
     realChangeSign((real_t *)&xi);
   }
-  
+
   // Newton-Raphson iterations: x_{n+1} = (x_n + z/x_n) / 2
   for(int iter = 0; iter < 10; iter++) {
     // Compute z/x_n = (zr+zi*i) / (xr+xi*i)
     // = ((zr*xr + zi*xi) + (zi*xr - zr*xi)*i) / (xr² + xi²)
-    
+
     // denom = xr² + xi²
     realMultiply((real_t *)&xr, (real_t *)&xr, (real_t *)&temp1, realContext);
     realMultiply((real_t *)&xi, (real_t *)&xi, (real_t *)&temp2, realContext);
     realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&denom, realContext);
-    
+
     // temp3 = (zr*xr + zi*xi) / denom
     realMultiply((real_t *)&zr, (real_t *)&xr, (real_t *)&temp1, realContext);
     realMultiply((real_t *)&zi, (real_t *)&xi, (real_t *)&temp2, realContext);
     realAdd((real_t *)&temp1, (real_t *)&temp2, (real_t *)&temp1, realContext);
     realDivide((real_t *)&temp1, (real_t *)&denom, (real_t *)&temp3, realContext);
-    
+
     // temp4 = (zi*xr - zr*xi) / denom
     realMultiply((real_t *)&zi, (real_t *)&xr, (real_t *)&temp1, realContext);
     realMultiply((real_t *)&zr, (real_t *)&xi, (real_t *)&temp2, realContext);
     realSubtract((real_t *)&temp1, (real_t *)&temp2, (real_t *)&temp1, realContext);
     realDivide((real_t *)&temp1, (real_t *)&denom, (real_t *)&temp4, realContext);
-    
+
     // x_{n+1} = (x_n + z/x_n) / 2
     realAdd((real_t *)&xr, (real_t *)&temp3, (real_t *)&xr, realContext);
     realDivideBy2((real_t *)&xr, realContext);
-    
+
     realAdd((real_t *)&xi, (real_t *)&temp4, (real_t *)&xi, realContext);
     realDivideBy2((real_t *)&xi, realContext);
   }
-  
+
   realCopy((real_t *)&xr, resReal);
   realCopy((real_t *)&xi, resImag);
 }
@@ -229,11 +234,12 @@ void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
   if(realContext->digits <= 75) {
     sqrtComplex75(real, imag, resReal, resImag, realContext);
 #if defined(OPTION_SQUARE_159) ||defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
-  } else
-  if(realContext->digits <= 159) {
+  }
+  else if(realContext->digits <= 159) {
     sqrtComplex159(real, imag, resReal, resImag, realContext);
 #endif //OPTION_SQUARE_159 || OPTION_CUBIC_159) || OPTION_EIGEN_159
-  } else {
+  }
+  else {
     sprintf(errorMessage, "Exceed digits :sqrtComplex: %d", (int)(realContext->digits));
     displayBugScreen(errorMessage);
   }

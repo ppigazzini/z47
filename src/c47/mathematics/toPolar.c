@@ -225,14 +225,14 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  +----+----+--------+------------+
     //  |NaN |any |NaN     |NaN         |   1
     //  |any |NaN |NaN     |NaN         |   2
-    realCopy(const_NaN, magnitude);
-    realCopy(const_NaN, theta);
+    realSetNaN(magnitude);
+    realSetNaN(theta);
     return;
   }
 
   // Real part is infinite
   if(realIsInfinite(&re)) {
-    realCopy(const_plusInfinity, magnitude);
+    realSetPlusInfinity(magnitude);
 
     if(realIsPositive(&re)) { // re = +inf
       //  +----+----+--------+------------+
@@ -251,7 +251,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
         }
       }
       else { // re = +inf  im ≠ infinite
-        realZero(theta);
+        realSetZero(theta);
       }
     }
     else { // re = -inf
@@ -289,7 +289,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  |-a  |-∞  |∞       |-π/2        |   8
     //  |0   |-∞  |∞       |-π/2        |  13
     //  |+a  |-∞  |∞       |-π/2        |  18
-    realCopy(const_plusInfinity, magnitude);
+    realSetPlusInfinity(magnitude);
     realCopy(const_piOn2, theta);
 
     if(realIsNegative(&im)) { // im = -inf
@@ -308,8 +308,8 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  |0   |-b  |b       |-π/2        |  14
     //  |0   |+b  |b       |π/2         |  16
     if(realIsZero(&im)) { // re = 0  im = 0
-      realZero(magnitude);
-      realZero(theta);
+      realSetZero(magnitude);
+      realSetZero(theta);
     }
     else { // re = 0  im ≠ 0
       realCopyAbs(&im, magnitude);
@@ -336,7 +336,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
       realCopy(const_pi, theta); // 180°
     }
     else { // re > 0  im = 0
-      realZero(theta); // 0°
+      realSetZero(theta); // 0°
     }
 
     return;

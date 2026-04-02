@@ -23,55 +23,69 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   complexMagnitude2(&p2->r, &p2->i, &v2a, &ctxtReal39);
 
   // NaN's aren't interesting so sort largest
-  if(realIsNaN(&v1a))
+  if(realIsNaN(&v1a)) {
     return realIsNaN(&v2a) ? 0 : 1;
-  if(realIsNaN(&v2a))
+  }
+  if(realIsNaN(&v2a)) {
     return -1;
+  }
 
   // Zeros are uninteresting so sort larger
-  if(realIsZero(&v1a))
+  if(realIsZero(&v1a)) {
     return realIsZero(&v2a)? 0 : 1;
-  if(realIsZero(&v2a))
+  }
+  if(realIsZero(&v2a)) {
     return -1;
+  }
 
   // Complex values are less interesting than real ones
   if(realIsZero(&p1->i)) {
-    if(!realIsZero(&p2->i))
+    if(!realIsZero(&p2->i)) {
       return -1;
+    }
   }
-  else if(realIsZero(&p2->i))
-      return 1;
+  else if(realIsZero(&p2->i)) {
+    return 1;
+  }
 
   // Sort on magnitude
   realCompare(&v1a, &v2a, &c, &ctxtReal75);
-  if(!realIsZero(&c))
-    return realIsNegative(&c) ? -1 : 1;
+  if(!realIsZero(&c)) {
+    return 1 - 2*realIsNegative(&c);
+  }
 
   // Equal magnitude, favour positive roots over negative
-  if(realIsNegative(&p1->r) && !realIsNegative(&p2->r))
+  if(realIsNegative(&p1->r) && !realIsNegative(&p2->r)) {
     return 1;
-  if(!realIsNegative(&p1->r) && realIsNegative(&p2->r))
+  }
+  if(!realIsNegative(&p1->r) && realIsNegative(&p2->r)) {
     return -1;
-  if(realIsNegative(&p1->i) && !realIsNegative(&p2->i))
+  }
+  if(realIsNegative(&p1->i) && !realIsNegative(&p2->i)) {
     return 1;
-  if(!realIsNegative(&p1->i) && realIsNegative(&p2->i))
+  }
+  if(!realIsNegative(&p1->i) && realIsNegative(&p2->i)) {
     return -1;
+  }
 
   // Favour smaller real parts
   realCompare(&p1->r, &p2->r, &c, &ctxtReal75);
   if(!realIsZero(&c)) {
-    if(realIsNegative(&p1->r))
-      return realIsNegative(&c) ? 1 : -1;
-    return realIsNegative(&c) ? -1 : 1;
+    if(realIsNegative(&p1->r)) {
+      return 1 - 2*realIsPositive(&c);
+    }
+    return 1 - 2*realIsNegative(&c);
   }
 
   // Favour smaller imaginary parts
   realCompare(&p1->i, &p2->i, &c, &ctxtReal75);
   if(!realIsZero(&c)) {
-    if(realIsNegative(&p1->i))
-      return realIsNegative(&c) ? 1 : -1;
-    else
-      return realIsNegative(&c) ? -1 : 1;
+    if(realIsNegative(&p1->i)) {
+      return 1 - 2*realIsPositive(&c);
+    }
+    else {
+      return 1 - 2*realIsNegative(&c);
+    }
   }
   return 0;
 }
@@ -117,8 +131,8 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
 
   if(realIsZero(&aReal) && realIsZero(&aImag)) {
     solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
-    realCopy(const_NaN, &x[2].r);
-    realCopy(const_NaN, &x[2].i);
+    realSetNaN(&x[2].r);
+    realSetNaN(&x[2].i);
   }
   else {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
@@ -137,14 +151,14 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     realPlus(&cImag, (real_t *)&cImagH, &c);
     realPlus(&dReal, (real_t *)&dRealH, &c);
     realPlus(&dImag, (real_t *)&dImagH, &c);
-    realZero((real_t*)&r0r);
-    realZero((real_t*)&r0i);
-    realZero((real_t*)&x1r);
-    realZero((real_t*)&x1i);
-    realZero((real_t*)&x2r);
-    realZero((real_t*)&x2i);
-    realZero((real_t*)&x3r);
-    realZero((real_t*)&x3i);
+    realSetZero((real_t*)&r0r);
+    realSetZero((real_t*)&r0i);
+    realSetZero((real_t*)&x1r);
+    realSetZero((real_t*)&x1i);
+    realSetZero((real_t*)&x2r);
+    realSetZero((real_t*)&x2i);
+    realSetZero((real_t*)&x3r);
+    realSetZero((real_t*)&x3i);
     solveCubicEquation159((real_t*)&bRealH, (real_t*)&bImagH, (real_t*)&cRealH, (real_t*)&cImagH, (real_t*)&dRealH, (real_t*)&dImagH, (real_t*)&r0r, (real_t*)&r0i, (real_t*)&x1r, (real_t*)&x1i, (real_t*)&x2r, (real_t*)&x2i, (real_t*)&x3r, (real_t*)&x3i, &c);
     realPlus((real_t *)&r0r, &rReal,  &ctxtReal39);
     realPlus((real_t *)&r0i, &rImag,  &ctxtReal39);
@@ -220,7 +234,7 @@ static void _realCheckedAdd(const real_t *operand1, const real_t *operand2, real
   real_t r;
   realAdd(operand1, operand2, &r, realContext);
   if(_checkConditionNumberOfAddSub(operand1, operand2, &r, realContext)) {
-    realZero(res);
+    realSetZero(res);
   }
   else {
     realCopy(&r, res);
@@ -230,7 +244,7 @@ static void _realCheckedSubtract(const real_t *operand1, const real_t *operand2,
   real_t r;
   realSubtract(operand1, operand2, &r, realContext);
   if(_checkConditionNumberOfAddSub(operand1, operand2, &r, realContext)) {
-    realZero(res);
+    realSetZero(res);
   }
   else {
     realCopy(&r, res);
@@ -308,26 +322,26 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   if(realIn) {
     if(realIsZero(rReal) || realIsNegative(rImag)) {
       /* Three real roots */
-      realZero(x1Imag);
-      realZero(x2Imag);
-      realZero(x3Imag);
+      realSetZero(x1Imag);
+      realSetZero(x2Imag);
+      realSetZero(x3Imag);
     }
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
         if(realCompareAbsLessThan(x1Imag, x3Imag)) {
-          realZero(x1Imag);
+          realSetZero(x1Imag);
         }
         else {
-          realZero(x3Imag);
+          realSetZero(x3Imag);
         }
       }
       else {
         if(realCompareAbsLessThan(x2Imag, x3Imag)) {
-          realZero(x2Imag);
+          realSetZero(x2Imag);
         }
         else {
-          realZero(x3Imag);
+          realSetZero(x3Imag);
         }
       }
     }
@@ -358,18 +372,23 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 
   // Compute high-precision constant sqrt(3)/2
   real159_t const159_root3on2;
-  realZero((real_t *)&const159_root3on2);
+  realSetZero((real_t *)&const159_root3on2);
   realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
   realMultiply((real_t *)&const159_root3on2, const_1on2, (real_t *)&const159_root3on2, realContext);
 
   // Intermediate variables in 159-digit precision
   real159_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
 
-  realZero((real_t *)&qr);  realZero((real_t *)&qi);
-  realZero((real_t *)&rr);  realZero((real_t *)&ri);
-  realZero((real_t *)&s1r); realZero((real_t *)&s1i);
-  realZero((real_t *)&s2r); realZero((real_t *)&s2i);
-  realZero((real_t *)&ar);  realZero((real_t *)&ai);
+  realSetZero((real_t *)&qr);
+  realSetZero((real_t *)&qi);
+  realSetZero((real_t *)&rr);
+  realSetZero((real_t *)&ri);
+  realSetZero((real_t *)&s1r);
+  realSetZero((real_t *)&s1i);
+  realSetZero((real_t *)&s2r);
+  realSetZero((real_t *)&s2i);
+  realSetZero((real_t *)&ar);
+  realSetZero((real_t *)&ai);
 
   // Compute q, r and the discriminant
   // This is done by scaling things up so that divisions are avoided until the final step.
@@ -406,8 +425,8 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 
 // Compute discriminant using intermediate 159-digit variables
   real159_t discrimR, discrimI;
-  realZero((real_t *)&discrimR);
-  realZero((real_t *)&discrimI);
+  realSetZero((real_t *)&discrimR);
+  realSetZero((real_t *)&discrimI);
 
   // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
   mulComplexComplex((real_t *)&qr, (real_t *)&qi, (real_t *)&qr, (real_t *)&qi, (real_t *)&discrimR, (real_t *)&discrimI, realContext);
@@ -459,26 +478,26 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   if(realIn) {
     if(realIsZero(rReal) || realIsNegative(rImag)) {
       /* Three real roots */
-      realZero(x1Imag);
-      realZero(x2Imag);
-      realZero(x3Imag);
+      realSetZero(x1Imag);
+      realSetZero(x2Imag);
+      realSetZero(x3Imag);
     }
     else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
         if(realCompareAbsLessThan(x1Imag, x3Imag)) {
-          realZero(x1Imag);
+          realSetZero(x1Imag);
         }
         else {
-          realZero(x3Imag);
+          realSetZero(x3Imag);
         }
       }
       else {
         if(realCompareAbsLessThan(x2Imag, x3Imag)) {
-          realZero(x2Imag);
+          realSetZero(x2Imag);
         }
         else {
-          realZero(x3Imag);
+          realSetZero(x3Imag);
         }
       }
     }
@@ -488,17 +507,17 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   int eff_exp;
   eff_exp = realGetExponent(x1Imag);
   if(eff_exp < -realContext->digits) {
-    realZero(x1Imag);
+    realSetZero(x1Imag);
   }
 
   eff_exp = realGetExponent(x2Imag);
   if(eff_exp < -realContext->digits) {
-    realZero(x2Imag);
+    realSetZero(x2Imag);
   }
 
   eff_exp = realGetExponent(x3Imag);
   if(eff_exp < -realContext->digits) {
-    realZero(x3Imag);
+    realSetZero(x3Imag);
   }
 
 #ifdef DISCRIMINANT
@@ -529,14 +548,22 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 //
 //   // Initialize ALL intermediate variables
-//   realZero((real_t *)&qr)   ;    realZero((real_t *)&qi)   ;
-//   realZero((real_t *)&rr)   ;    realZero((real_t *)&ri)   ;
-//   realZero((real_t *)&s1r)  ;    realZero((real_t *)&s1i)  ;
-//   realZero((real_t *)&s2r)  ;    realZero((real_t *)&s2i)  ;
-//   realZero((real_t *)&ar)   ;    realZero((real_t *)&ai)   ;
-//   realZero((real_t *)&temp1);    realZero((real_t *)&temp2);
-//   realZero((real_t *)&temp3);    realZero((real_t *)&temp4);
-//   realZero((real_t *)&mag)  ;    realZero((real_t *)&angle);
+//   realSetZero((real_t *)&qr);
+//   realSetZero((real_t *)&qi);
+//   realSetZero((real_t *)&rr);
+//   realSetZero((real_t *)&ri);
+//   realSetZero((real_t *)&s1r);
+//   realSetZero((real_t *)&s1i);
+//   realSetZero((real_t *)&s2r);
+//   realSetZero((real_t *)&s2i);
+//   realSetZero((real_t *)&ar);
+//   realSetZero((real_t *)&ai);
+//   realSetZero((real_t *)&temp1);
+//   realSetZero((real_t *)&temp2);
+//   realSetZero((real_t *)&temp3);
+//   realSetZero((real_t *)&temp4);
+//   realSetZero((real_t *)&mag);
+//   realSetZero((real_t *)&angle);
 //
 //   // ===== q = (c - b^2 / 3) / 3 =====
 //   // 9q = (3c - b^2)
@@ -756,22 +783,26 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   // ===== Force real outputs when appropriate =====
 //   if(realIn) {
 //     if(realIsZero(rReal) || realIsNegative(rImag)) {
-//       realZero(x1Imag);
-//       realZero(x2Imag);
-//       realZero(x3Imag);
+//       realSetZero(x1Imag);
+//       realSetZero(x2Imag);
+//       realSetZero(x3Imag);
 //     }
 //     else {
 //       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
-//         if(realCompareAbsLessThan(x1Imag, x3Imag))
-//           realZero(x1Imag);
-//         else
-//           realZero(x3Imag);
+//         if(realCompareAbsLessThan(x1Imag, x3Imag)) {
+//           realSetZero(x1Imag);
+//         }
+//         else {
+//           realSetZero(x3Imag);
+//         }
 //       }
 //       else {
-//         if(realCompareAbsLessThan(x2Imag, x3Imag))
-//           realZero(x2Imag);
-//         else
-//           realZero(x3Imag);
+//         if(realCompareAbsLessThan(x2Imag, x3Imag)) {
+//           realSetZero(x2Imag);
+//         }
+//         else {
+//           realSetZero(x3Imag);
+//         }
 //       }
 //     }
 //   }

@@ -52,8 +52,8 @@ void lnP1Complex(const real_t *real, const real_t *imag, real_t *lnReal, real_t 
     /* No numeric problems, so just do this directly */
     realAdd(real, const_1, &r, realContext);
     if(realIsZero(&r) && realIsZero(imag)) {
-      realCopy(const_minusInfinity, lnReal);
-      realZero(lnImag);
+      realSetMinusInfinity(lnReal);
+      realSetZero(lnImag);
     }
     else {
       realRectangularToPolar(&r, imag, lnReal, lnImag, realContext);
@@ -74,7 +74,7 @@ static void lnP1Real(void) {
   realAdd(&arg, const_1, &r, &ctxtReal39);
   if(realIsZero(&r)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-        realCopy(const_minusInfinity, &x);
+      realSetMinusInfinity(&x);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -95,7 +95,7 @@ static void lnP1Real(void) {
     }
     else if(getFlag(FLAG_CPXRES)) {
       if(realIsPositive(&r)) {
-        realCopy(const_plusInfinity, &x);
+        realSetPlusInfinity(&x);
       }
       else {
         convertComplexToResultRegister(const_plusInfinity, const_pi, REGISTER_X);
@@ -103,7 +103,7 @@ static void lnP1Real(void) {
       }
     }
     else {
-      realCopy(const_NaN, &x);
+      realSetNaN(&x);
     }
   }
 
@@ -118,7 +118,7 @@ static void lnP1Real(void) {
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, &x);
+      realSetNaN(&x);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -136,13 +136,14 @@ static void lnP1Real(void) {
 static void lnP1Cplx(void) {
   real_t xReal, xImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
-      return;
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
+    return;
+  }
 
   if(realIsZero(&xImag) && realCompareEqual(&xReal, const__1)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_minusInfinity, &xReal);
-      realZero(&xImag);
+      realSetMinusInfinity(&xReal);
+      realSetZero(&xImag);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -152,8 +153,9 @@ static void lnP1Cplx(void) {
       return;
     }
   }
-  else
+  else {
     lnP1Complex(&xReal, &xImag, &xReal, &xImag, &ctxtReal75);
+  }
   convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 

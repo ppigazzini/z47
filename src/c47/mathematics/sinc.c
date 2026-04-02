@@ -20,8 +20,8 @@ void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
   realCopy(imag, &ii);
 
   if(realIsZero(&rr) && realIsZero(&ii)) {
-    realOne(resReal);
-    realZero(resImag);
+    realSetOne(resReal);
+    realSetZero(resImag);
   }
   else {
     real_t sina, cosa, sinhb, coshb, sinR, sinImag;

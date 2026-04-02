@@ -29,7 +29,7 @@ static void swapReImRema(void) {
 
   for(uint16_t i = 0; i < c.header.matrixRows * c.header.matrixColumns; ++i) {
     real34Copy(VARIABLE_REAL34_DATA(&c.matrixElements[i]), VARIABLE_IMAG34_DATA(&c.matrixElements[i]));
-    real34Zero(VARIABLE_REAL34_DATA(&c.matrixElements[i]));
+    real34SetZero(VARIABLE_REAL34_DATA(&c.matrixElements[i]));
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&c, REGISTER_X);
