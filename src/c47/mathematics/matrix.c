@@ -3715,8 +3715,13 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
         if((b = allocC47Blocks(n * REAL_SIZE_IN_BLOCKS * 2))) {
           for(i = 0; i < n; i++) {
             for(j = 0; j < n; j++) {
-              realCopy((i == j) ? const_1 : const_0, &b[j * 2    ]);
-              realCopy(                     const_0, &b[j * 2 + 1]);
+              if(i == j) {
+                realSetOne(&b[j * 2]);
+              }
+              else {
+                realSetZero(&b[j * 2]);
+              }
+              realSetZero(&b[j * 2 + 1]);
             }
             complex_matrix_pivoting_solve(lu, n, b, pivots, x, realContext);
             for(j = 0; j < n; j++) {
@@ -7956,9 +7961,9 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     real34ToReal(&matrix->matrixElements[2], &z);
 
     if(realIsZero(&x) && realIsZero(&y) && realIsZero(&z)) { //by convention [0 0 0] ==> Both angles (θ and φ) are undefined since there's no direction from the origin. By convention, both angles can be set to 0, but any values could be used
-      realCopy(const_0,r);
-      realCopy(const_0,th1);
-      realCopy(const_0,th2);
+      realSetZero(r);
+      realSetZero(th1);
+      realSetZero(th2);
       goto SPH_ret1;
     }
 
