@@ -12,6 +12,7 @@
   uint8_t *findPreviousStep        (uint8_t *step);
   void     defineCurrentStep       (void);
   void     defineFirstDisplayedStep(void);
+  void     showStep                (void);
   void     fnBst                   (uint16_t unusedButMandatoryParameter);
   void     fnSst                   (uint16_t unusedButMandatoryParameter);
   void     fnBack                  (uint16_t numberOfSteps);
