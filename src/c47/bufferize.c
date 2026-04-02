@@ -2503,7 +2503,7 @@ typedef struct {
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
-        real34Zero(dest_i);
+        real34SetZero(dest_i);
       }
       else {
         real_t magnitude, theta;
@@ -2572,7 +2572,7 @@ typedef struct {
       pemCloseNumberInput();
       return;
     }
-    
+
     bool_t delayedShortIntegerCHS = false;
     //#if defined(PC_BUILD)
     //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);

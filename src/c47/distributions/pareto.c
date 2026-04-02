@@ -95,10 +95,10 @@ void fnParetoI(uint16_t unusedButMandatoryParameter) {
   real_t x, t, sigma, alpha;
 
   if(checkParamGPD(&x, NULL, &sigma, &alpha, true)) {
-    if ((realIsNegative(&x) && !realIsZero(&x)) ||
-            realCompareGreaterThan(&x, const_1)) {
-      realCopy(const_NaN, &x);
-    } else {
+    if((realIsNegative(&x) && !realIsZero(&x)) || realCompareGreaterThan(&x, const_1)) {
+      realSetNaN(&x);
+    }
+    else {
       realChangeSign(&x);
       WP34S_Ln1P(&x, &t, &ctxtReal39);
       realDivide(&t, &alpha, &x, &ctxtReal39);
@@ -162,10 +162,10 @@ void fnPareto2I(uint16_t unusedButMandatoryParameter) {
   real_t x, mu, sigma, alpha, t;
 
   if(checkParamGPD(&x, &mu, &sigma, &alpha, true)) {
-    if ((realIsNegative(&x) && !realIsZero(&x)) ||
-            realCompareGreaterThan(&x, const_1)) {
-      realCopy(const_NaN, &x);
-    } else {
+    if((realIsNegative(&x) && !realIsZero(&x)) || realCompareGreaterThan(&x, const_1)) {
+      realSetNaN(&x);
+    }
+    else {
       realChangeSign(&x);
       WP34S_Ln1P(&x, &t, &ctxtReal39);
       realDivide(&t, &alpha, &x, &ctxtReal39);

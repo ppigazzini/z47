@@ -133,7 +133,7 @@
     real_t p, q, r;
 
     if(realIsNegative(x) /* poission1_param */ || (!realIsAnInteger(x) /* pdf_poisson_xout */)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     WP34S_Ln(lambda, &p, realContext);
@@ -149,17 +149,17 @@
     real_t p;
 
     if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+      realSetZero(res);
       return;
     }
     // cdfu_poisson_xout
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     WP34S_GammaP(lambda, &p, res, realContext, false, true);
@@ -169,7 +169,7 @@
     real_t p;
 
     if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+      realSetZero(res);
       return;
     }
     // cdf_poisson_xout
@@ -182,11 +182,11 @@
 
     // cdf_poisson
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realOne(res);
+      realSetOne(res);
       return;
     }
     realAdd(x, const_1, &p, realContext);
@@ -197,7 +197,7 @@
     real_t p, q;
 
     if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+      realSetZero(res);
       return;
     }
 

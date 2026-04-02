@@ -8,7 +8,7 @@
 #include "c47.h"
 
 void convergenceTolerence(real_t *tol) {
-  realOne(tol);
+  realSetOne(tol);
   tol->exponent -= (significantDigits == 0 || significantDigits >= 32) ? 32 : significantDigits;
 }
 
@@ -378,7 +378,8 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //         }
 //       }
 //       checkDigits = number->digits;
-//     } else if(nn > 0 && number->digits > checkDigits) {
+//     }
+//     else if(nn > 0 && number->digits > checkDigits) {
 //       return false;
 //     }
 //
@@ -386,7 +387,8 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //     if(number->digits == checkDigits && checkDigits <= 1071) {
 //       realGetCoefficient(number, tmpString + TMP_STR_LENGTH/2);
 //       c.digits = checkDigits;
-//     } else {
+//     }
+//     else {
 //       int32_t minDigits = min(number->digits, 1071);
 //       c.digits = minDigits > 1 ? minDigits - 1 : 1;
 //       realPlus(number, (real_t *)&n1, &c);

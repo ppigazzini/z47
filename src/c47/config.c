@@ -1049,19 +1049,19 @@ void initSimEqMatABX(void) {
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
-  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
+  real34SetZero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
-  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
+  real34SetZero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
-  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
+  real34SetZero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 }
 
 
@@ -1515,7 +1515,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
-      real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
+      real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
     // initialize 1 long integer reserved variables: GRAMOD
@@ -1537,7 +1537,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       setRegisterDataType(regist, dtReal34, amNone);
       memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
       setRegisterDataPointer(regist, memPtr);
-      real34Zero(memPtr);
+      real34SetZero(memPtr);
     }
 
     // Clear global flags
@@ -1606,15 +1606,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     lastPlotMode = PLOT_NOTHING;
     plotSelection = 0;
     drawHistogram = 0;
-    realZero(&SAVED_SIGMA_LASTX);
-    realZero(&SAVED_SIGMA_LASTY);
+    realSetZero(&SAVED_SIGMA_LASTX);
+    realSetZero(&SAVED_SIGMA_LASTY);
     SAVED_SIGMA_lastAddRem = SIGMA_NONE;
 
     plotStatMx[0] = 0;
     regStatsXY = INVALID_VARIABLE;
-    real34Zero(&loBinR);
-    real34Zero(&nBins );
-    real34Zero(&hiBinR);
+    real34SetZero(&loBinR);
+    real34SetZero(&nBins );
+    real34SetZero(&hiBinR);
     histElementXorY = -1;
 
 

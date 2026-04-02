@@ -216,9 +216,9 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   real_t NN;
 
   nn = realToInt32C47(SIGMA_N, NULL);
-  realZero(&aa0);
-  realZero(&aa1);
-  realZero(&aa2);
+  realSetZero(&aa0);
+  realSetZero(&aa1);
+  realSetZero(&aa2);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     printf("Processing for best fit: %s\n",getCurveFitModeNames(curveFitting));
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1021,7 +1021,7 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
   float yf;
   real_t SS, TT, UU;
 
-  realZero(YY);
+  realSetZero(YY);
   if(USEFLOAT == useREAL4) {
     realContextForecast = &ctxtReal4;
   }
@@ -1157,9 +1157,9 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
   if(!getRegisterAsReal(REGISTER_X, &XX))
     return;
 
-  realZero(&aa0);
-  realZero(&aa1);
-  realZero(&aa2);
+  realSetZero(&aa0);
+  realSetZero(&aa1);
+  realSetZero(&aa2);
   if(checkMinimumDataPoints(const_2)) {
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;
@@ -1180,7 +1180,7 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
 void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2){
   real_t SS, TT, UU;
 
-  realZero(XX);
+  realSetZero(XX);
   realContextForecast = &ctxtReal39;
   switch(orOrtho(selection)) {
     case CF_LINEAR_FITTING:
@@ -1296,9 +1296,9 @@ void fnXIsFny(uint16_t unusedButMandatoryParameter){
   if(!getRegisterAsReal(REGISTER_X, &YY))
     return;
 
-  realZero(&aa0);
-  realZero(&aa1);
-  realZero(&aa2);
+  realSetZero(&aa0);
+  realSetZero(&aa1);
+  realSetZero(&aa2);
   if(checkMinimumDataPoints(const_2)) {
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;

@@ -229,7 +229,7 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-    if(didSystemFlagChange(FLAG_FRACT)  || didSystemFlagChange(FLAG_IRFRAC) || didSystemFlagChange(FLAG_PROPFR) || 
+    if(didSystemFlagChange(FLAG_FRACT)  || didSystemFlagChange(FLAG_IRFRAC) || didSystemFlagChange(FLAG_PROPFR) ||
        didSystemFlagChange(SETTING_DMX) || didSystemFlagChange(FLAG_DENFIX) || didSystemFlagChange(FLAG_DENANY)) {
 
       char statusMessage[20];
@@ -248,7 +248,7 @@ void drawBattery(uint16_t voltage);
         raiseString = 9;
         x = showString(STD_SUB_b, &standardFont, x, 0, vmNormal, true, true) - 2-2;
       } else {
-        lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);      
+        lcd_fill_rect(x, 0, 15, 20, LCD_SET_VALUE);
       }
 
       int xxSlash = x;
@@ -294,7 +294,7 @@ void drawBattery(uint16_t voltage);
         compressString = 1;
         x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
         if(x >= X_INT_MX_TVM_MODE - 1) {
-          lcd_fill_rect(X_INT_MX_TVM_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+          lcd_fill_rect(X_INT_MX_TVM_MODE - 1, 0, 1, 20, LCD_SET_VALUE);
         }
       }
 
@@ -414,7 +414,7 @@ void drawBattery(uint16_t voltage);
                                   + (alphaCase    << 12) \
                                   + (shiftF       << 13) \
                                   + (shiftG       << 14))
- 
+
   void showHideAlphaMode(void) {
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
@@ -741,15 +741,15 @@ void drawBattery(uint16_t voltage) {
       char statusMessage[100];
       char catalogstr[10];
       sprintf(catalogstr,"%d",catalog);
-      sprintf(statusMessage, "%s%s %s %s m:%s i:%d ti:%u er:%u lp:%u %u ", 
-        /*    */ catalog ? "asm:" : "", 
-        /*    */ catalog ? catalogstr : "", 
-        /*    */ tam.mode ? "tam" : "", 
+      sprintf(statusMessage, "%s%s %s %s m:%s i:%d ti:%u er:%u lp:%u %u ",
+        /*    */ catalog ? "asm:" : "",
+        /*    */ catalog ? catalogstr : "",
+        /*    */ tam.mode ? "tam" : "",
         /*    */ getCalcModeName(calcMode),
-        /* m  */ indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, 
-        /* i  */ softmenuStack[0].firstItem, 
-        /* ti  */ temporaryInformation, 
-        /* er */ lastErrorCode, 
+        /* m  */ indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName,
+        /* i  */ softmenuStack[0].firstItem,
+        /* ti  */ temporaryInformation,
+        /* er */ lastErrorCode,
         /* lp */ lastParam,
         /*    */ programRunStop
         );
@@ -965,7 +965,7 @@ void drawBattery(uint16_t voltage) {
     x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
     raiseString = 3;
     x = showString(STD_SUB_f, &standardFont, ++x, lowerUnderLine, vmNormal, true, true);
- 
+
     compressString = 1;
     sprintf(statusMessage, "%" PRIu32,9999);
     x = showString(statusMessage, &standardFont, xx, L1+lowerUnderLine, vmNormal, false, true);

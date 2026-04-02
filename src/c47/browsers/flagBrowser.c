@@ -283,8 +283,8 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
         y1 = 22*(f/6)+66-1-44;
         if(getSystemFlag(param)) {
           lcd_fill_rect(
-            x1, 
-            y1,  
+            x1,
+            y1,
             x2-x1,
             22*(f/6)+66+20-1-44-y1+1,
             LCD_EMPTY_VALUE);

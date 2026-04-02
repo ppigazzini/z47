@@ -2584,7 +2584,7 @@ var2:
             if(isCheckingEigenvectors) {
               x1 = malloc(REAL34_SIZE_IN_BYTES * cols);
               for(int col = 0; col < cols; ++col) {
-                real34Zero(x1 + col);
+                real34SetZero(x1 + col);
               }
             }
             while(r[0] == ' ') {
@@ -2708,8 +2708,8 @@ var2:
               xi1 = malloc(REAL_SIZE_IN_BYTES * cols);
               xf1 = malloc(sizeof(bool_t) * cols);
               for(int col = 0; col < cols; ++col) {
-                realZero(xr1 + col);
-                realZero(xi1 + col);
+                realSetZero(xr1 + col);
+                realSetZero(xi1 + col);
                 xf1[col] = false;
               }
             }
@@ -2781,8 +2781,8 @@ var2:
                   }
                   else {
                     strcpy(imag, "0");
-                    real34Zero(&expectedImag34);
-                    realZero(&expectedImag);
+                    real34SetZero(&expectedImag34);
+                    realSetZero(&expectedImag);
                   }
 
                   if(isCheckingEigenvectors && (!realIsZero(xr1 + element % cols) || !realIsZero(xi1 + element % cols))) {
@@ -2796,12 +2796,12 @@ var2:
                     WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&er); // possible pure imaginary
+                      realSetZero(&er); // possible pure imaginary
                     }
                     WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&ei); // possible real
+                      realSetZero(&ei); // possible real
                     }
 
                     realToReal34(&er, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
@@ -2815,12 +2815,12 @@ var2:
                     WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&er); // possible pure imaginary
+                      realSetZero(&er); // possible pure imaginary
                     }
                     WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&ei); // possible real
+                      realSetZero(&ei); // possible real
                     }
 
                     if(!(xf1[element % cols])) {
@@ -3119,18 +3119,19 @@ static bool_t timerOperation = false;
 static bool_t timedFunction = false;
 static time_t startTime = 0;  // module-level static variable
 void startTimer(void) {
-    startTime = time(NULL);
+  startTime = time(NULL);
 }
 
 void stopTimerAndPrint(void) {
-    if (startTime == 0) {
-        printf("Timer was not started.\n");
-        return;
-    }
-    time_t endTime = time(NULL);
-    double elapsed = difftime(endTime, startTime);
-    if(elapsed > 1)
-      printf("\n -- Processing time > 1 second: %d s\n", (int)elapsed);
+  if(startTime == 0) {
+    printf("Timer was not started.\n");
+    return;
+  }
+  time_t endTime = time(NULL);
+  double elapsed = difftime(endTime, startTime);
+  if(elapsed > 1) {
+    printf("\n -- Processing time > 1 second: %d s\n", (int)elapsed);
+  }
 }
 
 
