@@ -882,7 +882,7 @@ void print_line( const char *buff, int with_lf )
   unsigned char graphic[ PAPER_WIDTH ];	// Columns
   unsigned char glen = 0;
   unsigned char w = 0;
-
+  
   // Show Print SBI
   setPrinterSBI(true);
 
@@ -1849,7 +1849,7 @@ void printTrace(int16_t func, uint16_t param) {
           print_advance (0);
         }
         print_justified(tmpString);
-
+        
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
