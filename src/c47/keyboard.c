@@ -1822,6 +1822,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
+            #if defined(IR_PRINTING)
+              printf("**[DL]** STOP program\n");fflush(stdout);
+              refreshStatusBar();
+              printTrace(ITM_STOP,NOPARAM);   // STOP program
+            #endif //IR_PRINTING
           }
           else if(programRunStop == PGM_PAUSED) {
             programRunStop = PGM_KEY_PRESSED_WHILE_PAUSED;
