@@ -464,6 +464,15 @@ static void _sstInPem(void) {
   defineFirstDisplayedStep();
 }
 
+
+void showStep(void) {
+  temporaryInformation = TI_NO_INFO;
+  refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
+  refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
+  _showStep();
+}
+
+
 void fnSst(uint16_t unusedButMandatoryParameter) {
   screenUpdatingMode = SCRUPD_AUTO;
   if(calcMode == CM_PEM) {
@@ -488,10 +497,7 @@ void fnSst(uint16_t unusedButMandatoryParameter) {
     _sstInPem();
   }
   else {
-    temporaryInformation = TI_NO_INFO;
-    refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
-    refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
-    _showStep();
+    showStep();
     if(currentInputVariable != INVALID_VARIABLE) {
       if(currentInputVariable & 0x8000) {
         fnDropY(NOPARAM);
