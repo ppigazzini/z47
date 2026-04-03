@@ -56,7 +56,6 @@ void      removeMenuFromStack    (int16_t userMenuId);
 /**
  * Utility
  */
-int16_t   mm                     (int16_t id);
 int16_t   menu                   (uint8_t n);
 int16_t   currentMenu            (void);
 bool_t    setCurrentUserMenu     (int16_t item, char *funcParam);
