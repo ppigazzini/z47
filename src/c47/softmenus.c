@@ -1120,6 +1120,8 @@ dynamicSoftmenu_t dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS] = {
 /*  20 */  {.menuItem = -MNU_MENU   , .numItems = 0, .menuContent = NULL},
 };
 
+static void changeToHOME (void);
+static void changeToPFN  (void);
 
 
 uint8_t *getNthString(uint8_t *ptr, int16_t n) { // Starting with string 0 (the 1st string is returned for n=0)
@@ -3172,12 +3174,16 @@ void showSoftmenuCurrentPart(void) {
 
 
 
-  void changeToHOME(void) {
-    showSoftmenu(-MNU_HOME);
+  static void changeToHOME(void) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+      showSoftmenu(-MNU_HOME);
+    }
   }
 
-  void changeToPFN(void) {
-    showSoftmenu(-MNU_PFN);
+  static void changeToPFN(void) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+      showSoftmenu(-MNU_PFN);
+    }
   }
 
   void changeToALPHA(void) {
