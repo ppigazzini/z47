@@ -2054,6 +2054,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
+      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS) {
+        showFunctionNameItem = ITM_RS;
+        temporaryInformation = TI_NO_INFO;
+        refreshRegisterLine(REGISTER_T);
+      }
+
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         assignToKey((char *)data);
         if(previousCalcMode == CM_AIM) {             //vv JM RETURN TO AIM MODE
@@ -2416,6 +2422,17 @@ RELEASE_END:
           }
           break;
         }
+
+        case ITM_RS:
+          showStep();
+          keyActionProcessed = true;
+          showFunctionNameItem = 0;
+          #if defined(DMCP_BUILD)
+            lcd_refresh();
+          #else // !DMCP_BUILD
+            refreshLcd(NULL);
+          #endif // DMCP_BUILD
+          break;
 
         case ITM_DOWN1: {
           if(calcMode != CM_CONFIRMATION) {
