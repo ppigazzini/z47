@@ -30,6 +30,8 @@ make docs                   - Build documentation
 ## Distribution Packages
 ```
 make dist_macos             - Create macOS distribution package
+make dist_windows           - Create Windows distribution package
+make dist_linux             - Create Linux distribution package
 make dist_dmcp              - Create DM42 (DMCP) distribution package
 make dist_dmcpr47           - Create DM42 (DMCP) r47 distribution package
 make dist_dmcp5             - Create DM42n (DMCP5) distribution package
@@ -43,6 +45,8 @@ make DMCP_PACKAGE=3 dist_dmcp  - Create DM42 (DMCP) distribution package for fea
 ## Utilities
 ```
 make clean                  - Remove all build artifacts and generated files
+dist                        - Sequences all compiles and packages on Mac (modify script locally for dist_windows or dist_linux)
+distS                       - Runs dist, with a pipe to display used/remaining space on all dmcp versions
 ```
 
 ## ASAN Debugging
