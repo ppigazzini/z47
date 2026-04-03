@@ -2424,7 +2424,7 @@ RELEASE_END:
         }
 
         case ITM_RS:
-          showSst();
+          showStep();
           keyActionProcessed = true;
           showFunctionNameItem = 0;
           #if defined(DMCP_BUILD)
