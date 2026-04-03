@@ -1120,9 +1120,6 @@ dynamicSoftmenu_t dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS] = {
 /*  20 */  {.menuItem = -MNU_MENU   , .numItems = 0, .menuContent = NULL},
 };
 
-static void changeToHOME (void);
-static void changeToPFN  (void);
-
 
 uint8_t *getNthString(uint8_t *ptr, int16_t n) { // Starting with string 0 (the 1st string is returned for n=0)
   while(n) {
@@ -1142,6 +1139,8 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
 
 
 #if !defined(TESTSUITE_BUILD)
+  static void changeToHOME (void);
+  static void changeToPFN  (void);
   static void initVariableSoftmenu(int16_t menu);
 #endif // !TESTSUITE_BUILD
 
