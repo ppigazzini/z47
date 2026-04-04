@@ -433,6 +433,10 @@ void resetKeytimers(void) {
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
+    if(calcMode == CM_NORMAL && *result == ITM_RS) {
+      longpressDelayedkey1 = ITM_NOP;
+      //longpressDelayedkey2 & 3 disabled in LongpressKey_handler()
+    }
     if(calcMode == CM_NORMAL && *result == ITM_UP1) {
       longpressDelayedkey1 = ITM_NOP;
       //longpressDelayedkey2 & 3 disabled in LongpressKey_handler()
