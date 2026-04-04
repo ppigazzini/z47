@@ -268,25 +268,23 @@ void fnIntegrateYX(uint16_t labelOrVariable) {
 
 
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
-    const uint16_t regist = findOrAllocateNamedVariable(var);
-    bool_t doubleVarPress = regist == currentSolverVariable;
-    currentSolverVariable = regist;
-    if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
-        showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
-      }
-      else {
-        showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN
-      }
+  const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
+  const uint16_t regist = findOrAllocateNamedVariable(var);
+  bool_t doubleVarPress = regist == currentSolverVariable;
+  currentSolverVariable = regist;
+  if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+    if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
+      showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
     }
     else {
-      reallyRunFunction(ITM_STO, regist);
-      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
-      temporaryInformation = TI_SOLVER_VARIABLE;
+      showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN
     }
-  #endif // !TESTSUITE_BUILD
+  }
+  else {
+    reallyRunFunction(ITM_STO, regist);
+    currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+    temporaryInformation = TI_SOLVER_VARIABLE;
+  }
 }
 
 
@@ -423,30 +421,28 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
 
 
 void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const real_t *a, const real_t *b, const real_t *fact, realContext_t *realContext) {
-  #if !defined (TESTSUITE_BUILD)
-    real_t res;
-    clearRegisterLine(REGISTER_Z, true, true);
-    clearRegisterLine(REGISTER_Y, true, true);
-    clearRegisterLine(REGISTER_X, true, true);
-    uint8_t savedDisplayFormatDigits = displayFormatDigits;
-    displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-    real34_t rtmp34;
-    real_t tmpr;
-    realMultiply(ss, bma2, &res, realContext);
-    realMultiply(&res, h, &res, realContext); // load the integral result,
-    realMultiply(&res, fact, &res, realContext);
-    realToReal34(&res,&rtmp34);
-    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
-    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-    realSubtract(a,b,&tmpr,realContext);
-    realToReal34(&tmpr,&rtmp34);
-    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
-    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-    displayFormatDigits = savedDisplayFormatDigits;
-    #if defined DMCP_BUILD
-      lcd_refresh();
-    #endif //DMCP_BUILD
-  #endif //TESTSUITE_BUILD
+  real_t res;
+  clearRegisterLine(REGISTER_Z, true, true);
+  clearRegisterLine(REGISTER_Y, true, true);
+  clearRegisterLine(REGISTER_X, true, true);
+  uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+  real34_t rtmp34;
+  real_t tmpr;
+  realMultiply(ss, bma2, &res, realContext);
+  realMultiply(&res, h, &res, realContext); // load the integral result,
+  realMultiply(&res, fact, &res, realContext);
+  realToReal34(&res,&rtmp34);
+  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+  realSubtract(a,b,&tmpr,realContext);
+  realToReal34(&tmpr,&rtmp34);
+  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+  displayFormatDigits = savedDisplayFormatDigits;
+  #if defined DMCP_BUILD
+    lcd_refresh();
+  #endif //DMCP_BUILD
 }
 
 
@@ -478,9 +474,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   bool_t TS    = false;   // tanhsinh mode
   bool_t lg0   = false;   // true if level > 0
 
-  #if !defined(TESTSUITE_BUILD)
-    int loop = 0;
-  #endif //TESTSUITE_BUILD
+  int loop = 0;
 
   // check arguments  ************************************
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
@@ -617,7 +611,6 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
-      #if !defined(TESTSUITE_BUILD)
         char tmps[100];
         exitSignalled |= exitKeyWaiting();
         loop++;
@@ -655,7 +648,6 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
             }
           }
         }
-      #endif //TESTSUITE_BUILD
 
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
@@ -900,11 +892,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 
 #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
 static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_t *ulim, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
-  #if !defined(TESTSUITE_BUILD)
-    int16_t interruptedLoop = 0;
-    currentKeyCode = 255;
-    bool_t exitSignalled = false;
-  #endif //TESTSUITE_BUILD
+  int16_t interruptedLoop = 0;
+  currentKeyCode = 255;
+  bool_t exitSignalled = false;
   real_t a, b;
   real_t errval, bpa2, bma2;
   real_t eps, tol, h;
@@ -915,9 +905,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   real_t tmp;
   int k, maxlevel, j, evals;
 
-  #if !defined(TESTSUITE_BUILD)
-    int loop = 0;
-  #endif //TESTSUITE_BUILD
+  int loop = 0;
 
   // Get the two limits of integration and the integrating variable:
   if(realCompareGreaterThan(llim, ulim)) { // Ensure the upper limit is greater than the lower limit
@@ -963,7 +951,6 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     realMultiply(&h, const_1on2, &h, realContext); //h = 2 ^ -k
 
     do {
-      #if !defined(TESTSUITE_BUILD)
         char tmps[64];
         exitSignalled |= exitKeyWaiting();
         loop++;
@@ -1000,7 +987,6 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
             }
           }
         }
-      #endif //TESTSUITE_BUILD
 
       int32ToReal(j, &t);
       realMultiply(&t, &h, &t, realContext); // t = h * j
@@ -1222,11 +1208,9 @@ static real_t* exp_sinh_opt_d(calcRegister_t regist, const real_t* a, const real
  */
 
 static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t *b, real_t *error, real_t *result, int sign, realContext_t *realContext) {
-  #if !defined(TESTSUITE_BUILD)
-    int16_t interruptedLoop = 0;
-    currentKeyCode = 255;
-    bool_t exitSignalled = false;
-  #endif //TESTSUITE_BUILD
+  int16_t interruptedLoop = 0;
+  currentKeyCode = 255;
+  bool_t exitSignalled = false;
 
   real_t c, d, s, v, h, y, eps;
   real_t s1, s2, s3; // scratch variables
@@ -1235,9 +1219,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
 
   const int maxlevel = 7;
 
-  #if !defined(TESTSUITE_BUILD)
   int loop = 0;
-  #endif //TESTSUITE_BUILD
 
   realCopy(error, &eps);
 
@@ -1326,7 +1308,6 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
         // error for a and const_0 for b.
         // Note that result and error do not change within this inner loop so
         // only the loop counter changes each time.
-        #if !defined(TESTSUITE_BUILD)
           char tmps[64];
           exitSignalled |= exitKeyWaiting();
           loop++;
@@ -1359,7 +1340,6 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
               }
             }
           }
-        #endif //TESTSUITE_BUILD
 
 
         realDivide(const_1, &t, &s1, realContext); // s1 stores 1/t
@@ -1405,7 +1385,6 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
       do {
         real_t r, w, x;
 
-        #if !defined(TESTSUITE_BUILD)
           char tmps[64];
           exitSignalled |= exitKeyWaiting();
           loop++;
@@ -1438,7 +1417,6 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
               }
             }
           }
-        #endif //TESTSUITE_BUILD
 
         realMultiply(&t, const_4, &s1, realContext); // s1 = 4t
         realDivide(const_1, &s1, &s1, realContext); // s1 = 0.25/t

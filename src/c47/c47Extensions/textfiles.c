@@ -8,21 +8,18 @@ typedef struct {
 } nstr;
 
 
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const nstr ClipBoardMsg[] = {
+TO_QSPI static const nstr ClipBoardMsg[] = {
   /*0*/  { "Real matrix " },
   /*1*/  { " too large for transfer" },
   /*2*/  { "Complex matrix " },
   /*3*/  { "res/PROGRAMS" },
   /*4*/  { "C47_LOG.TXT" },
   /*5*/  { "Alpha buffer: " },
-  };
-#endif //TESTSUITE_BUILD
+};
 
 
 
 void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString) {
-  #if !defined(TESTSUITE_BUILD)
     switch(getRegisterDataType(regist)) {
       case dtLongInteger:
       case dtTime:
@@ -67,13 +64,11 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
         copyRegisterToClipboardString(regist, clipboardString);
         break;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 //USING tmpString !!
 void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
-  #if !defined(TESTSUITE_BUILD)
     char tmp_b[100], tmp_e[100];
 
     int16_t ix = reg_b;
@@ -137,20 +132,17 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
 
       ++ix;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 void tmpString_csv_out(uint8_t nn) {
-  #if !defined(TESTSUITE_BUILD)
-    export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(ClipBoardMsg[nn].itemName);  //"Alpha buffer: " //Output append to CSV file
-    export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(CSV_TAB);                    //Output append to CSV file
-    export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(tmpString);                  //Output append to CSV file    //aimBuffer now in tmpString
-    export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(CSV_NEWLINE);                //Output append to CSV file
-  #endif // !TESTSUITE_BUILD
+  export_append_line(CSV_STR);                    //Output append to CSV file
+  export_append_line(ClipBoardMsg[nn].itemName);  //"Alpha buffer: " //Output append to CSV file
+  export_append_line(CSV_STR);                    //Output append to CSV file
+  export_append_line(CSV_TAB);                    //Output append to CSV file
+  export_append_line(CSV_STR);                    //Output append to CSV file
+  export_append_line(tmpString);                  //Output append to CSV file    //aimBuffer now in tmpString
+  export_append_line(CSV_STR);                    //Output append to CSV file
+  export_append_line(CSV_NEWLINE);                //Output append to CSV file
 }
 
 

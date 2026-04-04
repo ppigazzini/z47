@@ -249,7 +249,7 @@ static decNumber * decTrim(decNumber *, decContext *, Flag, Flag, Int *);
 static Int         decUnitAddSub(const Unit *, Int, const Unit *, Int, Int, Unit *, Int);
 static Int         decUnitCompare(const Unit *, Int, const Unit *, Int, Int);
 #ifndef xcopy
-  extern void *xcopy(void *, const void *, int);
+  extern void *xcopy(void *, const void *, int32_t);
 #endif
 
 #if !DECSUBSET

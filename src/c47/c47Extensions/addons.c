@@ -31,13 +31,11 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 #if !defined(SAVE_SPACE_DM42_23_EDIT2)
-#if !defined(TESTSUITE_BUILD)
   static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
     uint8_t stringLength = *(uint8_t *)(stringAddress++);
     xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
   }
-#endif // !TESTSUITE_BUILD
 #endif // !SAVE_SPACE_DM42_23_EDIT2
 
 
@@ -132,8 +130,6 @@ void _shortIntegerToString(calcRegister_t regist, char *displayString) {
   return;
 }
 
-
-#if !defined(TESTSUITE_BUILD)
 
 static void _hmsTimeToReal() {
   int16_t i = 0;
@@ -286,14 +282,12 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
 // nimDisplay : used to fill nimBufferDisplay
 
 //}
-#endif // !TESTSUITE_BUILD
 #endif // !SAVE_SPACE_DM42_22_EDIT1
 
 
 void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
-  #if !defined(TESTSUITE_BUILD)
     #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
       int16_t index;
     #endif //!defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
@@ -560,10 +554,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 fnDrop(NOPARAM);
                 shiftF = false;
                 shiftG = false;
-                #if !defined(TESTSUITE_BUILD)
-                  calcModeAim(NOPARAM); // Alpha Input Mode
-                  showSoftmenu(-MNU_ALPHA);
-                #endif // !TESTSUITE_BUILD
+                calcModeAim(NOPARAM); // Alpha Input Mode
+                showSoftmenu(-MNU_ALPHA);
               }
               break;
             }
@@ -998,7 +990,7 @@ err:
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         break;
     }
-  #endif
+//  #endif
 }
 
 
@@ -1051,9 +1043,9 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   #if defined(DMCP_BUILD)
     if(!anyKeyWaiting()) return -1;
     if(displayWaitForRelease) {
-      #if !defined(TESTSUITE_BUILD) && defined(VERBOSEKEYS_BUFFERED)
+      #if defined(VERBOSEKEYS_BUFFERED)
         showString("Key(s) buffered ...", &standardFont, 20, 40, vmNormal, false, false);
-      #endif //!TESTSUITE_BUILD
+      #endif // VERBOSEKEYS_BUFFERED
       force_refresh(force);
 ////Monitor key codes on screen
 //char sss[22];
@@ -1108,10 +1100,8 @@ void fnShoiXRepeats(uint16_t numberOfRepeats) {           //JM SHOIDISP
 
 
 void fnCFGsettings(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    runFunction(ITM_FF);
-    showSoftmenu(-MNU_SYSFL);
-  #endif // !TESTSUITE_BUILD
+  runFunction(ITM_FF);
+  showSoftmenu(-MNU_SYSFL);
 }
 
 
@@ -1119,11 +1109,9 @@ void fnCFGsettings(uint16_t unusedButMandatoryParameter) {
 //input is date
 //output is ymd coded decimal yyyy.mmdd in the form of a normal decimal
 void fnFrom_ymd(uint16_t unusedButMandatoryParameter){
-  #if !defined(TESTSUITE_BUILD)
-    if(getRegisterDataType(REGISTER_X) == dtDate) {
-      fnToReal(NOPARAM);
-    }
-  #endif // !TESTSUITE_BUILD
+  if(getRegisterDataType(REGISTER_X) == dtDate) {
+    fnToReal(NOPARAM);
+  }
 }
 
 
@@ -1132,7 +1120,6 @@ void fnFrom_ymd(uint16_t unusedButMandatoryParameter){
 //input is time or DMS
 //output is sexagesima coded decimal ddd.mmsssssss in the form of a normal decimal
 void fnFrom_ms(uint16_t unusedButMandatoryParameter){
-  #if !defined(TESTSUITE_BUILD)
     char tmpString100[100];
     char tmpString100_OUT[100];
     tmpString100[0] = 0;
@@ -1229,7 +1216,6 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
     }
 
     //stringToReal(tmpString100, &value, &ctxtReal39);
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -1269,7 +1255,6 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
 
 
 void fnTo_ms(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     switch(calcMode) { //JM
       case CM_NIM:
         addItemToNimBuffer(ITM_ms);
@@ -1339,7 +1324,6 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgCalcModeWhileProcKey], "fnTo_ms", calcMode, ".ms");
         displayBugScreen(errorMessage);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -1800,8 +1784,6 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
 
 //change the current state from the old state?
 void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
-  #if !defined(TESTSUITE_BUILD)
-
   copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   if(AMODE == TM_HMS) {
     if(getRegisterDataType(REGISTER_X) == dtTime) {
@@ -1858,7 +1840,6 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
-  #endif //TESTSUITE_BUILD
 }
 
 
@@ -1961,7 +1942,6 @@ void shrinkNimBuffer(void) {                      //JMNIM vv
 
 
 void fnChangeBaseJM(uint16_t BASE) {
-  #if !defined(TESTSUITE_BUILD)
     //printf(">>> §§§ fnChangeBaseJMa Calmode:%d, nimbuffer:%s, lastbase:%d, nimnumberpart:%d\n", calcMode, nimBuffer, lastIntegerBase, nimNumberPart);
     shrinkNimBuffer();
     fnChangeBase(BASE);
@@ -1978,13 +1958,10 @@ void fnChangeBaseJM(uint16_t BASE) {
     }
 
     nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnChangeBaseMNU(uint16_t BASE) {
-  #if !defined(TESTSUITE_BUILD)
-
     if(calcMode == CM_AIM) {
       addItemToBuffer(ITM_toINT);
       return;
@@ -2026,8 +2003,6 @@ void fnChangeBaseMNU(uint16_t BASE) {
       nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
       return;
     }
-
-  #endif // !TESTSUITE_BUILD
 }
 
 /********************************************//**
@@ -2056,7 +2031,6 @@ void fnByteShortcutsU(uint16_t size) {
 
 
 void fnP_Alpha(void) {
-  #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_AIM) {
       #if defined(DMCP_BUILD)
         beep(440, 50);
@@ -2077,13 +2051,11 @@ void fnP_Alpha(void) {
     tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     //print_linestr(aimBuffer,false);
-  #endif
 }
 
 
 
 void fnP_Regs (uint16_t registerNo) {
-  #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_NORMAL) {
       #if defined(DMCP_BUILD)
         beep(440, 50);
@@ -2102,14 +2074,11 @@ void fnP_Regs (uint16_t registerNo) {
     #endif // VERBOSE_LEVEL >= 1
 
     stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
-
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void fnP_All_Regs(uint16_t option) {
-  #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
       #if defined(DMCP_BUILD)
         beep(440, 50);
@@ -2173,7 +2142,6 @@ void fnP_All_Regs(uint16_t option) {
 
       default: ;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -3081,7 +3049,6 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static void assignToMyMenu_(uint16_t position) {
     if(position < 18) {
       _assignItem(&userMenuItems[position]);
@@ -3096,7 +3063,6 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
     }
     cachedDynamicMenu = 0;
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -3105,7 +3071,6 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
 #define ITM_RIBBON_ENG_R47  32001
 
 // Ribbon mappings: [param, fn1, fn2, fn3, fn4, fn5, fn6]
-#if !defined(TESTSUITE_BUILD)
 TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_ENG_C47,  -MNU_CPX,      -MNU_MATX,     ITM_CONSTpi,   ITM_op_j,      ITM_EXP,       -MNU_TRG_C47},
   {ITM_RIBBON_ENG_R47,  ITM_op_j,      -MNU_CPX,      ITM_CONSTpi,   -MNU_MATX,     -MNU_TRG_R47,  ITM_EXP},
@@ -3120,12 +3085,10 @@ TO_QSPI static const int16_t ribbonMappings[][7] = {
   {ITM_RIBBON_R47,      ITM_op_j,      ITM_op_j_pol,  ITM_XFACT,     ITM_XTHROOT,   ITM_10x,       ITM_EXP},
   {ITM_RIBBON_R47PL,    ITM_TIMER,     ITM_DSP,       ITM_DREAL,     ITM_FF,        -MNU_LOOP,     -MNU_TEST},
 };
-#endif //!TESTSUITE_BUILD
 
 
 void fnRESET_MyM(uint16_t param) {
   //Pre-assign the MyMenu
-  #if !defined(TESTSUITE_BUILD)
     clearSystemFlag(FLAG_BASE_MYM);                                                   //switch off menu to prevent slow updating of 6 menu items
 
     int16_t searchParam = param;
@@ -3171,13 +3134,11 @@ void fnRESET_MyM(uint16_t param) {
     }
     setSystemFlag(FLAG_BASE_MYM);                                           //JM Menu system default (removed from reset_jm_defaults)
     refreshScreen(42);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnRESET_Mya(void){
   //Pre-assign the MyAlpha Menu                   //JM
-  #if !defined(TESTSUITE_BUILD)
     for(int8_t fn = 1; fn <= 6; fn++) {
       itemToBeAssigned = ASSIGN_CLEAR;
       assignToMyAlpha_(fn - 1);
@@ -3189,7 +3150,6 @@ void fnRESET_Mya(void){
 //    itemToBeAssigned = -MNU_ALPHA;
 //    assignToMyAlpha_(5);
     refreshScreen(43);
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -3212,7 +3172,6 @@ int16_t mm(int16_t id) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 //EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX AND MB_MACRO
 
   // Helper function to draw pixel array
@@ -3485,8 +3444,6 @@ int16_t mm(int16_t id) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Match DOUBLE offset from outline
     }
   }
-
-#endif // !TESTSUITE_BUILD
 
 
 void fnSetBCD (uint16_t bcd) {

@@ -20,9 +20,7 @@ void fnSHIFTg(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    btnClicked(NULL, "27");
-  #endif // !TESTSUITE_BUILD
+  btnClicked(NULL, "27");
 }
 
 
@@ -62,9 +60,7 @@ void showAlphaModeonGui(void) {
   #endif // PC_BUILD
 
   if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode) {                      //vv dr JM
-    #if !defined(TESTSUITE_BUILD)
-      showHideAlphaMode();
-    #endif // !TESTSUITE_BUILD
+    showHideAlphaMode();
     calcModeAimGui();
   }                                                         //^^
   screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
@@ -73,7 +69,6 @@ void showAlphaModeonGui(void) {
 
 
 void showShiftState(void) {
-  #if !defined(TESTSUITE_BUILD)
     #if defined(PC_BUILD_TELLTALE)
       printf("    >>> showShiftState: calcMode=%d\n", calcMode);
     #endif // PC_BUILD_TELLTALE
@@ -96,7 +91,6 @@ void showShiftState(void) {
         cleanupAfterShift = true;
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -123,9 +117,7 @@ void resetShiftState(void) {
     screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME);                         // | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP; removed the MENU skip again, as the fglines do not get deleted in PEM AIM
 
 //    refreshScreen(100);
-    #if !defined(TESTSUITE_BUILD)
-      force_refresh(timed);
-    #endif //TESTSUITE_BUILD
+    force_refresh(timed);
 
     refreshModeGui();
   }
@@ -146,7 +138,6 @@ void resetKeytimers(void) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   /********************************************//**
   * \brief Displays the f or g shift state in the
   * upper left corner of the T register line
@@ -984,7 +975,6 @@ void resetKeytimers(void) {
     fnTimerStop(TO_3S_CTFF);
   }
   //---------------------------------------------------------------
-#endif // !TESTSUITE_BUILD
 
 
 bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
@@ -1417,7 +1407,6 @@ void clearKeyBuffer(void) {
 
 //########################################
 void fnT_ARROW(uint16_t command) {
-  #if !defined(TESTSUITE_BUILD)
     #if defined(TEXT_MULTILINE_EDIT)
       uint16_t ixx;
       uint16_t current_cursor_x_old;
@@ -1508,7 +1497,6 @@ void fnT_ARROW(uint16_t command) {
       }
       //printf(">>> T_cursorPos limits %d\n",T_cursorPos);
     #endif // TEXT_MULTILINE_EDIT
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -1522,10 +1510,8 @@ void fnCla(uint16_t unusedButMandatoryParameter) {
     yCursor = Y_POSITION_OF_AIM_LINE + 6;
     cursorFont = &standardFont;
     cursorEnabled = true;
-    #if !defined(TESTSUITE_BUILD)
-      clearRegisterLine(AIM_REGISTER_LINE, true, true);
-      refreshRegisterLine(AIM_REGISTER_LINE);        //JM Execute here, to make sure that the 5/2 line check is done
-    #endif // !TESTSUITE_BUILD
+    clearRegisterLine(AIM_REGISTER_LINE, true, true);
+    refreshRegisterLine(AIM_REGISTER_LINE);        //JM Execute here, to make sure that the 5/2 line check is done
     screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   }
   else if(calcMode == CM_EIM) {
@@ -1537,14 +1523,12 @@ void fnCla(uint16_t unusedButMandatoryParameter) {
 
 
 void fnCln(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-   strcpy(aimBuffer,"+0");
-   fnKeyBackspace(0);
-   setSystemFlag(FLAG_ASLIFT);
-   screenUpdatingMode = SCRUPD_AUTO;
-   screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
-//   refreshScreen();
-  #endif // !TESTSUITE_BUILD
+ strcpy(aimBuffer,"+0");
+ fnKeyBackspace(0);
+ setSystemFlag(FLAG_ASLIFT);
+ screenUpdatingMode = SCRUPD_AUTO;
+ screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+// refreshScreen();
 }
 
 
