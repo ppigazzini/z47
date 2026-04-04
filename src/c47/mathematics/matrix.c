@@ -3063,7 +3063,7 @@ void vectorAngle(const real34Matrix_t *y, const real34Matrix_t *x, real34_t *rad
     realDivide(&a, &b, &a, &ctxtReal39);
     _euclideanNormRealMatrix(x, &b, &ctxtReal39);
     realDivide(&a, &b, &a, &ctxtReal39);
-    WP34S_Acos(&a, &a, &ctxtReal39);
+    C47_WP34S_Acos(&a, &a, &ctxtReal39);
     realToReal34(&a, radians);
   }
   else {

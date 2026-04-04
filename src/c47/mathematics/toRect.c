@@ -388,7 +388,7 @@ void realPolarToRectangular(const real_t *mag, const real_t *the, real_t *real, 
     //  +----+----+-------------+------+------+
     //  |r   |θ   |             |r·cosθ|r·sinθ| 18
 
-  WP34S_Cvt2RadSinCosTan(&theta, amRadian, &sin, &cos, NULL, realContext);
+  C47_WP34S_Cvt2RadSinCosTan(&theta, amRadian, &sin, &cos, NULL, realContext);
   realMultiply(&magnitude, &cos, real, realContext);
   realMultiply(&magnitude, &sin, imag, realContext);
 }

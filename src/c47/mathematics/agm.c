@@ -46,12 +46,12 @@ static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, 
     }
     if(mode==AGM_MODE_F) {
       real_t d, e, tanphi, ba;
-      WP34S_Cvt2RadSinCosTan(c, amRadian, &d, &e, &tanphi, realContext);
+      C47_WP34S_Cvt2RadSinCosTan(c, amRadian, &d, &e, &tanphi, realContext);
       realDivide(&bReal, &aReal, &ba, realContext);
       realDivide(const_1, &tanphi, &d, realContext);
       realFMA(&ba, &tanphi, &d, &d, realContext);
       realSubtract(&ba, const_1, &e, realContext);
-      WP34S_Atan2(&e, &d, &d, realContext);
+      C47_WP34S_Atan2(&e, &d, &d, realContext);
       realAdd(&cCoeff, &cCoeff, &cCoeff, realContext);
       if(realCompareAbsLessThan(&prevDelta, &d)) {
         realAdd(&cCoeff, const_1, &cCoeff, realContext);

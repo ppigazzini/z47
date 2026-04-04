@@ -23,6 +23,8 @@
 #if !defined(PC_BUILD)
   #undef DEBUGTAYLOR
 #endif
+static void C47_WP34S_SinCosTanTaylor_temp75   (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+static void C47_WP34S_SinCosTanTaylor_temp1071 (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
 
 // called from WP34S_Cvt2RadSinCosTan for 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
 // called from C47_WP34S_Cvt2RadSinCosTan for 1071+ XFN
@@ -124,10 +126,10 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
     if(savedContextDigits >= 1071) {
-      C47_WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp1071((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
     }
     else {
-      WP34S_SinCosTanTaylor((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp75((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
     }
   }
 
@@ -172,7 +174,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
 // Called directly 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
 //
 // Have to be careful here to ensure that every function we call can handle the increased size of the numbers we're using.
-void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+static void C47_WP34S_Cvt2RadSinCosTan_75temp(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
 
@@ -297,9 +299,9 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 }
 
 
-// used by normal TRIG
+// used by normal TRIG, used from externally from bessel.c
 // Calculate sin, cos by Taylor series and tan by division
-void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
+void C47_WP34S_SinCosTanTaylor_temp75(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   bool_t doEpsilon = false;
   int   epsilonDigits;
   real_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
@@ -345,8 +347,8 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
 }
 
 
-//used only by XFN
-void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+//used only by XFN 1071
+static void C47_WP34S_Cvt2RadSinCosTan_1071temp(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real1071_t angle;
 
@@ -373,10 +375,19 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
   }
 
 
+void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+  if(realContext->digits >= 1071) {
+    C47_WP34S_Cvt2RadSinCosTan_1071temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
+  }
+  else {
+    C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
+  }
+}
+
 
 //Used by normal C47 TRIG as well as XFN
-// Calculate sin, cos by Taylor series and tan by division, allowing for 1071 contexts
-void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
+// Calculate sin, cos by Taylor series and tan by division, for 1071 contexts
+void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
 
   doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
@@ -399,6 +410,17 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
         realDivide((real_t*)&sin, (real_t*)&cos, tanOut, realContext);
       }
     }
+  }
+}
+
+
+
+void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
+  if(realContext->digits >= 1071) {
+    C47_WP34S_SinCosTanTaylor_temp1071(a, swap, sinOut, cosOut, tanOut, realContext); // a in radian
+  }
+  else {
+    C47_WP34S_SinCosTanTaylor_temp75(a, swap, sinOut, cosOut, tanOut, realContext); // a in radian
   }
 }
 
@@ -545,7 +567,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
 }
 
 
-void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void WP34S_Atan_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   bool_t doEpsilon = false;
   real_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence;
   int doubles = 0;
@@ -576,7 +598,7 @@ void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
 }
 
 
-static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void C47do_WP34S_Atan_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
   int doubles = 0;
   int invert;
@@ -591,10 +613,10 @@ static void C47do_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *real
 
 void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
-    C47do_WP34S_Atan(x, angle, realContext);
+    C47do_WP34S_Atan_1071temp(x, angle, realContext);
   }
   else {
-    WP34S_Atan(x, angle, realContext);
+    WP34S_Atan_75temp(x, angle, realContext);
   }
 }
 
@@ -717,14 +739,14 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
 }
 
 
-void WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+static void WP34S_Atan2_75temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   real_t r, t;
   if(!doAtan2(y, x, atan, &r, &t, realContext)) {
     return; //NaN
   }
 }
 
-void C47do_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+static void C47do_WP34S_Atan2_1071temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   real1071_t r, t;
   if(!doAtan2((real_t*)y, (real_t*)x, (real_t*)atan, (real_t*)&r, (real_t*)&t, realContext)) {
     return; //NaN
@@ -733,10 +755,10 @@ void C47do_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realConte
 
 void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
-    C47do_WP34S_Atan2(y, x, atan, realContext);
+    C47do_WP34S_Atan2_1071temp(y, x, atan, realContext);
   }
   else {
-    WP34S_Atan2(y, x, atan, realContext);
+    WP34S_Atan2_75temp(y, x, atan, realContext);
   }
 }
 
@@ -763,14 +785,14 @@ static bool_t doAsin(real_t *x, real_t *angle, real_t *abx, real_t *z, realConte
 }
 
 
-void WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void WP34S_Asin_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
   if(!doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
     return; //NaN
   }
 }
 
-static void C47do_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void C47do_WP34S_Asin_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real1071_t abx, z;
   if(!doAsin((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
     return; //NaN
@@ -779,10 +801,10 @@ static void C47do_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *real
 
 void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
-    C47do_WP34S_Asin(x, angle, realContext);
+    C47do_WP34S_Asin_1071temp(x, angle, realContext);
   }
   else {
-    WP34S_Asin(x, angle, realContext);
+    WP34S_Asin_75temp(x, angle, realContext);
   }
 }
 
@@ -815,14 +837,14 @@ static bool_t doAcos(real_t *x, real_t *angle, real_t *abx, real_t *z, realConte
 }
 
 
-void WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void WP34S_Acos_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
   if(!doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
     return; //NaN
   }
 }
 
-static void C47do_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void C47do_WP34S_Acos_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real1071_t abx, z;
   if(!doAcos((real_t*)x, (real_t*)angle, (real_t*)&abx, (real_t*)&z, realContext)) {
     return; //NaN
@@ -831,10 +853,10 @@ static void C47do_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *real
 
 void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   if(realContext->digits >= 1071) {
-    C47do_WP34S_Acos(x, angle, realContext);
+    C47do_WP34S_Acos_1071temp(x, angle, realContext);
   }
   else {
-    WP34S_Acos(x, angle, realContext);
+    WP34S_Acos_75temp(x, angle, realContext);
   }
 }
 
@@ -948,7 +970,7 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
     // figure out xin * PI mod 2PI
     WP34S_Mod(xin, const_2, &t, realContext);
     realMultiply(&t, const_pi, &t, realContext);                   // t = xin·pi
-    WP34S_SinCosTanTaylor(&t, false, &x, NULL, NULL, realContext); // x = sin(xin·pi)
+    C47_WP34S_SinCosTanTaylor_temp75(&t, false, &x, NULL, NULL, realContext); // x = sin(xin·pi)
 
     if(calculateLnGamma) {
       realDivide(const_pi, &x, &t, realContext);                   // t = pi / sin(pi·xin)
@@ -1965,9 +1987,9 @@ void WP34S_Zeta(const real_t *x, real_t *res, realContext_t *realContext) {
     realSubtract(const_1, x, &q, realContext);
     realCopy(&q, &reg1);
     zeta_calc(&q, &reg1, &reg7, &p, realContext);
-    WP34S_Asin(const_1, &q, realContext);
+    C47_WP34S_Asin(const_1, &q, realContext);
     realMultiply(&q, &reg7, &q, realContext);
-    WP34S_Cvt2RadSinCosTan(&q, amRadian, &r, NULL, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&q, amRadian, &r, NULL, NULL, realContext);
     realMultiply(&p, &r, &p, realContext);
     realDivide(&p, const_pi, &p, realContext);
     realPower(const_2pi, &reg7, &q, realContext);

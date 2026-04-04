@@ -72,7 +72,7 @@ void atan2RealReal(void) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  WP34S_Atan2(&y, &x, &x, &ctxtReal39);
+  C47_WP34S_Atan2(&y, &x, &x, &ctxtReal39);
   convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   reallocateRegister(REGISTER_X, dtReal34, 0, currentAngularMode);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -98,7 +98,7 @@ void atan2RemaRema(void) {
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
       }
-      WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
+      C47_WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
       convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
       roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
       realToReal34(&xx, &x.matrixElements[i]);
@@ -140,7 +140,7 @@ void atan2RealRema(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
+    C47_WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
     convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
     roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
     realToReal34(&xx, &x.matrixElements[i]);
