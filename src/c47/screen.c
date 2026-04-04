@@ -1000,6 +1000,15 @@ void execTimerApp(uint16_t timerType) {
             return; //do not restart timer
           }
         }
+        else if(calcMode == CM_NORMAL && (programRunStop == PGM_STOPPED || programRunStop == PGM_SINGLE_STEP) && currentKeyCode == 35) { //R/S
+          refreshRegisterLine(REGISTER_T);
+          lastKeyItemDetermined = 0;
+          if(JM_auto_longpress_enabled == ITM_NOP) {
+            FN_timeouts_in_progress = false;
+            fnTimerStop(TO_FN_LONG);
+            return; //do not restart timer
+          }
+        }
 
         //printf("LongpressKey_handler = %d %s currentKeyCode=%d\n",JM_auto_longpress_enabled, indexOfItems[abs(JM_auto_longpress_enabled)].itemCatalogName, currentKeyCode);
         if((calcMode == CM_AIM || calcMode == CM_EIM || tam.alpha) && !( (currentKeyCode == 16 || currentKeyCode == 12)) && JM_auto_longpress_enabled != ITM_CLRMOD && JM_auto_longpress_enabled > 0) {  //using keyboard positions, as these cannot be re-assigned. It should not work with re-assigned keys on different places.
