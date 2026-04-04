@@ -5,7 +5,7 @@
 
 uint8_t memory[65536], *currenStep;
 
-void *xcopy(void *dest, const void *source, int n) {
+void *xcopy(void *dest, const void *source, uint32_t n) {
   char       *pDest   = (char *)dest;
   const char *pSource = (char *)source;
 

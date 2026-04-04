@@ -11,12 +11,12 @@
 #if defined(PC_BUILD)
   #include "gtkGui.h"
 
-  char modelString[50];
+  char                modelString[50];
   bool_t              mockup = false;
   uint16_t            dumpMenus = 0;
   bool_t              writeExportAll = false;
   uint8_t             config = 0;
-  bool_t enableFunctionKeysDisplay;
+  bool_t              enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
   GtkWidget           *screen;

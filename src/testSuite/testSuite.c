@@ -20,10 +20,19 @@ extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
-int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
+int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
+bool_t noFailForNow;
 
 uint16_t label, functionParameter;
+
+GtkWidget      *screen;
+calcKeyboard_t  calcKeyboard[43];
+int             currentBezel; // 0=normal, 1=AIM, 2=TAM
+int16_t         screenStride;
+int16_t         debugWindow;
+uint32_t       *screenData;
+bool_t          screenChange;
 
 void (*funcToTest)(uint16_t);
 void (*funcCvt)(uint16_t);
@@ -314,16 +323,6 @@ const funcTest_t funcTestNoParam[] = {
 
 
 
-void fnKeyGtoXeq             (uint16_t unusedButMandatoryParameter) {}
-void fnKeyGto                (uint16_t unusedButMandatoryParameter) {}
-void fnKeyXeq                (uint16_t unusedButMandatoryParameter) {}
-void fnProgrammableMenu      (uint16_t unusedButMandatoryParameter) {}
-void fnClearMenu             (uint16_t unusedButMandatoryParameter) {}
-void updateMatrixHeightCache (void) {}
-void tamEnterMode            (int16_t func) {}
-
-
-
 void printRegisterToString(calcRegister_t regist, char *registerContent) {
   char str[1000];
 
@@ -390,6 +389,8 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
 
 void runPgm(uint16_t unusedButMandatoryParameter) {
   if(label != INVALID_VARIABLE) {
+    dynamicSoftmenu[0].numItems = 0;
+    dynamicSoftmenu[0].menuContent = NULL;
     reallyRunFunction(ITM_XEQ, label);
   }
 }
@@ -2579,7 +2580,7 @@ var2:
             bool_t isCheckingEigenvectors;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               x1 = malloc(REAL34_SIZE_IN_BYTES * cols);
@@ -2701,7 +2702,7 @@ var2:
             bool_t *xf1 = NULL;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               xr1 = malloc(REAL_SIZE_IN_BYTES * cols);
@@ -2958,7 +2959,7 @@ void callFunction(void) {
   lastErrorCode = 0;
 
   switch(funcType) {
-    case FUNC_NOPARAM:
+    case FUNC_TO_TEST:
       if((indexOfItems[functionIndex].status & US_STATUS) == US_ENABLED) {
         saveForUndo();
       }
@@ -2967,6 +2968,13 @@ void callFunction(void) {
       }
 
       funcToTest(functionParameter);
+      if(gmpMemInBytes != 0) {
+        char tmpMsg[1000];
+        sprintf(tmpMsg, "\ngmpMemInBytes should be 0 but it is %" PRIu64 "! Check to ensure allocated long integers have been freed.", (uint64_t)gmpMemInBytes);
+        errorf(tmpMsg);
+        fflush(stderr);
+        exit(-1);
+      }
       break;
 
     case FUNC_CVT:
@@ -3013,7 +3021,7 @@ void functionToCall(char *functionName) {
 
   if(funcTestNoParam[function].name[0] != 0) {
     funcToTest = funcTestNoParam[function].func;
-    funcType = FUNC_NOPARAM;
+    funcType = FUNC_TO_TEST;
 
     if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
@@ -3042,8 +3050,11 @@ void functionToCall(char *functionName) {
 
 
 void abortTest(void) {
-  numTestsTotal--;
-  failedTests++;
+  if(noFailForNow) {
+    noFailForNow = false;
+    failedTests++;
+    successfulTests--;
+  }
   printf("\n%s\n", lastInParameters);
   printf("%s\n", line);
   printf("in file %s line %d\n-------------------------------------------------------------------------------------------------------------------------------------\n", fileName, lineNumber);
@@ -3157,7 +3168,7 @@ void processLine(void) {
 
 
   if(strncmp(line, "TIMER: ", 7) == 0) {
-    printf("\n%s", line);
+    printf("%s", line);
     timedFunction = true;
   }
 
@@ -3209,6 +3220,8 @@ void processLine(void) {
     }
 
     numTestsTotal++;
+    successfulTests++;
+    noFailForNow = true;
     outParameters(line + 5);
   }
 
@@ -3241,7 +3254,7 @@ void processOneFile(void) {
   // Default function to call
   functionIndex = ITM_NOP;
   funcToTest = fnNop;
-  funcType = FUNC_NOPARAM;
+  funcType = FUNC_TO_TEST;
 
   ignoreReturnedValue(fgets(line, 9999, testSuite));
   lineNumber = 1;
@@ -3316,8 +3329,9 @@ int processTests(const char *listPath) {
 
   checkCatalogsSorting();
 
-  numTestsTotal = 0;
-  failedTests = 0;
+  numTestsTotal   = 0;
+  successfulTests = 0;
+  failedTests     = 0;
 
   fileList = fopen(listPath, "rb");
   if(fileList == NULL) {
@@ -3341,7 +3355,8 @@ int processTests(const char *listPath) {
   fclose(fileList);
 
   printf("\n************************************\n");
-  printf("* %6d TESTS PASSED SUCCESSFULLY *\n", numTestsTotal);
+  printf("* NUMBER OF TESTS %6d           *\n", numTestsTotal);
+  printf("* %6d TEST%c PASSED SUCCESSFULLY *\n", successfulTests, successfulTests == 1 ? ' ' : 'S');
   printf("* %6d TEST%c FAILED              *\n", failedTests, failedTests == 1 ? ' ' : 'S');
   printf("************************************\n");
 
@@ -3359,7 +3374,7 @@ int main(int argc, char* argv[]) {
   }
 
   c47MemInBlocks = 0;
-  gmpMemInBytes = 0;
+  gmpMemInBytes  = 0;
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
   fnReset(CONFIRMED);

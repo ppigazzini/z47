@@ -17,20 +17,19 @@
   #include "c47Extensions/keyboardTweak.h"
 #endif
 
-#if !defined(GENERATE_CATALOGS)
-  uint16_t lastI = 0;
-  uint16_t lastJ = 0;
-  int16_t lastFunc = 0;
-  int16_t lastParam = 0;
-  char    lastTemp[16];
-#endif // !GENERATE_CATALOGS
-#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+uint16_t              lastI = 0;
+uint16_t              lastJ = 0;
+int16_t               lastFunc = 0;
+int16_t               lastParam = 0;
+char                  lastTemp[16];
+
+  #if defined(PC_BUILD)
   bool_t              debugMemAllocation;
   bool                forceTamAlpha;
   uint32_t            deadKey;
   bool_t              testDeadKeys = false;
   bool_t              swapCtrlCode = false;
-#endif // PC_BUILD || TESTSUITE_BUILD
+#endif // PC_BUILD
 
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;

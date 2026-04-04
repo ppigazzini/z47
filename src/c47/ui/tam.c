@@ -3,7 +3,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
     TO_QSPI const int16_t StoOperations[][2] = {
       {ITM_ADD,      ITM_STOADD},
       {ITM_SUB,      ITM_STOSUB},
@@ -1312,4 +1311,3 @@ printf("tam.value: %d\n", tam.value);
     _tamProcessInput(item);
     _tamUpdateBuffer();
   }
-#endif // !TESTSUITE_BUILD

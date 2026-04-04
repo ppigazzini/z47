@@ -7,8 +7,10 @@
 
 #include "c47.h"
 
-bool_t  funcOK;
+bool_t  funcOK=false;
 glyph_t glyphNotFound = {.charCode = 0x0000, .colsBeforeGlyph = 0, .colsGlyph = 13, .colsAfterGlyph = 0, .rowsGlyph = 19, .data = NULL};
+uint8_t calcMode=0, significantDigits=0, displayStack=0, Input_Default=0;
+int16_t exponentLimit=0;
 
 #define MAX_NUMBER_OF_ITEMS 1200
 #define GENERATION_FOR_DMCP    1

@@ -7,8 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
-
   static void _showProgress(const longInteger_t a) {
     #if ENABLE_SOLVER_PROGRESS == 1
         uint8_t savedDisplayFormatDigits = displayFormatDigits;
@@ -217,16 +215,11 @@ static void _checkiArgument(uint16_t label, bool_t prod) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void fnProgrammableiSum(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkiArgument(label, false);
-  #endif // !TESTSUITE_BUILD
+  _checkiArgument(label, false);
 }
 
 void fnProgrammableiProduct(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkiArgument(label, true);
-  #endif // !TESTSUITE_BUILD
+  _checkiArgument(label, true);
 }

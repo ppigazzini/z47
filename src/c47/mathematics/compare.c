@@ -409,11 +409,10 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
      * ---------------------------------------------------------------------- */
     default:
       compareTypeError(regist);
-#if defined(PC_BUILD)
-      sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
-      moreInfoOnError("In function compareRegisters:", errorMessage,
-                      "is not defined!", NULL);
-#endif
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
+        moreInfoOnError("In function compareRegisters:", errorMessage, "is not defined!", NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       break;
   }
 }
@@ -443,7 +442,6 @@ void fnXNotEqual(uint16_t regist) {
 }
 
 static void almostEqualMatrix(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && getRegisterDataType(regist) == dtReal34Matrix) {
       real34Matrix_t x, r;
       convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
@@ -515,7 +513,6 @@ static void almostEqualMatrix(uint16_t regist) {
         realMatrixFree(&m);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 #define SNAPVAL(reg, s) switch(s.t = getRegisterDataType(reg)) \

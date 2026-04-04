@@ -2835,7 +2835,6 @@ void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) 
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
@@ -2892,42 +2891,38 @@ static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
     tmpString[2*SHOWLineSize] = 0;
   }
 }
-#endif //TESTSUITE_BUILD
 
 
 void mimShowElement(void) {
-  #if !defined(TESTSUITE_BUILD)
-    uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+  uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
 
-    int16_t i = getIRegisterAsInt(true);
-    int16_t j = getJRegisterAsInt(true);
+  int16_t i = getIRegisterAsInt(true);
+  int16_t j = getJRegisterAsInt(true);
 
-    displayFormat = DF_ALL;
-    displayFormatDigits = 0;
+  displayFormat = DF_ALL;
+  displayFormatDigits = 0;
 
-    uint8_t ix;
-    for(ix=0; ix<=SHOWLineMax; ix++) { //L1 ... L7
-      tmpString[ix*SHOWLineSize]=0;
-    }
+  uint8_t ix;
+  for(ix=0; ix<=SHOWLineMax; ix++) { //L1 ... L7
+    tmpString[ix*SHOWLineSize]=0;
+  }
 
-    temporaryInformation = TI_SHOW_REGISTER;
+  temporaryInformation = TI_SHOW_REGISTER;
 
-    if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], amNone, tmpString, &standardFont, 2000, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
-    }
+  if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+    real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], amNone, tmpString, &standardFont, 2000, 34, !LIMITEXP, !FRONTSPACE, NOIRFRAC);
+  }
 
-    else {
-      _complex34ToShowTmpString(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]),
-                                VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
-    }
+  else {
+    _complex34ToShowTmpString(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]),
+                              VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
+  }
 
-    displayFormat = savedDisplayFormat;
-    displayFormatDigits = savedDisplayFormatDigits;
-  #endif
+  displayFormat = savedDisplayFormat;
+  displayFormatDigits = savedDisplayFormatDigits;
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_9)
 
 static void RegName(void) {    //JM using standard reg name, using showRegis, not using prefixWidth
@@ -3156,8 +3151,6 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
   #endif //MONITOR_SHOW
 }
 
-#endif //TESTSUITE_BUILD
-
 
 
 void realToSci(real_t* num, char* dispString) {
@@ -3235,7 +3228,6 @@ int16_t source = 0;
 
 void fnC47Show(uint16_t fnShow_param) {
 #if !defined(SAVE_SPACE_DM42_9)
-  #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
     uint64_t ssf0 = systemFlags0;
     uint64_t ssf1 = systemFlags1;
@@ -3345,13 +3337,11 @@ void fnC47Show(uint16_t fnShow_param) {
 // printf("fnC47Show: fnShow_param=%i startingLine=%i IntShowMode=%i source=%i\n",fnShow_param, startingLine, IntShowMode, source);
 
 
-    #if !defined(TESTSUITE_BUILD)
-      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf(">>> ---- clearScreenOld from display.c fnC47Show\n");
-      #endif // PC_BUILD && MONITOR_CLRSCR
-        //      clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys); //Clear screen content while NEW SHOW
-        refreshScreen(153);
-    #endif // !TESTSUITE_BUILD
+    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+      printf(">>> ---- clearScreenOld from display.c fnC47Show\n");
+    #endif // PC_BUILD && MONITOR_CLRSCR
+      //      clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys); //Clear screen content while NEW SHOW
+    refreshScreen(153);
 
     SHOW_reset();
 
@@ -3910,7 +3900,6 @@ goBreak1:
       printf("SHOW:Done |%s|\n",tmpString);
     #endif
 
-  #endif // !TESTSUITE_BUILD
 #else
     fnView(REGISTER_X); // Re-direct to use VIEW instead. No more accuracy though
 #endif // !SAVE_SPACE_DM42_9

@@ -3,13 +3,10 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD) //TESTSUITE_BUILD
-  static void calcMax(uint16_t maxOffset);
-  static void calcMin(uint16_t maxOffset);
-#endif // !TESTSUITE_BUILD
+static void calcMax(uint16_t maxOffset);
+static void calcMin(uint16_t maxOffset);
 
 bool_t isStatsMatrixN(uint16_t *rows, calcRegister_t regStats) {
-  #if !defined(TESTSUITE_BUILD)
     *rows = 0;
     if(regStats == INVALID_VARIABLE) {
       return false;
@@ -27,21 +24,17 @@ bool_t isStatsMatrixN(uint16_t *rows, calcRegister_t regStats) {
         }
       }
     }
-  #endif // !TESTSUITE_BUILD
   return true;
 }
 
 
 bool_t isStatsMatrix(uint16_t *rows, char *mx) {
-  #if !defined(TESTSUITE_BUILD)
-    calcRegister_t regStats = findNamedVariable(mx);
-    return isStatsMatrixN(rows, regStats);
-  #endif // !TESTSUITE_BUILD
+  calcRegister_t regStats = findNamedVariable(mx);
+  return isStatsMatrixN(rows, regStats);
   return true;
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   typedef struct {
     bool_t (*accumulate)(real_t *sum, const real_t *z);
     bool_t (*minimum)(const real_t *r1, const real_t *r2);
@@ -251,7 +244,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     };
     accumulateToSigma(x, y, &deacc);
   }
-#endif // !TESTSUITE_|BUILD
+//#endif // !TESTSUITE_|BUILD
 
 
 bool_t checkMinimumDataPoints(const real_t *n) {
@@ -310,7 +303,6 @@ void initStatisticalSums(void) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static void calcMax(uint16_t maxOffset) {
     realSetMinusInfinity(SIGMA_XMAX);
     realSetMinusInfinity(SIGMA_YMAX);
@@ -348,12 +340,10 @@ void initStatisticalSums(void) {
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 
 void calcSigma(uint16_t maxOffset) {
-  #if !defined(TESTSUITE_BUILD)
     clearStatisticalSums();
     if(!statisticalSumsPointer) {
       initStatisticalSums();
@@ -375,11 +365,9 @@ void calcSigma(uint16_t maxOffset) {
       }
     }
     printStatus(0, " ",force);
-  #endif //TESTSUITE_BUILD
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 static void getLastRowStatsMatrix(real_t *x, real_t *y) {
   uint16_t rows = 0, cols;
   calcRegister_t regStats = findNamedVariable(statMx);
@@ -469,11 +457,9 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 static calcRegister_t fnClHisto(bool_t deleteVariable) {
-  #if !defined(TESTSUITE_BUILD)
     calcRegister_t regHisto = findNamedVariable("HISTO");
     if(regHisto == INVALID_VARIABLE) {
       allocateNamedVariable("HISTO", dtReal34, REAL34_SIZE_IN_BLOCKS);
@@ -495,9 +481,6 @@ static calcRegister_t fnClHisto(bool_t deleteVariable) {
       clearRegister(regHisto);
       return regHisto;
     }
-  #else
-    return INVALID_VARIABLE;
-  #endif //TESTSUITE_BUILD
 }
 
 
@@ -559,7 +542,6 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSigmaAddRem(uint16_t plusMinusSelection) {
-  #if !defined(TESTSUITE_BUILD)
     real_t x, y;
 
     lrChosen = 0;
@@ -672,7 +654,6 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
         #endif //DEBUGUNDO
       }
     }
-  #endif // TESTSUITE_BUILD
 }
 
 
@@ -751,7 +732,6 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
 //----------- Histogram Section -----------------
 
 
-#if !defined(TESTSUITE_BUILD)
   static bool_t isHistoMatrix(uint16_t *rows, char *mx) {
     *rows = 0;
     calcRegister_t regHisto = findNamedVariable(mx);
@@ -811,13 +791,11 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif //!defined(TESTSUITE_BUILD)
 
 
 static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram);
 
 void fnSetLoBin(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     real_t x;
 
     if(histElementXorY == -1) {
@@ -827,11 +805,9 @@ void fnSetLoBin(uint16_t unusedButMandatoryParameter) {
       return;
     realToReal34(&x, &loBinR);
     convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-  #endif //!defined(TESTSUITE_BUILD)
 }
 
 void fnSetHiBin(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     real_t x;
 
     if(histElementXorY == -1) {
@@ -841,12 +817,10 @@ void fnSetHiBin(uint16_t unusedButMandatoryParameter) {
       return;
     realToReal34(&x, &hiBinR);
     convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-  #endif //!defined(TESTSUITE_BUILD)
 }
 
 
 void fnSetNBins(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     real_t x;
 
     if(histElementXorY == -1) {
@@ -856,7 +830,6 @@ void fnSetNBins(uint16_t unusedButMandatoryParameter) {
       return;
     realToReal34(&x, &nBins);
     convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-  #endif //!defined(TESTSUITE_BUILD)
 }
 
 
@@ -907,7 +880,6 @@ void fnConvertStatsToHisto(uint16_t statsVariableToHistogram) {
 //Histogram bin limits are:
 // data points larger than loBinR (inclusive) and smaller than hiBinR (exclusive), except the right most bin right hand limit is inclusive)
 static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
-  #if !defined(TESTSUITE_BUILD)
     real_t ii, lb, hb, nb, bw, bwon2;
     uint16_t i = 0;
     uint16_t j = 0;
@@ -1028,5 +1000,4 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
     }
-  #endif // !TESTSUITE_BUILD
 }

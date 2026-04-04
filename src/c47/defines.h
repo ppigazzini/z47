@@ -317,7 +317,6 @@
   #define    GRAPHDEBUG
   #undef     GRAPHDEBUG
 
-
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
   #if (DEBUG_STAT == 0)
@@ -331,7 +330,7 @@
   #if (DEBUG_STAT == 2)
     #define STATDEBUG
     #define STATDEBUG_VERBOSE
-    #endif // DEBUG_STAT == 2
+  #endif // DEBUG_STAT == 2
 
 //Debugging
   #if defined(PC_BUILD)
@@ -485,6 +484,41 @@
 #define NARROW_SCREEN                    1 // 400x1280 portrait screen
 #undef  USECURVES                          // activate spline curve option in the plot menu
 #define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
+
+#if defined(TESTSUITE_BUILD)
+  #undef VERBOSE_MINIMUM
+  #undef VERBOSEKEYS
+  #undef VERBOSEKEYS_BUFFERED
+  #undef VERBOSEKEYS_AUTOCASE
+  #undef MONITOR_CLRSCR
+  #undef ANALYSE_REFRESH
+  #undef PC_BUILD_TELLTALE
+  #undef VERBOSE_DETERMINEITEM
+  #undef VERBOSE_REGISTERS
+  #undef GRAPHDEBUG
+  #undef STATDEBUG
+  #undef STATDEBUG_VERBOSE
+  #undef DEBUGUNDO
+  #undef DEBUG_EXECUTE
+  #undef DEBUG_PGM
+  #undef PAIMDEBUG
+  #undef VERBOSE_COUNTER
+  #undef PC_BUILD_VERBOSE0
+  #undef PC_BUILD_VERBOSE1
+  #undef PC_BUILD_VERBOSE2
+  #undef VERBOSE_SCREEN
+  #undef INLINE_TEST
+  #undef NOMATRIXCURSORS
+  #undef RECORDLOG
+  #undef FULLUPDATE
+  #undef BUFFER_CLICK_DETECTION
+  #undef JMSHOWCODES_KB3
+
+  #undef  VERBOSE_LEVEL
+  #define VERBOSE_LEVEL -1
+  #undef  EXTRA_INFO_ON_CALC_ERROR
+  #define EXTRA_INFO_ON_CALC_ERROR 0
+#endif // TESTSUITE_BUILD
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
@@ -2257,7 +2291,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #endif // DMCP_BUILD || SIMULATOR_ON_SCREEN_KEYBOARD == 0
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-  #undef  PC_BUILD
   #undef  DMCP_BUILD
   #undef  DEBUG_PANEL
   #define DEBUG_PANEL 0
@@ -2267,20 +2300,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
-  #define addItemToBuffer fnNop
-  #define fnOff           fnNop
-  #define fnAim           fnNop
-  #define asnBrowser      fnNop
-  #define registerBrowser fnNop
-  #define flagBrowser     fnNop
-  #define fontBrowser     fnNop
-  #define flagBrowser_old fnNop       //JM
-  #define refreshRegisterLine(a)  do {} while(0)
-  #define displayBugScreen(a)     do { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n"); } while(0)
-  #define showHideHourGlass()     do {} while(0)
-  #define refreshScreen(a)        do {} while(0)
-  #define refreshLcd(a)           do {} while(0)
-  #define initFontBrowser()       do {} while(0)
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */

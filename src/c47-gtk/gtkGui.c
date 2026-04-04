@@ -972,7 +972,11 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
   if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
   if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "04",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-
+#if defined(RASPBERRY)
+  if(shortCutCommand(w, event_key_command, GDK_KEY_period      /* . 46    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} else        //                      s[Q]uare
+  if(shortCutCommand(w, event_key_command, GDK_KEY_comma       /* , 44    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_semicolon   /* ; 59    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
+#endif // RASPBERRY
 
 #if defined(VERBOSEKEYS)
   printf("------------------------ Checked commands, skipping to rest of key detections\n");
@@ -5050,6 +5054,7 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
     return false;
 }
 
+#if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 #define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do { \
     GtkWidget *widget = widget_var; \
     if (!widget) { \
@@ -5184,7 +5189,7 @@ void check_all_btn_widgets_for_consistency(void) {
 
     printf("Consistency check complete - none found.\n");
 }
-
+#endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
 
   static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
     btnFnPressed(widget, event, data);
