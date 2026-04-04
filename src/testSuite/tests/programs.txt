@@ -26,3 +26,10 @@ Out: FL_ASLIFT=1 RX=Real:"120.0"
 
 In:  FL_ASLIFT=1 RX=LonI:"20" PGM="Fact"
 Out: FL_ASLIFT=1 RX=Real:"2432902008176640000.0"
+
+
+;=======================================
+; SPIRAL
+;=======================================
+In:  FL_ASLIFT=1 AM=RAD PGM="SPIRAL"
+Out: FL_ASLIFT=1 RX=LonI:"234" RY=Real:"234.1120858422500435918070606729417" RZ=Real:"-6.635559215387594307758602996770176e-1":RAD

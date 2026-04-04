@@ -66,6 +66,11 @@ void ioFileClose(void) {
 }
 
 
+int ioEof(void) {
+  assert(_ioFileHandle != NULL);
+  return feof(_ioFileHandle);
+}
+
 
 int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
   assert(_ioFileHandle == NULL);
@@ -78,4 +83,13 @@ int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
     *errorNumber = errno;
   }
   return (result != -1? FILE_OK : FILE_ERROR);
+}
+
+
+void show_warning(char *str) {
+  printf("Warning: %s\n", str);
+}
+
+
+void fnDiskInfo(uint16_t unusedButMandatoryParameter) {
 }

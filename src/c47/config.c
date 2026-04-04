@@ -100,11 +100,9 @@ bool_t isConfigCommon(uint16_t id) {
 }
 
 void configCommon(uint16_t idx) {
-  #if !defined(TESTSUITE_BUILD)
-    if(checkHP) {
-      fnSetC47(0);
-    }
-  #endif // !TESTSUITE_BUILD
+  if(checkHP) {
+    fnSetC47(0);
+  }
 
   forceSystemFlag(FLAG_TDM24, configSettings[idx].tdm24);
   forceSystemFlag(FLAG_DMY, configSettings[idx].dmy);
@@ -501,7 +499,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
-  #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
     clearSystemFlag(FLAG_IRFRAC);
@@ -553,7 +550,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     #if defined(PC_BUILD_TELLTALE)
       jm_show_calc_state("fnClrMod end: \n");
     #endif //PC_BUILD_TELLTALE
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -591,21 +587,15 @@ void fnSettingsDispFormatGrpR   (uint16_t param) {
 }
 
 void fnMenuGapL (uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    showSoftmenu(-MNU_GAP_L);
-  #endif // ! TESTSUITE_BUILD
+  showSoftmenu(-MNU_GAP_L);
 }
 
 void fnMenuGapRX (uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    showSoftmenu(-MNU_GAP_RX);
-  #endif // ! TESTSUITE_BUILD
+  showSoftmenu(-MNU_GAP_RX);
 }
 
 void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    showSoftmenu(-MNU_GAP_R);
-  #endif // ! TESTSUITE_BUILD
+  showSoftmenu(-MNU_GAP_R);
 }
 
 
@@ -954,7 +944,6 @@ uint16_t getConfirmationTiId(void) {
 }
 
 void setConfirmationMode(void (*func)(uint16_t)) {
-#if !defined(TESTSUITE_BUILD)
   previousCalcMode = calcMode;
   cursorEnabled = false;
   calcMode = CM_CONFIRMATION;
@@ -962,28 +951,23 @@ void setConfirmationMode(void (*func)(uint16_t)) {
   confirmedFunction = func;
   temporaryInformation = TI_ARE_YOU_SURE;
   showSoftmenu(-MNU_YESNO);
-#endif // !TESTSUITE_BUILD
 }
 
 
 void fnConfirmationYes(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_CONFIRMATION) {
-      calcMode = previousCalcMode;
-      popSoftmenu();                // Pop MNU_YESNO
-      confirmedFunction(CONFIRMED);
+    calcMode = previousCalcMode;
+    popSoftmenu();                // Pop MNU_YESNO
+    confirmedFunction(CONFIRMED);
   }
-#endif // !TESTSUITE_BUILD
 }
 
 
  void fnConfirmationNo(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_CONFIRMATION) {
-      calcMode = previousCalcMode;
-      popSoftmenu();                // Pop MNU_YESNO
+    calcMode = previousCalcMode;
+    popSoftmenu();                // Pop MNU_YESNO
   }
-#endif // !TESTSUITE_BUILD
 }
 
 
@@ -1100,16 +1084,14 @@ void fnClAll(uint16_t confirmation) {
     }
 
     fnRESET_Mya();                            // Reset Menu MyAlpha
-    #if !defined(TESTSUITE_BUILD)
                                     #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                       printf("createHOME\n");
                                     #endif
-      createHOME();                             // Reset Menu HOME
+    createHOME();                             // Reset Menu HOME
                                     #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                       printf("createPFN CL\n");
                                     #endif
-      createPFN();                              // Reset Menu P.FN
-    #endif // !TESTSUITE_BUILD
+    createPFN();                              // Reset Menu P.FN
 
     // Clear All Key assignments
     fnKeysManagement(USER_KRESET);
@@ -1186,9 +1168,7 @@ void addTestPrograms(void) {
     printf("freeProgramBytes = %u\n", freeProgramBytes);
 
     scanLabelsAndPrograms();
-    #if !defined(TESTSUITE_BUILD)
-      leavePem();
-    #endif // !TESTSUITE_BUILD
+    leavePem();
     printf("freeProgramBytes = %u\n", freeProgramBytes);
     //listPrograms();
     //listLabelsAndPrograms();
@@ -1376,13 +1356,11 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   timeLastOp1 = 0;
   dispBase = 0;
 
-  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-    lastI = 0;
-    lastI = 0;
-    lastFunc    = 0;
-    lastParam   = 0;
-    lastTemp[0] = 0;
-  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+  lastI = 0;
+  lastI = 0;
+  lastFunc    = 0;
+  lastParam   = 0;
+  lastTemp[0] = 0;
 
   blockMonitoring = false;
 }
@@ -1561,9 +1539,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     initSimEqMatABX();
 
-    #if !defined(TESTSUITE_BUILD)
-      matrixIndex = INVALID_VARIABLE; // Unset matrix index
-    #endif // !TESTSUITE_BUILD
+    matrixIndex = INVALID_VARIABLE; // Unset matrix index
 
 
     #if defined(PC_BUILD)
@@ -1668,26 +1644,20 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     lastErrorCode = 0;
     previousErrorCode = 0;
 
-    #if !defined(TESTSUITE_BUILD)
-      resetAlphaSelectionBuffer();
-    #endif // !TESTSUITE_BUILD
+    resetAlphaSelectionBuffer();
 
-    #if defined(TESTSUITE_BUILD)
-      calcMode = CM_NORMAL;
-    #else // TESTSUITE_BUILD
-      if(calcMode == CM_MIM) {
-        mimFinalize();
-      }
+    if(calcMode == CM_MIM) {
+      mimFinalize();
+    }
 
-      clearScreen(10); //WE HAVE TO FIND THE BEST PLACE FOR A FULL SCREEN CLEAR, JUST BEFORE THE CALCULATOR STARTS
-      calcModeNormal();
-    #endif // !TESTSUITE_BUILD
+    clearScreen(10); //WE HAVE TO FIND THE BEST PLACE FOR A FULL SCREEN CLEAR, JUST BEFORE THE CALCULATOR STARTS
+    calcModeNormal();
 
-    #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+    #if defined(PC_BUILD)
       debugMemAllocation = true;
       forceTamAlpha = false;
       deadKey = 0;
-    #endif // PC_BUILD || TESTSUITE_BUILD
+    #endif // PC_BUILD
 
 
     tam.mode = 0;
@@ -1716,10 +1686,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                     #endif
     fnClearMenu(NOPARAM);
 
-    #if !defined(TESTSUITE_BUILD)
-      calcModeNormal();
-      if(getSystemFlag(FLAG_BASE_HOME)) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
-    #endif // !TESTSUITE_BUILD
+    calcModeNormal();
+    if(getSystemFlag(FLAG_BASE_HOME)) {
+      showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
+    }
 
     showRegis = 9999;                                          //JMSHOW
     overrideShowBottomLine = 0;
@@ -1775,9 +1745,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       fnKeysManagement(ITM_RIBBON_C47);                  // Reset Menu MyMenu Ribbon
     }
 
-    #if !defined(TESTSUITE_BUILD)
-      showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
-    #endif // !TESTSUITE_BUILD
+    showSoftmenu(-MNU_MyMenu);                           //this removes the false start on MyMenu error
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("fnKeysManagement\n");
                                    #endif
@@ -1843,9 +1811,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("version\n");
                                    #endif
-    #if !defined(TESTSUITE_BUILD)
-      runFunction(ITM_VERS);
-    #endif // !TESTSUITE_BUILD
+    runFunction(ITM_VERS);
 
 
     //Autoloading of C47Auto.sav
@@ -1855,9 +1821,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       }
     #endif // DMCP_BUILD
 
-    #if !defined(TESTSUITE_BUILD)
-      showSoftmenuCurrentPart();
-    #endif // !TESTSUITE_BUILD
+    showSoftmenuCurrentPart();
     doRefreshSoftMenu = true;     //jm dr
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(164);
@@ -2037,9 +2001,9 @@ void fnKeysManagement(uint16_t choice) {
         } else {
           Norm_Key_00.used = false;
           displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if defined(PC_BUILD)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.",NULL, NULL);
-          #endif // PC_BUILD
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
 //      }
       break;
@@ -2058,9 +2022,9 @@ void fnKeysManagement(uint16_t choice) {
       } else {
         Norm_Key_00.used = false;
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if defined(PC_BUILD)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.",NULL, NULL);
-        #endif // PC_BUILD
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       break;
 
@@ -2097,19 +2061,15 @@ void fnKeysManagement(uint16_t choice) {
       break;
 
     case USER_HRESET:
-      #if !defined(TESTSUITE_BUILD)
-        createHOME();
-        showSoftmenu(-MNU_HOME);
-        fnShowVersion(choice);
-      #endif // !TESTSUITE_BUILD
+      createHOME();
+      showSoftmenu(-MNU_HOME);
+      fnShowVersion(choice);
       break;
 
     case USER_PRESET:
-      #if !defined(TESTSUITE_BUILD)
-        createPFN();
-        showSoftmenu(-MNU_PFN);
-        fnShowVersion(choice);
-      #endif // !TESTSUITE_BUILD
+      createPFN();
+      showSoftmenu(-MNU_PFN);
+      fnShowVersion(choice);
       break;
 
     case USER_MRESET:
@@ -2134,9 +2094,7 @@ void fnKeysManagement(uint16_t choice) {
     case ITM_RIBBON_R47PL:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
-      #if !defined(TESTSUITE_BUILD)
-        showSoftmenu(-MNU_MyMenu);
-      #endif // !TESTSUITE_BUILD
+      showSoftmenu(-MNU_MyMenu);
       break;
 
 
