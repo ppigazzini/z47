@@ -7,10 +7,8 @@
 void fnPlotRegressionLine(uint16_t plotMode);
 
 
-#if !defined(TESTSUITE_BUILD)
-  static real_t RR,SMI,aa0,aa1,aa2,sa0, sa1; //L.R. variables
-  static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
-#endif // !TESTSUITE_BUILD
+static real_t RR,SMI,aa0,aa1,aa2,sa0, sa1; //L.R. variables
+static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
 
 
 float     graph_dx;
@@ -45,7 +43,6 @@ void statGraphReset(void){
 
 
 
-#if !defined(TESTSUITE_BUILD)
   float grf_x(int i) {
                                   #ifdef STATDEBUG
                                     char prefix[100];
@@ -176,37 +173,27 @@ int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
 
 
 
-#endif // !TESTSUITE_BUILD
-
-
 void placePixel(uint32_t x, uint32_t y) {
-  #if !defined(TESTSUITE_BUILD)
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setBlackPixel(x, y);
   }
-#endif //!TESTSUITE_BUILD
 }
 
 
 void removePixel(uint32_t x, uint32_t y) {
-  #if !defined(TESTSUITE_BUILD)
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setWhitePixel(x, y);
   }
-#endif //!TESTSUITE_BUILD
 }
 
 
 void clearScreenPixels(void) {
-  #if !defined(TESTSUITE_BUILD)
-    lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, LCD_SET_VALUE);
-    lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, LCD_SET_VALUE);
-    lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, LCD_SET_VALUE);
-  #endif //!TESTSUITE_BUILD
+  lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, LCD_SET_VALUE);
+  lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, LCD_SET_VALUE);
+  lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, LCD_SET_VALUE);
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 void plotcross(int16_t xn, int16_t yn) {              // Plots cross at xn,yn
   plotline1(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);                       //   PLOT a cross
   plotline1(max((int16_t)xn-2,0),yn+2,xn+2,max((int16_t)yn-2,0));
@@ -475,8 +462,6 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
     }
   #endif //USECURVES
 }
-#endif //TESTSUITE_BUILD
-
 
 
 
@@ -518,10 +503,9 @@ void pixelline(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal) 
 
 void graphAxisDraw (void){
 #if !defined(SAVE_SPACE_DM42_13GRF)
-  #if !defined(TESTSUITE_BUILD)
-    if(x_min <= FLoatingMin || x_min >= FLoatingMax || x_max <= FLoatingMin || x_max >= FLoatingMax || y_min <= FLoatingMin || y_min >= FLoatingMax || y_max <= FLoatingMin || y_max >= FLoatingMax) {
-      return;
-    }
+  if(x_min <= FLoatingMin || x_min >= FLoatingMax || x_max <= FLoatingMin || x_max >= FLoatingMax || y_min <= FLoatingMin || y_min >= FLoatingMax || y_max <= FLoatingMin || y_max >= FLoatingMax) {
+    return;
+  }
   uint32_t cnt;
 
   clearScreenPixels();
@@ -697,7 +681,7 @@ void graphAxisDraw (void){
   }
   //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
   force_refresh(timed);
-  #endif
+//  #endif
 #endif //SAVE_SPACE_DM42_13GRF
 }
 
@@ -766,7 +750,6 @@ return tick_int_f;
 
 void graph_axis (void){
 #if !defined(SAVE_SPACE_DM42_13GRF)
-  #if !defined(TESTSUITE_BUILD)
     graph_dx = 0; //XXX override manual setting from GRAPH to auto, temporarily. Can program these to fixed values.
     graph_dy = 0;
 
@@ -789,7 +772,6 @@ void graph_axis (void){
     #endif // STATDEBUG
 
 
-  #endif // !TESTSUITE_BUILD
   graphAxisDraw();
 #endif //SAVE_SPACE_DM42_13GRF
 }
@@ -891,17 +873,11 @@ char * smallE(char *output, const char * ss) {
 
 //**************************************************************************************************************
 
-#if !defined(TESTSUITE_BUILD)
-
   static int checkWidthWithPrefix(const char* itemName, const char* numStr, uint32_t max_width) {
     char test_buffer[128];
     snprintf(test_buffer, sizeof(test_buffer), "%s%s", itemName, numStr);
-    #if !defined(TESTSUITE_BUILD)
       //printf("ssss=%d\n",stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false));
       return stringWidthC47(test_buffer, stdNoEnlarge, !nocompress, false, false) < max_width;
-    #else //TESTSUITE_BUILD
-      return 0;
-    #endif //TESTSUITE_BUILD
   }
 
 
@@ -954,12 +930,10 @@ char * smallE(char *output, const char * ss) {
       }
     }
   }
-#endif //TESTSUITE_BUILD
 
 
 //success flag set if convertion was done and maxwidth is NOT overreached. Additionally ?? is output when no conversion is done.
 char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int digitswidthLimit) {
-  #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
     uint8_t saveddisplayFormat = displayFormat;
     bool_t  ovrENG = getSystemFlag(FLAG_ENGOVR);
@@ -1013,32 +987,30 @@ done:
     displayFormatDigits = savedDisplayFormatDigits;
     displayFormat = saveddisplayFormat;
     if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
-  #endif //TESTSUITE_BUILD
   return buf;
 }
 
 char* formatCore(double value, int digits, bool handle_zero, char* buf, int widthLimit) {
-    const char* sign = (value < 0.0) ? "-" : "";
-    if (value < 0.0) value = -value;
+  const char* sign = (value < 0.0) ? "-" : "";
+  if (value < 0.0) {
+    value = -value;
+  }
 
-    if (handle_zero && value == 0.0) {
-      sprintf(buf, "%s0.0", sign);
-    } else {
-      #if !defined(TESTSUITE_BUILD)
-        real34_t value34;
-        real_t valueR;
-        bool_t success;
-        char tmpBuf[128];
-        convertDoubleToReal(value, &valueR, &ctxtReal39);
-        realToReal34(&valueR, &value34);
-        strcpy(buf, sign);
-        strcat(buf, formatDoubleWidth(&value34, digits, "", &success, widthLimit == 0 ? 50 : widthLimit, tmpBuf, widthLimit == 0 ? 50 : widthLimit));
-      #else
-        buf[0] = '\0';
-      #endif //TESTSUITE_BUILD
-    }
-    radixProcess(buf, buf);
-    return  buf;//radixProcess(buf2, buf);
+  if(handle_zero && value == 0.0) {
+    sprintf(buf, "%s0.0", sign);
+  }
+  else {
+    real34_t value34;
+    real_t valueR;
+    bool_t success;
+    char tmpBuf[128];
+    convertDoubleToReal(value, &valueR, &ctxtReal39);
+    realToReal34(&valueR, &value34);
+    strcpy(buf, sign);
+    strcat(buf, formatDoubleWidth(&value34, digits, "", &success, widthLimit == 0 ? 50 : widthLimit, tmpBuf, widthLimit == 0 ? 50 : widthLimit));
+  }
+  radixProcess(buf, buf);
+  return  buf;//radixProcess(buf2, buf);
 }
 
 void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, const char* s05) {
@@ -1110,7 +1082,6 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 #define horOffset 1 //labels from the left
 
 
-#if !defined(TESTSUITE_BUILD)
   int32_t statMxN(void) {
     uint16_t rows = 0;
 
@@ -1168,8 +1139,6 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
     plotline1(xo, yo, xn, yn);
   }
 }
-#endif // !TESTSUITE_BUILD
-
 
 
 
@@ -1181,7 +1150,6 @@ currentKeyCode = 255;
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n",selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
   #endif // STATDEBUG && PC_BUILD
-  #if !defined(TESTSUITE_BUILD)
   uint16_t  cnt, ix, numberOfPlotPoints;
   int16_t  xo, xn, xN;
   int16_t  yo, yn, yN;
@@ -1449,12 +1417,10 @@ currentKeyCode = 255;
   #endif
 
 
- #endif // !TESTSUITE_BUILD)
 #endif //SAVE_SPACE_DM42_13GRF
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   void demo_plot(void) {
     int8_t ix;
     time_t t;
@@ -1481,25 +1447,21 @@ currentKeyCode = 255;
       runFunction(ITM_SIGMAPLUS);
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 void graphDrawLRline(uint16_t selection) {
-  #if !defined(TESTSUITE_BUILD)
-    //demo_plot();
-    if(selection != 0) {
-      processCurvefitSelection(selection, &RR, &SMI, &aa0, &aa1, &aa2);
-      realMultiply(&RR,&RR,&RR,&ctxtReal39);
-      if(orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
-        processCurvefitSA(&sa0, &sa1);
-      }
-      drawline(selection, &RR, &SMI, &aa0, &aa1, &aa2, &sa0, &sa1);
+  //demo_plot();
+  if(selection != 0) {
+    processCurvefitSelection(selection, &RR, &SMI, &aa0, &aa1, &aa2);
+    realMultiply(&RR,&RR,&RR,&ctxtReal39);
+    if(orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
+      processCurvefitSA(&sa0, &sa1);
     }
-  #endif // !TESTSUITE_BUILD
+    drawline(selection, &RR, &SMI, &aa0, &aa1, &aa2, &sa0, &sa1);
+  }
 }
 
 
-#if !defined(TESTSUITE_BUILD)
  static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1) {
 #if !defined(SAVE_SPACE_DM42_13GRF)
     int32_t n = 0;
@@ -1778,7 +1740,6 @@ void graphDrawLRline(uint16_t selection) {
   }
 #endif // !SAVE_SPACE_DM42_13GRF
   }
-#endif // !TESTSUITE_BUILD
 
 
 void fnPlotCloseSmi(uint16_t unusedButMandatoryParameter){
@@ -1795,7 +1756,6 @@ void fnPlotCloseSmi(uint16_t unusedButMandatoryParameter){
 //** plotSelection = 0 means that no curve fit is plotted
 //
 void fnPlotStat(uint16_t plotMode){
-#if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_13GRF)
     //restoreStats();
   switch(plotMode) {
@@ -1865,7 +1825,6 @@ void fnPlotStat(uint16_t plotMode){
        (plotStatMx[0]=='H' && statMxN() >= 3) ) {
       clearSystemFlag(FLAG_SCALE);
 
-      #if !defined(TESTSUITE_BUILD)
       if(!(lastPlotMode == PLOT_NOTHING || lastPlotMode == PLOT_START)) {
         plotMode = lastPlotMode;
       }
@@ -1927,8 +1886,6 @@ void fnPlotStat(uint16_t plotMode){
       else {
         lastPlotMode = plotMode;
       }
-      #endif // !TESTSUITE_BUILD
-
   }
   else {
     calcMode = CM_NORMAL;
@@ -1939,7 +1896,6 @@ void fnPlotStat(uint16_t plotMode){
     #endif
   }
 #endif // SAVE_SPACE_DM42_13GRF
-#endif // !TESTSUITE_BUILD
 }
 
 

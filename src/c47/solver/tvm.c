@@ -28,7 +28,7 @@
  }
 
 
-#if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) // || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+#if defined(DMCP_BUILD) && (HARDWARE_MODEL == HWM_DM42) // || defined(PC_BUILD)
   #define ctxtTvm          ctxtReal39
   #define ctxtTvmHi         ctxtTvm42  // only some exp/log parts
   #define ctxtSolverTvmHi   ctxtTvm42  // only the exp/log parts

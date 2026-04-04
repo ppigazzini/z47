@@ -46,7 +46,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static void fnPlot(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       strcpy(plotStatMx, "DrwMX");
@@ -161,7 +160,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       return 0;
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
   void fnClDrawMx(uint8_t origin) {
@@ -176,7 +174,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
   }
 
 
-#if !defined(TESTSUITE_BUILD)
   static void AddtoDrawMx() {
     real_t x, y;
     uint16_t rows = 0, cols;
@@ -227,7 +224,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -363,12 +359,10 @@ void commitHighResPointsInOrder(PlotPoint *buffer, int count) {
   #endif
   for(int i = 0; i < count; i++) {
     if(!buffer[i].stored) {
-      #if !defined(TESTSUITE_BUILD)
-        convertDoubleToReal34RegisterPush(buffer[i].x, REGISTER_X);
-        execute_rpn_function();
-        AddtoDrawMx();
-        buffer[i].stored = true;
-      #endif //TESTSUITE_BUILD
+      convertDoubleToReal34RegisterPush(buffer[i].x, REGISTER_X);
+      execute_rpn_function();
+      AddtoDrawMx();
+      buffer[i].stored = true;
     }
   }
 }
@@ -461,8 +455,6 @@ typedef struct {
 #define ASYMPTOTE_SAMPLE_POINTS 5   // Points to sample on each side
 
 bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, double yRight, double xGap, double gapWidth, AsymptoteInfo *asymptote) {
-  #if !defined(TESTSUITE_BUILD)
-
     #ifdef GRAPHDEBUG
       printf("Checking asymptote at x=%.6f, gap=%.6f\n", xGap, gapWidth);
       printf("  Left: x=%.6f, y=%.6f\n", xLeft, yLeft);
@@ -548,7 +540,6 @@ bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight,
       printf("    Standard height: %.3f\n", asymptote->maxHeight);
     #endif
 
-  #endif //TESTSUITE_BUILD
   return true;
 }
 
@@ -581,38 +572,38 @@ TO_QSPI const PointOffset asymptote_offsets_negative[] = {
 
 
 void renderAsymptote(AsymptoteInfo *asymptote) {
-  #if !defined(TESTSUITE_BUILD)
-    double x_center = asymptote->x;
-    double offset = 1e-3;  // Small x offset
-    double asymptoteHeight = 10000.0;
+  double x_center = asymptote->x;
+  double offset = 1e-3;  // Small x offset
+  double asymptoteHeight = 10000.0;
 
-    #ifdef GRAPHDEBUG
-      printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
-    #endif
+  #ifdef GRAPHDEBUG
+    printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
+  #endif
 
-    const PointOffset* offsets = NULL;
+  const PointOffset* offsets = NULL;
 
-    if (asymptote->hasPositive && asymptote->hasNegative) {
-        offsets = asymptote_offsets_both;
-    } else if (asymptote->hasPositive) {
-        offsets = asymptote_offsets_positive;
-    } else if (asymptote->hasNegative) {
-        offsets = asymptote_offsets_negative;
+  if(asymptote->hasPositive && asymptote->hasNegative) {
+    offsets = asymptote_offsets_both;
+  }
+  else if(asymptote->hasPositive) {
+    offsets = asymptote_offsets_positive;
+  }
+  else if(asymptote->hasNegative) {
+    offsets = asymptote_offsets_negative;
+  }
+
+  if(offsets) {
+    for(int i = 0; i < 3; i++) {
+      double x = x_center + offsets[i].dx * offset;
+      double y = offsets[i].dy * ((offsets[i].dy == 0.0) ? 0.0 : asymptoteHeight);
+      convertDoubleToReal34Register(x, REGISTER_X);
+      convertDoubleToReal34Register(y, REGISTER_Y);
+      AddtoDrawMx();
     }
-
-    if (offsets) {
-        for (int i = 0; i < 3; i++) {
-            double x = x_center + offsets[i].dx * offset;
-            double y = offsets[i].dy * ((offsets[i].dy == 0.0) ? 0.0 : asymptoteHeight);
-            convertDoubleToReal34Register(x, REGISTER_X);
-            convertDoubleToReal34Register(y, REGISTER_Y);
-            AddtoDrawMx();
-        }
-    }
+  }
   #ifdef GRAPHDEBUG
     printf("Added 3 asymptote points in clean vertical sequence\n");
   #endif
-  #endif //TESTSUITE_BUILD
 }
 
 
@@ -665,7 +656,6 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 // =============================================================================
 
 
-#if !defined(TESTSUITE_BUILD)
   static void graph_eqn(uint16_t mode) {
     currentKeyCode = 255;
     calcMode = CM_GRAPH;
@@ -1206,13 +1196,11 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     #endif //LOW_GRAPH_ACC
 
   }
-#endif // !TESTSUITE_BUILD
 //******************************************************************************************************************************
 
 
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     saveForUndo();
     strcpy(plotStatMx,"STATS");
 
@@ -1237,15 +1225,12 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function graph_stat:", errorMessage, NULL, NULL);
       #endif
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 // COMPLEX SOLVER
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
-  #if !defined(TESTSUITE_BUILD)
-
   // =============================================================================
   // SOLVER HELPERS
   // =============================================================================
@@ -1929,14 +1914,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     complexSolver();
   }
 
-  #endif // !TESTSUITE_BUILD
 #endif //SAVE_SPACE_DM42_13GRF
 
 
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
   #if !defined(SAVE_SPACE_DM42_13GRF)
-    #if !defined(TESTSUITE_BUILD)
       hourGlassIconEnabled = true;
       showHideHourGlass();
       #if defined(DMCP_BUILD)
@@ -2086,6 +2069,5 @@ void fnEqSolvGraph (uint16_t func) {
         }
         default: ;
       }
-    #endif // !TESTSUITE_BUILD
   #endif // SAVE_SPACE_DM42_13GRF
 }

@@ -410,27 +410,24 @@ int32_t pemLeftOffset(int32_t y) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
-  static bool_t _isAngleType(uint8_t literalType) {
-    switch (literalType) {
-      case STRING_ANGLE_RADIAN:
-      case STRING_ANGLE_GRAD:
-      case STRING_ANGLE_DEGREE:
-      case STRING_ANGLE_MULTPI: {
-        return true;
-        break;
-      }
-      default: {
-        return false;
-      }
+static bool_t _isAngleType(uint8_t literalType) {
+  switch (literalType) {
+    case STRING_ANGLE_RADIAN:
+    case STRING_ANGLE_GRAD:
+    case STRING_ANGLE_DEGREE:
+    case STRING_ANGLE_MULTPI: {
+      return true;
+      break;
+    }
+    default: {
+      return false;
     }
   }
-#endif // !TESTSUITE_BUILD
+}
 
 
 void fnPem(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_10)
-  #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For this function to work properly we need the following variables set properly:
     //  - currentProgramNumber
@@ -646,7 +643,6 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
-  #endif // !TESTSUITE_BUILD
 #endif // !SAVE_SPACE_DM42_10
 }
 
@@ -713,7 +709,6 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   dynamicMenuItem = _dynamicMenuItem;
 }
 
-#if !defined(TESTSUITE_BUILD)
 static void _closeAlphaMenus(void) {
   for(int i = 0; i < SOFTMENU_STACK_SIZE; ++i) {
     switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
@@ -750,11 +745,8 @@ static void _closeAlphaMenus(void) {
     softmenuStack[i].softmenuId = 0; // MyMenu
   }
 }
-#endif // !TESTSUITE_BUILD
 
 void pemAlpha(int16_t item) {
-  #if !defined(TESTSUITE_BUILD)
-
   bool_t editCommand = false;
   if(item == ITM_EDIT) {
     int16_t aimFunc = currentStep[0];
@@ -947,20 +939,17 @@ void pemAlpha(int16_t item) {
     if(!programListEnd) {
       scrollPemBackwards();
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 void pemCloseAlphaInput(void) {
-  #if !defined(TESTSUITE_BUILD)
-    aimBuffer[0] = 0;
-    clearSystemFlag(FLAG_ALPHA);
-    calcModeNormalGui();
-    ++currentLocalStepNumber;
-    currentStep = findNextStep(currentStep);
-    ++firstDisplayedLocalStepNumber;
-    firstDisplayedStep = findNextStep(firstDisplayedStep);
-    _closeAlphaMenus();
-  #endif // !TESTSUITE_BUILD
+  aimBuffer[0] = 0;
+  clearSystemFlag(FLAG_ALPHA);
+  calcModeNormalGui();
+  ++currentLocalStepNumber;
+  currentStep = findNextStep(currentStep);
+  ++firstDisplayedLocalStepNumber;
+  firstDisplayedStep = findNextStep(firstDisplayedStep);
+  _closeAlphaMenus();
 }
 
 
@@ -984,7 +973,6 @@ void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
 
 
 void pemAddNumber(int16_t item, bool doInsertInProgram) {
-  #if !defined(TESTSUITE_BUILD)
   if(aimBuffer[0] == 0) {
     lastIntegerBase = 0;
     editingLiteralType = 0;
@@ -1109,11 +1097,9 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
     aimBuffer[0] = 0;
     nimNumberPart = NP_EMPTY;
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void pemCloseNumberInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   if(editingLiteralType > 0) {     // For EDIT: close number input with the right data or angle type
     switch(editingLiteralType) {
       case STRING_DATE         : _pemCloseDateInput();            break;
@@ -1267,11 +1253,9 @@ void pemCloseNumberInput(void) {
   aimBuffer[0] = '!';
   nimNumberPart = NP_EMPTY;
   lastIntegerBase = 0;
-#endif // TESTSUITE_BUILD
 }
 
 static void _pemCloseTimeInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   switch(nimNumberPart) {
     case NP_INT_10:
     case NP_REAL_FLOAT_PART: {
@@ -1290,11 +1274,9 @@ static void _pemCloseTimeInput(void) {
       break;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 static void _pemCloseDateInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   if(nimNumberPart == NP_REAL_FLOAT_PART) {
     deleteStepsFromTo(currentStep, findNextStep(currentStep));
     if(aimBuffer[0] != 0) {
@@ -1317,11 +1299,9 @@ static void _pemCloseDateInput(void) {
 
     aimBuffer[0] = '!';
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 static void _pemCloseAngleInput(int item) {
-  #if !defined(TESTSUITE_BUILD)
   switch(nimNumberPart) {
     case NP_INT_10:
     case NP_REAL_FLOAT_PART: {
@@ -1353,7 +1333,6 @@ static void _pemCloseAngleInput(int item) {
       break;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void insertStepInProgram(const int16_t func) {
@@ -1383,10 +1362,8 @@ void insertStepInProgram(const int16_t func) {
       aimBuffer[0] = 0;
     }
     if(catalog) {      // If called from a catalog such as FNCS, exit catalog and Asm Mode
-      #if !defined(TESTSUITE_BUILD)
-        leaveAsmMode();
-        popSoftmenu();
-      #endif // !TESTSUITE_BUILD
+      leaveAsmMode();
+      popSoftmenu();
     }
     tam.function = ITM_REM;
     pemAlpha(func);

@@ -9,7 +9,6 @@
 
 #define addFlag true
 
-#if !defined(TESTSUITE_BUILD)
   any34Matrix_t         openMatrixMIMPointer;
   bool_t                matEditMode;
   uint16_t              scrollRow;
@@ -68,16 +67,14 @@
   static bool_t decJComplex(complex34Matrix_t *matrix) {
     return decJReal((real34Matrix_t *)matrix);
   }
-#endif // !defined(TESTSUITE_BUILD)
 
 void fnEditMatrix(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
   if(isRegisterMatrixVector((regist == NOPARAM) ? REGISTER_X : regist) && getVectorRegisterPolarMode((regist == NOPARAM) ? REGISTER_X : regist) != 0) {  //refuse editing a polar vector in the matrix editor
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType((regist == NOPARAM) ? REGISTER_X : regist));
       moreInfoOnError("In function fnEditMatrix:", errorMessage, "Cannot edit polar format as a matrix.", "");
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
 
@@ -98,17 +95,15 @@ void fnEditMatrix(uint16_t regist) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
       moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
-    #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnOldMatrix(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
@@ -130,50 +125,44 @@ void fnOldMatrix(uint16_t unusedParamButMandatory) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "works in MIM only");
-    moreInfoOnError("In function fnOldMatrix:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "works in MIM only");
+      moreInfoOnError("In function fnOldMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToElement(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     runFunction(ITM_M_GOTO_ROW);
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToRow(uint16_t row) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     tmpRow = row;
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToRow:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToColumn(uint16_t col) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     if(tmpRow == 0 || tmpRow > openMatrixMIMPointer.header.matrixRows || col == 0 || col > openMatrixMIMPointer.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -196,12 +185,11 @@ void fnGoToColumn(uint16_t col) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -216,22 +204,17 @@ void fnSetGrowMode(uint16_t growFlag) {
 
 
 void fnIncDecI(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decIReal : incIReal, (mode == DEC_FLAG) ? decIComplex : incIComplex);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnIncDecJ(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decJReal : incJReal, (mode == DEC_FLAG) ? decJComplex : incJComplex);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void _fnInsRow(bool_t add) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
@@ -244,12 +227,11 @@ void _fnInsRow(bool_t add) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function _fnInsRow:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -262,7 +244,6 @@ void fnAddRow(uint16_t unusedParamButMandatory) {
 
 
 void _fnInsCol(bool_t add) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
@@ -275,12 +256,11 @@ void _fnInsCol(bool_t add) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function _fnInsCol:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 void fnInsCol(uint16_t unusedParamButMandatory) {
@@ -292,7 +272,6 @@ void fnAddCol(uint16_t unusedParamButMandatory) {
 
 
 void fnDelRow(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(openMatrixMIMPointer.header.matrixRows > 1) {
@@ -307,17 +286,15 @@ void fnDelRow(uint16_t unusedParamButMandatory) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelRow:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnDelCol(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(openMatrixMIMPointer.header.matrixColumns > 1) {
@@ -332,16 +309,14 @@ void fnDelCol(uint16_t unusedParamButMandatory) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelCol:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 static int16_t getRegisterAsInt(bool_t asArrayPointer, calcRegister_t reg) {
   int16_t ret;
   longInteger_t tmp_lgInt;
@@ -1404,9 +1379,9 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;
-            for(int p = 0; p < MATRIX_MAX_COLUMNS; ++p) {
+          for(int p = 0; p < MATRIX_MAX_COLUMNS; ++p) {
             maxRightWidth[p] = maxLeftWidth[p] = 0;
-            }
+          }
           goto begin; // redo
         }
 
@@ -1415,17 +1390,17 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7)) ) {  //STD_CROSS
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
-                if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
-                  maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
-                }
+              if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
+                maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
+              }
               break;
             }
           }
-            if(maxLeftWidth[j] < (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j])) {
-              maxLeftWidth[j] = (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j]);
-            }
+          if(maxLeftWidth[j] < (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j])) {
+            maxLeftWidth[j] = (width - rPadWidth[i * MATRIX_MAX_COLUMNS + j]);
+          }
         }
         else {
           if(r34sign && strstr(tmpString, "/")) {
@@ -1861,4 +1836,3 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   }
   return totalWidth;
 }
-#endif // !defined(TESTSUITE_BUILD)

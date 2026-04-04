@@ -684,7 +684,6 @@ void sci_fmt(char *buf, int n, double x) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   void convertDoubleToString(double x, int16_t n, char *buff) { //Reformatting real strings that are formatted according to different locale settings
     uint16_t i = 2;
     uint16_t j = 2;
@@ -772,9 +771,6 @@ void sci_fmt(char *buf, int n, double x) {
     setSystemFlag(FLAG_ASLIFT);
   }
 
-
-
-#endif // !TESTSUITE_BUILD
 
 
 
