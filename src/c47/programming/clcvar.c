@@ -7,7 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   static void _clearVar(calcRegister_t regist) {
     switch(getRegisterDataType(regist)) {
       case dtLongInteger: {
@@ -305,16 +304,13 @@
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 
 void fnClCVar(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    uint8_t *ptr = beginOfCurrentProgram;
+  uint8_t *ptr = beginOfCurrentProgram;
 
-    while(_processOneStep(ptr)) {
-      ptr = findNextStep(ptr);
-    }
-  #endif // !TESTSUITE_BUILD
+  while(_processOneStep(ptr)) {
+    ptr = findNextStep(ptr);
+  }
 }

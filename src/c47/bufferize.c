@@ -5,8 +5,6 @@
 
 bool_t delayCloseNim = false;
 
-#if !defined(TESTSUITE_BUILD)
-
 TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item should not be NOPARAM=7654!";
 
   void fnAim(uint16_t unusedButMandatoryParameter) {
@@ -137,9 +135,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
     fnTimerStop(TO_ASM_ACTIVE);
-    #if !defined(TESTSUITE_BUILD)                   //JMvv
-      kill_ASB_icon();
-    #endif // TESTSUITE_BUILD                       //JM^^
+    kill_ASB_icon();
   }
 
 
@@ -672,20 +668,7 @@ typedef struct {
   char     noStr[3];
 } numStr;
 
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const numStr NumMsg[] = {
-    { "^0" },
-    { "^1" },
-    { "^2" },
-    { "^3" },
-    { "^4" },
-    { "^5" },
-    { "^6" },
-    { "^7" },
-    { "^8" },
-    { "^9" },
-  };
-#endif //TESTSUITE_BUILD
+TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" }, { "^4" }, { "^5" }, { "^6" }, { "^7" }, { "^8" }, { "^9" } };
 
   void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer);
 
@@ -930,9 +913,7 @@ typedef struct {
           softmenuStack[0].firstItem = findFirstItem(asmBuffer);
           setCatalogLastPos();
           fnTimerStart(TO_ASM_ACTIVE, TO_ASM_ACTIVE, 3000);
-          #if !defined(TESTSUITE_BUILD)
-            light_ASB_icon();
-          #endif // !TESTSUITE_BUILD
+          light_ASB_icon();
         }
         if(calcMode == CM_PEM) {
           hourGlassIconEnabled = false;
@@ -2963,5 +2944,3 @@ typedef struct {
   void fnAlphaCursorEnd(uint16_t unusedButMandatoryParameter) {
     alphaCursor = (uint16_t)stringGlyphLength(aimBuffer);
   }
-
-#endif // !TESTSUITE_BUILD

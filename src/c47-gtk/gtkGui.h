@@ -8,10 +8,9 @@
 #if !defined(GTKGUI_H)
   #define GTKGUI_H
 
-#if !defined(TESTSUITE_BUILD)
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);
   void fnOff                       (uint16_t unsuedParamButMandatory);
-  
+
   void check_all_btn_widgets_for_consistency();
 
   /**
@@ -42,7 +41,6 @@
    * Leaves the alpha selection mode.
    */
   void leaveAsmMode                (void);
-#endif // !TESTSUITE_BUILD
 
   #if defined(PC_BUILD)
     extern gboolean uiIsActive(void);

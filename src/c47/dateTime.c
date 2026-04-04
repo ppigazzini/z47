@@ -873,9 +873,7 @@ void fnHMStoTM(uint16_t unusedButMandatoryParameter) {
 void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
   switch(calcMode) {                     //JM vv
     case CM_NIM:
-      #if !defined(TESTSUITE_BUILD)
-        addItemToNimBuffer(ITM_HRtoTM);
-      #endif // !TESTSUITE_BUILD
+      addItemToNimBuffer(ITM_HRtoTM);
       break;
 
     default:                             //JM ^^

@@ -233,8 +233,9 @@ end1:
 static void cpyxReal(uint16_t combOrPerm) {
   real_t x, y;
 
-    if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
-    return;
+    if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
+      return;
+    }
 
   if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);

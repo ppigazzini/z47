@@ -17,11 +17,9 @@ bool_t      mutexRefreshTimer = false;
 uint32_t getUptimeMs(void) {
   #if defined(DMCP_BUILD)
     return (uint32_t)sys_current_ms();
-  #elif !defined(TESTSUITE_BUILD)
+  #else // !DMCP_BUILD
     return (uint32_t)(g_get_monotonic_time() / 1000);
-  #else // TESTSUITE_BUILD
-    return 0;
-  #endif // DMCP_BUILD ; TESTSUITE_BUILD
+  #endif // DMCP_BUILD
 }
 
 
@@ -168,17 +166,17 @@ void refreshTimer(void) {                   // This function is called when next
 
 
 void fnTimerDummy1(uint16_t param) {
-#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+#if defined(PC_BUILD)
   printf("fnTimerDummy1 called  %u\n", param);
-#endif // PC_BUILD || TESTSUITE_BUILD
+#endif // PC_BUILD
 }
 
 
 
 void fnTimerEndOfActivity(uint16_t param) {
-#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+#if defined(PC_BUILD)
   printf("fnTimerEndOfActivity called  %u\n", param);
-#endif // PC_BUILD || TESTSUITE_BUILD
+#endif // PC_BUILD
 
 #if defined(DMCP_BUILD)
                                 #if defined(DM42_POWERMARKS)
@@ -203,9 +201,7 @@ void fnTimerEndOfActivity(uint16_t param) {
 
 
 void fnTimerReset(void) {
-  #if !defined(TESTSUITE_BUILD)
   timerLastCalled = 0;
-  #endif // !TESTSUITE_BUILD
 
   for(int i = 0; i < TMR_NUMBER; i++) {
     timer[i].state = TMR_UNUSED;
@@ -310,7 +306,6 @@ uint8_t fnTimerGetStatus(uint8_t nr) {
 
 // Timer application
 
-#if !defined(TESTSUITE_BUILD)
 static uint32_t _currentTime(void) {
     #if defined(DMCP_BUILD)
     tm_t timeInfo;
@@ -353,7 +348,6 @@ static uint32_t _getTimerValue(void) {
   _antirewinder(currTime);
   return currTime - timerStartTime + timerValue;
 }
-#endif // TESTSUITE_BUILD
 
 //#if defined(PC_BUILD)
 //  static gboolean _updateTimer(gpointer unusedData) {
@@ -366,7 +360,7 @@ static uint32_t _getTimerValue(void) {
 //#endif // PC_BUILD
 
 void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+#if !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
   if(timerStartTime != TIMER_APP_STOPPED) {
@@ -375,13 +369,11 @@ void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
       //  gdk_threads_add_timeout(100, _updateTimer, NULL);
       //#endif // PC_BUILD
   }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnDecisecondTimerApp(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
   timerCraAndDeciseconds ^= 0x80u;
-  #endif // !TESTSUITE_BUILD
 }
 
 uint32_t remainingMsecCountdown = 0;
@@ -465,7 +457,6 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
 
 
 void fnSetCountDownTimerApp(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
     bool_t overflow;
     uint32_t input;
     if(!inputHelper(regist, &input, &overflow)) return;
@@ -476,12 +467,10 @@ void fnSetCountDownTimerApp(uint16_t regist) {
       fnStopTimerApp();
       remainingMsecCountdown = input;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnResetTimerApp(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
   timerValue = 0;
   timerTotalTime = 0;
   remainingMsecCountdown = 0;
@@ -490,11 +479,10 @@ void fnResetTimerApp(uint16_t unusedButMandatoryParameter) {
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
   }
   rbr1stDigit = true;
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnStartStopTimerApp(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime == TIMER_APP_STOPPED) {
     setSystemFlag(FLAG_RUNTIM);
     timerStartTime = _currentTime();
@@ -507,11 +495,11 @@ void fnStartStopTimerApp(uint16_t unusedButMandatoryParameter) {
     fnStopTimerApp();
   }
   rbr1stDigit = true;
-#endif // TESTSUITE_BUILD
+#endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnStopTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime != TIMER_APP_STOPPED) {
     const uint32_t msec = _currentTime();
     timerValue += msec - timerStartTime;
@@ -526,11 +514,11 @@ void fnStopTimerApp(void) {
     setSystemFlagChanged(SETTING_WATCHICON);
     watchIconEnabled = false;
   }
-#endif // TESTSUITE_BUILD
+#endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnShowTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(calcMode == CM_TIMER) {
     const uint32_t msec = _getTimerValue();
     clearRegisterLine(REGISTER_T, true, true);
@@ -610,11 +598,11 @@ void fnShowTimerApp(void) {
         calcModeNormalGui();
       }
     }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnUpdateTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(calcMode == CM_TIMER) {
     fnShowTimerApp();
     displayShiftAndTamBuffer();
@@ -625,12 +613,12 @@ void fnUpdateTimerApp(void) {
       refreshLcd(NULL);
     #endif // DMCP_BUILD
   }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnRegAddTimerApp(uint16_t unusedButMandatoryParameter) {  //ENTER
 printf("fnRegAddTimerApp\n");
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit) {
     real_t tmp;
     uInt32ToReal(_getTimerValue() / 100u, &tmp);
@@ -646,12 +634,12 @@ printf("fnRegAddTimerApp\n");
     timerCraAndDeciseconds = (timerCraAndDeciseconds & 0x80u) + (uint8_t)(aimBuffer[AIM_BUFFER_LENGTH / 2] - '0');
     rbr1stDigit = true;
   }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnRegAddLapTimerApp(uint16_t unusedButMandatoryParameter) {   //dot
 printf("fnRegAddLapTimerApp\n");
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
 
@@ -673,13 +661,12 @@ printf("fnRegAddLapTimerApp\n");
     timerStartTime = _currentTime();
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
   }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 
 void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {           //Send TIM to STATS
-  #if !defined(TESTSUITE_BUILD)
-printf("fnAddTimerApp\n");
+  printf("fnAddTimerApp\n");
   real_t tmp;
 
   uInt32ToReal(_getTimerValue() / 100u, &tmp);
@@ -699,13 +686,12 @@ printf("fnAddTimerApp\n");
   fnSigmaAddRem(SIGMA_PLUS);
 
   refreshScreen(30);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnAddLapTimerApp(uint16_t unusedButMandatoryParameter) {
 printf("fnAddLapTimerApp\n");
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
 
@@ -742,12 +728,12 @@ printf("fnAddLapTimerApp\n");
   }
 
   refreshScreen(31);
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 
 void fnUpTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if((timerCraAndDeciseconds & 0x7fu) >= 99u) {
     timerCraAndDeciseconds &= 0x80u;
   }
@@ -755,11 +741,10 @@ void fnUpTimerApp(void) {
     ++timerCraAndDeciseconds;
   }
   rbr1stDigit = true;
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 void fnDownTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
   if((timerCraAndDeciseconds & 0x7fu) == 0u) {
     timerCraAndDeciseconds |= 99u;
   }
@@ -767,11 +752,10 @@ void fnDownTimerApp(void) {
     --timerCraAndDeciseconds;
   }
   rbr1stDigit = true;
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnDigitKeyTimerApp(uint16_t digit) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  #if !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit || aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
     aimBuffer[AIM_BUFFER_LENGTH / 2    ] = digit + '0';
     aimBuffer[AIM_BUFFER_LENGTH / 2 + 1] = 0;
@@ -781,12 +765,11 @@ void fnDigitKeyTimerApp(uint16_t digit) {
     timerCraAndDeciseconds = (timerCraAndDeciseconds & 0x80u) + (uint8_t)(aimBuffer[AIM_BUFFER_LENGTH / 2] - '0') * 10u + digit;
     rbr1stDigit = true;
   }
-  #endif // !TESTSUITE_BUILD
+  #endif // !SAVE_SPACE_DM42_20_TIMER
 }
 
 
 void fnRecallTimerApp(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
   bool_t overflow;
   uint32_t val;
   if(!inputHelper(regist, &val, &overflow)) return;
@@ -804,11 +787,9 @@ void fnRecallTimerApp(uint16_t regist) {
       fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnBackspaceTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
   if(rbr1stDigit) {
     fnResetTimerApp(NOPARAM);
   }
@@ -818,11 +799,9 @@ void fnBackspaceTimerApp(void) {
   else {
     aimBuffer[AIM_BUFFER_LENGTH / 2] = 0;
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnLeaveTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
   popSoftmenu();
   rbr1stDigit = true;
   calcMode = previousCalcMode;
@@ -830,13 +809,10 @@ void fnLeaveTimerApp(void) {
     setSystemFlagChanged(SETTING_WATCHICON);
     watchIconEnabled = !watchIconEnabled;
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnPollTimerApp(void) { // poll every minute not to rewind the timer
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode != CM_TIMER && timerStartTime != TIMER_APP_STOPPED) {
     _antirewinder(_currentTime());
   }
-  #endif // !TESTSUITE_BUILD
 }

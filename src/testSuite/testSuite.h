@@ -5,7 +5,7 @@
  * \file testSuite.h
  ***********************************************/
 
-#define FUNC_NOPARAM  0
+#define FUNC_TO_TEST  0
 #define FUNC_CVT      1
 
 #define RE_ACCURATE   0

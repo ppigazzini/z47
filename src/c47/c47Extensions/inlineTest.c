@@ -90,10 +90,8 @@
       swStop[nr] = g_get_monotonic_time();
     #endif // PC_BUILD
 
-    #if !defined(TESTSUITE_BUILD)
-      uint32_t swTime = swStop[nr] - swStart[nr];
-      char snum[50];
-    #endif // !TESTSUITE_BUILD
+    uint32_t swTime = swStop[nr] - swStart[nr];
+    char snum[50];
 
     #if defined(DMCP_BUILD)
       showString("ms:", &standardFont, 30, 40 +nr*20, vmNormal, false, false);
@@ -103,13 +101,11 @@
       showString(STD_mu "s:", &standardFont, 30, 40 +nr*20, vmNormal, false, false);
     #endif // PC_BUILD
 
-    #if !defined(TESTSUITE_BUILD)
-      itoa(nr, snum, 10);
-      showString(snum, &standardFont, 20, 40 +nr*20, vmNormal, false, false);
-      itoa(swTime, snum, 10);
-      strcat(snum, "         ");
-      showString(snum, &standardFont, 60, 40 +nr*20, vmNormal, false, false);
-    #endif // !TESTSUITE_BUILD
+    itoa(nr, snum, 10);
+    showString(snum, &standardFont, 20, 40 +nr*20, vmNormal, false, false);
+    itoa(swTime, snum, 10);
+    strcat(snum, "         ");
+    showString(snum, &standardFont, 60, 40 +nr*20, vmNormal, false, false);
   }
 
 
