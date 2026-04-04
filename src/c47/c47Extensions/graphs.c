@@ -324,7 +324,6 @@ void fnPlotReset(uint16_t unusedButMandatoryParameter) {
 
 
 void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     #if defined(DMCP_BUILD)
       lcd_refresh();
     #else // !DMCP_BUILD
@@ -351,22 +350,18 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
     else if(menu(0) != -MNU_PLOT_STAT && plotStatMx[0] == 'S') {
       showSoftmenu(-MNU_PLOT_STAT);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
   if((plotStatMx[0]=='D' ? (drawMxN() >= 1) : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
-    }
-  #endif // !TESTSUITE_BUILD
+  }
 }
 
 
 //added this, to add a new command to plot advanced from the STATS
-#if !defined(TESTSUITE_BUILD)
   void fnPlotStatAdv(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
     strcpy(plotStatMx, "STATS");
@@ -374,10 +369,8 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
     PLOT_SHADE = true;
     fnPlotSQ(0);
   }
-#endif // !TESTSUITE_BUILD
 
 
-#if !defined(TESTSUITE_BUILD)
   static void plotarrow(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     float dx, dy, ddx, dydx, zz, zzz;
     dydx = yn-yo;
@@ -503,8 +496,6 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
     }
   }
 
-#endif  // !TESTSUITE_BUILD
-
 
 //###################################################################################
 
@@ -513,7 +504,6 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
 #define bufLen 40
 
 
-#if !defined(TESTSUITE_BUILD)
   static void showGraphTickText1(float tick_int_x, float tick_int_y, int32_t xoff, int32_t yoff1, int32_t yoff2, uint16_t acc) {
     char buff[32];
     char outstr[bufLen];
@@ -526,11 +516,9 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
     convertDigits(smallE(buff,tmpString), outstr);
     showString(outstr, &standardFont, xoff, yoff2, vmNormal, true, true);
   }
-#endif // !TESTSUITE_BUILD
 
 
 void graph_text(void) {
-  #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
     int16_t ii;
     char ss[100], tt[100];
@@ -605,7 +593,6 @@ void graph_text(void) {
     }
 
     force_refresh(timed);
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -806,7 +793,6 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 void graph_plotmem(void) {
   currentKeyCode = 255;
   #if !defined(SAVE_SPACE_DM42_13GRF_JM)
-    #if !defined(TESTSUITE_BUILD)
       #if defined(STATDEBUG) && defined(PC_BUILD)
         uint16_t i;
         int16_t cnt1;
@@ -1458,14 +1444,12 @@ void graph_plotmem(void) {
         ctxtReal51.digits = 51;
         ctxtReal75.digits = 75;
       #endif //LOW_GRAPH_ACC
-    #endif // !TESTSUITE_BUILD
   #endif // !SAVE_SPACE_DM42_13GRF_JM
 }
 
 
 //-----------------------------------------------------//-----------------------------------------------------
 void fnStatList() {
-  #if !defined(TESTSUITE_BUILD)
     char tmpstr1[100], tmpstr2[100];
     int16_t ix, ixx, statnum;
 
@@ -1503,5 +1487,4 @@ void fnStatList() {
         #endif // STATDEBUG
       }
     }
-  #endif // !TESTSUITE_BUILD
 }

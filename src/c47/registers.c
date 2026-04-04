@@ -5,9 +5,7 @@
 
 #include "reservedRegisterLookup.h"
 
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI const reservedVariableDescStr_t varDescr[] = {
-
+TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 /*  VAR_NO_X        0 */ { ""},
 /*  VAR_NO_Y        1 */ { ""},
 /*  VAR_NO_Z        2 */ { ""},
@@ -56,9 +54,7 @@
 /*  VAR_NO_LEST    45v*/ { ""},
 /*  VAR_NO_UY      46 */ { ""},
 /*  VAR_NO_LY      47 */ { ""}
-
 };
-#endif //TESTSUITE_BUILD
 
 
 
@@ -133,13 +129,13 @@ uint32_t getRegisterDataType(calcRegister_t regist) {
       if(regist < numberOfNamedVariables) {
         return allNamedVariables[regist].header.dataType;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function getRegisterDataType:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "getRegisterDataType");
@@ -163,19 +159,19 @@ uint32_t getRegisterDataType(calcRegister_t regist) {
       if(regist < currentNumberOfLocalRegisters) {
         return POINTER_TO_LOCAL_REGISTER(regist)->dataType;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function getRegisterDataType:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function getRegisterDataType:", "no local registers defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -199,13 +195,13 @@ void *getRegisterDataPointer(calcRegister_t regist) {
       if(regist < numberOfNamedVariables) {
         return TO_PCMEMPTR(allNamedVariables[regist].header.pointerToRegisterData);
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function getRegisterDataPointer:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "getRegisterDataPointer");
@@ -224,19 +220,19 @@ void *getRegisterDataPointer(calcRegister_t regist) {
       if(regist < currentNumberOfLocalRegisters) {
         return TO_PCMEMPTR(POINTER_TO_LOCAL_REGISTER(regist)->pointerToRegisterData);
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function getRegisterDataPointer:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "", NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -260,13 +256,13 @@ uint32_t getRegisterTag(calcRegister_t regist) {
       if(regist < numberOfNamedVariables) {
         return allNamedVariables[regist].header.tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function getRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "getRegisterTag");
@@ -285,19 +281,19 @@ uint32_t getRegisterTag(calcRegister_t regist) {
       if(regist < currentNumberOfLocalRegisters) {
         return POINTER_TO_LOCAL_REGISTER(regist)->tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function getRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
        moreInfoOnError("In function getRegisterTag:", "no local registers defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -323,13 +319,13 @@ void setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_
         allNamedVariables[regist].header.dataType = dataType;
         allNamedVariables[regist].header.tag = tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function setRegisterDataType:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterDataType");
@@ -352,19 +348,19 @@ void setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_
         POINTER_TO_LOCAL_REGISTER(regist)->dataType = dataType;
         POINTER_TO_LOCAL_REGISTER(regist)->tag = tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function setRegisterDataType:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
        moreInfoOnError("In function setRegisterDataType:", "no local registers defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -388,19 +384,19 @@ void setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
       if(regist < numberOfNamedVariables) {
         allNamedVariables[regist].header.pointerToRegisterData = dataPointer;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function setRegisterDataPointer:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
@@ -412,19 +408,19 @@ void setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
       if(regist < currentNumberOfLocalRegisters) {
         POINTER_TO_LOCAL_REGISTER(regist)->pointerToRegisterData = dataPointer;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function setRegisterDataPointer:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -446,13 +442,13 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
       if(regist < numberOfNamedVariables) {
         allNamedVariables[regist].header.tag = tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "named variable %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu16, (uint16_t)(numberOfNamedVariables - 1));
           moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterTag");
@@ -469,19 +465,19 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
       if(regist < currentNumberOfLocalRegisters) {
         POINTER_TO_LOCAL_REGISTER(regist)->tag = tag;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16, regist);
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function setRegisterTag:", errorMessage, "is not defined!", errorMessage + ERROR_MESSAGE_LENGTH/2);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function setRegisterTag:", "no local registers defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -789,28 +785,28 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
   uint8_t len;
 
   if(stringGlyphLength(variableName) < 1 || stringGlyphLength(variableName) > 7) {
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the name %s", variableName);
       moreInfoOnError("In function allocateNamedVariable:", errorMessage, "is incorrect! The length must be", "from 1 to 7 glyphs!");
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
 
   if(_findReservedVariable(variableName) != INVALID_VARIABLE) {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the name %s", variableName);
       moreInfoOnError("In function allocateNamedVariable:", errorMessage, "clashes with a reserved variable!", NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
 
   if(!validateName(variableName)) {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the name %s", variableName);
       moreInfoOnError("In function allocateNamedVariable:", errorMessage, "is incorrect! The name does not follow", "the naming convention!");
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
 
@@ -829,10 +825,10 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
     regist = numberOfNamedVariables;
     if(regist == LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE + 1) {
       displayCalcErrorMessage(ERROR_TOO_MANY_VARIABLES, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%d named variables!", LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE + 1);
         moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", errorMessage, NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
 
@@ -1021,11 +1017,11 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
@@ -1038,19 +1034,19 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
       if(regist-FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
         ((strLgIntHeader_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
       }
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         else {
           sprintf(errorMessage, "local register %" PRId16 " is not defined!", (uint16_t)(regist - FIRST_LOCAL_REGISTER));
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
           moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
         }
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
        moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -1079,11 +1075,11 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no named variables defined!", NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
@@ -1101,11 +1097,11 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else {
@@ -1347,12 +1343,10 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
   }
 
   if(lastErrorCode != 0) {
-    #if defined(TESTSUITE_BUILD)
-      #if defined(DEBUGUNDO)
-        printf(">>> undo from adjustResult\n");
-      #endif // DEBUGUNDO
-      undo();
-    #endif //TESTSUITE_BUILD
+    #if defined(DEBUGUNDO)
+      printf(">>> undo from adjustResult\n");
+    #endif // DEBUGUNDO
+    undo();
     return;
   }
 
@@ -1573,10 +1567,10 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
      (regist < FIRST_NAMED_VARIABLE ||
         regist >= FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "local indirection register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function indirectAddressing:", errorMessage, "is not defined!", NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return FAILED_INDIRECTION;
   }
 
@@ -1586,11 +1580,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     int32ToReal34(maxValue+1, &maxValue34plusOne);
     if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareGreaterEqual(REGISTER_REAL34_DATA(regist), &maxValue34plusOne)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return FAILED_INDIRECTION;
     }
     value = real34ToInt32(REGISTER_REAL34_DATA(regist));
@@ -1602,11 +1596,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     convertLongIntegerRegisterToLongInteger(regist, lgInt);
     if(longIntegerIsNegative(lgInt) || longIntegerCompareUInt(lgInt, maxValue) > 0) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerFree(lgInt);
       return FAILED_INDIRECTION;
     }
@@ -1621,11 +1615,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     convertShortIntegerRegisterToUInt64(regist, &sign, &val);
     if(sign == 1 || val > 180) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         shortIntegerToDisplayString(regist, errorMessage, false, noBaseOverride);
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return FAILED_INDIRECTION;
     }
     value = val;
@@ -1672,10 +1666,10 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function indirectAddressing:", errorMessage, "not suited for indirect addressing!", NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return FAILED_INDIRECTION;
   }
 
@@ -1687,20 +1681,20 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     }
     else if((parameterType == INDPM_FLAG) && (value > LAST_LOCAL_FLAG) && (value < FLAG_M)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "local flag value = %d! Should be from %d to %d", value, FIRST_LOCAL_FLAG, LAST_LOCAL_FLAG);
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return FAILED_INDIRECTION;
     }
     return value;
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "value = %d! Should be from %d to %d.", value, minValue, maxValue);
       moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return FAILED_INDIRECTION;
   }
 }

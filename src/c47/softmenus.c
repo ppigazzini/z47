@@ -3,9 +3,7 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const char bugScreenIdMustNotBe0[] = "In function showSoftmenu: id must not be 0!";
-#endif //TESTSUITE_BUILD
+TO_QSPI static const char bugScreenIdMustNotBe0[] = "In function showSoftmenu: id must not be 0!";
 
 
 /* The numbers refer to the index of items in items.c
@@ -1138,16 +1136,13 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
-  static void changeToHOME (void);
-  static void changeToPFN  (void);
-  static void initVariableSoftmenu(int16_t menu);
-#endif // !TESTSUITE_BUILD
+static void changeToHOME (void);
+static void changeToPFN  (void);
+static void initVariableSoftmenu(int16_t menu);
 
 
 
 void fnOpenMenu(uint16_t menu) {
-#if !defined(TESTSUITE_BUILD)
   int16_t i, numItems;
   i=0;
   while(softmenu[i].menuItem != 0) {
@@ -1210,7 +1205,6 @@ void fnOpenMenu(uint16_t menu) {
     }
   }
   menuPageNumber = 1;                                                // Restore default menu page number
-#endif // !TESTSUITE_BUILD
 }
 
 void _stripMenuName(char *buffer, char *name) {
@@ -1240,7 +1234,6 @@ void _stripMenuName(char *buffer, char *name) {
 
 int16_t findMenu(char *buffer) {
   int16_t menu_id = INVALID_MENU;
-#if !defined(TESTSUITE_BUILD)
   char name[16];
   int16_t i, menuItem;
   bool found = false;
@@ -1294,7 +1287,6 @@ int16_t findMenu(char *buffer) {
   if(menu_id == INVALID_MENU) {
     menuPageNumber = 1;       // Restore default menu page number
   }
-#endif // !TESTSUITE_BUILD
   return menu_id;
 }
 
@@ -1308,7 +1300,6 @@ void _add_digitglyph(char* tmp, int16_t xx) {
 }
 
 void fnGetMenu(uint16_t funusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
   int16_t lenInBytes;
   int16_t menuItem   = -softmenu[softmenuStack[0].softmenuId].menuItem;
   int16_t userMenuId = softmenuStack[0].userMenuId;
@@ -1352,11 +1343,9 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
     }
     xcopy(REGISTER_STRING_DATA(REGISTER_X), userMenus[userMenuId].menuName, lenInBytes);
   }
-#endif // !TESTSUITE_BUILD
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static int sortMenu(void const *a, void const *b) {
     return compareString(a, b, CMP_EXTENSIVE);
   }
@@ -3120,9 +3109,9 @@ void showSoftmenuCurrentPart(void) {
         return false;
       }
     }
-    #if defined (PC_BUILD)
+    #if defined(PC_BUILD)
       printf("----------- ############################ CREATING HOME #########################\n");
-    #endif //PC_BUILD
+    #endif // PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
       screenUpdatingMode = ~SCRUPD_AUTO;
@@ -3150,9 +3139,9 @@ void showSoftmenuCurrentPart(void) {
         return false;
       }
     }
-    #if defined (PC_BUILD)
+    #if defined(PC_BUILD)
       printf("----------- ############################ CREATING PFN #########################\n");
-    #endif //PC_BUILD
+    #endif // PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
       screenUpdatingMode = ~SCRUPD_AUTO;
@@ -3523,9 +3512,6 @@ void showSoftmenuCurrentPart(void) {
   }
 
 
-#endif // !TESTSUITE_BUILD
-
-
 // input param is (PageNumber << 14) +MenuNumber
 void fnPseudoMenu(uint16_t target) {
   menuPageNumber = target >> 14;
@@ -3566,15 +3552,12 @@ char *dynmenuGetLabelWithDup(int16_t menuitem, int16_t *dupNum) {
 
 
 void fnBaseMenu(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    BASE_OVERRIDEONCE = true;
-    showSoftmenu(-MNU_MyMenu);
-  #endif // !TESTSUITE_BUILD
+  BASE_OVERRIDEONCE = true;
+  showSoftmenu(-MNU_MyMenu);
 }
 
 
 void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
   uint16_t cnt = SOFTMENU_STACK_SIZE - 1;
   while((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyMenu && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) || (softmenu[softmenuStack[1].softmenuId].menuItem != -MNU_MyMenu)) {
     popSoftmenu();
@@ -3584,7 +3567,6 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
   popSoftmenu();
 
   //fnDumpMenus(0);   //Easy place to access the Dump Menus: PFN / More / ExitAll
-#endif // !TESTSUITE_BUILD
 }
 
 

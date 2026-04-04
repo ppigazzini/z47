@@ -14,8 +14,6 @@
 
 
 
-#if !defined(TESTSUITE_BUILD)
-
   void showProgressReal(const real_t *a, real_t *ai, bool_t cpx) {
     real34_t a34, ai34;
     #if ENABLE_SOLVER_PROGRESS == 1
@@ -244,16 +242,11 @@
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void fnProgrammableSum(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkArgument(label, false);
-  #endif // !TESTSUITE_BUILD
+  _checkArgument(label, false);
 }
 
 void fnProgrammableProduct(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkArgument(label, true);
-  #endif // !TESTSUITE_BUILD
+  _checkArgument(label, true);
 }

@@ -260,25 +260,23 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
       endSin = (!doEpsilon && realIsZero((real_t*)epsilonOrCompare)) || (doEpsilon && realCompareLessThan((real_t*)z, (real_t*)epsilonOrCompare));
     }
 
-   #if !defined(TESTSUITE_BUILD)
-     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
-       char ss[100];
-       sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
-       ss[40] = 0; //Hard limit to screen display
-       #if defined(DEBUGTAYLOR)
-         printf("%s%d\n",ss,epsilonDigits);
-       #endif //DEBUGTAYLOR
-       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-       }
-     }
-     #if !defined(PC_BUILD)
-       if(exitKeyWaiting()) {
-           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-         break;
-       }
-     #endif //PC_BUILD
-   #endif //TESTSUITE_BUILD
+    if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
+      char ss[100];
+      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
+      ss[40] = 0; //Hard limit to screen display
+      #if defined(DEBUGTAYLOR)
+        printf("%s%d\n",ss,epsilonDigits);
+      #endif //DEBUGTAYLOR
+      if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      }
+    }
+    #if !defined(PC_BUILD)
+      if(exitKeyWaiting()) {
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
+    #endif //PC_BUILD
 
     #ifdef DEBUGTAYLOR
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
@@ -520,25 +518,23 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     }
 
 
-    #if !defined(TESTSUITE_BUILD)
-      if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
-        char ss[100];
-        sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
-        ss[40] = 0; //Hard limit to screen display
-        #if defined(DEBUGTAYLOR)
-          printf("%s%d\n",ss,epsilonDigits);
-        #endif //DEBUGTAYLOR
-        if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-        }
+    if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
+      char ss[100];
+      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
+      ss[40] = 0; //Hard limit to screen display
+      #if defined(DEBUGTAYLOR)
+        printf("%s%d\n",ss,epsilonDigits);
+      #endif //DEBUGTAYLOR
+      if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
-      #if !defined(PC_BUILD)
-        if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-          break;
-        }
-      #endif //PC_BUILD
-    #endif //TESTSUITE_BUILD
+    }
+    #if !defined(PC_BUILD)
+      if(exitKeyWaiting()) {
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
+    #endif //PC_BUILD
 
 
     #ifdef DEBUGTAYLOR
@@ -1766,9 +1762,7 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
   real_t aa, c, d, apb, am1, ap1, m, m2, oldr;
   int i;
   real_t t, u, v, w;
-  #if !defined(TESTSUITE_BUILD)
-    int32_t loop = 0;
-  #endif //!TESTSUITE_BUILD
+  int32_t loop = 0;
 
   realAdd(a, const_1, &ap1, realContext);        // ap1 = 1+a
   realSubtract(a, const_1, &am1, realContext);   // am1 = a-1
@@ -1810,11 +1804,9 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
     if(realCompareEqual(&oldr, r)) {
       break;
     }
-    #if !defined(TESTSUITE_BUILD)
-      if(monitorExit(&loop, "Iter: ")) {
-        break;
-      }
-    #endif //!TESTSUITE_BUILD
+    if(monitorExit(&loop, "Iter: ")) {
+      break;
+    }
   }
 }
 
@@ -1924,9 +1916,7 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bn_star, realContext_t
 
 static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, realContext_t *realContext) {
   real_t p, q, r, s, reg0, reg3, reg4, reg5, reg6;
-  #if !defined(TESTSUITE_BUILD)
-    int32_t loop = 0;
-  #endif //!TESTSUITE_BUILD
+  int32_t loop = 0;
 
   int32ToReal(60/*44*/, &reg0);
   int32ToReal(60/*44*/, &reg3);
@@ -1954,11 +1944,9 @@ static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, 
     realCopy(&q, &reg4);
     realAdd(&q, &reg5, &reg5, realContext);
     realSubtract(&reg0, const_1, &reg0, realContext);
-    #if !defined(TESTSUITE_BUILD)
-      if(monitorExit(&loop, "Iter: ")) {
-        break;
-      }
-    #endif //!TESTSUITE_BUILD
+    if(monitorExit(&loop, "Iter: ")) {
+      break;
+    }
   } while(realCompareGreaterThan(&reg0, const_0));
   realDivide(&p, &reg5, &p, realContext);
   realSubtract(const_1, reg1, &r, realContext);

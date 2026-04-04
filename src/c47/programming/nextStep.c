@@ -328,7 +328,6 @@ uint8_t *findPreviousStep(uint8_t *step) {
 
 
 static void _showStep(void) {
-  #if !defined(TESTSUITE_BUILD)
     bool_t lblOrEnd;
     uint8_t *tmpStep;
 
@@ -365,7 +364,6 @@ static void _showStep(void) {
     }
 //    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
-  #endif // !TESTSUITE_BUILD
 }
 
 

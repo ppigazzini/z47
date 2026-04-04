@@ -19,6 +19,10 @@
 #define SOLVERDEBUG2 // more details
 #undef SOLVERDEBUG2
 
+#if defined(TESTSUITE_BUILD)
+  #undef SOLVERDEBUG
+  #undef SOLVERDEBUG2
+#endif // TESTSUITE_BUILD
 
 //The main real solver is converted to 39 digit operation internally, with a 39-digit interface to TVM, and the legacy 34-digit interface to the other legacy callers
 #define ctxtSolver   ctxtReal39
@@ -150,10 +154,10 @@ void fnSolve(uint16_t labelOrVariable) {
     }
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnSolve:", errorMessage, "is not a real number.", "");
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
   }
@@ -168,7 +172,6 @@ void fnSolve(uint16_t labelOrVariable) {
 }
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     printStatus(1, errorMessages[REAL_SOLVER],force);
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
@@ -206,7 +209,6 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
       currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
       temporaryInformation = TI_SOLVER_VARIABLE;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_t *res) {
@@ -313,7 +315,6 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
@@ -344,7 +345,6 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
       }
     #endif // ENABLE_SOLVER_PROGRESS == 1
   }
-#endif //!TESTSUITE_BUILD
 
 
 
@@ -552,26 +552,24 @@ retryLevel:
       #endif
 
       loop++;
-      #if !defined (TESTSUITE_BUILD)
-        if(checkHalfSec()) {
-          char ss[10];
-          strcpy(ss,"Iter: ");
-          ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
-          if(progressHalfSecUpdate_Integer(timed, ss,loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-            real34_t a34, b34, fa34, fb34;
-            realToReal34(&aa, &a34); realToReal34(&bb, &b34);
-            realToReal34(&faa, &fa34); realToReal34(&fbb, &fb34);
-            _showProgress(&a34, &b34, &fa34, &fb34);
-          }
+      if(checkHalfSec()) {
+        char ss[10];
+        strcpy(ss,"Iter: ");
+        ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
+        if(progressHalfSecUpdate_Integer(timed, ss,loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          real34_t a34, b34, fa34, fb34;
+          realToReal34(&aa, &a34); realToReal34(&bb, &b34);
+          realToReal34(&faa, &fa34); realToReal34(&fbb, &fb34);
+          _showProgress(&a34, &b34, &fa34, &fb34);
         }
+      }
 
-        if(exitKeyWaiting()) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-          break;
-        }
-      #endif //!TESTSUITE_BUILD
+      if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
