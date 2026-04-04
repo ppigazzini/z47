@@ -87,7 +87,6 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static bool_t storeElementReal(real34Matrix_t *matrix) {
     const int16_t i = getIRegisterAsInt(true);
     const int16_t j = getJRegisterAsInt(true);
@@ -167,7 +166,6 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
   static bool_t storeIjComplex(complex34Matrix_t *matrix) {
     return storeIjReal((real34Matrix_t *)matrix);
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -564,7 +562,6 @@ static void _fnStoreElement(bool_t stepForward);
 
 
 void fnStoreVElement(uint16_t ix) {
-  #if !defined(TESTSUITE_BUILD)
   const int16_t iBak = getIRegisterAsInt(true);
   const int16_t jBak = getJRegisterAsInt(true);
   real_t rx;
@@ -572,10 +569,10 @@ void fnStoreVElement(uint16_t ix) {
   if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
     if(!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
-      #endif
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
     if(getRegisterDataType(REGISTER_Y) == dtReal34Matrix) {
@@ -599,12 +596,11 @@ void fnStoreVElement(uint16_t ix) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
-    moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
-    #endif
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
+      moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
@@ -616,7 +612,6 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
 }
 
 void _fnStoreElement(bool_t stepForward) {
-  #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -638,13 +633,11 @@ void _fnStoreElement(bool_t stepForward) {
         calcSigma(0);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -659,5 +652,4 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
         calcSigma(0);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }

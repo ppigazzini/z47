@@ -10,7 +10,6 @@
 #define AsnDispShortForm (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM || tam.alpha)
 #define AsnDisplayUSER   (fnAsnDisplayUSER ^ (AsnDispShortForm & !getSystemFlag(FLAG_USER)))
 
-#if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8ASN)
   TO_QSPI const int      KEY_X_5[6] = {-1, 80, 160, 240, 320, 400};
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
@@ -135,11 +134,9 @@
     temporaryInformation = TI_NO_INFO;
   }
   #endif // !SAVE_SPACE_DM42_8ASN
-#endif // !TESTSUITE_BUILD
 
 
 void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8ASN)
     hourGlassIconEnabled = false;
     if(calcMode != CM_ASN_BROWSER) {
@@ -151,6 +148,4 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
     }
   fnAsnDisplay(currentAsnScr);
   #endif // !SAVE_SPACE_DM42_8ASN
-#endif // !TESTSUITE_BUILD
-
-  }
+}

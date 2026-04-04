@@ -655,7 +655,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/
 
 //**********************************************************************************************************
-#elif PC_BUILD // PC_BUILD
+#elif defined(PC_BUILD)
   int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
     FILE *outfile;
     char dirfile[40];
@@ -867,7 +867,7 @@ void preventFilenameTimeout(void){
     export_append_line(line);
     return 0;
   }
-#endif // DMCP_BUILD
+#endif // DMCP_BUILD || PC_BUILD
 
 
 // BOTH vvv *** ################################################################################################
@@ -879,7 +879,6 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
     printf("Status: %10u, %s\n", (uint32_t)(g_get_monotonic_time())-ttt, line1);
     fflush(stdout);
   #endif //PC_BUILD
-  #if !defined(TESTSUITE_BUILD)
     int16_t g_line_x, g_line_y;
     g_line_y = Y_POSITION_OF_REGISTER_T_LINE; //20
     g_line_x = 20 * row;
@@ -898,7 +897,6 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
     else {
       force_refresh(timed);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -907,7 +905,6 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 int16_t g_line_x, g_line_y;
 
 void print_linestr(const char *line1, bool_t line_init) {        //prints one line at a time, filled with dots on remaining line
-  #if !defined(TESTSUITE_BUILD)
     char l1[200];
     l1[0] = 0;
     int16_t ix = 0;
@@ -942,11 +939,9 @@ void print_linestr(const char *line1, bool_t line_init) {        //prints one li
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-  #endif // !TESTSUITE_BUILD
 }
 
 void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII NUMBERS AND E AND . //FIXED FONT
-  #if !defined(TESTSUITE_BUILD)
     if(line_init || g_line_y >= SCREEN_HEIGHT) {
       g_line_y = 0;
       g_line_x = 0;
@@ -966,8 +961,6 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -975,8 +968,6 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
 uint32_t t_line_x, t_line_y;
 
 void print_inlinestr(const char *line1, bool_t endline) {  //prints with or without newline at the end of the line
-    #if !defined(TESTSUITE_BUILD)
-
     char l1[100];    //Clip the string at 40
     l1[0] = 0;
     int16_t ix = 0;
@@ -998,17 +989,14 @@ void print_inlinestr(const char *line1, bool_t endline) {  //prints with or with
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void print_Register_line(calcRegister_t regist, char *before, char *after, bool_t line_init) {
-  #if !defined(TESTSUITE_BUILD)
-    char str[TMP_STR_LENGTH];
+  char str[TMP_STR_LENGTH];
 
-    copyRegisterToClipboardString2(regist, str);
-    addStrBothSides(str, before, after);
+  copyRegisterToClipboardString2(regist, str);
+  addStrBothSides(str, before, after);
 
-    print_numberstr(str, line_init);
-  #endif // !TESTSUITE_BUILD
+  print_numberstr(str, line_init);
 }

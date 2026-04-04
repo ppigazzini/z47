@@ -8,18 +8,18 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
 }
 
   void fnOldItemError(uint16_t unusedButMandatoryParameter) {
-    #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
+    #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
       displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE, REGISTER_X);
-    #endif // !TESTSUITE_BUILD
+    #endif // !GENERATE_CATALOGS &&  !GENERATE_TESTPGMS
   }
 
 
 //#if !defined(GENERATE_CATALOGS)
 //void fnToBeCoded(void) {
 //  displayCalcErrorMessage(ERROR_FUNCTION_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
-//  #if defined(PC_BUILD)
+//  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
 //    moreInfoOnError("Function to be coded", "for that data type(s)!", NULL, NULL);
-//  #endif // PC_BUILD
+//  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 //}
 //#endif // !GENERATE_CATALOGS
 
@@ -46,7 +46,7 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
     #ifdef DMCP_BUILD
       case ITM_WRXPALL   :
                           return  _TO_ITM_ERR;
-    #elif PC_BUILD
+    #elif defined(PC_BUILD)
       case ITM_SAVEAUT  :
       case ITM_SETDAT   :
       case ITM_SETTIM   :
@@ -73,9 +73,9 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
 
 //Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
 bool_t itemNotAvail(int16_t itemNr) {
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
   return (itemERRTIVal(itemNr) !=  _TO_ITM_NONE);
-#elif PC_BUILD
+#elif defined(PC_BUILD)
   if(itemERRTIVal(itemNr) !=  _TO_ITM_NONE) {
     #if (VERBOSE_LEVEL >= 0)
       printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n",itemNr);
@@ -234,18 +234,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
       lastParam = param;
     }
 
-    #if !defined(TESTSUITE_BUILD)
-      if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-          (currentMenu() == -MNU_MVAR) &&
-          (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
-        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
-      }
-      if(indexOfItems[func].func != fnTvmVar && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-          currentMenu() == -MNU_TVM &&
-          (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION)) {       //clear execute flag, to prioritise entry, on all keys except the actual variable keys
-        currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
-      }
-    #endif //TESTSUITE_BUILD
+    if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+        (currentMenu() == -MNU_MVAR) &&
+        (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
+      currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
+    }
+    if(indexOfItems[func].func != fnTvmVar && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+        currentMenu() == -MNU_TVM &&
+        (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION)) {       //clear execute flag, to prioritise entry, on all keys except the actual variable keys
+      currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
+    }
 
     if(func != ITM_CLX) { //JM Do not reset for backspace, because the timers need to run after the first action, CLX
       resetKeytimers();  //JM
@@ -342,21 +340,19 @@ bool_t isFunctionOldParam16(uint16_t func) {
       LastOpTimerLap(func);
     }
 
-#if !defined(TESTSUITE_BUILD)
     // mark the previous I and J, when STOSEQ and RCLSEQ are being used
     real_t iir,jjr;
     if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
       lastI=realToUint32C47(&iir, NULL);
       lastJ=realToUint32C47(&jjr, NULL);
-    } else {
+    }
+    else {
       lastI = 0xFFFF;
       lastJ = 0xFFFF;
     }
 
 
     refreshStatusBar();
-
-#endif //TESTSUITE_BUILD
 
 
     //**RunFunction
@@ -398,9 +394,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(funcIsProgramStopControl) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       if(currentSubroutineLevel == 0) {
-        #if !defined(TESTSUITE_BUILD)
-          forceSBupdate();
-        #endif //TESTSUITE_BUILD
+        forceSBupdate();
         screenUpdatingMode = SCRUPD_AUTO;
       }
     }
@@ -459,8 +453,6 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
     else
     if(calcMode == CM_NORMAL && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
-#if !defined(TESTSUITE_BUILD)
-
       //bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
@@ -546,7 +538,6 @@ bool_t isFunctionOldParam16(uint16_t func) {
           default:break;
         }
       }
-#endif //TESTSUITE_BUILD
     }
 
 
@@ -606,12 +597,12 @@ bool_t isFunctionOldParam16(uint16_t func) {
     #endif // PC_BUILD
     funcOK = true;
 
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       if(func >= LAST_ITEM) {
         sprintf(errorMessage, "item (%" PRId16 ") must be below LAST_ITEM", func);
         moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
     if(programRunStop != PGM_RUNNING) {
       if(func == ITM_RCL && dynamicMenuItem > -1) {
@@ -740,10 +731,10 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(!funcOK) {
       displayCalcErrorMessage(ERROR_ITEM_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRId16 " = %s", func, indexOfItems[func].itemCatalogName);
         moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 #endif // !GENERATE_CATALOGS && !GENERATE_TESTPGMS
@@ -1549,10 +1540,6 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSetRJ                    (uint16_t unusedButMandatoryParameter) {}
 
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
-
-#ifdef TESTSUITE_BUILD
-  void fnDiskInfo                 (uint16_t unusedButMandatoryParameter) {}
-#endif //TEST_SUITE
 
 
 #define PER_    STD_PER
