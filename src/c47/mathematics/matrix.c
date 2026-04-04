@@ -8019,6 +8019,8 @@ SPH_ret1:
   }
 
 
+#endif //OPTION_VECTOR
+
   bool_t is_2D3D_Register_Ready(uint32_t *ang2Dx, uint32_t *ang2Dy, uint32_t *ang3Dx, uint32_t *ang3Dy, uint32_t *ang3Dz, bool_t *validPolarInput, bool_t *valid2DRInput, bool_t *validSPHInput, bool_t *validCYLInput, bool_t *valid3DRInput, uint16_t constVector) {
     *ang2Dx = (registerIsNoAngle(REGISTER_X) || constVector != VECT_CR_yx) ? amNone : getRegisterAngularMode(REGISTER_X);
     *ang2Dy = (registerIsNoAngle(REGISTER_Y) || constVector != VECT_CR_yx) ? amNone : getRegisterAngularMode(REGISTER_Y);
@@ -8035,6 +8037,8 @@ SPH_ret1:
     // printf("validPolar=%2d valid2DR=%2d validSPH=%2d validCYL=%2d valid3DR=%2d\n", *validPolarInput, *valid2DRInput, *validSPHInput, *validCYLInput, *valid3DRInput);
     return (*validPolarInput || *valid2DRInput || *validSPHInput || *validCYLInput || *valid3DRInput);
   }
+
+#if defined(OPTION_VECTOR)
 
 
   #define _3DCYL 1
