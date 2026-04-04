@@ -7,8 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
-
 TO_QSPI static const char bugScreenUnknownOperator[] = "In function _parseWord: Unknown operator appeared!";
 TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _parseWord: Unknown mode of formula parser!";
 
@@ -112,7 +110,6 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
 
     { "",                                    0,               0}  // Sentinel
   };
-#endif // !TESTSUITE_BUILD
 
 //Note: i, j and 𝝿 are special characters
 //Note ARCSIN, ASIN, etc. will work from the items table
@@ -163,26 +160,24 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnEqEdit(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    if(currentFormula < numberOfFormulae) {
-      const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
-        if(equationString) {
-          xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
-        }
-        else {
-          aimBuffer[0] = 0;
-        }
-      calcMode = CM_EIM;
-      alphaCase = CAPS_EQN_DEFAULT;
-      nextChar = NC_NORMAL;//JM C47
-      clearSystemFlag(FLAG_NUMLOCK);
-      scrLock = NC_NORMAL;
-      setSystemFlag(FLAG_ALPHA);
-      yCursor = 0;
-      xCursor = equationString ? stringGlyphLength(equationString) : 0;
-      calcModeAimGui();
-    }
-  #endif // !TESTSUITE_BUILD
+  if(currentFormula < numberOfFormulae) {
+    const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+      if(equationString) {
+        xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
+      }
+      else {
+        aimBuffer[0] = 0;
+      }
+    calcMode = CM_EIM;
+    alphaCase = CAPS_EQN_DEFAULT;
+    nextChar = NC_NORMAL;//JM C47
+    clearSystemFlag(FLAG_NUMLOCK);
+    scrLock = NC_NORMAL;
+    setSystemFlag(FLAG_ALPHA);
+    yCursor = 0;
+    xCursor = equationString ? stringGlyphLength(equationString) : 0;
+    calcModeAimGui();
+  }
 }
 
 
@@ -263,7 +258,6 @@ void deleteEquation(uint16_t equationId) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static void _showExponent(char **bufPtr, const char **strPtr, int16_t *strWidth) {
     switch(*(++(*strPtr))) {
       //case '1': {
@@ -360,10 +354,8 @@ static void _addSpace(char **bufPtr, int16_t *strWidth, uint32_t *doubleBytednes
     *doubleBytednessHistory <<= 1;
   }
 }
-#endif // !TESTSUITE_BUILD
 
 void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool_t dryRun, bool_t *cursorShown, bool_t *rightEllipsis) {
-  #if !defined(TESTSUITE_BUILD)
   int8_t X_OFF = (cursorAt == EQUATION_NO_CURSOR) ? 0 : 20;
   if(equationId < numberOfFormulae || equationId == EQUATION_AIM_BUFFER) {
     char *bufPtr = tmpString;
@@ -668,12 +660,10 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
       showString(tmpString, &standardFont, 1 + X_OFF, SCREEN_HEIGHT - SOFTMENU_HEIGHT * 3 + 2 , vmNormal, true, true);
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _menuItem(int16_t item, char *bufPtr) {
   xcopy(bufPtr,indexOfItems[item].itemSoftmenuName,stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
   bufPtr[stringByteLength(indexOfItems[item].itemSoftmenuName)+1]=0;
@@ -1271,10 +1261,8 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
     }
   }
 }
-#endif // !TESTSUITE_BUILD
 
 void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *mvarBuffer) {
-  #if !defined(TESTSUITE_BUILD)
   const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
   char *bufPtr = buffer;
   const char *pointerInFormula = strPtr;
@@ -1644,5 +1632,4 @@ else
   if(parseMode == EQUATION_PARSER_XEQ) {
     _processOperator(PARSER_OPERATOR_ITM_END_OF_FORMULA, mvarBuffer);
   }
-  #endif // !TESTSUITE_BUILD
 }

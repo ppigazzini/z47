@@ -48,9 +48,6 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 };
 
 
-#if !defined(TESTSUITE_BUILD)
-
-
   /********************************************//**
    * \brief The flag browser application
    *
@@ -346,4 +343,3 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
     lastFlgScr = currentFlgScr;
   #endif // !SAVE_SPACE_DM42_8FL
   }
-#endif // !TESTSUITE_BUILD

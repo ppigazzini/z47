@@ -106,9 +106,9 @@ void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
   } else {
     Norm_Key_00.used = false;
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSigmaAssign: ", "the NRM key is not available.",NULL, NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
 }

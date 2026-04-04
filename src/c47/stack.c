@@ -128,21 +128,21 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     currentLocalRegisters[regist - FIRST_LOCAL_REGISTER] = savedRegisterHeader;
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else if(regist <= LAST_LOCAL_REGISTER) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is not defined!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "register %d", regist);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is unsupported!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 

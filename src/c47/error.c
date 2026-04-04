@@ -295,7 +295,6 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   void nextWord(const char *str, int16_t *pos, char *word) {
     int16_t i = 0;
 
@@ -370,7 +369,6 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 

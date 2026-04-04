@@ -7,7 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   /* Returns the character code from the first glyph of a string.
    *
    * \param[in]     ch     String whose first glyph is to extract
@@ -27,7 +26,6 @@
     }
     return charCode;
   }
-#endif //TESTSUITE_BUILD
 
 
 void convertDigits(char * refstr, char * outstr) {
@@ -76,51 +74,47 @@ typedef struct {
 } replaceTable_t;
 
 
-  TO_QSPI const replaceTable_t replacementTable[] = {
-    //        Nr    InStr          OutStr
-              {0,   STD_SUP_MINUS, STD_HP_MINUS},
-              {0,   STD_MINUS    , STD_HP_MINUS},
-              {0,   STD_SUP_PLUS , STD_HP_PLUS},
-              {0,   STD_PLUS     , STD_HP_PLUS},
-              {0,   STD_EulerE   , STD_e},
-              {0,   STD_op_i     , STD_i},
-              {0,   STD_op_j     , STD_j},
-              {0,   STD_WDOT     , STD_HP_PERIOD},
-              {0,   STD_CROSS    , STD_SPACE_PUNCTUATION},
-              {0,   STD_DOT      , STD_SPACE_PUNCTUATION},
-              {0,   STD_SUB_10   , STD_SPACE_4_PER_EM},
-              {0,   STD_0        , STD_HP_0},
-              {0,   STD_SUP_0    , STD_HP_0}
-            };
+TO_QSPI const replaceTable_t replacementTable[] = {
+  //        Nr    InStr          OutStr
+            {0,   STD_SUP_MINUS, STD_HP_MINUS},
+            {0,   STD_MINUS    , STD_HP_MINUS},
+            {0,   STD_SUP_PLUS , STD_HP_PLUS},
+            {0,   STD_PLUS     , STD_HP_PLUS},
+            {0,   STD_EulerE   , STD_e},
+            {0,   STD_op_i     , STD_i},
+            {0,   STD_op_j     , STD_j},
+            {0,   STD_WDOT     , STD_HP_PERIOD},
+            {0,   STD_CROSS    , STD_SPACE_PUNCTUATION},
+            {0,   STD_DOT      , STD_SPACE_PUNCTUATION},
+            {0,   STD_SUB_10   , STD_SPACE_4_PER_EM},
+            {0,   STD_0        , STD_HP_0},
+            {0,   STD_SUP_0    , STD_HP_0}
+          };
 
-  #if !defined(TESTSUITE_BUILD)
-  bool_t replace(uint16_t *charCode) {
-    uint_fast16_t n = nbrOfElements(replacementTable);
-    for(uint_fast16_t i=0; i<n; i++) {
-      if(*charCode == charCodeFromString(replacementTable[i].inStr, 0)) {
-        *charCode = charCodeFromString(replacementTable[i].outStr, 0);
-        return true;
-      }
+bool_t replace(uint16_t *charCode) {
+  uint_fast16_t n = nbrOfElements(replacementTable);
+  for(uint_fast16_t i=0; i<n; i++) {
+    if(*charCode == charCodeFromString(replacementTable[i].inStr, 0)) {
+      *charCode = charCodeFromString(replacementTable[i].outStr, 0);
+      return true;
     }
-    return false;
   }
-  #endif //TESTSUITE_BUILD
+  return false;
+}
 
 
-  #if !defined(GENERATE_CATALOGS)
+#if !defined(GENERATE_CATALOGS)
   void charCodeHPReplacement(uint16_t *charCode) {
-    #if !defined(TESTSUITE_BUILD)
-      if(replace(charCode)) {
-      }
-      else if(*charCode >= charCodeFromString(STD_1, 0) &&  *charCode <= charCodeFromString(STD_9, 0)) {
-        *charCode = *charCode - charCodeFromString(STD_1, 0) + charCodeFromString(STD_HP_1, 0);
-      }
-      else if(*charCode >= charCodeFromString(STD_SUP_1, 0) &&  *charCode <= charCodeFromString(STD_SUP_9, 0)) {
-        *charCode = *charCode - charCodeFromString(STD_SUP_1, 0) + charCodeFromString(STD_HP_1, 0);
-      }
-    #endif //TESTSUITE_BUILD
+    if(replace(charCode)) {
+    }
+    else if(*charCode >= charCodeFromString(STD_1, 0) &&  *charCode <= charCodeFromString(STD_9, 0)) {
+      *charCode = *charCode - charCodeFromString(STD_1, 0) + charCodeFromString(STD_HP_1, 0);
+    }
+    else if(*charCode >= charCodeFromString(STD_SUP_1, 0) &&  *charCode <= charCodeFromString(STD_SUP_9, 0)) {
+      *charCode = *charCode - charCodeFromString(STD_SUP_1, 0) + charCodeFromString(STD_HP_1, 0);
+    }
   }
-  #endif //GENERATE_CATALOGS
+#endif //GENERATE_CATALOGS
 
 
 
@@ -230,18 +224,14 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
 
 /*
     font = font1;                             //JM auto font change for enlarged alpha fonts vv
-    #if !defined(TESTSUITE_BUILD)
       if(combinationFonts == 2) {
         if(maxiC == 1 && font == &numericFont) {
-    #endif // !TESTSUITE_BUILD
-    glyphId = findGlyph(font, charCode);
-    if(glyphId < 0) {                         //JM if there is not a large glyph, width of the small letter
-      font = &standardFont;
-    }
-    #if !defined(TESTSUITE_BUILD)
+          glyphId = findGlyph(font, charCode);
+          if(glyphId < 0) {                   //JM if there is not a large glyph, width of the small letter
+            font = &standardFont;
+          }
         }
       }                                       //JM ^^
-    #endif // !TESTSUITE_BUILD
 */
     if(charCode != 1u) {                          //If the special ASCII 01, then skip the width and font not found portions
       glyphId = findGlyph(font, charCode);
@@ -1116,7 +1106,7 @@ void stringToFileNameChars(const char *str, char *ascii) {
 
 
 
-void *xcopy(void *dest, const void *source, int n) {
+void *xcopy(void *dest, const void *source, uint32_t n) {
   char       *pDest   = (char *)dest;
   const char *pSource = (char *)source;
 

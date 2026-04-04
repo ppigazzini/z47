@@ -90,18 +90,14 @@ void fn2ndDeriv(uint16_t label) {
 }
 
 static void derivativeEquation(uint16_t order, uint8_t ti) {
-    #if !defined(TESTSUITE_BUILD)
-    //new method to maintain solver variable
-      reallyRunFunction(ITM_RCL, currentSolverVariable);
-      copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-    #endif // TESTSUITE_BUILD
+  //new method to maintain solver variable
+  reallyRunFunction(ITM_RCL, currentSolverVariable);
+  copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   calcDerivOfOrder(INVALID_VARIABLE, order);
-    #if !defined(TESTSUITE_BUILD)
-      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
-      reallyRunFunction(ITM_STO, currentSolverVariable);
-      fnDrop(NOPARAM);
-    #endif // TESTSUITE_BUILD
+  reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
+  reallyRunFunction(ITM_STO, currentSolverVariable);
+  fnDrop(NOPARAM);
   temporaryInformation = ti;
 }
 
@@ -159,10 +155,8 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
   fnFillStack(NOPARAM);
 
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
-    #if !defined(TESTSUITE_BUILD)
-      reallyRunFunction(ITM_STO, currentSolverVariable);
-      parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
-    #endif // TESTSUITE_BUILD
+    reallyRunFunction(ITM_STO, currentSolverVariable);
+    parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
   else {
     dynamicMenuItem = -1;

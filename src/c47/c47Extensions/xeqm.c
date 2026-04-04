@@ -84,11 +84,9 @@ void fnXSWAP (uint16_t mode) {
         strcpy(aimBuffer, REGISTER_STRING_DATA(REGISTER_X));
         T_cursorPos = stringByteLength(aimBuffer);
         fnDrop(NOPARAM);
-        #if !defined(TESTSUITE_BUILD)
-          resetShiftState();
-          calcModeAim(NOPARAM); // Alpha Input Mode
-          showSoftmenu(-MNU_ALPHA);
-        #endif // !TESTSUITE_BUILD
+        resetShiftState();
+        calcModeAim(NOPARAM); // Alpha Input Mode
+        showSoftmenu(-MNU_ALPHA);
       }
     }
     else if(calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) != dtString) {

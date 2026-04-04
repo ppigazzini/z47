@@ -7,7 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
 static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
   uint8_t stringLength = *(uint8_t *)(stringAddress++);
   xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
@@ -230,4 +229,3 @@ void keyXeq(uint16_t keyNum, uint16_t label) {
   _setCaption(keyNum);
   programmableMenu.itemParam[keyNum - 1] = label | 0x8000;
 }
-#endif // !TESTSUITE_BUILD
