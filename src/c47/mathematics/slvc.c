@@ -372,7 +372,6 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 
   // Compute high-precision constant sqrt(3)/2
   real159_t const159_root3on2;
-  realSetZero((real_t *)&const159_root3on2);
   realSquareRoot(const_3, (real_t *)&const159_root3on2, realContext);
   realMultiply((real_t *)&const159_root3on2, const_1on2, (real_t *)&const159_root3on2, realContext);
 
