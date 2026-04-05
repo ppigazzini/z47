@@ -34,7 +34,7 @@ static void sinhCplx(void) {
     return;
 
   WP34S_SinhCosh(&a, &sinha, &cosha, &ctxtReal39);
-  WP34S_Cvt2RadSinCosTan(&b, amRadian, &sinb, &cosb, NULL, &ctxtReal39);
+  C47_WP34S_Cvt2RadSinCosTan(&b, amRadian, &sinb, &cosb, NULL, &ctxtReal39);
 
   realMultiply(&sinha, &cosb, &a, &ctxtReal39);
   realMultiply(&cosha, &sinb, &b, &ctxtReal39);

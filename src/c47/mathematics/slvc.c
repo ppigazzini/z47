@@ -528,7 +528,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
-// Trigonometric method -- not suitable until the new high digit count Trig WP34 SinCosTan
+// Trigonometric method -- not suitable until the new high digit count Trig WP34 SinCosTan supports 159
 //
 //   void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //                                    const real_t *c1Real, const real_t *c1Imag,
@@ -683,14 +683,14 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
 //
 //   // angle = atan2(rImag, rReal) / 2
-//   WP34S_Atan2(rReal, rImag, (real_t *)&angle, realContext);
+//   C47_WP34S_Atan2(rReal, rImag, (real_t *)&angle, realContext);
 //   realMultiply((real_t *)&angle, const_1on2, (real_t *)&angle, realContext);
 //
 //   // mag = sqrt(mag)
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
 //
 //   // s1r+s1i = mag * (cos(angle) + i*sin(angle))
-//   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&s1r, (real_t *)&s1i, NULL, realContext);
+//   C47_WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&s1r, (real_t *)&s1i, NULL, realContext);
 //   realMultiply((real_t *)&s1r, (real_t *)&mag, (real_t *)&s1r, realContext);
 //   realMultiply((real_t *)&s1i, (real_t *)&mag, (real_t *)&s1i, realContext);
 //
@@ -711,11 +711,11 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext); // ^(1/3) => total ^(1/6)
 //
 //   // angle = atan2(s1i, s1r) / 3
-//   WP34S_Atan2((real_t *)&s1r, (real_t *)&s1i, (real_t *)&angle, realContext);
+//   C47_WP34S_Atan2((real_t *)&s1r, (real_t *)&s1i, (real_t *)&angle, realContext);
 //   realDivide((real_t *)&angle, const_3, (real_t *)&angle, realContext);
 //
 //   // s1r+s1i = mag * (cos(angle) + i*sin(angle))
-//   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
+//   C47_WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
 //   realMultiply((real_t *)&temp1, (real_t *)&mag, (real_t *)&s1r, realContext);
 //   realMultiply((real_t *)&temp2, (real_t *)&mag, (real_t *)&s1i, realContext);
 //
@@ -726,10 +726,10 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //   realSquareRoot((real_t *)&mag, (real_t *)&mag, realContext);
 //   realPower((real_t *)&mag, (real_t *)&const159_1on3, (real_t *)&mag, realContext);
 //
-//   WP34S_Atan2((real_t *)&s2r, (real_t *)&s2i, (real_t *)&angle, realContext);
+//   C47_WP34S_Atan2((real_t *)&s2r, (real_t *)&s2i, (real_t *)&angle, realContext);
 //   realDivide((real_t *)&angle, const_3, (real_t *)&angle, realContext);
 //
-//   WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
+//   C47_WP34S_Cvt2RadSinCosTan((real_t *)&angle, amRadian, (real_t *)&temp1, (real_t *)&temp2, NULL, realContext);
 //   realMultiply((real_t *)&temp1, (real_t *)&mag, (real_t *)&temp3, realContext);
 //   realMultiply((real_t *)&temp2, (real_t *)&mag, (real_t *)&temp4, realContext);
 //   realCopy((real_t *)&temp3, (real_t *)&s2r);

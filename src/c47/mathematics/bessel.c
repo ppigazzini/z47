@@ -64,7 +64,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       realMinus(&b, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
 
-      WP34S_Cvt2RadSinCosTan(&b, amRadian, NULL, &b, NULL, &ctxtReal75);
+      C47_WP34S_Cvt2RadSinCosTan(&b, amRadian, NULL, &b, NULL, &ctxtReal75);
       WP34S_BesselJ(&n, &x, &c, &ctxtReal75);
       realMultiply(&b, &c, &b, &ctxtReal75);
       realAdd(&b, &b, &b, &ctxtReal75);
@@ -101,10 +101,10 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
   mod2Pi(&tmp, &chi, realContext);
 
   if(is_y) {
-    WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, NULL, realContext);
   }
   else {
-    WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, NULL, realContext);
   }
 
   realMultiply(alpha, alpha, &mu, realContext);
@@ -357,7 +357,7 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
 
   // nu * sec(beta) = nu / cos(beta) = x
   realDivide(nu, x, &cos_beta, realContext);
-  WP34S_Acos(&cos_beta, &beta, realContext);
+  C47_WP34S_Acos(&cos_beta, &beta, realContext);
 
   realMultiply(&cos_beta, &cos_beta, &sin_beta, realContext); // cos²β
   realSubtract(const_1, &sin_beta, &sin_beta, realContext); // sin²β
@@ -376,10 +376,10 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
   realSubtract(&psi, const_piOn4, &psi, realContext);
   mod2Pi(&psi, &psi, realContext);
   if(is_y) {
-    WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, NULL, realContext);
   }
   else {
-    WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, NULL, realContext);
   }
 
   realDivide(const_1, &tan_beta, &cot_beta, realContext);
@@ -677,7 +677,7 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
   if(!realIsAnInteger(&a)) {
     WP34S_Mod(&a, const_2, &t, realContext);
     realMultiply(&t, const_pi, &t, realContext);
-    WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, NULL, realContext);
     WP34S_BesselJ(&a, x, &t, realContext);
     realMultiply(&t, &c, &u, realContext);
     realMinus(&a, &c, realContext);

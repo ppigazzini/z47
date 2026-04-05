@@ -42,7 +42,7 @@ static void arcsinReal(void) {
     }
   }
   else {
-    WP34S_Asin(&x, &x, &ctxtReal39);
+    C47_WP34S_Asin(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
   reallocateRegister(REGISTER_X, dtReal34, 0, currentAngularMode);
