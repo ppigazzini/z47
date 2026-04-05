@@ -726,12 +726,12 @@ void mimAddNumber(int16_t item) {
               real_t theta;
               realCopy(const_piOn2, &theta);
               convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
-              real34Copy(const34_1, VARIABLE_REAL34_DATA(elm));
+              real34SetOne(VARIABLE_REAL34_DATA(elm));
               real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
             }
             else {
               real34SetZero(VARIABLE_REAL34_DATA(elm));
-              real34Copy(const34_1, VARIABLE_IMAG34_DATA(elm));
+              real34SetOne(VARIABLE_IMAG34_DATA(elm));
             }
           }
           return;
