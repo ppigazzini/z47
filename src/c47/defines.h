@@ -64,9 +64,9 @@
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
 
-#if defined(WIN32)
-    #define IR_PRINTING  // Enable IR printing for on Windows simulator
-#endif // WIN32
+#if defined(PC_BUILD)
+  #define IR_PRINTING  // Enable IR printing for the simulator
+#endif // PC_BUILD
 
 #if defined(DMCP_BUILD)
 
