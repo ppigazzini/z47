@@ -1215,11 +1215,15 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 //  Print a single register
 //
 void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma ) {
+  uint16_t tagAngle;
+  uint16_t tagPolar;
+  real34_t *real34;
+  real34_t *imag34;
   int16_t max_len   = ((where == LINE_FULL) || (where == LINE_NOLF) ?  17 : 11);
-  int16_t max_width = ((where == LINE_FULL) || (where == LINE_NOLF) ? 153 : 99);
+  //int16_t max_width = ((where == LINE_FULL) || (where == LINE_NOLF) ? 153 : 99);
   if(prSigma) {
     max_len   -= 1;
-    max_width -= 9;
+    //max_width -= 9;
   }
 
   if ( label != NULL ) {
@@ -1252,10 +1256,10 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
       break;
 
     case dtComplex34:
-      uint16_t tagAngle = getComplexRegisterAngularMode(regist);
-      uint16_t tagPolar = getComplexRegisterPolarMode(regist);
-      real34_t *real34 = REGISTER_REAL34_DATA(regist);
-      real34_t *imag34 = REGISTER_IMAG34_DATA(regist);
+      tagAngle = getComplexRegisterAngularMode(regist);
+      tagPolar = getComplexRegisterPolarMode(regist);
+      real34 = REGISTER_REAL34_DATA(regist);
+      imag34 = REGISTER_IMAG34_DATA(regist);
 
       _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
       break;
@@ -2449,6 +2453,7 @@ void fnP_All_Regs(uint16_t option) {
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
       bool_t exited;
+      uint16_t s, n;
       switch(option) {
         case PRN_ALL:
           exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
@@ -2466,7 +2471,6 @@ void fnP_All_Regs(uint16_t option) {
           break;
 
         case PRN_REGS:
-          uint16_t s, n;
           if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
             _printRegRange(s, (s + n) -1);
           }
