@@ -202,7 +202,6 @@
   extern char                   lastTemp[16];
 
   #if defined(PC_BUILD)
-    extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
@@ -212,17 +211,8 @@
     extern GtkWidget           *screen;
     extern GtkWidget           *frmCalc;
     extern int16_t              screenStride;
-    extern int16_t              debugWindow;
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
-    extern char                 debugString[10000];
-    #if (DEBUG_REGISTER_L == 1)
-      extern GtkWidget         *lblRegisterL1;
-      extern GtkWidget         *lblRegisterL2;
-    #endif // (DEBUG_REGISTER_L == 1)
-    #if (SHOW_MEMORY_STATUS == 1)
-      extern GtkWidget         *lblMemoryStatus;
-    #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
     extern int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
   #endif //PC_BUILD
@@ -231,7 +221,7 @@
   extern uint8_t calcModel;
 
   extern uint8_t             *lcd_buffer;
-  extern const int           KEY_X[7];
+  extern const int            KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];

@@ -30,7 +30,6 @@ GtkWidget      *screen;
 calcKeyboard_t  calcKeyboard[43];
 int             currentBezel; // 0=normal, 1=AIM, 2=TAM
 int16_t         screenStride;
-int16_t         debugWindow;
 uint32_t       *screenData;
 bool_t          screenChange;
 
