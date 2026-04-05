@@ -1874,7 +1874,6 @@ void nameAlias(uint16_t op, char *nameOp) {
 //  Start at the PC location
 //
 void printProgram(bool_t list, uint16_t lines) {
-  #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For details, see fnPem(). This is a modified copy.
     //
@@ -1995,120 +1994,9 @@ void printProgram(bool_t list, uint16_t lines) {
     if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
        print_advance( 0 );            // print remaining buffer content
     }
-  #endif // !TESTSUITE_BUILD
-}
-#endif // IR_PRINTING
-
-
-//********************************************************
-// PRINTER FUNCTIONS
-//********************************************************
-
-// Printer On/Off
-void fnP_PrinterOnOff(uint16_t op) {
-  #if !defined(TESTSUITE_BUILD)
-    //#if defined(IR_PRINTING)
-      if(op == PRON) {
-        printerState.print_on    = true;
-        setSystemFlag(FLAG_PRTACT);
-        fnSetFlag(FLAG_PRTEN);
-      }
-      else if(op == PROFF) {
-        printerState.print_on    = false;
-        clearSystemFlag(FLAG_PRTACT);
-        fnClearFlag(FLAG_PRTEN);
-      }
-    //#endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Printer Mode
-void fnP_PrinterMode(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
-    //#if defined(IR_PRINTING)
-      if(mode == MAN) {
-        fnClearFlag(FLAG_NORM);
-        fnClearFlag(FLAG_TRACE);
-      }
-      else if(mode == NORM) {
-        fnSetFlag(FLAG_NORM);
-        fnClearFlag(FLAG_TRACE);
-      }
-      else if(mode == TRACE) {
-        fnClearFlag(FLAG_NORM);
-        fnSetFlag(FLAG_TRACE);
-      }
-    //#endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Printer model selection
-void fnSetPrinter(uint16_t model) {
-  #if !defined(TESTSUITE_BUILD)
-    //#if defined(IR_PRINTING)
-      printerState.printer_model    = model;
-    //#endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Get printer line delay
-void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)
-      longInteger_t delay;
-
-      liftStack();
-
-      longIntegerInit(delay);
-      int32ToLongInteger(getLineDelay(), delay);
-      convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
-      longIntegerFree(delay);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Set printer line delay
-void fnP_SetDelay(uint16_t delay) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)
-      printerState.delay = delay;
-      setLineDelay(delay);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Printer paper advance
-void fnP_Advance(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)  // Show Print SBI
-      setPrinterSBI(true);
-      print_lf();
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
-}
-
-// Print program list
-void fnP_PrinterList(uint16_t lines) {
-  #if defined(IR_PRINTING)
-    printProgram(LIST, lines);
-  #endif //IR_PRINTING
-}
-
-// Print byte
-void fnP_Byte(uint16_t byte) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)
-      setPrinterSBI(true);
-      cmdprint( byte, PRINT_BYTE );
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
 }
 
 
-#if !defined(TESTSUITE_BUILD)
-#if defined(IR_PRINTING)
 static uint16_t _getUnicodeValue(calcRegister_t regist) {
     int32_t value;
 
@@ -2166,45 +2054,149 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
 
     return value;
 }
-#endif //IR_PRINTING
-#endif // !TESTSUITE_BUILD
+
+
+static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
+  uint16_t regist;
+  currentKeyCode = 255;
+  if(firstRegisterNo <= lastRegisterNo) {
+    for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
+      fnP_Regs (regist);
+      if(_exitKeyPressed()) {
+        return true;
+      }
+    }
+  }
+  else {
+    for(regist = firstRegisterNo; regist >= lastRegisterNo; regist--) {
+      fnP_Regs (regist);
+      if(_exitKeyPressed()) {
+        return true;
+      }
+    }
+  }
+  currentKeyCode = 255;
+  return false;
+}
+#endif // IR_PRINTING
+
+
+//********************************************************
+// PRINTER FUNCTIONS
+//********************************************************
+
+// Printer On/Off
+void fnP_PrinterOnOff(uint16_t op) {
+    //#if defined(IR_PRINTING)
+      if(op == PRON) {
+        printerState.print_on    = true;
+        setSystemFlag(FLAG_PRTACT);
+        fnSetFlag(FLAG_PRTEN);
+      }
+      else if(op == PROFF) {
+        printerState.print_on    = false;
+        clearSystemFlag(FLAG_PRTACT);
+        fnClearFlag(FLAG_PRTEN);
+      }
+    //#endif //IR_PRINTING
+}
+
+// Printer Mode
+void fnP_PrinterMode(uint16_t mode) {
+    //#if defined(IR_PRINTING)
+      if(mode == MAN) {
+        fnClearFlag(FLAG_NORM);
+        fnClearFlag(FLAG_TRACE);
+      }
+      else if(mode == NORM) {
+        fnSetFlag(FLAG_NORM);
+        fnClearFlag(FLAG_TRACE);
+      }
+      else if(mode == TRACE) {
+        fnClearFlag(FLAG_NORM);
+        fnSetFlag(FLAG_TRACE);
+      }
+    //#endif //IR_PRINTING
+}
+
+// Printer model selection
+void fnSetPrinter(uint16_t model) {
+    //#if defined(IR_PRINTING)
+      printerState.printer_model    = model;
+    //#endif //IR_PRINTING
+}
+
+// Get printer line delay
+void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
+    #if defined(IR_PRINTING)
+      longInteger_t delay;
+
+      liftStack();
+
+      longIntegerInit(delay);
+      int32ToLongInteger(getLineDelay(), delay);
+      convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
+      longIntegerFree(delay);
+    #endif //IR_PRINTING
+}
+
+// Set printer line delay
+void fnP_SetDelay(uint16_t delay) {
+    #if defined(IR_PRINTING)
+      printerState.delay = delay;
+      setLineDelay(delay);
+    #endif //IR_PRINTING
+}
+
+// Printer paper advance
+void fnP_Advance(uint16_t unusedButMandatoryParameter) {
+    #if defined(IR_PRINTING)  // Show Print SBI
+      setPrinterSBI(true);
+      print_lf();
+      setPrinterSBI(false);
+    #endif //IR_PRINTING
+}
+
+// Print program list
+void fnP_PrinterList(uint16_t lines) {
+  #if defined(IR_PRINTING)
+    printProgram(LIST, lines);
+  #endif //IR_PRINTING
+}
+
+// Print byte
+void fnP_Byte(uint16_t byte) {
+    #if defined(IR_PRINTING)
+      setPrinterSBI(true);
+      cmdprint( byte, PRINT_BYTE );
+      setPrinterSBI(false);
+    #endif //IR_PRINTING
+}
 
 // Print a character using character set translation
 void fnP_Char(uint16_t registerNo) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)
-      uint16_t character;
-      setPrinterSBI(true);
-      character = _getUnicodeValue(registerNo);
-      cmdprint( character, PRINT_CHAR );
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
+  #if defined(IR_PRINTING)
+    uint16_t character;
+    setPrinterSBI(true);
+    character = _getUnicodeValue(registerNo);
+    cmdprint( character, PRINT_CHAR );
+    setPrinterSBI(false);
+  #endif //IR_PRINTING
 }
 
 
 // Print Tab
 void fnP_Tab(uint16_t column) {
-  #if !defined(TESTSUITE_BUILD)
-    #if defined(IR_PRINTING)
-      setPrinterSBI(true);
-      cmdprint( column, PRINT_TAB );
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
+  #if defined(IR_PRINTING)
+    setPrinterSBI(true);
+    cmdprint( column, PRINT_TAB );
+    setPrinterSBI(false);
+  #endif //IR_PRINTING
 }
 
-/*
-#if !defined(TESTSUITE_BUILD)
-  static int sortMenu(void const *a, void const *b) {
-    return compareString(a, b, CMP_EXTENSIVE);
-  }
-#endif //TESTSUITE_BUILD
-*/
 
 // Print User
 void fnP_User(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     #if defined(IR_PRINTING)
       char label[16];
       currentKeyCode = 255;
@@ -2284,13 +2276,11 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
 
       print_line(".END.", 1);
 
-    #endif //IR_PRINTING
-  #endif //TESTSUITE_BUILD
+    #endif //IR_PRINTING*
 }
 
 // Print LCD
 void fnP_LCD(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(IR_PRINTING)
       return; // Not yet working for the 82240 printer
@@ -2304,13 +2294,11 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
     else {                             // SNAP
       fnSNAP(NOPARAM);
     }
-  #endif //TESTSUITE_BUILD
 }
 
 
 // Print Alpha string
 void fnP_Alpha(uint16_t registerNo) {
-  #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(IR_PRINTING)
       if (getRegisterDataType(registerNo) == dtString) {
@@ -2340,13 +2328,11 @@ void fnP_Alpha(uint16_t registerNo) {
       xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
       //print_linestr(aimBuffer,false);
     }
-  #endif
 }
 
 
 
 void fnP_Regs (uint16_t registerNo) {
-  #if !defined(TESTSUITE_BUILD)
 
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
@@ -2391,7 +2377,6 @@ void fnP_Regs (uint16_t registerNo) {
 
       stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICAL_SUMS] = {
@@ -2426,7 +2411,6 @@ TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICA
 };
 
 void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     currentKeyCode = 255;
     if(statisticalSumsPointer != NULL) {
       if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
@@ -2458,44 +2442,10 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnP_Sigma:", "There is no statistical data available!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-  #endif // !TESTSUITE_BUILD
 }
-
-
-#if !defined(TESTSUITE_BUILD)
-#if defined(IR_PRINTING)
-static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
-  uint16_t regist;
-  currentKeyCode = 255;
-  if(firstRegisterNo <= lastRegisterNo) {
-    for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
-      fnP_Regs (regist);
-      #if !defined(TESTSUITE_BUILD)
-        if(_exitKeyPressed()) {
-          return true;
-        }
-      #endif //!TESTSUITE_BUILD
-    }
-  }
-  else {
-    for(regist = firstRegisterNo; regist >= lastRegisterNo; regist--) {
-      fnP_Regs (regist);
-      #if !defined(TESTSUITE_BUILD)
-        if(_exitKeyPressed()) {
-          return true;
-        }
-      #endif //!TESTSUITE_BUILD
-    }
-  }
-  currentKeyCode = 255;
-  return false;
-}
-#endif //IR_PRINTING
-#endif // !TESTSUITE_BUILD
 
 
 void fnP_All_Regs(uint16_t option) {
-  #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
       bool_t exited;
@@ -2716,7 +2666,6 @@ void fnP_All_Regs(uint16_t option) {
         default: ;
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -2724,7 +2673,7 @@ void fnP_All_Regs(uint16_t option) {
 //  Print all items (test function)
 //
 void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
-  #if defined(PC_BUILD)
+  #if defined(PC_BUILD) && defined(IR_PRINTING)
     int32_t item;
     currentKeyCode = 255;
     if(getSystemFlag(FLAG_PRTACT)) {
@@ -2741,6 +2690,6 @@ void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
       }
       temporaryInformation = TI_PRINT_COMPLETE;
     }
-  #endif //PC_BUILD
+  #endif //PC_BUILD && IR_PRINTING
 }
 
