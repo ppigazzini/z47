@@ -26,13 +26,13 @@ static void getIterParam(uint16_t regist, real34_t *fp, real34_t *target, real34
     real34Multiply(step, const34_100, step);
     real34ToIntegralValue(step, step, DEC_ROUND_DOWN);
     if(real34IsZero(step)) {
-      real34Copy(const34_1, step);
+      real34SetOne(step);
     }
   }
   else {
     real34SetZero(fp);
     real34SetZero(target);
-    real34Copy(const34_1, step);
+    real34SetOne(step);
   }
 }
 
@@ -56,7 +56,7 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
     }
     case dtReal34: {
       if((mode & 2) == 2) {
-        real34Copy(const34_1, &step);
+        real34SetOne(&step);
         incDecReal(regist, mode >> 2);
         compared = real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1) ? 0 : 1;
         break;
