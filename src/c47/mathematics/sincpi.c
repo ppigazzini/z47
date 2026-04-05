@@ -31,7 +31,7 @@ void sincpiComplex(const real_t *real, const real_t *imag, real_t *resReal, real
     realMultiply(&rr, const_pi, &rr, realContext);
     realMultiply(&ii, const_pi, &ii, realContext);
 
-    WP34S_Cvt2RadSinCosTan(&rr, amRadian, &sina, &cosa, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&rr, amRadian, &sina, &cosa, NULL, realContext);
     WP34S_SinhCosh(&ii, &sinhb, &coshb, realContext);
 
     realMultiply(&sina, &coshb, resReal, realContext);
@@ -77,7 +77,7 @@ static void sincpiReal(void) {
       if(xAngularMode != amNone)
         convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);
       realMultiply(&x, const_pi, &x, &ctxtReal75);   //This pi is to convert sincpi to sinc for all input, regardless
-      WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal75);
+      C47_WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal75);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }
   }

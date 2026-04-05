@@ -3,7 +3,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   //TO_QSPI static const char bugScreenShowFonts[] = "In function showFonts: This should never happen!";
 
   /********************************************//**
@@ -183,4 +182,3 @@
     }
   #endif // !SAVE_SPACE_DM42_8F
   }
-#endif // !TESTSUITE_BUILD

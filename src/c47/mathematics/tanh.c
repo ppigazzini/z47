@@ -51,7 +51,7 @@ uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
   }
   else {
     WP34S_Tanh(xReal, rReal, &ctxtReal39);
-    WP34S_Cvt2RadSinCosTan(xImag, amRadian, &sina, &cosa, rImag, &ctxtReal39);
+    C47_WP34S_Cvt2RadSinCosTan(xImag, amRadian, &sina, &cosa, rImag, &ctxtReal39);
 
     realSetOne(&denomReal);
     realMultiply(rReal, rImag, &denomImag, &ctxtReal39);

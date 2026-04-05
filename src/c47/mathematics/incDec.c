@@ -39,12 +39,12 @@ void fnDec(uint16_t regist) {
     incDec[getRegisterDataType(regist)](regist, DEC_FLAG);
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function fnDec:", errorMessage, "is not defined!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -60,12 +60,12 @@ void fnInc(uint16_t regist) {
     incDec[getRegisterDataType(regist)](regist, INC_FLAG);
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function fnInc:", errorMessage, "is not defined!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 

@@ -25,10 +25,8 @@ void fnInput(uint16_t regist) {
 
 
 void fnVarMnu(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    currentMvarLabel = label;
-    showSoftmenu(-MNU_MVAR);
-  #endif // !TESTSUITE_BUILD
+  currentMvarLabel = label;
+  showSoftmenu(-MNU_MVAR);
 }
 
 
@@ -138,7 +136,6 @@ void fnPause(uint16_t dur) {
     }
   }
 
-  #if !defined(TESTSUITE_BUILD)
     uint8_t previousProgramRunStop = programRunStop;
     programRunStop = PGM_PAUSED;
 
@@ -239,7 +236,6 @@ void fnPause(uint16_t dur) {
         refreshLcd(NULL);
       #endif // DMCP_BUILD
         }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -395,7 +391,6 @@ void fnKeyType(uint16_t regist) {
 
 
 void fnPutKey(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
     char kc[4];
     uint16_t keyCode = _getKeyArg(regist);
 
@@ -463,7 +458,6 @@ void fnPutKey(uint16_t regist) {
     }
 
     programRunStop = PGM_WAITING;
-  #endif // !TESTSUITE_BUILD
 }
 
 

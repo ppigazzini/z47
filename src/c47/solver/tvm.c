@@ -28,7 +28,7 @@
  }
 
 
-#if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42)) // || defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+#if defined(DMCP_BUILD) && (HARDWARE_MODEL == HWM_DM42) // || defined(PC_BUILD)
   #define ctxtTvm          ctxtReal39
   #define ctxtTvmHi         ctxtTvm42  // only some exp/log parts
   #define ctxtSolverTvmHi   ctxtTvm42  // only the exp/log parts
@@ -758,9 +758,9 @@ void fnTvmVar(uint16_t variable) {
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED || testing) {
           real34_t y, x, resZ, resY, resX;
-          real34Copy(const_0, &resZ);
-          real34Copy(const_0, &resY);
-          real34Copy(const_1, &resX);
+          real34SetZero(&resZ);
+          real34SetZero(&resY);
+          real34SetOne (&resX);
           saveForUndo();
           thereIsSomethingToUndo = true;
           liftStack();
@@ -826,7 +826,7 @@ void fnTvmVar(uint16_t variable) {
             case RESERVED_VARIABLE_NPPER: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
-                real34Copy(const34_1, &x);
+                real34SetOne(&x);
               }
               break;
             }
@@ -856,7 +856,7 @@ void fnTvmVar(uint16_t variable) {
           }
 
           if(real34CompareAbsLessThan(&x,const34_1e_4) && real34CompareAbsLessThan(&y,const34_1e_4)) { //still after all the tries, if x & y are still both below 0.0001, then change x to 1 (keeping y = 0)
-            real34Copy(const34_1, &x);
+            real34SetOne(&x);
           }
 
           uint16_t iter = 0;

@@ -8,10 +8,8 @@
   #include <execinfo.h>
 #endif //PC_BUILD
 
-#if !defined(TESTSUITE_BUILD)
-  static void refreshRegisterLineRestoreT(void);
-  static void _refreshPemScreen(void);
-#endif //TESTSUITE_BUILD
+static void refreshRegisterLineRestoreT(void);
+static void _refreshPemScreen(void);
 
 
 //#define DEBUGCLEARS
@@ -46,7 +44,6 @@ void setLastintegerBasetoZero(void) {
 bool_t blockMonitoring = false;
 
 
-#if !defined(TESTSUITE_BUILD)
   #define spc STD_SPACE
   #define spc1 STD_SPACE STD_SPACE_3_PER_EM
 
@@ -95,15 +92,14 @@ typedef struct {
   char     itemName[30];
 } nstr;
 
-  TO_QSPI static const nstr nameOfWday_en[8] = { {"invalid day of week"},                                   {"Monday"},            {"Tuesday"},                     {"Wednesday"},               {"Thursday"},           {"Friday"},             {"Saturday"},             {"Sunday"}};
-  /*
-  TO_QSPI static const char *nameOfWday_de[8] = {"ung" STD_u_DIARESIS "ltiger Wochentag",                 "Montag",            "Dienstag",                    "Mittwoch",                "Donnerstag",         "Freitag",            "Samstag",              "Sonntag"};
-  TO_QSPI static const char *nameOfWday_fr[8] = {"jour de la semaine invalide",                           "lundi",             "mardi",                       "mercredi",                "jeudi",              "vendredi",           "samedi",               "dimanche"};
-  TO_QSPI static const char *nameOfWday_es[8] = {"d" STD_i_ACUTE "a inv" STD_a_ACUTE "lido de la semana", "lunes",             "martes",                      "mi" STD_e_ACUTE "rcoles", "jueves",             "viernes",            "s" STD_a_ACUTE "bado", "domingo"};
-  TO_QSPI static const char *nameOfWday_it[8] = {"giorno della settimana non valido",                     "luned" STD_i_GRAVE, "marted" STD_i_GRAVE,          "mercoled" STD_i_GRAVE,    "gioved" STD_i_GRAVE, "venerd" STD_i_GRAVE, "sabato",               "domenica"};
-  TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da semana",                  "segunda-feira",     "ter" STD_c_CEDILLA "a-feira", "quarta-feira",            "quinta-feira",       "sexta-feira",        "s" STD_a_ACUTE "bado", "domingo"};
-  */
-#endif // !TESTSUITE_BUILD
+TO_QSPI static const nstr nameOfWday_en[8] = { {"invalid day of week"},                                   {"Monday"},            {"Tuesday"},                     {"Wednesday"},               {"Thursday"},           {"Friday"},             {"Saturday"},             {"Sunday"}};
+/*
+TO_QSPI static const char *nameOfWday_de[8] = {"ung" STD_u_DIARESIS "ltiger Wochentag",                 "Montag",            "Dienstag",                    "Mittwoch",                "Donnerstag",         "Freitag",            "Samstag",              "Sonntag"};
+TO_QSPI static const char *nameOfWday_fr[8] = {"jour de la semaine invalide",                           "lundi",             "mardi",                       "mercredi",                "jeudi",              "vendredi",           "samedi",               "dimanche"};
+TO_QSPI static const char *nameOfWday_es[8] = {"d" STD_i_ACUTE "a inv" STD_a_ACUTE "lido de la semana", "lunes",             "martes",                      "mi" STD_e_ACUTE "rcoles", "jueves",             "viernes",            "s" STD_a_ACUTE "bado", "domingo"};
+TO_QSPI static const char *nameOfWday_it[8] = {"giorno della settimana non valido",                     "luned" STD_i_GRAVE, "marted" STD_i_GRAVE,          "mercoled" STD_i_GRAVE,    "gioved" STD_i_GRAVE, "venerd" STD_i_GRAVE, "sabato",               "domenica"};
+TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da semana",                  "segunda-feira",     "ter" STD_c_CEDILLA "a-feira", "quarta-feira",            "quinta-feira",       "sexta-feira",        "s" STD_a_ACUTE "bado", "domingo"};
+*/
 
 #if defined(PC_BUILD)
   gboolean drawScreen(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -553,7 +549,6 @@ void execTimerApp(uint16_t timerType) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   void refreshFn(uint16_t timerType) {                        //vv dr - general timeout handler
     if(timerType == TO_FG_LONG) Shft_handler();
     if(timerType == TO_CL_LONG) LongpressKey_handler();
@@ -1000,6 +995,15 @@ void execTimerApp(uint16_t timerType) {
         else if(calcMode == CM_NORMAL && programRunStop == PGM_SINGLE_STEP && (isArrowDown(currentKeyCode))) {
           programRunStop = PGM_STOPPED;
           refreshRegisterLine(REGISTER_T);
+          if(JM_auto_longpress_enabled == ITM_NOP) {
+            FN_timeouts_in_progress = false;
+            fnTimerStop(TO_FN_LONG);
+            return; //do not restart timer
+          }
+        }
+        else if(calcMode == CM_NORMAL && (programRunStop == PGM_STOPPED || programRunStop == PGM_SINGLE_STEP) && currentKeyCode == 35) { //R/S
+          refreshRegisterLine(REGISTER_T);
+          lastKeyItemDetermined = 0;
           if(JM_auto_longpress_enabled == ITM_NOP) {
             FN_timeouts_in_progress = false;
             fnTimerStop(TO_FN_LONG);
@@ -5248,7 +5252,6 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   }
 
 
-//#if !defined(TESTSUITE_BUILD)
 //  void clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys) {      //JMOLD
 //    if(clearStatusBar) {
 //      lcd_fill_rect(0, 0, SCREEN_WIDTH, 20, 0);
@@ -5262,10 +5265,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 //      lcd_fill_rect(0, 171-5, 20, 5, 0);
 //    }
 //  }                                                       //JM ^^
-//#endif // !TESTSUITE_BUILD
 
 
-  #if !defined(TESTSUITE_BUILD)  //clearScreenOld(clrStatusBar, clrRegisterLines, clrSoftkeys);
     void clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys) {  //clrStatusBar, clrRegisterLines, clrSoftkeys
                                         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                                           printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
@@ -5316,7 +5317,6 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
       calcMode = origCalcMode;
     }
-  #endif // !TESTSUITE_BUILD
 
 
   static void _refreshPemScreen(void) {
@@ -5810,7 +5810,6 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
     #endif //DMCP_REFRESH
 
   }
-#endif // !TESTSUITE_BUILD
 
 
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
@@ -5960,7 +5959,6 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static int32_t _getPositionFromRegister(calcRegister_t regist, int16_t maxValuePlusOne) {
     int32_t value;
 
@@ -5970,11 +5968,11 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       int32ToReal34(maxValuePlusOne, &maxValue34);
       if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if defined(PC_BUILD)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
           sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
-        #endif // PC_BUILD
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return -1;
       }
       value = real34ToInt32(REGISTER_REAL34_DATA(regist));
@@ -5986,11 +5984,11 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       convertLongIntegerRegisterToLongInteger(regist, lgInt);
       if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, maxValuePlusOne) >= 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if defined(PC_BUILD)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
           sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
-        #endif // PC_BUILD
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         longIntegerFree(lgInt);
         return -1;
       }
@@ -6000,10 +5998,10 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
-      #endif // PC_BUILD
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return -1;
     }
 
@@ -6014,10 +6012,8 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     *x = _getPositionFromRegister(REGISTER_X, SCREEN_WIDTH);
     *y = _getPositionFromRegister(REGISTER_Y, SCREEN_HEIGHT);
   }
-#endif // !TESTSUITE_BUILD
 
 void fnClLcd(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     int32_t x, y;
     getPixelPos(&x, &y);
     if(lastErrorCode == ERROR_NONE) {
@@ -6027,12 +6023,10 @@ void fnClLcd(uint16_t unusedButMandatoryParameter) {
     #if defined(REFRESH_ON_SCREEN_MONITOR)
       print_linestr("Start Refresh monitoring", true);
     #endif //DMCP_REFRESH
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnPixel(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     int32_t x, y;
     getPixelPos(&x, &y);
     if(lastErrorCode == ERROR_NONE) {
@@ -6042,11 +6036,9 @@ void fnPixel(uint16_t unusedButMandatoryParameter) {
         }
       setBlackPixel(x, SCREEN_HEIGHT - y - 1);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnPoint(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     int32_t x, y;
     getPixelPos(&x, &y);
     if(lastErrorCode == ERROR_NONE) {
@@ -6056,11 +6048,9 @@ void fnPoint(uint16_t unusedButMandatoryParameter) {
       }
       lcd_fill_rect(x - 1, SCREEN_HEIGHT - y - 2, 3, 3, LCD_EMPTY_VALUE);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnAGraph(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
     int32_t x, y;
     uint32_t gramod;
     longInteger_t liGramod;
@@ -6096,18 +6086,16 @@ void fnAGraph(uint16_t regist) {
 
       else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if defined(PC_BUILD)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
           moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", NULL);
-        #endif // PC_BUILD
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void insertAlphaCursor(uint16_t startAt) {
-  #if !defined(TESTSUITE_BUILD)
     char       *bufPtr = tmpString + startAt;
     const char *strPtr = aimBuffer;
     uint16_t    strLength = 0;
@@ -6155,5 +6143,4 @@ void insertAlphaCursor(uint16_t startAt) {
       /* Next character */
       strPtr += ((*strPtr) & 0x80) ? 2 : 1;
     }
-  #endif // !TESTSUITE_BUILD
 }

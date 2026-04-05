@@ -30,7 +30,6 @@
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static void _addSpaceAfterPrograms(uint16_t size) {
     if(freeProgramBytes < size) {
       uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
@@ -61,7 +60,6 @@
     }
     return true;
   }
-#endif // !TESTSUITE_BUILD
 
 
     typedef struct {
@@ -123,7 +121,6 @@
 
 
 
-#ifndef TESTSUITE_BUILD
 #if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
     int16_t i = 0;
@@ -160,12 +157,10 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
       }
 
 #endif //SAVE_SPACE_DM42_10
-#endif //TESTSUITE_BUILD
 
 
 void fnPExport(void) {
 #if !defined(SAVE_SPACE_DM42_10)
-  #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For details, see fnPem(). This is a modified copy.
     //
@@ -272,7 +267,6 @@ void fnPExport(void) {
       }
       step = nextStep;
     }
-  #endif // !TESTSUITE_BUILD
 #endif // !SAVE_SPACE_DM42_10
 }
 
@@ -320,7 +314,6 @@ void _fnExportProgram(ioFilePath_t path) {
 
 
 static void _selectProgram(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
     dynamicMenuItem = -1;
     // Find program boundaries
     // no argument – need to save current program
@@ -361,7 +354,6 @@ static void _selectProgram(uint16_t label) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -394,15 +386,12 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
 
 
 void fnExportProgram(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _exportProgram(label, ioPathExportRTFProgram);
-  #endif // !TESTSUITE_BUILD
+  _exportProgram(label, ioPathExportRTFProgram);
 }
 
 
 
 void _saveProgram(uint16_t label, ioFilePath_t path) {
-  #if !defined(TESTSUITE_BUILD)
     uint32_t programVersion = PROGRAM_VERSION;
     //char tmpString[3000];           //The concurrent use of the global tmpString
     //                                //as target does not work while the source is at
@@ -466,14 +455,11 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
     currentProgramNumber = savedCurrentProgramNumber;
 
     temporaryInformation = TI_SAVED;
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnSaveProgram(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _saveProgram(label, ioPathSaveProgram);
-  #endif // !TESTSUITE_BUILD
+  _saveProgram(label, ioPathSaveProgram);
 }
 
 
@@ -516,7 +502,6 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
 
 
 void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     ioFilePath_t path;
     uint32_t pgmSizeInByte;
     uint32_t i;
@@ -543,10 +528,8 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
       readLine(aimBuffer); // Format of program instructions (ignore now, there is only one format)
     }
     else {
-      #if !defined(TESTSUITE_BUILD)
-        sprintf(tmpString," \nThis is not a C47 program\n\nIt will not be loaded.");
-        show_warning(tmpString);
-      #endif // TESTSUITE_BUILD
+      sprintf(tmpString," \nThis is not a C47 program\n\nIt will not be loaded.");
+      show_warning(tmpString);
       ioFileClose();
       return;
     }
@@ -555,10 +538,8 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     if(strcmp(aimBuffer, "C47_program_file_version") == 0) {
       loadedVersion = stringToUint32(tmpString);
       if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
-        #if !defined(TESTSUITE_BUILD)
-          sprintf(tmpString, " \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
-          show_warning(tmpString);
-        #endif // TESTSUITE_BUILD
+        sprintf(tmpString, " \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
+        show_warning(tmpString);
         ioFileClose();
         return;
       }
@@ -566,16 +547,12 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     else {
       if(strcmp(aimBuffer, "WP43_program_file_version") == 0) {
         loadedVersion = stringToUint32(tmpString);
-        #if !defined(TESTSUITE_BUILD)
-          sprintf(tmpString," \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
-          show_warning(tmpString);
-        #endif // TESTSUITE_BUILD
+        sprintf(tmpString," \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
+        show_warning(tmpString);
       }
       else {
-        #if !defined(TESTSUITE_BUILD)
-          sprintf(tmpString, " \nThis is not a C47 program\n \nIt will not be loaded.");
-          show_warning(tmpString);
-        #endif // TESTSUITE_BUILD
+        sprintf(tmpString, " \nThis is not a C47 program\n \nIt will not be loaded.");
+        show_warning(tmpString);
         ioFileClose();
         return;
       }
@@ -620,12 +597,9 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
                         "Not compatible with current version\n"
                         " \n"
                         "It will not be loaded.");
-      #if !defined(TESTSUITE_BUILD)
-        show_warning(tmpString);
-      #endif // TESTSUITE_BUILD
+      show_warning(tmpString);
       return;
     }
 
     temporaryInformation = TI_PROGRAM_LOADED;
-  #endif // !TESTSUITE_BUILD
 }

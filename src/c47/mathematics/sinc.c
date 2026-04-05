@@ -26,7 +26,7 @@ void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
   else {
     real_t sina, cosa, sinhb, coshb, sinR, sinImag;
 
-    WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
     WP34S_SinhCosh(imag, &sinhb, &coshb, realContext);
 
     realMultiply(&sina, &coshb, resReal, realContext);
@@ -70,7 +70,7 @@ static void sincReal(void) {
         if(xAngularMode != amNone)
           convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal39);
       }
-      WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal39);
+      C47_WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal39);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }
   }

@@ -89,24 +89,16 @@ char       letteredRegisterName(calcRegister_t regist);
   #define widthGraphInclBorder   240 + 2
   #define menuHeightInclBorder   SOFTMENU_HEIGHT * 3
   #define topLeftMenuInclBorderY 240 - menuHeightInclBorder
-  #if defined(TESTSUITE_BUILD)
-      #define clearScreen(cnt)                        do { } while(0)
-      #define clearScreenExcludingStatusBar(cnt)      do { } while(0)
-      #define clearScreenStatusBar(cnt)               do { } while(0)
-  #else //!TESTSUITE_BUILD
-    #if defined(MONITOR_CLRSCR)
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate(); printf("CLEARSB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-    #else //!MONITOR_CLRSCR
-      #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                 } while(0)  //set last to undefined to force first refresh condition to be true
-      #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
-    #endif //MONITOR_CLRSCR
-  #endif //!TESTSUITE_BUILD
+  #if defined(MONITOR_CLRSCR)
+    #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",        (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n",(uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate(); printf("CLEARSB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+  #else //!MONITOR_CLRSCR
+    #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                 } while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+  #endif //MONITOR_CLRSCR
 
-
-  #if !defined(TESTSUITE_BUILD)
 
   void     refreshFn                            (uint16_t timerType);                                           //dr - general timeout handler
   extern uint8_t  compressString;                                                                               //global flags for character control: compressString
@@ -260,5 +252,4 @@ char       letteredRegisterName(calcRegister_t regist);
   void     showShiftStateF                    (void);
   void     showShiftStateG                    (void);
   void     displayShiftAndTamBuffer           (void);
-  #endif // !TESTSUITE_BUILD
 #endif // !SCREEN_H
