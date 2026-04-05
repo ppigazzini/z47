@@ -142,7 +142,6 @@
   void fnIsLeap                (uint16_t unusedButMandatoryParameter);
   void fnSetFirstGregorianDay  (uint16_t param);
   void fnGetFirstGregorianDay  (uint16_t unusedButMandatoryParameter);
-  bool_t followYY              (void);
   void fnYYDflt                (uint16_t tmp);
   void fnYYFollow              (uint16_t unusedButMandatoryParameter);
   void fnXToDate               (uint16_t unusedButMandatoryParameter);
