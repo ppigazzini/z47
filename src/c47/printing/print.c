@@ -2612,6 +2612,7 @@ void fnP_All_Regs(uint16_t option) {
         print_linestr(filename_csv, false);
       #endif // VERBOSE_LEVEL >= 1
 
+      uint16_t s, n;
       switch(option) {
         case PRN_ALL:
           stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
@@ -2621,7 +2622,6 @@ void fnP_All_Regs(uint16_t option) {
           break;
 
         case PRN_REGS:
-          uint16_t s, n;
           if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
             stackregister_csv_out(s, (s + n) -1 , !ONELINE);
           }
