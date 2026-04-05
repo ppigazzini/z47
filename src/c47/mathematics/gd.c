@@ -72,7 +72,7 @@ uint8_t GudermannianReal(const real_t *x, real_t *res, realContext_t *realContex
      * Gd(x) = 2 * Arctan(Exp(x)) - PI/2
      */
     realExp(x, res, realContext);
-    WP34S_Atan(res, res, realContext);
+    C47_WP34S_Atan(res, res, realContext);
     realMultiply(res, const_2, res, realContext);
     realSubtract(res, const_piOn2, res, realContext);
 
@@ -126,14 +126,14 @@ uint8_t InverseGudermannianReal(const real_t *x, real_t *res, realContext_t *rea
        */
       realMultiply(x, const_1on2, res, realContext);                       // r = x/2
       realAdd(res, const_piOn4, res, realContext);                         // r = x/2 + pi/4
-      WP34S_Cvt2RadSinCosTan(res, amRadian, &sin, &cos, res, &ctxtReal39); // r = Tan(x/2 + pi/4)
+      C47_WP34S_Cvt2RadSinCosTan(res, amRadian, &sin, &cos, res, &ctxtReal39); // r = Tan(x/2 + pi/4)
       WP34S_Ln(res, res, &ctxtReal39);                                     // r = Ln(Tan(x/2 + pi/4))
 
       /*
        * InvGd(x) = ArcSinh(Tan(x))
        * -PI/2 < x < PI/2
        */
-      //WP34S_Cvt2RadSinCosTan(x, amRadian, &sin, &cos, res, &ctxtReal39);
+      //C47_WP34S_Cvt2RadSinCosTan(x, amRadian, &sin, &cos, res, &ctxtReal39);
       //ArcsinhReal(res, res, &ctxtReal39);
     }
   }
