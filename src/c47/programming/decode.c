@@ -833,7 +833,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
         if(nameOp[0] == 0) {
           if(textVersion == MODE_ALIAS) {
+          #if defined(IR_PRINTING)
             nameAlias(op, nameOp); 
+          #endif //IR_PRINTING
           }
           else {
             strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
@@ -873,7 +875,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         else {
           if(nameOp[0] == 0) {
             if(textVersion == MODE_ALIAS) {
+            #if defined(IR_PRINTING)
               nameAlias(op, nameOp); 
+            #endif //IR_PRINTING
             }
             else {
               strcpy(nameOp,indexOfItems[op].itemCatalogName);

@@ -644,10 +644,8 @@ void fnDeleteMenu(uint16_t id) {
     return;
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
-    #if !defined(TESTSUITE_BUILD)
-      removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
-    #endif // !TESTSUITE_BUILD
+    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName); // Remove assignments before deleting the user menu
+    removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -664,12 +662,10 @@ void fnDeleteMenu(uint16_t id) {
   if(currentUserMenu > id) {
     --currentUserMenu;
   }
-  #if !defined(TESTSUITE_BUILD)
-    else if(currentUserMenu == id) {
-      showSoftmenu(-MNU_DYNAMIC);
-      popSoftmenu();
-    }
-  #endif // !TESTSUITE_BUILD
+  else if(currentUserMenu == id) {
+    showSoftmenu(-MNU_DYNAMIC);
+    popSoftmenu();
+  }
 }
 
 
@@ -679,17 +675,13 @@ void fnDeleteUserMenus(uint16_t confirmation) {
     setConfirmationMode(fnDeleteUserMenus);
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
-    #if !defined(TESTSUITE_BUILD)
-      removeUserMenuFromStack(numberOfUserMenus);         // Remove all user menus from the stack before deleting them
-    #endif // !TESTSUITE_BUILD
+    removeUserItemAssignments(-MNU_DYNAMIC,""); // Remove all user menus assignments
+    removeUserMenuFromStack(numberOfUserMenus); // Remove all user menus from the stack before deleting them
     freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
     userMenus = NULL;
     numberOfUserMenus = 0;
-    #if !defined(TESTSUITE_BUILD)
-      createHOME();
-      createPFN();
-    #endif // !TESTSUITE_BUILD
+    createHOME();
+    createPFN();
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_DEL_ALL_MENUS;
     }
@@ -711,10 +703,8 @@ void fnClearUserMenus(uint16_t confirmation) {
     for(i=0; i<numberOfUserMenus; i++) {
       memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));
     }
-    #if !defined(TESTSUITE_BUILD)
-      createHOME();
-      createPFN();
-    #endif // !TESTSUITE_BUILD
+    createHOME();
+    createPFN();
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_CLEAR_ALL_MENUS;
     }
@@ -1120,24 +1110,20 @@ void createMenu(const char *name) {
 
 
 void assignEnterAlpha(void) {
-  #if !defined(TESTSUITE_BUILD)
-    tam.alpha = true;
-    setSystemFlag(FLAG_ALPHA);
-    aimBuffer[0] = 0;
-    tamEnterMode(ITM_ASSIGN);
-    calcModeAim(NOPARAM);
-  #endif // !TESTSUITE_BUILD
+  tam.alpha = true;
+  setSystemFlag(FLAG_ALPHA);
+  aimBuffer[0] = 0;
+  tamEnterMode(ITM_ASSIGN);
+  calcModeAim(NOPARAM);
 }
 
 
 void assignLeaveAlpha(void) {
-  #if !defined(TESTSUITE_BUILD)
-    tam.alpha = false;
-    clearSystemFlag(FLAG_ALPHA);
-    leaveTamModeIfEnabled();
-    alphaCursor = 0;
-    calcModeNormalGui();
-  #endif // !TESTSUITE_BUILD
+  tam.alpha = false;
+  clearSystemFlag(FLAG_ALPHA);
+  leaveTamModeIfEnabled();
+  alphaCursor = 0;
+  calcModeNormalGui();
 }
 
 
@@ -1283,8 +1269,8 @@ void assignGetName2(void) {
 
   if(!result) {
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }

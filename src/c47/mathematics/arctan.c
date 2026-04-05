@@ -32,7 +32,7 @@ static void arctanReal(void) {
     }
   }
   else {
-    WP34S_Atan(&x, &x, &ctxtReal39);
+    C47_WP34S_Atan(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
   convertRealToResultRegister(&x, REGISTER_X, currentAngularMode);

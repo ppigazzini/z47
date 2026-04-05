@@ -25,8 +25,6 @@ void drawBattery(uint16_t voltage);
   void mockupSB(void);
 #endif
 
-#if !defined(TESTSUITE_BUILD)
-
   uint8_t  SBlastIntegerBaseShown = 0xFF;
   uint16_t SBAlphaModeLastShown = 0xFFFF;
   char     SBhourglassShown[2];
@@ -620,14 +618,13 @@ void drawBattery(uint16_t voltage);
 
 
   static void showHideWatch(void) {
-    if(!(SBARUPD_StopWatch)) return;
-
-    #if !defined(TESTSUITE_BUILD)
-      if(watchIconEnabled != (timerStartTime != TIMER_APP_STOPPED)) {
-        setSystemFlagChanged(SETTING_WATCHICON);
-        watchIconEnabled = !watchIconEnabled;
-      }
-    #endif // !TESTSUITE_BUILD
+    if(!(SBARUPD_StopWatch)) {
+      return;
+    }
+    if(watchIconEnabled != (timerStartTime != TIMER_APP_STOPPED)) {
+      setSystemFlagChanged(SETTING_WATCHICON);
+      watchIconEnabled = !watchIconEnabled;
+    }
 
     if(didSystemFlagChange(SETTING_WATCHICON)) {
       showStringAndClear(watchIconEnabled ? STD_TIMER : "", &standardFont, X_STOPWATCH, 0, X_SERIAL_IO - X_STOPWATCH, 20, vmNormal, true, false );
@@ -1052,5 +1049,3 @@ void drawBattery(uint16_t voltage) {
       calcMode = CM_GRAPH;
   }
 #endif //PC_BUILD
-
-#endif // !TESTSUITE_BUILD

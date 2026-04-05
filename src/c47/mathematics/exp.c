@@ -48,7 +48,7 @@ void expComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
   }
 
  realExp(real, &expa, realContext);
- WP34S_Cvt2RadSinCosTan(imag, amRadian, &sin, &cos, NULL, realContext);
+ C47_WP34S_Cvt2RadSinCosTan(imag, amRadian, &sin, &cos, NULL, realContext);
  realMultiply(&expa, &cos, resReal, realContext);
  realMultiply(&expa, &sin, resImag, realContext);
 }

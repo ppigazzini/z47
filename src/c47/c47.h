@@ -125,7 +125,7 @@
     #if defined(TESTSUITE_BUILD)
       #include "testSuite.h"
     #endif //TESTSUITE_BUILD
-  #endif // PC_BUILD || DMCP_BUILD || TESTSUITE_BUILD
+  #endif // !GENERATE_CATALOGS && !GENERATE_CONSTANTS && !GENERATE_TESTPGMS
 
   #if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
     #include <gmp.h>
@@ -158,7 +158,7 @@
     #include "solver/solver.h"
     #include "sort.h"
     #include "stats.h"
-  #endif // GENERATE_CATALOGS
+  #endif // GENERATE_CATALOGS || GENERATE_TESTPGMS
 
   #if defined(GENERATE_CONSTANTS)
     #include <gtk/gtk.h>
@@ -198,24 +198,18 @@
     #include "items.h"
   #endif // GENERATE_TESTPGMS
 
-  // Variables for the simulator
-  #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
-    extern uint16_t lastI;
-    extern uint16_t lastJ;
-    extern int16_t lastFunc;
-    extern int16_t lastParam;
-    extern char    lastTemp[16];
-  #endif // !GENERATE_CATALOGS
+  extern uint16_t               lastI;
+  extern uint16_t               lastJ;
+  extern int16_t                lastFunc;
+  extern int16_t                lastParam;
+  extern char                   lastTemp[16];
 
-  #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+  #if defined(PC_BUILD)
     extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
     extern bool_t               swapCtrlCode;
-  #endif // PC_BUILD || TESTSUITE_BUILD
-
-  #if defined(PC_BUILD)
     extern bool_t               calcLandscape;
     extern bool_t               calcAutoLandscapePortrait;
     extern GtkWidget           *screen;

@@ -684,7 +684,6 @@ void sci_fmt(char *buf, int n, double x) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   void convertDoubleToString(double x, int16_t n, char *buff) { //Reformatting real strings that are formatted according to different locale settings
     uint16_t i = 2;
     uint16_t j = 2;
@@ -774,9 +773,6 @@ void sci_fmt(char *buf, int n, double x) {
 
 
 
-#endif // !TESTSUITE_BUILD
-
-
 
 double convertRegisterToDouble(calcRegister_t regist) {
   real_t regReal, regImag;
@@ -794,7 +790,7 @@ static float fnRealToFloat(const real_t *r){
   int s = 0;
   int j, n, e;
 
-  static const float exps[] = {
+  TO_QSPI static const float exps[] = {
     1.e-45, 1.e-44, 1.e-43, 1.e-42, 1.e-41, 1.e-40, 1.e-39, 1.e-38,
     1.e-37, 1.e-36, 1.e-35, 1.e-34, 1.e-33, 1.e-32, 1.e-31, 1.e-30,
     1.e-29, 1.e-28, 1.e-27, 1.e-26, 1.e-25, 1.e-24, 1.e-23, 1.e-22,

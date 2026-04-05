@@ -884,7 +884,7 @@ void print_line( const char *buff, int with_lf )
   unsigned char graphic[ PAPER_WIDTH ];	// Columns
   unsigned char glen = 0;
   unsigned char w = 0;
-  
+
   // Show Print SBI
   setPrinterSBI(true);
 
@@ -1680,30 +1680,6 @@ void printViewAview(uint16_t func, uint16_t regist) {
 
 
 //
-//  Print all items (test function)
-//
-void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
-  #if defined(PC_BUILD)
-    int32_t item;
-    currentKeyCode = 255;
-    if(getSystemFlag(FLAG_PRTACT)) {
-      sprintf(tmpString, "item catname  menuname");
-      print_line(tmpString,1);
-      for(item=1; item<LAST_ITEM; item++) {
-        sprintf(tmpString, "%4d ", item);
-        strcat(tmpString, indexOfItems[item].itemCatalogName);
-        print_line(tmpString,0);
-        print_tab( 97 );
-        sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
-        print_line(tmpString,1);
-        if(_exitKeyPressed()) break;
-      }
-      temporaryInformation = TI_PRINT_COMPLETE;
-    }
-  #endif //PC_BUILD
-}
-
-//
 //  Trace an instruction
 //
 void printTrace(int16_t func, uint16_t param) {
@@ -1851,7 +1827,7 @@ void printTrace(int16_t func, uint16_t param) {
           print_advance (0);
         }
         print_justified(tmpString);
-        
+
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
@@ -2114,7 +2090,9 @@ void fnP_Advance(uint16_t unusedButMandatoryParameter) {
 
 // Print program list
 void fnP_PrinterList(uint16_t lines) {
-  printProgram(LIST, lines);
+  #if defined(IR_PRINTING)
+    printProgram(LIST, lines);
+  #endif //IR_PRINTING
 }
 
 // Print byte
@@ -2128,6 +2106,9 @@ void fnP_Byte(uint16_t byte) {
   #endif //TESTSUITE_BUILD
 }
 
+
+#if !defined(TESTSUITE_BUILD)
+#if defined(IR_PRINTING)
 static uint16_t _getUnicodeValue(calcRegister_t regist) {
     int32_t value;
 
@@ -2185,12 +2166,14 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
 
     return value;
 }
+#endif //IR_PRINTING
+#endif // !TESTSUITE_BUILD
 
 // Print a character using character set translation
 void fnP_Char(uint16_t registerNo) {
-  uint16_t character;
   #if !defined(TESTSUITE_BUILD)
     #if defined(IR_PRINTING)
+      uint16_t character;
       setPrinterSBI(true);
       character = _getUnicodeValue(registerNo);
       cmdprint( character, PRINT_CHAR );
@@ -2356,8 +2339,8 @@ void fnP_Alpha(uint16_t registerNo) {
       tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
       xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
       //print_linestr(aimBuffer,false);
-    #endif
     }
+  #endif
 }
 
 
@@ -2478,6 +2461,9 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
+
+#if !defined(TESTSUITE_BUILD)
+#if defined(IR_PRINTING)
 static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
   uint16_t regist;
   currentKeyCode = 255;
@@ -2504,13 +2490,15 @@ static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
   currentKeyCode = 255;
   return false;
 }
+#endif //IR_PRINTING
+#endif // !TESTSUITE_BUILD
 
 
 void fnP_All_Regs(uint16_t option) {
-  bool_t exited;
   #if !defined(TESTSUITE_BUILD)
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
     #if defined(IR_PRINTING)
+      bool_t exited;
       switch(option) {
         case PRN_ALL:
           exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
@@ -2729,5 +2717,30 @@ void fnP_All_Regs(uint16_t option) {
       }
     }
   #endif // !TESTSUITE_BUILD
+}
+
+
+//
+//  Print all items (test function)
+//
+void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
+  #if defined(PC_BUILD)
+    int32_t item;
+    currentKeyCode = 255;
+    if(getSystemFlag(FLAG_PRTACT)) {
+      sprintf(tmpString, "item catname  menuname");
+      print_line(tmpString,1);
+      for(item=1; item<LAST_ITEM; item++) {
+        sprintf(tmpString, "%4d ", item);
+        strcat(tmpString, indexOfItems[item].itemCatalogName);
+        print_line(tmpString,0);
+        print_tab( 97 );
+        sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
+        print_line(tmpString,1);
+        if(_exitKeyPressed()) break;
+      }
+      temporaryInformation = TI_PRINT_COMPLETE;
+    }
+  #endif //PC_BUILD
 }
 

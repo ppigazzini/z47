@@ -35,7 +35,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
             return;
           }
           if(realCompareLessThan(m, const_1e_32)) {
-            WP34S_Cvt2RadSinCosTan(u, amRadian, sn, cn, NULL, realContext);
+            C47_WP34S_Cvt2RadSinCosTan(u, amRadian, sn, cn, NULL, realContext);
             realSetOne(dn);
             freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
             freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
@@ -62,7 +62,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           realSubtract(mu(n-1), nu(n-1), &e, realContext);
 
           realMultiply(u, mu(n), &a, realContext);
-          WP34S_Cvt2RadSinCosTan(&a, amRadian, &sin_umu, &cos_umu, NULL, realContext);
+          C47_WP34S_Cvt2RadSinCosTan(&a, amRadian, &sin_umu, &cos_umu, NULL, realContext);
           realCopyAbs(&cos_umu, &b);
           //if(realCompareAbsLessThan(&sin_umu, &b))
           //  realDivide(&sin_umu, &cos_umu, &t, realContext);
@@ -227,7 +227,7 @@ void jacobiElliptic(const real_t *u, const real_t *m, real_t *am, real_t *sn, re
   real_t _sn;
   calc_real_elliptic(sn ? sn : &_sn, cn, dn, u, m, realContext);
   if(am) {
-    WP34S_Asin(sn ? sn : &_sn, am, realContext);
+    C47_WP34S_Asin(sn ? sn : &_sn, am, realContext);
   }
 }
 
@@ -395,7 +395,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
 
   realSubtract(const_1, m, &m1, realContext);
 
-  WP34S_Cvt2RadSinCosTan(phi, amRadian, &csc2Phi, &cot2Phi, &tan2Phi, realContext);
+  C47_WP34S_Cvt2RadSinCosTan(phi, amRadian, &csc2Phi, &cot2Phi, &tan2Phi, realContext);
   realDivide(const_1, &csc2Phi, &csc2Phi, realContext);
   realMultiply(&csc2Phi, &csc2Phi, &csc2Phi, realContext);
   realDivide(const_1, &tan2Phi, &cot2Phi, realContext);
@@ -422,7 +422,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
     realDivide(const_1, &cot2Lambda, lambda, realContext);
     rcSqrt(lambda, lambda, lambdaI, realContext);
     if(realIsZero(lambdaI)) {
-      WP34S_Atan(lambda, lambda, realContext);
+      C47_WP34S_Atan(lambda, lambda, realContext);
     }
     else {
       ArctanComplex(lambda, lambdaI, lambda, lambdaI, realContext);
@@ -437,7 +437,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
     realDivide(mu, m, mu, realContext);
     rcSqrt(mu, mu, muI, realContext);
     if(realIsZero(muI)) {
-      WP34S_Atan(mu, mu, realContext);
+      C47_WP34S_Atan(mu, mu, realContext);
     }
     else {
       ArctanComplex(mu, muI, mu, muI, realContext);
@@ -490,12 +490,12 @@ static void _ellipticF_1(const real_t *phi, const real_t *m, real_t *res, realCo
     real_t psi, m1, k1, tanPhi, k;
 
     ellipticKE(m, &k, NULL, NULL, NULL, realContext);
-    WP34S_Cvt2RadSinCosTan(phi, amRadian, &m1, &k1, &tanPhi, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(phi, amRadian, &m1, &k1, &tanPhi, realContext);
     realSubtract(const_1, m, &m1, realContext);
     realSquareRoot(&m1, &k1, realContext);
     realDivide(const_1, &k1, &psi, realContext);
     realMultiply(&k1, &tanPhi, &psi, realContext);
-    WP34S_Atan2(const_1, &psi, &psi, realContext);
+    C47_WP34S_Atan2(const_1, &psi, &psi, realContext);
     _ellipticF(&psi, &m1, res, realContext);
     realSubtract(&k, res, res, realContext);
   }
@@ -546,7 +546,7 @@ static void _ellipticF_3(const real_t *phi, const real_t *m, real_t *res, real_t
     real_t k, m_1, theta, thetai, a;
 
     mod2Pi(phi, &theta, realContext);
-    WP34S_Cvt2RadSinCosTan(&theta, amRadian, &a, NULL, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&theta, amRadian, &a, NULL, NULL, realContext);
     realSquareRoot(m, &k, realContext);
     realDivide(const_1, m, &m_1, realContext);
     realMultiply(&k, &a, &a, realContext);
@@ -631,7 +631,7 @@ static void _ellipticF_5(const real_t *phi, const real_t *psi, const real_t *m, 
     mulComplexComplex(&k1, &k1i, &tanPhi, &tanPhiI, &psir, &psii, realContext);
     divRealComplex(const_1, &psir, &psii, &psir, &psii, realContext);
     if(realIsZero(&psii)) {
-      WP34S_Atan(&psir, &psir, realContext);
+      C47_WP34S_Atan(&psir, &psir, realContext);
     }
     else {
       ArctanComplex(&psir, &psii, &psir, &psii, realContext);
@@ -699,7 +699,7 @@ void ellipticF(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
     realFMA(phi, const_1on2, const_piOn4, &p, realContext);
     realMultiply(psi, const_1on2, &q, realContext);
     if(realIsZero(&q)) {
-      WP34S_Cvt2RadSinCosTan(&p, amRadian, res, resi, &q, realContext);
+      C47_WP34S_Cvt2RadSinCosTan(&p, amRadian, res, resi, &q, realContext);
       WP34S_Ln(&q, res, realContext);
       realSetZero(resi);
     }
@@ -800,7 +800,7 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
   }
   else if(realCompareEqual(m, const_1)) {
     if(realIsZero(psi)) {
-      WP34S_Cvt2RadSinCosTan(&phiRemainder, amRadian, res, NULL, NULL, realContext);
+      C47_WP34S_Cvt2RadSinCosTan(&phiRemainder, amRadian, res, NULL, NULL, realContext);
       realSetZero(resi);
       realAdd(res, &phiQuotient, res, realContext);
       realAdd(res, &phiQuotient, res, realContext);
@@ -835,7 +835,7 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
     GudermannianReal(psi, &theta, realContext);
     realSubtract(const_1, m, &m1, realContext);
 
-    WP34S_Cvt2RadSinCosTan(&theta, amRadian, &c, &d, &a, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&theta, amRadian, &c, &d, &a, realContext);
 
     realMultiply(&c, &c, &c, realContext);
     realMultiply(&c, &m1, &c, realContext);
@@ -1043,7 +1043,7 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
             realAdd(&si, resi, resi, realContext);
             divComplexComplex(&s, &si, a + i, ai + i, &s, &si, realContext);
             if(realIsZero(&si) && !realCompareAbsLessThan(const_1, &s)) {
-              WP34S_Asin(&s, &s, realContext);
+              C47_WP34S_Asin(&s, &s, realContext);
             }
             else {
               ArcsinComplex(&s, &si, &s, &si, realContext);

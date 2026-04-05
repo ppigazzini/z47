@@ -2163,7 +2163,7 @@ void debugNIM(void) {
 
 
 
-#if defined(PC_BUILD ) || defined(TESTSUITE_BUILD)
+#if defined(PC_BUILD )
   void dumpSubroutineLevelData(void) {
     subroutineLevelHeader_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Header);
 
@@ -2478,4 +2478,4 @@ void debugNIM(void) {
     printf("v1=%d v2=%d v3=%d\n", v1, v2, v3);
                                                 stackCheck(stackBegin, stackEnd, 10000, "after printf(...");
   }
-#endif // PC_BUILD || TESTSUITE_BUILD
+#endif // PC_BUILD

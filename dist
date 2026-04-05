@@ -5,7 +5,7 @@ set -e  # Exit immediately if a command fails
 echo "🧹 Cleaning..."
 make clean
 
-echo "📦 Building dist_macos..."
+echo "📦 Building dist_macos... (change locally to dist_macos or dist_linux depending system)"
 make dist_macos
 
 echo "📦 Building dist_dmcp..."
@@ -20,7 +20,6 @@ make dist_dmcp5r47
 echo "📦 Building dist_dmcpr47..."
 make dist_dmcpr47
 
-echo "✅ All builds complete."
 echo "📦 Building dist_dmcp...package 1"
 make DMCP_PACKAGE=1 dist_dmcp
 
