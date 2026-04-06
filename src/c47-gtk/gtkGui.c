@@ -17,7 +17,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   #include "gtkGui.h"
 
   GtkWidget *grid;
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     GtkWidget *backgroundImage;
     GtkWidget *lblFKey2;
     GtkWidget *lblGKey2;
@@ -1830,7 +1830,7 @@ returnKeyPressedFalse:
   }
 
 
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     /* Reads the CSS file to configure the calc's GUI style. */
     static void prepareCssData(void) {
       FILE *cssFile;
@@ -5040,7 +5040,7 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
     return false;
 }
 
-#if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+#if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 #define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do { \
     GtkWidget *widget = widget_var; \
     if(!widget) { \
@@ -5216,7 +5216,7 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
   * \return void
   ***********************************************/
   void setupUI(void) {
-    #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
       int            numBytes, xPos, yPos;
       GError         *error;
       GtkCssProvider *cssProvider;
@@ -5281,7 +5281,7 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
       g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
-      #if(BIG_SCREEN_COEF > 1) || NARROW_SCREEN
+      #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
         gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
       #endif // BIG_SCREEN_COEF > 1 || NARROW_SCREEN

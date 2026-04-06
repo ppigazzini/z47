@@ -292,7 +292,7 @@ uint16_t               currentUserMenu;
 uint16_t               userKeyLabelSize;
 uint16_t               currentInputVariable = INVALID_VARIABLE;
 uint16_t               currentMvarLabel = INVALID_VARIABLE;
-#if(REAL34_WIDTH_TEST == 1)
+#if (REAL34_WIDTH_TEST == 1)
   uint16_t               largeur=200;
 #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -363,7 +363,7 @@ uint8_t                firstWeekOfYearDay = 4; // Thursday
 
 #if defined(DMCP_BUILD)
 
-#if(CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
+#if (CALCMODEL == USER_C47) && (HARDWARE_MODEL == HWM_DM42) // include DM42 QSPI
   IMPORT_BIN(".qspi_dm42", "../c47-dmcp/DM42_qspi_3.x.bin", DM42_qspi);
 #endif  // include DM42 QSPI
 

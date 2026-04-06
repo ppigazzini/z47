@@ -128,7 +128,7 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnEqNew:", "there is not enough memory for a new equation!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -150,7 +150,7 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnEqNew:", "there is not enough memory for a new equation!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -227,7 +227,7 @@ void setEquation(uint16_t equationId, const char *equationString) {
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function setEquation:", "there is not enough memory for a new equation!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -734,7 +734,7 @@ static void _pushNumericStack(char *mvarBuffer, const real34_t *re, const real34
   }
   else {
     displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function _pushNumericStack:", "numeric stack overflow!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -750,7 +750,7 @@ static void _popNumericStack(char *mvarBuffer, real34_t *re, real34_t *im) {
   }
   else {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function _popNumericStack:", "numeric stack is empty!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     realToReal34(const_NaN, re);
@@ -888,7 +888,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
           case PARSER_OPERATOR_ITM_PARENTHESIS_LEFT: {
             if(func == PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT) {
               displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
@@ -898,7 +898,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
             _runEqFunction(mvarBuffer, ITM_MAGNITUDE);
             if(func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT) {
               displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "unpaired vertical bar within parentheses", NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
@@ -932,7 +932,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
               return;
             }
             displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             break;
@@ -942,14 +942,14 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
       switch(func) {
         case PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT: {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening parenthesis", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           break;
         }
         case PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT: {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening vertical bar", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           break;
@@ -1000,7 +1000,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
         }
         else {
           displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function _processOperator:", "operator stack overflow!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
@@ -1024,7 +1024,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
   }
   else {
     displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function _processOperator:", "operator stack overflow!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -1034,7 +1034,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
   uint32_t tmpVal = 0;
   if(parserHint != PARSER_HINT_NUMERIC && stringGlyphLength(strPtr) > 7) {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function _parseWord:", strPtr, "token too long!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -1092,7 +1092,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
             screenUpdatingMode = SCRUPD_AUTO;
             refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             //refreshScreen(400); //This is the second step if screenUpdatingMode = SCRUPD_AUTO does not work, to force a refresh after screenUpdatingMode was set. It may not be needed depending the next normal refresh in the cycle
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function _parseWord:", strPtr, "names a reserved variable!", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -1126,7 +1126,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
         }
         else {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function _parseWord 1:", strPtr, "is not a valid name!", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
@@ -1171,7 +1171,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
         }
         else {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function _parseWord 2:", strPtr, "is not a valid name!", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
@@ -1249,7 +1249,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           }
         }
         displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function _parseWord:", strPtr, "is not recognized as a function", "or not for equations");
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -1313,7 +1313,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
     switch(*strPtr) {
       case ';': {
         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "%c", *strPtr);
           moreInfoOnError("In function parseEquation:", errorMessage, "cannot be appeared in equations", NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1326,7 +1326,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           ++strPtr;
           if(stringGlyphLength(buffer) == numericCount) {
             displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function parseEquation:", "attempt to call a number as a function!", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             return;
@@ -1358,7 +1358,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       case '|':
         if(equalAppeared && (*strPtr == '=')) {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function parseEquation:", "= appears more than once", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -1476,7 +1476,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         else {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function parseEquation:", buffer, "unexpected operator", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;

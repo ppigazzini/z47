@@ -74,7 +74,7 @@ void drawBattery(uint16_t voltage);
       return false;
     }
 
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return false;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
 
@@ -218,7 +218,7 @@ void drawBattery(uint16_t voltage);
   void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
 
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
 
@@ -414,7 +414,7 @@ void drawBattery(uint16_t voltage);
                                   + (shiftG       << 14))
 
   void showHideAlphaMode(void) {
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
 
@@ -513,7 +513,7 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
 
@@ -587,7 +587,7 @@ void drawBattery(uint16_t voltage);
 //sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void light_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
@@ -604,7 +604,7 @@ void drawBattery(uint16_t voltage);
 //sharing space with stopwatch, so ASM does not come when the stopwatch is on
   void kill_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
@@ -660,7 +660,7 @@ void drawBattery(uint16_t voltage);
 
 //todo make it check the last voltage plotted, and bypass if nothing has changed
 void drawBattery(uint16_t voltage) {
-  #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+  #if (DEBUG_INSTEAD_STATUS_BAR == 1)
     return;
   #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
   lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
@@ -734,7 +734,7 @@ void drawBattery(uint16_t voltage) {
       }
     }
 
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
       char catalogstr[10];
       sprintf(catalogstr,"%d",catalog);

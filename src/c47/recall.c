@@ -53,7 +53,7 @@ void fn2Rcl(uint16_t regist) {
     fnRecall(regist + 0);
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -71,7 +71,7 @@ void fn3Rcl(uint16_t regist) {
     fnRecall(regist + 0);
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -386,7 +386,7 @@ void fnRecallConfig(uint16_t regist) {
 
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "data type %s cannot be used to recall a configuration!", getRegisterDataTypeName(regist, false, false));
       moreInfoOnError("In function fnRecallConfig:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -401,14 +401,14 @@ void fnRecallStack(uint16_t regist) {
 
   if(REGISTER_X - size <= regist && regist < REGISTER_X) {
     displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute RCLS, destination register would overlap the stack: %d", regist);
       moreInfoOnError("In function fnRecallStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else if((REGISTER_X <= regist && regist < FIRST_LOCAL_REGISTER) || regist + size > FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute RCLS, destination register is out of range: %d", regist);
       moreInfoOnError("In function fnRecallStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -460,7 +460,7 @@ void fnRecallVElement(uint16_t ix) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnRecallVElement:", errorMessage, "is not a matrix.", "");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -479,7 +479,7 @@ void fnRecallElement(uint16_t unusedButMandatoryParameter) {
 void _fnRecallElement(bool_t stepForward) {
   if(matrixIndex == INVALID_VARIABLE) {
     displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute RCLEL without a matrix indexed");
       moreInfoOnError("In function fnRecallElement:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -496,7 +496,7 @@ void _fnRecallElement(bool_t stepForward) {
 void fnRecallIJ(uint16_t unusedButMandatoryParameter) {
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute RCLIJ without a matrix indexed");
         moreInfoOnError("In function fnRecallIJ:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

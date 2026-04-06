@@ -18,7 +18,7 @@ bool_t regInRange(uint16_t regist) {
   if(isRegInRange(regist)) {
     return true;
   }
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     const char *regType;
     uint16_t offset;
     uint8_t  errorType = ERROR_OUT_OF_RANGE;
@@ -74,7 +74,7 @@ bool_t regInRange(uint16_t regist) {
 static bool_t _checkReadOnlyVariable(uint16_t regist) {
   if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
     displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "reserved variable %s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       moreInfoOnError("In function _checkReadOnlyVariable:", errorMessage, " is write-protected!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -99,7 +99,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
     }
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s in a matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeElementReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -126,7 +126,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
     }
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s in a matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeElementReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -147,7 +147,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
           moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -155,7 +155,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
     }
     else if(lastErrorCode == ERROR_NONE){
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -185,7 +185,7 @@ static void _storeValue(uint16_t regist) {
       }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function _storeValue:", "Invalid value for GRAMOD", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -227,7 +227,7 @@ void fn2Sto(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -243,7 +243,7 @@ void fn3Sto(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -538,14 +538,14 @@ void fnStoreStack(uint16_t regist) {
 
   if(regist + size >= REGISTER_X && regist < REGISTER_X) {
     displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute STOS, destination register would overlap the stack: %d", regist);
       moreInfoOnError("In function fnStoreStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else if((regist >= REGISTER_X && regist < FIRST_LOCAL_REGISTER) || regist + size > FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute STOS, destination register is out of range: %d", regist);
       moreInfoOnError("In function fnStoreStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -569,7 +569,7 @@ void fnStoreVElement(uint16_t ix) {
   if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
     if(!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -596,7 +596,7 @@ void fnStoreVElement(uint16_t ix) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
       moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -614,7 +614,7 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
 void _fnStoreElement(bool_t stepForward) {
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOEL without a matrix indexed");
         moreInfoOnError("In function _fnStoreElement:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -640,7 +640,7 @@ void _fnStoreElement(bool_t stepForward) {
 void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOIJ without a matrix indexed");
         moreInfoOnError("In function fnStoreIJ:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

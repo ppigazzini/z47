@@ -26,7 +26,7 @@ void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
 
   if(!checkMinimumDataPoints(const_1)) {
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "There is no statistical data available!");
       moreInfoOnError("In function fnPcSigmaDeltaPcXmean:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

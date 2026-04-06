@@ -1094,7 +1094,7 @@ void createMenu(const char *name) {
     }
     else {
       displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "the name %s", name);
         moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1102,7 +1102,7 @@ void createMenu(const char *name) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -1269,7 +1269,7 @@ void assignGetName2(void) {
 
   if(!result) {
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
