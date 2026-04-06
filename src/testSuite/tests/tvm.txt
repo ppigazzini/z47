@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 FL_ENDPMT=1 SD=0 RMODE=0 IM=2compl SS=8 WS=64 
+In: FL_SPCRES=0 FL_CPXRES=0 FL_ENDPMT=1 SD=0 RMODE=0 IM=2compl SS=8 WS=64
 
 
 ;todo:
@@ -278,7 +278,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"5260.38242600032649401409035782846
 ;..
 ;..continue
 ;..
-;Duncan's TVM problems, #P11 part 2;    N=525600, i%/a=??, PV=0, PMT=-0.01, FV= from above, pp/a=525600, cp/a=525600; NOTE: FV first, then I%/a; Expected answer = 
+;Duncan's TVM problems, #P11 part 2;    N=525600, i%/a=??, PV=0, PMT=-0.01, FV= from above, pp/a=525600, cp/a=525600; NOTE: FV first, then I%/a; Expected answer =
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
 In: V2036=Real:"525600"
@@ -324,7 +324,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-999.99999999999999999999959886043
 
 
 
-;Robbert's sign test: n=60, I/a=10, PV=10000, PMT ?? -> -212.470 ; do again for PV = -10000, and ensure PMT result changes sign, FV = 0 
+;Robbert's sign test: n=60, I/a=10, PV=10000, PMT ?? -> -212.470 ; do again for PV = -10000, and ensure PMT result changes sign, FV = 0
 ;······································································································································
 Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
