@@ -265,31 +265,31 @@ TO_QSPI static const FINITE_DIFF_COEFF d2_7_upper = {
 };
 
 TO_QSPI static const FINITE_DIFF_COEFF *const d1_derivatives[] = {
-  &d1_15_central, &d1_13_central, &d1_11_central, &d1_9_central, 
-  &d1_8_lower_middle, &d1_8_upper_middle, &d1_7_central, &d1_7_lower_middle, 
-  &d1_7_upper_middle, &d1_7_lower, &d1_7_upper, &d1_6_lower_middle, 
-  &d1_6_upper_middle, &d1_6_lower, &d1_6_upper, &d1_5_central, 
-  &d1_5_lower_middle, &d1_5_upper_middle, &d1_5_lower, &d1_5_upper, 
-  &d1_4_lower_middle, &d1_4_upper_middle, &d1_4_lower, &d1_4_upper, 
-  &d1_3_central, &d1_3_lower_middle, &d1_3_upper_middle, &d1_3_lower, 
-  &d1_3_upper, &d1_2_lower_middle, &d1_2_upper_middle, &d1_2_lower, 
+  &d1_15_central, &d1_13_central, &d1_11_central, &d1_9_central,
+  &d1_8_lower_middle, &d1_8_upper_middle, &d1_7_central, &d1_7_lower_middle,
+  &d1_7_upper_middle, &d1_7_lower, &d1_7_upper, &d1_6_lower_middle,
+  &d1_6_upper_middle, &d1_6_lower, &d1_6_upper, &d1_5_central,
+  &d1_5_lower_middle, &d1_5_upper_middle, &d1_5_lower, &d1_5_upper,
+  &d1_4_lower_middle, &d1_4_upper_middle, &d1_4_lower, &d1_4_upper,
+  &d1_3_central, &d1_3_lower_middle, &d1_3_upper_middle, &d1_3_lower,
+  &d1_3_upper, &d1_2_lower_middle, &d1_2_upper_middle, &d1_2_lower,
   &d1_2_upper, NULL
 };
 
 TO_QSPI static const FINITE_DIFF_COEFF *const d2_derivatives[] = {
-  &d2_15_central, &d2_13_central, &d2_11_central, &d2_9_central, 
-  &d2_8_lower_middle, &d2_8_upper_middle, &d2_7_central, &d2_7_lower_middle, 
-  &d2_7_upper_middle, &d2_7_lower, &d2_7_upper, &d2_6_lower_middle, 
-  &d2_6_upper_middle, &d2_6_lower, &d2_6_upper, &d2_5_central, 
-  &d2_5_lower_middle, &d2_5_upper_middle, &d2_5_lower, &d2_5_upper, 
-  &d2_4_lower_middle, &d2_4_upper_middle, &d2_4_lower, &d2_4_upper, 
-  &d2_3_central, &d2_3_lower_middle, &d2_3_upper_middle, &d2_3_lower, 
+  &d2_15_central, &d2_13_central, &d2_11_central, &d2_9_central,
+  &d2_8_lower_middle, &d2_8_upper_middle, &d2_7_central, &d2_7_lower_middle,
+  &d2_7_upper_middle, &d2_7_lower, &d2_7_upper, &d2_6_lower_middle,
+  &d2_6_upper_middle, &d2_6_lower, &d2_6_upper, &d2_5_central,
+  &d2_5_lower_middle, &d2_5_upper_middle, &d2_5_lower, &d2_5_upper,
+  &d2_4_lower_middle, &d2_4_upper_middle, &d2_4_lower, &d2_4_upper,
+  &d2_3_central, &d2_3_lower_middle, &d2_3_upper_middle, &d2_3_lower,
   &d2_3_upper, NULL
 };
 
 TO_QSPI static const FINITE_DIFF_COEFF *const *const finite_difference_table[] = {
-  d1_derivatives, 
-  d2_derivatives, 
+  d1_derivatives,
+  d2_derivatives,
 };
 
 TO_QSPI static const int32_t fdValues[212] = {

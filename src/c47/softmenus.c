@@ -1787,8 +1787,8 @@ bool_t maxfgLines(int16_t y) {
 
   void greyRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
     int16_t col, row;
-    for (row=y; row<dy+y; row++) {
-      for (col=x+mod(x+row,2); col<dx+x; col+=2) {
+    for(row=y; row<dy+y; row++) {
+      for(col=x+mod(x+row,2); col<dx+x; col+=2) {
         setBlackPixel(col, row);
       }
     }
@@ -2354,7 +2354,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
-  switch (itemNr) {
+  switch(itemNr) {
 
     #ifdef SAVE_SPACE_DM42_12ORTHO
       case -MNU_ORTHOG:

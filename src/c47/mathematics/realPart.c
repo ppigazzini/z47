@@ -29,7 +29,7 @@ static void realPartCxma(void) {
 static void realPartCplx(void) {
   real_t a, b;
 
-  if (getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(getRegisterAsComplex(REGISTER_X, &a, &b))
     convertRealToResultRegister(&a, REGISTER_X, amNone);
 }
 
@@ -37,7 +37,7 @@ static void realPartCplx(void) {
 static void realPartReal(void) {
   real_t x;
 
-  if (getRegisterAsReal(REGISTER_X, &x))
+  if(getRegisterAsReal(REGISTER_X, &x))
     convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -50,8 +50,8 @@ static void realPartReal(void) {
  * \return void
  ***********************************************/
 void fnRealPart(uint16_t unusedButMandatoryParameter) {
-  if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if (saveLastX())
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    if(saveLastX())
       realPartCxma();
   } else
     processRealComplexMonadicFunction(&realPartReal, &realPartCplx);

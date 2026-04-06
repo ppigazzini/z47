@@ -379,7 +379,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               }
 
               uint16_t lessEqualGreater = 0;
-              if (getSystemFlag(FLAG_FRACT)) {
+              if(getSystemFlag(FLAG_FRACT)) {
                 grpGroupingLeft  = 0;
                 grpGroupingRight = 0;
                 _fractionToString(REGISTER_X, aimBuffer, (int16_t *)&lessEqualGreater);
@@ -686,7 +686,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             bool decimalflag = false;
             for(i = 0; i < iMax; i++) {
               //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n",i,tempBuffer[i]&0xff,aimBuffer);fflush(stdout);
-              switch ((uint8_t) tempBuffer[i]) {
+              switch((uint8_t) tempBuffer[i]) {
                 case '0':
                 case '1':
                 case '2':
@@ -817,7 +817,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
             if(chsNeeded) pemAddNumber(ITM_CHS, false);
-            switch (opParam) {
+            switch(opParam) {
               case STRING_DATE:
               case STRING_TIME:
               case STRING_ANGLE_RADIAN:
@@ -849,7 +849,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
             varOrLblName[index] = 0;
           }
-          switch (paramMode) {
+          switch(paramMode) {
             case PARAM_DECLARE_LABEL:
             case PARAM_LABEL:
             case PARAM_REGISTER:
@@ -892,7 +892,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 }
               }
 
-              if ((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
+              if((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -900,7 +900,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
-              else if ((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
+              else if((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -936,7 +936,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 3;
                 tam.value = (opParam & 0X3F) + 0X1500;    // remove last shuffled register
               }
-              else if ((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
+              else if((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
                 tam.digitsSoFar = maxDigits - 1;
                 tam.value = (opParam2 / 10) + 25;
               }
@@ -1492,7 +1492,7 @@ void fn_cnst_op_A(uint16_t option) {
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
   realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
 
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
     real34SetZero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     if(i != 0) {
@@ -1600,7 +1600,7 @@ void fnConvertStkToMx(uint16_t constVector) {
   }
 
 
-  for (int i = 0; i < elements; i++) {
+  for(int i = 0; i < elements; i++) {
     if(complexCoefs) {
       realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
       realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
@@ -1642,7 +1642,7 @@ void fnConvertMxToStk(uint16_t param) {
   }
 
 
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
@@ -2714,7 +2714,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   // Check if err2 < err1 and swap output if needed
   // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
   // printRealToConsole(&err2,  "err2: "," "); printf("%d/%d\n",    m[0][1],m[1][1]);
-  if (realIsNegative(&cmpResult)) {
+  if(realIsNegative(&cmpResult)) {
       m[0][0] = m[0][1];
       m[1][0] = m[1][1];
   }

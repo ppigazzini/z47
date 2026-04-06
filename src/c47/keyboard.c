@@ -1032,7 +1032,7 @@ endReturnTrue:
               showSoftmenu(item);
             }
             else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && !tam.alpha) {
-              if ((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
+              if((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
                 showSoftmenu(item);
               }
               else {
@@ -1310,7 +1310,7 @@ endReturnTrue:
                 else {
                   if(item == ITM_XEQ && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    if (strcmp(varCatalogItem, "XEQ") != 0) {
+                    if(strcmp(varCatalogItem, "XEQ") != 0) {
                       calcRegister_t regist = findNamedLabel(varCatalogItem);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
@@ -1326,7 +1326,7 @@ endReturnTrue:
                   }
                   else if(item == ITM_RCL && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    if (strcmp(varCatalogItem, "RCL") != 0) {
+                    if(strcmp(varCatalogItem, "RCL") != 0) {
                       calcRegister_t regist = findNamedVariable(varCatalogItem);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
@@ -1619,7 +1619,7 @@ endReturnTrue:
           default:;
         }
       }
-      if ((calcMode == CM_EIM) && (result == -MNU_AIMCATALOG)) {
+      if((calcMode == CM_EIM) && (result == -MNU_AIMCATALOG)) {
         result = -MNU_EIMCATALOG;
       }
     }
@@ -1631,7 +1631,7 @@ endReturnTrue:
                shiftG ? key->gShifted :
                         key->primary;
       if(calcMode == CM_REGISTER_BROWSER) {
-        if (shiftF && key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+        if(shiftF && key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
           result = key->primaryAim;
         }
       }
@@ -1692,7 +1692,7 @@ endReturnTrue:
           break;
         }
         default: {
-          if (key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+          if(key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
             result = key->primaryAim;
           }
         }

@@ -151,7 +151,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
        *denom = 1;
        validResult = true;
     }
-    else if (getSystemFlag(FLAG_DENFIX)) {
+    else if(getSystemFlag(FLAG_DENFIX)) {
       // *denom = denMax;
       // validResult = true;
     }

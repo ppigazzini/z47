@@ -943,7 +943,7 @@ printf("tam.value: %d\n", tam.value);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
-        else if (calcMode != CM_PEM) {
+        else if(calcMode != CM_PEM) {
           reallyRunFunction(tamOperation(), value);
           leaveTamModeIfEnabled();
           return;

@@ -401,7 +401,7 @@ int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
     if(('0' <= str[pos2] && str[pos2] <= '9') || str[pos] == '.' || str[pos] == ',') {
       return pos2;
     }
-  } while (pos2 != 0);
+  } while(pos2 != 0);
   return 0;
 }
 
@@ -579,20 +579,20 @@ uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // C47 supp
 void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
     printf("%s:", label);
     printf("  Hex:   ");
-    for (size_t i = 0; i < max_len; i++) {
+    for(size_t i = 0; i < max_len; i++) {
         printf("%02X ", str[i]);
     }
     printf("; ");
 
     printf("  Dec:   ");
-    for (size_t i = 0; i < max_len; i++) {
+    for(size_t i = 0; i < max_len; i++) {
         printf("%3d ", str[i]);
     }
     printf("; ");
 
     printf("  Char:  ");
-    for (size_t i = 0; i < max_len; i++) {
-        if (str[i] >= 32 && str[i] < 127) {
+    for(size_t i = 0; i < max_len; i++) {
+        if(str[i] >= 32 && str[i] < 127) {
             printf(" %c  ", str[i]);
         } else {
             printf("    ");
@@ -634,14 +634,14 @@ void stringToUtf8(const char *str, uint8_t *utf8) {
 //    //uint8_t *original_utf8 = utf8;
 //    //const char *original_str = str;
 //
-//    while (*str) {
-//        if ((uint8_t)*str & 0x80) {
+//    while(*str) {
+//        if((uint8_t)*str & 0x80) {
 //            uint16_t high = ((uint16_t)(uint8_t)(*str) & 0x7F);
 //            uint16_t low  = (uint8_t)str[1];
 //            uint16_t codepoint = (high << 8) | low;
-//            if (codepoint <= 0x7F) {
+//            if(codepoint <= 0x7F) {
 //                *utf8++ = (uint8_t)codepoint;
-//            } else if (codepoint <= 0x7FF) {
+//            } else if(codepoint <= 0x7FF) {
 //                // FIX: use (cp >> 6) & 0x1F to avoid stray upper bits
 //                *utf8++ = 0xC0 | ((codepoint >> 6) & 0x1F);
 //                *utf8++ = 0x80 | (codepoint & 0x3F);
@@ -661,13 +661,13 @@ void stringToUtf8(const char *str, uint8_t *utf8) {
 //
 //    //printf("Original input: ");
 //    //size_t input_len = str - original_str + 1;
-//    //for (size_t i = 0; i < input_len; i++) {
+//    //for(size_t i = 0; i < input_len; i++) {
 //    //    printf("%02X ", (unsigned char)original_str[i]);
 //    //}
 //    //printf("\n");
 //    //printf("UTF-8 output:   ");
 //    //size_t output_len = utf8 - original_utf8 + 1;
-//    //for (size_t i = 0; i < output_len; i++) {
+//    //for(size_t i = 0; i < output_len; i++) {
 //    //    printf("%02X ", original_utf8[i]);
 //    //}
 //    //printf("\n");

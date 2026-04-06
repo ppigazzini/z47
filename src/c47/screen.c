@@ -348,7 +348,7 @@ char letteredRegisterName(calcRegister_t regist) {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
+    for(calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -587,7 +587,7 @@ void execTimerApp(uint16_t timerType) {
     bool_t greyType = getSystemFlag(FLAG_FGGR);
     uint8_t lineCount, maxLine;
     lineCount = greyType ? SOFTMENU_HEIGHT - 3 : 3;
-    if (yUnderlined <= 2) {
+    if(yUnderlined <= 2) {
       maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
       // reset display to the buffer without shade
       lcd_refresh_lines (maxLine-lineCount, lineCount);
@@ -600,21 +600,21 @@ void execTimerApp(uint16_t timerType) {
     uint16_t j, buff_bit, colIncrease = greyType ? 5 : 2;
     maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
-    for (xIndex = 0;xIndex < 6; xIndex++) {
+    for(xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
       xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
     }
     // Draw shade pattern without changing lcd_buffer
-    for (line = maxLine - lineCount + 1; line <= maxLine; line++) {
+    for(line = maxLine - lineCount + 1; line <= maxLine; line++) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
-      for (xIndex = 0; xIndex < 6; xIndex++) {
-        if (xSoftkeyMask>>xIndex & 1u) {
+      for(xIndex = 0; xIndex < 6; xIndex++) {
+        if(xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 1;
           j += greyType ? mod(2*line-j,5) : mod(j+line,2);
-          for (; j < KEY_X[xIndex + 1]; j += colIncrease) {
+          for(; j < KEY_X[xIndex + 1]; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
-            if (xBg[xIndex]){
+            if(xBg[xIndex]){
               tempByte = tempByte & ~(1u<<mod(buff_bit,8));
             } else {
               tempByte = tempByte | (1u<<mod(buff_bit,8));
@@ -1176,7 +1176,7 @@ return res;
       }                           //JM REDUCE
       // Drawing the columns of the glyph
       for(col=0; col<glyph->colsGlyph; col++) {
-        if (!(col%8)) {
+        if(!(col%8)) {
           byte = *(data++);
           if(miniC!=0) {
             byte = (uint8_t)byte | (((uint8_t)byte) << 1);           //JMmini
@@ -1845,7 +1845,7 @@ return res;
 
   bool_t checkHalfSec(void) {
     #if defined(PC_BUILD)
-      while (gtk_events_pending()) {
+      while(gtk_events_pending()) {
         gtk_main_iteration();
       }
     #endif //PC_BUILD
@@ -1914,7 +1914,7 @@ return res;
     if(reg == RESERVED_VARIABLE_UEST) {
       sprintf(prefix, "Upper =");
       strcpy(regS,name);
-    } else if (reg == RESERVED_VARIABLE_LEST) {
+    } else if(reg == RESERVED_VARIABLE_LEST) {
       sprintf(prefix, "Lower =");
       strcpy(regS,name);
     } else {
@@ -1942,16 +1942,16 @@ return res;
   #define PRIORITY_itemSoftmenuName false
   const char* pickValidItemFromItems(int16_t item, bool_t priority) {
     bool_t takeCat = false;
-    if (priority == PRIORITY_itemCatalogName) {
-      if ((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
+    if(priority == PRIORITY_itemCatalogName) {
+      if((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
         takeCat = true;
       }
     } else { // PRIORITY_itemSoftmenuName
-      if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
+      if((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
         takeCat = true;
       }
     }
-    if (takeCat) {
+    if(takeCat) {
       return indexOfItems[abs(item)].itemCatalogName;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
@@ -2633,7 +2633,7 @@ void createSubstrings(uint8_t number) {
       int32_t jj = realToInt32C47(&t, NULL) - 100*ii;
       char sss[30];
       sss[0]=0;
-      switch (ii) {
+      switch(ii) {
         case 0 : strcpy(sss,"LongInteger"); break;
         case 1 : strcpy(sss,"Real"); break;
         case 2 : strcpy(sss,"Complex"); break;
@@ -2649,7 +2649,7 @@ void createSubstrings(uint8_t number) {
       if(ii == 8) {
         strcat(sss,", base");
       } else {
-        switch (jj) {
+        switch(jj) {
           case 10 : strcat(sss,", MUL" STD_pi); break;
           case 20 : strcat(sss,", DMS"); break;
           case 30 : strcat(sss,", Degree"); break;
@@ -3097,7 +3097,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn <= 9) {
+              while(nn <= 9) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3114,7 +3114,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+              while(nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3129,7 +3129,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
             int16_t nn = 0;
-            while (nn<=5) {
+            while(nn<=5) {
               showDisp( nn * SHOWLineSize, nn);
               nn++;
             }
@@ -3893,13 +3893,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
             #endif //DISCRIMINANT
           }
-         else if (temporaryInformation == TI_LR_A0) {
+         else if(temporaryInformation == TI_LR_A0) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A1) {
+         } else if(temporaryInformation == TI_LR_A1) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A2) {
+         } else if(temporaryInformation == TI_LR_A2) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
          }
@@ -5462,13 +5462,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   #if defined(PC_BUILD)
     char* get_binary_bits(uint64_t n, int bits) {
       static char buffer[80]; // 64 bits + 15 spaces + null terminator
-      if (bits <= 0 || bits > 64) {
+      if(bits <= 0 || bits > 64) {
           return NULL;
       }
       int pos = 0;
-      for (int i = bits - 1; i >= 0; i--) {
+      for(int i = bits - 1; i >= 0; i--) {
           buffer[pos++] = (n & (1ULL << i)) ? '1' : '0';
-          if (i % 4 == 0 && i != 0) {
+          if(i % 4 == 0 && i != 0) {
               buffer[pos++] = ' ';
           }
       }

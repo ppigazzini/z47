@@ -19,7 +19,7 @@ void print_caller(const char *format, ...) {
   dladdr(cs[2], &infoB);
   printf("%s%s%s called from: %s%-30s%s",COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
 
-  if (format != NULL) {
+  if(format != NULL) {
     printf("| ");
     va_start(ap, format);
     vprintf(format, ap);
@@ -85,7 +85,7 @@ void lcd_refresh(void) {
     }
   }
   #if defined(FULLUPDATE) // (UGLY)
-  if (changed) {
+  if(changed) {
     refresh_gui();
   }
   #endif // FULLUPDATE (UGLY)
@@ -125,7 +125,7 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
   const uint32_t bytes_needed = (bit_off + dx + 7) / 8;  // Actual bytes to write (1-4), prevents overflow at line end
 
   uint32_t srcbits;
-  if (fill == BLT_SET && blt_op != BLT_XOR) {
+  if(fill == BLT_SET && blt_op != BLT_XOR) {
     srcbits = (blt_op == BLT_ANDN) ? lowmask << bit_off : 0u;
   } else {
     srcbits = (val & lowmask) << bit_off;
@@ -137,10 +137,10 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
     (uint8_t)(srcbits >> 24),
   };
   uint8_t *j = &lcd_buffer[y * (LCD_LINE_SIZE + 2) + byte_i + 2];
-  switch (blt_op) {
-    case BLT_OR:   for (uint32_t i = 0; i < bytes_needed; i++) j[i] |=  srcbytes[i]; break;
-    case BLT_XOR:  for (uint32_t i = 0; i < bytes_needed; i++) j[i] ^=  srcbytes[i]; break;
-    case BLT_ANDN: for (uint32_t i = 0; i < bytes_needed; i++) j[i] &= ~srcbytes[i]; break;
+  switch(blt_op) {
+    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) j[i] |=  srcbytes[i]; break;
+    case BLT_XOR:  for(uint32_t i = 0; i < bytes_needed; i++) j[i] ^=  srcbytes[i]; break;
+    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) j[i] &= ~srcbytes[i]; break;
     default: return;
   }
   lcd_buffer[y * (LCD_LINE_SIZE + 2)] = 1u; // Mark line dirty
@@ -168,7 +168,7 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
     return;
   }
   int blt_op = val ? BLT_OR : BLT_ANDN;
-  for (col = x; col < endX; col += 24) {
+  for(col = x; col < endX; col += 24) {
     cols = min(24, endX - col);
     for(line = y; line < endY; line++) {
       bitblt24(col, cols, line, 0xFFFFFF, blt_op, BLT_NONE);

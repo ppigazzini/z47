@@ -9,7 +9,7 @@
 #include "and.h"
 
 void logicalOpResult(bool_t res, uint32_t xtype, uint32_t ytype) {
-  if (xtype == dtLongInteger && ytype == dtLongInteger) {
+  if(xtype == dtLongInteger && ytype == dtLongInteger) {
     longInteger_t ires;
 
     longIntegerInit(ires);
@@ -19,7 +19,7 @@ void logicalOpResult(bool_t res, uint32_t xtype, uint32_t ytype) {
   } else {
     const real_t *rres = res ? const_1 : const_0;
 
-    if (xtype == dtComplex34 || ytype == dtComplex34)
+    if(xtype == dtComplex34 || ytype == dtComplex34)
       convertComplexToResultRegister(rres, const_0, REGISTER_X);
     else
       convertRealToResultRegister(rres, REGISTER_X, amNone);

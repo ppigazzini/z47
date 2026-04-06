@@ -24,7 +24,7 @@ bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err;
   }
-  if (!qf && realCompareLessThan(x, mu == NULL ? sigma : mu)) {
+  if(!qf && realCompareLessThan(x, mu == NULL ? sigma : mu)) {
     displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function checkParamGPD:", "cannot calculate for x < sigma/mu", NULL, NULL);

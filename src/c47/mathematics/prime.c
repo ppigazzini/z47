@@ -75,7 +75,7 @@ uint16_t smallPrimeList(uint16_t index) {
 
 //To check if the list of small primes being split into two methods, are contimuous
 //void listAllPrimesInList(void) {
-//  for (uint i = 0; i < smallPrimeListNumber; i++) {
+//  for(uint i = 0; i < smallPrimeListNumber; i++) {
 //    printf("prime: %u : %u\n",i,smallPrimeList(i));
 //  }
 //}
@@ -900,7 +900,7 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
     if(head->matrixRows != 2 || cols < 1) { // changed to allow single column, -1^1 or m^n
       return false;
     }
-    for (i = 0; i < cols; i++) {
+    for(i = 0; i < cols; i++) {
       real34ToReal(elems + i + 0 * cols, &x);
       if(!realIsAnInteger(&x)) {
         return false;
@@ -1943,7 +1943,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
 
   if(Factors_1_SmallPrimes) {
     // first do a pre-run, to do small prime checking
-    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+    for(uint16_t i = 0; i < smallPrimeListNumber; i++) {
       uint16_t smallP = smallPrimeList(i);
       while(mpz_divisible_ui_p(currentNumber, smallP)) {
         loopp++;

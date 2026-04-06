@@ -10,7 +10,7 @@
 static bool_t getExponent(int32_t *res) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return false;
 
   if(realIsNaN(&x)) {
@@ -37,7 +37,7 @@ static void exptLonI(void) {
   int32_t expt;
   longInteger_t lgInt;
 
-  if (!getExponent(&expt))
+  if(!getExponent(&expt))
     return;
 
   longIntegerInit(lgInt);
@@ -50,7 +50,7 @@ static void exptReal(void) {
   int32_t expt;
   real_t x;
 
-  if (!getExponent(&expt))
+  if(!getExponent(&expt))
     return;
   int32ToReal(expt, &x);
   convertRealToResultRegister(&x, REGISTER_X, amNone);
