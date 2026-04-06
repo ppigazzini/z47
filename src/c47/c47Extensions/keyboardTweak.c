@@ -27,7 +27,7 @@ void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
 //Length in ms, frequency in Hz
 void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
   #if defined(DMCP_BUILD)
-    #if(defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+    #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
       while(get_beep_volume() < 11) {
         beep_volume_up();
       }
@@ -39,14 +39,14 @@ void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisec
 }
 
 void keyClick(uint8_t lengthMs) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
-  #if(defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
    _keyClick(lengthMs, 1000);
   #endif
 }
 
 
 void powerMarkerMsF(uint8_t lengthMs, uint32_t f) {
-  #if(defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
+  #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
     _keyClick(lengthMs, f);
   #endif
 }

@@ -536,7 +536,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     ( getSystemFlag(FLAG_MDY) && !isValidDay(&part3, &part1, &part2)) ||
     ( getSystemFlag(FLAG_DMY) && !isValidDay(&part3, &part2, &part1))) {
       displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -886,7 +886,7 @@ static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
 
 void badTypeError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "cannot convert Register %d from %s", reg, getRegisterDataTypeName(reg, true, false));
   moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -894,7 +894,7 @@ void badTypeError(calcRegister_t reg) {
 
 void badDomainError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "The input value is outside of the domain.");
   moreInfoOnError("In function badDomainError:", errorMessage, NULL, NULL);
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1231,7 +1231,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 
       if(longIntegerBase10Digits(angle) > 1000) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         longIntegerFree(angle);
@@ -1278,7 +1278,7 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
         *xAngularMode = currentAngularMode;
       if(*xAngularMode == amRadian && realGetExponent(val) > 999) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;

@@ -51,15 +51,15 @@
 #include "defines.h"
 #include "version.h"
 
-#if(CALCMODEL == USER_C47) // C47
+#if (CALCMODEL == USER_C47) // C47
   #define PROGRAM_NAME    "C47"
   #define PROGRAM_VERSION VERSION_SHORT
-  #if(HARDWARE_MODEL == HWM_DM32)
+  #if (HARDWARE_MODEL == HWM_DM32)
     #define PROGRAM_KEYMAP_ID 0x32334d44
   #endif
 #endif // CALCMODEL == USER_C47
 
-#if(CALCMODEL == USER_R47) // R47
+#if (CALCMODEL == USER_R47) // R47
   #define PROGRAM_NAME    "R47"
   #define PROGRAM_VERSION VERSION_SHORT
   #define PROGRAM_KEYMAP_ID 0x00373452   // R47 keymap file

@@ -19,14 +19,14 @@ bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t
 
   if(realIsZero(sigma) || realIsNegative(sigma)) {
     displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function checkParamGPD:", "the parameter sigma must be positive", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err;
   }
   if(!qf && realCompareLessThan(x, mu == NULL ? sigma : mu)) {
     displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function checkParamGPD:", "cannot calculate for x < sigma/mu", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err;

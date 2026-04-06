@@ -4,7 +4,7 @@
 #include "c47.h"
 
 /*
-#if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+#if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   void calcModeNormalGui(void) {
     int key;
 

@@ -285,7 +285,7 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
       }
       default: {
         displayCalcErrorMessage(ERROR_NO_ERRORS_CALCULABLE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function processCurvefitSA:", "No errors are calculable for the selected/chosen model!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;

@@ -9,7 +9,7 @@
 
 static void gdError(bool_t gd, uint8_t errorCode) {
   displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(gd) {
       sprintf(errorMessage, "cannot calculate gd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
       moreInfoOnError("In function fnGd:", errorMessage, NULL, NULL);

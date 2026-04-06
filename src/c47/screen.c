@@ -47,7 +47,7 @@ bool_t blockMonitoring = false;
   #define spc STD_SPACE
   #define spc1 STD_SPACE STD_SPACE_3_PER_EM
 
-  #if(CALCMODEL == USER_R47)
+  #if (CALCMODEL == USER_R47)
     #define MODELTEXT "R47"
   #else
     #define MODELTEXT "C47"
@@ -106,12 +106,12 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if(BIG_SCREEN_COEF != 1)
+    #if (BIG_SCREEN_COEF != 1)
       cairo_scale(cr, BIG_SCREEN_COEF, BIG_SCREEN_COEF);
     #endif // BIG_SCREEN_COEF != 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if(BIG_SCREEN_COEF != 1)
+    #if (BIG_SCREEN_COEF != 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     #endif // BIG_SCREEN_COEF != 1
     cairo_paint(cr);
@@ -754,7 +754,7 @@ void execTimerApp(uint16_t timerType) {
       }
       else {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
            sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
            moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -772,7 +772,7 @@ void execTimerApp(uint16_t timerType) {
       }
       else {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named label", funcParam);
             moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2877,7 +2877,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else {
             sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((lrSelection) & 0x01FF));
           }
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
             moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3331,7 +3331,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
           }
           else {
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Error message %" PRIu8 " is too wide!", lastErrorCode);
               moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3503,7 +3503,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             w = stringWidth(tmpString, &standardFont, false, true);
             lineWidth = w;
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Fraction representation too wide!");
@@ -4676,7 +4676,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else {
             w = stringWidth(tmpString, &standardFont, false, true);
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Long integer representation too wide!");
@@ -5443,7 +5443,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         //}
         refreshStatusBar();
 
-        #if(REAL34_WIDTH_TEST == 1)
+        #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);
           }
@@ -5850,7 +5850,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       int32ToReal34(maxValuePlusOne, &maxValue34);
       if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
           sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
@@ -5866,7 +5866,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       convertLongIntegerRegisterToLongInteger(regist, lgInt);
       if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, maxValuePlusOne) >= 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
           sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
@@ -5880,7 +5880,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -5968,7 +5968,7 @@ void fnAGraph(uint16_t regist) {
 
       else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
           moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -34,7 +34,7 @@ void fnDenMax(uint16_t D) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnDenMax:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -42,7 +42,7 @@ void fnDenMax(uint16_t D) {
 
   if(realIsNaN(&reX)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnDenMax:", "cannot use NaN as X input of fnDenMax", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -93,7 +93,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     real34ToReal(REGISTER_REAL34_DATA(regist), &temp0);
   }
   else {
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%s cannot be shown as a fraction!", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fraction:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -229,11 +229,11 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   if(!validResult && getSystemFlag(FLAG_DENANY)) { // denominator up to denMax
     #define OPTIMAL_FRACTION_METHOD 1 // 0=continuous fraction   1=Farey fractions   2=Nigel's method
 
-    #if(OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
+    #if (OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
       #error OPTIMAL_FRACTION_METHOD must be 0, 1 or 2
     #endif // (OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
 
-    #if(OPTIMAL_FRACTION_METHOD == 2) // NIGEL'S METHOD
+    #if (OPTIMAL_FRACTION_METHOD == 2) // NIGEL'S METHOD
     // see: https://forum.swissmicros.com/viewtopic.php?p=30506#p30506
     // and https://www.hpmuseum.org/forum/thread-20705-post-180180.html#pid180180
     // and https://en.wikipedia.org/wiki/Continued_fraction#Semiconvergents
@@ -367,7 +367,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     }
     #endif // OPTIMAL_FRACTION_METHOD == 2
 
-    #if(OPTIMAL_FRACTION_METHOD == 1) // FAREY FRACTIONS
+    #if (OPTIMAL_FRACTION_METHOD == 1) // FAREY FRACTIONS
     // see: https://math.stackexchange.com/questions/2438510/can-i-find-the-closest-rational-to-any-given-real-if-i-assume-that-the-denomina
     // and https://www.johndcook.com/blog/2010/10/20/best-rational-approximation/#comment-1077474
 
@@ -445,7 +445,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     }
     #endif // OPTIMAL_FRACTION_METHOD == 1
 
-    #if(OPTIMAL_FRACTION_METHOD == 0) // OLD CONTINUOUS FRACTION CODE RESULTING IN SUB-OPTIMAL FRACTIONS
+    #if (OPTIMAL_FRACTION_METHOD == 0) // OLD CONTINUOUS FRACTION CODE RESULTING IN SUB-OPTIMAL FRACTIONS
     uint64_t iPart[20], ex, bestNumer=0, bestDenom=1;
     uint32_t invalidOperation;
     int16_t i, j;

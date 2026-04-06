@@ -17,7 +17,7 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
 //#if !defined(GENERATE_CATALOGS)
 //void fnToBeCoded(void) {
 //  displayCalcErrorMessage(ERROR_FUNCTION_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
-//  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+//  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
 //    moreInfoOnError("Function to be coded", "for that data type(s)!", NULL, NULL);
 //  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 //}
@@ -77,7 +77,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   return (itemERRTIVal(itemNr) !=  _TO_ITM_NONE);
 #elif defined(PC_BUILD)
   if(itemERRTIVal(itemNr) !=  _TO_ITM_NONE) {
-    #if(VERBOSE_LEVEL >= 0)
+    #if (VERBOSE_LEVEL >= 0)
       printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n",itemNr);
     #endif
     return true;
@@ -263,7 +263,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       if(lastErrorCode == ERROR_RAM_FULL) {
         if((indexOfItems[func].status & US_STATUS) == US_ENABLED || calcMode == CM_CONFIRMATION) {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -271,7 +271,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         else {
           lastErrorCode = ERROR_NONE;
           temporaryInformation = TI_UNDO_DISABLED;
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
@@ -364,7 +364,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         }
         else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
           displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Not Available");
             moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -597,7 +597,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     #endif // PC_BUILD
     funcOK = true;
 
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       if(func >= LAST_ITEM) {
         sprintf(errorMessage, "item (%" PRId16 ") must be below LAST_ITEM", func);
         moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
@@ -619,7 +619,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           }
           else {
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -641,7 +641,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           }
           else {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -664,7 +664,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           }
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
             displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not Available");
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -731,7 +731,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(!funcOK) {
       displayCalcErrorMessage(ERROR_ITEM_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRId16 " = %s", func, indexOfItems[func].itemCatalogName);
         moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

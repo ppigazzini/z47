@@ -409,7 +409,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
      * ---------------------------------------------------------------------- */
     default:
       compareTypeError(regist);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
         moreInfoOnError("In function compareRegisters:", errorMessage, "is not defined!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

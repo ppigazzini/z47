@@ -10,7 +10,7 @@
 static void _longIntegerGcd(longInteger_t liY, longInteger_t liX, longInteger_t liA) {
   if(longIntegerIsZero(liY) && longIntegerIsZero(liX)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }

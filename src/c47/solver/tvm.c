@@ -65,7 +65,7 @@ static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t
 }
 
 #if defined (OPTION_TVM_FORMULAS)
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     const char * const tvmErrorMessages[] = {
       "TVM: Division by zero",                    // 0
       "TVM: Invalid interest rate",               // 1
@@ -83,7 +83,7 @@ static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t
 
 static int tvmRangeError(int errorCode) {
   displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function tvmRangeError:", tvmErrorMessages[errorCode], " Out of range error", NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   return errorCode;
@@ -695,7 +695,7 @@ int solveTvmVariable51(uint16_t variable) {
   if(error != 0) {
     //Not stopping for an error, but letting it through to the old solver for erroring and/or solving
     //displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function solveTvmVariable51:", tvmErrorMessages[error], " Cannot compute TVM equation with current parameters", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return error;
@@ -920,7 +920,7 @@ void fnTvmVar(uint16_t variable) {
             if(lastErrorCode != ERROR_SOLVER_ABORT) {
               displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             }
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -992,7 +992,7 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
     temporaryInformation = TI_TVM_EFF;
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameter cp/a = 0", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -1028,7 +1028,7 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
     temporaryInformation = TI_TVM_IA;
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnEffToI:", "cannot compute I%/a ", "with parameters n = 0 & EFF/a < 0 ", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }

@@ -352,7 +352,7 @@ void generateAllConstants(void) {
   generateConstantArray39("LbfToN",        "+4.448221615260500000000000000000000000000000000000000000e+00"); // newton = lbf × 9.80665 × 0.45359237
 
   generateConstantArray39("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02"); // pascal = torr × 101325 / 760
-  #if(MMHG_PA_133_3224 == 1)
+  #if (MMHG_PA_133_3224 == 1)
     generateConstantArray39("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224                   // BS 350:2004 p51, 13.595 1 × 9.806 65       , approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
     generateConstantArray39("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4            // BS 350:2004 p51, 13.595 1 × 9.806 65 x 25.4, approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
   #else // (MMHG_PA_133_3224 == 0)

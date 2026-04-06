@@ -3424,7 +3424,7 @@ void fnDeleteBackup(uint16_t confirmation) {
         int e = errno;
         if(e != ENOENT) {
           displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "removing the backup failed with error code %d", e);
             moreInfoOnError("In function fnDeleteBackup:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
