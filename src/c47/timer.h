@@ -14,11 +14,11 @@ void     LastOpTimerReStart    (uint16_t func);
 void     LastOpTimerLap        (uint16_t func);
 void     fnItemTimerApp        (uint16_t unusedButMandatoryParameter); // STOPW
 void     fnStopTimerApp        (void);                                 // from Off
-void     fnShowTimerApp        (void);                                
-void     fnUpdateTimerApp      (void);                                
-void     fnUpTimerApp          (void);                                
-void     fnDownTimerApp        (void);                                
-void     fnDigitKeyTimerApp    (uint16_t digit);                      
+void     fnShowTimerApp        (void);
+void     fnUpdateTimerApp      (void);
+void     fnUpTimerApp          (void);
+void     fnDownTimerApp        (void);
+void     fnDigitKeyTimerApp    (uint16_t digit);
 
 void     fnAddTimerApp         (uint16_t unusedButMandatoryParameter); // F1 TIM → Σ
 void     fnAddLapTimerApp      (uint16_t unusedButMandatoryParameter); // F2 LAP → Σ
