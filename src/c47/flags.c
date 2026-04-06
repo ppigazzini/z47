@@ -173,7 +173,7 @@ bool_t didSystemFlagChange(int32_t sf) {
     returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
     systemFlags0Changed &= ~((uint64_t)1 << flag);
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
     systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
   }
@@ -190,7 +190,7 @@ void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_.
   if(flag < 64) {
     systemFlags0Changed |= ((uint64_t)1 << (flag-0));
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     systemFlags1Changed |= ((uint64_t)1 << (flag-64));
   }
   else {

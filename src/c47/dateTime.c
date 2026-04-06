@@ -400,7 +400,7 @@ uint32_t getWeekOfYear(real34_t *jd) {
   composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
 
   int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
-  if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
+  if(firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
     real34Add(&j1, const34_7, &j1);  // … skip to next week
   }
 

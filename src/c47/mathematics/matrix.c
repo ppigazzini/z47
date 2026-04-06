@@ -5319,8 +5319,8 @@ static void printComplexMatrix(const char *heading, const real_t *m, uint16_t si
   realContext_t c = *ctxt;
   c.digits = 4;
   char reStr[80], imStr[80];
-  for (uint16_t i = 0; i < activeSize; i++) {
-    for (uint16_t j = 0; j < activeSize; j++) {
+  for(uint16_t i = 0; i < activeSize; i++) {
+    for(uint16_t j = 0; j < activeSize; j++) {
       uint32_t offset = (i * size + j) * 2;
       //printf("[%u,%u] = ", i, j);
       realPlus(m + offset, &tmp, &c);       // Real part

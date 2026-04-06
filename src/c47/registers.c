@@ -769,7 +769,7 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
   uint8_t len = stringGlyphLength(variableName);
   const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
 
-  if (reg != NULL)
+  if(reg != NULL)
     return reg->reg;
 
   #if defined VERBOSE_REGISTERS
@@ -1824,7 +1824,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
               strcpy(tmp, str);
               char *p = tmp;
               char *q = str;
-              while ((p = strstr(p, "Infinity"))) {
+              while((p = strstr(p, "Infinity"))) {
                 *p = 0;
                 q += sprintf(q, "%s∞", tmp);
                 p += 8;

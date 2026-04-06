@@ -15,7 +15,7 @@ static void fibLonI(void) {
   }
 
   bool_t neg = longIntegerIsNegative(x);
-  if (neg)
+  if(neg)
     longIntegerChangeSign(x);
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
@@ -43,7 +43,7 @@ static void fibLonI(void) {
   longIntegerInit(result);           // Initialize fib variable
   longIntegerFibonacci(n, result);   // result = FIB(n)
 
-  if (neg && longIntegerIsEven(x))
+  if(neg && longIntegerIsEven(x))
     longIntegerChangeSign(result);
 
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);

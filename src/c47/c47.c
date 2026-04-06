@@ -1082,7 +1082,7 @@ int convertKeyCode(int key) {
 
         keyBuffer_pop();
         uint8_t outKey;
-        while (!emptyKeyBuffer()) {
+        while(!emptyKeyBuffer()) {
           outKeyBuffer(&outKey);
         }
         lastItem = SCREENDUMP;

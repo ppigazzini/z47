@@ -83,7 +83,7 @@
           realDivide(&val, &sigma, &val, &ctxtReal39);
         }
         WP34S_Pdf_Q(&val, &ans, &ctxtReal39);
-        if (!stdn) {
+        if(!stdn) {
             realDivide(&ans, &sigma, &ans, &ctxtReal39);
             if(logn)
               realDivide(&ans, &alval, &ans, &ctxtReal39);

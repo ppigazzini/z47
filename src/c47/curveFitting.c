@@ -262,32 +262,32 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
     lrChosen = s;
 
     /* Set the TI */
-    if (resultType & (resultType - 1))
+    if(resultType & (resultType - 1))
       temporaryInformation = TI_LR;
-    else if (resultType & 1)
+    else if(resultType & 1)
       temporaryInformation = TI_LR_A0;
-    else if (resultType & 2)
+    else if(resultType & 2)
       temporaryInformation = TI_LR_A1;
-    else if (resultType & 4)
+    else if(resultType & 4)
       temporaryInformation = TI_LR_A2;
 
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
-      if (resultType & 4) {
+      if(resultType & 4) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         convertRealToResultRegister(&aa2, REGISTER_X, amNone);
       }
-    } else if (resultType == 4) {
+    } else if(resultType == 4) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       convertRealToResultRegister(const_0, REGISTER_X, amNone);
     }
-    if (resultType & 2) {
+    if(resultType & 2) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       convertRealToResultRegister(&aa1, REGISTER_X, amNone);
     }
-    if (resultType & 1) {
+    if(resultType & 1) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       convertRealToResultRegister(&aa0, REGISTER_X, amNone);

@@ -51,7 +51,7 @@ static void emitRealArray(const char *name, const void *vptr, int len, const cha
   int n, i;
 
   n = sprintf(b, "  ");
-  for (i=0; i<len; i++)
+  for(i=0; i<len; i++)
     n += sprintf(b + n, "0x%02x,", p[i]);
   sprintf(b + n, "  // %s%s\n", prefix, name);
 }
