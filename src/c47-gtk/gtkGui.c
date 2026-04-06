@@ -86,13 +86,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     //JM7 GtkWidget  *lblConfirmY; //JM for Y/N
     //JM7 GtkWidget  *lblConfirmN; //JM for Y/N
 
-    #if (DEBUG_PANEL == 1)
-      GtkWidget *lbl1[DEBUG_LINES], *lbl2[DEBUG_LINES];
-      GtkWidget *btnBitFields, *btnFlags, *btnRegisters, *btnLocalRegisters, *btnStatisticalSums, *btnNamedVariables, *btnSavedStackRegisters;
-      GtkWidget *chkHexaString;
-      int16_t debugWidgetDx, debugWidgetDy;
-    #endif // (DEBUG_PANEL == 1)
-
     char *cssData;
   #endif // (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 
@@ -5266,26 +5259,14 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
       if(calcLandscape) {
-        #if (DEBUG_PANEL == 1)
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
-          debugWidgetDx = 0;
-          debugWidgetDy = 545;
-        #else
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
-        #endif
+        gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
       }
       else {
-        #if (DEBUG_PANEL == 1)
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  1530, 980);
-          debugWidgetDx = 531;
-          debugWidgetDy = 0;
-        #else
-          #if NARROW_SCREEN == 0
-            gtk_window_set_default_size(GTK_WINDOW(frmCalc),  526, 980);
-          #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-            gtk_window_set_default_size(GTK_WINDOW(frmCalc),  400, 862);
-          #endif // NARROW_SCREEN == 0
-        #endif
+        #if NARROW_SCREEN == 0
+          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  526, 980);
+        #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
+          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  400, 862);
+        #endif // NARROW_SCREEN == 0
       }
 
       gtk_widget_set_name(frmCalc, "mainWindow");
@@ -5426,21 +5407,6 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
 
       g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
 
-
-      #if (DEBUG_REGISTER_L == 1)
-        lblRegisterL1 = gtk_label_new("");
-        lblRegisterL2 = gtk_label_new("");
-        gtk_widget_set_name(lblRegisterL1, "registerL");
-        gtk_widget_set_name(lblRegisterL2, "registerL");
-        gtk_fixed_put(GTK_FIXED(grid), lblRegisterL1, 5, 28);
-        gtk_fixed_put(GTK_FIXED(grid), lblRegisterL2, 5, 46);
-      #endif // (DEBUG_REGISTER_L == 1)
-
-      #if (SHOW_MEMORY_STATUS == 1)
-        lblMemoryStatus = gtk_label_new("");
-        gtk_widget_set_name(lblMemoryStatus, "memoryStatus");
-        gtk_fixed_put(GTK_FIXED(grid), lblMemoryStatus, 5, 5);
-      #endif // (SHOW_MEMORY_STATUS == 1)
 
       // 1st row: F1 to F6 buttons
       if(enableFunctionKeysDisplay) {
@@ -6472,65 +6438,6 @@ int keyCntA = 0;
 
 
       // gtk_fixed_put(GTK_FIXED(grid), lblOn,   0, 0);     //JM Removed ON to 81
-
-      // The debug window
-      #if (DEBUG_PANEL == 1)
-        for(int i=0; i<DEBUG_LINES; i++) {
-          lbl1[i] = gtk_label_new("");
-          gtk_widget_set_name(lbl1[i], "debugDejaVu");
-          gtk_fixed_put(GTK_FIXED(grid), lbl1[i], 1 + debugWidgetDx, 26 + i*14 + debugWidgetDy);
-          lbl2[i] = gtk_label_new("");
-          gtk_widget_set_name(lbl2[i], "debugC47");
-          gtk_fixed_put(GTK_FIXED(grid), lbl2[i], 270 + debugWidgetDx, 25 + i*14 + debugWidgetDy);
-        }
-
-        btnBitFields           = gtk_button_new_with_label("Bitfields");
-        btnFlags               = gtk_button_new_with_label("Flags");
-        btnRegisters           = gtk_button_new_with_label("Registers");
-        btnLocalRegisters      = gtk_button_new_with_label("Local registers");
-        btnStatisticalSums     = gtk_button_new_with_label("Statistical sums");
-        btnNamedVariables      = gtk_button_new_with_label("Named variables");
-        btnSavedStackRegisters = gtk_button_new_with_label("Saved stack registers");
-        chkHexaString          = gtk_check_button_new_with_label("Strings in hexadecimal form");
-
-        gtk_widget_set_name(btnBitFields,           "debugButton");
-        gtk_widget_set_name(btnFlags,               "debugButton");
-        gtk_widget_set_name(btnRegisters,           "debugButton");
-        gtk_widget_set_name(btnLocalRegisters,      "debugButton");
-        gtk_widget_set_name(btnStatisticalSums,     "debugButton");
-        gtk_widget_set_name(btnNamedVariables,      "debugButton");
-        gtk_widget_set_name(btnSavedStackRegisters, "debugButton");
-        gtk_widget_set_name(chkHexaString,          "debugCheckbox");
-
-        g_signal_connect(btnBitFields,           "clicked", G_CALLBACK(btnBitFieldsClicked),           NULL);
-        g_signal_connect(btnFlags,               "clicked", G_CALLBACK(btnFlagsClicked),               NULL);
-        g_signal_connect(btnRegisters,           "clicked", G_CALLBACK(btnRegistersClicked),           NULL);
-        g_signal_connect(btnLocalRegisters,      "clicked", G_CALLBACK(btnLocalRegistersClicked),      NULL);
-        g_signal_connect(btnStatisticalSums,     "clicked", G_CALLBACK(btnStatisticalSumsClicked),     NULL);
-        g_signal_connect(btnNamedVariables,      "clicked", G_CALLBACK(btnNamedVariablesClicked),      NULL);
-        g_signal_connect(btnSavedStackRegisters, "clicked", G_CALLBACK(btnSavedStackRegistersClicked), NULL);
-        g_signal_connect(chkHexaString,          "clicked", G_CALLBACK(chkHexaStringClicked),          NULL);
-
-        gtk_fixed_put(GTK_FIXED(grid), btnBitFields,             1 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnFlags,                60 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnRegisters,           101 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnLocalRegisters,      166 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnStatisticalSums,     260 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnNamedVariables,      360 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), btnSavedStackRegisters, 465 + debugWidgetDx, 1 + debugWidgetDy);
-        gtk_fixed_put(GTK_FIXED(grid), chkHexaString,          630 + debugWidgetDx, 1 + debugWidgetDy);
-
-        gtk_widget_show(btnBitFields);
-        gtk_widget_show(btnFlags);
-        gtk_widget_show(btnRegisters);
-        gtk_widget_show(btnLocalRegisters);
-        gtk_widget_show(btnStatisticalSums);
-        gtk_widget_show(btnNamedVariables);
-        gtk_widget_show(btnSavedStackRegisters);
-        gtk_widget_show(chkHexaString);
-
-        debugWindow = DBG_REGISTERS;
-      #endif // DEBUG_PANEL == 0
 
       gtk_widget_show_all(frmCalc);
 

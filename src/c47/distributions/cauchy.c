@@ -144,7 +144,7 @@
       realSetPlusInfinity(res);
       return;
     }
-    WP34S_Atan(&p, &p, realContext);
+    C47_WP34S_Atan(&p, &p, realContext);
     realDivide(&p, const_pi, &p, realContext);
     if(complementary) {
       realChangeSign(&p);
@@ -162,7 +162,7 @@
 
     realSubtract(x, const_1on2, &p, realContext);
     realMultiply(&p, const_pi, &p, realContext);
-    WP34S_SinCosTanTaylor(&p, false, &s, &c, &p, realContext);
+    C47_WP34S_SinCosTanTaylor(&p, false, &s, &c, &p, realContext);
     realMultiply(&p, gamma, &p, realContext);
     realAdd(&p, x0, res, realContext);
   }

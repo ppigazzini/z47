@@ -19,24 +19,15 @@
   bool_t              enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
-  GtkWidget           *screen;
-  GtkWidget           *frmCalc;
+  GtkWidget          *screen;
+  GtkWidget          *frmCalc;
   int16_t             screenStride;
-  int16_t             debugWindow;
-  uint32_t            *screenData;
+  uint32_t           *screenData;
   bool_t              screenChange;
-  char                debugString[10000];
-  #if (DEBUG_REGISTER_L == 1)
-    GtkWidget         *lblRegisterL1;
-    GtkWidget         *lblRegisterL2;
-  #endif // (DEBUG_REGISTER_L == 1)
-  #if (SHOW_MEMORY_STATUS == 1)
-    GtkWidget         *lblMemoryStatus;
-  #endif // (SHOW_MEMORY_STATUS == 1)
-  calcKeyboard_t       calcKeyboard[43];
-  int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
-  bool_t               resetKeys = false;
-  uint8_t              calcModelNew = 255;
+  calcKeyboard_t      calcKeyboard[43];
+  int                 currentBezel; // 0=normal, 1=AIM, 2=TAM
+  bool_t              resetKeys = false;
+  uint8_t             calcModelNew = 255;
 
   #if defined(EXPORT_ITEMS)
     int sortItems(void const *a, void const *b) {
@@ -72,9 +63,9 @@
     for(int arg=1; arg<argc; arg++) {
 
       if(strcmp(argv[arg], "--background") == 0) {    //must be first in the list of evaluations, as it can incremant the counter
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
         if(arg+1<argc && (argv[arg+1])[0] != 0) {
-          strcpy(modelString,argv[++arg]);
+          strcpy(modelString, argv[++arg]);
           if(arg+1<argc && (argv[arg+1])[0] != 0) {
             arg++;
           }
@@ -86,7 +77,7 @@
 
       if(strcmp(argv[arg], "--functionkeys") == 0) {
         enableFunctionKeysDisplay = true;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       else {
         enableFunctionKeysDisplay = false;
@@ -95,103 +86,103 @@
       if(strcmp(argv[arg], "--landscape") == 0) {
         calcLandscape             = true;
         calcAutoLandscapePortrait = false;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--portrait") == 0) {
         calcLandscape             = false;
         calcAutoLandscapePortrait = false;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--auto") == 0) {
         calcLandscape             = false;
         calcAutoLandscapePortrait = true;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--c47") == 0) {
         calcModelNew = USER_C47;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--r47") == 0) {
         calcModelNew = USER_R47f_g;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v0") == 0) {
         calcModelNew = USER_R47f_g;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v1") == 0) {
         calcModelNew = USER_R47fg_bk;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v2") == 0) {
         calcModelNew = USER_R47fg_g;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v3") == 0) {
         calcModelNew = USER_R47bk_fg;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
 
       if(strcmp(argv[arg], "--e47") == 0) {
         calcModelNew = USER_E47;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--n47") == 0) {
         calcModelNew = USER_N47;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--v47") == 0) {
         calcModelNew = USER_V47;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--d47") == 0) {
         calcModelNew = USER_D47;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--dm42") == 0) {
         calcModelNew = USER_DM42;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--jm") == 0) {
         config = 1;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--rj") == 0) {
         config = 2;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--hp35") == 0) {
         config = 3;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--deadkeys") == 0) {
         testDeadKeys = true;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--swapctrlcode") == 0) {
         swapCtrlCode = true;
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
       }
       if(strcmp(argv[arg], "--writeexportall") == 0) {
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
         writeExportAll = true;
       }
       if(strcmp(argv[arg], "--mockup") == 0) {
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
         mockup = true;
       }
       if(strcmp(argv[arg], "--dumpMenus1") == 0) {
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
         dumpMenus = 1;
       }
       if(strcmp(argv[arg], "--dumpMenus2") == 0) {
-        printf("Activated: %s\n",argv[arg]);
+        printf("Activated: %s\n", argv[arg]);
         dumpMenus = 2;
       }
 
@@ -367,7 +358,6 @@
     }
 
 
-    //ramDump();
     refreshScreen(190);
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms

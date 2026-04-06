@@ -362,6 +362,6 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     realSquareRoot(magnitude, magnitude, realContext);
 
     // Angle
-    WP34S_Atan2(&im, &re, theta, realContext);
+    C47_WP34S_Atan2(&im, &re, theta, realContext);
   }
 }

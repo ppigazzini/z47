@@ -30,7 +30,6 @@ GtkWidget      *screen;
 calcKeyboard_t  calcKeyboard[43];
 int             currentBezel; // 0=normal, 1=AIM, 2=TAM
 int16_t         screenStride;
-int16_t         debugWindow;
 uint32_t       *screenData;
 bool_t          screenChange;
 
@@ -2794,12 +2793,12 @@ var2:
                     real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &ei);
 
                     // check for possible real or pure imaginary
-                    WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
-                    WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real
@@ -2813,12 +2812,12 @@ var2:
                     mulComplexComplex(&er, &ei, xr1 + element % cols, xi1 + element % cols, &er, &ei, &ctxtReal39);
 
                     // check for possible real or pure imaginary
-                    WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
-                    WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real

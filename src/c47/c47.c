@@ -23,8 +23,7 @@ int16_t               lastFunc = 0;
 int16_t               lastParam = 0;
 char                  lastTemp[16];
 
-  #if defined(PC_BUILD)
-  bool_t              debugMemAllocation;
+#if defined(PC_BUILD)
   bool                forceTamAlpha;
   uint32_t            deadKey;
   bool_t              testDeadKeys = false;

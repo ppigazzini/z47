@@ -1486,10 +1486,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
     //defineCurrentLocalRegisters();
 
-    #if (DEBUG_REGISTER_L == 1)
-      refreshRegisterLine(REGISTER_X); // to show L register
-    #endif // (DEBUG_REGISTER_L == 1)
-
     //save and restore screenData is not mandatory
     //for(int y = 0; y < SCREEN_HEIGHT; ++y) {
     //  for(int x = 0; x < SCREEN_WIDTH; x += 8) {
