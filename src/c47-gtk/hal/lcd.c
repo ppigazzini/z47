@@ -162,7 +162,7 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
     #if defined(MONITOR_CLRSCR)
       printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
                                     #if defined(ANALYSE_REFRESH)
-                                      print_caller();
+                                      print_caller(NULL);
                                     #endif //ANALYSE_REFRESH
     #endif
     return;

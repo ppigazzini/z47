@@ -542,7 +542,6 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOL:
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
-    case ITM_YY_DFLT:   result = lastCenturyHighUsed & 0x3FFF;                        break;
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }

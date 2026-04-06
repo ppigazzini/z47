@@ -2290,26 +2290,32 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                         break;
 
-      case ITM_YY_DFLT: *showValue = lastCenturyHighUsed & 0x3FFF;
+      case ITM_YY_DFLT: *showValue = lastCenturyHighUsed & (YY_MASK_TRACKING - 1);
                         showText[0] = 0;
-                        if(lastCenturyHighUsed & 0x8000) {
+                        if(lastCenturyHighUsed & YY_MASK_OFF) {
                           *showValue = NOVAL;
                           strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
                         }
-                        if(followYY()) {
+                        if(lastCenturyHighUsed & YY_MASK_TRACKING) {
                           strcat(showText,STD_SPACE_3_PER_EM STD_SUB_t);
                         }
                         break;
 
-      case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) stringCopy(showText + stringByteLength(showText), "\1\1");
-                        else stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
+      case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) {
+                          stringCopy(showText + stringByteLength(showText), "\1\1");
+                        } else {
+                          stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
+                        }
                         *showValue = NOVAL;
                         break;
       case ITM_GAP_RX : stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRadix].itemSoftmenuName);  //  gapCharRadix);
                         *showValue = NOVAL;
                         break;
-      case ITM_GAP_R  : if(gapItemRight == ITM_NULL) stringCopy(showText + stringByteLength(showText), "\1\1");
-                        else stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRight].itemSoftmenuName);  //  gapCharRight);
+      case ITM_GAP_R  : if(gapItemRight == ITM_NULL) {
+                          stringCopy(showText + stringByteLength(showText), "\1\1");
+                        } else {
+                          stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRight].itemSoftmenuName);  //  gapCharRight);
+                        }
                         *showValue = NOVAL;
                         break;
       case ITM_GRP_L  : *showValue = grpGroupingLeft;

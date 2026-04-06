@@ -58,7 +58,7 @@ bool_t checkDateArgument(calcRegister_t regist, real34_t *jd) {
     case dtReal34: {
       if(getRegisterAngularMode(regist) == amNone) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone); // make sure TEMP_REGISTER_1 is not of dtDate type here
-        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, !YYSystem);
+        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, false);  //no !YYsystem needed here
         if(getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
           return false; // invalid date
         }
@@ -589,17 +589,12 @@ void fnGetFirstGregorianDay(uint16_t unusedButMandatoryParameter) {
 }
 
 
-//return true if bit 14 (16384 0x4000) is set, meaning that the YY default is updated from the last used full YYYY used.
-bool_t followYY(void) {
-  return lastCenturyHighUsed & 0x4000;
-}
-
 void fnYYDflt(uint16_t tmp) {
   if(tmp == YY_TRACKING) {
-    lastCenturyHighUsed = 0x4000;
+    lastCenturyHighUsed = YY_MASK_TRACKING;           //0x4000;
   }
   else if(tmp == YY_OFF) {
-    lastCenturyHighUsed = 0x8000;
+    lastCenturyHighUsed = YY_MASK_OFF;                //0x8000;
   }
   else if(tmp < 100) {                                //allow lowest range 0100 -> 0199
     lastCenturyHighUsed = 0;
@@ -625,7 +620,7 @@ void fnXToDate(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       if(getRegisterAngularMode(REGISTER_X) == amNone) {
-        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, !YYSystem);
+        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, false);     //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
         checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
         temporaryInformation = TI_DAY_OF_WEEK;
         if(lastErrorCode != 0) {
