@@ -28,14 +28,14 @@
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamGeometric:", "cannot calculate for x < 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
     else if(realIsZero(i) || realIsNegative(i) || realCompareGreaterThan(i, const_1)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamGeometric:", "the parameter must be 0 < p " STD_LESS_EQUAL " 1", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
@@ -89,7 +89,7 @@
     if(checkParamGeometric(&val, &prob)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnGeometricI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {

@@ -47,7 +47,7 @@ bool_t blockMonitoring = false;
   #define spc STD_SPACE
   #define spc1 STD_SPACE STD_SPACE_3_PER_EM
 
-  #if (CALCMODEL == USER_R47)
+  #if(CALCMODEL == USER_R47)
     #define MODELTEXT "R47"
   #else
     #define MODELTEXT "C47"
@@ -106,12 +106,12 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if (BIG_SCREEN_COEF != 1)
+    #if(BIG_SCREEN_COEF != 1)
       cairo_scale(cr, BIG_SCREEN_COEF, BIG_SCREEN_COEF);
     #endif // BIG_SCREEN_COEF != 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if (BIG_SCREEN_COEF != 1)
+    #if(BIG_SCREEN_COEF != 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     #endif // BIG_SCREEN_COEF != 1
     cairo_paint(cr);
@@ -348,7 +348,7 @@ char letteredRegisterName(calcRegister_t regist) {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
+    for(calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -587,7 +587,7 @@ void execTimerApp(uint16_t timerType) {
     bool_t greyType = getSystemFlag(FLAG_FGGR);
     uint8_t lineCount, maxLine;
     lineCount = greyType ? SOFTMENU_HEIGHT - 3 : 3;
-    if (yUnderlined <= 2) {
+    if(yUnderlined <= 2) {
       maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
       // reset display to the buffer without shade
       lcd_refresh_lines (maxLine-lineCount, lineCount);
@@ -600,21 +600,21 @@ void execTimerApp(uint16_t timerType) {
     uint16_t j, buff_bit, colIncrease = greyType ? 5 : 2;
     maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
-    for (xIndex = 0;xIndex < 6; xIndex++) {
+    for(xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
       xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
     }
     // Draw shade pattern without changing lcd_buffer
-    for (line = maxLine - lineCount + 1; line <= maxLine; line++) {
+    for(line = maxLine - lineCount + 1; line <= maxLine; line++) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
-      for (xIndex = 0; xIndex < 6; xIndex++) {
-        if (xSoftkeyMask>>xIndex & 1u) {
+      for(xIndex = 0; xIndex < 6; xIndex++) {
+        if(xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 1;
           j += greyType ? mod(2*line-j,5) : mod(j+line,2);
-          for (; j < KEY_X[xIndex + 1]; j += colIncrease) {
+          for(; j < KEY_X[xIndex + 1]; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
-            if (xBg[xIndex]){
+            if(xBg[xIndex]){
               tempByte = tempByte & ~(1u<<mod(buff_bit,8));
             } else {
               tempByte = tempByte | (1u<<mod(buff_bit,8));
@@ -754,7 +754,7 @@ void execTimerApp(uint16_t timerType) {
       }
       else {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
            sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
            moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -772,7 +772,7 @@ void execTimerApp(uint16_t timerType) {
       }
       else {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named label", funcParam);
             moreInfoOnError("In function _executeItem:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1176,7 +1176,7 @@ return res;
       }                           //JM REDUCE
       // Drawing the columns of the glyph
       for(col=0; col<glyph->colsGlyph; col++) {
-        if (!(col%8)) {
+        if(!(col%8)) {
           byte = *(data++);
           if(miniC!=0) {
             byte = (uint8_t)byte | (((uint8_t)byte) << 1);           //JMmini
@@ -1845,7 +1845,7 @@ return res;
 
   bool_t checkHalfSec(void) {
     #if defined(PC_BUILD)
-      while (gtk_events_pending()) {
+      while(gtk_events_pending()) {
         gtk_main_iteration();
       }
     #endif //PC_BUILD
@@ -1914,7 +1914,7 @@ return res;
     if(reg == RESERVED_VARIABLE_UEST) {
       sprintf(prefix, "Upper =");
       strcpy(regS,name);
-    } else if (reg == RESERVED_VARIABLE_LEST) {
+    } else if(reg == RESERVED_VARIABLE_LEST) {
       sprintf(prefix, "Lower =");
       strcpy(regS,name);
     } else {
@@ -1942,16 +1942,16 @@ return res;
   #define PRIORITY_itemSoftmenuName false
   const char* pickValidItemFromItems(int16_t item, bool_t priority) {
     bool_t takeCat = false;
-    if (priority == PRIORITY_itemCatalogName) {
-      if ((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
+    if(priority == PRIORITY_itemCatalogName) {
+      if((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
         takeCat = true;
       }
     } else { // PRIORITY_itemSoftmenuName
-      if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
+      if((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
         takeCat = true;
       }
     }
-    if (takeCat) {
+    if(takeCat) {
       return indexOfItems[abs(item)].itemCatalogName;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
@@ -2633,7 +2633,7 @@ void createSubstrings(uint8_t number) {
       int32_t jj = realToInt32C47(&t, NULL) - 100*ii;
       char sss[30];
       sss[0]=0;
-      switch (ii) {
+      switch(ii) {
         case 0 : strcpy(sss,"LongInteger"); break;
         case 1 : strcpy(sss,"Real"); break;
         case 2 : strcpy(sss,"Complex"); break;
@@ -2649,7 +2649,7 @@ void createSubstrings(uint8_t number) {
       if(ii == 8) {
         strcat(sss,", base");
       } else {
-        switch (jj) {
+        switch(jj) {
           case 10 : strcat(sss,", MUL" STD_pi); break;
           case 20 : strcat(sss,", DMS"); break;
           case 30 : strcat(sss,", Degree"); break;
@@ -2877,7 +2877,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else {
             sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((lrSelection) & 0x01FF));
           }
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
             moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3097,7 +3097,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn <= 9) {
+              while(nn <= 9) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3114,7 +3114,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+              while(nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3129,7 +3129,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
             int16_t nn = 0;
-            while (nn<=5) {
+            while(nn<=5) {
               showDisp( nn * SHOWLineSize, nn);
               nn++;
             }
@@ -3331,7 +3331,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
           }
           else {
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Error message %" PRIu8 " is too wide!", lastErrorCode);
               moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3503,7 +3503,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             w = stringWidth(tmpString, &standardFont, false, true);
             lineWidth = w;
             if(w > SCREEN_WIDTH) {
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Fraction representation too wide!");
@@ -3893,13 +3893,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
             #endif //DISCRIMINANT
           }
-         else if (temporaryInformation == TI_LR_A0) {
+         else if(temporaryInformation == TI_LR_A0) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A1) {
+         } else if(temporaryInformation == TI_LR_A1) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A2) {
+         } else if(temporaryInformation == TI_LR_A2) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
          }
@@ -4676,7 +4676,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else {
             w = stringWidth(tmpString, &standardFont, false, true);
             if(w > SCREEN_WIDTH) {
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Long integer representation too wide!");
@@ -5443,7 +5443,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         //}
         refreshStatusBar();
 
-        #if (REAL34_WIDTH_TEST == 1)
+        #if(REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);
           }
@@ -5462,13 +5462,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   #if defined(PC_BUILD)
     char* get_binary_bits(uint64_t n, int bits) {
       static char buffer[80]; // 64 bits + 15 spaces + null terminator
-      if (bits <= 0 || bits > 64) {
+      if(bits <= 0 || bits > 64) {
           return NULL;
       }
       int pos = 0;
-      for (int i = bits - 1; i >= 0; i--) {
+      for(int i = bits - 1; i >= 0; i--) {
           buffer[pos++] = (n & (1ULL << i)) ? '1' : '0';
-          if (i % 4 == 0 && i != 0) {
+          if(i % 4 == 0 && i != 0) {
               buffer[pos++] = ' ';
           }
       }
@@ -5850,7 +5850,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       int32ToReal34(maxValuePlusOne, &maxValue34);
       if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
           sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
@@ -5866,7 +5866,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       convertLongIntegerRegisterToLongInteger(regist, lgInt);
       if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, maxValuePlusOne) >= 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
           sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
           moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
@@ -5880,7 +5880,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -5968,7 +5968,7 @@ void fnAGraph(uint16_t regist) {
 
       else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
           moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

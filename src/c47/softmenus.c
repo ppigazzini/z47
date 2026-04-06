@@ -379,7 +379,7 @@ TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_
 TO_QSPI const int16_t menu_XXFCNS[]    =   { ITM_DEG2_XFN,                  ITM_RAD2_XFN,               ITM_ADD_XFN,              ITM_SUB_XFN,           ITM_MULT_XFN,                ITM_DIV_XFN,
                                              ITM_DEG,                       ITM_RAD,                    ITM_pi_XFN,               ITM_sin_XFN,           ITM_cos_XFN,                 ITM_tan_XFN,
                                              ITM_TO_XFN,                    ITM_DRG_XFN,                ITM_atan2_XFN,            ITM_arcsin_XFN,        ITM_arccos_XFN,              ITM_arctan_XFN,
-#if (CALCMODEL != USER_R47)
+#if(CALCMODEL != USER_R47)
                                              ITM_MOD_XFN,                   ITM_1ONX_XFN,               ITM_SQRT_XFN,             ITM_LOG_XFN,           ITM_LN_XFN,                  ITM_RDP_XFN,
                                              ITM_MODANG_XFN,                ITM_POWER_XFN,              ITM_SQR_XFN,              ITM_10X_XFN,           ITM_EXP_XFN,                 ITM_RSD_XFN,
                                              ITM_TO_XFN,                    ITM_XTHROOT_XFN,            ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CHS_XFN,
@@ -770,7 +770,7 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
                                              ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_HPBASE,                  ITM_FF};
 
 
-#if (CALCMODEL != USER_R47)
+#if(CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_EE[]          = { ITM_op_j,                      ITM_op_j_pol,               ITM_SQUARE,               ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,
                                              ITM_DEG,                       ITM_RAD,                    ITM_STKTO3x1,             ITM_3x1TOSTK,          ITM_RECT,                    ITM_POLAR,
@@ -790,7 +790,7 @@ TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_
 
 
 //ASN_N menu different for C47, R47
-#if (CALCMODEL != USER_R47)
+#if(CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_N_KEY_USER,             ITM_N_KEY_ALPHA,          ITM_N_KEY_FGSH,        ITM_N_KEY_GSH,               ITM_FROM_USER,
                                              ITM_N_KEY_DRG,                 ITM_N_KEY_op_j_pol,         ITM_N_KEY_Rup,            ITM_N_KEY_XFACT,       ITM_NULL,                    ITM_TO_USER    };
 #else
@@ -801,7 +801,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
 
 //KEYS menu different for C47, R47
 TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_USERMODE,              ITM_KEYMAP,
-#if (CALCMODEL != USER_R47)
+#if(CALCMODEL != USER_R47)
                                              ITM_USER_C47,              ITM_USER_DM42,             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL         };
 #else
                                              ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL         };
@@ -834,7 +834,7 @@ TO_QSPI const int16_t menu_BLUE_C47[]    = { ITM_MAGNITUDE,       -MNU_CPX,     
   #define CC_EE  -MNU_EE
 #endif // SAVE_SPACE_DM42_6
 
-#if (CALCMODEL != USER_R47)
+#if(CALCMODEL != USER_R47)
 TO_QSPI const int16_t menu_HOME[]        = { ITM_DRG,                       ITM_YX,                     ITM_SQUARE,               ITM_10x,               ITM_EXP,                     ITM_op_j_pol,
                                              ITM_ROUND2,                    ITM_RMD,                    ITM_XFACT,                ITM_PARALLEL,          ITM_EE_EXP_TH,               ITM_LINPOL,
                                              ITM_FP,                        ITM_IP,                    -MNU_PREFIX,               CC_EE,                 ITM_RECT,                    ITM_POLAR             };
@@ -1161,7 +1161,7 @@ void fnOpenMenu(uint16_t menu) {
 
   if(softmenu[i].menuItem == 0) {                                              // Should never happen as menu is checked before the call fnOpenMenu
     displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);  // No check for FLAG_IGN1ER to ensure this error case is reported if it happens anyway
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "menu '%d' is not a valid menu item", menu);
       moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1191,14 +1191,14 @@ void fnOpenMenu(uint16_t menu) {
   else {
     if(getSystemFlag(FLAG_IGN1ER)) {
       clearSystemFlag(FLAG_IGN1ER);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
         moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
         moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1787,8 +1787,8 @@ bool_t maxfgLines(int16_t y) {
 
   void greyRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
     int16_t col, row;
-    for (row=y; row<dy+y; row++) {
-      for (col=x+mod(x+row,2); col<dx+x; col+=2) {
+    for(row=y; row<dy+y; row++) {
+      for(col=x+mod(x+row,2); col<dx+x; col+=2) {
         setBlackPixel(col, row);
       }
     }
@@ -2354,7 +2354,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
-  switch (itemNr) {
+  switch(itemNr) {
 
     #ifdef SAVE_SPACE_DM42_12ORTHO
       case -MNU_ORTHOG:
@@ -3397,7 +3397,7 @@ void showSoftmenuCurrentPart(void) {
 
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -3442,7 +3442,7 @@ void showSoftmenuCurrentPart(void) {
          id == -MNU_2NDDERIV     ) {
         id = -MNU_EQN;
         displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "The solver/integrator variable is not selected. Refusing access to Tools/Solver menu prior to variable selected!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }

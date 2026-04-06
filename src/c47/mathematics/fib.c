@@ -15,12 +15,12 @@ static void fibLonI(void) {
   }
 
   bool_t neg = longIntegerIsNegative(x);
-  if (neg)
+  if(neg)
     longIntegerChangeSign(x);
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate fib(%s), the limit for UNSIGN is 93", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
@@ -29,7 +29,7 @@ static void fibLonI(void) {
   }
   else*/ if(longIntegerCompareUInt(x, 4791) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate fib(%s), the limit is 4791, it's to ensure that the 3328 bits limit is not exceeded", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
@@ -43,7 +43,7 @@ static void fibLonI(void) {
   longIntegerInit(result);           // Initialize fib variable
   longIntegerFibonacci(n, result);   // result = FIB(n)
 
-  if (neg && longIntegerIsEven(x))
+  if(neg && longIntegerIsEven(x))
     longIntegerChangeSign(result);
 
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);

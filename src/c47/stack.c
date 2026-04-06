@@ -128,7 +128,7 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     currentLocalRegisters[regist - FIRST_LOCAL_REGISTER] = savedRegisterHeader;
   }
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     else if(regist <= LAST_LOCAL_REGISTER) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
@@ -136,7 +136,7 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     }
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "register %d", regist);

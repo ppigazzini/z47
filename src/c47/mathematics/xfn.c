@@ -197,7 +197,7 @@
   #if defined(TESTSUITE_BUILD)
     const bool_t use1071 = true;
   #else
-    #if (defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
+    #if(defined(DMCP_BUILD) && (HARDWARE_MODEL) && (HARDWARE_MODEL == HWM_DM42n)) || defined(PC_BUILD)
       #define HIMEMORY true
     #else
       #define HIMEMORY false
@@ -370,7 +370,7 @@ typedef struct {
       }
     }
     displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Invalid input register");
         moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -391,7 +391,7 @@ typedef struct {
     }
     else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input angle register");
           moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -414,7 +414,7 @@ typedef struct {
     }
     else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input angle register");
           moreInfoOnError("In function fnXfn:getAngleModeForArithmetic3r:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -453,7 +453,7 @@ typedef struct {
   static bool getCombinedParameter (int param, int registerNo, real1071_t* combined, real1071_t* temporary, angularMode_t* angleMode, realContext_t* c) {
     if(!getAngleModeForRegister3r(registerNo, angleMode) && getRegisterDataType(registerNo) != dtLongInteger) {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister3r ");
           moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -461,7 +461,7 @@ typedef struct {
     }
     if(!readThreeRegisters(registerNo, combined, temporary, c)) {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input registers: readThreeRegisters");
           moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -472,7 +472,7 @@ typedef struct {
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -487,7 +487,7 @@ printf("Dddd %d\n",registerNo);
 
     if(!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {                        //ignore anglemode, it is handled elsewhere
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Invalid input registers: getLongintegerRegisterAsReal1071");
           moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -498,7 +498,7 @@ printf("Dddd %d\n",registerNo);
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Total VAR = r%d exceeds the maximum exponent %d > %d", registerNo, realGetExponent(combined), maxAllowedDigits);
             moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -570,7 +570,7 @@ printf("Dddd %d\n",registerNo);
       return;
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Specified register numbers out of range: %d",registerNo);
       moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -673,12 +673,12 @@ printf("Dddd %d\n",registerNo);
 
 
   static void doXfn(uint16_t registerNo, int function, int functionType, int functionAngle, int functionParam, int ErrorLocation) {
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       int location = 0;
     #endif //EXTRA_INFO_ON_CALC_ERROR
 
     if(ErrorLocation != 0 || function == XFN_NOTFOUND || functionType == XFN_NOTFOUND) {
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         location = ErrorLocation;
       #endif //EXTRA_INFO_ON_CALC_ERROR
       goto noFunction;
@@ -720,7 +720,7 @@ printf("Dddd %d\n",registerNo);
       }
     }
     else {
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         location = 3;
       #endif //EXTRA_INFO_ON_CALC_ERROR
       goto noFunction;
@@ -928,7 +928,7 @@ printf("Dddd %d\n",registerNo);
 
   //--------//No function
         default: {
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             location = 5;
           #endif //EXTRA_INFO_ON_CALC_ERROR
           goto noFunction;
@@ -1063,7 +1063,7 @@ printf("Dddd %d\n",registerNo);
 
 noFunction:
     displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Incorrect function code %d (location %d)", function, location);
       moreInfoOnError("In function doXfn:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

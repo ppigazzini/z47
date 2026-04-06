@@ -1269,10 +1269,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
-    if (getSystemFlag(FLAG_FRACT)) {
+    if(getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);
     }
-    else if (getSystemFlag(FLAG_IRFRAC)) {
+    else if(getSystemFlag(FLAG_IRFRAC)) {
       setSystemFlag(FLAG_IRFRAC);
     }
 
@@ -1441,17 +1441,17 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     if(backupVersion < 1009) {                           //register header is already loaded with 32 bits
       printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
       int qq = FIRST_GLOBAL_REGISTER;
-      while (qq <= LAST_GLOBAL_REGISTER) {
+      while(qq <= LAST_GLOBAL_REGISTER) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
       qq = FIRST_NAMED_VARIABLE;
-      while (qq <= LAST_NAMED_VARIABLE) {
+      while(qq <= LAST_NAMED_VARIABLE) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
       qq = FIRST_LOCAL_REGISTER;
-      while (qq <= LAST_LOCAL_REGISTER) {
+      while(qq <= LAST_LOCAL_REGISTER) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
@@ -2362,7 +2362,7 @@ int64_t stringToInt64(const char *str) {
           debugPrintf(2, "-", tmpString);
         #endif //LOADDEBUG
         str = tmpString;
-        for (i = 0; i < 7; i++) {
+        for(i = 0; i < 7; i++) {
           globalFlags[i] = toUint16(str);
           str = next_word(str);
         }
@@ -2525,10 +2525,10 @@ int64_t stringToInt64(const char *str) {
         }
 
         // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
-        if (getSystemFlag(FLAG_FRACT)) {
+        if(getSystemFlag(FLAG_FRACT)) {
           setSystemFlag(FLAG_FRACT);
         }
-        else if (getSystemFlag(FLAG_IRFRAC)) {
+        else if(getSystemFlag(FLAG_IRFRAC)) {
           setSystemFlag(FLAG_IRFRAC);
         }
       }
@@ -2747,15 +2747,15 @@ int64_t stringToInt64(const char *str) {
       }
 
 
-      if (firstFreeProgramByte + freeProgramBytes != beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2) {
+      if(firstFreeProgramByte + freeProgramBytes != beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2) {
         uint32_t diff = TO_BYTES(RAM_SIZE_IN_BLOCKS_NEW_HW - RAM_SIZE_IN_BLOCKS_OLD_HW);
         #if defined(DMCP_BUILD) && defined(OLD_HW)
-          if ((firstFreeProgramByte + freeProgramBytes - diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+          if((firstFreeProgramByte + freeProgramBytes - diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
             currentStep -= diff;
             firstFreeProgramByte -= diff;
           }
         #else
-          if ((firstFreeProgramByte + freeProgramBytes + diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+          if((firstFreeProgramByte + freeProgramBytes + diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
             currentStep += diff;
             firstFreeProgramByte += diff;
           }
@@ -3238,13 +3238,13 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     }
     break;
     case stateLoad: {
-      if (loadMode == LM_ALL) {
+      if(loadMode == LM_ALL) {
         enableLoad = true;
       }
     }
     break;
     case autoLoad: {
-      if (((loadMode == LM_ALL) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion)) ){
+      if(((loadMode == LM_ALL) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion)) ){
         enableLoad = true;
       }
     }
@@ -3424,7 +3424,7 @@ void fnDeleteBackup(uint16_t confirmation) {
         int e = errno;
         if(e != ENOENT) {
           displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "removing the backup failed with error code %d", e);
             moreInfoOnError("In function fnDeleteBackup:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

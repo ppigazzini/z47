@@ -36,7 +36,7 @@ static uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
     prod = (uint64_t)s * rand;
     i = prod >> 32;
     f = prod & 0xffffffff;
-    if (f <= 1 + ~s)    // 1+~s == -s but compilers whine
+    if(f <= 1 + ~s)    // 1+~s == -s but compilers whine
         return i;
 
     // We're in the position where the carry from the next word *might* cause
@@ -51,16 +51,16 @@ static uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
     // this process, so each each word beyond the first has a probability
     // of 2^-32 of not terminating the process.  That is, we're extremely
     // likely to stop very rapidly.
-    for (int j = 0; j < 10; j++) {
+    for(int j = 0; j < 10; j++) {
         rand = pcg32_random_r(&pcg32_global);
         prod = (uint64_t)s * rand;
         f2 = prod >> 32;
         f += f2;
         // On overflow, add the carry to our result
-        if (f < f2)
+        if(f < f2)
             return i + 1;
         // For not all 1 bits, there is no carry so return the result
-        if (f != 0xffffffff)
+        if(f != 0xffffffff)
             return i;
         // setup for the next word of randomness
         f = prod & 0xffffffff;
@@ -129,7 +129,7 @@ static void doIntRandomI(void) {
   longIntegerSubtract(maxi, mini, regX);
   if(longIntegerCompareUInt(regX, 0xFFFFFFFE) >= 0) { // 2^32 - 2
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function doIntRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     fnUndo(0);
@@ -158,7 +158,7 @@ err1:
 static void doRealRandomI(void) {
   real_t regX, regY, t, u, *lower;
 
-  if (!getRegisterAsReal(REGISTER_X, &regX) || !getRegisterAsReal(REGISTER_Y, &regY))
+  if(!getRegisterAsReal(REGISTER_X, &regX) || !getRegisterAsReal(REGISTER_Y, &regY))
     return;
 
   realSubtract(&regX, &regY, &t, &ctxtReal39);
@@ -202,11 +202,11 @@ void fnSeed(uint16_t unusedButMandatoryParameter) {
   real_t regX;
   unsigned char *p = (unsigned char *)regX.lsu;
 
-  if (!saveLastX())
+  if(!saveLastX())
     return;
 
   memset(&regX, 0, sizeof(regX));
-  if (!getRegisterAsReal(REGISTER_X, &regX))
+  if(!getRegisterAsReal(REGISTER_X, &regX))
     return;
   fnDrop(NOPARAM);
 

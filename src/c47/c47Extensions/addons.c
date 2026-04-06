@@ -11,7 +11,7 @@ Math changes:
    as it already works for a real and longint.
    (testSuite not in use for fnArg, therefore also not added)
 
-2. bufferize.c: closenim: changed the default for (0 CC EXIT to 0) instead of i.
+2. bufferize.c: closenim: changed the default for(0 CC EXIT to 0) instead of i.
    (testSuite not ifluenced).
 
 Todo
@@ -379,7 +379,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               }
 
               uint16_t lessEqualGreater = 0;
-              if (getSystemFlag(FLAG_FRACT)) {
+              if(getSystemFlag(FLAG_FRACT)) {
                 grpGroupingLeft  = 0;
                 grpGroupingRight = 0;
                 _fractionToString(REGISTER_X, aimBuffer, (int16_t *)&lessEqualGreater);
@@ -686,7 +686,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             bool decimalflag = false;
             for(i = 0; i < iMax; i++) {
               //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n",i,tempBuffer[i]&0xff,aimBuffer);fflush(stdout);
-              switch ((uint8_t) tempBuffer[i]) {
+              switch((uint8_t) tempBuffer[i]) {
                 case '0':
                 case '1':
                 case '2':
@@ -817,7 +817,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
             if(chsNeeded) pemAddNumber(ITM_CHS, false);
-            switch (opParam) {
+            switch(opParam) {
               case STRING_DATE:
               case STRING_TIME:
               case STRING_ANGLE_RADIAN:
@@ -849,7 +849,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
             varOrLblName[index] = 0;
           }
-          switch (paramMode) {
+          switch(paramMode) {
             case PARAM_DECLARE_LABEL:
             case PARAM_LABEL:
             case PARAM_REGISTER:
@@ -892,7 +892,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 }
               }
 
-              if ((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
+              if((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -900,7 +900,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
-              else if ((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
+              else if((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -936,7 +936,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 3;
                 tam.value = (opParam & 0X3F) + 0X1500;    // remove last shuffled register
               }
-              else if ((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
+              else if((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
                 tam.digitsSoFar = maxDigits - 1;
                 tam.value = (opParam2 / 10) + 25;
               }
@@ -984,7 +984,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
       default:
 err:
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Calculator mode or type not supported for EDIT command");
           moreInfoOnError("In function fnEdit:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1209,7 +1209,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
       if(tmpString100_OUT[0] != 0) {
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -1296,7 +1296,7 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
           }
           else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "cannot calculate specific type/tag");
               moreInfoOnError("In function fnTo_ms:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1466,7 +1466,7 @@ void fn_cnst_op_A(uint16_t option) {
   }
   else {
     displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
       moreInfoOnError("In function fn_cnst_op_A:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1492,7 +1492,7 @@ void fn_cnst_op_A(uint16_t option) {
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
   realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
 
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
     real34SetZero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     if(i != 0) {
@@ -1583,7 +1583,7 @@ void fnConvertStkToMx(uint16_t constVector) {
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
         moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1600,7 +1600,7 @@ void fnConvertStkToMx(uint16_t constVector) {
   }
 
 
-  for (int i = 0; i < elements; i++) {
+  for(int i = 0; i < elements; i++) {
     if(complexCoefs) {
       realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
       realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
@@ -1642,7 +1642,7 @@ void fnConvertMxToStk(uint16_t param) {
   }
 
 
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
@@ -2042,7 +2042,7 @@ void fnP_Alpha(void) {
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     create_filename(".REGS.TSV");
 
-    #if (VERBOSE_LEVEL >= 1)
+    #if(VERBOSE_LEVEL >= 1)
       clearScreen(2);
       print_linestr("Output Aim Buffer to drive:", true);
       print_linestr(filename_csv, false);
@@ -2067,7 +2067,7 @@ void fnP_Regs (uint16_t registerNo) {
 
     create_filename(".REGS.TSV");
 
-    #if (VERBOSE_LEVEL >= 1)
+    #if(VERBOSE_LEVEL >= 1)
       clearScreen(3);
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -2090,7 +2090,7 @@ void fnP_All_Regs(uint16_t option) {
 
     create_filename(".REGS.TSV");
 
-    #if (VERBOSE_LEVEL >= 1)
+    #if(VERBOSE_LEVEL >= 1)
       clearScreen(4);
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -2384,7 +2384,7 @@ void dms34ToReal34(uint16_t dms) {
 void notSexa(void) {
   copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, false, false));
     moreInfoOnError("In function notSexa:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2559,7 +2559,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
       default:
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "data type %s cannot be converted to a time!", getRegisterDataTypeName(toTimeParamReg[i], false, false));
           moreInfoOnError("In function fnToTime:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2714,7 +2714,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   // Check if err2 < err1 and swap output if needed
   // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
   // printRealToConsole(&err2,  "err2: "," "); printf("%d/%d\n",    m[0][1],m[1][1]);
-  if (realIsNegative(&cmpResult)) {
+  if(realIsNegative(&cmpResult)) {
       m[0][0] = m[0][1];
       m[1][0] = m[1][1];
   }

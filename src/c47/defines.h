@@ -296,15 +296,15 @@
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
-  #if (DEBUG_STAT == 0)
+  #if(DEBUG_STAT == 0)
     #undef STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 0
-  #if (DEBUG_STAT == 1)
+  #if(DEBUG_STAT == 1)
     #define STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 1
-  #if (DEBUG_STAT == 2)
+  #if(DEBUG_STAT == 2)
     #define STATDEBUG
     #define STATDEBUG_VERBOSE
   #endif // DEBUG_STAT == 2
@@ -496,7 +496,7 @@
   #define EXTRA_INFO_ON_CALC_ERROR 0
 #endif // TESTSUITE_BUILD
 
-#if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+#if(BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
   #define SIMULATOR_ON_SCREEN_KEYBOARD 0
 #endif // BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1
@@ -2000,7 +2000,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //******************************
 //* Macros replacing functions *
 //******************************
-#if (EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
+#if(EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
   #define EXTRA_INFO_MESSAGE(function, msg)
 #else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)

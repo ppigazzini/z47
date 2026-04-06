@@ -235,7 +235,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     clearSystemFlag(FLAG_ENGOVR);   // Default to SCI display in PEM for large reals
   }
 
-  #if (REAL34_WIDTH_TEST == 1)
+  #if(REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -424,8 +424,8 @@ overRange:
 
       real34ToReal(real34,&valueReal);
       realCopyAbs(&valueReal,&valueRealAbs);
-      for (unsigned int i=0; i<nbrOfElements(replacements); i++)
-        if ((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
+      for(unsigned int i=0; i<nbrOfElements(replacements); i++)
+        if((limitIrfrac >= replacements[i].option && runningOnSimOrUSB) || limitIrfrac == FULLIRFRAC)
           if(checkForAndChange(displayString, &valueReal, &valueRealAbs, replacements[i].cnst, toleranceIrrational, replacements[i].name, frontSpace, complex)) {
             IrFractionsCurrentStatus = CF_NORMAL;
             return;
@@ -439,7 +439,7 @@ overRange:
   //printReal34ToConsole(real34," ------- 001 >>>>>"," <<<<<\n");   //JM
   if(displayFormat == DF_SF) {                                 //convert real34 to string, eat away all zeroes from the right and give back to FIX as a real
     exponent = real34GetExponent(real34) + real34Digits(real34) - 1;
-    if (abs(exponent) <= displayHasNDigits) {
+    if(abs(exponent) <= displayHasNDigits) {
       char tmpString100[100];                           //cleaning up the REAL
       real34_t reduced;
       real_t tmp1;
@@ -1310,7 +1310,7 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
       displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
     }
     else {
-      if (displayFormat == DF_FIX) {
+      if(displayFormat == DF_FIX) {
         if(displayFormatDigits == 0 || noFix) {
           noFix = true;
           displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
@@ -1335,7 +1335,7 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
     complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
     overflow = stringWidth(displayString, font, true, true) - maxWidth;
   }
-  // if (overflown && overflow < -3 * digitWidth) {
+  // if(overflown && overflow < -3 * digitWidth) {
   //   printf("oops: %d\n", overflow);
   // }
 
@@ -1839,7 +1839,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
 
   sign = (lgInt->_mp_size < 0);
 
-  while (!longIntegerIsZero(lgInt)) {
+  while(!longIntegerIsZero(lgInt)) {
     digit = (int32_t)longIntegerModuloUInt(lgInt, (int32_t)(dispBase));
     longIntegerDivideUInt(lgInt, (int32_t)(dispBase), lgInt);
     displayString[i++] = baseDigits[digit];
@@ -2214,7 +2214,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (1)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -2274,7 +2274,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (2)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -3546,7 +3546,7 @@ goBreak1:
         int32_t strWid = stringWidth(tmpString + 2100, &numericFont, true, true);
         d = 2100;
         int16_t hadFirstRealDigit = 0;
-        while ( d < 2100 + stringByteLength(tmpString + 2100)) {
+        while( d < 2100 + stringByteLength(tmpString + 2100)) {
           if(hadFirstRealDigit == 0 && tmpString[d] >= '0' && tmpString[d] <='9') {
             hadFirstRealDigit = d - 2100;
           }
@@ -3873,7 +3873,7 @@ goBreak1:
       default:
         temporaryInformation = TI_NO_INFO;
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, showRegis);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "cannot SHOW %s%s", tmpString + 2100, getRegisterDataTypeName(showRegis, true, false));
           moreInfoOnError("In function fnC47Show:", errorMessage, NULL, NULL);
         #endif

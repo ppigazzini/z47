@@ -189,7 +189,7 @@
       if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0 || strcmp(argv[arg], "-h") == 0) {
         char cc[2];
         cc[1]=0;
-        #if (CALCMODEL == USER_R47)
+        #if(CALCMODEL == USER_R47)
           #define MODELTEXT "R47"
           cc[0]='r';
         #else

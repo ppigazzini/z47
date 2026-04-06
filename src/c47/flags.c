@@ -173,7 +173,7 @@ bool_t didSystemFlagChange(int32_t sf) {
     returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
     systemFlags0Changed &= ~((uint64_t)1 << flag);
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
     systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
   }
@@ -190,7 +190,7 @@ void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_.
   if(flag < 64) {
     systemFlags0Changed |= ((uint64_t)1 << (flag-0));
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     systemFlags1Changed |= ((uint64_t)1 << (flag-64));
   }
   else {
@@ -266,7 +266,7 @@ bool_t getFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       moreInfoOnError("In function getFlag:", "no local flags defined!", "", "");
     }
@@ -325,7 +325,7 @@ void fnSetFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnSetFlag:", "Tying to set a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -355,7 +355,7 @@ void fnSetFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
     }
@@ -367,7 +367,7 @@ void fnSetFlag(uint16_t flag) {
     globalFlags[flag/16] |= 1u << (flag%16);
   }
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
@@ -396,7 +396,7 @@ void fnClearFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnClearFlag:", "Tying to clear a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -427,7 +427,7 @@ void fnClearFlag(uint16_t flag) {
       }
     }
 
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
        moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
       }
@@ -439,7 +439,7 @@ void fnClearFlag(uint16_t flag) {
     globalFlags[flag/16] &= ~(1u << (flag%16));
   }
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
@@ -468,7 +468,7 @@ void fnFlipFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnFlipFlag:", "Tying to flip a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -503,7 +503,7 @@ void fnFlipFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
       }
@@ -515,7 +515,7 @@ void fnFlipFlag(uint16_t flag) {
     globalFlags[flag/16] ^=  1u << (flag%16);
   }
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);

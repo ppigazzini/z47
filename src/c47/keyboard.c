@@ -774,7 +774,7 @@ static void executeFunction(const char *data, int16_t item_);
       }
       default: {
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-currentMenu()].itemCatalogName, "is write-protected.");
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 endReturnTrue:
@@ -1032,7 +1032,7 @@ endReturnTrue:
               showSoftmenu(item);
             }
             else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && !tam.alpha) {
-              if ((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
+              if((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
                 showSoftmenu(item);
               }
               else {
@@ -1310,14 +1310,14 @@ endReturnTrue:
                 else {
                   if(item == ITM_XEQ && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    if (strcmp(varCatalogItem, "XEQ") != 0) {
+                    if(strcmp(varCatalogItem, "XEQ") != 0) {
                       calcRegister_t regist = findNamedLabel(varCatalogItem);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
                       }
                       else {
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
                           moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1326,14 +1326,14 @@ endReturnTrue:
                   }
                   else if(item == ITM_RCL && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    if (strcmp(varCatalogItem, "RCL") != 0) {
+                    if(strcmp(varCatalogItem, "RCL") != 0) {
                       calcRegister_t regist = findNamedVariable(varCatalogItem);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
                       }
                       else {
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
                           moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1619,7 +1619,7 @@ endReturnTrue:
           default:;
         }
       }
-      if ((calcMode == CM_EIM) && (result == -MNU_AIMCATALOG)) {
+      if((calcMode == CM_EIM) && (result == -MNU_AIMCATALOG)) {
         result = -MNU_EIMCATALOG;
       }
     }
@@ -1631,7 +1631,7 @@ endReturnTrue:
                shiftG ? key->gShifted :
                         key->primary;
       if(calcMode == CM_REGISTER_BROWSER) {
-        if (shiftF && key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+        if(shiftF && key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
           result = key->primaryAim;
         }
       }
@@ -1692,7 +1692,7 @@ endReturnTrue:
           break;
         }
         default: {
-          if (key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+          if(key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
             result = key->primaryAim;
           }
         }
@@ -2152,7 +2152,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
             else {
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2176,7 +2176,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
             else {
               displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named label", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2333,7 +2333,7 @@ RELEASE_END:
       programRunStop = PGM_STOPPED;
     }
 
-    #if (REAL34_WIDTH_TEST == 1)
+    #if(REAL34_WIDTH_TEST == 1)
       longInteger_t lgInt;
       longIntegerInit(lgInt);
     #endif // (REAL34_WIDTH_TEST == 1)
@@ -2405,7 +2405,7 @@ RELEASE_END:
               refreshScreen(118);
             }
             keyActionProcessed = true;
-            #if (REAL34_WIDTH_TEST == 1)
+            #if(REAL34_WIDTH_TEST == 1)
               if(++largeur > SCREEN_WIDTH) {
                 largeur--;
               }
@@ -2442,7 +2442,7 @@ RELEASE_END:
               refreshScreen(119);
             }
             keyActionProcessed = true;
-            #if (REAL34_WIDTH_TEST == 1)
+            #if(REAL34_WIDTH_TEST == 1)
               if(--largeur < 20) {
                 largeur++;
               }
@@ -3107,7 +3107,7 @@ RELEASE_END:
                       }
                       else {
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", label);
                           moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3122,7 +3122,7 @@ RELEASE_END:
                       }
                       else {
                         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", var);
                           moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3239,7 +3239,7 @@ RELEASE_END:
         }
       }
     }
-    #if (REAL34_WIDTH_TEST == 1)
+    #if(REAL34_WIDTH_TEST == 1)
       longIntegerFree(lgInt);
     #endif // (REAL34_WIDTH_TEST == 1)
   }
@@ -4047,7 +4047,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
         else {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         }
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         if(!polarOk && getSystemFlag(FLAG_POLAR)) {
           sprintf(errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with %s(%s) in X and %s(%s) in Y!",       getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getRegisterTagName((REGISTER_X), 0), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false), getRegisterTagName((REGISTER_Y), 0));
         }

@@ -182,7 +182,7 @@ static void _removeLabelsAssignments() {
   int16_t i;
   char label[15];
   uint8_t labelLength;
-  for (i=0; i<numberOfLabels; i++) {
+  for(i=0; i<numberOfLabels; i++) {
     if((labelList[i].program == currentProgramNumber) && (labelList[i].step > 0)) {
       labelLength = labelList[i].labelPointer[0];
       xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
@@ -411,7 +411,7 @@ int32_t pemLeftOffset(int32_t y) {
 
 
 static bool_t _isAngleType(uint8_t literalType) {
-  switch (literalType) {
+  switch(literalType) {
     case STRING_ANGLE_RADIAN:
     case STRING_ANGLE_GRAD:
     case STRING_ANGLE_DEGREE:
@@ -1304,10 +1304,10 @@ static void _pemCloseAngleInput(int item) {
             [ITM_RAD2]   = STRING_ANGLE_RADIAN
         };
         int id = -1;
-        if (item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
+        if(item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
             id = angle_ids[item];
         }
-        if (id != -1) {
+        if(id != -1) {
             *(tmpPtr++) = id;
         }
         *(tmpPtr++) = stringByteLength(numBuffer);
@@ -1378,7 +1378,7 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  else if ((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
+  else if((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
     editingLiteralType = 0;
     pemCloseNumberInput();
     aimBuffer[0] = '!';

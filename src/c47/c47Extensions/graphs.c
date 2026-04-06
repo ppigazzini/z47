@@ -1239,18 +1239,18 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG)
             printf("Before edge checking: 001 yN1 =%4i yN0=%4i minN_y=%4i : ", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
             printf("    xN1 =%4i  xo=%4i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
-            if (!bothOutOfScreen01 && outOfScreen0 && !outOfScreen1) {
+            if(!bothOutOfScreen01 && outOfScreen0 && !outOfScreen1) {
               printf("POTENTIAL ENTRY DEBUG: yN0=%d yN1=%d slope=%s from=%s\n", yN0, yN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE", yN0 >= SCREEN_HEIGHT_GRAPH ? "BOTTOM" : (yN0 < minN_y ? "TOP" : "MIDDLE"));
             }
           #endif // STATDEBUG
 
 
-            if (!bothOutOfScreen01) {
+            if(!bothOutOfScreen01) {
               // Coming in from bottom - BOTH positive and negative slopes
-              if (outOfScreen0 && !outOfScreen1 && yN0 >= SCREEN_HEIGHT_GRAPH) {
+              if(outOfScreen0 && !outOfScreen1 && yN0 >= SCREEN_HEIGHT_GRAPH) {
                 //printf("ENTRY CLIP BOTTOM: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
                 int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
-                if (yN1 != yN0) {
+                if(yN1 != yN0) {
                   float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
                   //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
                   xo = xo + dxN;
@@ -1259,10 +1259,10 @@ void graph_plotmem(void) {
                 }
               }
               // Coming in from top - BOTH positive and negative slopes
-              else if (outOfScreen0 && !outOfScreen1 && yN0 < minN_y) {
+              else if(outOfScreen0 && !outOfScreen1 && yN0 < minN_y) {
                 //printf("ENTRY CLIP TOP: yN0=%d yN1=%d xo=%d xN1=%d slope=%s\n", yN0, yN1, xo, xN1, yN1 > yN0 ? "POSITIVE" : "NEGATIVE");
                 int16_t dY = abs(yN0 - minN_y);
-                if (yN1 != yN0) {
+                if(yN1 != yN0) {
                   float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
                   //printf("  -> Calculated dxN=%f, new xo=%f\n", dxN, xo + dxN);
                   xo = xo + dxN;
@@ -1277,7 +1277,7 @@ void graph_plotmem(void) {
              (yN1 < yN0 && xN1 > xo && yN0 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
             //printf("EXIT CLIP BOTTOM: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
-            if (yN1 == yN0) continue; // Skip horizontal lines
+            if(yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
@@ -1288,7 +1288,7 @@ void graph_plotmem(void) {
                   (yN1 > yN0 && xN1 > xo && yN0 < minN_y && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
             //printf("EXIT CLIP TOP: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(yN0 - minN_y);
-            if (yN1 == yN0) continue; // Skip horizontal lines
+            if(yN1 == yN0) continue; // Skip horizontal lines
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = minN_y;
@@ -1431,7 +1431,7 @@ void graph_plotmem(void) {
       }
       else {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "There is no statistical data available!");
           moreInfoOnError("In function graph_plotmem:", errorMessage, NULL, NULL);
         #endif // EXTRA_INFO_ON_CALC_ERROR == 1

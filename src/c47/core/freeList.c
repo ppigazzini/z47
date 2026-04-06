@@ -221,7 +221,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
                                           char **strs = backtrace_symbols(callstack, frames);
                                           printf("%30s%42s%s\n\n\n", "", "freeListFree called from: ", strs[1]);
                                           printf("%30s%42s%s\n\n\n", "", "backtrace: ", "");
-                                          for (int i = 1; i < frames; i++) {
+                                          for(int i = 1; i < frames; i++) {
                                               printf("%30s%42d: %s\n", "", i, strs[i]);
                                           }
                                           free(strs);
@@ -245,7 +245,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
                                           char **strs = backtrace_symbols(callstack, frames);
                                           printf("%30s%42s%s\n\n\n", "", "freeListFree called from: ", strs[1]);
                                           printf("%30s%42s%s\n\n\n", "", "backtrace: ", "");
-                                          for (int i = 1; i < frames; i++) {
+                                          for(int i = 1; i < frames; i++) {
                                               printf("%30s%42d: %s\n", "", i, strs[i]);
                                           }
                                           free(strs);

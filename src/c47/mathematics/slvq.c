@@ -32,7 +32,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   if(   realIsZero(&aReal) && realIsZero(&aImag)
      && realIsZero(&bReal) && realIsZero(&bImag)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvq:", "cannot use 0 for Y and Z as input of SLVQ", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;

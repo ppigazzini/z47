@@ -30,7 +30,7 @@ TO_QSPI void (* const multiplication[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMB
  * \param[in] unusedButMandatoryParameter
  * \return void
  ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
   void mulError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot multiply %s", getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -641,7 +641,7 @@ void mulRemaRema(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot multiply %d" STD_CROSS "%d-matrix and %d" STD_CROSS "%d-matrix",
               y.header.matrixRows, y.header.matrixColumns,
               x.header.matrixRows, x.header.matrixColumns);
@@ -805,7 +805,7 @@ void mulCxmaCxma(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot multiply %d" STD_CROSS "%d-matrix and %d" STD_CROSS "%d-matrix",
               y.header.matrixRows, y.header.matrixColumns,
               x.header.matrixRows, x.header.matrixColumns);

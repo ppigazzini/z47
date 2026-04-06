@@ -501,7 +501,7 @@ void debugNIM(void) {
 */
 
 
-#if (DEBUG_INSTEAD_STATUS_BAR == 1)
+#if(DEBUG_INSTEAD_STATUS_BAR == 1)
   /********************************************//**
    * \brief Returns the name of a calc mode
    *

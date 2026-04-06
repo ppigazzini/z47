@@ -30,7 +30,7 @@ TO_QSPI void (* const addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_
  * \param void
  * \return void
  ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
   void addError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot add %s", getRegisterDataTypeName(REGISTER_X, true, false));
@@ -432,7 +432,7 @@ static void _addString(const char *stringToAppend) {
 
   if(stringGlyphLength(REGISTER_STRING_DATA(REGISTER_Y)) + stringGlyphLength(stringToAppend) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
     displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the resulting string would be %d (Y %d + X %d) characters long. Maximum is %d",
                                                            stringGlyphLength(REGISTER_STRING_DATA(REGISTER_Y)) + stringGlyphLength(stringToAppend),
                                                                  stringGlyphLength(REGISTER_STRING_DATA(REGISTER_Y)),
@@ -652,7 +652,7 @@ void addRemaRema(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
@@ -908,7 +908,7 @@ void addCxmaCxma(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
