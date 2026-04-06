@@ -620,7 +620,7 @@ void fnXToDate(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       if(getRegisterAngularMode(REGISTER_X) == amNone) {
-        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);  //change from !YYSystem needed here
+        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, false);     //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
         checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
         temporaryInformation = TI_DAY_OF_WEEK;
         if(lastErrorCode != 0) {
