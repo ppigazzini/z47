@@ -16,21 +16,10 @@ void *freeListAlloc(size_t sizeInBlocks) {
     sizeInBlocks = 1;
   }
 
-  #if !defined(DMCP_BUILD)
-    //if(debugMemAllocation) {
-    //  printf("Allocating %" PRIu64 " bytes (%" PRIu16 " blocks)\n", (uint64_t)TO_BYTES(sizeInBlocks), sizeInBlocks);
-    //}
-  #endif // !DMCP_BUILD
-
   // Search the smalest hole where the claimed block fits
   //debugMemory();
   for(i=0; i<numberOfFreeMemoryRegions; i++) {
     if(freeMemoryRegions[i].sizeInBlocks == sizeInBlocks) {
-      #if !defined(DMCP_BUILD)
-        //if(debugMemAllocation) {
-        //  printf("The block found is the size of the one claimed at address %u\n", freeMemoryRegions[i].blockAddress);
-        //}
-      #endif // !DMCP_BUILD
       pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[i].blockAddress);
       xcopy(freeMemoryRegions + i, freeMemoryRegions + i + 1, (numberOfFreeMemoryRegions - i - 1) * sizeof(freeMemoryRegion_t));
       numberOfFreeMemoryRegions--;
@@ -67,11 +56,6 @@ void *freeListAlloc(size_t sizeInBlocks) {
     return NULL;
   }
 
-  #if !defined(DMCP_BUILD)
-    //if(debugMemAllocation) {
-    //  printf("The block found is larger than the one claimed\n");
-    //}
-  #endif // !DMCP_BUILD
   pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[minBlock].blockAddress);
   freeMemoryRegions[minBlock].blockAddress += sizeInBlocks;
   freeMemoryRegions[minBlock].sizeInBlocks -= sizeInBlocks;
@@ -241,7 +225,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
                                               printf("%30s%42d: %s\n", "", i, strs[i]);
                                           }
                                           free(strs);
-                                        #endif 
+                                        #endif
           fflush(stderr);
         }
         if(numberOfAllocatedMemoryRegions - region - 1) {

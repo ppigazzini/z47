@@ -440,9 +440,6 @@
 //*********************************
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
-#define DEBUG_PANEL                      0 // Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
-#define DEBUG_REGISTER_L                 0 // Showing register L content on the PC GUI
-#define SHOW_MEMORY_STATUS               0 // Showing the memory status on the PC GUI
 #define MMHG_PA_133_3224                 1 // mmHg to Pa conversion coefficient is 133.3224 and not 133.322387415
 #define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 // 1001 decimal digits: 3328 ≃ log2(10^1001)
 #define MAX_FACTORIAL                    450  // Auto conversion to Real for > 450
@@ -1691,15 +1688,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RBR_LOCAL                                  1 // Local registers are browsed
 #define RBR_NAMED                                  2 // Named variables are browsed
 
-// Debug window
-#define DBG_BIT_FIELDS                             0
-#define DBG_FLAGS                                  1
-#define DBG_REGISTERS                              2
-#define DBG_LOCAL_REGISTERS                        3
-#define DBG_STATISTICAL_SUMS                       4
-#define DBG_NAMED_VARIABLES                        5
-#define DBG_TMP_SAVED_STACK_REGISTERS              6
-
 // alpha selection menus
 #define CATALOG_NONE                               0 // CATALOG_NONE must be 0
 #define CATALOG_CNST                               1
@@ -2208,36 +2196,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #error Only one of OS32BIT and OS64BIT must be defined
 #endif // OS32BIT && OS64BIT
 
-#if defined(PC_BUILD)
-  #if defined(WIN32) // No DEBUG_PANEL mode for Windows
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-  #endif // WIN32
-  #if defined(RASPBERRY) // No DEBUG_PANEL mode for Raspberry Pi
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-  #endif // RASPBERRY
-#endif // PC_BUILD
-
 #if defined(DMCP_BUILD) || (SIMULATOR_ON_SCREEN_KEYBOARD == 0)
-  #undef  DEBUG_PANEL
-  #define DEBUG_PANEL 0
-  #undef  DEBUG_REGISTER_L
-  #define DEBUG_REGISTER_L 0
-  #undef  SHOW_MEMORY_STATUS
-  #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
 #endif // DMCP_BUILD || SIMULATOR_ON_SCREEN_KEYBOARD == 0
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
   #undef  DMCP_BUILD
-  #undef  DEBUG_PANEL
-  #define DEBUG_PANEL 0
-  #undef  DEBUG_REGISTER_L
-  #define DEBUG_REGISTER_L 0
-  #undef  SHOW_MEMORY_STATUS
-  #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS

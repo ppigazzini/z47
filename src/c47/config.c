@@ -1541,11 +1541,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     matrixIndex = INVALID_VARIABLE; // Unset matrix index
 
-
-    #if defined(PC_BUILD)
-      debugWindow = DBG_REGISTERS;
-    #endif // PC_BUILD
-
     decContextDefault(&ctxtReal34, DEC_INIT_DECQUAD);
 
     decContextDefault(&ctxtReal4, DEC_INIT_DECSINGLE);
@@ -1654,7 +1649,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     calcModeNormal();
 
     #if defined(PC_BUILD)
-      debugMemAllocation = true;
       forceTamAlpha = false;
       deadKey = 0;
     #endif // PC_BUILD
@@ -1779,12 +1773,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     timerValue             = 0u;
     timerStartTime         = TIMER_APP_STOPPED;
     timerTotalTime         = 0u;
-
-    #if (DEBUG_PANEL == 1)
-      debugWindow = DBG_REGISTERS;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkHexaString), false);
-      refreshDebugPanel();
-    #endif // (DEBUG_PANEL == 1)
 
     #if defined(DMCP_BUILD)
       //Check and update current power status (USB / LOWBAT)
