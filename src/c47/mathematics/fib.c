@@ -62,7 +62,7 @@ static uint8_t FibonacciReal(const real_t *n, real_t *res, realContext_t *realCo
   realPower(const_PHI, n, &a, realContext);                             // a   = PHI^(n)
   realDivide(const_1, &a, &b, realContext);                             // b   = PHI^(-n) = = 1/PHI^(n)
   realMultiply(const_pi, n, res, realContext);                          // res = PI * n
-  WP34S_Cvt2RadSinCosTan(res, amRadian, NULL, res, NULL, realContext);  // res = COS(PI * n)
+  C47_WP34S_Cvt2RadSinCosTan(res, amRadian, NULL, res, NULL, realContext);  // res = COS(PI * n)
   realMultiply(&b, res, &b, realContext);                               // b   = PHI^(-n) * COS(PI * n)
   realSquareRoot(const_5, res, realContext);                            // res = SQRT(5)
   realSubtract(&a, &b, &a, realContext);                                // a   = PHI^(n) - PHI^(-n) * COS(PI * n)

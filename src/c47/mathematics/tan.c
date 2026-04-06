@@ -18,7 +18,7 @@ static void tanReal(void) {
   if(realIsSpecial(&tan))
     r = const_NaN;
   else {
-    WP34S_Cvt2RadSinCosTan(&tan, xAngularMode, &sin, &cos, &tan, &ctxtReal75);
+    C47_WP34S_Cvt2RadSinCosTan(&tan, xAngularMode, &sin, &cos, &tan, &ctxtReal75);
     if(realIsZero(&sin)) {
        realSetPositiveSign(&tan);
     }
@@ -60,7 +60,7 @@ uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real
   real_t numerReal, denomReal;
   real_t numerImag, denomImag;
 
-  WP34S_Cvt2RadSinCosTan(xReal, amRadian, &sina, &cosa, NULL, realContext);
+  C47_WP34S_Cvt2RadSinCosTan(xReal, amRadian, &sina, &cosa, NULL, realContext);
   WP34S_SinhCosh(xImag, &sinhb, &coshb, realContext);
 
   realMultiply(&sina, &coshb, &numerReal, realContext);
