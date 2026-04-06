@@ -204,7 +204,9 @@ void composeJulianDay(const real34_t *year, const real34_t *month, const real34_
   real34_t fg, y, m, d;
 
   uInt32ToReal34(firstGregorianDay, &fg);
-  real34Copy(year, &y); real34Copy(month, &m); real34Copy(day, &d);
+  real34Copy(year, &y);
+  real34Copy(month, &m);
+  real34Copy(day, &d);
   composeJulianDay_g(&y, &m, &d, jd);
   if((firstGregorianDay > 0u) && real34CompareLessThan(jd, &fg)) {
     composeJulianDay_j(&y, &m, &d, jd);

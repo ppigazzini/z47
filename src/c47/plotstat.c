@@ -7,7 +7,7 @@
 void fnPlotRegressionLine(uint16_t plotMode);
 
 
-static real_t RR,SMI,aa0,aa1,aa2,sa0, sa1; //L.R. variables
+static real_t RR, SMI, aa0, aa1, aa2, sa0, sa1; //L.R. variables
 static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
 
 
@@ -194,31 +194,31 @@ void clearScreenPixels(void) {
 }
 
 
-void plotcross(int16_t xn, int16_t yn) {              // Plots cross at xn,yn
-  plotline1(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);                       //   PLOT a cross
-  plotline1(max((int16_t)xn-2,0),yn+2,xn+2,max((int16_t)yn-2,0));
+void plotcross(int16_t xn, int16_t yn) {              // Plots cross at xn, yn
+  plotline1(max((int16_t)xn-2, 0), max((int16_t)yn-2, 0),xn+2, yn+2);                       //   PLOT a cross
+  plotline1(max((int16_t)xn-2, 0), yn+2, xn+2, max((int16_t)yn-2, 0));
 }
 
 
-void plotplus(int16_t xn, int16_t yn) {              // Plots plus xn,yn
-  plotline1(max((int16_t)xn-3,0),yn,xn+3,yn);          // PLOT a plus
-  plotline1(xn,yn+3,xn,max((int16_t)yn-3,0));
+void plotplus(int16_t xn, int16_t yn) {              // Plots plus xn, yn
+  plotline1(max((int16_t)xn-3, 0),yn, xn+3, yn);          // PLOT a plus
+  plotline1(xn, yn+3, xn, max((int16_t)yn-3, 0));
 }
 
 
-void plotbox(int16_t xn, int16_t yn) {                // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-  plotline1   (max((int16_t)xn-2,0),max((int16_t)yn-2,0),max((int16_t)xn-2,0),max((int16_t)yn-1,0));                       //   PLOT a box
-  placePixel  (max((int16_t)xn-1,0),max((int16_t)yn-2,0));
-  plotline1   (max((int16_t)xn-2,0),yn+2,max((int16_t)xn-2,0),yn+1);
-  placePixel  (max((int16_t)xn-1,0),yn+2);
-  plotline1   (xn+2,max((int16_t)yn-2,0),xn+1,max((int16_t)yn-2,0));
-  placePixel  (xn+2,max((int16_t)yn-1,0));
-  plotline1   (xn+2,yn+2,xn+2,yn+1);
-  placePixel  (xn+1,yn+2);
+void plotbox(int16_t xn, int16_t yn) {                // Plots line from xo, yo to xn, yn; uses temporary x1, y1
+  plotline1   (max((int16_t)xn-2, 0), max((int16_t)yn-2, 0), max((int16_t)xn-2, 0), max((int16_t)yn-1, 0));                       //   PLOT a box
+  placePixel  (max((int16_t)xn-1, 0), max((int16_t)yn-2, 0));
+  plotline1   (max((int16_t)xn-2, 0), yn+2, max((int16_t)xn-2, 0),yn+1);
+  placePixel  (max((int16_t)xn-1, 0), yn+2);
+  plotline1   (xn+2, max((int16_t)yn-2, 0),xn+1, max((int16_t)yn-2, 0));
+  placePixel  (xn+2, max((int16_t)yn-1, 0));
+  plotline1   (xn+2, yn+2, xn+2, yn+1);
+  placePixel  (xn+1, yn+2);
 }
 
 
-void plotrect(int16_t a, int16_t b, int16_t c, int16_t d) {                // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
+void plotrect(int16_t a, int16_t b, int16_t c, int16_t d) {                // Plots rectangle from xo, yo to xn, yn; uses temporary x1, y1
   plotline1(a, b, c, b);
   plotline1(a, b, a, d);
   plotline1(c, d, c, b);
@@ -228,37 +228,37 @@ void plotrect(int16_t a, int16_t b, int16_t c, int16_t d) {                // Pl
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
   static void plotHisto_coln(int16_t x, int16_t y, int16_t y_min, int16_t y_wid, int16_t colw) {  //x is 0..(n-1)
-    plotrect(max((int16_t)x - colw,0), y_min + y_wid,  x + colw, y);
+    plotrect(max((int16_t)x - colw, 0), y_min + y_wid,  x + colw, y);
     }
 #endif //SAVE_SPACE_DM42_13GRF
 
 
 
-void plotbox_fat(int16_t xn, int16_t yn) {                                         // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-  plotrect(max((int16_t)xn-3,0),max((int16_t)yn-3,0),xn+3,yn+3);
-  plotrect(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);
+void plotbox_fat(int16_t xn, int16_t yn) {                                         // Plots line from xo, yo to xn, yn; uses temporary x1, y1
+  plotrect(max((int16_t)xn-3, 0), max((int16_t)yn-3, 0), xn+3, yn+3);
+  plotrect(max((int16_t)xn-2, 0), max((int16_t)yn-2, 0), xn+2, yn+2);
 }
 
 
-void plotline1(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-   pixelline(xo,yo,xn,yn,1);
+void plotline1(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo, yo to xn, yn; uses temporary x1, y1
+   pixelline(xo, yo, xn, yn, 1);
 }
 
 
-void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-   //printf("From (%8d,%8d) to (%8d, %8d)\n", xo,yo,xn,yn);
-   pixelline(xo,yo,xn,yn,1);
-   pixelline(max((int16_t)xo-1,0),yo,max((int16_t)xn-1,0),yn,1);
-   pixelline(xo,max((int16_t)yo-1,0),xn,max((int16_t)yn-1,0),1);
-   //   pixelline(xo+1,yo,xn+1,yn,1);   //Do not use the full doubling, without it give as nice profile if the slope changes
-   //   pixelline(xo,yo+1,xn,yn+1,1);
+void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                   // Plots line from xo, yo to xn, yn; uses temporary x1, y1
+   //printf("From (%8d, %8d) to (%8d, %8d)\n", xo, yo, xn, yn);
+   pixelline(xo, yo, xn, yn, 1);
+   pixelline(max((int16_t)xo-1, 0), yo, max((int16_t)xn-1, 0), yn, 1);
+   pixelline(xo, max((int16_t)yo-1, 0), xn, max((int16_t)yn-1, 0),1);
+   //   pixelline(xo+1, yo, xn+1, yn, 1);   //Do not use the full doubling, without it give as nice profile if the slope changes
+   //   pixelline(xo, yo+1, xn, yn+1, 1);
 }
 
 
 
 // plotline3 does curve fitting every 2, 3, 4, and 5 points plotted.
-//           it needs to be started prior to data using plotline3(0,0,0,0,true,false)
-//           it needs to be stopped after the last data plotline3(0,0,0,0,false,true) which will plot the last segment provided there were more than 4 points
+//           it needs to be started prior to data using plotline3(0, 0, 0, 0, true, false)
+//           it needs to be stopped after the last data plotline3(0, 0, 0, 0, false, true) which will plot the last segment provided there were more than 4 points
 
 #if defined(USECURVES)
 static void evalHermite(
@@ -290,12 +290,12 @@ static bool_t ifAnyMax(uint16_t *px, uint16_t *py, int cnt) {
 void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time, bool_t final_segment) {
 
   #if !defined(USECURVES)
-    plotline2(xo,yo,xn,yn);
+    plotline2(xo, yo, xn, yn);
   #endif //USECURVES
 
 
   #if defined(USECURVES)
-    //printf("plotline3: %10d %10d %10d %10d ", xo,yo, xn, yn);
+    //printf("plotline3: %10d %10d %10d %10d ", xo, yo, xn, yn);
     #define maxSteps 6
     static uint16_t px[5];
     static uint16_t  py[5];
@@ -339,13 +339,14 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
         if(count == 2) {
             float prev_x = px[0], prev_y = py[0];
             if(ifAnyMax(px, py, count)) {
-                int steps = min(1,max(maxSteps,z[1]));
+                int steps = min(1, max(maxSteps, z[1]));
                 for(int i = 1; i <= steps; i++) {
                     float t = (float)i / steps;
                     float sx = (1 - t) * px[0] + t * px[1];
                     float sy = (1 - t) * py[0] + t * py[1];
                     plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx; prev_y = sy;
+                    prev_x = sx;
+                    prev_y = sy;
                 }
             } else {
                     plotline2(ROUND_F2I(px[0]), ROUND_F2I(py[0]), ROUND_F2I(px[1]), ROUND_F2I(py[1]));
@@ -356,14 +357,15 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
         } else if(count == 3) {
             float prev_x = px[0], prev_y = py[0];
             if(!ifAnyMax(px, py, count)) {
-                int steps = min(1,max(maxSteps,z[1] + z[2]));
+                int steps = min(1, max(maxSteps, z[1] + z[2]));
                 for(int i = 1; i <= steps; i++) {
                     float t = (float)i / steps;
                     float u = 1 - t;
                     float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
                     float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
                     plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx; prev_y = sy;
+                    prev_x = sx;
+                    prev_y = sy;
                 }
             } else {
                     plotline2(ROUND_F2I(px[1]), ROUND_F2I(py[1]), ROUND_F2I(px[2]), ROUND_F2I(py[2]));
@@ -379,7 +381,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 
             float prev_x = px[1], prev_y = py[1];
             if(!ifAnyMax(px, py, count)) {
-                int steps = min(1,max(maxSteps,z[1] + z[2] + z[3]));
+                int steps = min(1, max(maxSteps, z[1] + z[2] + z[3]));
                 for(int i = 1; i <= steps; i++) {
                     float sx, sy;
                     evalHermite((float)i / steps,
@@ -387,7 +389,8 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
                                 py[1], py[2], t1y, t2y,
                                 &sx, &sy);
                     plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx; prev_y = sy;
+                    prev_x = sx;
+                    prev_y = sy;
                 }
             } else {
                     plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
@@ -403,12 +406,13 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 
                 float prev_x = px[1], prev_y = py[1];
                 if(!ifAnyMax(px, py, 5)) {
-                    int steps = min(1,max(maxSteps,z[1] + z[2]));
+                    int steps = min(1, max(maxSteps, z[1] + z[2]));
                     for(int i = 1; i <= steps; i++) {
                         float sx, sy;
                         evalHermite((float)i / steps, px[1], px[2], t1x, t2x, py[1], py[2], t1y, t2y, &sx, &sy);
                         plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                        prev_x = sx; prev_y = sy;
+                        prev_x = sx;
+                        prev_y = sy;
                     }
                 } else {
                         plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
@@ -423,12 +427,13 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 
                 float prev_x = px[2], prev_y = py[2];
                 if(!ifAnyMax(px, py, 5)) {
-                    int steps = min(1,max(maxSteps,z[2] + z[3] + z[4]));
+                    int steps = min(1, max(maxSteps, z[2] + z[3] + z[4]));
                     for(int i = 1; i <= steps; i++) {
                         float sx, sy;
                         evalHermite((float)i / steps, px[2], px[3], t1x, t2x, py[2], py[3], t1y, t2y, &sx, &sy);
                         plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                        prev_x = sx; prev_y = sy;
+                        prev_x = sx;
+                        prev_y = sy;
                     }
                 } else {
                     ;
@@ -445,7 +450,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 
         if(!ifAnyMax(px, py, count)) {
             float prev_x = px[3], prev_y = py[3];
-            int steps = min(1,max(maxSteps,z[3] + z[4]));
+            int steps = min(1, max(maxSteps, z[3] + z[4]));
             for(int i = 1; i <= steps; i++) {
                 float sx, sy;
                 evalHermite((float)i / steps,
@@ -469,7 +474,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 //Exhange the name of this routine with pixelline() above to try Bresenham
 void pixelline(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
-    printf("pixelline 1: xo,yo,xn,yn: %d %d   %d %d \n",xo,yo,xn,yn);
+    printf("pixelline 1: xo,yo,  xn,yn: %d,%d    %d,%d \n",xo, yo, xn, yn);
   #endif // STATDEBUG_VERBOSE && PC_BUILD
 
   //Bresenham line drawing: Pauli's link. Also here: http://forum.6502.org/viewtopic.php?f=10&t=2247&start=555
@@ -510,8 +515,8 @@ void graphAxisDraw (void){
 
   clearScreenPixels();
   //GRAPH ZERO AXIS
-  yzero = screen_window_y(y_min,0,y_max);
-  xzero = screen_window_x(x_min,0,x_max);
+  yzero = screen_window_y(y_min, 0, y_max);
+  xzero = screen_window_x(x_min, 0, x_max);
 
   uint32_t minnx, minny;
   minny = 0;
@@ -521,13 +526,13 @@ void graphAxisDraw (void){
   //SEPARATING LINE
   cnt = minny;
   while(cnt!=SCREEN_HEIGHT_GRAPH) {
-    setBlackPixel(minnx-1,cnt);
-    setBlackPixel(minnx-2,cnt);
+    setBlackPixel(minnx-1, cnt);
+    setBlackPixel(minnx-2, cnt);
     cnt++;
   }
 
     #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("xzero=%d yzero=%d   \n",(int)xzero,(int)yzero);
+    printf("xzero=%d yzero=%d   \n", (int)xzero, (int)yzero);
     #endif // STATDEBUG && PC_BUILD
 
   float x;
@@ -538,7 +543,7 @@ void graphAxisDraw (void){
     cnt = minnx;
 
     while(cnt != SCREEN_WIDTH_GRAPH - 1) {
-      setBlackPixel(cnt,yzero);
+      setBlackPixel(cnt, yzero);
         #if defined(STATDEBUG) && defined(PC_BUILD)
         printf("cnt=%d   \n",(int)cnt);
         #endif // STATDEBUG && PC_BUILD
@@ -548,55 +553,55 @@ void graphAxisDraw (void){
    force_refresh(timed);
 
    if(0<x_max && 0>x_min) {
-     for(x=0; x<=x_max; x+=tick_int_x) {                         //draw x ticks
+     for(x=0; x<=x_max; x+=tick_int_x) {                           //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
          printf(">> x=%d   \n",(int)x);
           #endif // STATDEBUG && PC_BUILD
-       cnt = screen_window_x(x_min,x,x_max);
-       //printf(">>>>>A %f %d ",x,cnt);
-       setBlackPixel(cnt,min(yzero+1,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-1,minny));                    //tick
+       cnt = screen_window_x(x_min, x, x_max);
+       //printf(">>>>>A %f %d ",x, cnt);
+       setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-1, minny));                    //tick
      }
-     for(x=0; x>=x_min; x+=-tick_int_x) {                        //draw x ticks
-       cnt = screen_window_x(x_min,x,x_max);
-       //printf(">>>>>B %f %d ",x,cnt);
-       setBlackPixel(cnt,min(yzero+1,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-1,minny));                    //tick
+     for(x=0; x>=x_min; x+=-tick_int_x) {                          //draw x ticks
+       cnt = screen_window_x(x_min, x, x_max);
+       //printf(">>>>>B %f %d ",x, cnt);
+       setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-1, minny));                    //tick
      }
-     for(x=0; x<=x_max; x+=tick_int_x*5) {                       //draw x ticks
-       cnt = screen_window_x(x_min,x,x_max);
-       setBlackPixel(cnt,min(yzero+2,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-2,minny));                    //tick
-       setBlackPixel(cnt,min(yzero+3,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-3,minny));                    //tick
+     for(x=0; x<=x_max; x+=tick_int_x*5) {                         //draw x ticks
+       cnt = screen_window_x(x_min, x, x_max);
+       setBlackPixel(cnt, min(yzero+2, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-2, minny));                    //tick
+       setBlackPixel(cnt, min(yzero+3, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-3, minny));                    //tick
      }
-     for(x=0; x>=x_min; x+=-tick_int_x*5) {                      //draw x ticks
-       cnt = screen_window_x(x_min,x,x_max);
-       setBlackPixel(cnt,min(yzero+2,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-2,minny));                    //tick
-       setBlackPixel(cnt,min(yzero+3,SCREEN_HEIGHT_GRAPH-1));    //tick
-       setBlackPixel(cnt,max(yzero-3,minny));                    //tick
+     for(x=0; x>=x_min; x+=-tick_int_x*5) {                        //draw x ticks
+       cnt = screen_window_x(x_min, x, x_max);
+       setBlackPixel(cnt, min(yzero+2, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-2, minny));                    //tick
+       setBlackPixel(cnt, min(yzero+3, SCREEN_HEIGHT_GRAPH-1));    //tick
+       setBlackPixel(cnt, max(yzero-3, minny));                    //tick
      }
    }
    else {
-     for(x=x_min; x<=x_max; x+=tick_int_x) {                     //draw x ticks
+     for(x=x_min; x<=x_max; x+=tick_int_x) {                       //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>x=%d   \n",(int)x);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_x(x_min,x,x_max);
-        //printf(">>>>>A %f %d ",x,cnt);
-          setBlackPixel(cnt,min(yzero+1,SCREEN_HEIGHT_GRAPH-1)); //tick
-          setBlackPixel(cnt,max(yzero-1,minny));                 //tick
+        cnt = screen_window_x(x_min, x, x_max);
+        //printf(">>>>>A %f %d ",x, cnt);
+          setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1)); //tick
+          setBlackPixel(cnt, max(yzero-1, minny));                 //tick
        }
-      for(x=x_min; x<=x_max; x+=tick_int_x*5) {                  //draw x ticks
+      for(x=x_min; x<=x_max; x+=tick_int_x*5) {                    //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>>x=%d   \n",(int)x);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_x(x_min,x,x_max);
-          setBlackPixel(cnt,min(yzero+2,SCREEN_HEIGHT_GRAPH-1)); //tick
-          setBlackPixel(cnt,max(yzero-2,minny));                 //tick
-          setBlackPixel(cnt,min(yzero+3,SCREEN_HEIGHT_GRAPH-1)); //tick
-          setBlackPixel(cnt,max(yzero-3,minny));                 //tick
+        cnt = screen_window_x(x_min, x, x_max);
+          setBlackPixel(cnt, min(yzero+2, SCREEN_HEIGHT_GRAPH-1)); //tick
+          setBlackPixel(cnt, max(yzero-2, minny));                 //tick
+          setBlackPixel(cnt, min(yzero+3, SCREEN_HEIGHT_GRAPH-1)); //tick
+          setBlackPixel(cnt, max(yzero-3, minny));                 //tick
        }
      }
    }
@@ -614,68 +619,68 @@ void graphAxisDraw (void){
     }
 
     //DRAW YAXIS
-    lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,LCD_EMPTY_VALUE);
+    lcd_fill_rect(xzero, minny, 1, SCREEN_HEIGHT_GRAPH-minny, LCD_EMPTY_VALUE);
 
     //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
 
 
     force_refresh(timed);
     if(0<y_max && 0>y_min) {
-      for(y=0; y<=y_max; y+=tick_int_y) {                     //draw y ticks
+      for(y=0; y<=y_max; y+=tick_int_y) {                      //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-1,0),cnt);                    //tick
-        setBlackPixel(min(xzero+1,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-1, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+1, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
-      for(y=0; y>=y_min; y+=-tick_int_y) {                    //draw y ticks
+      for(y=0; y>=y_min; y+=-tick_int_y) {                      //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-1,0),cnt);                    //tick
-        setBlackPixel(min(xzero+1,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-1, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+1, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
-      for(y=0; y<=y_max; y+=tick_int_y*5) {                   //draw y ticks
+      for(y=0; y<=y_max; y+=tick_int_y*5) {                     //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-2,0),cnt);                    //tick
-        setBlackPixel(min(xzero+2,SCREEN_WIDTH_GRAPH-1),cnt); //tick
-        setBlackPixel(max(xzero-3,0),cnt);                    //tick
-        setBlackPixel(min(xzero+3,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-2, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+2, SCREEN_WIDTH_GRAPH-1), cnt); //tick
+        setBlackPixel(max(xzero-3, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+3, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
-      for(y=0; y>=y_min; y+=-tick_int_y*5) {                  //draw y ticks
+      for(y=0; y>=y_min; y+=-tick_int_y*5) {                    //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>>>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-2,0),cnt);                    //tick
-        setBlackPixel(min(xzero+2,SCREEN_WIDTH_GRAPH-1),cnt); //tick
-        setBlackPixel(max(xzero-3,0),cnt);                    //tick
-        setBlackPixel(min(xzero+3,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-2, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+2, SCREEN_WIDTH_GRAPH-1), cnt); //tick
+        setBlackPixel(max(xzero-3, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+3, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
     }
     else {
-      for(y=y_min; y<=y_max; y+=tick_int_y) {                 //draw y ticks
+      for(y=y_min; y<=y_max; y+=tick_int_y) {                   //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>>>>>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-1,0),cnt);                    //tick
-        setBlackPixel(min(xzero+1,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-1, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+1, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
-      for(y=y_min; y<=y_max; y+=tick_int_y*5) {               //draw y ticks
+      for(y=y_min; y<=y_max; y+=tick_int_y*5) {                 //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
           printf(">>>>>>>>y=%d   \n",(int)y);
           #endif // STATDEBUG && PC_BUILD
-        cnt = screen_window_y(y_min,y,y_max);
-        setBlackPixel(max(xzero-2,0),cnt);                    //tick
-        setBlackPixel(min(xzero+2,SCREEN_WIDTH_GRAPH-1),cnt); //tick
-        setBlackPixel(max(xzero-3,0),cnt);                    //tick
-        setBlackPixel(min(xzero+3,SCREEN_WIDTH_GRAPH-1),cnt); //tick
+        cnt = screen_window_y(y_min, y, y_max);
+        setBlackPixel(max(xzero-2, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+2, SCREEN_WIDTH_GRAPH-1), cnt); //tick
+        setBlackPixel(max(xzero-3, 0), cnt);                    //tick
+        setBlackPixel(min(xzero+3, SCREEN_WIDTH_GRAPH-1), cnt); //tick
       }
     }
   }
@@ -768,7 +773,7 @@ void graph_axis (void){
     }
 
     #if defined(STATDEBUG)
-     printf("TICKS X=%f Y=%f\n",tick_int_x,tick_int_y);
+     printf("TICKS X=%f Y=%f\n", tick_int_x, tick_int_y);
     #endif // STATDEBUG
 
 
@@ -986,7 +991,12 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
 done:
     displayFormatDigits = savedDisplayFormatDigits;
     displayFormat = saveddisplayFormat;
-    if(ovrENG) setSystemFlag(FLAG_ENGOVR); else clearSystemFlag(FLAG_ENGOVR);
+    if(ovrENG) {
+      setSystemFlag(FLAG_ENGOVR);
+    }
+    else {
+      clearSystemFlag(FLAG_ENGOVR);
+    }
   return buf;
 }
 
@@ -1094,7 +1104,7 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
         return 0;
       }
       else {
-        if(isStatsMatrix(&rows,plotStatMx)) {
+        if(isStatsMatrix(&rows, plotStatMx)) {
           real34Matrix_t stats;
           linkToRealMatrixRegister(regStats, &stats);
           return stats.header.matrixRows;
@@ -1109,32 +1119,32 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE) {
   if(PLOT_CROSS) {
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Plotting cross to x=%d y=%d\n",xn,yn);
+      printf("Plotting cross to x=%d y=%d\n", xn, yn);
     #endif // STATDEBUG && PC_BUILD
-    plotcross(xn,yn);
+    plotcross(xn, yn);
   }
   else if(PLOT_BOXFAT) {
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Plotting box to x=%d y=%d\n",xn,yn);
+      printf("Plotting box to x=%d y=%d\n", xn, yn);
     #endif // STATDEBUG && PC_BUILD
-    plotbox_fat(xn,yn);
+    plotbox_fat(xn, yn);
   }
   else if(PLOT_BOX) {
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Plotting box to x=%d y=%d\n",xn,yn);
+      printf("Plotting box to x=%d y=%d\n", xn, yn);
     #endif // STATDEBUG && PC_BUILD
-    plotbox(xn,yn);
+    plotbox(xn, yn);
   }
   else if(PLOT_PLUS) {
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Plotting plus to x=%d y=%d\n",xn,yn);
+      printf("Plotting plus to x=%d y=%d\n", xn, yn);
     #endif // STATDEBUG && PC_BUILD
-    plotplus(xn,yn);
+    plotplus(xn, yn);
   }
 
   if(PLOT_LINE) {
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Plotting line to x=%d y=%d\n",xn,yn);
+      printf("Plotting line to x=%d y=%d\n", xn, yn);
     #endif // STATDEBUG && PC_BUILD
     plotline1(xo, yo, xn, yn);
   }
@@ -1258,8 +1268,8 @@ currentKeyCode = 255;
 
 
     graph_axis();
-    yn = screen_window_y(y_min,grf_y(0),y_max);
-    xn = screen_window_x(x_min,grf_x(0),x_max);
+    yn = screen_window_y(y_min, grf_y(0), y_max);
+    xn = screen_window_x(x_min, grf_x(0), x_max);
     xN = xn;
     yN = yn;
       #if defined(STATDEBUG) && defined(PC_BUILD)
@@ -1267,7 +1277,7 @@ currentKeyCode = 255;
       #endif // STATDEBUG && PC_BUILD
 
       int16_t colw = (int16_t) (
-                                 (  (screen_window_x(x_min,grf_x(1),x_max) - screen_window_x(x_min,grf_x(0),x_max))  / 2.0f  )
+                                 (  (screen_window_x(x_min, grf_x(1), x_max) - screen_window_x(x_min, grf_x(0), x_max))  / 2.0f  )
                                 ) - 1;
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
       for(ix = 0; (ix < numberOfPlotPoints); ++ix) {
@@ -1275,14 +1285,14 @@ currentKeyCode = 255;
         y = grf_y(ix);
         xo = xN;
         yo = yN;
-        xN = screen_window_x(x_min,x,x_max);
-        yN = screen_window_y(y_min,y,y_max);
+        xN = screen_window_x(x_min, x, x_max);
+        yN = screen_window_y(y_min, y, y_max);
 
         #if defined(STATDEBUG) && defined(PC_BUILD)
           printf("plotting graph table[%d] = x:%f y:%f xN:%d yN:%d drawHistogram:%d ", ix, x, y, xN, yN, drawHistogram);
         #endif // STATDEBUG && PC_BUILD
 
-        int16_t minN_y,minN_x;
+        int16_t minN_y, minN_x;
         minN_y = 0;
         minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
 
@@ -1303,7 +1313,7 @@ currentKeyCode = 255;
         }
         else {
             #if defined(PC_BUILD)
-            printf("Not plotted point: (%u %u) ",xN,yN);
+            printf("Not plotted point: (%u %u) ",xN, yN);
               if(xN >= SCREEN_WIDTH_GRAPH) {
                 printf("x>>%u ", SCREEN_WIDTH_GRAPH);
               }
@@ -1318,7 +1328,7 @@ currentKeyCode = 255;
                 printf("y<<%u ", 1+minN_y);
               }
             printf("\n");
-            //printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>1+minN_y=%d\n",xN,SCREEN_WIDTH_GRAPH,xN,minN_x,yN,SCREEN_HEIGHT_GRAPH,yN,1+minN_y);
+            //printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>1+minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN, SCREEN_HEIGHT_GRAPH, yN, 1+minN_y);
             #endif // PC_BUILD
         }
         if(exitKeyWaiting()) {
@@ -1349,11 +1359,11 @@ currentKeyCode = 255;
       realToFloat(&nBr, &nB);
 
       strcpy(ss, "Histogram(");
-      strcat(ss,histElementXorY == 1 ? "y)" : "x)");
+      strcat(ss, histElementXorY == 1 ? "y)" : "x)");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -7 +autoshift, vmNormal, false, false);
 
       grphNumFormatter(ss, "(", x_max, 2, "");
-      grphNumFormatter(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
+      grphNumFormatter(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
       strcat(tt, padEquals(tmpbuf, ss));
       n = showString(padEquals(tmpbuf, ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2   -3  +autoshift, vmNormal, false, false);
       grphNumFormatter(ss, radixProcess(tmpbuf, "#"), y_max, 2, ")");
@@ -1364,25 +1374,25 @@ currentKeyCode = 255;
       grphNumFormatter(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
       showString(padEquals(tmpbuf, ss), &standardFont, n+3,           Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -6  + autoshift + 2, vmNormal, false, false);
 
-      strcpy(ss,"Bin centres:");
+      strcpy(ss, "Bin centres:");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
-      grphNumFormatter(ss,"",lB,3,"");
+      grphNumFormatter(ss, "", lB, 3, "");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
-      strcpy(ss,STD_DOWN_ARROW "BIN" "=");
+      strcpy(ss, STD_DOWN_ARROW "BIN" "=");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-      grphNumFormatter(ss,"",hB,3,"");
+      grphNumFormatter(ss, "", hB, 3, "");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
-      strcpy(ss,STD_UP_ARROW "BIN" "=");
+      strcpy(ss, STD_UP_ARROW "BIN" "=");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-      grphNumFormatter(ss,"",nB,3,"");
+      grphNumFormatter(ss, "", nB, 3, "");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
-      strcpy(ss,"nBINS" "=");
+      strcpy(ss, "nBINS" "=");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
-      grphNumFormatter(ss,"",(hB-lB)/nB,3,"");
+      grphNumFormatter(ss, "", (hB-lB)/nB, 3, "");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
-      strcpy(ss,"Width" "=");
+      strcpy(ss, "Width" "=");
       showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
     }
@@ -1453,7 +1463,7 @@ void graphDrawLRline(uint16_t selection) {
   //demo_plot();
   if(selection != 0) {
     processCurvefitSelection(selection, &RR, &SMI, &aa0, &aa1, &aa2);
-    realMultiply(&RR,&RR,&RR,&ctxtReal39);
+    realMultiply(&RR, &RR, &RR, &ctxtReal39);
     if(orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
       processCurvefitSA(&sa0, &sa1);
     }
@@ -1527,7 +1537,7 @@ void graphDrawLRline(uint16_t selection) {
       uint16_t  iterations = 0;
       double    intervalW = (double)(x_max-x_min)/(double)(Intervals);
 
-      int16_t minN_y,minN_x;
+      int16_t minN_y, minN_x;
       minN_y = 0;
       minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
       for(ix = (double)x_min-intervalW; iterations < 2000 && x < x_max+(x_max-x_min)*0.5 && xN < SCREEN_WIDTH-1; iterations++) {       //Variable accuracy line plot
@@ -1538,49 +1548,51 @@ void graphDrawLRline(uint16_t selection) {
           x = ix + intervalW / ((double)((uint16_t) 1 << xx));
           if(USEFLOATING == useREAL4) {
             //TODO create REAL from x (double) if REALS will be used
-            //snprintf(ss,100,"%f",x); stringToReal(ss,&XX,&ctxtReal4);
+            //snprintf(ss, 100, "%f",x);
+            //stringToReal(ss, &XX, &ctxtReal4);
             convertDoubleToReal(x, &XX, &ctxtReal4);
           }
           else {
             if(USEFLOATING == useREAL39) {
               //TODO create REAL from x (double) if REALS will be used
-              //snprintf(ss,100,"%f",x); stringToReal(ss,&XX,&ctxtReal39);
+              //snprintf(ss, 100, "%f",x);
+              //stringToReal(ss, &XX, &ctxtReal39);
               convertDoubleToReal(x, &XX, &ctxtReal39);
             }
           }
           yIsFnx( USEFLOATING, selection, x, &y, a0, a1, a2, &XX, &YY, RR, SMI, aa0, aa1, aa2);
-          xN = screen_window_x(x_min,(float)x,x_max);
-          yN = screen_window_y(y_min,(float)y,y_max);
+          xN = screen_window_x(x_min, (float)x, x_max);
+          yN = screen_window_y(y_min, (float)y, y_max);
           if((abs((int)yN-(int)yo)<=2 /*&& abs((int)xN-(int)xo)<=2*/) || iterations == 0 || xN <= minN_x) {
             break;
           }
         }
         ix = x;
-        //printf("### iter:%u ix=%20lf xx=%i x=%lf y=%lf xN=%u yN=%u\n",iterations,ix,xx,x,y,xN,yN);
+        //printf("### iter:%u ix=%20lf xx=%i x=%lf y=%lf xN=%u yN=%u\n", iterations, ix, xx, x, y, xN, yN);
         if(iterations > 0) {  //Allow for starting values to accumulate in the registers at ix = 0
           #if defined(STATDEBUG) && defined(PC_BUILD)
-            printf("plotting graph: iter:%u ix:%f I.vals:%u ==>xmin:%f (x:%f) xmax:%f ymin:%f (y:%f) ymax:%f xN:%d yN:%d \n",iterations,ix,Intervals,x_min,x,x_max,y_min,y,y_max,  xN,yN);
+            printf("plotting graph: iter:%u ix:%f I.vals:%u ==>xmin:%f (x:%f) xmax:%f ymin:%f (y:%f) ymax:%f xN:%d yN:%d \n",iterations, ix, Intervals, x_min, x, x_max, y_min, y, y_max,  xN, yN);
           #endif // STATDEBUG && PC_BUILD
           #define tol 4
           if(xN<SCREEN_WIDTH_GRAPH && xN>minN_x && yN<SCREEN_HEIGHT_GRAPH-tol && yN>minN_y) {
             yn = yN;
             xn = xN;
             #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
-              printf("Plotting box to x=%d y=%d\n",xn,yn);
+              printf("Plotting box to x=%d y=%d\n", xn, yn);
             #endif // STATDEBUG && PC_BUILD
             if(fittedcurveboxes) {
-              plotbox(xn,yn);
+              plotbox(xn, yn);
             }
             if(xo < SCREEN_WIDTH_GRAPH && xo > minN_x && yo < SCREEN_HEIGHT_GRAPH-tol && yo > minN_y) {
               #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
-                printf("Plotting line to x=%d y=%d\n",xn,yn);
+                printf("Plotting line to x=%d y=%d\n", xn, yn);
               #endif // STATDEBUG && PC_BUILD
               plotline2(xo, yo, xn, yn);
             }
           }
           else {
             #if defined(STATDEBUG) && defined(PC_BUILD)
-              printf("Not plotted line: (%u %u) ",xN,yN);
+              printf("Not plotted line: (%u %u) ", xN, yN);
               if(xN >= SCREEN_WIDTH_GRAPH) {
                 printf("x>>%u ", SCREEN_WIDTH_GRAPH);
               }
@@ -1606,17 +1618,19 @@ void graphDrawLRline(uint16_t selection) {
 
     int16_t index = -1;
     if(selection!=0) {
-      strcpy(ss,eatSpacesEnd(getCurveFitModeName(selection)));
+      strcpy(ss, eatSpacesEnd(getCurveFitModeName(selection)));
       if(lrCountOnes(lrSelection)>1 && selection == lrChosen) {
-        strcat(ss,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
+        strcat(ss, lrChosen == 0 ? "" : STD_SUP_ASTERISK);
       }
       showString(ss, &standardFont, horOffset + 17, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
       if(selection != CF_GAUSS_FITTING && selection != CF_CAUCHY_FITTING) {
-        strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
+        strcpy(ss, "y=");
+        strcat(ss, getCurveFitModeFormula(selection));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
       else {
-        strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
+        strcpy(ss, "y=");
+        strcat(ss, getCurveFitModeFormula(selection));
         compressString = 1;
         showString(          ss,  &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
@@ -1649,41 +1663,41 @@ void graphDrawLRline(uint16_t selection) {
         }
 
         char tmpBuf[100];
-        strcpy(ss,formatCore(rr,5,false,tmpBuf, 50));
+        strcpy(ss, formatCore(rr, 5, false, tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
         strcpy(ss, "r" STD_SUP_2 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
 
-        grphNumFormatter(ss,"(",x_max,2,"");
-        uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-        grphNumFormatter(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
-        uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
-        n = showString(padEquals(tmpbuf, ss), &standardFont,160-3-2-ssw-ttw, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
-        showString(padEquals(tmpbuf, tt), &standardFont,n+3, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ +autoshift + 2, vmNormal, false, false);
+        grphNumFormatter(ss, "(", x_max, 2, "");
+        uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+        grphNumFormatter(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+        uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+        n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, tt), &standardFont, n+3, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ +autoshift + 2, vmNormal, false, false);
         grphNumFormatter(ss, "(", x_min, 2, "");
-        n = showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
-        grphNumFormatter(ss,radixProcess(tmpbuf, "#"),y_min,2,")");
-        showString(padEquals(tmpbuf, ss), &standardFont,n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
+        n = showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
+        grphNumFormatter(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+        showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
 
       }
       else {                          //ORTHOF
         char tmpBuf[100];
-        strcpy(ss,formatCore(a0,3,false,tmpBuf, 50));
+        strcpy(ss, formatCore(a0, 3, false, tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(ssa0,3, false,tmpBuf, 50));
+        strcpy(ss, formatCore(ssa0, 3, false, tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(a1,3,false,tmpBuf, 50));
+        strcpy(ss, formatCore(a1, 3, false, tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-        strcpy(ss,formatCore(ssa1,3,false,tmpBuf, 50));
+        strcpy(ss, formatCore(ssa1, 3, false, tmpBuf, 50));
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
@@ -1693,15 +1707,15 @@ void graphDrawLRline(uint16_t selection) {
             grphNumFormatter(ss, "", smi, 3, "");
           }
           else {
-            strcpy(ss,"  | n < 30");
+            strcpy(ss, "  | n < 30");
           }
 
           showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +1 +autoshift, vmNormal, false, false);
-          strcpy(ss,"s" STD_SUB_m STD_SUB_i "=");
+          strcpy(ss, "s" STD_SUB_m STD_SUB_i "=");
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
         }
         else {
-          strcpy(ss,formatCore(rr,3,false,tmpBuf, 50));
+          strcpy(ss, formatCore(rr, 3, false, tmpBuf, 50));
           showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
           strcpy(ss, "r" STD_SUP_2 "=");
           showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
@@ -1728,7 +1742,7 @@ void graphDrawLRline(uint16_t selection) {
       }
       else if(NN < minLRDataPoints(selection) ) {
         showString("insufficient data", &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
-        sprintf(ss," %u < %u", NN,minLRDataPoints(selection));
+        sprintf(ss, " %u < %u", NN, minLRDataPoints(selection));
         showString(ss, &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
         }
       else if(selection == 0) {
@@ -1775,7 +1789,7 @@ void fnPlotStat(uint16_t plotMode){
     }
     case H_NORM: {
       drawHistogram = 1;
-      strcpy(statMx,"HISTO");
+      strcpy(statMx, "HISTO");
       calcSigma(0);
       plotMode = PLOT_LR;
       lastPlotMode = PLOT_START;
@@ -1790,7 +1804,7 @@ void fnPlotStat(uint16_t plotMode){
   }
 
                                   #if defined(STATDEBUG) && defined(PC_BUILD)
-                                  printf("fnPlotStat1: plotSelection = %u; Plotmode=%u\n",plotSelection,plotMode);
+                                  printf("fnPlotStat1: plotSelection = %u; Plotmode=%u\n", plotSelection, plotMode);
                                   printf("#####>>> fnPlotStat1: plotSelection:%u:%s  Plotmode:%u lastplotmode:%u  lrSelection:%u lrChosen:%u plotStatMx:%s\n",plotSelection, getCurveFitModeName(plotSelection), plotMode, lastPlotMode, lrSelection, lrChosen, plotStatMx);
                                     if( (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
                                         (plotStatMx[0]=='D' && drawMxN() >= 2) ||

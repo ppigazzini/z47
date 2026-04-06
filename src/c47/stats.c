@@ -269,7 +269,7 @@ bool_t checkMinimumDataPoints(const real_t *n) {
 
 void reLoadStatisticalSums(void) {
   uint16_t rows;
-  strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+  strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
   calcRegister_t regStats = findNamedVariable(statMx);
   if(isStatsMatrixN(&rows, regStats) && rows > 0) {
     calcSigma(0);
@@ -294,7 +294,7 @@ void initStatisticalSums(void) {
     if(statisticalSumsPointer == NULL) {
       statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
       clearStatisticalSums();
-      strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+      strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -357,7 +357,7 @@ void calcSigma(uint16_t maxOffset) {
       real_t x, y;
       char aa[100];
       for(uint16_t i = 0; i < rows - maxOffset; i++) {
-        sprintf(aa,"%s%s (%u of %u)",errorMessages[RECALC_SUMS], statMx,i,rows - maxOffset);
+        sprintf(aa, "%s%s (%u of %u)", errorMessages[RECALC_SUMS], statMx, i, rows - maxOffset);
         printStatus(0, aa, timed);
         real34ToReal(&stats.matrixElements[i * cols    ], &x);
         real34ToReal(&stats.matrixElements[i * cols + 1], &y);
@@ -393,13 +393,13 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
 
   static void AddtoStatsMatrix(real_t *x, real_t *y) {
     uint16_t rows = 0, cols;
-    strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+    strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     calcRegister_t regStats = findNamedVariable(statMx);
-    if(!isStatsMatrix(&rows,statMx)) {
+    if(!isStatsMatrix(&rows, statMx)) {
       regStats = allocateNamedMatrix(statMx, 1, 2);
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
-      //realMatrixInit(&stats,1,2);
+      //realMatrixInit(&stats, 1, 2);
     }
     else {
       if(appendRowAtMatrixRegister(regStats)) {
@@ -429,8 +429,8 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
 
   static void removeLastRowFromStatsMatrix(void) {
     uint16_t rows = 0;
-    strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
-    if(!isStatsMatrix(&rows,statMx)) {
+    strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+    if(!isStatsMatrix(&rows, statMx)) {
       displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "no STATS matrix");
@@ -513,7 +513,7 @@ void setStatisticalSumsUpdate(bool_t para) {
 
 void fnClSigma(uint16_t unusedButMandatoryParameter) {
   fnClHisto(true);
-  strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
+  strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
   calcRegister_t regStats = findNamedVariable(statMx);
   if(regStats == INVALID_VARIABLE) {
     allocateNamedVariable(statMx, dtReal34, REAL34_SIZE_IN_BLOCKS);
@@ -566,7 +566,7 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
 
         #if defined(DEBUGUNDO)
           calcRegister_t regStats = findNamedVariable(statMx);
-          printRegisterToConsole(regStats,"From: AddtoStatsMatrix STATS:\n","\n");
+          printRegisterToConsole(regStats, "From: AddtoStatsMatrix STATS:\n", "\n");
         #endif //DEBUGUNDO
 
         if(statisticalSumsPointer != NULL) {
@@ -647,9 +647,9 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
         #if defined(DEBUGUNDO)
           if(statisticalSumsPointer != NULL) {
             calcRegister_t regStats = findNamedVariable(statMx);
-            printRealToConsole(SIGMA_N,"   >>> After\n   >>>   SIGMA_N:","\n");
-            printRealToConsole(SIGMA_XMAX,"   >>>   SIGMA_MaxX:","\n");
-            printRegisterToConsole(regStats,"From Sigma-: STATS\n","\n");
+            printRealToConsole(SIGMA_N, "   >>> After\n   >>>   SIGMA_N:", "\n");
+            printRealToConsole(SIGMA_XMAX, "   >>>   SIGMA_MaxX:", "\n");
+            printRegisterToConsole(regStats, "From Sigma-: STATS\n", "\n");
           }
         #endif //DEBUGUNDO
       }
@@ -758,7 +758,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
   static void initHistoMatrix(real_t *s) {
     uint16_t rows = 0, cols;
     calcRegister_t regHisto = findNamedVariable("HISTO");
-    if(!isHistoMatrix(&rows,"HISTO")) {
+    if(!isHistoMatrix(&rows, "HISTO")) {
       regHisto = allocateNamedMatrix("HISTO", 1, 2);
       real34Matrix_t histo;
       linkToRealMatrixRegister(regHisto, &histo);
@@ -838,7 +838,7 @@ void fnConvertStatsToHisto(uint16_t statsVariableToHistogram) {
     uint16_t rows;
     real_t lb, hb, nb, nn;
 
-    if(statMx[0]=='S' && isStatsMatrix(&rows,statMx)) {
+    if(statMx[0]=='S' && isStatsMatrix(&rows, statMx)) {
       if(checkMinimumDataPoints(const_3)) {
         if(statsVariableToHistogram == ITM_Y) {
           realToReal34(SIGMA_YMIN, &loBinR);                                     //set up the user variables from auto estimates from the data
@@ -857,7 +857,7 @@ void fnConvertStatsToHisto(uint16_t statsVariableToHistogram) {
       real34ToReal(&loBinR, &lb);
       real34ToReal(&hiBinR, &hb);
       realCopy(SIGMA_N, &nn);
-      realSquareRoot(&nn,&nb,&ctxtReal39);
+      realSquareRoot(&nn, &nb, &ctxtReal39);
       realToIntegralValue(&nb, &nb, DEC_ROUND_CEILING, &ctxtReal39);  //number of bins are defaulted to square root of data points  nb = CEIL (sqrt(SIGMA_N))
       realToReal34(&nb, &nBins);                                      //set up the user variables from auto estimates from the data
 
@@ -920,7 +920,7 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
           realAdd(&ii, const_1on2, &ii, &ctxtReal39);
           realMultiply(&ii, &bw, &ii, &ctxtReal39);
           realAdd(&ii, &lb, &ii, &ctxtReal39);                      //bin midpoint
-          //printRealToConsole(&ii,"midpoint "," \n");
+          //printRealToConsole(&ii, "midpoint ", " \n");
           initHistoMatrix(&ii);                                     // Set up all x-mid-points of the bins in HISTO, with 0 in y
           linkToRealMatrixRegister(regHisto, &histo);
           //#if defined(PC_BUILD)
@@ -932,7 +932,7 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
 
         if(isStatsMatrix(&i, statMx) && isHistoMatrix(&i, "HISTO")) {
           for(i = 0; i < rows; i++) {
-            //printf("n=%d ^^^^ i=%d ",n,i);
+            //printf("n=%d ^^^^ i=%d ", n, i);
             for(j = 0; j < NN; j++) {
               real_t t, tl, th;
               real34ToReal(&stats.matrixElements[i * cols + histElementXorY], &t);  //from X or Y, depending
@@ -945,21 +945,21 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
               realSubtract(&tl, &bwon2, &tl, &ctxtReal39);   //get the bin x low
               realAdd     (&tl, &bw   , &th, &ctxtReal39);   //get the bin x hi
               //#if defined(PC_BUILD)
-              //  printRealToConsole(&tl,"low:","  ");
-              //  printRealToConsole(&t,"t (midpoint):","  ");
-              //  printRealToConsole(&th,"hi:","\n");
+              //  printRealToConsole(&tl, "low:", "  ");
+              //  printRealToConsole(&t, "t (midpoint):", "  ");
+              //  printRealToConsole(&th, "hi:", "\n");
               //#endif // PC_BUILD
               if( (j <  NN - 1 && realCompareLessThan(&t, &th) && realCompareGreaterEqual(&t, &tl)) ||
                   (j == NN - 1 && realCompareLessEqual(&t, &th) && realCompareGreaterEqual(&t, &tl)) )  {
                 real34Add(&histo.matrixElements[j * histo.header.matrixColumns + 1], const34_1, &histo.matrixElements[j * histo.header.matrixColumns + 1]);
                 #if defined(PC_BUILD) && defined(HISTDEBUG)
-                  printf("Stats element %d in bin no %d, lying between: ",i,j);
-                  printRealToConsole(&tl,"low (inclusive):"," and ");
+                  printf("Stats element %d in bin no %d, lying between: ", i, j);
+                  printRealToConsole(&tl, "low (inclusive):", " and ");
                   if(j == NN - 1) {
-                    printRealToConsole(&th,"hi (inclusive):","\n");
+                    printRealToConsole(&th, "hi (inclusive):", "\n");
                   }
                   else {
-                    printRealToConsole(&th,"hi (exclusive):","\n");
+                    printRealToConsole(&th, "hi (exclusive):", "\n");
                   }
                 #endif // PC_BUILD && HISTDEBUG
                 break;

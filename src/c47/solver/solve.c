@@ -432,10 +432,10 @@ retryLevel:
       if(--getOutOfLevel >= 0) {
         #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
           printf("Solver retry Level:%2i ",getOutOfLevel);
-          printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
+          printReal34ToConsole(&antiLevel34, " antiLevel34:", "\n");
         #endif //PC_BUILD
-        real34Multiply(&antiLevel34,const34_153,&antiLevel34);   //increase it for the next round so long
-        real34Minus(&antiLevel34,&antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
+        real34Multiply(&antiLevel34, const34_153, &antiLevel34);  //increase it for the next round so long
+        real34Minus(&antiLevel34, &antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
         real_t antiLevel;
         real34ToReal(&antiLevel34, &antiLevel);
         if(real34IsPositive(&antiLevel34)) {
@@ -471,8 +471,10 @@ retryLevel:
 
     // calculation
     _executeSolverReal(variable, &bb, &fbb, NULL);
-    //printRealToConsole(&bb1,"JJ2: f(&b1=",")  "); printRealToConsole(&fbb1,"","\n");
-    //printRealToConsole(&bb, "JJ2: f(&b=", ")  "); printRealToConsole(&fbb,"","\n");
+    //printRealToConsole(&bb1, "JJ2: f(&b1=",")  ");
+    //printRealToConsole(&fbb1, "", "\n");
+    //printRealToConsole(&bb, "JJ2: f(&b=", ")  ");
+    //printRealToConsole(&fbb, "", "\n");
 
     if(lastErrorCode != ERROR_NONE) {
       result = SOLVER_RESULT_BAD_GUESS;
@@ -495,8 +497,14 @@ retryLevel:
     }
 
     if(realCompareAbsLessThan(&faa, &fbb)) {
-      realCopy(&bb, &tmp); realCopy(&aa, &bb); realCopy(&tmp, &aa); realCopy(&tmp, &bb1);
-      realCopy(&fbb, &tmp); realCopy(&faa, &fbb); realCopy(&tmp, &faa); realCopy(&tmp, &fbb1);
+      realCopy(&bb, &tmp);
+      realCopy(&aa, &bb);
+      realCopy(&tmp, &aa);
+      realCopy(&tmp, &bb1);
+      realCopy(&fbb, &tmp);
+      realCopy(&faa, &fbb);
+      realCopy(&tmp, &faa);
+      realCopy(&tmp, &fbb1);
     }
 
     if(realIsZero(&faa) || realIsZero(&fbb)) { // already is a root?
@@ -554,12 +562,14 @@ retryLevel:
       loop++;
       if(checkHalfSec()) {
         char ss[10];
-        strcpy(ss,"Iter: ");
+        strcpy(ss, "Iter: ");
         ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
-        if(progressHalfSecUpdate_Integer(timed, ss,loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(progressHalfSecUpdate_Integer(timed, ss, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           real34_t a34, b34, fa34, fb34;
-          realToReal34(&aa, &a34); realToReal34(&bb, &b34);
-          realToReal34(&faa, &fa34); realToReal34(&fbb, &fb34);
+          realToReal34(&aa, &a34);
+          realToReal34(&bb, &b34);
+          realToReal34(&faa, &fa34);
+          realToReal34(&fbb, &fb34);
           _showProgress(&a34, &b34, &fa34, &fb34);
         }
       }
@@ -866,9 +876,14 @@ retryLevel:
           }
 
           if(realCompareAbsLessThan(&faa, &fbp1)) {
-            realCopy(bp1, &tmp); realCopy(&aa, bp1); realCopy(&tmp, &aa);
-            realCopy(&fbp1, &tmp); realCopy(&faa, &fbp1); realCopy(&tmp, &faa);
-            realCopy(&aa, &bb); realCopy(&faa, &fbb);
+            realCopy(bp1, &tmp);
+            realCopy(&aa, bp1);
+            realCopy(&tmp, &aa);
+            realCopy(&fbp1, &tmp);
+            realCopy(&faa, &fbp1);
+            realCopy(&tmp, &faa);
+            realCopy(&aa, &bb);
+            realCopy(&faa, &fbb);
           }
 
           if(bp1 == &ss) {
@@ -881,7 +896,8 @@ retryLevel:
           realCopy(&fbb, &fbb1);
           realCopy(bp1, &bb);
           realCopy(&fbp1, &fbb);
-          //printRealToConsole(&bb1,"PP: &b1=","  "); printRealToConsole(&bb,"&b=","\n");
+          //printRealToConsole(&bb1, "PP: &b1=", "  ");
+          //printRealToConsole(&bb, "&b=", "\n");
         }
 
         else if(originallyLevel && (realIsInfinite(&bb) || realIsInfinite(&aa))) {
@@ -911,10 +927,10 @@ retryLevel:
         }
 
         //printf("\nSOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-        //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
-        //printRealToConsole(&bb,"  bb="," ");
-        //printRealToConsole(&fbb,"fbb="," ");
-        //printRealToConsole(&tolAlmostZero,"tolAlmostZero=","\n");
+        //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n", bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+        //printRealToConsole(&bb, "  bb=", " ");
+        //printRealToConsole(&fbb, "fbb=", " ");
+        //printRealToConsole(&tolAlmostZero, "tolAlmostZero=", "\n");
 
         if(result != SOLVER_RESULT_NORMAL) {
           break;

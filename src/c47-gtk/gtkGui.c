@@ -533,16 +533,16 @@ Jacos Mac, Control works
     char strr[30];
     strr[0]=0;
     #if defined(VERBOSEKEYS)
-      strcat(strr,(((event->state) & 0x0001) != 0) ? "b0 " : "---");
-      strcat(strr,(((event->state) & 0x0002) != 0) ? "b1 " : "---");
-      strcat(strr,(((event->state) & 0x0004) != 0) ? "b2 " : "---");
-      strcat(strr,(((event->state) & 0x0008) != 0) ? "b3 " : "---");
-      strcat(strr,(((event->state) & 0x0010) != 0) ? "b4 " : "---");
-      strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
-      strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
+      strcat(strr, (((event->state) & 0x0001) != 0) ? "b0 " : "---");
+      strcat(strr, (((event->state) & 0x0002) != 0) ? "b1 " : "---");
+      strcat(strr, (((event->state) & 0x0004) != 0) ? "b2 " : "---");
+      strcat(strr, (((event->state) & 0x0008) != 0) ? "b3 " : "---");
+      strcat(strr, (((event->state) & 0x0010) != 0) ? "b4 " : "---");
+      strcat(strr, (((event->state) & 0x0020) != 0) ? "b5 " : "---");
+      strcat(strr, (((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
-      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State,shiftF,shiftG,
+      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, (uint16_t)(event->state), strr, SHIFT_State, shiftF, shiftG,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
       fflush(stdout);
     #endif //VERBOSEKEYS
@@ -566,12 +566,12 @@ Jacos Mac, Control works
           event_command_shift = 0;
           if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
 
-            if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
-            if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
-            if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
-            if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
-            if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
-            if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if(checkNormal( 0, KEY_fg))     btnClicked(w, "00"); else
+            if(checkNormal(10, KEY_fg))     btnClicked(w, "10"); else
+            if(checkNormal(11, KEY_fg))     btnClicked(w, "11"); else
+            if(checkNormal( 0, ITM_SHIFTf)) btnClicked(w, "00"); else
+            if(checkNormal(10, ITM_SHIFTf)) btnClicked(w, "10"); else
+            if(checkNormal(11, ITM_SHIFTf)) btnClicked(w, "11"); else
 
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == ITM_SHIFTf) btnClicked(w, "10"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00"); else
@@ -592,12 +592,12 @@ Jacos Mac, Control works
       case GDK_KEY_Control_R: // right Ctrl
           if(CTRL_State != 0) {
 
-            if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
-            if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
-            if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
-            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
-            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
-            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+            if(checkNormal( 0, KEY_fg))     btnClicked(w, "00"); else
+            if(checkNormal(10, KEY_fg))     btnClicked(w, "10"); else
+            if(checkNormal(11, KEY_fg))     btnClicked(w, "11"); else
+            if(checkNormal( 0, ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10, ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11, ITM_SHIFTg)) btnClicked(w, "11"); else
 
             if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11"); else
             {
@@ -677,7 +677,7 @@ Jacos Mac, Control works
     }
 
 returnKeyReleasedFalse:
-    //printf("Released1 %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
+    //printf("Released1 %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval, SHIFT_State, shiftF);
     previousEventStateR = event->state;
     previousEventKeyR   = event->keyval;
     return FALSE;
@@ -690,16 +690,16 @@ returnKeyReleasedFalse:
     char strr[30];
     strr[0]=0;
     #if defined(VERBOSEKEYS)
-      strcat(strr,(((event->state) & 0x0001) != 0) ? "b0 " : "---");
-      strcat(strr,(((event->state) & 0x0002) != 0) ? "b1 " : "---");
-      strcat(strr,(((event->state) & 0x0004) != 0) ? "b2 " : "---");
-      strcat(strr,(((event->state) & 0x0008) != 0) ? "b3 " : "---");
-      strcat(strr,(((event->state) & 0x0010) != 0) ? "b4 " : "---");
-      strcat(strr,(((event->state) & 0x0020) != 0) ? "b5 " : "---");
-      strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
+      strcat(strr, (((event->state) & 0x0001) != 0) ? "b0 " : "---");
+      strcat(strr, (((event->state) & 0x0002) != 0) ? "b1 " : "---");
+      strcat(strr, (((event->state) & 0x0004) != 0) ? "b2 " : "---");
+      strcat(strr, (((event->state) & 0x0008) != 0) ? "b3 " : "---");
+      strcat(strr, (((event->state) & 0x0010) != 0) ? "b4 " : "---");
+      strcat(strr, (((event->state) & 0x0020) != 0) ? "b5 " : "---");
+      strcat(strr, (((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
-      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode,
+      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State, shiftF, shiftG, labelText, plainTextMode,
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
       fflush(stdout);
     #endif //VERBOSEKEYS
@@ -745,9 +745,9 @@ returnKeyReleasedFalse:
       switch(event_key_strip_capslock) {
         case GDK_KEY_f: //f
 
-            if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
-            if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
-            if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if(checkNormal( 0, ITM_SHIFTf)) btnClicked(w, "00"); else
+            if(checkNormal(10, ITM_SHIFTf)) btnClicked(w, "10"); else
+            if(checkNormal(11, ITM_SHIFTf)) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTf )) btnClicked(w, "10"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTf )) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg     )) btnClicked(w, "10"); else
@@ -756,9 +756,9 @@ returnKeyReleasedFalse:
           break;
         case GDK_KEY_g: //g
 
-            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
-            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
-            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+            if(checkNormal( 0, ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10, ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11, ITM_SHIFTg)) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg )) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10"); else
             {
@@ -3024,21 +3024,21 @@ bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
 
 
 bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t *key, GtkWidget *btn, bool showBtn) {
-  if(!check_label_consistency(lbl,ctx)) {
+  if(!check_label_consistency(lbl, ctx)) {
     return false;
   }
   if(key) {
-    print_label_bytes(lbl,16);
+    print_label_bytes(lbl, 16);
     if(showBtn&&btn)printf("     : key details - btn:=%s\n",get_button_name(btn));
     printf("       key->primaryAim = %d ",key->primaryAim);
-    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName,"primaryAim AA:","\n");
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "primaryAim AA:","\n");
     printf("       key->fShiftedAim = %d ",key->fShiftedAim);
-    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName,"fShiftedAim AA:","\n");
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "fShiftedAim AA:","\n");
     printf("       key->gShiftedAim = %d ",key->gShiftedAim);
-    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName,"...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName,"gShiftedAim AA:","\n\n");
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "gShiftedAim AA:","\n\n");
   }
   return true;
 }
@@ -3182,7 +3182,7 @@ char sstmp[16];
   }
 
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
-    strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
+    strcpy((char *)lbl, "      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
   }
 
   gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
@@ -3254,10 +3254,10 @@ char sstmp[16];
   }
 
   if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
-    strcpy((char *)lbl,"#");
+    strcpy((char *)lbl, "#");
   }
   else if(strcmp((char *)lbl, "LINPOL") == 0) {
-    strcpy((char *)lbl,"LIN");
+    strcpy((char *)lbl, "LIN");
   }
 
   gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
@@ -3331,7 +3331,7 @@ char sstmp[16];
         R47LongpressColour = true;
       }
       else {
-          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(4, max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK),true, false)].itemSoftmenuName, lbl);
       }
 
       if(lbl[0] == 32 && lbl[1]==0) {
@@ -3379,20 +3379,26 @@ char sstmp[16];
       }
       else {
         if( shiftG && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-          stringToUtf8(indexOfItems[numlockReplacements(5,max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(5, max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
         }
         else {
           if( ((!shiftF && (alphaCase == AC_LOWER)) || ( shiftF && (alphaCase == AC_UPPER))) && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-            stringToUtf8(indexOfItems[numlockReplacements(5,max(key->primaryAim, -key->primaryAim) + 26, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+            stringToUtf8(indexOfItems[numlockReplacements(5, max(key->primaryAim, -key->primaryAim) + 26, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
           }
           else {
-            if(shiftF) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl); else
-            if(shiftG) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl); else
-            stringToUtf8(indexOfItems[numlockReplacements(6,max(key->primaryAim, -key->primaryAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+            if(shiftF) {
+              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+            }
+            else if(shiftG) {
+              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+            }
+            else {
+              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->primaryAim, -key->primaryAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
+            }
           }
         }
       }
-      //printf("####B^^ %d %d %d %d %u %s\n", numLock, shiftF,shiftG,calcMode==CM_AIM, lbl[0], (gchar*)lbl);
+      //printf("####B^^ %d %d %d %d %u %s\n", numLock, shiftF, shiftG, calcMode==CM_AIM, lbl[0], (gchar*)lbl);
       if(lbl[0] == 32 && lbl[1]==0) {
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
@@ -3425,7 +3431,7 @@ char sstmp[16];
         /*}*/       //dr - new AIM
       }
 
-      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
+      stringToUtf8(indexOfItems[numlockReplacements(10, key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
 
       //GShift set label
       if(key->gShiftedAim == 0) {
@@ -5295,20 +5301,20 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
 
 
       if(modelString[0] == 0) {
-        strcpy(modelString,"res/");
+        strcpy(modelString, "res/");
         strcat(modelString, isR47FAM?"R47":"C47");
         if(calcLandscape) {
-          strcat(modelString,"short.png");
+          strcat(modelString, "short.png");
         }
         else {
-          strcat(modelString,".png");
+          strcat(modelString, ".png");
         }
       }
       else {
         char modelString2[50];
-        strcpy(modelString2,"res/");
-        strcat(modelString2,modelString);
-        strcpy(modelString,modelString2);
+        strcpy(modelString2, "res/");
+        strcat(modelString2, modelString);
+        strcpy(modelString, modelString2);
       }
 
 
@@ -5342,20 +5348,20 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
 
       // Frame around the Sigma+ key
       //lblEKey = gtk_label_new("");
-      //gtk_widget_set_name(lblEKey,"eSoftkeyArea");
+      //gtk_widget_set_name(lblEKey, "eSoftkeyArea");
       //gtk_widget_set_size_request(lblEKey, 61-8-2-2,  5-2);
       //gtk_fixed_put(GTK_FIXED(grid), lblEKey, 350+4+2 - 4 * DELTA_KEYS_X, 563-1 - DELTA_KEYS_Y);
 
       // Frame around the Sigma- key
       //lblEEKey = gtk_label_new("");
-      //gtk_widget_set_name(lblEEKey,"eSoftkeyArea");
+      //gtk_widget_set_name(lblEEKey, "eSoftkeyArea");
       //gtk_widget_set_size_request(lblEEKey, 61-8-2-2,  5-2);
       //gtk_fixed_put(GTK_FIXED(grid), lblEEKey, 350+4+2 - 4 * DELTA_KEYS_X, 563-1 - 2*DELTA_KEYS_Y);
 
 
       // Frame around the SIN key
       //lblSKey = gtk_label_new("");
-      //gtk_widget_set_name(lblSKey,"eSoftkeyArea");
+      //gtk_widget_set_name(lblSKey, "eSoftkeyArea");
       //gtk_widget_set_size_request(lblSKey, 61-8-2-2,  5-2);
       //gtk_fixed_put(GTK_FIXED(grid), lblSKey, 350+4+2 - 1 * DELTA_KEYS_X, 563-1 -0* DELTA_KEYS_Y);
 

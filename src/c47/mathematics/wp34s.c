@@ -262,10 +262,10 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
@@ -520,10 +520,10 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }

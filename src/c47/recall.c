@@ -441,7 +441,7 @@ void fnRecallVElement(uint16_t ix) {
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t x;
       linkToRealMatrixRegister(REGISTER_X, &x);
-      //printf("ix:%u Rows:%u Cols:%u \n",ix,x.header.matrixRows, x.header.matrixColumns);
+      //printf("ix:%u Rows:%u Cols:%u \n", ix, x.header.matrixRows, x.header.matrixColumns);
       setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
       setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }

@@ -676,7 +676,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
   void addItemToBuffer(uint16_t item) {
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"bufferize.c:addItemToBuffer item=%d tam.mode=%d\n",item,tam.mode); jm_show_calc_state(tmp);
+      char tmp[200];
+      sprintf(tmp, "bufferize.c:addItemToBuffer item=%d tam.mode=%d\n", item, tam.mode);
+      jm_show_calc_state(tmp);
     #endif // PC_BUILD
     //resetKeytimers();  //JM
 
@@ -839,21 +841,21 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             }
             T_cursorPos = in;
             char ixaa[AIM_BUFFER_LENGTH];                           //prepare temporary aimBuffer
-            xcopy(ixaa, aimBuffer,in);                              //copy everything up to the cursor position
+            xcopy(ixaa, aimBuffer, in);                             //copy everything up to the cursor position
             ixaa[in]=0;                                             //stop new buffer at cursor position to be able to insert new character
 
-            //          strcat(ixaa,indexOfItems[item].itemSoftmenuName);       //add new character
+            //          strcat(ixaa, indexOfItems[item].itemSoftmenuName);       //add new character
             uint16_t nq = stringByteLength(indexOfItems[item].itemSoftmenuName);
             xcopy(ixaa + in, indexOfItems[item].itemSoftmenuName, nq+1);
             ixaa[in + nq]=0;
 
-            //          strcat(ixaa,aimBuffer + in);                            //copy rest of the aimbuffer
+            //          strcat(ixaa, aimBuffer + in);                            //copy rest of the aimbuffer
             uint16_t nr = stringByteLength(aimBuffer + in);
             xcopy(ixaa + in + nq, aimBuffer + in, nr+1);
             ixaa[in + nq + nr]=0;
 
-            //          strcpy(aimBuffer,ixaa);                                 //return temporary string to aimBuffer
-            xcopy(aimBuffer,ixaa,stringByteLength(ixaa)+1);
+            //          strcpy(aimBuffer, ixaa);                                 //return temporary string to aimBuffer
+            xcopy(aimBuffer, ixaa, stringByteLength(ixaa)+1);
 
             T_cursorPos = stringNextGlyph(aimBuffer, T_cursorPos);  //place the cursor at the next glyph boundary
             //JMCURSOR ^^ REPLACES THE FOLLOWING XCOPY, WHICH NORMALLY JUST ADDS A CHARACTER TO THE END OF THE STRING
@@ -981,16 +983,16 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           }
 
           default: {
-            if(isFunctionInMim(item,0)) {
+            if(isFunctionInMim(item, 0)) {
                 mimAddNumber(item);
                 break;
             }
-            else if(isFunctionInMim(item,1)) {
+            else if(isFunctionInMim(item, 1)) {
                 lastErrorCode = ERROR_NONE;
                 mimEnter(true);
                 runFunction(item);
                 break;
-            } else if(isFunctionInMim(item,2)) {
+            } else if(isFunctionInMim(item, 2)) {
                 mimRunFunction(item, indexOfItems[item].param);
                 break;
             }
@@ -2189,7 +2191,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     if((numDigits - nth) % GROUPWIDTH_LEFT == 1 || GROUPWIDTH_LEFT == 1) {
       char tt[4];
       if(SEPARATOR_LEFT[1]!=1) {
-        //strcpy(tt,SEPARATOR_LEFT);
+        //strcpy(tt, SEPARATOR_LEFT);
         tt[0] = 0xab;  //token
         tt[1] = 1;
         tt[2] = 0;
@@ -2223,7 +2225,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     if(nth % GROUPWIDTH_RIGHT == GROUPWIDTH_RIGHT - 1) {
       char tt[4];
       if(SEPARATOR_RIGHT[1]!=1) {
-        //strcpy(tt,SEPARATOR_RIGHT);
+        //strcpy(tt, SEPARATOR_RIGHT);
         tt[0] = 0xbb;   //token
         tt[1] = 1;
         tt[2] = 0;

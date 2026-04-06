@@ -24,7 +24,7 @@ All the below: because both Last x and savestack does not work due to multiple s
   7. SYM>ABC
   8. ABC>SYM
   9. e^theta. redo in math file,
-  10. three phase Ohms Law: 17,18,19
+  10. three phase Ohms Law: 17, 18, 19
 
 
  Check for savestack in jm.c
@@ -341,7 +341,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
               // Test if long inter number display string will fit on two lines in standard font, if not do nothing (cannot edit)
               if(stringWidth(nimBufferDisplay, &standardFont, true, true) < (SCREEN_WIDTH * 2)  - 8) { // 8 is the standard font cursor width
-                //printf("**[DL]** aimBuffer %s \n nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+                //printf("**[DL]** aimBuffer %s \n nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+                //fflush(stdout);
                 calcMode = CM_NIM;
                 clearSystemFlag(FLAG_ALPHA);
                 freeRegisterData(REGISTER_X);
@@ -370,7 +371,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               grpGroupingRightOld = grpGroupingRight;
               angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
 
-              //printf("**[DL]** xangularMode %d\n",xangularMode);fflush(stdout);
+              //printf("**[DL]** xangularMode %d\n", xangularMode);
+              //fflush(stdout);
               memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
               memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
 
@@ -410,7 +412,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               else {  // display real34
                 _real34ToNim(REGISTER_REAL34_DATA(REGISTER_X), aimBuffer, nimBufferDisplay);
               }
-              //printf("**[DL]** dtReal34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              //printf("**[DL]** dtReal34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              //fflush(stdout);
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
@@ -424,7 +427,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
               }
               real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
-              //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
+              //printf("**[DL]** AngularMode %d\n", getRegisterAngularMode(REGISTER_X));
+              //fflush(stdout);
               hexDigits = 0;
               if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
               xCursor = 1;
@@ -455,7 +459,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
                 decContext c = ctxtReal39;
                 int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-                c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
+                c.digits = (SHOWMODE ? 39 : max(0, maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
                 realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
                 c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
                 convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
@@ -514,7 +518,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              fflush(stdout);
 
               exponentSignLocation = realExponentSignLocation;
               calcMode = CM_NIM;
@@ -601,7 +606,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-              //printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              //printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              //fflush(stdout);
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
@@ -630,7 +636,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
       case CM_PEM : {
         if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) return; // Don't try to edit step 000 or END or .END.
-        //printf("**[DL]** currentLocalStepNumber %d\n",currentLocalStepNumber);fflush(stdout);
+        //printf("**[DL]** currentLocalStepNumber %d\n", currentLocalStepNumber);
+        //fflush(stdout);
         int16_t i = 0;
         int16_t func = currentStep[i++];
         if(func & 0x80) {
@@ -644,7 +651,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           uint8_t opParam3 = currentStep[i];
         #endif
 
-        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
+        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n", func, opParam, opParam2, decodedLiteralType);
+        //fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
           memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
@@ -678,14 +686,16 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               strcpy(tempBuffer, tmpString);
             }
             lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
-            //printf("**[DL]** fnEdit lastIntegerBase %d tempBuffer %s\n",lastIntegerBase,tempBuffer);fflush(stdout);
+            //printf("**[DL]** fnEdit lastIntegerBase %d tempBuffer %s\n", lastIntegerBase, tempBuffer);
+            //fflush(stdout);
             deleteStepsFromTo(currentStep, findNextStep(currentStep));
 
             uint16_t i;
             uint16_t iMax = strlen(tempBuffer);
             bool decimalflag = false;
             for(i = 0; i < iMax; i++) {
-              //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n",i,tempBuffer[i]&0xff,aimBuffer);fflush(stdout);
+              //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n", i, tempBuffer[i]&0xff, aimBuffer);
+              //fflush(stdout);
               switch((uint8_t) tempBuffer[i]) {
                 case '0':
                 case '1':
@@ -723,7 +733,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   if(chsNeeded)  pemAddNumber(ITM_CHS, false);  // '-' was already encountered, let's first negate the real part
                   chsNeeded = false;
                   if(opParam == BINARY_COMPLEX34) {
-                    //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n",aimBuffer);fflush(stdout);
+                    //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
+                    //fflush(stdout);
                     pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                   }
@@ -739,7 +750,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                     if(chsNeeded) pemAddNumber(ITM_CHS, false);  // second time '-' is encountered, let's first negate the real part
                     chsNeeded = true;
                     if(opParam == BINARY_COMPLEX34) {
-                      //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n",aimBuffer);fflush(stdout);
+                      //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
+                      //fflush(stdout);
                       pemAddNumber(ITM_CC, false);
                       decimalflag = false;
                     }
@@ -764,7 +776,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   break;
                 case 0x80:
                   i++;
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   if((tempBuffer[i] == STD_CROSS[1]) && (nimNumberPart != NP_COMPLEX_INT_PART)) {
                     i += 2; // Skip next character (STD_BASE_10)
                     if(chsNeeded) pemAddNumber(ITM_CHS, false);         // change mantissa sign before entering exponent
@@ -777,7 +790,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   break;
                 case 0xa1:
                   i++;
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   if((tempBuffer[i] >= STD_SUP_0[1]) && (tempBuffer[i] <= STD_SUP_9[1])) {
                     pemAddNumber(ITM_0 + tempBuffer[i] - STD_SUP_0[1], false);
                   }
@@ -786,11 +800,13 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                   else if(((tempBuffer[i] == STD_op_i[1]) || (tempBuffer[i] == STD_op_j[1])) &&
                           (nimNumberPart != NP_COMPLEX_INT_PART)) {
-                    //printf("**[DL]** fnEdit pemAddNumber ITM_op_j aimBuffer %s\n",aimBuffer);fflush(stdout);
+                    //printf("**[DL]** fnEdit pemAddNumber ITM_op_j aimBuffer %s\n", aimBuffer);
+                    //fflush(stdout);
                     pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                   }
-                  //printf("**[DL]** fnEdit pemAddNumber %02x aimBuffer %s\n",tempBuffer[i],aimBuffer);fflush(stdout);
+                  //printf("**[DL]** fnEdit pemAddNumber %02x aimBuffer %s\n", tempBuffer[i],aimBuffer);
+                  //fflush(stdout);
                   break;
                 case 0x81:
                 case 0x82:
@@ -808,10 +824,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 case 0xab:
                 case 0xac:
                   i++;   // Ignore non supported unicode characters, including base subscripts
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   break;
                 default:
-                  //printf("**[DL]** dflt   tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]** dflt   tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   break;
               }
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
@@ -832,7 +850,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 editingLiteralType = 0;
             }
             pemAddNumber(ITM_NOP, true);    // to insert the resulting number in program
-            //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n",editingLiteralType,aimBuffer);fflush(stdout);
+            //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n", editingLiteralType, aimBuffer);
+            //fflush(stdout);
           }
 #endif // !SAVE_SPACE_DM42_23_EDIT2
           else {
@@ -944,7 +963,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar =  maxDigits - 1;
                 tam.value = opParam / 10;
               }
-              //printf("**[DL]** tamProcessInput func %d aimBuffer %s\n",func,aimBuffer);fflush(stdout);
+              //printf("**[DL]** tamProcessInput func %d aimBuffer %s\n", func, aimBuffer);
+              //fflush(stdout);
               tamProcessInput(func);
               //scrollPemBackwards();
               if(opParam == STRING_LABEL_VARIABLE) {      // Variable name : Label or  edit name string
@@ -1000,11 +1020,11 @@ err:
   int32_t vol = 0;
   vol = getBeepVolume();
   fnSetVolume(11);
-  _Buzz(100,5);
+  _Buzz(100, 5);
   xcopy(tmpString, errorMessage, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
   create_screenshot(0);      //Screen dump
   xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-  _Buzz(100,5);
+  _Buzz(100, 5);
   fnSetVolume((uint16_t)vol);
 }
 #endif //DMCP_BUILD
@@ -1014,7 +1034,7 @@ bool_t anyKeyWaiting(void) {
   #if defined(DMCP_BUILD)
     return key_empty() == 0 || key_tail() != -1;
   #elif defined(PC_BUILD) // !DMCP_BUILD
-    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    //printf("KeyWaiting keyCode=%u", currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
   #endif // PC_BUILD
   return false;
@@ -1031,7 +1051,7 @@ bool_t exitKeyWaiting(void) {
     }
     return checkKey;
   #elif defined(PC_BUILD) // !DMCP_BUILD
-    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    //printf("KeyWaiting keyCode=%u", currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
   #endif // PC_BUILD
   return false;
@@ -1049,8 +1069,8 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
       force_refresh(force);
 ////Monitor key codes on screen
 //char sss[22];
-//sprintf(sss,"%i   AA ",sys_last_key());
-//print_linestr(sss,true);
+//sprintf(sss, "%i   AA ", sys_last_key());
+//print_linestr(sss, true);
     }
     wait_for_key_release(0);
     bool_t signalToDoScreenDump = false;
@@ -1459,7 +1479,7 @@ void fn_cnst_op_A(uint16_t option) {
 
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+  convertRealToResultRegister(const_0, REGISTER_X, amNone);
 
   //Initialize Memory for Matrix
   if(initMatrixRegister(REGISTER_X, 3, 3, true)) {
@@ -1626,14 +1646,14 @@ void fnConvertMxToStk(uint16_t param) {
     return;
   }
 
-  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Y,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Z,amNone);
+  convertRealToResultRegister(const_0, REGISTER_X, amNone);
+  convertRealToResultRegister(const_0, REGISTER_Y, amNone);
+  convertRealToResultRegister(const_0, REGISTER_Z, amNone);
 
   if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
     linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
@@ -1680,7 +1700,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       }
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
 
-      if(longIntegerCompare(tmp1,tmp3) != 0) {
+      if(longIntegerCompare(tmp1, tmp3) != 0) {
         if(temporaryInformation != TI_DATA_NEG_OVRFL) {
           temporaryInformation = TI_DATA_LOSS;             // I cannot think of which condition will reach here, without other overflows overriding, but leaving it in
         }
@@ -1877,7 +1897,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);      //re-set it to Polar iven if it was there already
     dest = getComplexRegisterAngularMode(REGISTER_X);
     DRG_cyc(&dest);
-    setComplexRegisterAngularMode(REGISTER_X,dest);
+    setComplexRegisterAngularMode(REGISTER_X, dest);
 
   }
   else if(getRegisterDataType(REGISTER_X) == dtShortInteger) {           // If shortinteger in X, convert to real
@@ -1926,7 +1946,7 @@ void shrinkNimBuffer(void) {                      //JMNIM vv
         //printf(">>> ***A # found. hexD=%d\n",hexD);
       }
       else {
-        //printf(">>> ***B # not found in %s:%d=%d hexD=%d\n",nimBuffer,ix,nimBuffer[ix],hexD);
+        //printf(">>> ***B # not found in %s:%d=%d hexD=%d\n", nimBuffer, ix, nimBuffer[ix], hexD);
       }
       ix++;
     }
@@ -2049,8 +2069,8 @@ void fnP_Alpha(void) {
     #endif // VERBOSE_LEVEL >= 1
 
     tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-    //print_linestr(aimBuffer,false);
+    xcopy(aimBuffer, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+    //print_linestr(aimBuffer, false);
 }
 
 
@@ -2639,8 +2659,8 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     maxden = denMax;
   }
   int32ToReal(maxden, &temp);
-  realDivide(const_1on4,&temp,&temp,&ctxtReal_denom_finder);
-  if(realCompareLessThan(&xx,&temp)) {
+  realDivide(const_1on4, &temp, &temp, &ctxtReal_denom_finder);
+  if(realCompareLessThan(&xx, &temp)) {
     //printf("Lower than 0.25/DMX, quitting before fraction loop.\n");  // Any value lower than 0.5/DMX will be deemed 0. Make the threshold 1/2 of 0.5/DMX
     dd = 1;
     goto nothingTodo;
@@ -2653,7 +2673,9 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
 
   /* loop finding terms until denom gets too big */
   while(m[1][0] *  ( ai = realToInt32C47(&xx, NULL) ) + m[1][1] <= maxden) {
-    //printf("  ai = %12i  condition:%8i<%6i ",ai, m[1][0] * ai + m[1][1], maxden ); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
+    //printf("  ai = %12i  condition:%8i<%6i ", ai, m[1][0] * ai + m[1][1], maxden );
+    //printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]);
+    //printRealToConsole(&xx, "  xx=", " + m[1][1] \n");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
     m[0][1] = m[0][0];
@@ -2663,19 +2685,21 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     m[1][0] = t;
 
     int32ToReal(ai, &temp);
-    realSubtract(&xx,&temp,&xx,&ctxtReal_denom_finder);
-    //printf("                                               "); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
+    realSubtract(&xx, &temp, &xx, &ctxtReal_denom_finder);
+    //printf("                                               ");
+    //printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]);
+    //printRealToConsole(&xx, "  xx=", " + m[1][1] \n");
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
-    realDivide(const_1,&xx,&xx,&ctxtReal_denom_finder);
-    if(realCompareGreaterThan(&xx,const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
-      realCopy(const_10p9__1,&xx);
+    realDivide(const_1, &xx, &xx, &ctxtReal_denom_finder);
+    if(realCompareGreaterThan(&xx, const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
+      realCopy(const_10p9__1, &xx);
     }
     if(realIsSpecial(&xx)) {
       #if defined(PC_BUILD)
         errorf("Representation failure. Quitting fraction loop.");
-        printRealToConsole(&xx,"xx:","\n");
+        printRealToConsole(&xx, "xx:","\n");
         fflush(stderr);
       #endif //PC_BUILD
       dd = 1;
@@ -2712,8 +2736,10 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   realCompare(&err2, &err1, &cmpResult, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   // cmpResult will hold -1 if err2 < err1, 0 if equal, 1 if err2 > err1
   // Check if err2 < err1 and swap output if needed
-  // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
-  // printRealToConsole(&err2,  "err2: "," "); printf("%d/%d\n",    m[0][1],m[1][1]);
+  // printRealToConsole(&err1, "\nerr1: ", " ");
+  //printf("%d/%d      ", m[0][0], m[1][0]);
+  // printRealToConsole(&err2,  "err2: ", " ");
+  //printf("%d/%d\n", m[0][1], m[1][1]);
   if(realIsNegative(&cmpResult)) {
       m[0][0] = m[0][1];
       m[1][0] = m[1][1];
@@ -2752,7 +2778,7 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
   longIntegerInit(lgInt);
   int32ToLongInteger(intt, lgInt);
   longIntegerToDisplayString(lgInt, str, 30, SCREEN_WIDTH, 20, true);
-  strcat(str,str1);
+  strcat(str, str1);
   longIntegerFree(lgInt);
 }
 
@@ -2791,7 +2817,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal_irrational_detection);                                               //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs, constant, &multConstant, &ctxtReal_irrational_detection);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_10p9__1)) {   //reduce whole multiple range to 34-24 = 10 digits. Use 10p9__1 = 999 999 999. (was const_2p31__1 = 2 147 483 647)
       return false;
     }
@@ -2805,9 +2831,9 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
     reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-    realToReal34(&multConstant,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    realToReal34(&multConstant, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
-    //printf("aaaaaaa: %i%llu + %llu / %llu \n",sign1,intPart,numer,denom);
+    //printf("aaaaaaa: %i%llu + %llu / %llu \n", sign1, intPart, numer, denom);
     int32_t smallestDenom = denom;
 #endif //FRACT_ENGINE
 #ifdef IRFRAC_ENGINE
@@ -2837,53 +2863,54 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 
 // DEBUG CODE
-//                                printRealToConsole(constant,"\n\nconstant=","\n");
-//                                printRealToConsole(valueReal,"valueReal=","\n");
-//                                printRealToConsole(&multConstant,"multConstant=","\n");
+//                                printRealToConsole(constant, "\n\nconstant=", "\n");
+//                                printRealToConsole(valueReal, "valueReal=", "\n");
+//                                printRealToConsole(&multConstant, "multConstant=", "\n");
 //                                printf("smallestDenom:%i\n",smallestDenom);
-//                                printRealToConsole(&newConstant,"newConstant=","\n");
-//                                printRealToConsole(&multipleOfNewConstant,"multipleOfNewConstant=","\n");
-//                                printRealToConsole(&multipleOfNewConstant_ip,"multipleOfNewConstant_ip=","\n");
-//                                printRealToConsole(&multipleOfNewConstant_fp,"multipleOfNewConstant_fp=","\n");
+//                                printRealToConsole(&newConstant, "newConstant=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant, "multipleOfNewConstant=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant_ip, "multipleOfNewConstant_ip=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant_fp, "multipleOfNewConstant_fp=", "\n");
 
 //                                printf(">>>multipleOfNewConstantInteger:%i>1? SmallestDenom:%i\n", multipleOfNewConstantInteger, smallestDenom);
 //                                printf(" Numer=%i Denom:%i\n---\n", multipleOfNewConstantInteger, smallestDenom);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"fp:","--\n");
-//                                printRealToConsole(findingIrrationalTolerance,"tol:","--\n");
-//                                printf("realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n",realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
+//                                printRealToConsole(&multipleOfNewConstant_fp, "fp:", "--\n");
+//                                printRealToConsole(findingIrrationalTolerance, "tol:", "--\n");
+//                                printf("realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance):%i\n", realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance));
 //                                printf(">>> %i ", multipleOfNewConstantInteger);
 //                                printf("QQ:%s§\n",displayString);
 //                                char teststr[1000];
 //                                char teststr1[1000];
-//                                sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
-//                                stringToASCII(teststr,teststr1);
+//                                sprintf(teststr, ">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                stringToASCII(teststr, teststr1);
 //                                printf("%s\n",teststr1);
-//                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
+//                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance));
 
 
     if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers && smallestDenom != 1) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
       cStr[0] = 0;
     }
     else {
-      strcpy(cStr,constantStr);
+      strcpy(cStr, constantStr);
     }
 
 
 // DEBUG CODE
-//                                printRealToConsole(valueReal,"\n\nInputvalue: valueReal=","\n");
-//                                printRealToConsole(constant,"    constant=","\n");
+//                                printRealToConsole(valueReal, "\n\nInputvalue: valueReal=", "\n");
+//                                printRealToConsole(constant, "    constant=", "\n");
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
-//                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                                printRealToConsole(&findingIrrationalTolerance1, "findingIrrationalTolerance1=", "\n");
 //                                char displayString2[200];
-//                                stringToASCII(constantStr,displayString2);
-//                                printf("constantStr:%s\n",displayString2);
-//                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
+//                                stringToASCII(constantStr, displayString2);
+//                                printf("constantStr:%s\n", displayString2);
+//                                printf("Numerator: multipleOfNewConstantInteger   %i\n", multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+//                                printRealToConsole(&multipleOfNewConstant_fp, "&multipleOfNewConstant_fp=", "\n");
 //                                char displayString1[200];
-//                                stringToASCII(resultingIntStr,displayString1); printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n",displayString1,(uint8_t)(displayString[0]),(uint8_t)(displayString[1]),(uint8_t)(displayString[2]),(uint8_t)(displayString[3]),(uint8_t)(displayString[4]),(uint8_t)(displayString[5]),(uint8_t)(displayString[6]),(uint8_t)(displayString[7]));
+//                                stringToASCII(resultingIntStr, displayString1);
+//                                printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n", displayString1, (uint8_t)(displayString[0]), (uint8_t)(displayString[1]), (uint8_t)(displayString[2]), (uint8_t)(displayString[3]), (uint8_t)(displayString[4]), (uint8_t)(displayString[5]), (uint8_t)(displayString[6]), (uint8_t)(displayString[7]));
 
-    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
+    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp, &findingIrrationalTolerance1)) {
 
 // DEBUG CODE
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
@@ -2900,8 +2927,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
           useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
           useMixedNumbersSep[2] = 0;
-          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);
-          strcat(wholePart,useMixedNumbersSep);                                                                   // "1 "
+          changeToWholeString(wholeInteger, wholePart, useMixedNumbersSep);
+          strcat(wholePart, useMixedNumbersSep);                                                                   // "1 "
         }
         else {                                                                                                    // constant with numbers
           useMixedNumbersSep[0] = sign[0];
@@ -2911,9 +2938,9 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
             sprintf(wholePart, "%s%s", cStr, useMixedNumbersSep);                                                 // "e+"
           }
           else {
-            changeToWholeString(wholeInteger,wholePart,PRODUCT_SIGN);
-            strcat(wholePart,cStr);
-            strcat(wholePart,useMixedNumbersSep);                                                                 // "2xe+"
+            changeToWholeString(wholeInteger, wholePart, PRODUCT_SIGN);
+            strcat(wholePart, cStr);
+            strcat(wholePart, useMixedNumbersSep);                                                                 // "2xe+"
           }
         }
       }
@@ -2925,17 +2952,17 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
         else {
           return false;
           //return false, to abort and use standard decimal instead of "1."
-          //sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);                                                 //==1
-          //strcat(tmpstr,RADIX34_MARK_STRING);
+          //sprintf(tmpstr, "%i", (int)multipleOfNewConstantInteger);                                                 //==1
+          //strcat(tmpstr, RADIX34_MARK_STRING);
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
       else {                                                                                                      // constant
         if(multipleOfNewConstantInteger == 1) {
-          sprintf(resultingIntStr,"%s", wholePart);                                                                 // "e+" or "2xe+"
+          sprintf(resultingIntStr, "%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
-          sprintf(tmpstr,"%i%s",(int)multipleOfNewConstantInteger,PRODUCT_SIGN);
+          sprintf(tmpstr, "%i%s",(int)multipleOfNewConstantInteger, PRODUCT_SIGN);
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
@@ -2943,7 +2970,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
         if(smallestDenom == 1) {
           return false;   //unlikely
           //return false, to abort and use standard decimal instead of "1."
-          //sprintf(resultingIntStr,"%i", (int)multipleOfNewConstantInteger);                                       // if denom = 1, then use large font
+          //sprintf(resultingIntStr, "%i", (int)multipleOfNewConstantInteger);                                       // if denom = 1, then use large font
         }
         else {
           changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                             // if denom <> 0, then use superscript, knowing there is a denom
@@ -2952,20 +2979,20 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     }
 
 // DEBUG CODE
-//                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
-//                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(tmpstr[0]),(uint8_t)(tmpstr[1]),(uint8_t)(tmpstr[2]),(uint8_t)(tmpstr[3]),(uint8_t)(tmpstr[4]),(uint8_t)(tmpstr[5]),(uint8_t)(tmpstr[6]),(uint8_t)(tmpstr[7]));
-//                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(resultingIntStr[0]),(uint8_t)(resultingIntStr[1]),(uint8_t)(resultingIntStr[2]),(uint8_t)(resultingIntStr[3]),(uint8_t)(resultingIntStr[4]),(uint8_t)(resultingIntStr[5]),(uint8_t)(resultingIntStr[6]),(uint8_t)(resultingIntStr[7]));
+//                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(wholePart[0]),       (uint8_t)(wholePart[1]),       (uint8_t)(wholePart[2]),       (uint8_t)(wholePart[3]),       (uint8_t)(wholePart[4]),       (uint8_t)(wholePart[5]),       (uint8_t)(wholePart[6]),       (uint8_t)(wholePart[7]));
+//                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(tmpstr[0]),          (uint8_t)(tmpstr[1]),          (uint8_t)(tmpstr[2]),          (uint8_t)(tmpstr[3]),          (uint8_t)(tmpstr[4]),          (uint8_t)(tmpstr[5]),          (uint8_t)(tmpstr[6]),          (uint8_t)(tmpstr[7]));
+//                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(resultingIntStr[0]), (uint8_t)(resultingIntStr[1]), (uint8_t)(resultingIntStr[2]), (uint8_t)(resultingIntStr[3]), (uint8_t)(resultingIntStr[4]), (uint8_t)(resultingIntStr[5]), (uint8_t)(resultingIntStr[6]), (uint8_t)(resultingIntStr[7]));
 //                                char teststr[1000];
-//                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                sprintf(teststr, ">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
 //                                char teststr2[1000];
-//                                stringToASCII(teststr,teststr2);
-//                                printf("%s\n",teststr2);
+//                                stringToASCII(teststr, teststr2);
+//                                printf("%s\n", teststr2);
 
     if(smallestDenom > 1) {
       changeToSub(smallestDenom, denomStr);                                                                     // "/12"
     }
 
-    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
+    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0, stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
@@ -2974,13 +3001,13 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   irfractionTolerence(smallestDenom * 6 + 1, &roundingTolerance1);                                              // relative convergence, add (6x+1) i.e about 0.43 digits + 1 for safety margin)
 
 // DEBUG CODE
-//                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
-//                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
-//                               printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                               printRealToConsole(&multipleOfNewConstant_fp, "&multipleOfNewConstant_fp=", "\n");
+//                               printRealToConsole(&roundingTolerance1, "roundingTolerance1=", "\n");
+//                               printRealToConsole(&findingIrrationalTolerance1, "findingIrrationalTolerance1=", "\n");
 
     displayString[0] = 0;
-    if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
-      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,&roundingTolerance1) ){                                               // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
+    if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp, &findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
+      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp, &roundingTolerance1) ){                                               // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 
@@ -2990,15 +3017,15 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           if(resultingIntStr[0] !=0 ) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,cStr);
-          strcat(displayString,denomStr);                              // " 2xe+" "e" "/3"
+          strcat(displayString, cStr);
+          strcat(displayString, denomStr);                             // " 2xe+" "e" "/3"
         }
         else {
           if(resultingIntStr[0] != 0) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,cStr);
-          strcat(displayString,denomStr);                              // "2xe+" "e" "/3"
+          strcat(displayString, cStr);
+          strcat(displayString, denomStr);                             // "2xe+" "e" "/3"
         }
       }
       else { // "-"
@@ -3006,15 +3033,15 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
         if(resultingIntStr[0] !=0 ) {
           strcat(displayString, resultingIntStr);
         }
-        strcat(displayString,cStr);
-        strcat(displayString,denomStr);                                // "-2xe+" "e" "/3"
+        strcat(displayString, cStr);
+        strcat(displayString, denomStr);                               // "-2xe+" "e" "/3"
       }
 
       if(cStr[0] == 0 && constantStr[0] !=0) {                         // "-2/3" "e"
-        strcat(displayString,STD_SPACE_4_PER_EM);
-        strcat(displayString,PRODUCT_SIGN);
-        strcat(displayString,STD_SPACE_4_PER_EM);
-        strcat(displayString,constantStr);
+        strcat(displayString, STD_SPACE_4_PER_EM);
+        strcat(displayString, PRODUCT_SIGN);
+        strcat(displayString, STD_SPACE_4_PER_EM);
+        strcat(displayString, constantStr);
       }
 
       return true;             //successful IRFRAC conversion, displaying as fraction
@@ -3116,11 +3143,11 @@ void fnRESET_MyM(uint16_t param) {
 
 
       if(itemToBeAssigned == -MNU_PFN) {
-        strcpy(aimBuffer,"P.FN");
+        strcpy(aimBuffer, "P.FN");
         assignGetName1();
       }
       else if(itemToBeAssigned == -MNU_HOME) {
-        strcpy(aimBuffer,"HOME");
+        strcpy(aimBuffer, "HOME");
         assignGetName1();
       }
 
@@ -3162,7 +3189,7 @@ int16_t mm(int16_t id) {
     while(softmenu[m].menuItem != 0) {
       //printf(">>> mm %d %d %d %s \n",id, m, softmenu[m].menuItem, indexOfItems[-softmenu[m].menuItem].itemSoftmenuName);
       if(softmenu[m].menuItem == id) {
-        //printf("####>> mm() broken out id=%i m=%i\n",id,m);
+        //printf("####>> mm() broken out id=%i m=%i\n", id, m);
         break;
       }
       m++;
@@ -3192,47 +3219,47 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer ring + center dot (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
       // Column 1: yy+3..yy+7
-      {1,3},{1,4},{1,5},{1,6},{1,7},
+      {1,3}, {1,4}, {1,5}, {1,6}, {1,7},
       // Column 2: yy+2..yy+8
-      {2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},
+      {2,2}, {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8},
       // Column 3: yy+1..yy+3, yy+7..yy+9
-      {3,1},{3,2},{3,3},{3,7},{3,8},{3,9},
+      {3,1}, {3,2}, {3,3}, {3,7}, {3,8}, {3,9},
       // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
+      {4,1}, {4,2}, {4,4}, {4,5}, {4,6}, {4,8}, {4,9},
       // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
+      {5,1}, {5,2}, {5,4}, {5,5}, {5,6}, {5,8}, {5,9},
       // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
+      {6,1}, {6,2}, {6,4}, {6,5}, {6,6}, {6,8}, {6,9},
       // Column 7: yy+1..yy+3, yy+7..yy+9
-      {7,1},{7,2},{7,3},{7,7},{7,8},{7,9},
+      {7,1}, {7,2}, {7,3}, {7,7}, {7,8}, {7,9},
       // Column 8: yy+2..yy+8
-      {8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},
+      {8,2}, {8,3}, {8,4}, {8,5}, {8,6}, {8,7}, {8,8},
       // Column 9: yy+3..yy+7
-      {9,3},{9,4},{9,5},{9,6},{9,7}
+      {9,3}, {9,4}, {9,5}, {9,6}, {9,7}
     };
 
     // WHITE pixels: background borders and gaps creating ring shape
     TO_QSPI static const uint8_t rbWhite[][2] = {
       // Column 0: yy+2..yy+8 (left border)
-      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
+      {0,2}, {0,3}, {0,4},  {0,5}, {0,6}, {0,7}, {0,8},
       // Column 1: yy+1, yy+8, yy+9
-      {1,1},{1,8},{1,9},
+      {1,1}, {1,8}, {1,9},
       // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0},{2,1},{2,9},{2,10},
+      {2,0}, {2,1}, {2,9}, {2,10},
       // Column 3: yy+0, yy+4..yy+6, yy+10
-      {3,0},{3,4},{3,5},{3,6},{3,10},
+      {3,0}, {3,4}, {3,5}, {3,6}, {3,10},
       // Column 4: yy+0, yy+3, yy+7, yy+10
-      {4,0},{4,3},{4,7},{4,10},
+      {4,0}, {4,3}, {4,7}, {4,10},
       // Column 5: yy+0, yy+3, yy+7, yy+10
-      {5,0},{5,3},{5,7},{5,10},
+      {5,0}, {5,3}, {5,7}, {5,10},
       // Column 6: yy+0, yy+3, yy+7, yy+10
-      {6,0},{6,3},{6,7},{6,10},
+      {6,0}, {6,3}, {6,7}, {6,10},
       // Column 7: yy+0, yy+4..yy+6, yy+10
-      {7,0},{7,4},{7,5},{7,6},{7,10},
+      {7,0}, {7,4}, {7,5}, {7,6}, {7,10},
       // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0},{8,1},{8,9},{8,10},
+      {8,0}, {8,1}, {8,9}, {8,10},
       // Column 9: yy+1, yy+8, yy+9
-      {9,1},{9,8},{9,9}
+      {9,1}, {9,8}, {9,9}
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3244,47 +3271,47 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer ring only (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
       // Column 1: yy+3..yy+7
-      {1,3},{1,4},{1,5},{1,6},{1,7},
+      {1,3}, {1,4}, {1,5}, {1,6}, {1,7},
       // Column 2: yy+2, yy+3, yy+7, yy+8
-      {2,2},{2,3},{2,7},{2,8},
+      {2,2}, {2,3}, {2,7}, {2,8},
       // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1},{3,2},{3,8},{3,9},
+      {3,1}, {3,2}, {3,8}, {3,9},
       // Column 4: yy+1, yy+9
-      {4,1},{4,9},
+      {4,1}, {4,9},
       // Column 5: yy+1, yy+9
-      {5,1},{5,9},
+      {5,1}, {5,9},
       // Column 6: yy+1, yy+9
-      {6,1},{6,9},
+      {6,1}, {6,9},
       // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1},{7,2},{7,8},{7,9},
+      {7,1}, {7,2}, {7,8}, {7,9},
       // Column 8: yy+2, yy+3, yy+7, yy+8
-      {8,2},{8,3},{8,7},{8,8},
+      {8,2}, {8,3}, {8,7}, {8,8},
       // Column 9: yy+3..yy+7
-      {9,3},{9,4},{9,5},{9,6},{9,7}
+      {9,3}, {9,4}, {9,5}, {9,6}, {9,7}
     };
 
     // WHITE pixels: background borders, gaps, and hollow center
     TO_QSPI static const uint8_t rbWhite[][2] = {
       // Column 0: yy+2..yy+8 (left border)
-      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
+      {0,2}, {0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8},
       // Column 1: yy+1, yy+8, yy+9
-      {1,1},{1,8},{1,9},
+      {1,1}, {1,8}, {1,9},
       // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0},{2,1},{2,9},{2,10},
+      {2,0}, {2,1}, {2,9}, {2,10},
       // Column 3: yy+0, yy+10
-      {3,0},{3,10},
+      {3,0}, {3,10},
       // Column 4: yy+0, yy+10
-      {4,0},{4,10},
+      {4,0}, {4,10},
       // Column 5: yy+0, yy+10
-      {5,0},{5,10},
+      {5,0}, {5,10},
       // Column 6: yy+0, yy+10
-      {6,0},{6,10},
+      {6,0}, {6,10},
       // Column 7: yy+0, yy+10
-      {7,0},{7,10},
+      {7,0}, {7,10},
       // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0},{8,1},{8,9},{8,10},
+      {8,0}, {8,1}, {8,9}, {8,10},
       // Column 9: yy+1, yy+8, yy+9
-      {9,1},{9,8},{9,9}
+      {9,1}, {9,8}, {9,9}
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3298,47 +3325,47 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer square + inner checkmark pattern
     TO_QSPI static const uint8_t cbBlack[][2] = {
       // Column 1: yy+1..yy+9 (full)
-      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
+      {1,1}, {1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
       // Column 2: yy+1..yy+9 (full)
-      {2,1},{2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},{2,9},
+      {2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8}, {2,9},
       // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1},{3,2},{3,8},{3,9},
+      {3,1}, {3,2}, {3,8}, {3,9},
       // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
+      {4,1}, {4,2}, {4,4}, {4,5}, {4,6}, {4,8}, {4,9},
       // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
+      {5,1}, {5,2}, {5,4}, {5,5}, {5,6}, {5,8}, {5,9},
       // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
+      {6,1}, {6,2}, {6,4}, {6,5}, {6,6}, {6,8}, {6,9},
       // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1},{7,2},{7,8},{7,9},
+      {7,1}, {7,2}, {7,8}, {7,9},
       // Column 8: yy+1..yy+9 (full)
-      {8,1},{8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},{8,9},
+      {8,1}, {8,2}, {8,3}, {8,4}, {8,5}, {8,6}, {8,7}, {8,8}, {8,9},
       // Column 9: yy+1..yy+9 (full)
-      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+      {9,1}, {9,2}, {9,3}, {9,4}, {9,5}, {9,6}, {9,7}, {9,8}, {9,9}
     };
 
     // WHITE pixels: background borders and hollow center area
     TO_QSPI static const uint8_t cbWhite[][2] = {
       // Column 0: yy+0..yy+10 (left border)
-      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
+      {0,0}, {0,1},{0,2},{0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8}, {0,9}, {0,10},
       // Column 1: yy+0, yy+10
-      {1,0},{1,10},
+      {1,0}, {1,10},
       // Column 2: yy+0, yy+10
-      {2,0},{2,10},
+      {2,0}, {2,10},
       // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {3,0},{3,3},{3,4},{3,5},{3,6},{3,7},{3,10},
+      {3,0}, {3,3}, {3,4}, {3,5}, {3,6}, {3,7}, {3,10},
       // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {4,0},{4,3},{4,7},{4,10},
+      {4,0}, {4,3}, {4,7}, {4,10},
       // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {5,0},{5,3},{5,7},{5,10},
+      {5,0}, {5,3}, {5,7}, {5,10},
       // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {6,0},{6,3},{6,7},{6,10},
+      {6,0}, {6,3}, {6,7}, {6,10},
       // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {7,0},{7,3},{7,4},{7,5},{7,6},{7,7},{7,10},
+      {7,0}, {7,3}, {7,4}, {7,5}, {7,6}, {7,7}, {7,10},
       // Column 8: yy+0, yy+10
-      {8,0},{8,10},
+      {8,0}, {8,10},
       // Column 9: yy+0, yy+10
-      {9,0},{9,10}
+      {9,0}, {9,10}
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3352,47 +3379,47 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer square only (hollow inside)
     TO_QSPI static const uint8_t cbBlack[][2] = {
       // Column 1: yy+1..yy+9 (full)
-      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
+      {1,1}, {1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
       // Column 2: yy+1, yy+9 (top/bottom only)
-      {2,1},{2,9},
+      {2,1}, {2,9},
       // Column 3: yy+1, yy+9
-      {3,1},{3,9},
+      {3,1}, {3,9},
       // Column 4: yy+1, yy+9
-      {4,1},{4,9},
+      {4,1}, {4,9},
       // Column 5: yy+1, yy+9
-      {5,1},{5,9},
+      {5,1}, {5,9},
       // Column 6: yy+1, yy+9
-      {6,1},{6,9},
+      {6,1}, {6,9},
       // Column 7: yy+1, yy+9
-      {7,1},{7,9},
+      {7,1}, {7,9},
       // Column 8: yy+1, yy+9
-      {8,1},{8,9},
+      {8,1}, {8,9},
       // Column 9: yy+1..yy+9 (full)
-      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+      {9,1}, {9,2}, {9,3}, {9,4}, {9,5}, {9,6}, {9,7}, {9,8}, {9,9}
     };
 
     // WHITE pixels: background borders
     TO_QSPI static const uint8_t cbWhite[][2] = {
       // Column 0: yy+0..yy+10 (left border)
-      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
+      {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8}, {0,9}, {0,10},
       // Column 1: yy+0, yy+10
-      {1,0},{1,10},
+      {1,0}, {1,10},
       // Column 2: yy+0, yy+10
-      {2,0},{2,10},
+      {2,0}, {2,10},
       // Column 3: yy+0, yy+10
-      {3,0},{3,10},
+      {3,0}, {3,10},
       // Column 4: yy+0, yy+10
-      {4,0},{4,10},
+      {4,0}, {4,10},
       // Column 5: yy+0, yy+10
-      {5,0},{5,10},
+      {5,0}, {5,10},
       // Column 6: yy+0, yy+10
-      {6,0},{6,10},
+      {6,0}, {6,10},
       // Column 7: yy+0, yy+10
-      {7,0},{7,10},
+      {7,0}, {7,10},
       // Column 8: yy+0, yy+10
-      {8,0},{8,10},
+      {8,0}, {8,10},
       // Column 9: yy+0, yy+10
-      {9,0},{9,10}
+      {9,0}, {9,10}
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3404,17 +3431,17 @@ int16_t mm(int16_t id) {
     // Diamond outline coordinates (x_offset, y_offset from xx, yy)
     // Forms diamond shape: top point → widest middle → bottom point
     TO_QSPI static const uint8_t diamond[][2] = {
-      {5, 0},                                       // Top point
-      {4, 1}, {6, 1},                               // Row 1: 2 pixels
-      {3, 2}, {7, 2},                               // Row 2: 2 pixels
-      {2, 3}, {8, 3},                               // Row 3: 2 pixels
-      {1, 4}, {9, 4},                               // Row 4: 2 pixels
-      {0, 5}, {10, 5},                              // Row 5: widest point (2 pixels)
-      {1, 6}, {9, 6},                               // Row 6: 2 pixels
-      {2, 7}, {8, 7},                               // Row 7: 2 pixels
-      {3, 8}, {7, 8},                               // Row 8: 2 pixels
-      {4, 9}, {6, 9},                               // Row 9: 2 pixels
-      {5, 10}                                       // Bottom point
+      {5,0},                                      // Top point
+      {4,1}, {6,1},                               // Row 1: 2 pixels
+      {3,2}, {7,2},                               // Row 2: 2 pixels
+      {2,3}, {8,3},                               // Row 3: 2 pixels
+      {1,4}, {9,4},                               // Row 4: 2 pixels
+      {0,5}, {10,5},                              // Row 5: widest point (2 pixels)
+      {1,6}, {9,6},                               // Row 6: 2 pixels
+      {2,7}, {8,7},                               // Row 7: 2 pixels
+      {3,8}, {7,8},                               // Row 8: 2 pixels
+      {4,9}, {6,9},                               // Row 9: 2 pixels
+      {5,10}                                      // Bottom point
     };
     #define DOUBLE                                  // Draw double-width for visibility
     #define offs 1                                  // X-offset adjustment
@@ -3428,7 +3455,7 @@ int16_t mm(int16_t id) {
 
   // ◇ Diamond/macro button checked: diamond outline + center fill
   void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy) {
-    MB_MACRO(xx,yy);  // Draw outline first
+    MB_MACRO(xx, yy);  // Draw outline first
 
     // Diamond interior fill coordinates (x_offset, y_offset from xx, yy)
     // Fills center area to indicate checked state

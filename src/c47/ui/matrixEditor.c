@@ -930,7 +930,7 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t to
   }
 
   toDisplay |= forEditor || rows > 1;
-  strcpy(errorMessage,"[");
+  strcpy(errorMessage, "[");
 
   uint16_t maxCols = cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols;
   const uint16_t maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
@@ -1103,9 +1103,9 @@ int16_t colX = 0;
         colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
       } else {
         if(j > 0) {
-          strcat(errorMessage," ");
+          strcat(errorMessage, " ");
         }
-      strcat(errorMessage,tmpString);
+      strcat(errorMessage, tmpString);
       }
     }
 //end string creation
@@ -1116,7 +1116,7 @@ int16_t colX = 0;
         showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       }
     } else {
-      strcat(errorMessage,"]");
+      strcat(errorMessage, "]");
       if(colVector == true) {
         strcat(errorMessage, STD_SUP_BOLD_T);
       }

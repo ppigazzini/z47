@@ -310,7 +310,7 @@ void fnMirror(uint16_t unusedButMandatoryParameter) {
  * \return void
  ***********************************************/
 void fnSwapEndian(uint16_t bitWidth) {
-  uint64_t b7,b6,b5,b4,b3,b2,b1,b0;
+  uint64_t b7, b6, b5, b4, b3, b2, b1, b0;
   uint64_t x;
   uint32_t base;
 

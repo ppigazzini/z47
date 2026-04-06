@@ -1192,14 +1192,14 @@ void fnOpenMenu(uint16_t menu) {
     if(getSystemFlag(FLAG_IGN1ER)) {
       clearSystemFlag(FLAG_IGN1ER);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
+      sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber, menu);
         moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
+        sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber, menu);
         moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
@@ -1238,7 +1238,7 @@ int16_t findMenu(char *buffer) {
   int16_t i, menuItem;
   bool found = false;
 
-  _stripMenuName(buffer,name);
+  _stripMenuName(buffer, name);
 
   i = 0;
   menuItem = MNU_MyMenu;
@@ -1788,7 +1788,7 @@ bool_t maxfgLines(int16_t y) {
   void greyRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
     int16_t col, row;
     for(row=y; row<dy+y; row++) {
-      for(col=x+mod(x+row,2); col<dx+x; col+=2) {
+      for(col=x+mod(x+row, 2); col<dx+x; col+=2) {
         setBlackPixel(col, row);
       }
     }
@@ -2093,21 +2093,21 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_ACC: {
                       real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
                       if(realIsZero(&tmpR)) {
-                        strcpy(tmpS,"0");
+                        strcpy(tmpS, "0");
                       }
                       else {
                         realToFloat(&tmpR, &tmpF);
                         if(tmpF<0) {
-                          strcpy(tmpS,"NEG");
+                          strcpy(tmpS, "NEG");
                         }
                         else if(tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                          strcpy(tmpS, STD_GAUSS_WHITE_L "1E-34");
                         }
                         else if(tmpF>1) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "1");
+                          strcpy(tmpS, STD_GAUSS_WHITE_R "1");
                         }
                         else {
-                          sprintf(tmpS,"%5.G",tmpF);
+                          sprintf(tmpS, "%5.G", tmpF);
                           strcpy(tmpS, eatSpacesMid(tmpS));
                         }
                       }
@@ -2177,21 +2177,21 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                          (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
                          )) {
                         //integer smaller than limit
-                        sprintf(tmpS,"%i",(int)tmpF);
+                        sprintf(tmpS, "%i", (int)tmpF);
                       }
                       else {
                         //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_SUB_0);
+                          strcpy(tmpS, STD_GAUSS_WHITE_R STD_SUB_0);
                         }
                         else if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_SUB_0);
+                          strcpy(tmpS, STD_GAUSS_WHITE_L STD_SUB_0);
                         }
                         else if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
+                          strcpy(tmpS, STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
                         }
                         else if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
+                          strcpy(tmpS, STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
                         }
                         else {
                           bool_t convertedRealPerfectly;
@@ -2233,7 +2233,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                       }
 
-                      radixProcess(tmpSS,tmpS);
+                      radixProcess(tmpSS, tmpS);
 
                       //for very short numerics, add one space
                       if(stringByteLength(tmpSS) < 4) {
@@ -2266,14 +2266,14 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
                           case NC_SUBSCRIPT   : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL;
-                                                stringCopy(itemName,indexOfItems[itemNr%10000].itemSoftmenuName);
+                                                stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                                                 itemName[0]=STD_alpha[0];
                                                 itemName[1]=STD_alpha[1];
                                                 itemName[2]=0;
                                                 return;
                                                 break;
                           case NC_SUPERSCRIPT : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUP_s STD_SUP_u STD_SUP_p : alphaCase == AC_UPPER ? STD_SUP_S STD_SUP_U STD_SUP_P : ""); *showValue = NOVAL;
-                                                stringCopy(itemName,indexOfItems[itemNr%10000].itemSoftmenuName);
+                                                stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                                                 itemName[0]=STD_alpha[0];
                                                 itemName[1]=STD_alpha[1];
                                                 itemName[2]=0;
@@ -2294,10 +2294,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         showText[0] = 0;
                         if(lastCenturyHighUsed & YY_MASK_OFF) {
                           *showValue = NOVAL;
-                          strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
+                          strcpy(showText, STD_SUB_o STD_SUB_f STD_SUB_f);
                         }
                         if(lastCenturyHighUsed & YY_MASK_TRACKING) {
-                          strcat(showText,STD_SPACE_3_PER_EM STD_SUB_t);
+                          strcat(showText, STD_SPACE_3_PER_EM STD_SUB_t);
                         }
                         break;
 
@@ -2340,13 +2340,13 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     }
     else {
       stringCopy(itemName, changeDotAndIJ(itemNr, indexOfItems[itemNr%10000].itemSoftmenuName));
-      //printf("WWW2: itemName=%s, ItemNr=%i \n",itemName,itemNr);
+      //printf("WWW2: itemName=%s, ItemNr=%i \n", itemName, itemNr);
       return;
     }
   }
   else if(itemNr < 0) { //itemNr >= 0
     stringCopy(itemName, indexOfItems[-itemNr%10000].itemSoftmenuName);
-    //printf("WWW3: itemName=%s, ItemNr=%i \n",itemName,itemNr);
+    //printf("WWW3: itemName=%s, ItemNr=%i \n", itemName, itemNr);
     return;
   }
 }
@@ -2519,7 +2519,9 @@ void showSoftmenuCurrentPart(void) {
   int16_t x, y, yDotted=0, currentFirstItem, item, numberOfItems, m = softmenuStack[0].softmenuId;
   bool_t dottedTopLine;
   #if defined(PC_BUILD) && ((VERBOSE_LEVEL > -1) || defined(PC_BUILD_TELLTALE))
-    char tmp[200]; sprintf(tmp,"^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n",m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName); jm_show_comment(tmp);
+    char tmp[200];
+    sprintf(tmp, "^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n", m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
+    jm_show_comment(tmp);
     printf("==>%s\n",tmp);
   #endif // PC_BUILD
 
@@ -2803,10 +2805,10 @@ void showSoftmenuCurrentPart(void) {
           else if(softmenu[m].menuItem == -MNU_SYSFL) {                                         //JMvv add radiobuttons to standard flags
             if(indexOfItems[item%10000].itemCatalogName[0] != 0) {
               if(isSystemFlagWriteProtected(indexOfItems[item%10000].param)) {
-                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT);
+                showSoftkey(changeDotAndIJ(item, indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, getSystemFlag(indexOfItems[item%10000].param) ?  1 : 0, NOTEXT);
               }
               else {
-                showSoftkey(changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT);
+                showSoftkey(changeDotAndIJ(item, indexOfItems[item%10000].itemCatalogName),  x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, getSystemFlag(indexOfItems[item%10000].param) ?  CB_TRUE : CB_FALSE, NOVAL, NOTEXT);
               }
             }
           }                                                                      //JM^^
@@ -2838,7 +2840,7 @@ void showSoftmenuCurrentPart(void) {
             else {
               if( (softmenu[m].menuItem == -MNU_FCNS || softmenu[m].menuItem == -MNU_FCNS_EIM || softmenu[m].menuItem  == -MNU_CONST) || //CONST is a normal menu not a catalog, but we expect the catalog to be treated as a catalog. //The same could be a problem with any of the generated catalogs (MNU_SYSFL, MNU_alpha_INTL, MNU_alpha_intl, )
                  ((softmenu[m].menuItem == -MNU_IO   || softmenu[m].menuItem  == -MNU_PFN  ) && (item == ITM_STOCFG || item == ITM_RCLCFG))) { //do not display "Config"
-                stringCopy(itemName, changeDotAndIJ(item,indexOfItems[item%10000].itemCatalogName));
+                stringCopy(itemName, changeDotAndIJ(item, indexOfItems[item%10000].itemCatalogName));
               }
               showSoftkey(itemName, x, y-currentFirstItem/6, vm, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText);
             }
@@ -2858,13 +2860,13 @@ void showSoftmenuCurrentPart(void) {
             char tmpp[16]; tmpp[0]=0;
             char tmpq[16]; tmpq[0]=0;
             switch(item) {
-              case ITM_TIMER_SIGMA_T: sprintf(tmpq,"%s","[" STD_SIGMA "+]"); break;
-              case ITM_TIMER_SIGMA_L: sprintf(tmpq,"%s","[+]"); break;
-              case ITM_TIMER_R_T    : sprintf(tmpq,"%s","[ENTER]"); break;
-              case ITM_TIMER_R_L    : sprintf(tmpq,"%s","[.]"); break;
+              case ITM_TIMER_SIGMA_T: sprintf(tmpq, "%s","[" STD_SIGMA "+]");     break;
+              case ITM_TIMER_SIGMA_L: sprintf(tmpq, "%s","[+]");                  break;
+              case ITM_TIMER_R_T    : sprintf(tmpq, "%s","[ENTER]");              break;
+              case ITM_TIMER_R_L    : sprintf(tmpq, "%s","[.]");                  break;
               case ITM_TIMER_R_S    :
-              case ITM_STOP         : sprintf(tmpq,"%s","[R/S]"); break;
-              case ITM_TIMER_RESET  : sprintf(tmpq,"%s","[" STD_LEFT_ARROW "]"); break;
+              case ITM_STOP         : sprintf(tmpq, "%s","[R/S]");                break;
+              case ITM_TIMER_RESET  : sprintf(tmpq, "%s","[" STD_LEFT_ARROW "]"); break;
               default:break;
             }
             int16_t x1, y1, x2, y2;
@@ -2939,9 +2941,9 @@ void showSoftmenuCurrentPart(void) {
 
                                          //JMvv    //triangle centre point  // Triangles indicating more menus
         #define t 5
-        #define t_o 1.6*t                                                             //offset
+        #define t_o (1.6*t)                                                        //offset
         #define tt_o 2                                                             //total offset
-        lcd_fill_rect(0,(uint32_t)(yDotted-t), 20,t+1, 0);                         // (see screen.c: _selectiveClearScreen)
+        lcd_fill_rect(0, (uint32_t)(yDotted-t), 20, t+1, 0);                       // (see screen.c: _selectiveClearScreen)
         uint32_t xx;
         for(xx=0; xx<=t; xx++) {
           if(!catalog) {
@@ -2981,7 +2983,9 @@ void showSoftmenuCurrentPart(void) {
     int16_t userMenuId;
 
     #if defined(PC_BUILD)
-      char tmp[300]; sprintf(tmp,">>> ...... pushing id:%d name:%s\n",softmenuId, indexOfItems[-softmenu[softmenuId].menuItem].itemSoftmenuName); jm_show_comment(tmp);
+      char tmp[300];
+      sprintf(tmp, ">>> ...... pushing id:%d name:%s\n", softmenuId, indexOfItems[-softmenu[softmenuId].menuItem].itemSoftmenuName);
+      jm_show_comment(tmp);
     #endif // PC_BUILD
     if(softmenu[softmenuId].menuItem == -MNU_DYNAMIC) {
       userMenuId = currentUserMenu;
@@ -3088,7 +3092,9 @@ void showSoftmenuCurrentPart(void) {
 
     #if defined(PC_BUILD)
       jm_show_calc_state("popped");
-      char tmp[300]; sprintf(tmp,">>> ...... popped into [0]: Id:%d Name:%s\n",softmenuStack[0].softmenuId, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName); jm_show_comment(tmp);
+      char tmp[300];
+      sprintf(tmp, ">>> ...... popped into [0]: Id:%d Name:%s\n", softmenuStack[0].softmenuId, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+      jm_show_comment(tmp);
     #endif // PC_BUILD
   }
 
@@ -3108,9 +3114,9 @@ void showSoftmenuCurrentPart(void) {
 
   bool_t createHOME(void) {
     int16_t itemToBeAssignedMeM = itemToBeAssigned;
-    if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC, "HOME")) {
       createMenu("HOME");
-      if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+      if(!setCurrentUserMenu(-MNU_DYNAMIC, "HOME")) {
         itemToBeAssigned = itemToBeAssignedMeM;
         return false;
       }
@@ -3138,9 +3144,9 @@ void showSoftmenuCurrentPart(void) {
 
   bool_t createPFN(void) {
     int16_t itemToBeAssignedMeM = itemToBeAssigned;
-    if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC, "P.FN")) {
       createMenu("P.FN");
-      if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+      if(!setCurrentUserMenu(-MNU_DYNAMIC, "P.FN")) {
         itemToBeAssigned = itemToBeAssignedMeM;
         return false;
       }
@@ -3169,13 +3175,13 @@ void showSoftmenuCurrentPart(void) {
 
 
   static void changeToHOME(void) {
-    if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC, "HOME")) {
       showSoftmenu(-MNU_HOME);
     }
   }
 
   static void changeToPFN(void) {
-    if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC, "P.FN")) {
       showSoftmenu(-MNU_PFN);
     }
   }
@@ -3220,7 +3226,7 @@ void showSoftmenuCurrentPart(void) {
 
     for(i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for the user menu to remove from the stack
       #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
-        printf("*** Id %d item %d menuItem %d userMenuId %d\n",userMenuId,i,softmenu[softmenuStack[i].softmenuId].menuItem,softmenuStack[i].userMenuId);
+        printf("*** Id %d item %d menuItem %d userMenuId %d\n", userMenuId, i, softmenu[softmenuStack[i].softmenuId].menuItem, softmenuStack[i].userMenuId);
       #endif
       if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_DYNAMIC) {
         if((softmenuStack[i].userMenuId == userMenuId) || all==true) { // if found, remove it
@@ -3270,7 +3276,7 @@ void showSoftmenuCurrentPart(void) {
   void showSoftmenu(int16_t id) {
     int16_t m;
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
+      char tmp[200]; sprintf(tmp, "ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
       jm_show_comment(tmp);
     #endif // PC_BUILD
 
@@ -3286,7 +3292,7 @@ void showSoftmenuCurrentPart(void) {
 
     //* *** List of exceptions, fixed menu call finds and opens the equivalent underlying dynamic menu (P.fN and HOME are now user populated, in the user menu space)
     if(id == -MNU_HOME) {
-      if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+      if(!setCurrentUserMenu(-MNU_DYNAMIC, "HOME")) {
         if(!createHOME()) {
           return;
         }
@@ -3294,7 +3300,7 @@ void showSoftmenuCurrentPart(void) {
       id = -MNU_DYNAMIC;
     }
     else if(id == -MNU_PFN) {
-      if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+      if(!setCurrentUserMenu(-MNU_DYNAMIC, "P.FN")) {
         if(!createPFN()) {
           return;
         }
@@ -3605,14 +3611,14 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat) {     
     //printf(">>> Menustring:%s|",asciiMenuName);
     stringToFileNameChars(asciiMenuName, asciiString);
     //printf(">>> Menustring:%s|",asciiString);
-    sprintf(bmpFileName,"%s.%d.bmp", asciiString, (int)(item/18)+1);
+    sprintf(bmpFileName, "%s.%d.bmp", asciiString, (int)(item/18)+1);
     printf(">>> filename:%s|\n",bmpFileName);
   } else   if(newFilenameformat == 1) {
     stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
     //printf(">>> Menustring:%s|",asciiMenuName);
     stringToFileNameChars(asciiMenuName, asciiString);
     //printf(">>> Menustring:%s|",asciiString);
-    sprintf(bmpFileName,"Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
+    sprintf(bmpFileName, "Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
     printf(">>> filename:%s|\n",bmpFileName);
   }
 
@@ -3724,12 +3730,12 @@ void fnDumpMenus(uint16_t newFilenameformat) {                      //JM
   int cc = currentSolverStatus;
   currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
   printf("Dumping menus\n");
-  int16_t m,n;
+  int16_t m, n;
   m = 0;
     while(softmenu[m].menuItem != 0) {
       n=0;
       while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
-        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n",m,n,m,softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
+        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n", m, n, m, softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :

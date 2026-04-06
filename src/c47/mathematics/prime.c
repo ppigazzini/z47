@@ -76,7 +76,7 @@ uint16_t smallPrimeList(uint16_t index) {
 //To check if the list of small primes being split into two methods, are contimuous
 //void listAllPrimesInList(void) {
 //  for(uint i = 0; i < smallPrimeListNumber; i++) {
-//    printf("prime: %u : %u\n",i,smallPrimeList(i));
+//    printf("prime: %u : %u\n", i, smallPrimeList(i));
 //  }
 //}
 
@@ -230,7 +230,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
     }
 
     longIntegerInit(tmp);
-    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+    longIntegerPowerUIntUInt(10, maximumPrime, tmp);
     longIntegerSubtract(primeCandidate, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
       badDomainError(REGISTER_X);
@@ -603,12 +603,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       clearRegisterLine(REGISTER_X, true, true);
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
-      strcpy(tmpString,"Last:   ");
+      strcpy(tmpString, "Last:   ");
       real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
-      strcpy(tmpString,"Test:   ");
+      strcpy(tmpString, "Test:   ");
       real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
@@ -634,7 +634,7 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
   longIntegerCopy(exponent, count);
 
   while(!longIntegerIsNegative(count)) {
-    //printLongIntegerToConsole(count,"  count:"," \n");
+    //printLongIntegerToConsole(count, "  count:", " \n");
     if(k == 0) {                                    // Divisor Count is the generalized sigma function, with k = 0
       uInt32ToLongInteger(0u, tmp);
     }
@@ -648,8 +648,8 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
     longIntegerPower(tmpbase, tmp, pwr);
     longIntegerCopy(pwr, tmp);
     longIntegerAdd(sum, tmp, sum);
-    //printLongIntegerToConsole(pwr,"  pwr:"," ");
-    //printLongIntegerToConsole(sum,"  sum:","\n");
+    //printLongIntegerToConsole(pwr, "  pwr:", " ");
+    //printLongIntegerToConsole(sum, "  sum:", "\n");
     longIntegerSubtractUInt(count, 1, count);
   }
 
@@ -722,8 +722,8 @@ static void _doFnEvPFacts     (uint16_t param) {
           if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
             convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
             convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
-            //printLongIntegerToConsole(p_li,"base:","  ");
-            //printLongIntegerToConsole(k_li,"exp:","\n");
+            //printLongIntegerToConsole(p_li, "base:", "  ");
+            //printLongIntegerToConsole(k_li, "exp:", "\n");
             switch(param){
               case M_FACTORS: longIntegerPower(p_li, k_li, factor); break;
               case M_SIGMA_0:
@@ -733,7 +733,7 @@ static void _doFnEvPFacts     (uint16_t param) {
             }
             longIntegerFree(p_li);
             longIntegerFree(k_li);
-            //printLongIntegerToConsole(factor,"factor:","\n");
+            //printLongIntegerToConsole(factor, "factor:", "\n");
             longIntegerCopy(prod, tmp_prod);
             longIntegerMultiply(tmp_prod, factor, prod);
           }
@@ -850,7 +850,7 @@ static void doFnEvPFacts (uint16_t param) {
     longIntegerInit(tmp);
     int32ToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
-    longIntegerCopy(tmp,y);                                        // y is the number to be subtracted
+    longIntegerCopy(tmp, y);                                       // y is the number to be subtracted
     convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
 
     switch(param) {
@@ -1604,12 +1604,12 @@ typedef struct FactorAdder {
 
 //  static void initFactorCreateFromMatrix(FactorAdder_t *faddr) {
 //    faddr->nExpons = 0;
-//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0,const34_1)) {
+//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0, const34_1)) {
 //      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
 //      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
 //      for(int j = cols-1-1; j >= 0 ; j--) {
 //        for(int i = rows-1; i >= 0; i--) {
-//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j,REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
+//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
 //        }
 //      }
 //      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0);
@@ -1632,7 +1632,7 @@ typedef struct FactorAdder {
 
                                             #ifdef MONITOR_FACTORS
                                               printf("\ndumpExponents:\n");
-                                              printRegisterToConsole(regist,"Matrix: ","\n");
+                                              printRegisterToConsole(regist, "Matrix: ", "\n");
                                               printf("  Exponent Array: faddr->nExpons=%d\n", faddr->nExpons);
                                               for(int ii = 0; ii < faddr->nExpons; ii++) {
                                                 printf("%d:%d ",ii, faddr->expons[ii]);
@@ -1671,8 +1671,8 @@ typedef struct FactorAdder {
   }
 
 
-  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
-    //printLongIntegerToConsole(factor,"-->","\n");
+  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded, FactorAdder_t *faddr) {
+    //printLongIntegerToConsole(factor, "-->", "\n");
 
     if(addFactorsToTSV) {
       convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
@@ -1775,14 +1775,14 @@ typedef struct FactorAdder {
     }
 
     //increment exponent if found
-    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter,const34_1) ) {
+    if(longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter, const34_1) ) {
       ++(faddr->expons[counter]);
                                               #ifdef MONITOR_FACTORS
                                                 printf("--e:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
                                               #endif //MONITOR_FACTORS
     }
     else {
-      bool_t incNExpons = real34CompareAbsEqual(&factorR,const34_1) ? false : true;
+      bool_t incNExpons = real34CompareAbsEqual(&factorR, const34_1) ? false : true;
       if( !incNExpons ) {
         c = 0;
       }
@@ -1852,7 +1852,7 @@ static void printTitles(longInteger_t input) {
     fnP_All_Regs(PRN_TMP);
 
     char filename[50];
-    strcpy(filename,"FACTORS:");
+    strcpy(filename, "FACTORS:");
     fnStrtoReg(filename, TEMP_REGISTER_1);
     fnP_All_Regs(PRN_TMP);
   }
@@ -1889,7 +1889,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     longIntegerSetPositiveSign(currentNumber);
   }
 
-  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerPowerUIntUInt(10, maximumPrime, tmp);
   longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
   if(longIntegerIsPositive(tmp)) {
     badDomainError(REGISTER_X);

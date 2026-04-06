@@ -807,7 +807,7 @@ printf("Dddd %d\n",registerNo);
               realToString((real_t *)&paramX, tmpString); /*tmpString[debugLongNumberLimit]=0; */printf(" ParamX reduced angle: %s\n",tmpString);
             #endif //DEBUG_XFN
 
-            real1071_t aa,bb;
+            real1071_t aa, bb;
             realSetZero((real_t*)&aa);
             realSetZero((real_t*)&bb);
                  if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); }
@@ -953,7 +953,7 @@ printf("Dddd %d\n",registerNo);
     realPlus((real_t *)&paramX, (real_t *)&paramX, &cc);
 
     #if defined(DEBUG_XFN)
-      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+      printRegisterToConsole(REGISTER_X, "\nX:", "\n");
       realToString((real_t *)&paramX, tmpString); tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
     #endif //DEBUG_XFN
 
@@ -1018,7 +1018,7 @@ printf("Dddd %d\n",registerNo);
     longInteger_t integerOutput;
     longIntegerInit(integerOutput);
     decomposeReal(&paramX, integerOutput, &paramY, &c);
-    convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
+    convertLongIntegerToLongIntegerRegister(integerOutput, REGISTER_X);
     longIntegerFree(integerOutput);
 
 
@@ -1044,9 +1044,9 @@ printf("Dddd %d\n",registerNo);
 
     //Step 5: debug stack output
     #if defined(DEBUG_XFN)
-      printRegisterToConsole(REGISTER_Z,"\nZ:","\n");
-      printRegisterToConsole(REGISTER_Y,"\nY:","\n");
-      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+      printRegisterToConsole(REGISTER_Z, "\nZ:", "\n");
+      printRegisterToConsole(REGISTER_Y, "\nY:", "\n");
+      printRegisterToConsole(REGISTER_X, "\nX:", "\n");
     #endif //DEBUG_XFN
 
 

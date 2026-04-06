@@ -9,8 +9,8 @@
 
   /* Returns the character code from the first glyph of a string.
    *
-   * \param[in]     ch     String whose first glyph is to extract
-   * \param[in,out] offset Offset which is updated, or null if zero and no update
+   * \param[in]      ch     String whose first glyph is to extract
+   * \param[in, out] offset Offset which is updated, or null if zero and no update
    * \return Character code for that glyph
    */
   uint16_t charCodeFromString(const char *ch, uint16_t *offset) {
@@ -125,7 +125,7 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
   int16_t i = 0;
   int16_t jj = 0;
   char inStr[51];
-  xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
+  xcopy(inStr, msg1, min(50, stringByteLength(msg1)+1));
   inStr[50]=0;
   msg1[0]=0;
   while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km
@@ -160,7 +160,7 @@ void compressConversionName(char *msg1) {   // 2x16+1 character limit, rounded u
   int16_t i = 0;
   int16_t jj = 0;
   char inStr[51];
-  xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
+  xcopy(inStr, msg1, min(50, stringByteLength(msg1)+1));
   inStr[50]=0;
   msg1[0]=0;
   while(inStr[i] != 0) { //replace 100k with |ook; 100m with |oom; /kWh with /U; kWh/ with U/
@@ -396,7 +396,7 @@ int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
   int16_t pos2 = pos;
 
   do {
-    pos2 = stringPrevGlyph(str,pos2);
+    pos2 = stringPrevGlyph(str, pos2);
 
     if(('0' <= str[pos2] && str[pos2] <= '9') || str[pos] == '.' || str[pos] == ',') {
       return pos2;
@@ -877,13 +877,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
+    //printf("_getText %c%c %u %u : ", (uint8_t)a1, (uint8_t)a2, (uint8_t)a1, (uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsASCII[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsASCII[i].item_in[1])) {
-        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]),indexOfStringsASCII[i].item_out);
-        stringAppend(str,indexOfStringsASCII[i].item_out);
+        //printf("(%u):%u %u %s\n", i, (uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]), indexOfStringsASCII[i].item_out);
+        stringAppend(str, indexOfStringsASCII[i].item_out);
         break;
       }
     }
@@ -891,13 +891,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getTextRTF(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getTextRTF %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getTextRTF %u %u : ", (uint8_t)a1, (uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsRTF);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsRTF[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsRTF[i].item_in[1])) {
-        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]),indexOfStringsRTF[i].item_out);
-        stringAppend(str,indexOfStringsRTF[i].item_out);
+        //printf("(%u):%u %u %s\n", i, (uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]), indexOfStringsRTF[i].item_out);
+        stringAppend(str, indexOfStringsRTF[i].item_out);
         break;
       }
     }
@@ -952,7 +952,7 @@ void stringToRTF(const char *str, char *ascii) {
 //      if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
 //      if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
 
-      { sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
+      { sprintf(aa, "\\u%i?", ((a1 & 0x7F) << 8) | a2);
         //printf("§%s§\n",aa);
 
         int16_t j = 0;
@@ -966,9 +966,9 @@ void stringToRTF(const char *str, char *ascii) {
 
       if(bb[0] != 0) {
         if(supsub == +1) {
-          strcpy(aa,"\\super ");
+          strcpy(aa, "\\super ");
         } else if(supsub == -1) {
-          strcpy(aa,"\\sub ");
+          strcpy(aa, "\\sub ");
         }
         int16_t j = 0;
         while(aa[j] != 0) {
@@ -981,7 +981,7 @@ void stringToRTF(const char *str, char *ascii) {
         ascii++;
 
 
-        strcpy(aa,"\\nosupersub ");
+        strcpy(aa, "\\nosupersub ");
         j = 0;
         while(aa[j] != 0) {
           *ascii = aa[j++];
@@ -1049,7 +1049,7 @@ void stringToASCII(const char *str, char *ascii) {
       if(a1==(uint8_t)(STD_LEFT_DOUBLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_DOUBLE_QUOTE[1]) && a2<=(uint8_t)(STD_DOUBLE_HIGH_QUOTE[1])) ) *ascii = '"'; else
       {
         #ifdef PC_BUILD
-          printf("Not decoded, replace with _: --a1=%u--a2=%u\n",a1,a2);
+          printf("Not decoded, replace with _: --a1=%u--a2=%u\n", a1, a2);
         #endif// PC_BUILD
         *ascii = 0x5F;    // underscore
       }

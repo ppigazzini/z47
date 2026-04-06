@@ -236,16 +236,16 @@ void divComplexReal(const real_t *numerReal, const real_t *numerImag, const real
  * \return void
  ***********************************************/
 void divLonILonI(void) {
-  longInteger_t x,y;
+  longInteger_t x, y;
 
   convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
   convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
 
   if(longIntegerIsZero(x)) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    convertLongIntegerToReal34(x,REGISTER_REAL34_DATA(REGISTER_X));
+    convertLongIntegerToReal34(x, REGISTER_REAL34_DATA(REGISTER_X));
     reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-    convertLongIntegerToReal34(y,REGISTER_REAL34_DATA(REGISTER_Y));
+    convertLongIntegerToReal34(y, REGISTER_REAL34_DATA(REGISTER_Y));
     divRealReal();
   }
   else {

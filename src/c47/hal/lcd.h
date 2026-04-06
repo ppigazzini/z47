@@ -21,10 +21,10 @@ static inline void print_caller(const char *format, ...) {}
     lcd_forced_refresh();
   }
   static inline void _lcdSBRefresh(void) {
-    lcd_refresh_lines(0,20);
+    lcd_refresh_lines(0, 20);
   }
   static inline void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-    lcd_refresh_lines(y,dy);
+    lcd_refresh_lines(y, dy);
   }
   // lcd_fill_rect from dmcp.h
   // lcd_refresh   from dmcp.h

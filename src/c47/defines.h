@@ -952,7 +952,7 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
-// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2, 22] so no big loss to do.
 #define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
 #define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
@@ -2022,11 +2022,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
-#define min(a,b)                             ((a)<(b)?(a):(b))
-#define max(a,b)                             ((a)>(b)?(a):(b))
-#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
-#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n,d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
-//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n,d) = rmd(n,d) (+ |d| if rmd(n,d)<0)  thus the result is always >= 0
+#define min(a, b)                            ((a)<(b)?(a):(b))
+#define max(a, b)                            ((a)>(b)?(a):(b))
+#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n, d) = n - d*idiv(n, d)   where idiv is the division with decimal part truncature
+#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n, d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
+//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n, d) = rmd(n, d) (+ |d| if rmd(n, d)<0)  thus the result is always >= 0
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
@@ -2164,18 +2164,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
-#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
-#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
-#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define isMatrix2dVector(rows, cols)         ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows, cols)         ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows, cols)           ((isMatrix3dVector(rows, cols) || isMatrix2dVector(rows, cols)))
 #define getTagAngularMode(tag)               ( tag & amAngleMask)
 #define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
 #define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)
 #define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
 #define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
-#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
-#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
-#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+#define isMatrix3dVectorSPH(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows, cols, tag) (isMatrix2dVector(rows, cols) && is2dVectorPolar(tag))
 
 
 

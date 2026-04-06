@@ -187,7 +187,7 @@ static void _removeLabelsAssignments() {
       labelLength = labelList[i].labelPointer[0];
       xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
       label[labelLength]=0;
-      removeUserItemAssignments(ITM_XEQ,label);   // Remove label assignments
+      removeUserItemAssignments(ITM_XEQ, label);   // Remove label assignments
     }
   }
 }
@@ -200,7 +200,7 @@ void fnClPAll(uint16_t confirmation) {
   }
   else {
     // Remove assignments of all global labels, before deleting all programs
-    removeUserItemAssignments(ITM_XEQ,"");   // Remove all labels assignments
+    removeUserItemAssignments(ITM_XEQ, "");   // Remove all labels assignments
 
     bool_t wasInRam = (programList[currentProgramNumber - 1].step > 0);
     resizeProgramMemory(1); // 1 block for an empty program
@@ -1183,7 +1183,7 @@ void pemCloseNumberInput(void) {
       case NP_COMPLEX_FLOAT_PART:
       case NP_COMPLEX_EXPONENT: {
         if(aimBuffer[stringByteLength(aimBuffer)-1] == 'i') {
-          strcat(aimBuffer,"1");
+          strcat(aimBuffer, "1");
           inputLength++;
         }
 

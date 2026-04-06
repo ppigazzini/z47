@@ -282,7 +282,7 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
       if(dtp == dtShortInteger) {
         real34Multiply(&rr, const34_1on10, &rr);
       }
-      real34Multiply(&rr, const34_1on10,REGISTER_REAL34_DATA(REGISTER_X));
+      real34Multiply(&rr, const34_1on10, REGISTER_REAL34_DATA(REGISTER_X));
       setSystemFlag(FLAG_ASLIFT);
       break;
     }

@@ -602,7 +602,7 @@ void execTimerApp(uint16_t timerType) {
     // Get current background from corner pixels
     for(xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
-      xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
+      xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit, 8)) & 1u;
     }
     // Draw shade pattern without changing lcd_buffer
     for(line = maxLine - lineCount + 1; line <= maxLine; line++) {
@@ -610,14 +610,14 @@ void execTimerApp(uint16_t timerType) {
       for(xIndex = 0; xIndex < 6; xIndex++) {
         if(xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 1;
-          j += greyType ? mod(2*line-j,5) : mod(j+line,2);
+          j += greyType ? mod(2*line-j, 5) : mod(j+line, 2);
           for(; j < KEY_X[xIndex + 1]; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
             if(xBg[xIndex]){
-              tempByte = tempByte & ~(1u<<mod(buff_bit,8));
+              tempByte = tempByte & ~(1u<<mod(buff_bit, 8));
             } else {
-              tempByte = tempByte | (1u<<mod(buff_bit,8));
+              tempByte = tempByte | (1u<<mod(buff_bit, 8));
             }
             temp_line[buff_bit/8] = tempByte;
           }
@@ -641,7 +641,7 @@ void execTimerApp(uint16_t timerType) {
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
       varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
     }
-    showFunctionName(Dyn,0, varCatalogItem);
+    showFunctionName(Dyn, 0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = true;
     underline_softkey(1<<(FN_key_pressed-38), 1);
     fnTimerStart(TO_FN_LONG, TO_FN_LONG, time);          //dr
@@ -660,7 +660,7 @@ void execTimerApp(uint16_t timerType) {
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
       varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
     }
-    showFunctionName(Dyn,0, varCatalogItem);
+    showFunctionName(Dyn, 0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = true;
     underline_softkey(1<<(FN_key_pressed-38), 2);
     fnTimerStart(TO_FN_LONG, TO_FN_LONG, time);          //dr
@@ -696,7 +696,7 @@ void execTimerApp(uint16_t timerType) {
           }
 
           #if defined(FN_TIME_DEBUG1)
-            printf("Handler 1, KEY=%d =%i\n",FN_key_pressed,nameFunction(FN_key_pressed-37, shiftF, shiftG));
+            printf("Handler 1, KEY=%d =%i\n", FN_key_pressed, nameFunction(FN_key_pressed-37, shiftF, shiftG));
           #endif // FN_TIME_DEBUG1
         }
         else if(shiftF && !shiftG) {                          //From F State 2
@@ -707,13 +707,13 @@ void execTimerApp(uint16_t timerType) {
             FN_handler_StepToNOP();                           //To NOP State 4
           }
           #if defined(FN_TIME_DEBUG1)
-            printf("Handler 2, KEY=%d =%i\n",FN_key_pressed,nameFunction(FN_key_pressed-37, shiftF, shiftG));
+            printf("Handler 2, KEY=%d =%i\n", FN_key_pressed, nameFunction(FN_key_pressed-37, shiftF, shiftG));
           #endif // FN_TIME_DEBUG1
         }
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {  //From G: 3 (or illegal state FG)
           FN_handler_StepToNOP();                             //To NOP State 4
           #if defined(FN_TIME_DEBUG1)
-            printf("Handler 3, KEY=%d =%i\n",FN_key_pressed,nameFunction(FN_key_pressed-37, shiftF, shiftG));
+            printf("Handler 3, KEY=%d =%i\n", FN_key_pressed, nameFunction(FN_key_pressed-37, shiftF, shiftG));
           #endif // FN_TIME_DEBUG1
         }
       }
@@ -836,7 +836,7 @@ void execTimerApp(uint16_t timerType) {
               }
               else {
                 clearShiftTemporaryIndications((item != ITM_SNAP) && (shiftG || shiftF));
-                _executeItem(item,keyCode);
+                _executeItem(item, keyCode);
               }
             }
             else { //non-USER mode
@@ -1155,7 +1155,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0, yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -1166,7 +1166,7 @@ return res;
     //x += xGlyph; //JM
 
     // Choose pencil
-    void (*setPixel)(uint32_t,uint32_t) = (videoMode == vmNormal)?&setBlackPixel:&setWhitePixel;
+    void (*setPixel)(uint32_t, uint32_t) = (videoMode == vmNormal) ? &setBlackPixel : &setWhitePixel;
     // Drawing the glyph
     for(row=0; row<glyph->rowsGlyph; row++, y++) {
       if(displaymode == numHalf) {
@@ -1186,22 +1186,22 @@ return res;
         if(byte & 0x80 && !noShow) { // MSB set
           uint32_t x1 = x+((((doubling * (xGlyph+col)) >> miniC)) >> 3);
           uint32_t x2 = x1;
-          uint32_t y1 = min(SCREEN_HEIGHT-1, max(0,yy + (int32_t)min(yNewMaxDx,  ((y-y0) >> miniC))));
-          uint32_t y2 = min(SCREEN_HEIGHT-1, max(0,yy + (int32_t)min(yNewMaxDx,1+((y-y0) >> miniC))));
+          uint32_t y1 = min(SCREEN_HEIGHT-1, max(0, yy + (int32_t)min(yNewMaxDx,   ((y-y0) >> miniC))));
+          uint32_t y2 = min(SCREEN_HEIGHT-1, max(0, yy + (int32_t)min(yNewMaxDx, 1+((y-y0) >> miniC))));
           if(x2 > 0) {
             x2--;
           }
-          setPixel(x1,y1);
+          setPixel(x1, y1);
           if(boldString == 1) {
-            setPixel(x1+1,y1);
+            setPixel(x1+1, y1);
           }
           if(numDouble) {
-            setPixel(x2,y1);
+            setPixel(x2, y1);
           }
           if(rep_enlarge) {
-            setPixel(x1,y2);
+            setPixel(x1, y2);
             if(numDouble) {
-              setPixel(x2,y2);
+              setPixel(x2, y2);
             }
           }
         }
@@ -1224,7 +1224,7 @@ return res;
   /* Finds the cols and rows for a glyph.
    *
    * \param[in]     ch     const char*   String whose first glyph is to find the bounds for
-   * \param[in,out] offset uint16_t*     Offset for string or null if zero should be used
+   * \param[in, out] offset uint16_t*     Offset for string or null if zero should be used
    * \param[in]     font   const font_t* Font to use
    * \param[out]    col    uint32_t*     Number of columns for the glyph
    * \param[out]    row    uint32_t*     Number of rows for the glyph
@@ -1604,7 +1604,7 @@ return res;
       //****************************************
       ch = offset;
       while(string[ch] != 0) {
-        //printf("%3d:%3d ",ch,(uint8_t)string[ch]);
+        //printf("%3d:%3d ", ch, (uint8_t)string[ch]);
 
         if(lg == 1 || (lg == 2 && (string[offset] & 0x80))) {// The string is 1 glyph long
           slc = showLeadingCols;
@@ -1631,10 +1631,10 @@ return res;
           tmpxy = y-1;
           while(tmpxy < y + (yincr+1)) {
             if(!noshow1) {
-              setBlackPixel(x,tmpxy);
+              setBlackPixel(x, tmpxy);
             }
             if(!noshow1) {
-              setBlackPixel(x+1,tmpxy);
+              setBlackPixel(x+1, tmpxy);
             }
             tmpxy++;
           }
@@ -1913,10 +1913,10 @@ return res;
 
     if(reg == RESERVED_VARIABLE_UEST) {
       sprintf(prefix, "Upper =");
-      strcpy(regS,name);
+      strcpy(regS, name);
     } else if(reg == RESERVED_VARIABLE_LEST) {
       sprintf(prefix, "Lower =");
-      strcpy(regS,name);
+      strcpy(regS, name);
     } else {
         strcpy(regS, "Reg_");
         regS[3] = letteredRegisterName(reg);
@@ -2040,8 +2040,10 @@ return res;
       clearShiftState();
       int xx = showString(padding, &standardFont, funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
       if(overLapPossible) {
-        plotrect(funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx,funcNameOffset_x + typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
-        if(xx < funcNameOffset_x + typWidth) lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, funcNameOffset_x + typWidth - xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
+        plotrect(funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx, funcNameOffset_x + typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        if(xx < funcNameOffset_x + typWidth) {
+          lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, funcNameOffset_x + typWidth - xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
+        }
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
@@ -2183,7 +2185,7 @@ void createSubstrings(uint8_t number) {
   uint16_t counter = 0;
   uint16_t mm = stringByteLength(tmpString);
   while(nn <= mm){
-    //printf("#%u tmpString[nn]=%u",nn,(uint8_t)(tmpString[nn]));
+    //printf("#%u tmpString[nn]=%u", nn, (uint8_t)(tmpString[nn]));
     if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1]) {
       tmpString[nn++] = 32;
       tmpString[nn  ] = 0;
@@ -2195,19 +2197,19 @@ void createSubstrings(uint8_t number) {
     }
     nn++;
     //printf("\nSSS %u @ %u ; ",counter, nn);
-    //printStringToConsole(tmpString,">>","<<\n");
+    //printStringToConsole(tmpString, ">>", "<<\n");
   }
-  //printf("TTT %u nn=%u\n",counter,nn);
+  //printf("TTT %u nn=%u\n", counter, nn);
   tmpString[  nn] = 0;
   while(counter < number && number <= 4) {   //allow up to 5 sub-strings
     tmpString[++nn] = 0;
     counter++;
   }
-  //printStringToConsole(tmpString,"String: ","\n");
-  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,0),"createSubstrings: substring 0: ","\n");
-  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,1),"createSubstrings: substring 1: ","\n");
-  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,2),"createSubstrings: substring 2: ","\n");
-  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,3),"createSubstrings: substring 3: ","\n");
+  //printStringToConsole(tmpString, "String: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString, 0),"createSubstrings: substring 0: ", "\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString, 1),"createSubstrings: substring 1: ", "\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString, 2),"createSubstrings: substring 2: ", "\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString, 3),"createSubstrings: substring 3: ", "\n");
   return;
 }
 
@@ -2225,33 +2227,33 @@ void createSubstrings(uint8_t number) {
       createSubstrings(4);
       if(refreshRegist == REGISTER_T) {
         char *string1 = "";
-        string1 = (char *)getNthString((uint8_t *)tmpString,0);
+        string1 = (char *)getNthString((uint8_t *)tmpString, 0);
         xcopy(tmpString + (isShiftOffset ? 2 : 0), string1, stringByteLength(string1) + 1);
         if(isShiftOffset) {
           tmpString[0] = 32;
           tmpString[1] = 32;
         }
-        //printStringToConsole(tmpString,"--userTI substring 0: ","\n");
+        //printStringToConsole(tmpString, "--userTI substring 0: ", "\n");
       }
       else if(refreshRegist == REGISTER_X) {
         char *string1 = "";
-        string1 = (char *)getNthString((uint8_t *)tmpString,1);
+        string1 = (char *)getNthString((uint8_t *)tmpString, 1);
         xcopy(prefix, string1, stringByteLength(string1) + 1);
-        //printStringToConsole(prefix,"--userTI substring 1: ","\n");
+        //printStringToConsole(prefix, "--userTI substring 1: ", "\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Y) {
         char *string1 = "";
-        string1 = (char *)getNthString((uint8_t *)tmpString,2);
+        string1 = (char *)getNthString((uint8_t *)tmpString, 2);
         xcopy(prefix, string1, stringByteLength(string1) + 1);
-        //printStringToConsole(prefix,"--userTI substring 2: ","\n");
+        //printStringToConsole(prefix, "--userTI substring 2: ", "\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Z) {
         char *string1 = "";
-        string1 = (char *)getNthString((uint8_t *)tmpString,3);
+        string1 = (char *)getNthString((uint8_t *)tmpString, 3);
         xcopy(prefix, string1, stringByteLength(string1) + 1);
-        //printStringToConsole(prefix,"--userTI substring 3: ","\n");
+        //printStringToConsole(prefix, "--userTI substring 3: ", "\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
     }
@@ -2365,7 +2367,7 @@ void createSubstrings(uint8_t number) {
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
 
       bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
-      for(int j = 0; j < min(cols,MATRIX_MAX_COLUMNS); j++) {
+      for(int j = 0; j < min(cols, MATRIX_MAX_COLUMNS); j++) {
         allElementsInColAreIntegers[j]=true;
         for(int i = 0; i < rows; i++) {
           if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
@@ -2506,7 +2508,7 @@ void createSubstrings(uint8_t number) {
     if(lastErrorCode != 0) {
       return;
     }
-    real_t iir,jjr;
+    real_t iir, jjr;
 
     int32_t iii, jji;
     bool_t bb;
@@ -2530,23 +2532,23 @@ void createSubstrings(uint8_t number) {
         nameRegis(matrixIndex, tmp);
 // M[Ir Jc]=INDEXname[1, 2]=
         if(regist == REGISTER_X && temporaryInformation == TI_MIJEQ) {
-          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]%s",tmp, (uint8_t)iii,(uint8_t)jji,(temporaryInformation == TI_MIJEQ ? "=" : ""));
+          sprintf(prefix, STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]%s", tmp, (uint8_t)iii, (uint8_t)jji, (temporaryInformation == TI_MIJEQ ? "=" : ""));
         }
 // M[Ir Jc]=INDEXname[1, 2]
         else if(regist == REGISTER_X && temporaryInformation == TI_MIJ) {
-          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]",tmp, (uint8_t)iii,(uint8_t)jji);
+          sprintf(prefix, STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]", tmp, (uint8_t)iii, (uint8_t)jji);
         }
 //R00 [Ir=1 Jc=1]: Jc=
         else if(regist == REGISTER_X && ((iii != 0 && temporaryInformation == TI_I) || (jji != 0 && temporaryInformation == TI_J))) {
-         sprintf(prefix,"%s[I" STD_SUB_r "=%u" STD_SPACE_4_PER_EM "J" STD_SUB_c "=%u]%s",tmp, (uint8_t)iii,(uint8_t)jji, temporaryInformation == TI_I ? ": I" STD_SUB_r "=" : ": J" STD_SUB_c "=");
+         sprintf(prefix, "%s[I" STD_SUB_r "=%u" STD_SPACE_4_PER_EM "J" STD_SUB_c "=%u]%s", tmp, (uint8_t)iii, (uint8_t)jji, temporaryInformation == TI_I ? ": I" STD_SUB_r "=" : ": J" STD_SUB_c "=");
         }
 //R00: Ir=
 //R00: Jr=
         else if(iii != 0 && jji != 0) {
           if(regist == REGISTER_Y) {
-            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:I" STD_SUB_r "=",tmp);
+            sprintf(prefix, STD_MU STD_SPACE_4_PER_EM "%s:I" STD_SUB_r "=", tmp);
           } else if(regist == REGISTER_X) {
-            sprintf(prefix,STD_MU STD_SPACE_4_PER_EM "%s:J" STD_SUB_c "=",tmp);
+            sprintf(prefix, STD_MU STD_SPACE_4_PER_EM "%s:J" STD_SUB_c "=", tmp);
           }
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -2559,17 +2561,17 @@ void createSubstrings(uint8_t number) {
       real_t t;
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
       switch(no) {
-        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " =");
-                   break;
-        case  1: strcpy(noo," =" );
-                   if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
-                     if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t, NULL) == 200) {
-                      strcat(noo," (conjugates)");
-                     }
+        case  2: strcpy(noo, STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " =");
+                 break;
+        case  1: strcpy(noo, " =" );
+                 if(getRegisterAsRealQuiet(REGISTER_T, &t)) {
+                   if(!realIsSpecial(&t) && realIsAnInteger(&t) && realToInt32C47(&t, NULL) == 200) {
+                    strcat(noo, " (conjugates)");
                    }
-                   break;
-        default: strcpy(noo," =" );
-                   break;
+                 }
+                 break;
+        default: strcpy(noo, " =" );
+                 break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
@@ -2593,7 +2595,7 @@ void createSubstrings(uint8_t number) {
     }
     if(regist == REGISTER_T) {
       if(funcNameOffset_x == shiftOffset) {
-        strcpy(prefix,"  ");
+        strcpy(prefix, "  ");
       } else {
         prefix[0]=0;
       }
@@ -2634,27 +2636,27 @@ void createSubstrings(uint8_t number) {
       char sss[30];
       sss[0]=0;
       switch(ii) {
-        case 0 : strcpy(sss,"LongInteger"); break;
-        case 1 : strcpy(sss,"Real"); break;
-        case 2 : strcpy(sss,"Complex"); break;
-        case 3 : strcpy(sss,"Time"); break;
-        case 4 : strcpy(sss,"Date"); break;
-        case 5 : strcpy(sss,"String"); break;
-        case 6 : strcpy(sss,"RealMatrix"); break;
-        case 7 : strcpy(sss,"ComplexMatrix");  break;
-        case 8 : strcpy(sss,"ShortInteger"); break;
-        case 9 : strcpy(sss,"Config"); break;
+        case 0 : strcpy(sss, "LongInteger"); break;
+        case 1 : strcpy(sss, "Real"); break;
+        case 2 : strcpy(sss, "Complex"); break;
+        case 3 : strcpy(sss, "Time"); break;
+        case 4 : strcpy(sss, "Date"); break;
+        case 5 : strcpy(sss, "String"); break;
+        case 6 : strcpy(sss, "RealMatrix"); break;
+        case 7 : strcpy(sss, "ComplexMatrix");  break;
+        case 8 : strcpy(sss, "ShortInteger"); break;
+        case 9 : strcpy(sss, "Config"); break;
         default: break;
       }
       if(ii == 8) {
-        strcat(sss,", base");
+        strcat(sss, ", base");
       } else {
         switch(jj) {
-          case 10 : strcat(sss,", MUL" STD_pi); break;
-          case 20 : strcat(sss,", DMS"); break;
-          case 30 : strcat(sss,", Degree"); break;
-          case 40 : strcat(sss,", Grad"); break;
-          case 50 : strcat(sss,", Radian"); break;
+          case 10 : strcat(sss, ", MUL" STD_pi); break;
+          case 20 : strcat(sss, ", DMS"); break;
+          case 30 : strcat(sss, ", Degree"); break;
+          case 40 : strcat(sss, ", Grad"); break;
+          case 50 : strcat(sss, ", Radian"); break;
           default:break;
         }
       }
@@ -2798,7 +2800,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
      while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
     strcat(prefix, STD_SPACE_6_PER_EM);
   }
-  strcat(prefix,label);
+  strcat(prefix, label);
   strcat(prefix, STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
   *prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
 }
@@ -2925,7 +2927,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         real34_t j;
         char tmpStr2[20];
         uInt32ToReal34(firstGregorianDay, &j);
-        julianDayToInternalDate(&j,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         dateToDisplayString(TEMP_REGISTER_1, tmpStr2);
         sprintf(tmpString, "First Gregorian day set: %s", tmpStr2);
         //sprintf(tmpString, "1st Gregorian day set: %s (JD %" PRId32 ")", tmpStr2, firstGregorianDay);
@@ -2943,7 +2945,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         real34_t j;
         char tmpStr2[20];
         uInt32ToReal34(firstGregorianDay, &j);
-        julianDayToInternalDate(&j,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         dateToDisplayString(TEMP_REGISTER_1, tmpStr2);
         sprintf(tmpString, "First Gregorian day set: %s", tmpStr2);
         //sprintf(tmpString, "1st Gregorian day set: %s (JD %" PRId32 ")", tmpStr2, firstGregorianDay);
@@ -3359,7 +3361,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/') {
             char *lb = lastBase;
 
-            uint32_t iDigit = pow(10,(int)log10(lastDenominator)+1);
+            uint32_t iDigit = pow(10, (int)log10(lastDenominator) + 1);
             uint32_t iDigit1;
             while(iDigit >= 10) {
               iDigit1 = iDigit / 10;
@@ -3404,8 +3406,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
 
           displayBaseMode(regist);
-          //printStringToConsole(nimBufferDisplay,"XX: nimBufferDisplay:","\n");
-          //printStringToConsole(lastBase,        "YY: lastBase:","\n");
+          //printStringToConsole(nimBufferDisplay, "XX: nimBufferDisplay:", "\n");
+          //printStringToConsole(lastBase,         "YY: lastBase:", "\n");
           displayNim(nimBufferDisplay, lastBase, wLastBaseNumeric, wLastBaseStandard);
         }
 
@@ -3854,28 +3856,28 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation == TI_STATISTIC_HISTO) {
             if(regist == REGISTER_X) {
-              strcpy(prefix,STD_UP_ARROW "BIN" STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_UP_ARROW "BIN" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else
             if(regist == REGISTER_Y) {
-              strcpy(prefix,STD_DOWN_ARROW "BIN" STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_DOWN_ARROW "BIN" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_Z) {
-              strcpy(prefix,"nBINS" STD_SPACE_FIGURE ":");
+              strcpy(prefix, "nBINS" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_ROOTS3) {
             if(regist == REGISTER_X || regist == REGISTER_Y || regist == REGISTER_Z) {
-              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              strcpy(prefix, "Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_T) {
-              strcpy(prefix,STD_UP_ARROW "  Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_UP_ARROW "  Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
@@ -3883,12 +3885,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation == TI_ROOTS2) {
             if(regist == REGISTER_X || regist == REGISTER_Y) {
-              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              strcpy(prefix, "Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_Z) {
-              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
@@ -3913,9 +3915,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                 displayLRtemporaryInformation("", "", prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
               }
               else if(regist == REGISTER_Y) {
-                strcpy(prefix,"y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+                strcpy(prefix, "y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
-                  strcat(prefix,STD_SPACE_6_PER_EM);
+                  strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 strcat(prefix, "a" STD_SUB_1 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
@@ -3923,10 +3925,10 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               else if(regist == REGISTER_Z) {
                 strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
+                  strcat(prefix, lrChosen == 0 ? "" : STD_SUP_ASTERISK);
                 }
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
-                  strcat(prefix,STD_SPACE_6_PER_EM);
+                  strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 strcat(prefix, "a" STD_SUB_2 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
@@ -3939,10 +3941,10 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                 else if(regist == REGISTER_Y) {
                 strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,lrChosen == 0 ? "" : STD_SUP_ASTERISK);
+                  strcat(prefix, lrChosen == 0 ? "" : STD_SUP_ASTERISK);
                 }
                 while(stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
-                  strcat(prefix,STD_SPACE_6_PER_EM);
+                  strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 strcat(prefix, "a" STD_SUB_1 STD_SPACE_4_PER_EM "=" STD_SPACE_HAIR);
                 prefixWidth = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
@@ -3968,14 +3970,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             if(regist == REGISTER_X) {
               prefix[0] = 0;
               if(lrChosen != 0) {
-                strcpy(prefix,eatSpacesEnd(getCurveFitModeName(lrChosen)));
+                strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,STD_SUP_ASTERISK);
+                  strcat(prefix, STD_SUP_ASTERISK);
                 }
                 strcat(prefix, STD_SPACE_FIGURE);
               }
               strcat(prefix, STD_y_CIRC " =");
-              prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+              prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
             }
           }
 
@@ -3983,14 +3985,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             if(regist == REGISTER_X) {
               prefix[0] = 0;
               if(lrChosen != 0) {
-                strcpy(prefix,eatSpacesEnd(getCurveFitModeName(lrChosen)));
+                strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,STD_SUP_ASTERISK);
+                  strcat(prefix, STD_SUP_ASTERISK);
                 }
                 strcat(prefix, STD_SPACE_FIGURE);
               }
               strcat(prefix, STD_x_CIRC " =");
-              prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+              prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
             }
           }
 
@@ -3998,27 +4000,27 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             if(regist == REGISTER_X) {
               prefix[0] = 0;
               if(lrChosen != 0) {
-                strcpy(prefix,eatSpacesEnd(getCurveFitModeName(lrChosen)));
+                strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,STD_SUP_ASTERISK);
+                  strcat(prefix, STD_SUP_ASTERISK);
                 }
                 strcat(prefix, STD_SPACE_FIGURE);
               }
               strcat(prefix, STD_x_CIRC STD_SUB_1 " =" );
-              prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+              prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
             }
             else {
               if(regist == REGISTER_Y) {
                 prefix[0] = 0;
                 if(lrChosen != 0) {
-                  strcpy(prefix,eatSpacesEnd(getCurveFitModeName(lrChosen)));
+                  strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                   if(lrCountOnes(lrSelection)>1) {
-                    strcat(prefix,STD_SUP_ASTERISK);
+                    strcat(prefix, STD_SUP_ASTERISK);
                   }
                   strcat(prefix, STD_SPACE_FIGURE);
                 }
                 strcat(prefix, STD_x_CIRC STD_SUB_2 " =");
-                prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+                prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
               }
             }
           }
@@ -4027,21 +4029,21 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             if(regist == REGISTER_X) {
               prefix[0] = 0;
               if(lrChosen != 0) {
-                strcpy(prefix,eatSpacesEnd(getCurveFitModeName(lrChosen)));
+                strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
                 if(lrCountOnes(lrSelection)>1) {
-                  strcat(prefix,STD_SUP_ASTERISK);
+                  strcat(prefix, STD_SUP_ASTERISK);
                 }
                 strcat(prefix, STD_SPACE_FIGURE);
               }
               strcat(prefix, "r =");
-              prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+              prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
             }
           }
 
           else if(temporaryInformation == TI_SMI) {
             if(regist == REGISTER_X) {
               strcpy(prefix, "s" STD_SUB_m STD_SUB_i " =");
-              prefixWidth = stringWidth(prefix, &standardFont, false,false) + 1;
+              prefixWidth = stringWidth(prefix, &standardFont, false, false) + 1;
             }
           }
           //L.R. Display
@@ -4154,7 +4156,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
 
           else if(temporaryInformation == TI_CONV_MENU_STR && regist == REGISTER_X) {    //convert menu
-                strcpy(prefix," ");
+                strcpy(prefix, " ");
                 strcat(prefix, errorMessage);
                 strcat(prefix, ":");
                 prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4227,7 +4229,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                   prefix_[0]=0;
                   strcat(prefix_, lastFuncCatalogName());
                   if(prefix_[0] != 0) {
-                    strcat(prefix,prefix_);
+                    strcat(prefix, prefix_);
                   }
                 }
                 if(prefix[0] != 0) {
@@ -4304,24 +4306,24 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation == TI_ROOTS3) {
             if(regist == REGISTER_X || regist == REGISTER_Y || regist == REGISTER_Z) {
-              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              strcpy(prefix, "Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_T) {
-              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
           }
           else if(temporaryInformation == TI_ROOTS2) {
             if(regist == REGISTER_X || regist == REGISTER_Y) {
-              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              strcpy(prefix, "Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #ifdef DISCRIMINANT
             if(regist == REGISTER_Z) {
-              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              strcpy(prefix, STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
@@ -4376,13 +4378,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
           else if(temporaryInformation == TI_LASTSTATEFILE) {
                clearRegisterLine(REGISTER_Y, true, false);
-               strcpy(prefix,"Last full state file loaded:");
+               strcpy(prefix, "Last full state file loaded:");
                showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE, vmNormal, prefixPre, prefixPost);
                prefix[0]=0;
                prefixWidth = 0;
           }
           else if(isShiftOffset && regist == REGISTER_T) {
-             strcpy(prefix,"  ");
+             strcpy(prefix, "  ");
              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
@@ -4499,7 +4501,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               displayTrueFalse(regist);
             }
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
-              lcd_fill_rect(0,Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+              lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
             }
           }
 
@@ -4596,7 +4598,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               if(day < 1 || day > 7) {
                 day = 0;
               }
-              strcpy(prefix,"[ISO day] ");
+              strcpy(prefix, "[ISO day] ");
               strcat(prefix, nameOfWday_en[day].itemName);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
@@ -4608,7 +4610,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
            int len = strlen(prefix);
            if(len + 2 < 200) {
              if(prefix[0] == 0) {
-               strcpy(prefix,"  ");
+               strcpy(prefix, "  ");
                prefixWidth += 20; //stringWidth("  ", &standardFont, true, true) - 2;
              } else {
                for(int i = len; i >= 0; i--) {
@@ -4623,7 +4625,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
         //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
-            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            strcpy(tmpString, STD_INTEGER_Z_SMALL ": "); // STD_SPACE_4_PER_EM);
             w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
@@ -4632,7 +4634,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
         //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
           else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
-            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            strcpy(tmpString, STD_INTEGER_Z_SMALL ": "); // STD_SPACE_4_PER_EM);
             w = stringWidth(tmpString, &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 1024, !toRemoveTrailingRadix);
@@ -4648,7 +4650,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               //This section to display too long integers as reals, re-doing the above string in Real. The wastage is minor compared to the Real processing that will follow
               uint16_t pos;
               if(findTwoChars(tmpString, (uint8_t)PRODUCT_SIGN[0], (uint8_t)PRODUCT_SIGN[1], &pos)) {
-                strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+                strcpy(tmpString, STD_INTEGER_Z_SMALL ": "); // STD_SPACE_4_PER_EM);
                 w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
                 int16_t tlen =stringByteLength(tmpString);
                 uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
@@ -4718,7 +4720,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                 prefix[0] = 0;
               }
               if(isShiftOffset && regist == REGISTER_T){
-                strcpy(prefix,"  ");
+                strcpy(prefix, "  ");
               }
               strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4727,7 +4729,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
             strcat(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
-            strcat(prefix," ");
+            strcat(prefix, " ");
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
           else if(temporaryInformation == TI_VIEW_REGISTER) {          //X, Y, & Z, not T
@@ -4809,11 +4811,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
             char preserveErrorMessage[ERROR_MESSAGE_LENGTH];
-            xcopy(preserveErrorMessage,errorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
-            if(!vectorToDisplayString(regist, tmpString)) {                  //   errorMessage string used
+            xcopy(preserveErrorMessage, errorMessage, ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
+            if(!vectorToDisplayString(regist, tmpString)) {                    //   errorMessage string used
               real34MatrixToDisplayString(regist, tmpString);
             }
-            xcopy(errorMessage,preserveErrorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
+            xcopy(errorMessage, preserveErrorMessage, ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
 
 
 
@@ -5486,7 +5488,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                               #endif
 
                               #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
-                                powerMarkerMsF(3,10000);
+                                powerMarkerMsF(3, 10000);
                               #endif // DMCP_BUILD && CLICK_REFRESHSCR
 
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
@@ -5504,17 +5506,20 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                              #if defined(PC_BUILD) && defined(VERBOSE_MINIMUM)
                                char ttt[500] = "";
                                char sss[500] = "";
-                               strcpy(sss,get_binary_bits(screenUpdatingMode,8));
+                               strcpy(sss, get_binary_bits(screenUpdatingMode, 8));
                                convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
                                shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false, noBaseOverride);
-                               stringToASCII(ttt,sss);
-                               strcpy(ttt,"");
-                               if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
-                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");
-                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");
+                               stringToASCII(ttt, sss);
+                               strcpy(ttt, "");
+                               if(screenUpdatingMode == 0) {
+                                strcat(ttt, "AUTO ");
+                               }
+                               else {
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt, "SkpMEN ");
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt, "SkpSTK ");
 
-                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");
-                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");
+                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt, "SHFT ");
+                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt, "MENU ");
                                  if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");
                                  if(!(screenUpdatingMode & 0x01)) strcat(ttt, "STS ");
                                }
@@ -5528,7 +5533,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                   calcMode,
                                   screenUpdatingMode, sss, ttt,
                                   temporaryInformation,
-                                  (alphaCase == AC_LOWER)?"LO":"UP",
+                                  alphaCase == AC_LOWER ? "LO" : "UP",
                                   tam.mode,
                                   m, currentMenu(), uuu);
                                fflush(stdout);
@@ -5687,7 +5692,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
     #if defined(REFRESH_ON_SCREEN_MONITOR)
       char aaa[111];
-      sprintf(aaa,"Refresh #%d",source);
+      sprintf(aaa, "Refresh #%d", source);
       print_linestr(aaa, false);
     #endif //DMCP_REFRESH
 

@@ -157,14 +157,14 @@
 
         #if defined(VERBOSE_COUNTER)
           printf(">>> Fin: %d, Cpx: %d ", finished, changedOverToComplex);
-          printReal34ToConsole(&counter," Cnt: ", " ");
-          printRealToConsole(&resultX," X: ", " ");
+          printReal34ToConsole(&counter, " Cnt: ", " ");
+          printRealToConsole(&resultX, " X: ", " ");
           if(changedOverToComplex) {
-            printRealToConsole(&resultXi," Xi: ", " ");
+            printRealToConsole(&resultXi, " Xi: ", " ");
           }
-          printRealToConsole(&resultR," SUM: ", "");
+          printRealToConsole(&resultR, " SUM: ", "");
           if(changedOverToComplex) {
-            printRealToConsole(&resultRi," SUMii: ", " ");
+            printRealToConsole(&resultRi, " SUMii: ", " ");
           }
           printf("\n");
         #endif // VERBOSE_COUNTER

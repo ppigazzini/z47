@@ -115,16 +115,16 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       fnRCL(regStats);
 
                                     #if defined(VERBOSE_SOLVER0)
-                                      printRegisterToConsole(REGISTER_X,">>> Calc x=","");
-                                      printRegisterToConsole(REGISTER_Y," y=","");
+                                      printRegisterToConsole(REGISTER_X, ">>> Calc x=", "");
+                                      printRegisterToConsole(REGISTER_Y, " y=", "");
                                     #endif // VERBOSE_SOLVER0
 
                                     if(ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
-                                      copySourceRegisterToDestRegister(REGISTER_X,REGISTER_J);
-                                      copySourceRegisterToDestRegister(REGISTER_Y,REGISTER_K);
+                                      copySourceRegisterToDestRegister(REGISTER_X, REGISTER_J);
+                                      copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_K);
                                       fnP_All_Regs(PRN_XYr);
-                                      copySourceRegisterToDestRegister(REGISTER_J,REGISTER_X);
-                                      copySourceRegisterToDestRegister(REGISTER_K,REGISTER_Y);
+                                      copySourceRegisterToDestRegister(REGISTER_J, REGISTER_X);
+                                      copySourceRegisterToDestRegister(REGISTER_K, REGISTER_Y);
                                     }
 
     }
@@ -151,7 +151,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     if(regStats == INVALID_VARIABLE) {
       return 0;
     }
-    if(isStatsMatrix(&rows,plotStatMx)) {
+    if(isStatsMatrix(&rows, plotStatMx)) {
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
       return stats.header.matrixRows;
@@ -184,12 +184,12 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                     printf("Adding to Draw Matrix %s\n",prefix);
                                   #endif //STATDEBUG
     calcRegister_t regStats = regStatsXY;
-    if(!isStatsMatrixN(&rows,regStats)) {
+    if(!isStatsMatrixN(&rows, regStats)) {
       regStats = allocateNamedMatrix(plotStatMx, 1, 2);
       regStatsXY = regStats;
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
-      realMatrixInit(&stats,1,2);
+      realMatrixInit(&stats, 1, 2);
     }
     else {
       if(appendRowAtMatrixRegister(regStats)) {
@@ -211,9 +211,9 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       realToReal34(&y, &stats.matrixElements[(rows-1) * cols + 1]);
 
                                   #ifdef STATDEBUG
-                                    printf("[r,c] [%u,%u]=",rows,cols);
-                                    printRealToConsole(&x,"x:="," ");
-                                    printRealToConsole(&y,"y:=","\n");
+                                    printf("[r, c] [%u, %u]=",rows, cols);
+                                    printRealToConsole(&x, "x:=", " ");
+                                    printRealToConsole(&y, "y:=", "\n");
                                   #endif //STATDEBUG
     }
     else {
@@ -714,7 +714,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
     if(mode == initDrwMx) {
       fnClDrawMx(3);
-      strcpy(plotStatMx,"DrwMX");
+      strcpy(plotStatMx, "DrwMX");
       asymptoteCount = 0; // Reset asymptote tracking for new plot
     }
   #if defined(GRAPHDEBUG)
@@ -1202,7 +1202,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
     saveForUndo();
-    strcpy(plotStatMx,"STATS");
+    strcpy(plotStatMx, "STATS");
 
     if(statMxN()) {
       lastPlotMode = PLOT_NOTHING;
@@ -1353,7 +1353,7 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
   return false;
 }
 
-static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
+static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *res) {
   cplx_t tmp;
   copyComplex(base, &tmp);
   for(uint8_t i = 1; i<*exp; i++) {
@@ -1517,7 +1517,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
         oscillations++;
       }
       else {
-        oscillations = max(0,oscillations-1);
+        oscillations = max(0, oscillations-1);
       }
 
       //If converging, increment convergence counter
@@ -1596,7 +1596,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       // if same as cpxSlvBestX we probably hit the precision limit for this equation?
       subComplex(CPLX(cpxSlvBestX), CPLX(X2), CPLX(temp1), ctxtSolver2);
       complexMagnitude(CPLX(temp1), &temp1.Real,  ctxtSolver2);
-      Y2IsCloseToZero = Y2IsCloseToZero || (realCompareLessThan(&cpxSlvBestMagnitudeY,const_1e_6) && realIsZero(&temp1.Real) && realIsZero(&temp1.Imag));
+      Y2IsCloseToZero = Y2IsCloseToZero || (realCompareLessThan(&cpxSlvBestMagnitudeY, const_1e_6) && realIsZero(&temp1.Real) && realIsZero(&temp1.Imag));
 
       iterAfterBest = execute_rpn_function_reals(&X2, &Y2N, &magnitudeY) ? 0 : iterAfterBest + 1;
       powCplxNat(&Y2N, &yPower, &Y2);
@@ -1627,7 +1627,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
                                         #if defined(VERBOSE_SOLVER_ITERDATA)
-                                            float dbYr,dbYi;
+                                            float dbYr, dbYi;
                                             char *arrows[8] = {"→","↗︎","↑","↖︎","←","↙︎","↓","↘︎"};
                                             realToFloat(&Y2N.Real, &dbYr);
                                             realToFloat(&Y2N.Imag, &dbYi);
@@ -1897,18 +1897,18 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
   void fnComplexSolver(void) {
-    printStatus(1,errorMessages[COMPLEX_SOLVER],force);
+    printStatus(1, errorMessages[COMPLEX_SOLVER],force);
     saveForUndo();
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                           double higherXStartValue = convertRegisterToDouble(REGISTER_X);
                                           double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
-                                          printRegisterToConsole(REGISTER_Y,">>> lowerXStartValue=","");
-                                          printRegisterToConsole(REGISTER_X," higherXStartValue=","\n");
+                                          printRegisterToConsole(REGISTER_Y, ">>> lowerXStartValue=", "");
+                                          printRegisterToConsole(REGISTER_X, " higherXStartValue=", "\n");
                                           if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
                                             x_min = lowerXStartValue;
                                             x_max = higherXStartValue;
                                           }
-                                          printf("xmin:%f, xmax:%f\n",x_min,x_max);
+                                          printf("xmin:%f, xmax:%f\n",x_min, x_max);
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
     // initialize_function();
     complexSolver();
@@ -2030,7 +2030,7 @@ void fnEqSolvGraph (uint16_t func) {
           #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
           fnClDrawMx(5);
-          strcpy(plotStatMx,"DrwMX");
+          strcpy(plotStatMx, "DrwMX");
 
           if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
             x_min = lowerXStartValue;
@@ -2051,7 +2051,7 @@ void fnEqSolvGraph (uint16_t func) {
             x_max = x_max + 0.1 * x_d;
           }
           #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-            printf("xmin:%f, xmax:%f\n",x_min,x_max);
+            printf("xmin:%f, xmax:%f\n", x_min, x_max);
           #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
           initialize_function();

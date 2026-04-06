@@ -23,7 +23,7 @@ static void executeFunction(const char *data, int16_t item_);
                     #endif // VERBOSEKEYS
                     #if defined(PC_BUILD)
                       char tmp[200];
-                      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(fn=%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
+                      sprintf(tmp, "^^^^determineFunctionKeyItem_C47(fn=%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
                       jm_show_comment(tmp);
                     #endif // PC_BUILD
 
@@ -50,7 +50,7 @@ static void executeFunction(const char *data, int16_t item_);
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userAlphaItems[dynamicMenuItem].item;
                     #if defined(VERBOSEKEYS)
-                    printf(">>>>Z 0091   case MNU_MyAlpha             data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n",data,data[0],item,itemShift, FN_key_pressed);
+                    printf(">>>>Z 0091   case MNU_MyAlpha             data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", data, data[0],item, itemShift, FN_key_pressed);
                     printf(">>>>  0092     dynamicMenuItem=%d\n",dynamicMenuItem);
                     printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn);
                     #endif //VERBOSEKEYS
@@ -189,7 +189,7 @@ static void executeFunction(const char *data, int16_t item_);
         if(dynamicMenuItem < dynamicSoftmenu[menuId].numItems) {
           for(uint16_t i = 0; softmenu[i].menuItem < 0; ++i) {
                     #if defined(VERBOSEKEYS)
-                    printf(">>>>Z 0093b determineFunctionKeyItem  case MNU_MENUS:     i=%u softmenu[i].menuItem=%i name:=%s\n",i,softmenu[i].menuItem, indexOfItems[-softmenu[i].menuItem].itemCatalogName);
+                    printf(">>>>Z 0093b determineFunctionKeyItem  case MNU_MENUS:     i=%u softmenu[i].menuItem=%i name:=%s\n", i, softmenu[i].menuItem, indexOfItems[-softmenu[i].menuItem].itemCatalogName);
                     #endif //VERBOSEKEYS
             if(compareString((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem), indexOfItems[-softmenu[i].menuItem].itemCatalogName, CMP_NAME) == 0) {
               if(tam.mode == TM_DELITM) {
@@ -256,7 +256,7 @@ static void executeFunction(const char *data, int16_t item_);
     }
 
                     #if defined(VERBOSEKEYS)
-                    printf(">>>>Z 0094B    calcMode == %u  data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n",calcMode, data,data[0],item,itemShift, FN_key_pressed);
+                    printf(">>>>Z 0094B    calcMode == %u  data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", calcMode, data, data[0],item, itemShift, FN_key_pressed);
                     printf(">>>>  0095     dynamicMenuItem=%d\n",dynamicMenuItem);
                     printf(">>>>  0096     firstItem=%d itemShift=%d fn=%d\n",firstItem, itemShift, fn);
                     #endif //VERBOSEKEYS
@@ -473,9 +473,11 @@ static void executeFunction(const char *data, int16_t item_);
   void processAimInput(int16_t item) {
     int16_t item1 = 0;
                     #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,"^^^^processAimInput:AIM %d nextChar=%d",item,nextChar); jm_show_comment(tmp);
+                      char tmp[200];
+                      sprintf(tmp, "^^^^processAimInput:AIM %d nextChar=%d", item, nextChar);
+                      jm_show_comment(tmp);
                       #if defined(PAIMDEBUG)
-                        printf("%s, |%s|\n",tmp,aimBuffer);
+                        printf("%s, |%s|\n", tmp, aimBuffer);
                       #endif //PAIMDEBUG
                     #endif //PC_BUILD
 
@@ -545,9 +547,10 @@ static void executeFunction(const char *data, int16_t item_);
 
       showHideAlphaMode();
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^processAimInput:AIM:end %d, processed %d",item,keyActionProcessed); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^processAimInput:AIM:end %d, processed %d", item, keyActionProcessed);
+                      jm_show_comment(tmp);
                       #if defined(PAIMDEBUG)
-                        printf("%s, |%s|\n",tmp,aimBuffer);
+                        printf("%s, |%s|\n", tmp, aimBuffer);
                       #endif //PAIMDEBUG
                     #endif //PC_BUILD
   }
@@ -610,7 +613,7 @@ static void executeFunction(const char *data, int16_t item_);
         const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
         int16_t _item = softkeyItem[asnKey[0]-'1'];
         //printf("WWWWWWWW-0 %i %i\n",currentMenu(), softkeyItem[asnKey[0]-'1']);
-        reallyRunFunction(_item,NOPARAM);
+        reallyRunFunction(_item, NOPARAM);
         hourGlassIconEnabled = false;
         //printf("WWWWWWWW-1 %i %i\n",currentMenu(), softkeyItem[asnKey[0]-'1']);
         if(_item == ITM_TIMER_R_S) {
@@ -744,7 +747,7 @@ static void executeFunction(const char *data, int16_t item_);
         goto endReturnTrue;
       }
       case MNU_HOME: {
-        if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+        if(!setCurrentUserMenu(-MNU_DYNAMIC, "HOME")) {
           #if defined(PC_BUILD)
             printf("Not done!\n");
           #endif //PC_BUILD
@@ -754,7 +757,7 @@ static void executeFunction(const char *data, int16_t item_);
         goto endReturnTrue;
       }
       case MNU_PFN: {
-        if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+        if(!setCurrentUserMenu(-MNU_DYNAMIC, "P.FN")) {
           #if defined(PC_BUILD)
             printf("Not done!\n");
           #endif //PC_BUILD
@@ -1498,7 +1501,9 @@ endReturnTrue:
     int8_t key_no = stringToKeyNumber(data);
 
                     #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:", key_no); jm_show_comment(tmp);
+                      char tmp[200];
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: key_no: %d:", key_no);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
     //.    if(kbd_usr[36].primaryTam == ITM_EXIT1) //opposite keyboard V43 LT, 43S, V43 RT
@@ -1509,7 +1514,8 @@ endReturnTrue:
     fnTimerExec(TO_FN_EXEC);                                  //dr execute queued fn
 
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
     if( (key->primary != ITM_SHIFTf) && (key->primary != KEY_fg) && ( !SHOWMODE || !(
@@ -1535,7 +1541,8 @@ endReturnTrue:
     }
 
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary2: %d:",key->primary); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: key->primary2: %d:", key->primary);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
 
@@ -1577,7 +1584,8 @@ endReturnTrue:
 
 
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary3: %d:",key->primary); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: key->primary3: %d:", key->primary);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
                                                                                                                          //JM shifts
     if( !tam.mode && (calcMode == CM_NIM || calcMode == CM_NORMAL) && (lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)) && (key_no >= 0 && key_no <= 5 )) {               //JMNIM vv Added direct A-F for hex entry
@@ -1592,7 +1600,7 @@ endReturnTrue:
           break;
         default:break;
       }
-      //printf(">>> ±±±§§§ keys key:%d result:%d Calmode:%d, nimbuffer:%s, lastbase:%d, nimnumberpart:%d\n",key_no, result, calcMode,nimBuffer,lastIntegerBase, nimNumberPart);
+      //printf(">>> ±±±§§§ keys key:%d result:%d Calmode:%d, nimbuffer:%s, lastbase:%d, nimnumberpart:%d\n", key_no, result, calcMode, nimBuffer, lastIntegerBase, nimNumberPart);
       Check_MultiPresses(&result, key_no);        //JM
       return result;
     }
@@ -1642,7 +1650,8 @@ endReturnTrue:
     }
 
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: result1: %d:",result); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: result1: %d:", result);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
     if(Check_Norm_Key_00_Assigned(&result, key_no) == 0) {
@@ -1650,7 +1659,8 @@ endReturnTrue:
     }
 
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: result3: %d:",result); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^^^^keyboard.c: determineitem: result3: %d:", result);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
     if(result == ITM_PROD_SIGN) {
@@ -1850,19 +1860,23 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       showFunctionNameItem = 0;
                     #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,"^^^^btnPressed START item=%d data=\'%s\'",item,(char *)data); jm_show_comment(tmp);
+                      char tmp[200];
+                      sprintf(tmp, "^^^^btnPressed START item=%d data=\'%s\'", item, (char *)data);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
       if(item != ITM_NOP && item != ITM_NULL) {
 
                     #if defined(PC_BUILD_TELLTALE)
-                      sprintf(tmp,"keyboard.c: btnPressed 1--> processKeyAction(%d) which is str:%s\n",item,(char *)data); jm_show_calc_state(tmp);
+                      sprintf(tmp, "keyboard.c: btnPressed 1--> processKeyAction(%d) which is str:%s\n", item, (char *)data);
+                      jm_show_calc_state(tmp);
                     #endif //PC_BUILD_TELLTALE
 
         processKeyAction(item);
 
                     #if defined(PC_BUILD_TELLTALE)
-                      sprintf(tmp,"keyboard.c: btnPressed 2--> processKeyAction(%d) which is str:%s; keyActionProcessed=%u\n",item,(char *)data, keyActionProcessed); jm_show_calc_state(tmp);
+                      sprintf(tmp, "keyboard.c: btnPressed 2--> processKeyAction(%d) which is str:%s; keyActionProcessed=%u\n", item, (char *)data, keyActionProcessed);
+                      jm_show_calc_state(tmp);
                     #endif //PC_BUILD_TELLTALE
 
         if(!keyActionProcessed) {
@@ -1898,7 +1912,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 //        refreshScreen(140);
 //      }
                     #if defined(PC_BUILD)
-                      sprintf(tmp,"^^^^btnPressed End item=%d:\'%s\' showFunctionNameItem=%d\n",item,(char *)data,showFunctionNameItem); jm_show_comment(tmp);
+                      sprintf(tmp, "^^^^btnPressed End item=%d:\'%s\' showFunctionNameItem=%d\n", item, (char *)data, showFunctionNameItem);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
     }
 
@@ -2072,7 +2087,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       else if(showFunctionNameItem != 0) {
         item = showFunctionNameItem;
                     #if defined(PC_BUILD)
-                      char tmp[200]; sprintf(tmp,"^^^^btnReleased %d:\'%s\'",item,(char *)data); jm_show_comment(tmp);
+                      char tmp[200];
+                      sprintf(tmp, "^^^^btnReleased %d:\'%s\'", item, (char *)data);
+                      jm_show_comment(tmp);
                     #endif //PC_BUILD
 
         if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol && item != ITM_dotD && item != ITM_HASH_JM && item != ITM_toINT) {
@@ -2091,12 +2108,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
                     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                      printf("**[DL]** btnReleased1 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+                      printf("**[DL]** btnReleased1 - item %d showFunctionNameArg %s funcParam %s\n", item, showFunctionNameArg, funcParam);
                     #endif //VERBOSE_DETERMINEITEM
         if(showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
                     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                      printf("**[DL]** btnReleased2 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+                      printf("**[DL]** btnReleased2 - item %d showFunctionNameArg %s funcParam %s\n", item, showFunctionNameArg, funcParam);
                     #endif //VERBOSE_DETERMINEITEM
         }
 
@@ -2139,13 +2156,13 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             if(var != INVALID_VARIABLE) {
               if(calcMode == CM_PEM) {  // Insert user variable recall in program
                 #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
+                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n", item, funcParam);
                 #endif //VERBOSE_DETERMINEITEM
                 insertUserItemInProgram(item, funcParam);
               }
               else {                    // Execute item
                 #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                  printf("**[DL]** reallyRunFunction(item=%d, var=%d, funcParam=%s)\n",item,var,funcParam);
+                  printf("**[DL]** reallyRunFunction(item=%d, var=%d, funcParam=%s)\n", item, var, funcParam);
                 #endif //VERBOSE_DETERMINEITEM
                 reallyRunFunction(item, var);
               }
@@ -2163,13 +2180,13 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             if(label != INVALID_VARIABLE) {
               if(calcMode == CM_PEM) {  // Insert user program call in program
                 #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
+                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n", item, funcParam);
                 #endif //VERBOSE_DETERMINEITEM
                 insertUserItemInProgram(item, funcParam);
               }
               else {                    // Execute item
                 #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                  printf("**[DL]** reallyRunFunction(item=%d, label=%d, funcParam=%s)\n",item,label,funcParam);
+                  printf("**[DL]** reallyRunFunction(item=%d, label=%d, funcParam=%s)\n", item, label, funcParam);
                 #endif //VERBOSE_DETERMINEITEM
                 reallyRunFunction(item, label);
               }
@@ -3100,7 +3117,7 @@ RELEASE_END:
                   else {
                     if(item == ITM_XEQ && tmpString[0] != 0 && (getSystemFlag(FLAG_USER) || ((currentKeyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used))) {
                       char label[15];
-                      xcopy(label,tmpString, stringByteLength(tmpString) + 1);
+                      xcopy(label, tmpString, stringByteLength(tmpString) + 1);
                       calcRegister_t regist = findNamedLabel(label);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
@@ -3115,7 +3132,7 @@ RELEASE_END:
                     }
                     else if(item == ITM_RCL && tmpString[0] != 0 && (getSystemFlag(FLAG_USER) || ((currentKeyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used))) {
                       char var[15];
-                      xcopy(var,tmpString, stringByteLength(tmpString) + 1);
+                      xcopy(var, tmpString, stringByteLength(tmpString) + 1);
                       calcRegister_t regist = findNamedVariable(var);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
@@ -3129,12 +3146,12 @@ RELEASE_END:
                       }
                     }
 
-                    itemToBeAssigned = numlockReplacements(100,item,getSystemFlag(FLAG_NUMLOCK),false,false);
+                    itemToBeAssigned = numlockReplacements(100, item, getSystemFlag(FLAG_NUMLOCK), false, false);
                     if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
                       itemToBeAssigned += (ITM_a - ITM_A);
                     }
                     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
-                      printf("**[DL]** itemToBeAssigned = %d %s\n",itemToBeAssigned,indexOfItems[itemToBeAssigned].itemSoftmenuName);
+                      printf("**[DL]** itemToBeAssigned = %d %s\n", itemToBeAssigned, indexOfItems[itemToBeAssigned].itemSoftmenuName);
                     #endif //VERBOSE_DETERMINEITEM
 
                     if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
@@ -4002,18 +4019,18 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       uint8_t sdataTypeY = getRegisterDataType(REGISTER_Y);
       uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
       bool_t toClearPolar = false;
-      #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
-      #define isValidAngle(typ,tag) (typ == dtLongInteger || typ == dtReal34)
-      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
-      if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+      #define isAngle     (typ, tag) (typ == dtReal34 && tag != amNone)
+      #define isValidAngle(typ, tag) (typ == dtLongInteger || typ == dtReal34)
+      #define isRadius    (typ, tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
+      if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY, sdataAtagY) && isRadius(sdataTypeX, sdataAtagX)) {
         fnSwapXY(0);
       }
-      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY, sdataAtagY) && isRadius(sdataTypeX, sdataAtagX)) {
         fnSwapXY(0);
         setSystemFlag(FLAG_POLAR);
         toClearPolar = true;
       }
-      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeX,sdataAtagX) && isRadius(sdataTypeY,sdataAtagY)) {
+      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeX, sdataAtagX) && isRadius(sdataTypeY, sdataAtagY)) {
         setSystemFlag(FLAG_POLAR);
         toClearPolar = true;
       }
@@ -4192,7 +4209,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             ix++;
           }
           aimBuffer[ix+lg]=0;                          //end new buffer
-          //printf("newXCursor=%d  T_cursorPos=%d  stringLastGlyph(aimBuffer)=%d\n",newXCursor,T_cursorPos,stringLastGlyph(aimBuffer));
+          //printf("newXCursor=%d  T_cursorPos=%d  stringLastGlyph(aimBuffer)=%d\n", newXCursor, T_cursorPos, stringLastGlyph(aimBuffer));
           if(T_cursorPos <= 1 + stringLastGlyph(aimBuffer)) {
             fnT_ARROW(ITM_T_LEFT_ARROW);                               //move cursor one left
           }

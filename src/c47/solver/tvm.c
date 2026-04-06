@@ -855,7 +855,7 @@ void fnTvmVar(uint16_t variable) {
               real34ChangeSign(&x);
           }
 
-          if(real34CompareAbsLessThan(&x,const34_1e_4) && real34CompareAbsLessThan(&y,const34_1e_4)) { //still after all the tries, if x & y are still both below 0.0001, then change x to 1 (keeping y = 0)
+          if(real34CompareAbsLessThan(&x, const34_1e_4) && real34CompareAbsLessThan(&y, const34_1e_4)) { //still after all the tries, if x & y are still both below 0.0001, then change x to 1 (keeping y = 0)
             real34SetOne(&x);
           }
 
@@ -867,8 +867,8 @@ void fnTvmVar(uint16_t variable) {
             real34Copy(&x, &xx);
             real34Copy(&y, &yy);
             #if defined (PC_BUILD) && defined (TVMDEBUG2)
-              printReal34ToConsole(&x,"iter x:","\n");
-              printReal34ToConsole(&y,"iter y:","\n");
+              printReal34ToConsole(&x, "iter x:", "\n");
+              printReal34ToConsole(&y, "iter y:", "\n");
             #endif //PC_BUILD
             uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
             #if defined(PC_BUILD) && defined (TVMDEBUG2)
@@ -876,9 +876,9 @@ void fnTvmVar(uint16_t variable) {
             #endif //PC_BUILD
             if(solveResult == SOLVER_RESULT_NORMAL) {
               #if defined(PC_BUILD)  && defined (TVMDEBUG2)
-                printReal34ToConsole(&resZ,"  solver results: resZ:","\n");
-                printReal34ToConsole(&resY,"  solver results: resY:","\n");
-                printReal34ToConsole(&resX,"  solver results: resX:","\n");
+                printReal34ToConsole(&resZ, "  solver results: resZ:", "\n");
+                printReal34ToConsole(&resY, "  solver results: resY:", "\n");
+                printReal34ToConsole(&resX, "  solver results: resX:", "\n");
               #endif //PC_BUILD
               reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
               real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
@@ -1039,20 +1039,25 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
 
 void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
   // printf("tvmEquation start: variable = %d\n", variable);
-  // printRealToConsole(ioVal,"ioVal: "," derivative: ");
-  // if(derivative != NULL) printRealToConsole(ioVal,"ioVal: ","\n"); else printf("NULL\n");
+  // printRealToConsole(ioVal, "ioVal: "," derivative: ");
+  // if(derivative != NULL) {
+  //   printRealToConsole(ioVal, "ioVal: ", "\n");
+  // }
+  // else {
+  //   printf("NULL\n");
+  // }
   // printf("Context ctxtTvm         : %d digits\n", ctxtTvm.digits);
   // printf("Context ctxtTvmHi       : %d digits\n", ctxtTvmHi.digits);
   // printf("Context ctxtSolverTvmHi : %d digits\n", ctxtSolverTvmHi.digits);
   // printf("Context ctxtSolverTvmInv: %d digits\n", ctxtSolverTvmInv.digits);
   // switch(variable){
-  //   case RESERVED_VARIABLE_FV      : printf("RESERVED_VARIABLE_FV     \n");break;
-  //   case RESERVED_VARIABLE_IPONA   : printf("RESERVED_VARIABLE_IPONA  \n");break;
-  //   case RESERVED_VARIABLE_NPPER   : printf("RESERVED_VARIABLE_NPPER  \n");break;
-  //   case RESERVED_VARIABLE_PPERONA : printf("RESERVED_VARIABLE_PPERONA\n");break;
-  //   case RESERVED_VARIABLE_CPERONA : printf("RESERVED_VARIABLE_CPERONA\n");break;
-  //   case RESERVED_VARIABLE_PMT     : printf("RESERVED_VARIABLE_PMT    \n");break;
-  //   case RESERVED_VARIABLE_PV      : printf("RESERVED_VARIABLE_PV     \n");break;
+  //   case RESERVED_VARIABLE_FV      : printf("RESERVED_VARIABLE_FV     \n"); break;
+  //   case RESERVED_VARIABLE_IPONA   : printf("RESERVED_VARIABLE_IPONA  \n"); break;
+  //   case RESERVED_VARIABLE_NPPER   : printf("RESERVED_VARIABLE_NPPER  \n"); break;
+  //   case RESERVED_VARIABLE_PPERONA : printf("RESERVED_VARIABLE_PPERONA\n"); break;
+  //   case RESERVED_VARIABLE_CPERONA : printf("RESERVED_VARIABLE_CPERONA\n"); break;
+  //   case RESERVED_VARIABLE_PMT     : printf("RESERVED_VARIABLE_PMT    \n"); break;
+  //   case RESERVED_VARIABLE_PV      : printf("RESERVED_VARIABLE_PV     \n"); break;
   //   default:;
   // }
 
