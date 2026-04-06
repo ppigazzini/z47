@@ -180,7 +180,7 @@ void fnTimerEndOfActivity(uint16_t param) {
 
 #if defined(DMCP_BUILD)
                                 #if defined(DM42_POWERMARKS)
-                                  powerMarkerMsF(1,10000);
+                                  powerMarkerMsF(1, 10000);
                                 #endif //DM42_POWERMARKS
 
   if(skippedStackLines) {       //update screen after 1 or 2 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
@@ -193,7 +193,7 @@ void fnTimerEndOfActivity(uint16_t param) {
     //}
   }
                                 #if defined(DM42_POWERMARKS)
-                                  powerMarkerMsF(1,15000);
+                                  powerMarkerMsF(1, 15000);
                                 #endif //DM42_POWERMARKS
 #endif // DMCP_BUILD
 }

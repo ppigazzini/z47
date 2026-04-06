@@ -203,7 +203,7 @@ void resetKeytimers(void) {
           if(getSystemFlag(FLAG_USER)) {    // USER mode
             if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
               #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
-                _executeItem(item,keyCode);
+                _executeItem(item, keyCode);
               #endif // LONGPRESS_CFG
 
               screenUpdatingMode = SCRUPD_AUTO;
@@ -799,7 +799,7 @@ void resetKeytimers(void) {
     //printf("^^^^ softmenu=%d -MNU_ALPHA=%d currentFirstItem=%d\n", softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA, softmenuStack[0].firstItem);
     //**************JM DOUBLE CLICK DETECTION ******************************* // JM FN-DOUBLE
     double_click_detected = false;                                            //JM FN-DOUBLE - Dip detection flag
-    if((getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0)  )) {
+    if((getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(), FN_key_pressed-38, 0)  )) {
       if(exexute_double_g) {
         if(FN_key_pressed !=0 && FN_key_pressed == FN_key_pressed_last) {     //Identified valid double press dip, the same key in rapid succession
           shiftF = false;                                                     //JM
@@ -895,7 +895,7 @@ void resetKeytimers(void) {
       printf(">>>>Z 0050B btnFnReleased_StateMachine ------------------ FN_state=%d\n", FN_state);
     #endif // VERBOSEKEYS
 
-    if(getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(),FN_key_pressed-38,0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
+    if(getSystemFlag(FLAG_G_DOUBLETAP) && !BLOCK_DOUBLEPRESS_MENU(currentMenu(), FN_key_pressed-38, 0) && FN_state == ST_2_REL1 && FN_handle_timed_out_to_EXEC) {
       uint8_t offset =  0;
       if(shiftF && !shiftG) {
         offset =  6;
@@ -906,7 +906,7 @@ void resetKeytimers(void) {
       fnTimerStart(TO_FN_EXEC, FN_key_pressed + offset, TIME_FN_DOUBLE_RELEASE); // if it times out, it goes to execFnTimeout
 
       #if defined(VERBOSEKEYS)
-        printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n",(char*)data,((char*)data)[0], FN_key_pressed, offset);
+        printf(">>>>Z 0050 btnFnReleased_StateMachine ------------------ Start TO_FN_EXEC\n          data=|%s| data[0]=%d (Global) FN_key_pressed=%d +offset=%d\n", (char*)data, ((char*)data)[0], FN_key_pressed, offset);
       #endif // VERBOSEKEYS
 
       //FN_key_pressed = *((char *)data) - '0' + 37;  //to render 38-43, as per original keypress
@@ -1122,8 +1122,8 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
     if(buffer.data[(buffer.write - 1) & BUFFER_MASK] == byte) {
       #if defined(JMSHOWCODES_KB0)
         char aaa[16];
-        sprintf   (aaa,"%2d ",byte);
-        showString(aaa,&standardFont, tmpxx++, 1, vmNormal, true, true);
+        sprintf   (aaa, "%2d ",byte);
+        showString(aaa, &standardFont, tmpxx++, 1, vmNormal, true, true);
       #endif // JMSHOWCODES_KB0
 
       return BUFFER_FAIL;  // duplicate
@@ -1347,11 +1347,11 @@ uint8_t outKeyBufferDoubleClick(void) {
   #if defined(JMSHOWCODES_KB2)
     char line[50], line1[100];
     fnDisplayStack(2);
-    sprintf(line1,"R%-1dW%-1d -1:%-5d -2:%-5d -3:%-5d -4:%-5d  ", (uint16_t)buffer.read,(uint16_t)buffer.write,
+    sprintf(line1, "R%-1dW%-1d -1:%-5d -2:%-5d -3:%-5d -4:%-5d  ", (uint16_t)buffer.read, (uint16_t)buffer.write,
       (uint16_t)buffer.time[(buffer.read-1) & BUFFER_MASK], (uint16_t)buffer.time[(buffer.read-2) & BUFFER_MASK],(uint16_t)buffer.time[(buffer.read-3) & BUFFER_MASK],(uint16_t)buffer.time[(buffer.read-4) & BUFFER_MASK]);
     showString(line1, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
     sprintf(line, "B-1:%d %d %d %d", (uint16_t)buffer.data[(buffer.read-1) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-2) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-3) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-4) & BUFFER_MASK]);
-    sprintf(line1, "%-16s   D1:%d D2:%d D3:%d    ", line,dTime_1, dTime_2, dTime_3);
+    sprintf(line1, "%-16s   D1:%d D2:%d D3:%d    ", line, dTime_1, dTime_2, dTime_3);
     showString(line1, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
   #endif // JMSHOWCODES_KB2
 
@@ -1413,7 +1413,9 @@ void fnT_ARROW(uint16_t command) {
       uint16_t current_cursor_y_old;
 
       #if defined(PC_BUILD)
-        char tmp[200]; sprintf(tmp,"^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n",command,current_cursor_x, current_cursor_y); jm_show_comment(tmp);
+        char tmp[200];
+        sprintf(tmp, "^^^^fnT_ARROW: command=%d current_cursor_x=%d current_cursor_y=%d \n", command, current_cursor_x, current_cursor_y);
+        jm_show_comment(tmp);
       #endif //PC_BUILD
 
       switch(command) {
@@ -1468,7 +1470,7 @@ void fnT_ARROW(uint16_t command) {
             showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
 
-            //printf("###^^^ %d %d %d %d %d\n",ixx,current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);
+            //printf("###^^^ %d %d %d %d %d\n", ixx, current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);
           }
           break;
 
@@ -1523,7 +1525,7 @@ void fnCla(uint16_t unusedButMandatoryParameter) {
 
 
 void fnCln(uint16_t unusedButMandatoryParameter) {
- strcpy(aimBuffer,"+0");
+ strcpy(aimBuffer, "+0");
  fnKeyBackspace(0);
  setSystemFlag(FLAG_ASLIFT);
  screenUpdatingMode = SCRUPD_AUTO;

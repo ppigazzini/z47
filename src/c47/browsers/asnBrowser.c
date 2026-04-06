@@ -14,7 +14,7 @@
   TO_QSPI const int      KEY_X_5[6] = {-1, 80, 160, 240, 320, 400};
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
   #define YOFF 32
-    int16_t x1,x2,yy;
+    int16_t x1, x2, yy;
     int kk = 0;
     int16_t key;
     char Name[16];
@@ -83,7 +83,7 @@
         }
       }
 
-      strcpy(Name, indexOfItems[max(kk,-kk)].itemSoftmenuName);
+      strcpy(Name, indexOfItems[max(kk, -kk)].itemSoftmenuName);
       if(strcmp(Name, "0000") == 0) {
         Name[0]=0;
       }
@@ -122,7 +122,7 @@
             ((page == 6) && (kbd_std[key].gShiftedAim == kbd_usr[key].gShiftedAim))
            )
         ) {
-        void (*setPixel)(uint32_t,uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
+        void (*setPixel)(uint32_t, uint32_t) = videoMode ? &setWhitePixel : &setBlackPixel;
         for(int16_t yStroke = YOFF+yy*SOFTMENU_HEIGHT + 3; yStroke < YOFF+(yy+1)*SOFTMENU_HEIGHT - 2; yStroke+=1){
           for(int16_t xStroke = x1 + 3 + (2*yStroke+x1)%5; xStroke < x2 - 2; xStroke+=5) {
               setPixel(xStroke, yStroke);

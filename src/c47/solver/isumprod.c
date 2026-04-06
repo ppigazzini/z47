@@ -81,7 +81,7 @@
         fnFillStack(NOPARAM);
 
         #if defined(VERBOSE_COUNTER)
-          printRegisterToConsole(REGISTER_X,"[f(",") ");
+          printRegisterToConsole(REGISTER_X, "[f(",") ");
         #endif //VERBOSE_COUNTER
 
 
@@ -92,8 +92,8 @@
         }
 
         #if defined(VERBOSE_COUNTER)
-          printRegisterToConsole(REGISTER_X," = ","] ");
-          printLongIntegerToConsole(resultLi," + "," ");
+          printRegisterToConsole(REGISTER_X, " = ", "] ");
+          printLongIntegerToConsole(resultLi, " + ", " ");
         #endif //VERBOSE_COUNTER
 
         if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
@@ -112,7 +112,7 @@
         longIntegerFree(xLi);
 
         #if defined(VERBOSE_COUNTER)
-          printLongIntegerToConsole(resultLi,"= "," \n");
+          printLongIntegerToConsole(resultLi, "= ", " \n");
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);

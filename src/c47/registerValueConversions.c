@@ -457,12 +457,12 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
     // remember last used century if the century is not an abbreviation, i.e. if YYYY > 100, ignore neg value YYYY
     if(getSystemFlag(FLAG_YMD)) {
-      if(real34CompareGreaterEqual(&part1,const34_100)) {
+      if(real34CompareGreaterEqual(&part1, const34_100)) {
         lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) + 99;
       }
     }
     else //FLAG_MDY //FLAG_DMY
-    if(real34CompareGreaterEqual(&part3,const34_100)) {
+    if(real34CompareGreaterEqual(&part3, const34_100)) {
       lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) + 99;
     }
 
@@ -484,7 +484,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
           #if defined(DMCP_BUILD)
             uInt32ToReal34(dateInfo.year, &part1);
           #elif defined(PC_BUILD) // PC_BUILD
-            uInt32ToReal34(timeInfo->tm_year + 1900,&part1);
+            uInt32ToReal34(timeInfo->tm_year + 1900, &part1);
           #endif // PC_BUILD
         }
       }
@@ -493,7 +493,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         #if defined(DMCP_BUILD)
           uInt32ToReal34(dateInfo.year, &part3);
         #elif defined(PC_BUILD) // PC_BUILD
-          uInt32ToReal34(timeInfo->tm_year + 1900,&part3);
+          uInt32ToReal34(timeInfo->tm_year + 1900, &part3);
         #endif // PC_BUILD
       }
     }
@@ -506,7 +506,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     //                              if yy > 49, then yy += 1900 else yy += 2000
     int16_t thresholdYYHigh = max(0, (int16_t)(lastCenturyHighUsed & (YY_MASK_TRACKING - 1)) - 99);
     if(getSystemFlag(FLAG_YMD)) {
-      if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part1,const34_100)) {
+      if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part1, const34_100)) {
         int16_t yy = (int16_t)(real34ToInt32(&part1));
         if(yy >= (thresholdYYHigh) % 100) {
           yy += (thresholdYYHigh - thresholdYYHigh % 100);
@@ -518,7 +518,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
       }
     }
     //FLAG_MDY //FLAG_DMY
-    else if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part3,const34_100)) {
+    else if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part3, const34_100)) {
       int16_t yy = (int16_t)(real34ToInt32(&part3));
       if(yy >= (thresholdYYHigh) % 100) {
         yy += (thresholdYYHigh - thresholdYYHigh % 100);
@@ -735,7 +735,7 @@ void sci_fmt(char *buf, int n, double x) {
           snprintf(buff, 100, "%.16e", x);
           printf("                                 Original conversion: §%s§\n", buff);
         #endif //PC_BUILD
-        strcpy(buff,"NaN");
+        strcpy(buff, "NaN");
       }
     }
 

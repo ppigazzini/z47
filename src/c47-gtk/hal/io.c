@@ -51,9 +51,9 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
       gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
   }
 
-  gtk_file_chooser_set_current_folder(chooser,base_dir);
+  gtk_file_chooser_set_current_folder(chooser, base_dir);
   if(disp_save) {
-    gtk_file_chooser_set_current_name (chooser,untitled);
+    gtk_file_chooser_set_current_name (chooser, untitled);
   }
   GtkFileFilter *filter = gtk_file_filter_new ();
   gtk_file_filter_add_pattern (filter, ext);
@@ -66,8 +66,8 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
     if(disp_save) {
       char * fe = data+strlen(filename)-4;
       const char * ee = ext+1;
-      if(strcmp(fe,ee) != 0) {
-        strcat(data,ee);     //filename doesn't have the expected extension
+      if(strcmp(fe, ee) != 0) {
+        strcat(data, ee);     //filename doesn't have the expected extension
       }
     }
     g_free(filename);
@@ -121,7 +121,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
     case ioPathSaveStateFile:
     case ioPathLoadStateFile:
       current_dir = g_get_current_dir();
-      strcpy(base_dir,current_dir);
+      strcpy(base_dir, current_dir);
       if(create_dir("./" STATE_DIR) != 0) return FILE_ERROR;
       strcat(base_dir, "/" STATE_DIR);
       if(path == ioPathSaveStateFile) {
@@ -137,7 +137,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
     case ioPathSaveProgram:
     case ioPathLoadProgram:
       current_dir = g_get_current_dir();
-      strcpy(base_dir,current_dir);
+      strcpy(base_dir, current_dir);
       if(create_dir("./" PROGRAMS_DIR) != 0) {
         return 0;
       }
@@ -209,7 +209,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   if(_ioFileHandle != NULL) {
     if(mode == ioModeRead) {
       int16_t jj = stringByteLength(filename);
-      int16_t kk = max(0,jj - stateFileNameVarLength + 1);
+      int16_t kk = max(0, jj - stateFileNameVarLength + 1);
       while(jj>kk) {
         if(filename[jj-1]!='\\' && filename[jj-1]!='/' && filename[jj-1]!=0) {
           jj--;

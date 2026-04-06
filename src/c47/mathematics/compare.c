@@ -516,38 +516,38 @@ static void almostEqualMatrix(uint16_t regist) {
 }
 
 #define SNAPVAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
-  { \
-  case dtComplex34: \
-    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34Copy(REGISTER_IMAG34_DATA(reg), &s.i); \
-    break; \
-  case dtReal34: \
-    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34SetZero(&s.i); \
-    break; \
-  case dtLongInteger: \
-    getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
-    break; \
-  case dtShortInteger: \
+  {                                                            \
+  case dtComplex34:                                            \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
+    real34Copy(REGISTER_IMAG34_DATA(reg), &s.i);               \
+    break;                                                     \
+  case dtReal34:                                               \
+    real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
+    real34SetZero(&s.i);                                       \
+    break;                                                     \
+  case dtLongInteger:                                          \
+    getRegisterAsLongInt(REGISTER_X, s.li, NULL);              \
+    break;                                                     \
+  case dtShortInteger:                                         \
     getRegisterAsRawShortInt(REGISTER_X, &s.siVal, &s.siBase); \
-    break; \
+    break;                                                     \
   }
 
-#define RESTOREVAL(reg, s) switch(s.t) \
-  { \
-  case dtComplex34: \
-    real34Copy(&s.i,REGISTER_IMAG34_DATA(reg)); \
-  case dtReal34: \
-    real34Copy(&s.r,REGISTER_REAL34_DATA(reg)); \
-    break; \
-  case dtLongInteger: \
-    convertLongIntegerToLongIntegerRegister(s.li,reg); \
-    longIntegerFree(s.li); \
-    break; \
-  case dtShortInteger: \
-    *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal; \
-    setRegisterShortIntegerBase(reg,s.siBase); \
-    break; \
+#define RESTOREVAL(reg, s) switch(s.t)                  \
+  {                                                     \
+  case dtComplex34:                                     \
+    real34Copy(&s.i, REGISTER_IMAG34_DATA(reg));        \
+  case dtReal34:                                        \
+    real34Copy(&s.r, REGISTER_REAL34_DATA(reg));        \
+    break;                                              \
+  case dtLongInteger:                                   \
+    convertLongIntegerToLongIntegerRegister(s.li, reg); \
+    longIntegerFree(s.li);                              \
+    break;                                              \
+  case dtShortInteger:                                  \
+    *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal;        \
+    setRegisterShortIntegerBase(reg, s.siBase);         \
+    break;                                              \
   }
 
 

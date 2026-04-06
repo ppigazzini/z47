@@ -923,7 +923,7 @@ void fnDeleteVariable(uint16_t regist) {
     printStatus(0, "fnDeleteVariable",force);
   #endif //VERBOSE_REGISTERS
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
-    removeUserItemAssignments(ITM_RCL,(char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
+    removeUserItemAssignments(ITM_RCL, (char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
     freeRegisterData(regist);
     for(uint16_t i = (regist - FIRST_NAMED_VARIABLE); i < (numberOfNamedVariables - 1); ++i) {
       allNamedVariables[i] = allNamedVariables[i + 1];
@@ -1539,8 +1539,10 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   int16_t value;
   bool_t isValidAlpha = false;
   #if defined(PC_BUILD)
-    printf("parameterType %u\n", parameterType); fflush(stdout);
-    printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags); fflush(stdout);
+    printf("parameterType %u\n", parameterType);
+    fflush(stdout);
+    printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags);
+    fflush(stdout);
   #endif   // PC_BUILD
 
   switch(parameterType) {
@@ -1854,8 +1856,8 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     printf("%s", before);
     char s2[2000];
 
-    stringToASCII(str,s2);
-    printf("\"%s\"",s2);
+    stringToASCII(str, s2);
+    printf("\"%s\"", s2);
 
     for(int16_t ii=0; ii<stringByteLength(s2) && ii<40; ii++) {
       printf(" ");
@@ -2008,7 +2010,8 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
   if(getRegisterDataType(regist) != dataType || ((getRegisterDataType(regist) == dtString || getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) && getRegisterMaxDataLengthInBlocks(regist) != dataSizeWithoutDataLenBlocks)) {
     if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks)) {
       #if defined(PC_BUILD)
-        printf("In function reallocateRegister: required %" PRIu16 " blocks for register #%" PRId16 " but no data blocks with enough size are available!\n", dataSizeWithoutDataLenBlocks, regist); fflush(stdout);
+        printf("In function reallocateRegister: required %" PRIu16 " blocks for register #%" PRId16 " but no data blocks with enough size are available!\n", dataSizeWithoutDataLenBlocks, regist);
+        fflush(stdout);
       #endif // PC_BUILD
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       return;

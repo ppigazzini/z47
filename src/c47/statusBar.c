@@ -258,9 +258,9 @@ void drawBattery(uint16_t voltage);
 
       compressString = 1;
       if(denMax == 0 || denMax > MAX_DENMAX) {
-        sprintf(statusMessage,"max");
+        sprintf(statusMessage, "max");
       } else {
-        sprintf(statusMessage, "%" PRIu32,denMax);
+        sprintf(statusMessage, "%" PRIu32, denMax);
       }
       int xx = x;
       x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
@@ -275,14 +275,14 @@ void drawBattery(uint16_t voltage);
       }
 
       if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
-        strcpy(divStr,PRODUCT_SIGN);
+        strcpy(divStr, PRODUCT_SIGN);
         lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
         raiseString = 2;
         x = showString(divStr, &standardFont, x, lowerUnderLine, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
       }
 
       if(getSystemFlag(FLAG_IRFRAC)) {
-        strcpy(divStr,STD_IRRATIONAL_I);
+        strcpy(divStr, STD_IRRATIONAL_I);
         lcd_fill_rect(x, 0, 9, 20, LCD_SET_VALUE);
         raiseString = 1;
         x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
@@ -300,7 +300,7 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, X_INT_MX_TVM_MODE - x, 20, LCD_SET_VALUE);
       }
 
-      plotline2(xxSlash,  18, xxSlash+9,0);
+      plotline2(xxSlash, 18, xxSlash+9, 0);
 
     }
   }
@@ -322,7 +322,7 @@ void drawBattery(uint16_t voltage);
 
      //clear right of message to end of allocated space
      if(xx < x+dx) {
-       lcd_fill_rect(xx, max(0,y/*-raise*/), x+dx -xx, max(row,dy)/*-raise*/ + min(0,y), LCD_SET_VALUE);
+       lcd_fill_rect(xx, max(0, y/*-raise*/), x+dx -xx, max(row, dy)/*-raise*/ + min(0, y), LCD_SET_VALUE);
        //printf("%s ### x=%u y=%i dx=%u dy=%u   xx=%u dd=%i \n", str, x, y, dx, dy, xx, x+dx -xx);
      }
      //clear slither below lifted text
@@ -374,7 +374,7 @@ void drawBattery(uint16_t voltage);
       reInstateIntegerModeDisplay = false;
       char statusMessage[10];
       sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-      strcat(statusMessage," ");
+      strcat(statusMessage, " ");
       showStringAndClear(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, X_OVERFLOW_CARRY - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
       return true;
     } else {
@@ -548,7 +548,7 @@ void drawBattery(uint16_t voltage);
     int32_t yoffs = 0;
     switch(programRunStop) {
       case PGM_WAITING: {
-        strcpy(statusMessage,STD_NEG_EXCLAMATION_MARK);
+        strcpy(statusMessage, STD_NEG_EXCLAMATION_MARK);
         offs = 0;
         break;
       }
@@ -559,7 +559,7 @@ void drawBattery(uint16_t voltage);
       }
       default: {
         if(hourGlassIconEnabled) {
-          strcpy(statusMessage,STD_HOURGLASS_WH);
+          strcpy(statusMessage, STD_HOURGLASS_WH);
           offs = +1;
           yoffs = +5;
         }
@@ -590,7 +590,7 @@ void drawBattery(uint16_t voltage);
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    lcd_fill_rect(X_ALPHA_MODE, 18, 9, 2, LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     //compressString = 1; //do not use compress, as the far edges of the letter get cut off
     if(!watchIconEnabled) {
       showStringAndClear(asmBuffer, &standardFont, X_ASM, 0, X_SERIAL_IO - X_ASM, 20, vmNormal, true, false);
@@ -607,7 +607,7 @@ void drawBattery(uint16_t voltage);
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       return;
     #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    lcd_fill_rect(X_ALPHA_MODE, 18, 9, 2, LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
     if(!watchIconEnabled) {
       lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
     }
@@ -664,16 +664,16 @@ void drawBattery(uint16_t voltage) {
     return;
   #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
   lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
-  uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
-  for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
+  uint16_t vv = (uint16_t)(min(max(voltage - 2000, 0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
+  for(uint16_t ii = min(vv-1, DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
     if(ii%2 == 0) { //draw outline
       setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + 0 : X_BATTERY + 2                           ,(DY_BATTERY-1)-ii);
       setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + DX_BATTERY + 0 : X_BATTERY + DX_BATTERY - 2 ,(DY_BATTERY-1)-ii);
     }
   }
-  for(uint16_t ii = 0; ii <= min(vv,DY_BATTERY-1); ii++) { //draw voltage
+  for(uint16_t ii = 0; ii <= min(vv, DY_BATTERY-1); ii++) { //draw voltage
     for(uint16_t jj = 0; jj <= DX_BATTERY; jj++) {
-      if(min(vv,DY_BATTERY)-ii > (voltage > 2750 ? 2 : 1) || (jj>1 && jj<DX_BATTERY-1)) {
+      if(min(vv, DY_BATTERY)-ii > (voltage > 2750 ? 2 : 1) || (jj>1 && jj<DX_BATTERY-1)) {
         setBlackPixel(X_BATTERY + jj, (DY_BATTERY-1)-ii);
       }
     }
@@ -737,7 +737,7 @@ void drawBattery(uint16_t voltage) {
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
       char catalogstr[10];
-      sprintf(catalogstr,"%d",catalog);
+      sprintf(catalogstr, "%d", catalog);
       sprintf(statusMessage, "%s%s %s %s m:%s i:%d ti:%u er:%u lp:%u %u ",
         /*    */ catalog ? "asm:" : "",
         /*    */ catalog ? catalogstr : "",
@@ -957,33 +957,33 @@ void drawBattery(uint16_t voltage) {
     lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
 
     compressString = 1;
-    sprintf(statusMessage,"max");
+    sprintf(statusMessage, "max");
     xx = x;
     x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
     raiseString = 3;
     x = showString(STD_SUB_f, &standardFont, ++x, lowerUnderLine, vmNormal, true, true);
 
     compressString = 1;
-    sprintf(statusMessage, "%" PRIu32,9999);
+    sprintf(statusMessage, "%" PRIu32, 9999);
     x = showString(statusMessage, &standardFont, xx, L1+lowerUnderLine, vmNormal, false, true);
     compressString = 1;
     x = showString(statusMessage, &standardFont, xx, L2+lowerUnderLine, vmNormal, false, true);
 
-    strcpy(divStr,STD_CROSS);
+    strcpy(divStr, STD_CROSS);
     raiseString = 2;
     xx = x;
     x = showString(divStr, &standardFont, ++x, L1+lowerUnderLine, vmNormal, true, true) + (0);
-    strcpy(divStr,STD_IRRATIONAL_I);
+    strcpy(divStr, STD_IRRATIONAL_I);
     raiseString = 1;
-    x = max(0,((int32_t)x)-1);
+    x = max(0, ((int32_t)x)-1);
     x = showString(divStr, &standardFont, x, L1, vmNormal, false, false) + 2;
 
-    strcpy(divStr,STD_DOT);
+    strcpy(divStr, STD_DOT);
     raiseString = 2;
     x = showString(divStr, &standardFont, ++xx,   L2+lowerUnderLine, vmNormal, true, true) + (2);
-    strcpy(divStr,STD_IRRATIONAL_I);
+    strcpy(divStr, STD_IRRATIONAL_I);
     raiseString = 1;
-    x = max(0,((int32_t)x)-1);
+    x = max(0, ((int32_t)x)-1);
     x = showString(divStr, &standardFont, x  , L2, vmNormal, false, false) + 2;
 
     compressString = 1;
@@ -1021,7 +1021,7 @@ void drawBattery(uint16_t voltage) {
     showGlyph(STD_P,                    &standardFont, X_HOURGLASS  +2   ,     L2, vmNormal, true, false, false);
     showGlyph(STD_HOURGLASS_WH,            &standardFont, X_HOURGLASS_GRAPHS  , L2, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
 
-    strcpy(asmBuffer,"MM");
+    strcpy(asmBuffer, "MM");
     compressString = 1;             //^JM
     showString(asmBuffer, &standardFont, X_ASM, L1, vmNormal, true, false);
     asmBuffer[0]=0;
@@ -1031,7 +1031,7 @@ void drawBattery(uint16_t voltage) {
     x = showGlyph(STD_4, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
     x = X_SSIZE_BEGIN;
     char dd[6];
-    sprintf(dd,STD_SPACE_6_PER_EM STD_8);
+    sprintf(dd, STD_SPACE_6_PER_EM STD_8);
     showString(dd, &standardFont, x, L1, vmReverse, false, true);
     showString(dd, &standardFont, x, L2, vmReverse, false, true);
     showString(dd, &standardFont, x, L3, vmReverse, false, true);

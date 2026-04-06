@@ -42,7 +42,7 @@ void doNothing(void) {
 #define  _TO_ITM_TI   2
 
 static uint8_t itemERRTIVal(int16_t itemNr) {
-  switch(max(itemNr,-itemNr)) {
+  switch(max(itemNr, -itemNr)) {
     #ifdef DMCP_BUILD
       case ITM_WRXPALL   :
                           return  _TO_ITM_ERR;
@@ -283,7 +283,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     if(programRunStop != PGM_RUNNING) { //NORMAL MODE
       #if defined(PC_BUILD)
-        char tmp[200]; sprintf(tmp,"^^^^reallyRunFunction func=%d param=%d\n",func, param); jm_show_comment(tmp);
+        char tmp[200];
+        sprintf(tmp, "^^^^reallyRunFunction func=%d param=%d\n", func, param);
+        jm_show_comment(tmp);
         //printf("---#### Before function %s\n",tmp);
       #endif // PC_BUILD
 
@@ -341,7 +343,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
 
     // mark the previous I and J, when STOSEQ and RCLSEQ are being used
-    real_t iir,jjr;
+    real_t iir, jjr;
     if((func == ITM_RCLELPLUS || func == ITM_STOELPLUS) && isMatrixIndexed() && getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
       lastI=realToUint32C47(&iir, NULL);
       lastJ=realToUint32C47(&jjr, NULL);
@@ -514,7 +516,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           case -MNU_CONVCHEF :
           case -MNU_CONVTEMP : {
             errorMessage[0]=0;
-            strcat(errorMessage,indexOfItems[func].itemCatalogName);
+            strcat(errorMessage, indexOfItems[func].itemCatalogName);
             temporaryInformation = TI_NO_INFO;
             int16_t i = 0;
             while(errorMessage[i+1] != 0) {
@@ -724,7 +726,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
 
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^ReallyRunFunction func=%d\n",func); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^ReallyRunFunction func=%d\n", func);
+      jm_show_comment(tmp);
     #endif // PC_BUILD
 
     reallyRunFunction(func, indexOfItems[func].param);

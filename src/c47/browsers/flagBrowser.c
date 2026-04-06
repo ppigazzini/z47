@@ -57,7 +57,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
   void flagBrowser(uint16_t init) {
   #if !defined(SAVE_SPACE_DM42_8FL)
     static int16_t line;
-    int16_t f,i;
+    int16_t f, i;
     bool_t firstFlag;
 
     hourGlassIconEnabled = false;
@@ -296,7 +296,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 
       for(f=0; f<=99/*79*/; f++) {                                          //JM 99
         if(getFlag(f)) {
-          lcd_fill_rect(40*(f%10)+1,22*(f/10)+66-1-44,  40*(f%10)+39-(40*(f%10)+1),22*(f/10)+66+20-1-44-(22*(f/10)+66-1-44)+1,LCD_EMPTY_VALUE);
+          lcd_fill_rect(40*(f%10)+1, 22*(f/10)+66-1-44,  40*(f%10)+39-(40*(f%10)+1),22*(f/10)+66+20-1-44-(22*(f/10)+66-1-44)+1, LCD_EMPTY_VALUE);
         }
         sprintf(tmpString, "%d", f);
         showString(tmpString, &standardFont, 40*(f%10) + 19 - stringWidth(tmpString, &standardFont, false, false)/2, 22*(f/10)+66-1-44, getFlag(f) ? vmReverse : vmNormal, true, true); //JM-44

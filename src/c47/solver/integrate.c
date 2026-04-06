@@ -41,7 +41,7 @@ void fnPgmInt(uint16_t label) {
 
 /*DEBUGINT
 static void printCurrentSolverStatus(int nn, uint16_t currentSolverStatus) {
-printf("%i: currentSolverStatus=%u: ",nn,currentSolverStatus);
+printf("%i: currentSolverStatus=%u: ", nn, currentSolverStatus);
 if(currentSolverStatus > SOLVER_STATUS_TVM_APPLICATION)   { currentSolverStatus -= SOLVER_STATUS_TVM_APPLICATION;   printf("TVM ");}
 if(currentSolverStatus > SOLVER_STATUS_MVAR_BEING_OPENED) { currentSolverStatus -= SOLVER_STATUS_MVAR_BEING_OPENED; printf("MVARopen ");}
 if(currentSolverStatus > SOLVER_STATUS_USES_FORMULA)      { currentSolverStatus -= SOLVER_STATUS_USES_FORMULA;      printf("FORMULA ");}
@@ -67,14 +67,14 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
   //char yyy[100], yy1[100];
   //int16_t yy0;
   //  __displaySolver(labelOrVariable, yyy , &yy0);
-  //  stringToASCII(yyy,yy1);
+  //  stringToASCII(yyy, yy1);
   //printf("labelOrVariable=%u %s\n",labelOrVariable, yy1);
   //  __displaySolver(currentSolverVariable, yyy , &yy0);
-  //  stringToASCII(yyy,yy1);
+  //  stringToASCII(yyy, yy1);
   //printf("currentSolverVariable=%u %s\n",currentSolverVariable, yy1);
   //  xcopy(yyy, labelList[currentSolverProgram].labelPointer + 1, *(labelList[currentSolverProgram].labelPointer));
   //  yyy[*(labelList[currentSolverProgram].labelPointer)] = 0;
-  //  stringToASCII(yyy,yy1);
+  //  stringToASCII(yyy, yy1);
   //printf("currentSolverProgram %u = %s\n", currentSolverProgram, yy1);
 
   if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
@@ -209,14 +209,14 @@ saveForUndo();
     else {
     #ifdef PC_BUILD
       printf("Temporary Debugging info. Can be deleted once done.\n");
-      printRealToConsole(&llim,"llim:","\n");
-      printRealToConsole(&ulim,"ulim:","\n");
-      printRealToConsole(&acc,"acc:","\n");
+      printRealToConsole(&llim, "llim:", "\n");
+      printRealToConsole(&ulim, "ulim:", "\n");
+      printRealToConsole(&acc, "acc:", "\n");
     #endif //PC_BUILD
     integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
     #ifdef PC_BUILD
       printf("Temporary Debugging info. Can be deleted once done.\n");
-      printRealToConsole(&res,"res:","\n");
+      printRealToConsole(&res, "res:", "\n");
     #endif //PC_BUILD
     }
 #else //SPEEDUPEXPERIMENT
@@ -253,8 +253,8 @@ void fnIntegrate(uint16_t labelOrVariable) {
 
 void fnIntegrateYX(uint16_t labelOrVariable) {
   //printf("fnIntegrateYX\n");
-  //printRegisterToConsole(REGISTER_X,"X:",", ");
-  //printRegisterToConsole(REGISTER_Y,"Y:","\n");
+  //printRegisterToConsole(REGISTER_X, "X:", ", ");
+  //printRegisterToConsole(REGISTER_Y, "Y:", "\n");
   real_t x, y;
   if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
     realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
@@ -304,7 +304,7 @@ static void _integratorIteration(void) {
     execProgram(currentSolverProgram + FIRST_LABEL);
   }
                             if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
-                              copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
+                              copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Y);
                               fnP_All_Regs(PRN_XYr);
                             }
 }
@@ -432,11 +432,11 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
   realMultiply(ss, bma2, &res, realContext);
   realMultiply(&res, h, &res, realContext); // load the integral result,
   realMultiply(&res, fact, &res, realContext);
-  realToReal34(&res,&rtmp34);
+  realToReal34(&res, &rtmp34);
   real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
   showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-  realSubtract(a,b,&tmpr,realContext);
-  realToReal34(&tmpr,&rtmp34);
+  realSubtract(a, b, &tmpr, realContext);
+  realToReal34(&tmpr, &rtmp34);
   real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
   showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
   displayFormatDigits = savedDisplayFormatDigits;
@@ -615,10 +615,10 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         exitSignalled |= exitKeyWaiting();
         loop++;
         if(checkHalfSec()) {
-          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl, NULL));
+          sprintf(tmps, "Level:  %i Iter: ", (int16_t)realToInt32C47(&lvl, NULL));
           if(progressHalfSecUpdate_Integer(timed, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
             #if defined(PC_BUILD)
-              printf("%s %i\n",tmps,loop);
+              printf("%s %i\n", tmps, loop);
             #endif //PC_BUILD
             #if ENABLE_SOLVER_PROGRESS == 1
               //Error indication: incomplete, set to 0-0
@@ -633,8 +633,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
               interruptedLoop = 1;
             }
             if(interruptedLoop) {
-              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-              radixProcess(tmps,tmps);
+              sprintf(tmps, "Level %i. %5.1fs or EXIT: Iter: ", (int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps, tmps);
               progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
               if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
                 exitSignalled = false;
@@ -690,7 +690,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
       realFMA(&x, &bma2, &bpa2, &x, realContext);
       DEI_xeq_user(regist, &x, &x, realContext); // f(bpa2 + bma2*r)
       realMultiply(&x, &w, &x, realContext); // fplus*w
-      realCopy(&x, &tmp); realCopy(&rp, &x); realCopy(&tmp, &rp); // p = fplus*w stored, r in X
+      realCopy(&x, &tmp);
+      realCopy(&rp, &x);
+      realCopy(&tmp, &rp); // p = fplus*w stored, r in X
       realCopy(&x, &z);
       // RCL bpa2    // (b + a)/2
       // RCL bma2    // (b - a)/2
@@ -760,7 +762,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     realMultiply(&x, &h, &x, realContext); // ss*bma2*h
     realMultiply(&x, const_piOn2, &x, realContext); // ss*bma2*h*pi/2
     if(rev) { // reverse?
-      realChangeSign(&x); // yes,so change sign
+      realChangeSign(&x); // yes, so change sign
     }
     // done with constant coeffs  --------------------------
     // show progress  --------------------------------------
@@ -834,10 +836,10 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 //    program was written by M. César Rodríguez in 2017 for inclusion in
 //    the WP 34s calculator software for numerical integration. It
 //    covers the four intervals with four different programs:
-//         a. finite interval, (a,b)
-//         b. Right semi-infinite interval, (a,inf)
-//         c. Left semi-infinite interval, (-inf,b)
-//         d. Infinite interval, (-inf,inf)
+//         a. finite interval, (a, b)
+//         b. Right semi-infinite interval, (a, inf)
+//         c. Left semi-infinite interval, (-inf, b)
+//         d. Infinite interval, (-inf, inf)
 //
 //    The RPN source code selected is the first of the three versions
 //    presented on the web page, shown as v1.2r-393 (20170327), and stated
@@ -850,8 +852,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 // where   x(z) = (b + a) / 2 + (b - a) / 2 * TANH(SINH(z))
 // and     dxdz(z) = (b - a) / 2 * COSH(z) / COSH(SINH(z))^2
 //
-// The purpose of the T-S transform is to transform a function over (-1,1) to a new function
-// on the entire real line (-inf,inf), where the two integrals have the same value.
+// The purpose of the T-S transform is to transform a function over (-1, 1) to a new function
+// on the entire real line (-inf, inf), where the two integrals have the same value.
 //
 // It is the transformed function which is integrated by the T-S integrator
 // using Trapezoidal summation.
@@ -928,8 +930,8 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 
   #ifdef PC_BUILD
     printf"Temporary Debugging info. Can be deleted once done.\n";
-    printRealToConsole(acc,"acc:","\n");
-    printRealToConsole(&eps,"eps:","\n");
+    printRealToConsole(acc, "acc:", "\n");
+    printRealToConsole(&eps, "eps:", "\n");
     printf("digits %i\n",realContext->digits);
     printf("regist %u\n",regist);
     printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
@@ -955,10 +957,10 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
         exitSignalled |= exitKeyWaiting();
         loop++;
         if(checkHalfSec()) {
-          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+          sprintf(tmps, "Level: %i/%i Iter: ", (int16_t)k, (int16_t)maxlevel);
           if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
             #if defined(PC_BUILD)
-              printf("%s %i\n",tmps,loop);
+              printf("%s %i\n", tmps, loop);
             #endif //PC_BUILD
             #if ENABLE_SOLVER_PROGRESS == 1
               _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
@@ -972,8 +974,8 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
               interruptedLoop = 1;
             }
             if(interruptedLoop) {
-              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-              radixProcess(tmps,tmps);
+              sprintf(tmps, "Level %i. %5.1fs or EXIT: Iter: ", (int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps, tmps);
               progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
               if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
                 exitSignalled = false;
@@ -1312,10 +1314,10 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
           exitSignalled |= exitKeyWaiting();
           loop++;
           if(checkHalfSec()) {
-            sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+            sprintf(tmps, "Level: %i/%i Iter: ", (int16_t)k, (int16_t)maxlevel);
             if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
             #if defined(PC_BUILD)
-              printf("%s %i\n",tmps,loop);
+              printf("%s %i\n", tmps, loop);
             #endif //PC_BUILD
               #if ENABLE_SOLVER_PROGRESS == 1
               _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
@@ -1329,8 +1331,8 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
                 interruptedLoop = 1;
               }
               if(interruptedLoop) {
-                sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-                radixProcess(tmps,tmps);
+                sprintf(tmps, "Level %i. %5.1fs or EXIT: Iter: ", (int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+                radixProcess(tmps, tmps);
                 progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                 if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
                   exitSignalled = false;
@@ -1389,10 +1391,10 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
           exitSignalled |= exitKeyWaiting();
           loop++;
           if(checkHalfSec()) {
-            sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+            sprintf(tmps, "Level: %i/%i Iter: ", (int16_t)k, (int16_t)maxlevel);
             if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
               #if defined(PC_BUILD)
-                printf("%s %i\n",tmps,loop);
+                printf("%s %i\n", tmps, loop);
               #endif //PC_BUILD
               #if ENABLE_SOLVER_PROGRESS == 1
                 _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
@@ -1406,8 +1408,8 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
                 interruptedLoop = 1;
               }
               if(interruptedLoop) {
-                sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-                radixProcess(tmps,tmps);
+                sprintf(tmps, "Level %i. %5.1fs or EXIT: Iter: ", (int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+                radixProcess(tmps, tmps);
                 progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                 if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
                   exitSignalled = false;
