@@ -561,7 +561,6 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
     case ITM_YY_DFLT:   result = lastCenturyHighUsed & 0x3FFF;                      break;
     case ITM_PRINTERDLAY: result = printerState.delay;                              break; // DL
-    case MNU_PRINTER:   result = (printerState.printer_model == PRINTER_HP ? 82240 : 7850);   break; // DL
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }
