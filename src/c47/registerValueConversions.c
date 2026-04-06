@@ -536,7 +536,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     ( getSystemFlag(FLAG_MDY) && !isValidDay(&part3, &part1, &part2)) ||
     ( getSystemFlag(FLAG_DMY) && !isValidDay(&part3, &part2, &part1))) {
       displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -649,16 +649,16 @@ void sci_fmt(char *buf, int n, double x) {
  *   [-]d.dddddddddddddddde±dd\0 (up to 25–30 bytes depending on exponent digits)
  */
     int exp = 0, i = 0;
-    if (x < 0) {
+    if(x < 0) {
         buf[i++] = '-';
         x = -x;
     }
 
-    while (x && x < 1.0) x *= 10.0, exp--;
-    while (x >= 10.0) x /= 10.0, exp++;
+    while(x && x < 1.0) x *= 10.0, exp--;
+    while(x >= 10.0) x /= 10.0, exp++;
 
     unsigned long long m = (unsigned long long)(x * 1e15 + 0.5);
-    if (m >= 10000000000000000ULL) {
+    if(m >= 10000000000000000ULL) {
         m /= 10;
         exp++;
     }
@@ -674,7 +674,7 @@ void sci_fmt(char *buf, int n, double x) {
         1000ULL,            100ULL,             10ULL
     };
 
-    for (int j = 1; j < 15 && i < n - 6; j++) {
+    for(int j = 1; j < 15 && i < n - 6; j++) {
         buf[i++] = '0' + (m / divs[j]) % 10;
     }
 
@@ -850,11 +850,11 @@ void realToFloat(const real_t *vv, float *v) {
 
 static double fnRealToDouble(const real_t *r) {
     char buffer[100];
-        if (realIsSpecial(r)) {
-        if (realIsNaN(r)) return 0.0 / 0.0;
+        if(realIsSpecial(r)) {
+        if(realIsNaN(r)) return 0.0 / 0.0;
         return realIsPositive(r) ? 1.0 / 0.0 : -1.0 / 0.0;
     }
-    if (realIsZero(r)) {
+    if(realIsZero(r)) {
         return realIsPositive(r) ? 0.0 : -0.0;
     }
     decNumberToString((decNumber*)r, buffer);
@@ -886,7 +886,7 @@ static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
 
 void badTypeError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "cannot convert Register %d from %s", reg, getRegisterDataTypeName(reg, true, false));
   moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -894,7 +894,7 @@ void badTypeError(calcRegister_t reg) {
 
 void badDomainError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "The input value is outside of the domain.");
   moreInfoOnError("In function badDomainError:", errorMessage, NULL, NULL);
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -969,7 +969,7 @@ bool_t getRegisterAsComplexOrAnyRealQuiet(calcRegister_t reg, real_t *r, real_t 
 bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   const bool_t ret = getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
 
-  if (!ret)
+  if(!ret)
     badTypeError(reg);
   return ret;
 }
@@ -977,7 +977,7 @@ bool_t getRegisterAsComplexOrAnyReal(calcRegister_t reg, real_t *r, real_t *i, b
 bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   const uint32_t t = getRegisterDataType(reg);
 
-  if (t == dtTime || t == dtDate)
+  if(t == dtTime || t == dtDate)
     return false;
   return getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
 }
@@ -985,7 +985,7 @@ bool_t getRegisterAsComplexOrRealQuiet(calcRegister_t reg, real_t *r, real_t *i,
 bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
   const bool_t ret = getRegisterAsComplexOrRealQuiet(reg, r, i, cmplx);
 
-  if (!ret)
+  if(!ret)
     badTypeError(reg);
   return ret;
 }
@@ -1022,7 +1022,7 @@ bool_t getRegisterAsAnyRealQuiet(calcRegister_t reg, real_t *val) {
 bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
   uint32_t t = getRegisterDataType(reg);
 
-  if (t == dtDate || t ==dtTime)
+  if(t == dtDate || t ==dtTime)
     return false;
   return getRegisterAsAnyRealQuiet(reg, val);
 }
@@ -1139,21 +1139,21 @@ bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *bas
   uint64_t v;
   uint32_t b;
 
-  if (getRegisterDataType(reg) == dtShortInteger) {
+  if(getRegisterDataType(reg) == dtShortInteger) {
     v = *REGISTER_SHORT_INTEGER_DATA(reg);
     b = getRegisterShortIntegerBase(reg);
     goto finish;
   }
-  if (!getRegisterAsShortInt(reg, &sign, &v, &overflow, &fractional))
+  if(!getRegisterAsShortInt(reg, &sign, &v, &overflow, &fractional))
     return false;
-  if (overflow || fractional) {
+  if(overflow || fractional) {
     badDomainError(reg);
     return false;
   }
   v = (uint64_t)WP34S_build_value(v, sign);
   b = lastIntegerBase != 0 ? lastIntegerBase : 10;
 finish:
-  if (base != NULL)
+  if(base != NULL)
     *base = b;
   *val = v;
   return true;
@@ -1176,9 +1176,9 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
     case dtComplex34:
     case dtReal34:
       if(getRegisterAsReal(reg, &rval)) {
-        if (realIsSpecial(&rval))
+        if(realIsSpecial(&rval))
           return ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
-        if (!realIsAnInteger(&rval)) {
+        if(!realIsAnInteger(&rval)) {
           realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
           frac = true;
         }
@@ -1190,7 +1190,7 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
     default:
       return ERROR_INVALID_DATA_TYPE_FOR_OP;
   }
-  if (fractional != NULL)
+  if(fractional != NULL)
     *fractional = frac;
   return ERROR_NONE;
 }
@@ -1231,7 +1231,7 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
 
       if(longIntegerBase10Digits(angle) > 1000) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         longIntegerFree(angle);
@@ -1278,7 +1278,7 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
         *xAngularMode = currentAngularMode;
       if(*xAngularMode == amRadian && realGetExponent(val) > 999) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;

@@ -250,7 +250,7 @@ void fnLj(uint16_t unusedButMandatoryParameter) {
   if (!getShiftInput(&w, &base))
     return;
 
-  if (w == 0)
+  if(w == 0)
     count = shortIntegerWordSize;
   else {
     count = __builtin_clzll(w) - (64 - shortIntegerWordSize);
@@ -275,7 +275,7 @@ void fnRj(uint16_t unusedButMandatoryParameter) {
   if (!getShiftInput(&w, &base))
     return;
 
-  if (w == 0)
+  if(w == 0)
     count = shortIntegerWordSize;
   else {
     count = __builtin_ctzll(w | ~shortIntegerMask);
@@ -375,7 +375,7 @@ void fnZip(uint16_t unusedButMandatoryParameter) {
   if (!getShiftInput(&x, &base))
     return;
 
-  for (i = j = 0; i < shortIntegerWordSize / 2; i++) {
+  for(i = j = 0; i < shortIntegerWordSize / 2; i++) {
       r |= (x & mask) << j++;
       r |= (y & mask) << j;
       mask += mask;
@@ -393,7 +393,7 @@ void fnUnzip(uint16_t unusedButMandatoryParameter) {
     return;
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  for (j = i = 0; i < shortIntegerWordSize / 2; i++) {
+  for(j = i = 0; i < shortIntegerWordSize / 2; i++) {
       x |= (a & mask) >> j++;
       mask += mask;
       y |= (a & mask) >> j;

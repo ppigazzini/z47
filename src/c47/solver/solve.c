@@ -46,7 +46,7 @@ void fnPgmSlv(uint16_t label) {
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -57,7 +57,7 @@ void fnPgmSlv(uint16_t label) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -75,7 +75,7 @@ void fnSolve(uint16_t labelOrVariable) {
   }
   else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
     displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -105,7 +105,7 @@ void fnSolve(uint16_t labelOrVariable) {
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       int32ToReal34(resultCode, REGISTER_REAL34_DATA(REGISTER_T));
-      #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+      #if(defined PC_BUILD) && (defined SOLVERDEBUG2)
         printf("Close ");
         printRegisterToConsole(REGISTER_X, "X=", " ");
         printRegisterToConsole(REGISTER_Y, "Xold=", "\n");
@@ -154,7 +154,7 @@ void fnSolve(uint16_t labelOrVariable) {
     }
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnSolve:", errorMessage, "is not a real number.", "");
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -163,7 +163,7 @@ void fnSolve(uint16_t labelOrVariable) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -430,7 +430,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(realCompareEqual(&bb, &aa)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
 retryLevel:
       if(--getOutOfLevel >= 0) {
-        #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        #if(defined PC_BUILD) && (defined SOLVERDEBUG2)
           printf("Solver retry Level:%2i ",getOutOfLevel);
           printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
         #endif //PC_BUILD
@@ -447,7 +447,7 @@ retryLevel:
         }
       }
     }
-    #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+    #if(defined PC_BUILD) && (defined SOLVERDEBUG2)
       printf("Start %d  ", loop);
       printRealToConsole(&aa, "  a=", " ");
       printRealToConsole(&bb, "b=", "\n");
@@ -524,7 +524,7 @@ retryLevel:
     // =========== ITERATION START =============
     do {
 
-      #if (defined PC_BUILD) && ((defined SOLVERDEBUG) || (defined SOLVERDEBUG2))
+      #if(defined PC_BUILD) && ((defined SOLVERDEBUG) || (defined SOLVERDEBUG2))
         const char* methodName[] = {"BRENT", "NEWTON"};
         if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
           #if defined(OPTION_TVM_NEWTON)
@@ -816,7 +816,7 @@ retryLevel:
               clearSystemFlag(FLAG_SOLVING);
             }
             first_newton_iter = true;  // Reset for next solve
-            #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
+            #if(defined PC_BUILD) && (defined SOLVERDEBUG2)
               printf("  Newton end Iter %d (%s)  ", loop, methodName[currentMethod]);
               printRealToConsole(&newton_x, "x=", "\n");
             #endif
@@ -926,7 +926,7 @@ retryLevel:
 
       if( (!realIsSpecial(&bb2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
-        #if (defined OPTION_TVM_NEWTON) && (defined PC_BUILD) && (defined SOLVERDEBUG2)
+        #if(defined OPTION_TVM_NEWTON) && (defined PC_BUILD) && (defined SOLVERDEBUG2)
           printf("  Exit via first end-condition, newton_polish_mode=%d\n", newton_polish_mode);
         #endif
 
@@ -990,7 +990,7 @@ retryLevel:
 
 
 
-    #if (defined PC_BUILD) && (defined SOLVERDEBUG)
+    #if(defined PC_BUILD) && (defined SOLVERDEBUG)
       printf("Ended iter %d  ", loop);
       printRealToConsole(&aa, "a=", " ");
       printRealToConsole(&bb, "b=", "\n");
@@ -1015,7 +1015,7 @@ retryLevel:
     copySourceRegisterToDestRegister(REGISTER_X, variable);
 
 solver_final_print:;
-    #if (defined PC_BUILD) && ((defined SOLVERDEBUG) || (defined SOLVERDEBUG2))
+    #if(defined PC_BUILD) && ((defined SOLVERDEBUG) || (defined SOLVERDEBUG2))
       printReal34ToConsole(REGISTER_REAL34_DATA(REGISTER_X), "Final real34  =", "\n");
     #endif
 

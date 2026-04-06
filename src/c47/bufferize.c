@@ -1350,7 +1350,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             int16_t numeratorLocation = HP32SII ? 1 : strchr(aimBuffer, '.') - aimBuffer + 1;
             int32_t numerator = toInt32(aimBuffer + numeratorLocation);
-            if (numerator < 0 || numerator > 999999999) {
+            if(numerator < 0 || numerator > 999999999) {
               break;
             }
 
@@ -1386,7 +1386,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             int16_t numeratorLocation = HP32SII ? imaginaryMantissaSignLocation + 2 : strchr(aimBuffer + imaginaryMantissaSignLocation + 2, '.') - aimBuffer + 1;
             int32_t numerator = toInt32(aimBuffer + numeratorLocation);
-            if (numerator < 0 || numerator > 999999999) {
+            if(numerator < 0 || numerator > 999999999) {
               break;
             }
 
@@ -1780,7 +1780,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             if(lastErrorCode == ERROR_RAM_FULL) {
               lastErrorCode = 0;
               temporaryInformation = TI_UNDO_DISABLED;
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
@@ -1795,7 +1795,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           if(lastErrorCode == ERROR_RAM_FULL) {
             lastErrorCode = 0;
             temporaryInformation = TI_UNDO_DISABLED;
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -2059,7 +2059,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           savedNimNumberPart = nimNumberPart;
           nimNumberPart = nimRealPart;
 
-          if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
+          if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
             nimFractionToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
           }
           else {
@@ -2091,7 +2091,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
           // Imaginary part
           if(aimBuffer[imaginaryMantissaSignLocation+2] != 0) {
-            if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
+            if(nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
               nimFractionToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
             }
             else {
@@ -2316,7 +2316,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
   void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer) {
     int16_t index;
 
-    if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
+    if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
       nimBufferToDisplayBuffer(buffer, displayBuffer);
       strcat(displayBuffer, STD_SPACE_4_PER_EM);
 
@@ -2324,7 +2324,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
     }
     else {
-      if (buffer[0] == '-') {
+      if(buffer[0] == '-') {
         strcat(displayBuffer, "-");
       }
       index = 0;
@@ -2336,15 +2336,15 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     for(; buffer[index]!='/'; index++) {
     }
-    if (buffer[++index] == '+') { // There is an imaginary part
+    if(buffer[++index] == '+') { // There is an imaginary part
       subNumberToDisplayString(lastDenominator, displayBuffer + stringByteLength(displayBuffer), NULL);
     }
-    else if (buffer[index] != 0) {
+    else if(buffer[index] != 0) {
       int32_t denominator = toInt32(buffer + index);
       subNumberToDisplayString(denominator, displayBuffer + stringByteLength(displayBuffer), NULL);
       for(; buffer[index] >= '0' && buffer[index] <= '9'; index++) {
       }
-      if (buffer[index] == '+') {
+      if(buffer[index] == '+') {
         lastDenominator = denominator;
       }
     }
@@ -2370,7 +2370,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     for(i=1; i<posSpace; i++) {
       if(source[i]<'0' || source[i]>'9') { // This should never happen
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
@@ -2388,7 +2388,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     for(i=posSpace+1; i<posSlash; i++) {
       if(source[i]<'0' || source[i]>'9') { // This should never happen
        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
          moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        return;
@@ -2399,7 +2399,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       for(i=posSlash+1; i<lg; i++) {
         if(source[i]<'0' || source[i]>'9') {
           displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function nimFractionToReal34:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -2407,7 +2407,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
     }
 
-    if (posSpace != 0) {
+    if(posSpace != 0) {
       source[posSpace] = 0;
       integer = toInt32(source + 1);
     }
@@ -2428,7 +2428,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     if(denom == 0 && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function nimFractionToReal34:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -2447,7 +2447,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
   void nimRealToDisplayBuffer(const char *buffer, int16_t exponentLocation, char *displayBuffer) {
     nimBufferToDisplayBuffer(buffer, displayBuffer);
 
-    if (nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) {
+    if(nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) {
       exponentToDisplayString(stringToInt32(buffer + exponentLocation), displayBuffer + stringByteLength(displayBuffer), NULL, true);
       if(buffer[exponentLocation + 1] == 0 && buffer[exponentLocation] == '-') {
         strcat(displayBuffer, STD_SUP_MINUS);
@@ -2468,14 +2468,14 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     aimBuffer[imaginaryMantissaSignLocation+1] = aimBuffer[imaginaryMantissaSignLocation];
     aimBuffer[imaginaryMantissaSignLocation] = 0;
 
-    if (nimRealPart == NP_FRACTION_DENOMINATOR || nimRealPart == NP_HP32SII_DENOMINATOR) {
+    if(nimRealPart == NP_FRACTION_DENOMINATOR || nimRealPart == NP_HP32SII_DENOMINATOR) {
       nimFractionToReal34(aimBuffer, dest_r);
     }
     else {
       stringToReal34(aimBuffer, dest_r);
     }
 
-    if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
+    if(nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
       nimFractionToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
     }
     else {
@@ -2629,7 +2629,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
                 // This should never happen
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                   moreInfoOnError("In function closeNIM:", "there is a non numeric character in the base of the integer!", NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                 return;
@@ -2639,7 +2639,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             base = stringToInt32(aimBuffer + posHash + 1);
             if(base < 2 || base > 16) {
               displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                moreInfoOnError("In function closeNIM:", "the base of the integer must be from 2 to 16!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               return;
@@ -2648,7 +2648,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             for(i=aimBuffer[0] == '-' ? 1 :0; i<posHash; i++) {
               if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 :aimBuffer[i] - '0') >= base) {
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                   sprintf(errorMessage, "digit %c is not allowed in base %d!", aimBuffer[i], base);
                   moreInfoOnError("In function closeNIM:", errorMessage, NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2700,7 +2700,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
               displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
                 char strMin[22], strMax[22];
                 longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
                 longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));

@@ -21,7 +21,7 @@ TO_QSPI void (* const mant[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  * \param void
  * \return void
  ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
   void mantError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot calculate MANT for %s", getRegisterDataTypeName(REGISTER_X, true, false));
@@ -64,7 +64,7 @@ void mantLonI(void) {
 void mantReal(void) {
   if(real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function mantReal:", "cannot use NaN as X input of MANT", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;

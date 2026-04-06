@@ -117,7 +117,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
      && realIsZero(&bReal) && realIsZero(&bImag)
      && realIsZero(&cReal) && realIsZero(&cImag)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -175,7 +175,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   }
 
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     if(realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
       convertRealToResultRegister(&x[i].r, REGISTER_X + i, amNone);
     }
@@ -300,7 +300,7 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   curtComplex(&s1r, &s1i, &s1r, &s1i, realContext);
   curtComplex(&s2r, &s2i, &s2r, &s2i, realContext);
 
-  // reusing q, r for (s1 ± s2)
+  // reusing q, r for(s1 ± s2)
   addComplex(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
   subComplex(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
   mulComplexComplex(&rr, &ri, const_0, const_root3on2, &rr, &ri, realContext);
@@ -448,7 +448,7 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   curtComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s1r, (real_t *)&s1i, realContext);
   curtComplex((real_t *)&s2r, (real_t *)&s2i, (real_t *)&s2r, (real_t *)&s2i, realContext);
 
-  // reusing q, r for (s1 ± s2)
+  // reusing q, r for(s1 ± s2)
   addComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, (real_t *)&qr, (real_t *)&qi, realContext);
   subComplex((real_t *)&s1r, (real_t *)&s1i, (real_t *)&s2r, (real_t *)&s2i, (real_t *)&rr, (real_t *)&ri, realContext);
   mulComplexComplex((real_t *)&rr, (real_t *)&ri, const_0, (real_t *)&const159_root3on2, (real_t *)&rr, (real_t *)&ri, realContext);

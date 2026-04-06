@@ -85,11 +85,11 @@ hash (register const char *str, register size_t len)
     };
   register unsigned int hval = 0;
 
-  switch (len)
+  switch(len)
     {
       default:
         hval += asso_values[(unsigned char)str[2]];
-#if (defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
+#if(defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
       [[fallthrough]];
 #elif (defined __GNUC__ && __GNUC__ >= 7) || (defined __clang__ && __clang_major__ >= 10)
       __attribute__ ((__fallthrough__));
@@ -97,7 +97,7 @@ hash (register const char *str, register size_t len)
       /*FALLTHROUGH*/
       case 2:
         hval += asso_values[(unsigned char)str[1]];
-#if (defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
+#if(defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
       [[fallthrough]];
 #elif (defined __GNUC__ && __GNUC__ >= 7) || (defined __clang__ && __clang_major__ >= 10)
       __attribute__ ((__fallthrough__));
@@ -110,7 +110,7 @@ hash (register const char *str, register size_t len)
   return hval;
 }
 
-#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#if(defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
@@ -139,22 +139,22 @@ TO_QSPI static const struct reservedRegister wordlist[] =
     {"I%/a",RESERVED_VARIABLE_IPONA},
     {"#DEC",RESERVED_VARIABLE_NDEC}
   };
-#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#if(defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
 #pragma GCC diagnostic pop
 #endif
 
 const struct reservedRegister *
 lookupReservedVariableName (register const char *str, register size_t len)
 {
-  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
+  if(len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
       register unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE)
+      if(key <= MAX_HASH_VALUE)
         {
           register const char *s = wordlist[key].name;
 
-          if (s && *str == *s && !strcmp (str + 1, s + 1))
+          if(s && *str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];
         }
     }

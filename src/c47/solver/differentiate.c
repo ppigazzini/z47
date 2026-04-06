@@ -59,7 +59,7 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function derivativeCommon:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -71,7 +71,7 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function derivativeCommon:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -137,7 +137,7 @@ static void deriv_default_h(real_t *h) {
   fnFillStack(NOPARAM);
 
   dynamicMenuItem = -1;
-  for (i=0; i<nbrOfElements(lbls); i++) {
+  for(i=0; i<nbrOfElements(lbls); i++) {
     if((deltaX = findNamedLabel(lbls[i])) != INVALID_VARIABLE) {
       deriv_found_lbl(deltaX, h);
       undo();
@@ -181,7 +181,7 @@ static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[]
   const real_t *const fx = fxIn + MAX_ORDER - stencil->n;
 
   // Check if all f(x) are defined or not
-  for (i=0; i<maxi; i++)
+  for(i=0; i<maxi; i++)
     if(stencil->coeff[i] != 0 && realIsSpecial(fx + i)) {
       return false;
     }

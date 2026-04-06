@@ -16,7 +16,7 @@ static void factLonI(void) {
 
   if(longIntegerIsNegative(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
       moreInfoOnError("In function factLonI:", tmpString, NULL, NULL);
@@ -90,7 +90,7 @@ static void factShoI(void) {
 
   if(sign == 1) { // Negative value
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
       moreInfoOnError("In function factShoI:", tmpString, NULL, NULL);
@@ -100,7 +100,7 @@ static void factShoI(void) {
 
   if(value > 20) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
       moreInfoOnError("In function factShoI:", tmpString, NULL, NULL);
@@ -121,7 +121,7 @@ static void factShoI(void) {
 static void factReal(void) {
   real_t x;
 
-  if (getRegisterAsReal(REGISTER_X, &x)) {
+  if(getRegisterAsReal(REGISTER_X, &x)) {
     WP34S_Factorial(&x, &x, &ctxtReal39);
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
@@ -132,7 +132,7 @@ static void factReal(void) {
 static void factCplx(void) {
   real_t zReal, zImag;
 
-  if (getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     realAdd(&zReal, const_1, &zReal, &ctxtReal39);
     WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
     convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);

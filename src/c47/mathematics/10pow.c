@@ -77,12 +77,12 @@ static void tenPowShoI(void) {
 void intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realContext)) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realIsSpecial(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function intPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 10" STD_SUP_BOLD_x " when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -100,7 +100,7 @@ static void tenPowReal(void) {
 void intPowCplx(const real_t *lnBase) {
   real_t a, b, factor;
 
-  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b))
     return;
 
   // ln(10) * (a + bi) --> (a + bi)

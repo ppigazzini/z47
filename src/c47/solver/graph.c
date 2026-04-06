@@ -119,7 +119,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                       printRegisterToConsole(REGISTER_Y," y=","");
                                     #endif // VERBOSE_SOLVER0
 
-                                    if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
+                                    if(ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
                                       copySourceRegisterToDestRegister(REGISTER_X,REGISTER_J);
                                       copySourceRegisterToDestRegister(REGISTER_Y,REGISTER_K);
                                       fnP_All_Regs(PRN_XYr);
@@ -218,7 +218,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "additional matrix line not added; rows = %i",rows);
         moreInfoOnError("In function AddtoDrawMx:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1220,7 +1220,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     else {
       calcMode = CM_NORMAL;
       displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "There is no statistical/plot data available!");
         moreInfoOnError("In function graph_stat:", errorMessage, NULL, NULL);
       #endif
@@ -1343,9 +1343,9 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
   execute_rpn_function();
   getRegisterAsComplex(REGISTER_Y, &to->Real, &to->Imag);
   complexMagnitude(&to->Real, &to->Imag, magnitude,  ctxtSolver2);
-  if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
+  if(realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
     copyComplex(from, &cpxSlvBestX);
-    if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
+    if(realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
       realCopy(magnitude, &cpxSlvBestMagnitudeY);
     }
     return true;
@@ -1356,7 +1356,7 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
 static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
   cplx_t tmp;
   copyComplex(base, &tmp);
-  for (uint8_t i = 1; i<*exp; i++) {
+  for(uint8_t i = 1; i<*exp; i++) {
      mulComplexComplex(CPLX(tmp), &base->Real,  &base->Imag, CPLX(tmp), ctxtSolver2);
   }
   copyComplex(&tmp, res);
@@ -1521,12 +1521,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       }
 
       //If converging, increment convergence counter
-      if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
+      if(realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
       {
         convergent++;
       }
       else {
-        if (Y2IsCloseToZero) Y2IsZero = true; // if close to solution stop if converge strike is over
+        if(Y2IsCloseToZero) Y2IsZero = true; // if close to solution stop if converge strike is over
         else convergent = max(-3, convergent-2);
       }
       realCopy(&magnitudeY, &oldMagnitudeY);
@@ -1549,12 +1549,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                           #endif // VERBOSE_SOLVER0
         }
 
-        if (((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
+        if(((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
           osc = 0;
           convergent = 0;
           oscillations = 0;
           kicker = 3;
-          if (yPower>1) {
+          if(yPower>1) {
             execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
             execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
           }
@@ -1600,7 +1600,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
       iterAfterBest = execute_rpn_function_reals(&X2, &Y2N, &magnitudeY) ? 0 : iterAfterBest + 1;
       powCplxNat(&Y2N, &yPower, &Y2);
-      if (realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
+      if(realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
         // Revert kick
                                         #if defined(PC_BUILD)
                                                 printf("----- Inf.Y iter:%u  revert kick", iterationCounter);
@@ -1727,7 +1727,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                         #endif // VERBOSE_SOLVER1
         mulComplexComplex(CPLX(X2N), CPLX(Y1), CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
         // if converges slow without oscillating then accelerate.
-        if (convergent > 10) {
+        if(convergent > 10) {
           convertDoubleToReal(1.0 + convergent * 0.1, &f, ctxtSolver2); // factor ()
           mulComplexComplex(CPLX(X2N), &f, const_0, CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
         }
@@ -1993,7 +1993,7 @@ void fnEqSolvGraph (uint16_t func) {
       }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "unexpected parameter %u", graphVariabl1);
           moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -4,7 +4,7 @@
 #if !defined(DEBUG_H)
 #define DEBUG_H
 
-#if (DEBUG_INSTEAD_STATUS_BAR == 1)
+#if(DEBUG_INSTEAD_STATUS_BAR == 1)
   char  *getCalcModeName                    (uint16_t cm);
 #endif //((DEBUG_INSTEAD_STATUS_BAR == 1)
 

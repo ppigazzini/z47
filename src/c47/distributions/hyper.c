@@ -30,7 +30,7 @@
         || !getRegisterAsReal(REGISTER_N, j)
         || !getRegisterAsReal(REGISTER_Q, k)) {
       displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Values in register X, I, J and K must be of the real or long integer type");
         moreInfoOnError("In function checkParamHyper:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -47,21 +47,21 @@
 
     if((!checkRegisterNoFP(i)) || (!checkRegisterNoFP(j)) || (!checkRegisterNoFP(k))) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamHyper:", "N, n and/or K is not an integer", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
     if(realIsNegative(x) || realCompareLessThan(x, &xmin) || realCompareGreaterThan(x, &xmax)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamHyper:", "cannot calculate for x < max(0, n + K - N) or x > min(n, K)", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
     if(realIsNegative(k) || realCompareGreaterThan(k, i) || realIsNegative(j) || realCompareGreaterThan(j, i) || realIsNegative(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamHyper:", "the parameters must be integer, and 0 " STD_LESS_EQUAL " K " STD_LESS_EQUAL " N, 0 " STD_LESS_EQUAL " n " STD_LESS_EQUAL " N, and N " STD_GREATER_EQUAL " 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
@@ -82,7 +82,7 @@
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnHypergeometricP:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -101,7 +101,7 @@
       cdf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal75);
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnHypergeometricL:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -120,7 +120,7 @@
       cdfu_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal75);
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnHypergeometricR:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -138,7 +138,7 @@
     if(checkParamHyper(&val, &spec, &samp, &batch)) {
       if(realCompareLessThan(&val, const_0) || realCompareGreaterThan(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnHypergeometricI:", "the argument must be 0 " STD_LESS_EQUAL " x " STD_LESS_EQUAL " 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
@@ -149,7 +149,7 @@
       qf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal75);
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnHypergeometricI:", "WP34S_Qf_Binomial did not converge", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
