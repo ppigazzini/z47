@@ -71,7 +71,6 @@
   void convertLongIntegerRegisterToTimeRegister              (calcRegister_t source, calcRegister_t destination);
 
   void convertDateRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
-  #define YYSystem true
   void convertReal34RegisterToDateRegister                   (calcRegister_t source, calcRegister_t destination, bool_t handleYY);
 
   void convertReal34MatrixRegisterToReal34Matrix             (calcRegister_t regist, real34Matrix_t *matrix);

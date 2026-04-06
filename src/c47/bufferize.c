@@ -1909,7 +1909,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
           //Accommodate 2-digit xx.xxYY, and change to xx.xx00YY
           int16_t tmplen = stringByteLength(aimBuffer);
-          if(!(lastCenturyHighUsed & 0x8000) && !getSystemFlag(FLAG_YMD) && (
+          if(!(lastCenturyHighUsed & YY_MASK_OFF) && !getSystemFlag(FLAG_YMD) && (
                (tmplen == 8 && (isValidNumber(aimBuffer, "sdd.dddd")))                                //+11.1123
             || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120
              )) {

@@ -458,6 +458,8 @@
 #define NARROW_SCREEN                    1 // 400x1280 portrait screen
 #undef  USECURVES                          // activate spline curve option in the plot menu
 #define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
+#define YYSystem                         true // Enable the shortcut system to allow two-digit year defaults, i.e. 23.1212 [.d] to decode to 2023.1212
+
 
 #if defined(TESTSUITE_BUILD)
   #undef VERBOSE_MINIMUM
@@ -1835,6 +1837,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
+#define YY_MASK_TRACKING                      0x4000 // bit14 = 1: tracking the year; meaning that the YY default is updated from the last used full YYYY used
+#define YY_MASK_OFF                           0x8000 // bit15 = 1: off
+
+
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode

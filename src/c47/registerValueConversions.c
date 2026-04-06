@@ -453,7 +453,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
   uint16_t lastCenturyHighUsedtmp;
   if(handleYY) {
     //get the actual active YYYY value, excluding the tracking flag
-    lastCenturyHighUsedtmp = lastCenturyHighUsed & 0x3FFF;
+    lastCenturyHighUsedtmp = lastCenturyHighUsed & (YY_MASK_TRACKING - 1);
 
     // remember last used century if the century is not an abbreviation, i.e. if YYYY > 100, ignore neg value YYYY
     if(getSystemFlag(FLAG_YMD)) {
@@ -504,9 +504,9 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     // thresholdYYHigh = 1950 :     Automatic, 2024 ==> 2000-2099. 29 ==> 2029, 59 ==> 2059
     //                              1950-2049. 29 ==> 2029, 59 ==> 1959
     //                              if yy > 49, then yy += 1900 else yy += 2000
-    int16_t thresholdYYHigh = max(0, (int16_t)(lastCenturyHighUsed & 0x3FFF) - 99);
+    int16_t thresholdYYHigh = max(0, (int16_t)(lastCenturyHighUsed & (YY_MASK_TRACKING - 1)) - 99);
     if(getSystemFlag(FLAG_YMD)) {
-      if(!(lastCenturyHighUsed & 0x8000) && real34CompareLessThan(&part1,const34_100)) {
+      if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part1,const34_100)) {
         int16_t yy = (int16_t)(real34ToInt32(&part1));
         if(yy >= (thresholdYYHigh) % 100) {
           yy += (thresholdYYHigh - thresholdYYHigh % 100);
@@ -518,7 +518,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
       }
     }
     //FLAG_MDY //FLAG_DMY
-    else if(!(lastCenturyHighUsed & 0x8000) && real34CompareLessThan(&part3,const34_100)) {
+    else if(!(lastCenturyHighUsed & YY_MASK_OFF) && real34CompareLessThan(&part3,const34_100)) {
       int16_t yy = (int16_t)(real34ToInt32(&part3));
       if(yy >= (thresholdYYHigh) % 100) {
         yy += (thresholdYYHigh - thresholdYYHigh % 100);
@@ -544,8 +544,8 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
 
   //update stored YYYY and add the control bits again
-  if(handleYY && !(lastCenturyHighUsed & 0x8000) && followYY()) {
-    lastCenturyHighUsed = (lastCenturyHighUsed & ~0x3FFF) | (lastCenturyHighUsedtmp & 0x3FFF);
+  if(handleYY && !(lastCenturyHighUsed & YY_MASK_OFF) && (lastCenturyHighUsed & YY_MASK_TRACKING)) {
+    lastCenturyHighUsed = (lastCenturyHighUsed & ~(YY_MASK_TRACKING - 1)) | (lastCenturyHighUsedtmp & (YY_MASK_TRACKING - 1));
   }
 
   reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
