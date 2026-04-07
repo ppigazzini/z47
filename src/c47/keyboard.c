@@ -4019,9 +4019,9 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       uint8_t sdataTypeY = getRegisterDataType(REGISTER_Y);
       uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
       bool_t toClearPolar = false;
-      #define isAngle     (typ, tag) (typ == dtReal34 && tag != amNone)
+      #define isAngle(typ, tag)      (typ == dtReal34 && tag != amNone)
       #define isValidAngle(typ, tag) (typ == dtLongInteger || typ == dtReal34)
-      #define isRadius    (typ, tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
+      #define isRadius(typ, tag)     (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
       if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY, sdataAtagY) && isRadius(sdataTypeX, sdataAtagX)) {
         fnSwapXY(0);
       }
