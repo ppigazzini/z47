@@ -1076,7 +1076,8 @@ int16_t colX = 0;
       if(allElementsInColAreIntegers[j]) {
         displayFormat = DF_FIX;
         displayFormatDigits = 0;
-      } else {
+      }
+      else {
         displayFormat = displayFormat1;
         displayFormatDigits = displayFormatDigits1;
       }
@@ -1101,11 +1102,12 @@ int16_t colX = 0;
         width = stringWidth(tmpString, font, true, true) + 1;
         showString(tmpString, font, X_POS + colX + (((j == maxCols) && rightEllipsis) ? -stringWidth(" ", font, true, true) : (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j]), Y_POS - (maxRows -1 -i) * fontHeight, vm, true, false);
         colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
-      } else {
+      }
+      else {
         if(j > 0) {
           strcat(errorMessage, " ");
         }
-      strcat(errorMessage, tmpString);
+        strcat(errorMessage, tmpString);
       }
     }
 //end string creation
@@ -1115,7 +1117,8 @@ int16_t colX = 0;
       if(colVector == true) {
         showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       }
-    } else {
+    }
+    else {
       strcat(errorMessage, "]");
       if(colVector == true) {
         strcat(errorMessage, STD_SUP_BOLD_T);
@@ -1151,7 +1154,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   int16_t maxRightWidth[MATRIX_MAX_COLUMNS] = {};
   int16_t maxLeftWidth[MATRIX_MAX_COLUMNS] = {};
   const int16_t exponentOutOfRange = 0x4000;
-  bool_t noFix = false; const int16_t dspDigits = displayFormatDigits;
+  bool_t noFix = false;
+  const int16_t dspDigits = displayFormatDigits;
 
   begin:
   for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
@@ -1176,7 +1180,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(allElementsInColAreIntegers[j]) {
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
-        } else {
+        }
+        else {
           displayFormat = displayFormat1;
           displayFormatDigits = displayFormatDigits1;
         }

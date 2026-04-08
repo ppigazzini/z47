@@ -44,7 +44,8 @@
         x1 = KEY_X[key % 6 + (key > 12)];
         x2 = KEY_X[(key + (key > 11)) % 6 + 1];
         yy = key/6 + 1;
-      } else {
+      }
+      else {
         x1 = KEY_X_5[(key-17)%5];
         x2 = KEY_X_5[(key-17)%5+1];
         yy = (key-17)/5 + 4;

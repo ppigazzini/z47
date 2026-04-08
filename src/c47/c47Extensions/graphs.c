@@ -186,8 +186,8 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
         PLOT_ZMY += increment;
         if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
           PLOT_ZMY = 0;
-        } else
-        if(PLOT_ZMY > zoomOverride+1) {
+        }
+        else if(PLOT_ZMY > zoomOverride+1) {
           PLOT_ZMY = zoomRangeLo;
         }
         else if(PLOT_ZMY < zoomRangeLo) {
@@ -334,7 +334,8 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
     if(GRAPHMODE) {
       previousCalcMode = CM_NORMAL;
-    } else {
+    }
+    else {
       previousCalcMode = calcMode;
       clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys); //Change over hourglass to the left side
     }
@@ -709,7 +710,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     if(PLOT_ZMY != zoomOverride) {
       if(PLOT_ZMY == zoomOverride-1 || PLOT_ZMY == zoomOverride+1) {
         PLOT_ZMY = 0;
-      } else if(PLOT_ZMY > zoomOverride+1) {
+      }
+      else if(PLOT_ZMY > zoomOverride+1) {
         PLOT_ZMY = zoomRangeLo;
       }
       else if(PLOT_ZMY < zoomRangeLo) {
@@ -728,7 +730,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
       if(fabs(plotzoomx-1) < 0.00001 && fabs(plotzoomy-1) < 0.00001 && !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) && real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))) {
         y_min = convertRegisterToDouble(RESERVED_VARIABLE_LY);
         y_max = convertRegisterToDouble(RESERVED_VARIABLE_UY);
-      } else {
+      }
+      else {
         y_min = -10;
         y_max = 10;
       }
@@ -767,7 +770,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
       else {
         if(dx > dy) {
           dy = dx;
-        } else {
+        }
+        else {
           dx = dy;
         }
       }
@@ -819,7 +823,7 @@ void graph_plotmem(void) {
         reDraw = false; //draw now and block reDraw in the next round
       } //continue with draw
 
-      #if defined (LOW_GRAPH_ACC)
+      #if defined(LOW_GRAPH_ACC)
         //Change to SDIGS digit operation for graphs;
         ctxtReal34.digits = significantDigitsForScreen;
         ctxtReal39.digits = significantDigitsForScreen+3;
@@ -1011,10 +1015,18 @@ void graph_plotmem(void) {
 /**/        }
 /**/
 /**/        //pre-loop to cover trivial quasi symmetrical axis
-/**/        if(y_max > 0 && y_min < 0 && (y_max > 4 * scaleRmsy)) {y_max = scaleRmsy;} else                      //force the RMS if large peaks occur
-/**/        if(y_max > 0 && y_min < 0 && (-y_min > 4 * scaleRmsy)) {y_min = -scaleRmsy;} else
-/**/        if(y_max > 0 && y_min < 0 && (y_max > -y_min) && (y_max / y_min < 1.2)) { y_min = -y_max; } else     //make x-axis sit in the middle if close enough
-/**/        if(y_max > 0 && y_min < 0 && (y_max < -y_min) && (y_min / y_max < 1.2)) { y_max = -y_min; } else
+/**/        if(y_max > 0 && y_min < 0 && (y_max > 4 * scaleRmsy)) { //force the RMS if large peaks occur
+/**/          y_max = scaleRmsy;
+/**/        }
+/**/        else if(y_max > 0 && y_min < 0 && (-y_min > 4 * scaleRmsy)) {
+/**/          y_min = -scaleRmsy;
+/**/        }
+/**/        else if(y_max > 0 && y_min < 0 && (y_max > -y_min) && (y_max / y_min < 1.2)) { //make x-axis sit in the middle if close enough
+/**/          y_min = -y_max;
+/**/        }
+/**/        else if(y_max > 0 && y_min < 0 && (y_max < -y_min) && (y_min / y_max < 1.2)) {
+/**/          y_max = -y_min;
+/**/        }
 /**/
 /**/
 /**/         {
@@ -1277,7 +1289,9 @@ void graph_plotmem(void) {
              (yN1 < yN0 && xN1 > xo && yN0 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
             //printf("EXIT CLIP BOTTOM: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
-            if(yN1 == yN0) continue; // Skip horizontal lines
+            if(yN1 == yN0) {
+              continue; // Skip horizontal lines
+            }
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
@@ -1288,7 +1302,9 @@ void graph_plotmem(void) {
                   (yN1 > yN0 && xN1 > xo && yN0 < minN_y && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
             //printf("EXIT CLIP TOP: yN0=%d yN1=%d\n", yN0, yN1);
             int16_t dY = abs(yN0 - minN_y);
-            if(yN1 == yN0) continue; // Skip horizontal lines
+            if(yN1 == yN0) {
+              continue; // Skip horizontal lines
+            }
             float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + (int16_t)(dxN + 0.5);
             yN1 = minN_y;
@@ -1304,8 +1320,9 @@ void graph_plotmem(void) {
             xn = xN1;
 
             #if defined(STATDEBUG)
-              if(invalid_diff || invalid_intg || invalid_rms)
+              if(invalid_diff || invalid_intg || invalid_rms) {
                 printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
+              }
             #endif // STATDEBUG
 
             if(plotmode != _VECT) {
@@ -1387,7 +1404,8 @@ void graph_plotmem(void) {
               #endif // STATDEBUG
               if(plotInCurves) {
                 plotline3(xo, yo, xn, yn, false, false);
-              } else {
+              }
+              else {
                 plotline2(xo, yo, xn, yn);
               }
             }
@@ -1437,7 +1455,7 @@ void graph_plotmem(void) {
         #endif // EXTRA_INFO_ON_CALC_ERROR == 1
       }
 
-      #if defined (LOW_GRAPH_ACC)
+      #if defined(LOW_GRAPH_ACC)
         //Change to normal operation for graphs;
         ctxtReal34.digits = 34;
         ctxtReal39.digits = 39;

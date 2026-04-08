@@ -16,13 +16,16 @@ void logicalOpResult(bool_t res, uint32_t xtype, uint32_t ytype) {
     uInt32ToLongInteger(res ? 1u : 0u, ires);
     convertLongIntegerToLongIntegerRegister(ires, REGISTER_X);
     longIntegerFree(ires);
-  } else {
+  }
+  else {
     const real_t *rres = res ? const_1 : const_0;
 
-    if(xtype == dtComplex34 || ytype == dtComplex34)
+    if(xtype == dtComplex34 || ytype == dtComplex34) {
       convertComplexToResultRegister(rres, const_0, REGISTER_X);
-    else
+    }
+    else {
       convertRealToResultRegister(rres, REGISTER_X, amNone);
+    }
   }
 }
 
@@ -36,9 +39,9 @@ void dyadicLogicalOp(const unsigned char table[4]) {
   real_t xr, xc, yr, yc;
   bool_t x, y, res;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xr, &xc)
-      || !getRegisterAsComplex(REGISTER_Y, &yr, &yc))
+  if(!getRegisterAsComplex(REGISTER_X, &xr, &xc) || !getRegisterAsComplex(REGISTER_Y, &yr, &yc)) {
     return;
+  }
 
   x = !realIsZero(&xr) || !realIsZero(&xc);
   y = !realIsZero(&yr) || !realIsZero(&yc);

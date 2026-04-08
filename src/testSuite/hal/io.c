@@ -30,7 +30,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
     case ioModeRead:   filemode = "rb";  break;
     case ioModeWrite:  filemode = "wb";  break;
     case ioModeUpdate: filemode = "r+b"; break;
-    default: return FILE_ERROR;
+    default:           return FILE_ERROR;
   }
   _ioFileHandle = fopen(filename, filemode);
   return (_ioFileHandle != NULL? FILE_OK : FILE_ERROR);

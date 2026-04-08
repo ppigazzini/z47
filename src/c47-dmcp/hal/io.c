@@ -266,8 +266,7 @@ void show_warning(char *str) {
   lcd_putsRAt(t24, 0, "                   WARNING");
   lcd_setLine(t24, 1);
 
-  while(ptr != NULL)
-  {
+  while(ptr != NULL) {
     lcd_puts(t24, ptr);
     ptr = strtok(NULL, delim);
   }

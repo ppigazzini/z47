@@ -44,12 +44,12 @@ void statGraphReset(void){
 
 
   float grf_x(int i) {
-                                  #ifdef STATDEBUG
+                                  #if defined(STATDEBUG)
                                     char prefix[100];
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("X: Reading from Matrix %s\n",prefix);
-                                  #endif //STATDEBUG
+                                  #endif // STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
 //    }
@@ -72,12 +72,12 @@ void statGraphReset(void){
 
 
   float grf_y(int i) {
-                                  #ifdef STATDEBUG
+                                  #if defined(STATDEBUG)
                                     char prefix[100];
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("Y: Reading from Matrix %s\n",prefix);
-                                  #endif //STATDEBUG
+                                  #endif // STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
 //    }
@@ -102,62 +102,68 @@ void statGraphReset(void){
 #define ROUND_F2I(f) ((int)((f) >= 0 ? (f) + 0.5f : (f) - 0.5f))
 
 int16_t screen_window_x(float x_min, float x, float x_max) {
-    int16_t temp;
-    float tempr;
+  int16_t temp;
+  float tempr;
 
-    tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
+  tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
 
-    if(tempr > 32766) {
-        temp = 32767;
-    } else if(tempr < -32766) {
-        temp = -32767;
-    } else {
-        temp = (int16_t)ROUND_F2I(tempr);
-    }
+  if(tempr > 32766) {
+    temp = 32767;
+  }
+  else if(tempr < -32766) {
+    temp = -32767;
+  }
+  else {
+    temp = (int16_t)ROUND_F2I(tempr);
+  }
 
-    if(temp > SCREEN_HEIGHT_GRAPH - 1) {
-        temp = SCREEN_HEIGHT_GRAPH - 1;
-    } else if(temp < 0) {
-        temp = 0;
-    }
+  if(temp > SCREEN_HEIGHT_GRAPH - 1) {
+    temp = SCREEN_HEIGHT_GRAPH - 1;
+  }
+  else if(temp < 0) {
+    temp = 0;
+  }
 
-    return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
+  return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
 }
 
 
 #define minn 0
 int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
-    int32_t temp;
-    float tempr;
+  int32_t temp;
+  float tempr;
 
-    tempr = ((y - y_min) / (y_max - y_min) * (float)(SCREEN_HEIGHT_GRAPH - 1 - minn));
+  tempr = ((y - y_min) / (y_max - y_min) * (float)(SCREEN_HEIGHT_GRAPH - 1 - minn));
 
-    if(tempr > 32766) {
-        temp = 32767;
-    } else if(tempr < -32766) {
-        temp = -32767;
-    } else {
-        temp = (int16_t)ROUND_F2I(tempr);
+  if(tempr > 32766) {
+    temp = 32767;
+  }
+  else if(tempr < -32766) {
+    temp = -32767;
+  }
+  else {
+    temp = (int16_t)ROUND_F2I(tempr);
+  }
+
+  if(!nolimit) {
+    if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
+      temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
     }
-
-    if(!nolimit) {
-        if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-            temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
-        } else if(temp < 0) {
-            temp = 0;
-        }
+    else if(temp < 0) {
+      temp = 0;
     }
+  }
 
-    #if defined(PC_BUILD)
-    if(SCREEN_HEIGHT_GRAPH - 1 - temp < 0) {
-        printf("In function screen_window_y Y NEGATIVE %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
-    }
-    if(SCREEN_HEIGHT_GRAPH - 1 - temp > 239) {
-        printf("In function screen_window_y Y EXCEEDED %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
-    }
-    #endif
+  #if defined(PC_BUILD)
+  if(SCREEN_HEIGHT_GRAPH - 1 - temp < 0) {
+    printf("In function screen_window_y Y NEGATIVE %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
+  }
+  if(SCREEN_HEIGHT_GRAPH - 1 - temp > 239) {
+    printf("In function screen_window_y Y EXCEEDED %6d; ", SCREEN_HEIGHT_GRAPH - 1 - temp);
+  }
+  #endif
 
-    return (int16_t)(SCREEN_HEIGHT_GRAPH - 1 - temp);
+  return (int16_t)(SCREEN_HEIGHT_GRAPH - 1 - temp);
 }
 
   #define nolimit true
@@ -261,12 +267,7 @@ void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                
 //           it needs to be stopped after the last data plotline3(0, 0, 0, 0, false, true) which will plot the last segment provided there were more than 4 points
 
 #if defined(USECURVES)
-static void evalHermite(
-    float t,
-    float x1, float x2, float tx1, float tx2,
-    float y1, float y2, float ty1, float ty2,
-    float *ox, float *oy)
-{
+  static void evalHermite(float t, float x1, float x2, float tx1, float tx2, float y1, float y2, float ty1, float ty2, float *ox, float *oy) {
     float h1 =  2*t*t*t - 3*t*t + 1;
     float h2 = -2*t*t*t + 3*t*t;
     float h3 =    t*t*t - 2*t*t + t;
@@ -274,27 +275,25 @@ static void evalHermite(
 
     *ox = h1*x1 + h2*x2 + h3*tx1 + h4*tx2;
     *oy = h1*y1 + h2*y2 + h3*ty1 + h4*ty2;
-}
+  }
 
 
-static bool_t ifAnyMax(uint16_t *px, uint16_t *py, int cnt) {
+  static bool_t ifAnyMax(uint16_t *px, uint16_t *py, int cnt) {
     for(int rr = 0; rr < cnt; rr++) {
-        //printf("%d %d\n",px[rr],py[rr]);
-        if(px[rr] < 1 || px[rr] > 398 || py[rr] < 1 || py[rr] > 238) return true;
+      //printf("%d %d\n",px[rr],py[rr]);
+      if(px[rr] < 1 || px[rr] > 398 || py[rr] < 1 || py[rr] > 238) {
+        return true;
+      }
     }
     return false;
-}
+  }
 #endif //USECURVES
 
 
 void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time, bool_t final_segment) {
-
   #if !defined(USECURVES)
     plotline2(xo, yo, xn, yn);
-  #endif //USECURVES
-
-
-  #if defined(USECURVES)
+  #else // USECURVES
     //printf("plotline3: %10d %10d %10d %10d ", xo, yo, xn, yn);
     #define maxSteps 6
     static uint16_t px[5];
@@ -303,169 +302,168 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
     static int z[5] = {0};
 
     if(first_time) {
-        count = 0;
-        memset(z, 0, sizeof(z));
-        return;
+      count = 0;
+      memset(z, 0, sizeof(z));
+      return;
     }
 
     if(!final_segment) {
-        if(count < 5) {
-            px[count] = xn;
-            py[count] = yn;
+      if(count < 5) {
+        px[count] = xn;
+        py[count] = yn;
 
-            if(count > 0) {
-                int dx = abs((int)px[count] - (int)px[count - 1]);
-                int dy = abs((int)py[count] - (int)py[count - 1]);
-                z[count] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
-            }
-
-            count++;
-        } else {
-            for(int i = 0; i < 4; i++) {
-                px[i] = px[i + 1];
-                py[i] = py[i + 1];
-                z[i] = z[i + 1];
-            }
-            px[4] = xn;
-            py[4] = yn;
-
-            int dx = abs((int)px[4] - (int)px[3]);
-            int dy = abs((int)py[4] - (int)py[3]);
-            z[4] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+        if(count > 0) {
+          int dx = abs((int)px[count] - (int)px[count - 1]);
+          int dy = abs((int)py[count] - (int)py[count - 1]);
+          z[count] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
         }
 
-        if(count < 2) return;
+        count++;
+      }
+      else {
+        for(int i = 0; i < 4; i++) {
+          px[i] = px[i + 1];
+          py[i] = py[i + 1];
+          z[i] = z[i + 1];
+        }
+        px[4] = xn;
+        py[4] = yn;
 
-        if(count == 2) {
-            float prev_x = px[0], prev_y = py[0];
-            if(ifAnyMax(px, py, count)) {
-                int steps = min(1, max(maxSteps, z[1]));
-                for(int i = 1; i <= steps; i++) {
-                    float t = (float)i / steps;
-                    float sx = (1 - t) * px[0] + t * px[1];
-                    float sy = (1 - t) * py[0] + t * py[1];
-                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx;
-                    prev_y = sy;
-                }
-            } else {
-                    plotline2(ROUND_F2I(px[0]), ROUND_F2I(py[0]), ROUND_F2I(px[1]), ROUND_F2I(py[1]));
-            }
+        int dx = abs((int)px[4] - (int)px[3]);
+        int dy = abs((int)py[4] - (int)py[3]);
+        z[4] = (int)(sqrtf((float)(dx*dx + dy*dy)) + 0.5f);
+      }
 
+      if(count < 2) {
+        return;
+      }
 
-
-        } else if(count == 3) {
-            float prev_x = px[0], prev_y = py[0];
-            if(!ifAnyMax(px, py, count)) {
-                int steps = min(1, max(maxSteps, z[1] + z[2]));
-                for(int i = 1; i <= steps; i++) {
-                    float t = (float)i / steps;
-                    float u = 1 - t;
-                    float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
-                    float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
-                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx;
-                    prev_y = sy;
-                }
-            } else {
-                    plotline2(ROUND_F2I(px[1]), ROUND_F2I(py[1]), ROUND_F2I(px[2]), ROUND_F2I(py[2]));
-            }
-
-
-
-        } else if(count == 4) {
-            float t1x = (px[2] - px[0]) / 2.0f;
-            float t1y = (py[2] - py[0]) / 2.0f;
-            float t2x = (px[3] - px[1]) / 2.0f;
-            float t2y = (py[3] - py[1]) / 2.0f;
-
-            float prev_x = px[1], prev_y = py[1];
-            if(!ifAnyMax(px, py, count)) {
-                int steps = min(1, max(maxSteps, z[1] + z[2] + z[3]));
-                for(int i = 1; i <= steps; i++) {
-                    float sx, sy;
-                    evalHermite((float)i / steps,
-                                px[1], px[2], t1x, t2x,
-                                py[1], py[2], t1y, t2y,
-                                &sx, &sy);
-                    plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                    prev_x = sx;
-                    prev_y = sy;
-                }
-            } else {
-                    plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
-            }
-
-
-        } else { // count == 5
-            {
-                float t1x = (px[2] - px[0]) / 2.0f;
-                float t1y = (py[2] - py[0]) / 2.0f;
-                float t2x = (px[3] - px[1]) / 2.0f;
-                float t2y = (py[3] - py[1]) / 2.0f;
-
-                float prev_x = px[1], prev_y = py[1];
-                if(!ifAnyMax(px, py, 5)) {
-                    int steps = min(1, max(maxSteps, z[1] + z[2]));
-                    for(int i = 1; i <= steps; i++) {
-                        float sx, sy;
-                        evalHermite((float)i / steps, px[1], px[2], t1x, t2x, py[1], py[2], t1y, t2y, &sx, &sy);
-                        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                        prev_x = sx;
-                        prev_y = sy;
-                    }
-                } else {
-                        plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
-                }
-            }
-
-            {
-                float t1x = (px[3] - px[1]) / 2.0f;
-                float t1y = (py[3] - py[1]) / 2.0f;
-                float t2x = (px[4] - px[2]) / 2.0f;
-                float t2y = (py[4] - py[2]) / 2.0f;
-
-                float prev_x = px[2], prev_y = py[2];
-                if(!ifAnyMax(px, py, 5)) {
-                    int steps = min(1, max(maxSteps, z[2] + z[3] + z[4]));
-                    for(int i = 1; i <= steps; i++) {
-                        float sx, sy;
-                        evalHermite((float)i / steps, px[2], px[3], t1x, t2x, py[2], py[3], t1y, t2y, &sx, &sy);
-                        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
-                        prev_x = sx;
-                        prev_y = sy;
-                    }
-                } else {
-                    ;
-                }
-            }
+      if(count == 2) {
+        float prev_x = px[0], prev_y = py[0];
+        if(ifAnyMax(px, py, count)) {
+          int steps = min(1, max(maxSteps, z[1]));
+          for(int i = 1; i <= steps; i++) {
+            float t = (float)i / steps;
+            float sx = (1 - t) * px[0] + t * px[1];
+            float sy = (1 - t) * py[0] + t * py[1];
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+            prev_x = sx;
+            prev_y = sy;
+          }
+        }
+        else {
+          plotline2(ROUND_F2I(px[0]), ROUND_F2I(py[0]), ROUND_F2I(px[1]), ROUND_F2I(py[1]));
         }
 
 
-    } else if(final_segment && count == 5) {
-        float t1x = (px[4] - px[2]) / 2.0f;
-        float t1y = (py[4] - py[2]) / 2.0f;
-        float t2x = (px[4] - px[3]) / 2.0f;
-        float t2y = (py[4] - py[3]) / 2.0f;
 
+      }
+      else if(count == 3) {
+        float prev_x = px[0], prev_y = py[0];
         if(!ifAnyMax(px, py, count)) {
-            float prev_x = px[3], prev_y = py[3];
-            int steps = min(1, max(maxSteps, z[3] + z[4]));
-            for(int i = 1; i <= steps; i++) {
-                float sx, sy;
-                evalHermite((float)i / steps,
-                            px[3], px[4], t1x, t2x,
-                            py[3], py[4], t1y, t2y,
-                            &sx, &sy);
-                plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),ROUND_F2I(sx), ROUND_F2I(sy));
-
-                prev_x = sx; prev_y = sy;
-            }
-        } else {
-                plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+          int steps = min(1, max(maxSteps, z[1] + z[2]));
+          for(int i = 1; i <= steps; i++) {
+            float t = (float)i / steps;
+            float u = 1 - t;
+            float sx = u*u*px[0] + 2*u*t*px[1] + t*t*px[2];
+            float sy = u*u*py[0] + 2*u*t*py[1] + t*t*py[2];
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+            prev_x = sx;
+            prev_y = sy;
+          }
         }
+        else {
+          plotline2(ROUND_F2I(px[1]), ROUND_F2I(py[1]), ROUND_F2I(px[2]), ROUND_F2I(py[2]));
+        }
+
+
+
+      }
+      else if(count == 4) {
+        float t1x = (px[2] - px[0]) / 2.0f;
+        float t1y = (py[2] - py[0]) / 2.0f;
+        float t2x = (px[3] - px[1]) / 2.0f;
+        float t2y = (py[3] - py[1]) / 2.0f;
+
+        float prev_x = px[1], prev_y = py[1];
+        if(!ifAnyMax(px, py, count)) {
+          int steps = min(1, max(maxSteps, z[1] + z[2] + z[3]));
+          for(int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps,    px[1], px[2], t1x, t2x,    py[1], py[2], t1y, t2y,    &sx, &sy);
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+            prev_x = sx;
+            prev_y = sy;
+          }
+        }
+        else {
+          plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+        }
+
+      }
+      else { // count == 5
+        float t1x = (px[2] - px[0]) / 2.0f;
+        float t1y = (py[2] - py[0]) / 2.0f;
+        float t2x = (px[3] - px[1]) / 2.0f;
+        float t2y = (py[3] - py[1]) / 2.0f;
+
+        float prev_x = px[1], prev_y = py[1];
+        if(!ifAnyMax(px, py, 5)) {
+          int steps = min(1, max(maxSteps, z[1] + z[2]));
+          for(int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps, px[1], px[2], t1x, t2x, py[1], py[2], t1y, t2y, &sx, &sy);
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+            prev_x = sx;
+            prev_y = sy;
+          }
+        }
+        else {
+          plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+        }
+
+        t1x = (px[3] - px[1]) / 2.0f;
+        t1y = (py[3] - py[1]) / 2.0f;
+        t2x = (px[4] - px[2]) / 2.0f;
+        t2y = (py[4] - py[2]) / 2.0f;
+
+        prev_x = px[2], prev_y = py[2];
+        if(!ifAnyMax(px, py, 5)) {
+          int steps = min(1, max(maxSteps, z[2] + z[3] + z[4]));
+          for(int i = 1; i <= steps; i++) {
+            float sx, sy;
+            evalHermite((float)i / steps, px[2], px[3], t1x, t2x, py[2], py[3], t1y, t2y, &sx, &sy);
+            plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
+            prev_x = sx;
+            prev_y = sy;
+          }
+        }
+      }
     }
-  #endif //USECURVES
+  }
+  else if(final_segment && count == 5) {
+    float t1x = (px[4] - px[2]) / 2.0f;
+    float t1y = (py[4] - py[2]) / 2.0f;
+    float t2x = (px[4] - px[3]) / 2.0f;
+    float t2y = (py[4] - py[3]) / 2.0f;
+
+    if(!ifAnyMax(px, py, count)) {
+      float prev_x = px[3], prev_y = py[3];
+      int steps = min(1, max(maxSteps, z[3] + z[4]));
+      for(int i = 1; i <= steps; i++) {
+        float sx, sy;
+        evalHermite((float)i / steps,    px[3], px[4], t1x, t2x,    py[3], py[4], t1y, t2y,    &sx, &sy);
+        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),ROUND_F2I(sx), ROUND_F2I(sy));
+
+        prev_x = sx;
+        prev_y = sy;
+      }
+    }
+    else {
+      plotline2(ROUND_F2I(px[2]), ROUND_F2I(py[2]), ROUND_F2I(px[3]), ROUND_F2I(py[3]));
+    }
+  }
+  #endif // USECURVES
 }
 
 
@@ -712,7 +710,7 @@ float auto_tick(float tick_int_f) {
     //get exponent
     tmpString2[0] = '1';
     tmpString2[2] = '0';  //creating "1.0e+01"
-    float tick_int_f_mult = strtof (tmpString2, NULL);;
+    float tick_int_f_mult = strtof (tmpString2, NULL);
     //tick_int_f = (float)(tx[0]-48) + (float)(tx[2]-48)/10.0f;
     //printf("tick1 %f x %f, orgstr %s ==> tx %s \n",tick_int_f, tick_int_f_mult, tmpString2, tx);
 
@@ -903,7 +901,8 @@ char * smallE(char *output, const char * ss) {
         }
         if(p == decimal_pos) {
           memmove(decimal_pos, e_pos, strlen(e_pos) + 1);
-        } else {
+        }
+        else {
           memmove(p + 1, e_pos, strlen(e_pos) + 1);
         }
       }
@@ -920,7 +919,8 @@ char * smallE(char *output, const char * ss) {
           memmove(exp_start, exp_start + 1, strlen(exp_start + 1) + 1);
         }
       }
-    } else {
+    }
+    else {
       char* decimal_pos = strchr(str, '.');
       if(decimal_pos) {
         int len = strlen(str);
@@ -969,7 +969,8 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
     if(realToInt32C47(&reall10, NULL) < digits) {
       displayFormat = DF_SF;
       displayFormatDigits = digits;
-    } else {
+    }
+    else {
       displayFormat = DF_FIX;
       displayFormatDigits = 0;
     }
@@ -1077,11 +1078,12 @@ void grphNumFormatter(char* s02, const char* s01, double inreal, int8_t digits, 
 //          }
 //          printf("\n");
 //
-//          if(i % 15 == 14) printf("\n"); // Add spacing every 15 values
+//          if(i % 15 == 14) {
+//            printf("\n"); // Add spacing every 15 values
+//          }
 //      }
 //
-//      printf("\nTotal test cases: %d values × 7 digit settings × 2 functions = %d tests\n",
-//             num_values, num_values * 7 * 2);
+//      printf("\nTotal test cases: %d values × 7 digit settings × 2 functions = %d tests\n", num_values, num_values * 7 * 2);
 //  }
 
 

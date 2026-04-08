@@ -121,7 +121,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //    bool_t numLock_MEM;  numLock_MEM = getSystemFlag(FLAG_NUMLOCK);  clearSystemFlag(FLAG_NUMLOCK);
 //    bool_t u_mem = getSystemFlag(FLAG_USER); clearSystemFlag(FLAG_USER);
 //    btnClicked(w, st);
-//    if(u_mem) setSystemFlag(FLAG_USER);
+//    if(u_mem) {
+//      setSystemFlag(FLAG_USER);
+//    }
 //    if(numLock_MEM) {
 //      setSystemFlag(FLAG_NUMLOCK);
 //    }
@@ -160,8 +162,12 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //    bool_t numLock_MEM;
 //    alphaCase_MEM = alphaCase;
 //    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
-//    if(alphaCase == AC_UPPER && !pcKeyboardCapsLockEngaged) {alphaCase = AC_LOWER;}
-//    else if(alphaCase == AC_LOWER && !pcKeyboardCapsLockEngaged) {alphaCase = AC_UPPER;}
+//    if(alphaCase == AC_UPPER && !pcKeyboardCapsLockEngaged) {
+//      alphaCase = AC_LOWER;
+//    }
+//    else if(alphaCase == AC_LOWER && !pcKeyboardCapsLockEngaged) {
+//      alphaCase = AC_UPPER;
+//    }
 //    clearSystemFlag(FLAG_NUMLOCK);
 //    btnClicked(w, data);
 //    alphaCase = alphaCase_MEM;
@@ -350,8 +356,12 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //    #endif //VERBOSEKEYS
     }
 
-    if(disable) return false;                                  //exit directly for disallowed input condition
-    if(labelText) return false;                     //exit directly, not allowing label entry
+    if(disable) {
+      return false;                                  //exit directly for disallowed input condition
+    }
+    if(labelText) {
+      return false;                     //exit directly, not allowing label entry
+    }
 
     if(key == keyCode && condition1) {
       #if defined(VERBOSEKEYS)
@@ -434,7 +444,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     showHideAlphaMode();
     if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
       pemAlpha(sent);
-    } else {
+    }
+    else {
         processAimInput(sent);
       }
     }
@@ -529,7 +540,9 @@ Jacos Mac, Control works
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
+    if(event_keyval == event->keyval + CTRL_State) {
+      event_keyval = 99999999;
+    }
     char strr[30];
     strr[0]=0;
     #if defined(VERBOSEKEYS)
@@ -547,7 +560,9 @@ Jacos Mac, Control works
       fflush(stdout);
     #endif //VERBOSEKEYS
 
-    if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
+    if(C47SpecialKey_Ctrl_Released) {
+      goto returnKeyReleasedFalse;
+    }
 
     if(C47SpecialKey_AltGr_Released) { //clear any valid or invalid prior control key activation
       SHIFT_State = 0;
@@ -566,19 +581,19 @@ Jacos Mac, Control works
           event_command_shift = 0;
           if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
 
-            if(checkNormal( 0, KEY_fg))     btnClicked(w, "00"); else
-            if(checkNormal(10, KEY_fg))     btnClicked(w, "10"); else
-            if(checkNormal(11, KEY_fg))     btnClicked(w, "11"); else
-            if(checkNormal( 0, ITM_SHIFTf)) btnClicked(w, "00"); else
-            if(checkNormal(10, ITM_SHIFTf)) btnClicked(w, "10"); else
-            if(checkNormal(11, ITM_SHIFTf)) btnClicked(w, "11"); else
+                 if(checkNormal( 0, KEY_fg))     btnClicked(w, "00");
+            else if(checkNormal(10, KEY_fg))     btnClicked(w, "10");
+            else if(checkNormal(11, KEY_fg))     btnClicked(w, "11");
+            else if(checkNormal( 0, ITM_SHIFTf)) btnClicked(w, "00");
+            else if(checkNormal(10, ITM_SHIFTf)) btnClicked(w, "10");
+            else if(checkNormal(11, ITM_SHIFTf)) btnClicked(w, "11");
 
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == ITM_SHIFTf) btnClicked(w, "10"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == KEY_fg    ) btnClicked(w, "10"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary)) == KEY_fg    ) btnClicked(w, "11"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27"); else
-            {
+            else if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == ITM_SHIFTf) btnClicked(w, "10");
+            else if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00");
+            else if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == KEY_fg    ) btnClicked(w, "10");
+            else if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary)) == KEY_fg    ) btnClicked(w, "11");
+            else if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27");
+            else {
               shiftF = !shiftF;
               shiftG = false;
               refreshStatusBar();
@@ -591,16 +606,15 @@ Jacos Mac, Control works
       case GDK_KEY_Control_L: // Left Ctrl
       case GDK_KEY_Control_R: // right Ctrl
           if(CTRL_State != 0) {
+                 if(checkNormal( 0, KEY_fg))     btnClicked(w, "00");
+            else if(checkNormal(10, KEY_fg))     btnClicked(w, "10");
+            else if(checkNormal(11, KEY_fg))     btnClicked(w, "11");
+            else if(checkNormal( 0, ITM_SHIFTg)) btnClicked(w, "00");
+            else if(checkNormal(10, ITM_SHIFTg)) btnClicked(w, "10");
+            else if(checkNormal(11, ITM_SHIFTg)) btnClicked(w, "11");
 
-            if(checkNormal( 0, KEY_fg))     btnClicked(w, "00"); else
-            if(checkNormal(10, KEY_fg))     btnClicked(w, "10"); else
-            if(checkNormal(11, KEY_fg))     btnClicked(w, "11"); else
-            if(checkNormal( 0, ITM_SHIFTg)) btnClicked(w, "00"); else
-            if(checkNormal(10, ITM_SHIFTg)) btnClicked(w, "10"); else
-            if(checkNormal(11, ITM_SHIFTg)) btnClicked(w, "11"); else
-
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11"); else
-            {
+            else if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
+            else {
               shiftF = false;
               shiftG = !shiftG;
               refreshStatusBar();
@@ -708,7 +722,9 @@ returnKeyReleasedFalse:
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
 
-    if(C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
+    if(C47SpecialKey_Ctrl_Pressed) {
+      goto continueWithOldDetections;
+    }
 
     if(C47SpecialKey_AltGr_Pressed) { //clear any valid or invalid prior control key activation
       SHIFT_State = 0;
@@ -739,7 +755,9 @@ returnKeyReleasedFalse:
     }
 
 
-    if(CTRL_State == 65536 && !C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
+    if(CTRL_State == 65536 && !C47SpecialKey_Ctrl_Pressed) {
+      goto continueWithOldDetections;
+    }
 
     if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha))) {
       switch(event_key_strip_capslock) {
@@ -849,133 +867,134 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
 
 
 //C47 & R47============
-  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",        0b0100000000001101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
-  if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[v]erse
-  if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} else        //                        s[q]rt
-  if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} else        //                         l[o]g
-  if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,               ITM_LN ))        {goto returnKeyPressedFalse;} else        //                          [l]n
-  if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",   "05",                   0b01101,         -1,              ITM_XEQ ))        {goto returnKeyPressedFalse;} else        //                         [x]eq
-  if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} else        //                      [m]emory
-  if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} else        //                         [r]cl
-  if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} else        //                        [d]own
-  if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_sin ))        {goto returnKeyPressedFalse;} else        //                        [s]ine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} else        //                             i
-  if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} else        //                             i
-  if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_op_j_pol ))    {goto returnKeyPressedFalse;} else        //                             i
-  if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,              ITM_cos ))        {goto returnKeyPressedFalse;} else        //                      [c]osine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,              ITM_tan ))        {goto returnKeyPressedFalse;} else        //                     [t]angent
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Return      /* ENTER 65293 */,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} else        //                           key
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Tab         /* tab 65289   */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} else        //                        s[w]ap
-  if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} else        //                        s[w]ap
-  if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {goto returnKeyPressedFalse;} else        //                CHS [n]egative
-  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} else        //                    [e]xponent
-  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_X           /* X 88    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          KEY_COMPLEX ))        {goto returnKeyPressedFalse;} else        //                     comple[X]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_R           /* R 82    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toREC2 ))        {goto returnKeyPressedFalse;} else        //                           ->R
-  if(shortCutCommand(w, event_key_command, GDK_KEY_P           /* P 80    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toPOL2 ))        {goto returnKeyPressedFalse;} else        //                           ->P
-  if(shortCutCommand(w, event_key_command, GDK_KEY_p           /* p 112   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_CONSTpi ))        {goto returnKeyPressedFalse;} else        //                            pi
-  if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[V]erse
-  if(shortCutCommand(w, event_key_command, GDK_KEY_y           /* y 121   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_XTHROOT ))        {goto returnKeyPressedFalse;} else        //               xth root of [Y]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_C           /* C 67    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arccos ))        {goto returnKeyPressedFalse;} else        //                   arc[C]osine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_S           /* S 83    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arcsin ))        {goto returnKeyPressedFalse;} else        //                     arc[S]ine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_T           /* T 84    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arctan ))        {goto returnKeyPressedFalse;} else        //                  arc[T]angent
-  if(shortCutCommand(w, event_key_command, GDK_KEY_L           /* L 76    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_EXP ))        {goto returnKeyPressedFalse;} else        //                  anti[L]n e^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_O           /* O 79    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_10x ))        {goto returnKeyPressedFalse;} else        //                antil[O]g 10^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} else        //                      s[Q]uare
-  if(shortCutCommand(w, event_key_command, GDK_KEY_D           /* D 68    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_Rup ))        {goto returnKeyPressedFalse;} else        //                        Up [D]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_I           /* I 73    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_DISP ))        {goto returnKeyPressedFalse;} else        //                        D[I]SP
-  if(shortCutCommand(w, event_key_command, GDK_KEY_J           /* J 74    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_EXP ))        {goto returnKeyPressedFalse;} else        //                           EXP
-  if(shortCutCommand(w, event_key_command, GDK_KEY_K           /* K 75    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_STK ))        {goto returnKeyPressedFalse;} else        //                         ST[K]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_MODE ))        {goto returnKeyPressedFalse;} else        //                        [M]ODE
+       if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",        0b0100000000001101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} //               [a]ccumulate
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} //                  in[v]erse
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} //                     s[q]rt
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} //                      l[o]g
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,               ITM_LN ))        {goto returnKeyPressedFalse;} //                       [l]n
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",   "05",                   0b01101,         -1,              ITM_XEQ ))        {goto returnKeyPressedFalse;} //                      [x]eq
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} //                   [m]emory
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} //                      [r]cl
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} //                     [d]own
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_sin ))        {goto returnKeyPressedFalse;} //                     [s]ine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} //                          i
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} //                          i
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_op_j_pol ))    {goto returnKeyPressedFalse;} //                          i
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,              ITM_cos ))        {goto returnKeyPressedFalse;} //                   [c]osine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,              ITM_tan ))        {goto returnKeyPressedFalse;} //                  [t]angent
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Return      /* ENTER 65293 */,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} //                        key
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Tab         /* tab 65289   */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} //                     s[w]ap
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} //                     s[w]ap
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {goto returnKeyPressedFalse;} //             CHS [n]egative
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} //                 [e]xponent
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} //                  [=]>D,R,G
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_X           /* X 88    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          KEY_COMPLEX ))        {goto returnKeyPressedFalse;} //                  comple[X]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_R           /* R 82    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toREC2 ))        {goto returnKeyPressedFalse;} //                        ->R
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_P           /* P 80    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toPOL2 ))        {goto returnKeyPressedFalse;} //                        ->P
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_p           /* p 112   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_CONSTpi ))        {goto returnKeyPressedFalse;} //                         pi
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} //                  in[V]erse
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_y           /* y 121   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_XTHROOT ))        {goto returnKeyPressedFalse;} //            xth root of [Y]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_C           /* C 67    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arccos ))        {goto returnKeyPressedFalse;} //                arc[C]osine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_S           /* S 83    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arcsin ))        {goto returnKeyPressedFalse;} //                  arc[S]ine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_T           /* T 84    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arctan ))        {goto returnKeyPressedFalse;} //               arc[T]angent
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_L           /* L 76    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_EXP ))        {goto returnKeyPressedFalse;} //               anti[L]n e^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_O           /* O 79    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_10x ))        {goto returnKeyPressedFalse;} //             antil[O]g 10^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} //                   s[Q]uare
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_D           /* D 68    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_Rup ))        {goto returnKeyPressedFalse;} //                     Up [D]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_I           /* I 73    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_DISP ))        {goto returnKeyPressedFalse;} //                     D[I]SP
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_J           /* J 74    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_EXP ))        {goto returnKeyPressedFalse;} //                        EXP
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_K           /* K 75    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_STK ))        {goto returnKeyPressedFalse;} //                      ST[K]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_MODE ))        {goto returnKeyPressedFalse;} //                     [M]ODE
 
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F           /* F 70    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_PREFIX ))        {goto returnKeyPressedFalse;} else        //                      PRE[F]IX
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F           /* F 70    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_PREFIX ))        {goto returnKeyPressedFalse;} //                   PRE[F]IX
 
-  if(shortCutCommand(w, event_key_command, GDK_KEY_percent     /* % 37    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_PC ))        {goto returnKeyPressedFalse;} else        //                           [%]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_exclam      /* ! 33    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_XFACT ))        {goto returnKeyPressedFalse;} else        //                          x[!]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_U           /* U 85    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,    "",  "-01",                    0xffff,         -1,         ITM_USERMODE ))        {goto returnKeyPressedFalse;} else        //                        [U]SER
-  if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "f",   "05",                   0b11101,         -1,              ITM_AIM ))        {goto returnKeyPressedFalse;} else        //                     alpha [']
-  if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "g",   "05",                   0b01101,         -1,              ITM_GTO ))        {goto returnKeyPressedFalse;} else        //                         [g]TO
-  if(shortCutCommand(w, event_key_command, GDK_KEY_A           /* A 65    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_ARG ))        {goto returnKeyPressedFalse;} else        //                       [A]ngle
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Z           /* Z 90    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} else        //                        Si[Z]e
-  if(shortCutCommand(w, event_key_command, GDK_KEY_bar         /* | 124   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} else        //                Size [|] (dup)
-  if(shortCutCommand(w, event_key_command, 126       /*DUP left   | 124/6 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} else        //                Size [|] (dup)
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F7          /*   65476 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_n ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F8          /*   65477 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_u ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F9          /*   65478 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_m ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F10         /*   65479 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_k ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_F11         /*   65480 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_M ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_W           /* W 87    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_LASTX ))        {goto returnKeyPressedFalse;} else        //                        Last X
-  if(shortCutCommand(w, event_key_command, GDK_KEY_equal       /* = 61    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} else        //                      .d (dup)
-  if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               CST_09 ))        {goto returnKeyPressedFalse;} else        //                     Euler's E
-  if(shortCutCommand(w, event_key_command, GDK_KEY_N           /* N 78    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "35",                   0b01101,     CM_PEM,               ITM_PR ))        {goto returnKeyPressedFalse;} else        //                       PRGM N]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_b           /* b 98    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {goto returnKeyPressedFalse;} else        //                       LBL [B]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_u           /* u 117   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {goto returnKeyPressedFalse;} else        //                        [u]ndo
-  if(shortCutCommand(w, event_key_command, GDK_KEY_H           /* H 72    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {goto returnKeyPressedFalse;} else        //                        [H]ome
-  if(shortCutCommand(w, event_key_command, GDK_KEY_B           /* B 66    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {goto returnKeyPressedFalse;} else        //                    MyMenu [b]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_less        /* < 60    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_RTN ))        {goto returnKeyPressedFalse;} else        //                       RTN [<]
-  if(shortCutCommand(w, event_key_command, GDK_KEY_twosuperior /* ² 178   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} else        //     Square on French keyboard
-  if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "g",   "00",                   0b01101,         -1,           ITM_TGLFRT ))        {goto returnKeyPressedFalse;} else        //                          ab/c
-  if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} else        //                             #
-  if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} else        //                             #
-  if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",        0b0100000000001101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
-  if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
-  if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} else        //                         [x]eq
-//                                             PC_GTK3_code                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno ,            Valid CalcMode requiredCalcMode2  itemForRunFunction
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_percent     /* % 37    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_PC ))        {goto returnKeyPressedFalse;} //                        [%]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_exclam      /* ! 33    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_XFACT ))        {goto returnKeyPressedFalse;} //                       x[!]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_U           /* U 85    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,    "",  "-01",                    0xffff,         -1,         ITM_USERMODE ))        {goto returnKeyPressedFalse;} //                     [U]SER
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "f",   "05",                   0b11101,         -1,              ITM_AIM ))        {goto returnKeyPressedFalse;} //                  alpha [']
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "g",   "05",                   0b01101,         -1,              ITM_GTO ))        {goto returnKeyPressedFalse;} //                      [g]TO
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_A           /* A 65    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_ARG ))        {goto returnKeyPressedFalse;} //                    [A]ngle
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Z           /* Z 90    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} //                     Si[Z]e
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_bar         /* | 124   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} //             Size [|] (dup)
+  else if(shortCutCommand(w, event_key_command, 126       /*DUP left   | 124/6 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {goto returnKeyPressedFalse;} //             Size [|] (dup)
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F7          /*   65476 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_n ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F8          /*   65477 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_u ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F9          /*   65478 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_m ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F10         /*   65479 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_k ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_F11         /*   65480 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_M ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_W           /* W 87    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_LASTX ))        {goto returnKeyPressedFalse;} //                     Last X
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_equal       /* = 61    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} //                   .d (dup)
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               CST_09 ))        {goto returnKeyPressedFalse;} //                  Euler's E
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_N           /* N 78    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "35",                   0b01101,     CM_PEM,               ITM_PR ))        {goto returnKeyPressedFalse;} //                    PRGM N]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_b           /* b 98    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {goto returnKeyPressedFalse;} //                    LBL [B]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_u           /* u 117   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {goto returnKeyPressedFalse;} //                     [u]ndo
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_H           /* H 72    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {goto returnKeyPressedFalse;} //                     [H]ome
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_B           /* B 66    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {goto returnKeyPressedFalse;} //                 MyMenu [b]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_less        /* < 60    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_RTN ))        {goto returnKeyPressedFalse;} //                    RTN [<]
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_twosuperior /* ² 178   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} //  Square on French keyboard
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "g",   "00",                   0b01101,         -1,           ITM_TGLFRT ))        {goto returnKeyPressedFalse;} //                       ab/c
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} //                          #
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} //                          #
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} //                         >I
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",        0b0100000000001101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} //                      [x]eq
+  else if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} //                      [x]eq
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {goto returnKeyPressedFalse;} //                      [x]eq
+//                                             PC_GTK3_code                                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno, Valid CalcMode       requiredCalcMode2     itemForRunFunction
 
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} else        //                      s[Q]uare
-  if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} else        //                             i
-  if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} else        //                             i
-  if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} else        //                        s[q]rt
-  if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "01",                   0b11101,         -1,             ITM_op_j_pol ))    {goto returnKeyPressedFalse;} else        //                          ipol
-  if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[v]erse
-  if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} else        //                         l[o]g
-  if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "05",                   0b01101,         -1,               ITM_LN ))        {goto returnKeyPressedFalse;} else        //                          [l]n
-  if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} else        //                      [m]emory
-  if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} else        //                         [r]cl
-  if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} else        //                        [d]own
-  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
-  if(shortCutCommand(w, event_key_command, GDK_KEY_f           /* f 102   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {goto returnKeyPressedFalse;} else        //                             f
-  if(shortCutCommand(w, event_key_command, GDK_KEY_g           /* g 103   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {goto returnKeyPressedFalse;} else        //                             g
-  if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69 EE */    ,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} else        //                           key
-  if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} else        //                        s[w]ap
-  if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {goto returnKeyPressedFalse;} else        //                CHS [n]egative
-  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} else        //                    [e]xponent
-  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} else        //                  [a]ccumulate
-  if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "17",                   0b01101,         -1,              ITM_XEQ ))        {goto returnKeyPressedFalse;} else        //                         [x]eq
-  if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "17",                   0b01101,         -1,              ITM_AIM ))        {goto returnKeyPressedFalse;} else        //                     alpha [']
-  if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "g",   "17",                   0b01101,         -1,              ITM_GTO ))        {goto returnKeyPressedFalse;} else        //                         [g]TO
-  if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_PREF ))        {goto returnKeyPressedFalse;} else        //                      PREF [M}
-  if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_sin ))        {goto returnKeyPressedFalse;} else        //                        [s]ine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_cos ))        {goto returnKeyPressedFalse;} else        //                      [c]osine
-  if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {goto returnKeyPressedFalse;} else        //                     [t]angent
-  if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} else        //                     in[v]erse
-  if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,   "g",   "34",                   0b01101,         -1,           ITM_TGLFRT ))        {goto returnKeyPressedFalse;} else        //                          ab/c
-  if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} else        //                             #
-  if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} else        //                             #
-  if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} else        //                            .d
-  if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "04",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} else        //                            >I
-#if defined(RASPBERRY)
-  if(shortCutCommand(w, event_key_command, GDK_KEY_period      /* . 46    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} else        //                      s[Q]uare
-  if(shortCutCommand(w, event_key_command, GDK_KEY_comma       /* , 44    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
-  if(shortCutCommand(w, event_key_command, GDK_KEY_semicolon   /* ; 59    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
-#endif // RASPBERRY
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} //                   s[Q]uare
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} //                          i
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {goto returnKeyPressedFalse;} //                          i
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {goto returnKeyPressedFalse;} //                     s[q]rt
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "01",                   0b11101,         -1,             ITM_op_j_pol ))    {goto returnKeyPressedFalse;} //                       ipol
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} //                  in[v]erse
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,            ITM_LOG10 ))        {goto returnKeyPressedFalse;} //                      l[o]g
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "05",                   0b01101,         -1,               ITM_LN ))        {goto returnKeyPressedFalse;} //                       [l]n
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {goto returnKeyPressedFalse;} //                   [m]emory
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {goto returnKeyPressedFalse;} //                      [r]cl
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {goto returnKeyPressedFalse;} //                     [d]own
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} //                  [=]>D,R,G
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_f           /* f 102   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {goto returnKeyPressedFalse;} //                          f
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_g           /* g 103   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {goto returnKeyPressedFalse;} //                          g
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69 EE */    ,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {goto returnKeyPressedFalse;} //                        key
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} //                     s[w]ap
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {goto returnKeyPressedFalse;} //             CHS [n]egative
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} //                 [e]xponent
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {goto returnKeyPressedFalse;} //               [a]ccumulate
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "17",                   0b01101,         -1,              ITM_XEQ ))        {goto returnKeyPressedFalse;} //                      [x]eq
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "17",                   0b01101,         -1,              ITM_AIM ))        {goto returnKeyPressedFalse;} //                  alpha [']
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "g",   "17",                   0b01101,         -1,              ITM_GTO ))        {goto returnKeyPressedFalse;} //                      [g]TO
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_PREF ))        {goto returnKeyPressedFalse;} //                   PREF [M}
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_sin ))        {goto returnKeyPressedFalse;} //                     [s]ine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_cos ))        {goto returnKeyPressedFalse;} //                   [c]osine
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {goto returnKeyPressedFalse;} //                  [t]angent
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {goto returnKeyPressedFalse;} //                  in[v]erse
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,   "g",   "34",                   0b01101,         -1,           ITM_TGLFRT ))        {goto returnKeyPressedFalse;} //                       ab/c
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} //                          #
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {goto returnKeyPressedFalse;} //                          #
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {goto returnKeyPressedFalse;} //                         .d
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_ampersand   /* & 38    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "04",                   0b11101,         -1,               ITM_RI ))        {goto returnKeyPressedFalse;} //                         >I
 
-#if defined(VERBOSEKEYS)
-  printf("------------------------ Checked commands, skipping to rest of key detections\n");
-#else
-  {}
-#endif
+  #if defined(RASPBERRY)
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_period      /* . 46    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {goto returnKeyPressedFalse;} //                   s[Q]uare
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_comma       /* , 44    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} //                      [y]^x
+  else if(shortCutCommand(w, event_key_command, GDK_KEY_semicolon   /* ; 59    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} //                  [=]>D,R,G
+  #endif // RASPBERRY
+
+  #if defined(VERBOSEKEYS)
+  else {
+    printf("------------------------ Checked commands, skipping to rest of key detections\n");
+  }
+  #endif
 
 }
 else if(     (CTRL_State != 65536 || allowAltGrKey)
@@ -989,17 +1008,17 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right     ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,      FALSE,               "",   "1" , 0b01001, -1, 0))        {goto returnKeyPressedFalse;} else        //  F6 Rt
-      if(shortCutCommand(w, event->keyval, '/'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "21", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, '*'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "26", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+           if(shortCutCommand(w, event->keyval, GDK_KEY_Up    , shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED, "", "17", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Down  , shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Up    ,                                shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Down  ,                                shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "27", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right, shortcutProfile == USER_C47 || shortcutProfile == USER_R47,      FALSE,            "", "1" , 0b01001, -1, 0))  { goto returnKeyPressedFalse;} //  F6 Rt
+      else if(shortCutCommand(w, event->keyval, '/'           , shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "21", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, '*'           , shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "26", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, '-'           , shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "31", 0b01001, -1, 0))  { return false;}               //  [x]eq
+      else if(shortCutCommand(w, event->keyval, '+'           , shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "36", 0b01001, -1, 0))  { return false;}               //  [x]eq
 
-      if((event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) || (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z)) {
+      else if((event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) || (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z)) {
         switch(event->keyval) {
           case GDK_KEY_X:                         addItemToBuffer(ITM_REG_X); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
           case GDK_KEY_Y:                         addItemToBuffer(ITM_REG_Y); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
@@ -1059,22 +1078,20 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
 
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");
-      #else
-        {}
       #endif
     }
     else if((tamArrows) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
         printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+           if(shortCutCommand(w, event->keyval, GDK_KEY_Up  , shortcutProfile == USER_C47                            , !EXITIFNIM, !DISABLED, "", "17", 0b01001, -1, 0)) {return false;} // [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Down, shortcutProfile == USER_C47                            , !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0)) {return false;} // [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Up  ,                             shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0)) {return false;} // [x]eq
+      else if(shortCutCommand(w, event->keyval, GDK_KEY_Down,                             shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED, "", "27", 0b01001, -1, 0)) {return false;} // [x]eq
       #if defined(VERBOSEKEYS)
+      else {
         printf("------------------------ Checked GTO Up Dn, skipping to rest of key detections\n");
-      #else
-        {}
+      }
       #endif
     }
   }
@@ -1088,18 +1105,18 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
    && IS_SIM_ARROW_ALLOWED_IN_MENU(currentMenu(), event_keyval)
   ) {
   #if defined(VERBOSEKEYS)
-      printf("------------------------ Checking Matrix arrows functions\n");
+    printf("------------------------ Checking Matrix arrows functions\n");
   #endif
 
-  //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F1 Up
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F2 Dn
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
-  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
+  //                       *w, int key     ,keyCode,                   condition1,                                              disable, *shift, *keyForBtnClicked, modes,  requiredCalcMode2, itemForRunFunction
+       if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         3 << 13,         -1,          0    )) {goto returnKeyPressedFalse;} // F1 Up
+  else if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         3 << 13,         -1,          0    )) {goto returnKeyPressedFalse;} // F2 Dn
+  else if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         3 << 13,         -1,          0    )) {goto returnKeyPressedFalse;} // F5 Lt
+  else if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         3 << 13,         -1,          0    )) {goto returnKeyPressedFalse;} // F6 Rt
   #if defined(VERBOSEKEYS)
+  else {
     printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");
-  #else
-    {}
+  }
   #endif
 }
 
@@ -1141,7 +1158,9 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
     ll = event->keyval;
 
     //Deadkey ^ simulation
-    //if(ll=='a') ll = 65106;
+    //if(ll=='a') {
+    //  ll = 65106;
+    //}
 
     if('A' <= ll && ll <= 'Z' && alphaCase == AC_UPPER) {         //A-Z is shifted on PC, and flips
       ll += ('a' - 'A');
@@ -1238,7 +1257,8 @@ continueWithOldDetections:
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || tam.alpha) {
-      printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);fflush(stdout);
+      printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
+      fflush(stdout);
       switch(event_keyval) {
 
         //ROW 0
@@ -1256,12 +1276,15 @@ continueWithOldDetections:
           }
           break;
         case GDK_KEY_Down:                                               //JM     // CursorDown //JM
-          if(AlphaArrowsOffAndUpDn)
+          if(AlphaArrowsOffAndUpDn) {
             btnClicked(w, isR47FAM?"27":"22");   //Up
-          else if(calcMode == CM_EIM)
+          }
+          else if(calcMode == CM_EIM) {
             btnClicked(w, isR47FAM?"27":"22");   //Dn
-          else
+          }
+          else {
             btnFnClicked(w, "2");  //F2
+          }
           break;
         case GDK_KEY_Left:                                               //JM     // CursorLt BST //JM Left
           if(AlphaArrowsOffAndUpDn) {
@@ -1594,7 +1617,8 @@ continueWithOldDetections:
         case GDK_KEY_question: // Question mark is blank key
           if(calcModel == USER_R47fg_bk && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             btnClicked(w, "11");
-          } else
+          }
+          else
           if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             btnClicked(w, "10");
           }
@@ -3029,7 +3053,9 @@ bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t 
   }
   if(key) {
     print_label_bytes(lbl, 16);
-    if(showBtn&&btn)printf("     : key details - btn:=%s\n",get_button_name(btn));
+    if(showBtn&&btn) {
+      printf("     : key details - btn:=%s\n",get_button_name(btn));
+    }
     printf("       key->primaryAim = %d ",key->primaryAim);
     printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
     printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "primaryAim AA:","\n");
@@ -3081,8 +3107,12 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     //stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
     char sstmp[16];
     strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName);
-    if((key->primary == ITM_op_j || key->primary == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-    if(key->primary == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+    if((key->primary == ITM_op_j || key->primary == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
+      sstmp[1]++;
+    }
+    if(key->primary == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
+      sstmp[3]++;
+    }
     stringToUtf8(sstmp, lbl);
     if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
       if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6)) != 0) {
@@ -3105,8 +3135,12 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         }
         else {
           strcpy(sstmp, indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName);
-          if((Norm_Key_00.func == ITM_op_j || Norm_Key_00.func == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-          if(Norm_Key_00.func == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+          if((Norm_Key_00.func == ITM_op_j || Norm_Key_00.func == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
+            sstmp[1]++;
+          }
+          if(Norm_Key_00.func == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
+            sstmp[3]++;
+          }
         }
         stringToUtf8(sstmp, lbl);
       }
@@ -3159,8 +3193,12 @@ char sstmp[16];
     strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
   }
 
-  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
+    sstmp[1]++;
+  }
+  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
+    sstmp[3]++;
+  }
   stringToUtf8(sstmp, lbl);
   if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
@@ -3169,16 +3207,16 @@ char sstmp[16];
   }
 
   if(strcmp((char *)lbl, "SST") == 0) {
-      char tt[20];
-      strcpy(tt, STD_HAMBURGER);
-      strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
-      stringToUtf8(tt, lbl);
-  } else
-  if(strcmp((char *)lbl, "BST") == 0) {
-      char tt[20];
-      strcpy(tt, STD_HAMBURGER);
-      strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
-      stringToUtf8(tt, lbl);
+    char tt[20];
+    strcpy(tt, STD_HAMBURGER);
+    strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
+    stringToUtf8(tt, lbl);
+  }
+  else if(strcmp((char *)lbl, "BST") == 0) {
+    char tt[20];
+    strcpy(tt, STD_HAMBURGER);
+    strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
+    stringToUtf8(tt, lbl);
   }
 
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
@@ -3198,8 +3236,10 @@ char sstmp[16];
     gtk_widget_set_name(lblF, "fShifted");
   }
 
-//  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
-//  else
+//  if(key->gShifted == ITM_op_j) {
+//    strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
+//  }
+//  else {
   if(isR47FAM && (key->primary == ITM_SHIFTf)) {
     if(key->gShifted == ITM_NULL) {
       strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
@@ -3244,8 +3284,12 @@ char sstmp[16];
     strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
   }
 
-  if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-  if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
+    sstmp[1]++;
+  }
+  if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
+    sstmp[3]++;
+  }
   stringToUtf8(sstmp, lbl);
   if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2)) != 0) {
@@ -3286,7 +3330,9 @@ char sstmp[16];
     lbl[5]=0;             //JM SPACE
   }                       //JM SPACE
 
-  if(debugLabelConsistency(lbl, "Normal", key, button, true)) return;
+  if(debugLabelConsistency(lbl, "Normal", key, button, true)) {
+    return;
+  }
   gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
   gtk_widget_set_name(lblL, "letter");
 }
@@ -3346,7 +3392,9 @@ char sstmp[16];
         lbl[5] = 0;
       }
 
-      if(debugLabelConsistency(lbl, "labelCaptionAimFa", key, NULL, false)) return;
+      if(debugLabelConsistency(lbl, "labelCaptionAimFa", key, NULL, false)) {
+        return;
+      }
       gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
       if(R47LongpressColour) {
         gtk_widget_set_name(lblF, "letter");
@@ -3466,7 +3514,9 @@ char sstmp[16];
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
-      if(debugLabelConsistency(lbl, "labelCaptionAim", key, button, true)) return;
+      if(debugLabelConsistency(lbl, "labelCaptionAim", key, button, true)) {
+        return;
+      }
       //LOAD letter in AIM, NOT SURE WHERE THIS IS. SUSPECT C47 DOES NOT USE IT
       gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
       gtk_widget_set_name(lblL, "letter");
@@ -4884,334 +4934,358 @@ static int16_t _getDeadKeyItem (int16_t item) {
 
 
 static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
-    uint32_t gdkKey = gdkK;
-    int16_t item;
+  uint32_t gdkKey = gdkK;
+  int16_t item;
 //  printf("**[DL]** _keyCodeFromGdkKey gdkKey %x capslock state %d\n", gdkKey, gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default())));
 
-    if(testDeadKeys) {
-      switch(gdkKey) {
-        case '^' :
-          gdkKey = GDK_KEY_dead_circumflex;   // ^ circumflex test dead key resulting in a -> â
-          break;
-        case '`' :
-          gdkKey = GDK_KEY_dead_grave;        // ' grave test dead key resulting in a -> à
-          break;
-        case '\'' :
-          gdkKey = GDK_KEY_dead_acute;        // ` grave test dead key resulting in a -> á
-          break;
-        case '~' :
-          gdkKey = GDK_KEY_dead_tilde;        // ~ tilde above test dead key resulting in a -> ã
-          break;
-        case '/' :
-          gdkKey = GDK_KEY_dead_stroke;       // / slash test dead key resulting in O -> Ø
-          break;
-        default:;
-      }
-    }
+  if(testDeadKeys) {
     switch(gdkKey) {
-      //dead keys detection
-      case GDK_KEY_F12  :
-      case GDK_KEY_dead_macron  :
-      case GDK_KEY_dead_acute  :
-      case GDK_KEY_dead_breve  :
-      case GDK_KEY_dead_grave  :
-      case GDK_KEY_dead_diaeresis :
-      case GDK_KEY_dead_tilde :
-      case GDK_KEY_dead_circumflex:
-      case GDK_KEY_dead_ogonek  :
-      case GDK_KEY_dead_abovering :
-      case GDK_KEY_dead_cedilla :
-      case GDK_KEY_dead_stroke :
-      case GDK_KEY_dead_abovedot :
-        if(deadKey != 0 && deadKey == gdkKey && testDeadKeys) {
-          //printf("Cancel deadkey\n");
-          deadKey = 0;
-          switch(gdkKey) {
-            case GDK_KEY_dead_circumflex :
-              gdkKey = '^';  // circumflex test dead key
-              break;
-            case GDK_KEY_dead_grave :
-              gdkKey = '`'; // grave test dead key
-              break;
-            case GDK_KEY_dead_acute :
-              gdkKey = '\'';  // grave test dead key
-              break;
-            case GDK_KEY_dead_tilde :
-              gdkKey = '~';  // tilde above test dead key
-              break;
-            case GDK_KEY_dead_stroke :
-              gdkKey = '/';  // slash test dead key
-              break;
-            default:;
-          }
-          showHideAlphaMode();
-          refreshLcd(NULL);
-          goto cancelledDeadkey;
-        }
-        else {
-          deadKey = gdkKey;
-          showHideAlphaMode();
-          refreshLcd(NULL);
-          return -1;
-        }
-      default:
-        cancelledDeadkey:
-
-        switch(gdkKey) {
-          case GDK_KEY_Tab:
-                    item = ITM_CR; break;
-          case '`': item = ITM_NQUOTE; break;
-          case '*': item = ITM_PROD_SIGN; break;
-          default : item = _getGdkKeyItem(gdkKey); break;       //normal translation (also done by prior key code)
-          }
-        if(item == ITM_PROD_SIGN) {
-          item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
-        }
-        //printf("     gdkKey=%i deadKey=%i item=%i\n",gdkKey, deadKey, item);
-
-        if(item != 0) {
-          if(deadKey != 0) {
-            item = _getDeadKeyItem(item);
-            deadKey = 0;
-          }
-        }
-        return item;
-      }
+      case '^' :
+        gdkKey = GDK_KEY_dead_circumflex;   // ^ circumflex test dead key resulting in a -> â
+        break;
+      case '`' :
+        gdkKey = GDK_KEY_dead_grave;        // ' grave test dead key resulting in a -> à
+        break;
+      case '\'' :
+        gdkKey = GDK_KEY_dead_acute;        // ` grave test dead key resulting in a -> á
+        break;
+      case '~' :
+        gdkKey = GDK_KEY_dead_tilde;        // ~ tilde above test dead key resulting in a -> ã
+        break;
+      case '/' :
+        gdkKey = GDK_KEY_dead_stroke;       // / slash test dead key resulting in O -> Ø
+        break;
+      default:;
     }
+  }
+  switch(gdkKey) {
+    //dead keys detection
+    case GDK_KEY_F12  :
+    case GDK_KEY_dead_macron  :
+    case GDK_KEY_dead_acute  :
+    case GDK_KEY_dead_breve  :
+    case GDK_KEY_dead_grave  :
+    case GDK_KEY_dead_diaeresis :
+    case GDK_KEY_dead_tilde :
+    case GDK_KEY_dead_circumflex:
+    case GDK_KEY_dead_ogonek  :
+    case GDK_KEY_dead_abovering :
+    case GDK_KEY_dead_cedilla :
+    case GDK_KEY_dead_stroke :
+    case GDK_KEY_dead_abovedot :
+      if(deadKey != 0 && deadKey == gdkKey && testDeadKeys) {
+        //printf("Cancel deadkey\n");
+        deadKey = 0;
+        switch(gdkKey) {
+          case GDK_KEY_dead_circumflex :
+            gdkKey = '^';  // circumflex test dead key
+            break;
+          case GDK_KEY_dead_grave :
+            gdkKey = '`'; // grave test dead key
+            break;
+          case GDK_KEY_dead_acute :
+            gdkKey = '\'';  // grave test dead key
+            break;
+          case GDK_KEY_dead_tilde :
+            gdkKey = '~';  // tilde above test dead key
+            break;
+          case GDK_KEY_dead_stroke :
+            gdkKey = '/';  // slash test dead key
+            break;
+          default:;
+        }
+        showHideAlphaMode();
+        refreshLcd(NULL);
+        goto cancelledDeadkey;
+      }
+      else {
+        deadKey = gdkKey;
+        showHideAlphaMode();
+        refreshLcd(NULL);
+        return -1;
+      }
+    default:
+      cancelledDeadkey:
+
+      switch(gdkKey) {
+        case GDK_KEY_Tab: item = ITM_CR;                 break;
+        case '`':         item = ITM_NQUOTE;             break;
+        case '*':         item = ITM_PROD_SIGN;          break;
+        default:          item = _getGdkKeyItem(gdkKey); break;       //normal translation (also done by prior key code)
+        }
+      if(item == ITM_PROD_SIGN) {
+        item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
+      }
+      //printf("     gdkKey=%i deadKey=%i item=%i\n",gdkKey, deadKey, item);
+
+      if(item != 0) {
+        if(deadKey != 0) {
+          item = _getDeadKeyItem(item);
+          deadKey = 0;
+        }
+      }
+      return item;
+  }
+}
 
 static bool is_valid_utf8(const char *s, size_t *error_offset) {
-    const unsigned char *p = (const unsigned char *)s;
-    size_t i = 0;
-    while(*p) {
-        if(*p < 0x80) {
-            p++; i++;
-        } else if((*p & 0xE0) == 0xC0) {
-            if((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            p += 2; i += 2;
-        } else if((*p & 0xF0) == 0xE0) {
-            if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            uint32_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
-            if(cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            if(cp == 0xFFFE || cp == 0xFFFF) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            p += 3; i += 3;
-        } else if((*p & 0xF8) == 0xF0) {
-            if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            uint32_t cp = ((p[0] & 0x07) << 18) | ((p[1] & 0x3F) << 12) |
-                          ((p[2] & 0x3F) << 6) | (p[3] & 0x3F);
-            if(cp < 0x10000 || cp > 0x10FFFF) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            if((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
-                if(error_offset) *error_offset = i;
-                return false;
-            }
-            p += 4; i += 4;
-        } else {
-            if(error_offset) *error_offset = i;
-            return false;
-        }
+  const unsigned char *p = (const unsigned char *)s;
+  size_t i = 0;
+  while(*p) {
+    if(*p < 0x80) {
+      p++;
+      i++;
     }
-    return true;
+    else if((*p & 0xE0) == 0xC0) {
+      if((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      p += 2;
+      i += 2;
+    }
+    else if((*p & 0xF0) == 0xE0) {
+      if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      uint32_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
+      if(cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      if(cp == 0xFFFE || cp == 0xFFFF) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      p += 3;
+      i += 3;
+    }
+    else if((*p & 0xF8) == 0xF0) {
+      if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      uint32_t cp = ((p[0] & 0x07) << 18) | ((p[1] & 0x3F) << 12) | ((p[2] & 0x3F) << 6) | (p[3] & 0x3F);
+      if(cp < 0x10000 || cp > 0x10FFFF) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      if((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
+        if(error_offset) {
+          *error_offset = i;
+        }
+        return false;
+      }
+      p += 4;
+      i += 4;
+    }
+    else {
+      if(error_offset) {
+        *error_offset = i;
+      }
+      return false;
+    }
+  }
+  return true;
 }
 
 static bool check_utf_string(const char *widget_name, const char *what, const char *s) {
-    if(!s) return false;
-    size_t bad_pos = 0;
-    if(!is_valid_utf8(s, &bad_pos)) {
-        printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n",
-               widget_name, what, bad_pos);
-        printf("Corrupted string: ");
-        for(const char *p = s; *p; p++) {
-            printf("\\x%02x", (unsigned char)*p);
-        }
-        printf("\n");
-        return true;
-    }
+  if(!s) {
     return false;
+  }
+  size_t bad_pos = 0;
+  if(!is_valid_utf8(s, &bad_pos)) {
+    printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n", widget_name, what, bad_pos);
+    printf("Corrupted string: ");
+    for(const char *p = s; *p; p++) {
+      printf("\\x%02x", (unsigned char)*p);
+    }
+    printf("\n");
+    return true;
+  }
+  return false;
 }
 
 #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
-#define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do { \
-    GtkWidget *widget = widget_var; \
-    if(!widget) { \
-        printf("Widget %s is NULL - skipping\n", widget_name); \
-    } else if(!GTK_IS_WIDGET(widget)) { \
-        printf("Widget %s (%p) is not a valid GTK widget - skipping\n", \
-               widget_name, (void*)widget); \
-    } else { \
-        bool consistency_found = false; \
-        \
-        consistency_found |= check_utf_string(widget_name, "tooltip", \
-            gtk_widget_get_tooltip_text(widget)); \
-        consistency_found |= check_utf_string(widget_name, "tooltip markup", \
-            gtk_widget_get_tooltip_markup(widget)); \
-        \
-        if(GTK_IS_BUTTON(widget)) { \
-            consistency_found |= check_utf_string(widget_name, "button label", \
-                gtk_button_get_label(GTK_BUTTON(widget))); \
-        } \
-        if(GTK_IS_LABEL(widget)) { \
-            const char *text = gtk_label_get_text(GTK_LABEL(widget)); \
-            consistency_found |= check_utf_string(widget_name, "label text", text); \
-            const char *markup = gtk_label_get_label(GTK_LABEL(widget)); \
-            if(markup && markup != text) { \
-                consistency_found |= check_utf_string(widget_name, "label markup", markup); \
-            } \
-        } \
-        \
-        if(!consistency_found) { \
-            if(false) printf("Checking %s: %p - OK\n", widget_name, (void*)widget); \
-        } else { \
-            abort(); \
-        } \
-    } \
+#define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do {                                                  \
+    GtkWidget *widget = widget_var;                                                                                   \
+    if(!widget) {                                                                                                     \
+      printf("Widget %s is NULL - skipping\n", widget_name);                                                          \
+    }                                                                                                                 \
+    else if(!GTK_IS_WIDGET(widget)) {                                                                                 \
+      printf("Widget %s (%p) is not a valid GTK widget - skipping\n", widget_name, (void*)widget);                    \
+    }                                                                                                                 \
+    else {                                                                                                            \
+      bool consistency_found = false;                                                                                 \
+                                                                                                                      \
+      consistency_found |= check_utf_string(widget_name, "tooltip", gtk_widget_get_tooltip_text(widget));             \
+      consistency_found |= check_utf_string(widget_name, "tooltip markup", gtk_widget_get_tooltip_markup(widget));    \
+                                                                                                                      \
+      if(GTK_IS_BUTTON(widget)) {                                                                                     \
+        consistency_found |= check_utf_string(widget_name, "button label", gtk_button_get_label(GTK_BUTTON(widget))); \
+      }                                                                                                               \
+      if(GTK_IS_LABEL(widget)) {                                                                                      \
+        const char *text = gtk_label_get_text(GTK_LABEL(widget));                                                     \
+        consistency_found |= check_utf_string(widget_name, "label text", text);                                       \
+        const char *markup = gtk_label_get_label(GTK_LABEL(widget));                                                  \
+        if(markup && markup != text) {                                                                                \
+          consistency_found |= check_utf_string(widget_name, "label markup", markup);                                 \
+      }                                                                                                               \
+    }                                                                                                                 \
+                                                                                                                      \
+    if(!consistency_found) {                                                                                          \
+      if(false) {                                                                                                     \
+        printf("Checking %s: %p - OK\n", widget_name, (void*)widget);                                                 \
+      }                                                                                                               \
+    }                                                                                                                 \
+    else {                                                                                                            \
+      abort();                                                                                                        \
+    }                                                                                                                 \
+  }                                                                                                                   \
 } while(0)
 
 
 
 void check_all_btn_widgets_for_consistency(void) {
-    printf("Checking all btn widgets for consistency...\n");
+  printf("Checking all btn widgets for consistency...\n");
 
-    // Row 1 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn11, "btn11");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn12, "btn12");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn13, "btn13");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn14, "btn14");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn15, "btn15");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn16, "btn16");
+  // Row 1 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn11, "btn11");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn12, "btn12");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn13, "btn13");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn14, "btn14");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn15, "btn15");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn16, "btn16");
 
-    // Row 2 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn21, "btn21");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn22, "btn22");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn23, "btn23");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn24, "btn24");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn25, "btn25");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn26, "btn26");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn21A, "btn21A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn22A, "btn22A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn23A, "btn23A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn24A, "btn24A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn25A, "btn25A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn26A, "btn26A");
+  // Row 2 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn21, "btn21");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn22, "btn22");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn23, "btn23");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn24, "btn24");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn25, "btn25");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn26, "btn26");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn21A, "btn21A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn22A, "btn22A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn23A, "btn23A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn24A, "btn24A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn25A, "btn25A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn26A, "btn26A");
 
-    // Row 3 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn31, "btn31");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn32, "btn32");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn33, "btn33");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn34, "btn34");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn35, "btn35");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn36, "btn36");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn31A, "btn31A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn32A, "btn32A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn33A, "btn33A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn34A, "btn34A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn35A, "btn35A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn36A, "btn36A");
+  // Row 3 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn31, "btn31");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn32, "btn32");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn33, "btn33");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn34, "btn34");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn35, "btn35");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn36, "btn36");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn31A, "btn31A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn32A, "btn32A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn33A, "btn33A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn34A, "btn34A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn35A, "btn35A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn36A, "btn36A");
 
-    // Row 4 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn41, "btn41");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn42, "btn42");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn43, "btn43");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn44, "btn44");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn45, "btn45");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn42A, "btn42A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn43A, "btn43A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn44A, "btn44A");
+  // Row 4 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn41, "btn41");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn42, "btn42");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn43, "btn43");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn44, "btn44");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn45, "btn45");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn42A, "btn42A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn43A, "btn43A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn44A, "btn44A");
 
-    // Row 5 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn51, "btn51");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn52, "btn52");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn53, "btn53");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn54, "btn54");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn55, "btn55");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn52A, "btn52A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn53A, "btn53A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn54A, "btn54A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn55A, "btn55A");
+  // Row 5 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn51, "btn51");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn52, "btn52");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn53, "btn53");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn54, "btn54");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn55, "btn55");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn52A, "btn52A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn53A, "btn53A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn54A, "btn54A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn55A, "btn55A");
 
-    // Row 6 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn61, "btn61");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn62, "btn62");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn63, "btn63");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn64, "btn64");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn65, "btn65");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn62A, "btn62A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn63A, "btn63A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn64A, "btn64A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn65A, "btn65A");
+  // Row 6 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn61, "btn61");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn62, "btn62");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn63, "btn63");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn64, "btn64");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn65, "btn65");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn62A, "btn62A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn63A, "btn63A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn64A, "btn64A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn65A, "btn65A");
 
-    // Row 7 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn71, "btn71");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn72, "btn72");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn73, "btn73");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn74, "btn74");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn75, "btn75");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn71A, "btn71A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn72A, "btn72A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn73A, "btn73A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn74A, "btn74A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn75A, "btn75A");
+  // Row 7 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn71, "btn71");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn72, "btn72");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn73, "btn73");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn74, "btn74");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn75, "btn75");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn71A, "btn71A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn72A, "btn72A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn73A, "btn73A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn74A, "btn74A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn75A, "btn75A");
 
-    // Row 8 buttons
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn81, "btn81");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn82, "btn82");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn83, "btn83");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn84, "btn84");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn85, "btn85");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn82A, "btn82A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn83A, "btn83A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn84A, "btn84A");
-    CHECK_WIDGET_CONSISTENCY_CHECK(btn85A, "btn85A");
+  // Row 8 buttons
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn81, "btn81");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn82, "btn82");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn83, "btn83");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn84, "btn84");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn85, "btn85");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn82A, "btn82A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn83A, "btn83A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn84A, "btn84A");
+  CHECK_WIDGET_CONSISTENCY_CHECK(btn85A, "btn85A");
 
-    printf("Consistency check complete - none found.\n");
+  printf("Consistency check complete - none found.\n");
 }
 #endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
 
-  static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    btnFnPressed(widget, event, data);
-    return FALSE;  // Let GTK continue event processing
-  }
+static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+  btnFnPressed(widget, event, data);
+  return FALSE;  // Let GTK continue event processing
+}
 
-  static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    btnFnReleased(widget, event, data);
-    return FALSE;  // Let GTK continue event processing
-  }
+static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
+  btnFnReleased(widget, event, data);
+  return FALSE;  // Let GTK continue event processing
+}
 
 static guint ui_settle_timer = 0;
 
 // Helper to clear the active flag after UI settles
 static gboolean clear_ui_active_flag(gpointer data) {
-    ui_is_active = FALSE;
-    ui_settle_timer = 0;
-    return FALSE;
+  ui_is_active = FALSE;
+  ui_settle_timer = 0;
+  return FALSE;
 }
 
 // Single handler for all UI events
 static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
-    ui_is_active = TRUE;
+  ui_is_active = TRUE;
 
-    if(ui_settle_timer) {
-        g_source_remove(ui_settle_timer);
-    }
-    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+  if(ui_settle_timer) {
+    g_source_remove(ui_settle_timer);
+  }
+  ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
 
-    return FALSE;  // Let event continue processing
+  return FALSE;  // Let event continue processing
 }
 
 

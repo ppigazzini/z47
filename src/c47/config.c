@@ -317,24 +317,24 @@ void Sett(int16_t grp) {
         }
       #endif //PC_BUILD
       switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType
-        case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
-        case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits
-        case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits
-        case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
-        case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
-        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
-        case HIDE                 : {exponentHideLimit  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // HIDE
-        case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK
-        case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK
-        case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM
-        case IPGRP                : {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP
-        case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
-        case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
-        case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
-        case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
-        case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
+        case InputDefaultDataType : fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // InputDefaultDataType
+        case SigFigNumberOfDigits : fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SigFigNumberOfDigits
+        case AllNumberOfDigits    : fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // AllNumberOfDigits
+        case FixNumberOfDigits    : fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FixNumberOfDigits
+        case RNG                  : exponentLimit              = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // RNG
+        case SDIGS                : significantDigits          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SDIGS
+        case FDIGS                : fractionDigits             = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FDIGS
+        case HIDE                 : exponentHideLimit          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // HIDE
+        case DSTACK               : displayStack               = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DSTACK
+        case CACHEDDSTACK         : cachedDisplayStack         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // CACHEDDSTACK
+        case ADM                  : currentAngularMode         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // ADM
+        case IPGRP                : grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP
+        case FPGRP                : grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FPGRP
+        case IPGRP1               : grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1
+        case IPGRP1x              : grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1x
+        case DenMaX               : denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DenMaX
+        case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIKnown
+        case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIChanges
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
@@ -973,7 +973,9 @@ void fnConfirmationYes(uint16_t unusedButMandatoryParameter) {
 
 void fnRange(uint16_t R) {
   exponentLimit = R;
-  if(exponentLimit < 99) exponentLimit = 99;
+  if(exponentLimit < 99) {
+    exponentLimit = 99;
+  }
 }
 
 
@@ -1821,7 +1823,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
 
 
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
 
   void dmcpResetAutoOff(void) {
     // Key is ready -> clear auto off timer
@@ -1844,14 +1846,14 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         loop = 0;
       }
       else if(tmpVbat > vbatVIntegrated) {
-        #ifndef MONITOR_VOLTAGE_INTEGRATOR
+        #if !defined(MONITOR_VOLTAGE_INTEGRATOR)
           //During monitoring do not force a reset to normal and high voltage
           if(tmpVbat > 2900) {                                                           //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
           }
           else
-        #endif
+        #endif // !MONITOR_VOLTAGE_INTEGRATOR
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1, ((tmpVbat - vbatVIntegrated) >> 4)); //   (2500 - 2350) >> 4 = 9 increase every minute
         }
@@ -1862,7 +1864,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       loop = 0;
     }
 
-    #ifdef MONITOR_VOLTAGE_INTEGRATOR
+    #if defined(MONITOR_VOLTAGE_INTEGRATOR)
       //Monitoring for voltage integrator
       if(minutePulse) {
         char aaa[120];
@@ -1875,7 +1877,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         fnDrop(NOPARAM);
         fnDrop(NOPARAM);
       }
-    #endif
+    #endif // MONITOR_VOLTAGE_INTEGRATOR
 
     return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
@@ -1918,7 +1920,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       }
     }
   }
-#endif //DMCP_BUILD
+#endif // DMCP_BUILD
 
 /* not used anymore, replaced by DMCP and ActUSB
 */
@@ -1986,7 +1988,8 @@ void fnKeysManagement(uint16_t choice) {
           setUserKeyArgument(Norm_Key_00_key * 6 , Norm_Key_00.funcParam);
           fnRefreshState();
           fnSetFlag(FLAG_USER);
-        } else {
+        }
+        else {
           Norm_Key_00.used = false;
           displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2007,7 +2010,8 @@ void fnKeysManagement(uint16_t choice) {
         }
         fnRefreshState();
         fnClearFlag(FLAG_USER);
-      } else {
+      }
+      else {
         Norm_Key_00.used = false;
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)

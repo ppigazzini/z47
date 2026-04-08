@@ -459,10 +459,13 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
 void fnSetCountDownTimerApp(uint16_t regist) {
     bool_t overflow;
     uint32_t input;
-    if(!inputHelper(regist, &input, &overflow)) return;
+    if(!inputHelper(regist, &input, &overflow)) {
+      return;
+    }
     if(overflow){
       remainingMsecCountdown = 0;
-    } else {
+    }
+    else {
       fnResetTimerApp(NOPARAM);
       fnStopTimerApp();
       remainingMsecCountdown = input;
@@ -772,7 +775,9 @@ void fnDigitKeyTimerApp(uint16_t digit) {
 void fnRecallTimerApp(uint16_t regist) {
   bool_t overflow;
   uint32_t val;
-  if(!inputHelper(regist, &val, &overflow)) return;
+  if(!inputHelper(regist, &val, &overflow)) {
+    return;
+  }
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)

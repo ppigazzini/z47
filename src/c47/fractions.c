@@ -481,7 +481,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       *denom = iPart[i];
       for(j=i; j>1; j--) {
         *numer += *denom * iPart[j-1];
-        ex = *numer; *numer = *denom; *denom = ex;
+        ex = *numer;
+        *numer = *denom;
+        *denom = ex;
       }
 
       if(*denom <= denMax) {
@@ -502,7 +504,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       *denom = iPart[i] + 1;
       for(j=i; j>1; j--) {
         *numer += *denom * iPart[j-1];
-        ex = *numer; *numer = *denom; *denom = ex;
+        ex = *numer;
+        *numer = *denom;
+        *denom = ex;
       }
 
       if(*denom <= denMax) {

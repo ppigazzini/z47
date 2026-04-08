@@ -1319,8 +1319,10 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
       menuName[lenInBytes++] = (uint8_t)(STD_CR[0]);
       menuName[lenInBytes++] = (uint8_t)(STD_CR[1]);
       menuName[lenInBytes] = 0;
-      _add_digitglyph(tmp, (firstItem / 18)+1); stringCopy(menuName + stringByteLength(menuName), tmp);
-      //_add_digitglyph(tmp, firstItem % 10); stringCopy(menuName + stringByteLength(menuName), tmp);
+      _add_digitglyph(tmp, (firstItem / 18)+1);
+      stringCopy(menuName + stringByteLength(menuName), tmp);
+      //_add_digitglyph(tmp, firstItem % 10);
+      //stringCopy(menuName + stringByteLength(menuName), tmp);
       lenInBytes = stringByteLength(menuName) + 1;
     }
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
@@ -1866,16 +1868,25 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   const char *w[4];
 
   if(getSystemFlag(FLAG_HPCONV)) {
-    t[0] = label1;         w[0] = label1;
-    t[1] = STD_LEFT_ARROW; w[1] = STD_LEFT_ARROW;
-    t[2] = label0;         w[2] = STD_RIGHT_ARROW;
-    t[3] = STD_RIGHT_ARROW;w[3] = label0;
+    t[0] = label1;
+    t[1] = STD_LEFT_ARROW;
+    t[2] = label0;
+    t[3] = STD_RIGHT_ARROW;
+    w[0] = label1;
+    w[1] = STD_LEFT_ARROW;
+    w[2] = STD_RIGHT_ARROW;
+    w[3] = label0;
     arrowSpace = 2;
-  } else {
-    t[0] = label0;         w[0] = label0;
-    t[1] = STD_RIGHT_ARROW;w[1] = STD_RIGHT_ARROW;
-    t[2] = label1;         w[2] = STD_LEFT_ARROW;
-    t[3] = STD_LEFT_ARROW; w[3] = label1;
+  }
+  else {
+    t[0] = label0;
+    t[1] = STD_RIGHT_ARROW;
+    t[2] = label1;
+    t[3] = STD_LEFT_ARROW;
+    w[0] = label0;
+    w[1] = STD_RIGHT_ARROW;
+    w[2] = STD_LEFT_ARROW;
+    w[3] = label1;
     arrowSpace = 10;
   }
   for(int i=0; i<4; i++) {
@@ -1937,7 +1948,9 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
     w = stringWidthC47(figlabel(l, showText, showValue), stdNoEnlarge, 0, false, false);
     if((showCb >= 0) || (w >= ((min(x2, SCREEN_WIDTH) - max(0, x1))*3)/4 )) {
       w = stringWidthC47(figlabel(l, showText, showValue), stdNoEnlarge, 1, false, false);
-      if(showCb >= 0) { w = w + 8; }
+      if(showCb >= 0) {
+        w = w + 8;
+      }
       //    char *lw = stringAfterPixelsC47(l, stdNoEnlarge, compressString, rightMostSlot ? 65 : 66, false, false);
       //    *lw = 0;
     compressString = 1;       //JM compressString
@@ -1994,16 +2007,16 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
     int16_t xs[4], ys[4], ws[4], hs[4];
     if(_off == 2) { //inner doubling of softkey box
-      xs[0] = max(0, x1)+1;         ys[0] = y1;                         ws[0] = 1; hs[0] = SOFTMENU_HEIGHT;
-      xs[1] = x2-1;                 ys[1] = y1;                         ws[1] = 1; hs[1] = SOFTMENU_HEIGHT;
+      xs[0] = max(0, x1)+1;         ys[0] = y1;                         ws[0] = 1;                                  hs[0] = SOFTMENU_HEIGHT;
+      xs[1] = x2-1;                 ys[1] = y1;                         ws[1] = 1;                                  hs[1] = SOFTMENU_HEIGHT;
       xs[2] = max(0, x1)+1;         ys[2] = y1+1;                       ws[2] = min(x2, SCREEN_WIDTH)-max(0, x1)-2; hs[2] = 1;
       xs[3] = max(0, x1)+1;         ys[3] = y1+SOFTMENU_HEIGHT-1;       ws[3] = min(x2, SCREEN_WIDTH)-max(0, x1)-2; hs[3] = 1;
     }
     else { //positioning of nails or rivets
-      xs[0] = max(0, x1)+2+_off;    ys[0] = y1+1+_off;                  ws[0] = 3; hs[0] = 2;
-      xs[1] = max(0, x1)+2+_off;    ys[1] = y1+SOFTMENU_HEIGHT-2-_off;  ws[1] = 3; hs[1] = 2;
-      xs[2] = x2-1-3-_off;          ys[2] = y1+1+_off;                  ws[2] = 3; hs[2] = 2;
-      xs[3] = x2-1-3-_off;          ys[3] = y1+SOFTMENU_HEIGHT-2-_off;  ws[3] = 3; hs[3] = 2;
+      xs[0] = max(0, x1)+2+_off;    ys[0] = y1+1+_off;                  ws[0] = 3;  hs[0] = 2;
+      xs[1] = max(0, x1)+2+_off;    ys[1] = y1+SOFTMENU_HEIGHT-2-_off;  ws[1] = 3;  hs[1] = 2;
+      xs[2] = x2-1-3-_off;          ys[2] = y1+1+_off;                  ws[2] = 3;  hs[2] = 2;
+      xs[3] = x2-1-3-_off;          ys[3] = y1+SOFTMENU_HEIGHT-2-_off;  ws[3] = 3;  hs[3] = 2;
     }
     for(int i=0; i<4; i++) {
       lcd_fill_rect(xs[i], ys[i], ws[i], hs[i], (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
@@ -2259,20 +2272,25 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           case 32702 :
                           case 32703 :
                           case 32704 :
-                          case 32705 :stringCopy(showText + stringByteLength(showText), modeNames[*showValue - 32700].modeName ); *showValue = NOVAL; break;
+                          case 32705 : stringCopy(showText + stringByteLength(showText), modeNames[*showValue - 32700].modeName );
+                                       *showValue = NOVAL;
+                                       break;
                           default: ;
                           }
                           break;
       case ITM_SCR    :switch(*showValue) {
-                          case NC_NORMAL      : *showValue = NOVAL; break;
-                          case NC_SUBSCRIPT   : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL;
+                          case NC_NORMAL      : *showValue = NOVAL;
+                                                break;
+                          case NC_SUBSCRIPT   : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : "");
+                                                *showValue = NOVAL;
                                                 stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                                                 itemName[0]=STD_alpha[0];
                                                 itemName[1]=STD_alpha[1];
                                                 itemName[2]=0;
                                                 return;
                                                 break;
-                          case NC_SUPERSCRIPT : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUP_s STD_SUP_u STD_SUP_p : alphaCase == AC_UPPER ? STD_SUP_S STD_SUP_U STD_SUP_P : ""); *showValue = NOVAL;
+                          case NC_SUPERSCRIPT : stringCopy(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUP_s STD_SUP_u STD_SUP_p : alphaCase == AC_UPPER ? STD_SUP_S STD_SUP_U STD_SUP_P : "");
+                                                *showValue = NOVAL;
                                                 stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                                                 itemName[0]=STD_alpha[0];
                                                 itemName[1]=STD_alpha[1];
@@ -2303,7 +2321,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
       case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) {
                           stringCopy(showText + stringByteLength(showText), "\1\1");
-                        } else {
+                        }
+                        else {
                           stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
                         }
                         *showValue = NOVAL;
@@ -2313,7 +2332,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         break;
       case ITM_GAP_R  : if(gapItemRight == ITM_NULL) {
                           stringCopy(showText + stringByteLength(showText), "\1\1");
-                        } else {
+                        }
+                        else {
                           stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRight].itemSoftmenuName);  //  gapCharRight);
                         }
                         *showValue = NOVAL;
@@ -2355,8 +2375,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch(itemNr) {
-
-    #ifdef SAVE_SPACE_DM42_12ORTHO
+    #if defined(SAVE_SPACE_DM42_12ORTHO)
       case -MNU_ORTHOG:
       case ITM_HN     :
       case ITM_Lm     :
@@ -2365,18 +2384,18 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_Tn     :
       case ITM_Un     :
       case ITM_HNP    :
-    #endif //SAVE_SPACE_DM42_12ORTHO
+    #endif // SAVE_SPACE_DM42_12ORTHO
 
-    #ifdef SAVE_SPACE_DM42_20_TIMER
+    #if defined(SAVE_SPACE_DM42_20_TIMER)
       case ITM_TIMER  :
-    #endif //SAVE_SPACE_DM42_20_TIMER
+    #endif // SAVE_SPACE_DM42_20_TIMER
 
-    #ifdef SAVE_SPACE_DM42_12BESSEL
+    #if defined(SAVE_SPACE_DM42_12BESSEL)
       case ITM_JYX    :
       case ITM_YYX    :
-    #endif //SAVE_SPACE_DM42_12BESSEL
+    #endif // SAVE_SPACE_DM42_12BESSEL
 
-    #ifdef SAVE_SPACE_DM42_12PRIME
+    #if defined(SAVE_SPACE_DM42_12PRIME)
       case ITM_NEXTP  :
       case ITM_PRIME  :
       case ITM_FACTORS:
@@ -2387,15 +2406,15 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_SIGMAk :
       case ITM_SIGMAp1:
       case ITM_SIGMApk:
-    #endif //SAVE_SPACE_DM42_12PRIME
+    #endif // SAVE_SPACE_DM42_12PRIME
 
-    #ifdef SAVE_SPACE_DM42_16
+    #if defined(SAVE_SPACE_DM42_16)
       case -MNU_NORML :
       case ITM_NORMLP :      case ITM_NORML  :      case ITM_NORMLU :      case ITM_NORMLM1:
       case ITM_LGNRMP :      case ITM_LGNRM  :      case ITM_LGNRMU :      case ITM_LGNRMM1:
-    #endif //SAVE_SPACE_DM42_16
+    #endif // SAVE_SPACE_DM42_16
 
-    #ifdef SAVE_SPACE_DM42_17
+    #if defined(SAVE_SPACE_DM42_17)
       case -MNU_F: case -MNU_BINOM: case -MNU_HYPER: case -MNU_POISS: case -MNU_GEOM:
       case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P:
       case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
@@ -2403,10 +2422,12 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_HYPERP:     case ITM_HYPER:      case ITM_HYPERU:     case ITM_HYPERM1:
       case ITM_POISSP:     case ITM_POISS:      case ITM_POISSU:     case ITM_POISSM1:
       case ITM_GEOMP :     case ITM_GEOM :      case ITM_GEOMU :     case ITM_GEOMM1 :
-    #endif //SAVE_SPACE_DM42_17
+    #endif // SAVE_SPACE_DM42_17
 
-      case 9999       : return true; break;
-    default           : return false; break;
+    case 9999       : return true;
+                      break;
+    default         : return false;
+                      break;
   }
 }
 
@@ -2608,8 +2629,10 @@ void showSoftmenuCurrentPart(void) {
       }
     }
 
-    char itemName[16]; itemName[0]=0;
-    char showText[16]; showText[0]=0;
+    char itemName[16];
+    itemName[0]=0;
+    char showText[16];
+    showText[0]=0;
     videoMode_t vm = vmNormal;
     int8_t showCb = NOVAL;
     int16_t showValue = NOVAL;
@@ -2680,11 +2703,11 @@ void showSoftmenuCurrentPart(void) {
                   case MNU_MVAR: {
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
                     else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Solver_TOOL].itemSoftmenuName, CMP_NAME)) {
@@ -2857,8 +2880,10 @@ void showSoftmenuCurrentPart(void) {
           }
 
           if(softmenu[m].menuItem == -MNU_TIMERF && y == 0) {
-            char tmpp[16]; tmpp[0]=0;
-            char tmpq[16]; tmpq[0]=0;
+            char tmpp[16];
+            tmpp[0]=0;
+            char tmpq[16];
+            tmpq[0]=0;
             switch(item) {
               case ITM_TIMER_SIGMA_T: sprintf(tmpq, "%s","[" STD_SIGMA "+]");     break;
               case ITM_TIMER_SIGMA_L: sprintf(tmpq, "%s","[+]");                  break;
@@ -3004,7 +3029,8 @@ void showSoftmenuCurrentPart(void) {
           if(!getSystemFlag(FLAG_MNUp1) && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             lastCatalogPosition[CATALOG_NONE] = softmenuStack[i].firstItem;
             calcMode = softmenuStack[i].calcMode;
-          } else {
+          }
+          else {
             lastCatalogPosition[CATALOG_NONE] = 0;
           }
         }
@@ -3276,7 +3302,8 @@ void showSoftmenuCurrentPart(void) {
   void showSoftmenu(int16_t id) {
     int16_t m;
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp, "ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
+      char tmp[200];
+      sprintf(tmp, "ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
       jm_show_comment(tmp);
     #endif // PC_BUILD
 
@@ -3573,7 +3600,9 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
   uint16_t cnt = SOFTMENU_STACK_SIZE - 1;
   while((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyMenu && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) || (softmenu[softmenuStack[1].softmenuId].menuItem != -MNU_MyMenu)) {
     popSoftmenu();
-    if(cnt-- == 0) break;
+    if(cnt-- == 0) {
+      break;
+    }
   }
   softmenuStack[1].softmenuId = 0;
   popSoftmenu();
@@ -3613,7 +3642,8 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat) {     
     //printf(">>> Menustring:%s|",asciiString);
     sprintf(bmpFileName, "%s.%d.bmp", asciiString, (int)(item/18)+1);
     printf(">>> filename:%s|\n",bmpFileName);
-  } else   if(newFilenameformat == 1) {
+  }
+  else if(newFilenameformat == 1) {
     stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
     //printf(">>> Menustring:%s|",asciiMenuName);
     stringToFileNameChars(asciiMenuName, asciiString);

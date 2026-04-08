@@ -80,12 +80,12 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   if(realRoots) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-    #ifdef DISCRIMINANT
+    #if defined(DISCRIMINANT)
       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
     #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-    #ifdef DISCRIMINANT
+    #if defined(DISCRIMINANT)
       realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
     #endif //DISCRIMINANT
   }
@@ -108,7 +108,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
       convertComplexToResultRegister(&x2Real, &x2Imag, REGISTER_Y);
     }
 
-    #ifdef DISCRIMINANT
+    #if defined(DISCRIMINANT)
       if(realIsZero(&rImag)) { // r is real
         reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
@@ -123,7 +123,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   temporaryInformation = TI_ROOTS2;
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
-  #ifdef DISCRIMINANT
+  #if defined(DISCRIMINANT)
     adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
   #else
     fnDropZ(0);

@@ -8,11 +8,13 @@
 #include "c47.h"
 
 static bool_t checkParamUniform(real_t *x, real_t *low, real_t *high, real_t *range, int *cmp, uint16_t discrete) {
-  if(!saveLastX())
+  if(!saveLastX()) {
     return false;
+  }
 
-  if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, low) || !getRegisterAsReal(REGISTER_N, high))
+  if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, low) || !getRegisterAsReal(REGISTER_N, high)) {
     goto err;
+  }
   if(realIsSpecial(x) || realIsSpecial(low) || realIsSpecial(high)) {
     displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -44,11 +46,13 @@ static bool_t checkParamUniform(real_t *x, real_t *low, real_t *high, real_t *ra
   }
   if(range != NULL) {
     realSubtract(high, low, range, &ctxtReal39);
-    if(discrete)
+    if(discrete) {
       realAdd(range, const_1, range, &ctxtReal39);
+    }
   }
-  if(cmp != NULL)
+  if(cmp != NULL) {
     *cmp = realCompareLessThan(x, low) ? -1 : realCompareGreaterThan(x, high) ? 1 : 0;
+  }
   return true;
 
 err:
@@ -64,14 +68,19 @@ void fnUniformP(uint16_t discrete) {
 
   if(checkParamUniform(&x, &l, &h, &range, &cmp, discrete)) {
     if(cmp == 0) {
-      if(realIsZero(&range))
+      if(realIsZero(&range)) {
         res = const_1;
-      else if(discrete && !realIsAnInteger(&x))
+      }
+      else if(discrete && !realIsAnInteger(&x)) {
         res = const_0;
-      else
+      }
+      else {
         realDivide(const_1, &range, &x, &ctxtReal39);
-    } else
+      }
+    }
+    else {
       res = const_0;
+    }
     convertRealToResultRegister(res, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
@@ -84,9 +93,11 @@ void fnUniformL(uint16_t discrete) {
   if(checkParamUniform(&x, &low, &h, &range, &cmp, discrete)) {
     if(cmp < 0) {
       res = const_0;
-    } else if(cmp > 0 || realIsZero(&range)) {
+    }
+    else if(cmp > 0 || realIsZero(&range)) {
       res = const_1;
-    } else {
+    }
+    else {
       if(discrete) {
         realToIntegralValue(&x, &h, DEC_ROUND_FLOOR, &ctxtReal39);
         realAdd(&h, const_1, &x, &ctxtReal39);
@@ -106,9 +117,11 @@ void fnUniformU(uint16_t discrete) {
   if(checkParamUniform(&x, &l, &high, &range, &cmp, discrete)) {
     if(cmp < 0 || realIsZero(&range)) {
       res = const_1;
-    } else if(cmp > 0) {
+    }
+    else if(cmp > 0) {
       res = const_0;
-    } else {
+    }
+    else {
       if(discrete) {
         realToIntegralValue(&x, &l, DEC_ROUND_CEILING, &ctxtReal39);
         realSubtract(&l, const_1, &x, &ctxtReal39);
@@ -136,8 +149,9 @@ void fnUniformI(uint16_t discrete) {
       return;
     }
     // Adjust an exact unity input to not go out of range
-    if(realCompareEqual(&x, const_1))
+    if(realCompareEqual(&x, const_1)) {
       realCopy(&high, &x);
+    }
     else {
       realAdd(&high, const_1, &high, &ctxtReal39);
       linpol(&low, &high, &x, &t);

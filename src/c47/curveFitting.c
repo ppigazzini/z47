@@ -262,14 +262,18 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
     lrChosen = s;
 
     /* Set the TI */
-    if(resultType & (resultType - 1))
+    if(resultType & (resultType - 1)) {
       temporaryInformation = TI_LR;
-    else if(resultType & 1)
+    }
+    else if(resultType & 1) {
       temporaryInformation = TI_LR_A0;
-    else if(resultType & 2)
+    }
+    else if(resultType & 2) {
       temporaryInformation = TI_LR_A1;
-    else if(resultType & 4)
+    }
+    else if(resultType & 4) {
       temporaryInformation = TI_LR_A2;
+    }
 
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
       if(resultType & 4) {
@@ -277,7 +281,8 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
         setSystemFlag(FLAG_ASLIFT);
         convertRealToResultRegister(&aa2, REGISTER_X, amNone);
       }
-    } else if(resultType == 4) {
+    }
+    else if(resultType == 4) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       convertRealToResultRegister(const_0, REGISTER_X, amNone);
@@ -1039,7 +1044,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
       else {
         realMultiply(XX,  aa1, &UU, realContextForecast);
         realAdd     (&UU, aa0, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1051,7 +1057,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realMultiply(XX,  aa1, &UU, realContextForecast);
         realExp     (&UU, &UU,      realContextForecast);
         realMultiply(&UU, aa0, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1063,7 +1070,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         WP34S_Ln    (XX,  &SS,       realContextForecast);
         realMultiply(&SS, aa1, &UU,  realContextForecast);
         realAdd     (&UU, aa0, YY,   realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1074,7 +1082,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
       else {
         realPower   (XX,  aa1, &SS, realContextForecast);
         realMultiply(&SS, aa0, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1086,7 +1095,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realDivide  (const_1, XX,  &SS, realContextForecast);
         realPower   (aa1,     &SS, &SS, realContextForecast);    //very very slow with a1=0.9982, probably in the 0.4 < x < 1.0 area
         realMultiply(&SS,     aa0, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1098,7 +1108,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realMultiply(XX,      aa1, &UU, realContextForecast);
         realAdd     (&UU,     aa0, &TT, realContextForecast);
         realDivide  (const_1, &TT, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1112,7 +1123,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realMultiply(XX,  aa1, &UU, realContextForecast);
         realAdd     (&TT, &UU, &TT, realContextForecast);
         realAdd     (&TT, aa0, YY , realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1126,7 +1138,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realDivide  (&TT, aa2, &TT, realContextForecast);
         realExp     (&TT, &TT,      realContextForecast);
         realMultiply(&TT, aa0, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
       break;
     }
@@ -1140,7 +1153,8 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
         realMultiply(&TT,     aa0, &TT, realContextForecast);
         realAdd     (&TT,     aa2, &TT, realContextForecast);
         realDivide  (const_1, &TT, YY,  realContextForecast);
-        realToFloat/*Double*/(YY, &yf); *y = (double)yf;
+        realToFloat/*Double*/(YY, &yf);
+        *y = (double)yf;
       }
     }
     default: {
@@ -1154,8 +1168,9 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
   double x=-99, y = 0, a0=-99, a1=-99, a2=-99;
 
-  if(!getRegisterAsReal(REGISTER_X, &XX))
+  if(!getRegisterAsReal(REGISTER_X, &XX)) {
     return;
+  }
 
   realSetZero(&aa0);
   realSetZero(&aa1);
@@ -1209,8 +1224,9 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
     case CF_POWER_FITTING: {
       realDivide(YY,        aa0,     &UU, realContextForecast);
       xthRootReal(&UU,      aa1,          realContextForecast);             //Note X-register gets written here
-      if(!getRegisterAsReal(REGISTER_X, XX))
+      if(!getRegisterAsReal(REGISTER_X, XX)) {
         return;
+      }
       temporaryInformation = TI_CALCX;
       break;
     }
@@ -1293,8 +1309,9 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
 void fnXIsFny(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
 
-  if(!getRegisterAsReal(REGISTER_X, &YY))
+  if(!getRegisterAsReal(REGISTER_X, &YY)) {
     return;
+  }
 
   realSetZero(&aa0);
   realSetZero(&aa1);

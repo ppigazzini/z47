@@ -605,7 +605,8 @@ int convertKeyCode(int key) {
     lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
-                                                    lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();
+                                                    lcd_putsAt(t24, 4, "Press the bottom left key.");
+                                                    lcd_refresh();
                                                     while(key != 33 && key != 37) {
                                                       key = key_pop();
                                                       while(key == -1) {
@@ -848,7 +849,9 @@ int convertKeyCode(int key) {
                                                       strcat(snum, " ");
                                                       for(int8_t i = TMR_NUMBER -1; i>=0; i--) {
                                                         char digit[2] = "_";
-                                                        if(fnTimerGetStatus(i) == TMR_RUNNING) { itoa(i, digit, 16); }
+                                                        if(fnTimerGetStatus(i) == TMR_RUNNING) {
+                                                          itoa(i, digit, 16);
+                                                        }
                                                         strcat(snum, digit);
                                                       }
                                                       showString(snum, &standardFont, 20, 40, vmNormal, false, false);
@@ -981,7 +984,12 @@ int convertKeyCode(int key) {
                                                     //sprintf(sysLastKeyCh, " %02d", key);
                                                     //showString(sysLastKeyCh, &standardFont, 0, 0, vmReverse, true, true);
                                                     //The line below to emit a beep
-                                                    //while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(220000); sys_delay(200); stop_buzzer();
+                                                    //while(get_beep_volume() < 11) {
+                                                    //  beep_volume_up();
+                                                    //}
+                                                    //start_buzzer_freq(220000);
+                                                    //sys_delay(200);
+                                                    //stop_buzzer();
                                                   #endif // NOKEYMAP
 
                                                   #if defined(AUTOREPEAT_WP43S)
