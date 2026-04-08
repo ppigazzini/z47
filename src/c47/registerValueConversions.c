@@ -654,8 +654,12 @@ void sci_fmt(char *buf, int n, double x) {
         x = -x;
     }
 
-    while(x && x < 1.0) x *= 10.0, exp--;
-    while(x >= 10.0) x /= 10.0, exp++;
+    while(x && x < 1.0) {
+      x *= 10.0, exp--;
+    }
+    while(x >= 10.0) {
+      x /= 10.0, exp++;
+    }
 
     unsigned long long m = (unsigned long long)(x * 1e15 + 0.5);
     if(m >= 10000000000000000ULL) {

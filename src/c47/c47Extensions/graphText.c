@@ -877,7 +877,7 @@ void preventFilenameTimeout(void){
 
 uint32_t ttt = 0;
 void printStatus(uint8_t row, const char *line1, uint8_t forced) {
-  #if defined (PC_BUILD)
+  #if defined(PC_BUILD)
     if(ttt==0) ttt = (uint32_t)(g_get_monotonic_time());
     printf("Status: %10u, %s\n", (uint32_t)(g_get_monotonic_time())-ttt, line1);
     fflush(stdout);
@@ -954,7 +954,8 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
         int16_t cnt = 0;
         char tt[2];
         while(line1[cnt] != 0 && g_line_x < SCREEN_WIDTH-8 +1) {
-          tt[0]=line1[cnt]; tt[1]=0;
+          tt[0]=line1[cnt];
+          tt[1]=0;
           g_line_x = showString(tt, &standardFont, (uint32_t)cnt * 8, (uint32_t) g_line_y, vmNormal, true, true);
           cnt++;
         }

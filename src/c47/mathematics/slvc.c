@@ -186,7 +186,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   }
   temporaryInformation = TI_ROOTS3;
 
-  #ifdef DISCRIMINANT
+  #if defined(DISCRIMINANT)
     if(realIsZero(&rImag)) { // q3r2 is real
       convertRealToResultRegister(&rReal, REGISTER_T, amNone);
     }
@@ -194,9 +194,9 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
       convertComplexToResultRegister(&rReal, &rImag, REGISTER_T);
     }
     adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
-  #else
+  #else // !DISCIMINANT
     fnDropT(0);
-  #endif //DISCRIMINANT
+  #endif // DISCRIMINANT
 #endif // !SAVE_SPACE_DM42_12
 }
 
@@ -347,10 +347,10 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
     }
   }
 
-#ifdef DISCRIMINANT
+#if defined(DISCRIMINANT)
   // discriminant
   mulComplexReal(rReal, rImag, const__108, rReal, rImag, realContext);
-#endif
+#endif // DISCRIMINANT
 }
 
 
@@ -519,10 +519,10 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
     realSetZero(x3Imag);
   }
 
-#ifdef DISCRIMINANT
+#if defined(DISCRIMINANT)
   // discriminant
   mulComplexReal(rReal, rImag, const__108, rReal, rImag, realContext);
-#endif
+#endif // DISCRIMINANT
 }
 #endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
 

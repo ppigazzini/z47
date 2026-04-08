@@ -967,7 +967,7 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDate(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
       tm_t timeInfo;
       dt_t dateInfo;
@@ -981,11 +981,11 @@ void fnSetDate(uint16_t unusedButMandatoryParameter) {
         dateInfo.day   = real34ToUInt32(&d);
         rtc_write(&timeInfo, &dateInfo);
       }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 void fnSetTime(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
     tm_t timeInfo;
     dt_t dateInfo;
@@ -1032,7 +1032,7 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 

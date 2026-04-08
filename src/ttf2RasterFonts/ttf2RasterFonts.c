@@ -349,7 +349,9 @@ void processFiles(const char *fontsPath, const char *outputFile) {
     pos = 7;
     glyphRank[nbGlyphRanks].rank1 = atoi(line + pos);
 
-    while(line[pos++] != ',') ;
+    while(line[pos++] != ',') {
+    }
+
     glyphRank[nbGlyphRanks].rank2 = atoi(line + pos);
 
     nbGlyphRanks++;

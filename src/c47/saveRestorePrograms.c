@@ -189,7 +189,7 @@ void fnPExport(void) {
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
-    int8_t  indent;;
+    int8_t  indent;
     bool_t  newLine;
     int8_t  addnextLineIndent = 0;
     int16_t lastCommandFound = 0;
@@ -481,7 +481,8 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
               fflush(stdout);
               _saveProgram  (label, ioPathSaveAllPrograms);
               _exportProgram(label, ioPathExportRTFAllPrograms);
-            } else {
+            }
+            else {
               printf("   Not saved: %s is not the first label in program %5u.\n", labelName1, currentProgramNumber);
               fflush(stdout);
             }

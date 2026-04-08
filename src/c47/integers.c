@@ -752,9 +752,9 @@ uint64_t WP34S_intLog10(uint64_t x) {
 
 /* Calculate (a . b) mod c taking care to avoid overflow */
 uint64_t WP34S_mulmod(const uint64_t a, uint64_t b, const uint64_t c) {
-#ifdef __SIZEOF_INT128__
+#if defined(__SIZEOF_INT128__)
   __uint128_t x = a * (__uint128_t)b;
-#else
+#else // !__SIZEOF_INT128__
   uint64_t x = 0, y = a % c;
   while(b > 0) {
     if((b & 1)) {
@@ -763,7 +763,7 @@ uint64_t WP34S_mulmod(const uint64_t a, uint64_t b, const uint64_t c) {
     y = (y + y) % c;
     b /= 2;
   }
-#endif
+#endif // __SIZEOF_INT128__
   return x % c;
 }
 

@@ -42,7 +42,7 @@ uint8_t *lcd_line_addr(int row) {
 }
 
 
-void 	LCD_write_line(uint8_t *line_buf) {
+void LCD_write_line(uint8_t *line_buf) {
   if(line_buf[1] >= SCREEN_HEIGHT) {
     char tmp[1000];
     sprintf(tmp, "line_buf[1] = %" PRIu8 ", it should be >= 0 and < %" PRIi32 "!\n", line_buf[1], (int32_t)SCREEN_HEIGHT);
@@ -64,7 +64,7 @@ void 	LCD_write_line(uint8_t *line_buf) {
 }
 
 
-void 	lcd_clear_buf(void) {
+void lcd_clear_buf(void) {
   for(uint8_t row = 0; row < SCREEN_HEIGHT; row++) {
     uint8_t *line_buf = lcd_buffer + 52 * row;
     for(uint8_t c = 2; c < 52; c++) {
@@ -106,7 +106,7 @@ void lcd_refresh_lines(uint8_t ln, uint8_t cnt){
 
 
 
-void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill ) {
+void bitblt24(uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill ) {
   if(dx < 1 || dx > 24) {
     return;
   }
@@ -127,7 +127,8 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
   uint32_t srcbits;
   if(fill == BLT_SET && blt_op != BLT_XOR) {
     srcbits = (blt_op == BLT_ANDN) ? lowmask << bit_off : 0u;
-  } else {
+  }
+  else {
     srcbits = (val & lowmask) << bit_off;
   }
   uint8_t srcbytes[4] = {
@@ -138,10 +139,22 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
   };
   uint8_t *j = &lcd_buffer[y * (LCD_LINE_SIZE + 2) + byte_i + 2];
   switch(blt_op) {
-    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) j[i] |=  srcbytes[i]; break;
-    case BLT_XOR:  for(uint32_t i = 0; i < bytes_needed; i++) j[i] ^=  srcbytes[i]; break;
-    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) j[i] &= ~srcbytes[i]; break;
-    default: return;
+    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] |=  srcbytes[i];
+                   }
+                   break;
+
+    case BLT_XOR:  for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] ^=  srcbytes[i];
+                   }
+                   break;
+
+    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] &= ~srcbytes[i];
+                   }
+                   break;
+
+    default:       return;
   }
   lcd_buffer[y * (LCD_LINE_SIZE + 2)] = 1u; // Mark line dirty
 }
@@ -184,7 +197,9 @@ gboolean ui_is_active = FALSE;
 
 void refresh_gui(void) {
   while(gtk_events_pending()) {
-    if(ui_is_active) break;  // Exit if UI active - original W32 issue, but safer on all OS
+    if(ui_is_active) {
+      break;  // Exit if UI active - original W32 issue, but safer on all OS
+    }
     gtk_main_iteration();
   }
 }

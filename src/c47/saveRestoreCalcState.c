@@ -138,14 +138,16 @@ static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
 
 // Utility routines to skip stuff
 static char *skip_word(const char *str) {
-  while(*str != ' ')
+  while(*str != ' ') {
     str++;
+  }
   return (char *)str;
 }
 
 static char *skip_space(const char *str) {
-  while(*str == ' ')
+  while(*str == ' ') {
     str++;
+  }
   return (char *)str;
 }
 
@@ -154,14 +156,15 @@ static char *next_word(const char *str) {
 }
 
 static char *skip_to_space_newline(const char *str) {
-  while(*str != ' ' && *str != '\n' && *str != 0)
+  while(*str != ' ' && *str != '\n' && *str != 0) {
     str++;
+  }
   return (char *)str;
 }
 
 static char *toInt16_next_word(const char *str, int16_t *val) {
-    *val = toInt16(str);
-    return next_word(str);
+  *val = toInt16(str);
+  return next_word(str);
 }
 
 static void _updateConstantsInEquations(void) {
@@ -195,12 +198,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
   //it CANNOT be run on a new matrix header, as the cols read in form 0x0FFF will be shifted by 4 bits to align and will break if already shifted meaning if it already is new format.
   //Old matrixes with rows or cols > 12 bits 0x0FFF will fail. It is however unreasonable to expect such large matrix dimensions of 2^12-1 = 4095.
   if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-    #if defined PC_BUILD
+    #if defined(PC_BUILD)
       printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
     #endif //PC_BUILD
     uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
     uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
-    #if defined PC_BUILD
+    #if defined(PC_BUILD)
       printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
     #endif //PC_BUILD
     REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
@@ -1179,7 +1182,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
     restoreStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
     restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
-    if(backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {
+      currentInputVariable = INVALID_VARIABLE;
+    }
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_lastAddRem = SIGMA_NONE;
@@ -1187,14 +1192,20 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
     }
     restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_lastAddRem",         "int8");     //manual correction as the type allocation was wrong here
-    if(SAVED_SIGMA_lastAddRem == -1) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
-  //if(SAVED_SIGMA_lastAddRem == 0 ) SAVED_SIGMA_lastAddRem = SIGMA_NONE;
-  //if(SAVED_SIGMA_lastAddRem == 1 ) SAVED_SIGMA_lastAddRem = SIGMA_PLUS;
-  //if(SAVED_SIGMA_lastAddRem == 2 ) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
+    if(SAVED_SIGMA_lastAddRem == -1) {
+      SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
+    }
+    //if(SAVED_SIGMA_lastAddRem == 0 ) SAVED_SIGMA_lastAddRem = SIGMA_NONE;
+    //if(SAVED_SIGMA_lastAddRem == 1 ) SAVED_SIGMA_lastAddRem = SIGMA_PLUS;
+    //if(SAVED_SIGMA_lastAddRem == 2 ) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    if(backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {
+      currentMvarLabel = INVALID_VARIABLE;
+    }
     restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
-    if(backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {graphVariabl1 = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {
+      graphVariabl1 = INVALID_VARIABLE;
+    }
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
@@ -1213,10 +1224,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     if(fgLN == RBX_FGLNOFF) {                                                                                //This section to deal with any old states containing the old FG system
       clearSystemFlag(FLAG_FGLNLIM);
       clearSystemFlag(FLAG_FGLNFUL);
-    } else     if(fgLN == RBX_FGLNLIM) {
+    }
+    else if(fgLN == RBX_FGLNLIM) {
       setSystemFlag(FLAG_FGLNLIM);
       clearSystemFlag(FLAG_FGLNFUL);
-    } else     if(fgLN == RBX_FGLNFUL) {
+    }
+    else if(fgLN == RBX_FGLNFUL) {
       clearSystemFlag(FLAG_FGLNLIM);
       setSystemFlag(FLAG_FGLNFUL);
     }
@@ -1676,9 +1689,9 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 static void doSave(uint16_t saveType);
 
   void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     doSave(autoSave);
-  #endif //DMCP_BUILD
+  #endif // DMCP_BUILD
   }
 
 
@@ -1706,7 +1719,9 @@ void doSave(uint16_t saveType) {
 
 #if defined(DMCP_BUILD)
   // Don't pass through if the power is insufficient
-  if( power_check_screen() ) return;
+  if( power_check_screen() ) {
+    return;
+  }
 #endif // DMCP_BUILD
 
   if(saveType == autoSave) {
@@ -2900,7 +2915,8 @@ int64_t stringToInt64(const char *str) {
           debugPrintf(16, "A", "Ending OTHER_CONFIGURATION_STUFF prior to RESET");
         #endif //LOADDEBUG
         goto END_CONFIG;                              // If this is END_OTHER_PARAM, loading is aborted before the config RESET, got break
-      } else {
+      }
+      else {
         resetOtherConfigurationStuff(allowUserKeys);  // Ensure all the configuration stuff below is reset prior to loading. That ensures if missing settings, that the proper defaults are set.
       }
       readLine(tmpString); //value 00                 // Reading second (duplicated 00)
@@ -2908,7 +2924,9 @@ int64_t stringToInt64(const char *str) {
       i = 0;
       while(i < 255) {                                                            //adjust for absolute maximum number of OTHER CONFIGUARTION SETTINGS
         readLine(aimBuffer); // param
-        if(strcmp(aimBuffer, "END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) break; //to END_CONFIG break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
+        if(strcmp(aimBuffer, "END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) {
+          break; //to END_CONFIG break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
+        }
         readLine(tmpString); // value
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
@@ -2935,29 +2953,29 @@ int64_t stringToInt64(const char *str) {
               lastDenominator = 4;
             }
           }
-          else if(strcmp(aimBuffer, "displayFormat"               ) == 0) { displayFormat       = toUint8(tmpString);   }
-          else if(strcmp(aimBuffer, "displayFormatDigits"         ) == 0) { displayFormatDigits = toUint8(tmpString);   }
+          else if(strcmp(aimBuffer, "displayFormat"               ) == 0) { displayFormat           = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "displayFormatDigits"         ) == 0) { displayFormatDigits     = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "timeDisplayFormatDigits"     ) == 0) { timeDisplayFormatDigits = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize = toUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode     = toUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits    = toUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits       = toUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "currentAngularMode"          ) == 0) { currentAngularMode   = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize    = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode        = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits       = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits          = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "currentAngularMode"          ) == 0) { currentAngularMode      = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "groupingGap"                 ) == 0) { //backwards compatible loading old config files
             configCommon(CFG_DFLT);
             grpGroupingLeft = toUint8(tmpString);                     //Changed from groupingGap to remain compatible
             grpGroupingRight = grpGroupingLeft;
           }
-          else if(strcmp2(aimBuffer, "gapItemLeft"                ) == 0) { gapItemLeft          = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "gapItemRight"               ) == 0) { gapItemRight         = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "gapItemRadix"               ) == 0) { gapItemRadix         = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "lastCenturyHighUsed"        ) == 0) { lastCenturyHighUsed  = toUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingLeft"            ) == 0) { grpGroupingLeft      = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = toUint8(tmpString);  }      //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left   = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp2(aimBuffer, "grpGroupingRight"           ) == 0) { grpGroupingRight     = toUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
-          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode         = toUint8(tmpString);  }
-          else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack         = toUint8(tmpString);  }
+          else if(strcmp2(aimBuffer, "gapItemLeft"                ) == 0) { gapItemLeft                = toUint16(tmpString); } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "gapItemRight"               ) == 0) { gapItemRight               = toUint16(tmpString); } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "gapItemRadix"               ) == 0) { gapItemRadix               = toUint16(tmpString); } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "lastCenturyHighUsed"        ) == 0) { lastCenturyHighUsed        = toUint16(tmpString); } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingLeft"            ) == 0) { grpGroupingLeft            = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left         = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "grpGroupingRight"           ) == 0) { grpGroupingRight           = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode               = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack               = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
             pcg32_global.state = stringToUint64(tmpString);
             str = next_word(tmpString);
@@ -2967,102 +2985,116 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = toInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {                                        //This section to deal with any old states containing the old FG system
+          else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {                                   // This section to deal with any old states containing the old FG system
             fgLN = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF);
             if(fgLN == RBX_FGLNOFF) {
               clearSystemFlag(FLAG_FGLNLIM);
               clearSystemFlag(FLAG_FGLNFUL);
-            } else     if(fgLN == RBX_FGLNLIM) {
+            }
+            else if(fgLN == RBX_FGLNLIM) {
               setSystemFlag(FLAG_FGLNLIM);
               clearSystemFlag(FLAG_FGLNFUL);
-            } else     if(fgLN == RBX_FGLNFUL) {
+            }
+            else if(fgLN == RBX_FGLNFUL) {
               clearSystemFlag(FLAG_FGLNLIM);
               setSystemFlag(FLAG_FGLNFUL);
             }
           }             //Keep compatible with old setting
-          else if(strcmp(aimBuffer, "HOME3"                       ) == 0) {
+          else if(strcmp(aimBuffer, "HOME3") == 0) {
             if(loadedVersion < 10000022) {
-              forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_HOME_TRIPLE, toUint8(tmpString) != 0); //Keep compatible by repeating, even though setting is now in systemflags
               setLongPressFg(calcModel, -MNU_HOME);
-            } //Keep compatible by repeating, even though setting is now in systemflags
+            }
           }
-          else if(strcmp(aimBuffer, "MYM3"                        ) == 0) {
+          else if(strcmp(aimBuffer, "MYM3") == 0) {
             if(loadedVersion < 10000022) {
-              forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_MYM_TRIPLE, toUint8(tmpString) != 0); //Keep compatible by repeating, even though setting is now in systemflags
               setLongPressFg(calcModel, -MNU_MyMenu);
-            } //Keep compatible by repeating, even though setting is now in systemflags
+            }
           }
-          else if(strcmp(aimBuffer, "dispBase"                    ) == 0) { dispBase              = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) {
-            if(loadedVersion < 10000022) {
+          else if(strcmp(aimBuffer, "dispBase") == 0) {
+            dispBase = toUint8(tmpString);
+          }
+          else if(strcmp(aimBuffer, "ShiftTimoutMode") == 0) {
+            if(loadedVersion < 10000022) { //Keep compatible by repeating, even though setting is now in systemflags
               forceSystemFlag(FLAG_SHFT_4s, toUint8(tmpString) != 0);
-            } //Keep compatible by repeating, even though setting is now in systemflags
+            }
           }
-          else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) {//Keep compatible with old name by repeating it
-            if(loadedVersion < 10000022) {
+          else if(strcmp(aimBuffer, "SH_BASE_HOME") == 0) { //Keep compatible with old name by repeating it
+            if(loadedVersion < 10000022) { //Keep compatible by repeating, even though setting is now in systemflags
               forceSystemFlag(FLAG_BASE_HOME, toUint8(tmpString) != 0);
-            } //Keep compatible by repeating, even though setting is now in systemflags
+            }
           }
-          else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) {
-            if(loadedVersion < 10000022) {
+          else if(strcmp(aimBuffer, "BASE_HOME") == 0) {
+            if(loadedVersion < 10000022) { //Keep compatible by repeating, even though setting is now in systemflags
               forceSystemFlag(FLAG_BASE_HOME, toUint8(tmpString) != 0);
-            } //Keep compatible by repeating, even though setting is now in systemflags
+            }
           }
-          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0)) {
+          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00_VAR") == 0)) {
             // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
             if(Norm_Key_00_key != -1) {
               Norm_Key_00.func  = toUint16(tmpString);   // only the function is restored, assuming no param
               Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
-            } else {
+            }
+            else {
               Norm_Key_00.used = false;
             }
           }
-          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0)) { Norm_Key_00.func      = toUint16(tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {      //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
-              if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                     //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
-                  if(allowUserKeys) {
-                    Norm_Key_00.funcParam[0]=0;                                    //  - old file compatibility: If next setting name is found as data, clear it.
-                    Norm_Key_00.used = 0;                                          //  - populate the the next setting to default 0,  as the read has already currupted the sequence
-                  }
-                  readLine(tmpString);                                             //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
-              } else if(allowUserKeys &&
-                      (strcmp(tmpString, "NoNormKeyParamDef") == 0)) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
-                  Norm_Key_00.funcParam[0]=0;                                      //  - if the code word for a blank string, blank the string.
-              } else if(allowUserKeys) {                                           //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
-                  strcpy(Norm_Key_00.funcParam, tmpString);                         //Otherwise proceed and use the data as normal
-              }
+          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.func") == 0)) {
+            Norm_Key_00.func = toUint16(tmpString);
           }
-          else if(allowUserKeys && (strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0)) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam") == 0) {                //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
+            if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                        //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
+              if(allowUserKeys) {
+                Norm_Key_00.funcParam[0]=0;                                         //  - old file compatibility: If next setting name is found as data, clear it.
+                Norm_Key_00.used = 0;                                               //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+              }
+              readLine(tmpString);                                                  //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
+            }
+            else if(allowUserKeys && strcmp(tmpString, "NoNormKeyParamDef") == 0) { //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
+              Norm_Key_00.funcParam[0]=0;                                           //  - if the code word for a blank string, blank the string.
+            }
+            else if(allowUserKeys) {                                                //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
+              strcpy(Norm_Key_00.funcParam, tmpString);                             //Otherwise proceed and use the data as normal
+            }
+          }
+          else if(allowUserKeys && strcmp(aimBuffer, "Norm_Key_00.used") == 0) {
+            Norm_Key_00.used      = toUint8(tmpString) != 0;
+          }
 
-          else if(allowUserKeys && (strcmp(aimBuffer, "calcModel"                   ) == 0)) {
+          else if(allowUserKeys && strcmp(aimBuffer, "calcModel") == 0) {
             uint16_t calcModelRead = toUint16(tmpString);
             if(savedCalcModel == USER_R47 && (calcModelRead == USER_R47f_g || calcModelRead == USER_R47fg_g || calcModelRead == USER_R47fg_bk || calcModelRead == USER_R47bk_fg)) {
               calcModel = calcModelRead;
-            } else
-            if(savedCalcModel == USER_C47 && (calcModelRead == USER_C47    || calcModelRead == USER_DM42 )) {
+            }
+            else if(savedCalcModel == USER_C47 && (calcModelRead == USER_C47    || calcModelRead == USER_DM42 )) {
               calcModel = calcModelRead;
             }
           }
 
-          else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) {        //Keep compatible by repeating
+          else if(strcmp(aimBuffer, "Input_Default") == 0) {
+            Input_Default = toUint8(tmpString);
+          }
+          else if(strcmp(aimBuffer, "jm_BASE_SCREEN") == 0) {        //Keep compatible by repeating
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_BASE_MYM, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) {
+          else if(strcmp(aimBuffer, "BASE_MYM") == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_BASE_MYM, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) {
+          else if(strcmp(aimBuffer, "jm_G_DOUBLETAP") == 0) {
             if(loadedVersion < 10000022) {
               forceSystemFlag(FLAG_G_DOUBLETAP, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
 
-          else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) {
+          else if(strcmp(aimBuffer, "displayStackSHOIDISP") == 0) {
+            displayStackSHOIDISP  = toUint8(tmpString);
+          }
+          else if(strcmp(aimBuffer, "bcdDisplay") == 0) {
             if(loadedVersion < 10000020) {
               forceSystemFlag(FLAG_BCD, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags

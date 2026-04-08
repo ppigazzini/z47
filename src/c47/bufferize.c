@@ -26,32 +26,36 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
 uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
     if(subOrSup == NC_SUBSCRIPT) {
       nextChar = NC_NORMAL;            //JM de-latching superscript / suscript /sup/sub, removing the lock. Comment out to let sup/sub lock
-      if(item >= ITM_0 && item <= ITM_9) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_0 - (int16_t)ITM_0); else //JM optimized
-      if(item >= ITM_a && item <= ITM_z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_a - (int16_t)ITM_a); else //JM optimized
-      if(item >= ITM_A && item <= ITM_Z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_A - (int16_t)ITM_A); else //JM optimized
-      switch(item) {
-        case ITM_alpha    :return ITM_SUB_alpha;
-        case ITM_delta    :return ITM_SUB_delta;
-        case ITM_mu       :return ITM_SUB_mu;
-        case ITM_pi       :return ITM_SUB_pi;
-        case ITM_SUN      :return ITM_SUB_SUN;
-        case ITM_INFINITY :return ITM_SUB_INFINITY;
-        case ITM_PLUS     :return ITM_SUB_PLUS;
-        case ITM_MINUS    :return ITM_SUB_MINUS;
-        default           :return item;
+           if(item >= ITM_0 && item <= ITM_9) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_0 - (int16_t)ITM_0); //JM optimized
+      else if(item >= ITM_a && item <= ITM_z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_a - (int16_t)ITM_a); //JM optimized
+      else if(item >= ITM_A && item <= ITM_Z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_A - (int16_t)ITM_A); //JM optimized
+      else {
+        switch(item) {
+          case ITM_alpha    :return ITM_SUB_alpha;
+          case ITM_delta    :return ITM_SUB_delta;
+          case ITM_mu       :return ITM_SUB_mu;
+          case ITM_pi       :return ITM_SUB_pi;
+          case ITM_SUN      :return ITM_SUB_SUN;
+          case ITM_INFINITY :return ITM_SUB_INFINITY;
+          case ITM_PLUS     :return ITM_SUB_PLUS;
+          case ITM_MINUS    :return ITM_SUB_MINUS;
+          default           :return item;
+        }
       }
     }
     else if(subOrSup == NC_SUPERSCRIPT) {
       nextChar = NC_NORMAL;            //JM de-latching superscript / suscript /sup/sub, removing the lock. Comment out to let sup/sub lock
-      if(item >= ITM_0 && item <= ITM_9) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_0 - (int16_t)ITM_0); else //JM optimized
-      if(item >= ITM_a && item <= ITM_z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_a - (int16_t)ITM_a); else //JM optimized
-      if(item >= ITM_A && item <= ITM_Z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_A - (int16_t)ITM_A); else //JM optimized
-      switch(item) {
-        case ITM_INFINITY :return ITM_SUP_INFINITY;
-        case ITM_PLUS     :return ITM_SUP_PLUS;
-        case ITM_MINUS    :return ITM_SUP_MINUS;
-        case ITM_pi       :return ITM_SUP_pi;
-        default           :return item;
+           if(item >= ITM_0 && item <= ITM_9) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_0 - (int16_t)ITM_0); //JM optimized
+      else if(item >= ITM_a && item <= ITM_z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_a - (int16_t)ITM_a); //JM optimized
+      else if(item >= ITM_A && item <= ITM_Z) return (uint16_t)((int16_t)item + (int16_t)ITM_SUP_A - (int16_t)ITM_A); //JM optimized
+      else {
+        switch(item) {
+          case ITM_INFINITY :return ITM_SUP_INFINITY;
+          case ITM_PLUS     :return ITM_SUP_PLUS;
+          case ITM_MINUS    :return ITM_SUP_MINUS;
+          case ITM_pi       :return ITM_SUP_pi;
+          default           :return item;
+        }
       }
     }
     return item;
@@ -886,11 +890,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
 
       #undef SCROLL_ASM          // define this to have the ASM letters scroll if you type more than two. Alternative is it takes two, then you wait 3 and type again another word
-      #ifdef SCROLL_ASM
+      #if defined(SCROLL_ASM)
         #define Scroll_Asm 2
-      #else
+      #else // !SCROLL_ASM
         #define Scroll_Asm 1
-      #endif
+      #endif // SCROLL_ASM
 
       if(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) {
         if(item == ITM_BACKSPACE) {
@@ -904,11 +908,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
                 stringGlyphLength(asmBuffer) <= Scroll_Asm &&
                 item != ITM_CR && item != ITM_ROOT_SIGN &&
                 currentSoftmenuScrolls()) {
-          #ifdef SCROLL_ASM
+          #if defined(SCROLL_ASM)
             if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
               xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
             }
-          #endif //SCROLL_ASM
+          #endif // SCROLL_ASM
 
           stringCopy(asmBuffer + stringByteLength(asmBuffer), indexOfItems[item].itemSoftmenuName);
 
@@ -970,7 +974,6 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         }
 
         switch(item) {
-
           case ITM_SHOW: {
             mimEnter(true);
             temporaryInformation = TI_SHOW_REGISTER;
@@ -984,17 +987,18 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
           default: {
             if(isFunctionInMim(item, 0)) {
-                mimAddNumber(item);
-                break;
+              mimAddNumber(item);
+              break;
             }
             else if(isFunctionInMim(item, 1)) {
-                lastErrorCode = ERROR_NONE;
-                mimEnter(true);
-                runFunction(item);
-                break;
-            } else if(isFunctionInMim(item, 2)) {
-                mimRunFunction(item, indexOfItems[item].param);
-                break;
+              lastErrorCode = ERROR_NONE;
+              mimEnter(true);
+              runFunction(item);
+              break;
+            }
+            else if(isFunctionInMim(item, 2)) {
+              mimRunFunction(item, indexOfItems[item].param);
+              break;
             }
           }
         }
@@ -1022,7 +1026,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     uint16_t i;
     if(nimNumberPart == NP_INT_BASE) {
       return true;
-    } else {
+    }
+    else {
       for(i=1; i<lg-1; i++) {      //do not check the # on the very begin or very end as that is not valid
         if(aimBuffer[i] == '#') {
           posHash = i;
@@ -1035,13 +1040,19 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
     }
     uint8_t base = 0;
-    if((aimBuffer[lg-2]) == '#' && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-1];
-    if((aimBuffer[lg-3]) == '#' && (aimBuffer[lg-2] >= '0' && aimBuffer[lg-2] <= '1') && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) base = aimBuffer[lg-2]*10 + aimBuffer[lg-1];
+    if((aimBuffer[lg-2]) == '#' && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) {
+      base = aimBuffer[lg-1];
+    }
+    if((aimBuffer[lg-3]) == '#' && (aimBuffer[lg-2] >= '0' && aimBuffer[lg-2] <= '1') && (aimBuffer[lg-1] >= '0' && aimBuffer[lg-1] <= '9')) {
+      base = aimBuffer[lg-2]*10 + aimBuffer[lg-1];
+    }
     if(base < 2 || base > 16) {
       return false;
     }
     int start = 0;
-    if(aimBuffer[0] == '-' || aimBuffer[0] == '+' || aimBuffer[0] == ' ') start++;
+    if(aimBuffer[0] == '-' || aimBuffer[0] == '+' || aimBuffer[0] == ' ') {
+      start++;
+    }
     for(i=start; i<posHash; i++) {
       if(!(aimBuffer[i] >= '0' && aimBuffer[i] <= '9') && !(aimBuffer[i] >= 'A' && aimBuffer[i] <= 'F')) {
         return false;
@@ -1063,7 +1074,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
     }
-//    if(item != ITM_EXIT1) resetKeytimers();  //JM
+//    if(item != ITM_EXIT1) {
+//      resetKeytimers();  //JM
+//    }
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
     currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
@@ -1320,7 +1333,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           hexDigits++;
 
           nimNumberPart = NP_INT_16;
-          if(lastIntegerBase <= 10) lastIntegerBase = 16;       // [DL] auto set base to hex when entering A-F digit
+          if(lastIntegerBase <= 10) {
+            lastIntegerBase = 16;       // [DL] auto set base to hex when entering A-F digit
+          }
           //debugNIM();
         }
         break;
@@ -1997,9 +2012,15 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
             }
             if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone) {
-              if(currentAngularMode == amDMS) fnCvtFromCurrentAngularMode(amDMS); else
-                if(currentAngularMode == amMultPi) fnCvtFromCurrentAngularMode(amMultPi); else
-                  setRegisterAngularMode(REGISTER_X, currentAngularMode);
+              if(currentAngularMode == amDMS) {
+                fnCvtFromCurrentAngularMode(amDMS);
+              }
+              else if(currentAngularMode == amMultPi) {
+                fnCvtFromCurrentAngularMode(amMultPi);
+              }
+              else {
+                setRegisterAngularMode(REGISTER_X, currentAngularMode);
+              }
             }
 
             if(lastErrorCode == 0) {
@@ -2141,7 +2162,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     }
 
     else if(item != ITM_NOP) {
-      #if defined (PC_BUILD) && defined(VERBOSE_MINIMUM)
+      #if defined(PC_BUILD) && defined(VERBOSE_MINIMUM)
         printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
         fflush(stdout);
       #endif

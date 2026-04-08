@@ -31,11 +31,11 @@ void doNothing(void) {
 
 
 
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
   #define notAvail TI_Only_on_simulator
-#else //PC_BUILD
+#else // !DMCP_BUILD
   #define notAvail TI_Not_on_simulator
-#endif //PC_BUILD
+#endif // DMCP_BUILD
 
 #define  _TO_ITM_NONE 0
 #define  _TO_ITM_ERR  1
@@ -43,7 +43,7 @@ void doNothing(void) {
 
 static uint8_t itemERRTIVal(int16_t itemNr) {
   switch(max(itemNr, -itemNr)) {
-    #ifdef DMCP_BUILD
+    #if defined(DMCP_BUILD)
       case ITM_WRXPALL   :
                           return  _TO_ITM_ERR;
     #elif defined(PC_BUILD)
@@ -53,9 +53,9 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
       case ITM_SYSTEM2  :
       case ITM_ACTUSB   :
                           return  _TO_ITM_ERR;
-    #endif //PC_BUILD
+    #endif // PC_BUILD
 
-    #ifdef PC_BUILD
+    #if defined(PC_BUILD)
       case ITM_DISK     :
       case ITM_BUZZ     :
       case ITM_PLAY     :
@@ -64,7 +64,7 @@ static uint8_t itemERRTIVal(int16_t itemNr) {
       case ITM_VOLPLUS  :
       case ITM_VOLQ     :
       case ITM_BATT     :  return  _TO_ITM_TI;
-    #endif //PC_BUILD
+    #endif // PC_BUILD
       default           :  return  _TO_ITM_NONE;
     }
 }
@@ -81,7 +81,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n",itemNr);
     #endif
     return true;
-  } else {
+  }
+  else {
     return false;
   }
 #else //!DMCP_BUILD && !PC_BUILD
@@ -134,7 +135,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   }
 
   char *lastFuncCatalogName(void) {
-    if(lastFunc == ITM_VERS || lastFunc == NOPARAM) return "";
+    if(lastFunc == ITM_VERS || lastFunc == NOPARAM) {
+      return "";
+    }
     if(lastFunc == ITM_CNST) {
       if(lastParam <= LAST_CONSTANT-FIRST_CONSTANT - 1) {                 //less 1 for the ITM_CNST inside the range (historically)
         int16_t addOffset = (lastParam > indexOfItems[ITM_CNST - 1].param ? 1 : 0);
@@ -151,7 +154,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   }
 
   char *lastFuncSoftmenuName(void) {
-    if(lastFunc == ITM_VERS || lastFunc == NOPARAM) return "";
+    if(lastFunc == ITM_VERS || lastFunc == NOPARAM) {
+      return "";
+    }
     if(lastFunc == ITM_CNST) {
       if(lastParam <= LAST_CONSTANT-FIRST_CONSTANT - 1) {                 //less 1 for the ITM_CNST inside the range (historically)
         int16_t addOffset = (lastParam > indexOfItems[ITM_CNST - 1].param ? 1 : 0);
@@ -360,17 +365,18 @@ bool_t isFunctionOldParam16(uint16_t func) {
     //**RunFunction
     if(!itemNotAvail(func)) {
       indexOfItems[func].func(param);
-    } else {
-        if(itemERRTIVal(func) ==  _TO_ITM_TI) {
-          temporaryInformation = TI_NOT_AVAILABLE;
-        }
-        else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
-          displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Not Available");
-            moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
+    }
+    else {
+      if(itemERRTIVal(func) ==  _TO_ITM_TI) {
+        temporaryInformation = TI_NOT_AVAILABLE;
+      }
+      else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
+        displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "Not Available");
+          moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      }
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
@@ -382,7 +388,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_CASE:
         case ITM_SKIP:
         default: previousErrorCode = lastErrorCode;
-             break;
+                 break;
     }
 
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
@@ -465,7 +471,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
       bool_t isMatrix = (func == ITM_RCL || func == ITM_STO) ? ((inRegisterRange || inReservedRange || inNameRegisterRange || inLocalRegisters) ? (getRegisterDataType(param) == dtReal34Matrix || getRegisterDataType(param) == dtComplex34Matrix) : false) : false;
       uint16_t rr;
       calcRegister_t regStats = FAILED_INDIRECTION;
-      if(inNameRegisterRange) regStats = findNamedVariable("STATS");
+      if(inNameRegisterRange) {
+        regStats = findNamedVariable("STATS");
+      }
 
       switch(func) {
         case VAR_UEST        : solverEstimatesUsed = true; break;
@@ -480,8 +488,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
                                (param == REGISTER_J) && isMatrixIndexed() ? TI_J : \
                                (inNameRegisterRange) ? ((isStatsMatrixN(&rr, regStats) && param == regStats) ? TI_STATISTIC_SUMS : TI_STORCL) : \
                                (isMatrix) ? TI_STORCL : \
-                               (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : \
-                               TI_NO_INFO ; break;
+                               (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : TI_NO_INFO;
+                               break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
@@ -660,7 +668,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         //**Start TAM function
         if(!itemNotAvail(func)) {
           tamEnterMode(func);
-        } else {
+        }
+        else {
           if(itemERRTIVal(func) ==  _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
           }

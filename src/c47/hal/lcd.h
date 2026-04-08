@@ -31,8 +31,8 @@ static inline void print_caller(const char *format, ...) {}
   // LCD_write_line from dmcp.h
 
 #else
-  #define 	LCD_LINE_SIZE   50
-  #define 	LCD_LINE_BUF_SIZE   (LCD_LINE_SIZE+4)
+  #define LCD_LINE_SIZE       50
+  #define LCD_LINE_BUF_SIZE   (LCD_LINE_SIZE+4)
   #define LCD_SET_VALUE   0   // Black pixel
   #define LCD_EMPTY_VALUE 255 // White (or empty) pixel
   typedef enum { BLT_OR = 0, BLT_ANDN = 1, BLT_XOR = 2 } blt_op_t;

@@ -318,12 +318,16 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
-        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION & SOLVER_STATUS_USES_FORMULA)) == 0 && currentSolverNestingDepth == 1 ) { //} programRunStop != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION & SOLVER_STATUS_USES_FORMULA)) == 0 && currentSolverNestingDepth == 1 ) { // programRunStop != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
           uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
           if(real34CompareGreaterThan(a, b)) {
-            c = a;  a  = b;  b  = c;
-            c = fa; fa = fb; fb = c;
+            c = a;
+            a  = b;
+            b  = c;
+            c = fa;
+            fa = fb;
+            fb = c;
           }
 
           clearRegisterLine(REGISTER_Z, true, true);
@@ -339,7 +343,7 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
           showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           displayFormatDigits = savedDisplayFormatDigits;
 
-        #if defined DMCP_BUILD
+        #if defined(DMCP_BUILD)
           lcd_refresh();
         #endif //DMCP_BUILD
       }
@@ -948,8 +952,7 @@ retryLevel:
 
         break;
       }
-      if( !originallyLevel &&
-        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
+      if(!originallyLevel && ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         #if defined(OPTION_TVM_NEWTON)
           if(currentMethod == SOLVER_METHOD_BRENT &&
              (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&

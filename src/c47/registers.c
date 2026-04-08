@@ -563,7 +563,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
-      #if defined VERBOSE_REGISTERS
+      #if defined(VERBOSE_REGISTERS)
         printStatus(0, "allocateLocalRegisters1",force);
       #endif //VERBOSE_REGISTERS
 
@@ -586,7 +586,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
         }
       }                                                   //JM defaults ^^
 
-    #if defined VERBOSE_REGISTERS
+    #if defined(VERBOSE_REGISTERS)
       printStatus(0, " ", force);
     #endif //VERBOSE_REGISTERS
 
@@ -625,7 +625,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
             return;
           }
         }
-        #if defined VERBOSE_REGISTERS
+        #if defined(VERBOSE_REGISTERS)
           printStatus(0, " ", force);
         #endif //VERBOSE_REGISTERS
       }
@@ -636,7 +636,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       }
     }
     else { // Ther number of local register decreases
-      #if defined VERBOSE_REGISTERS
+      #if defined(VERBOSE_REGISTERS)
        printStatus(0, "allocateLocalRegisters3",force);
       #endif //VERBOSE_REGISTERS
       // free memory allocated to the data of the deleted local registers
@@ -649,7 +649,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
       currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
-      #if defined VERBOSE_REGISTERS
+      #if defined(VERBOSE_REGISTERS)
         printStatus(0, "", force);
       #endif //VERBOSE_REGISTERS
       return;
@@ -762,7 +762,7 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, "_findReservedVariable",force);
   #endif //VERBOSE_REGISTERS
 
@@ -772,7 +772,7 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
   if(reg != NULL)
     return reg->reg;
 
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
@@ -843,7 +843,7 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
     }
   }
 
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, "allocateNamedVariable",force);
   #endif //VERBOSE_REGISTERS
   len = stringByteLength(variableName);
@@ -855,7 +855,7 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
   regist += FIRST_NAMED_VARIABLE;
   setRegisterDataType(regist, dataType, amNone);
   setRegisterDataPointer(regist, allocC47Blocks(fullDataSizeInBlocks));
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
 }
@@ -874,7 +874,7 @@ calcRegister_t findNamedVariable(const char *variableName) {
     return regist;
   }
 
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, "findNamedVariable",force);
   #endif //VERBOSE_REGISTERS
   //printf("|%20s|%20s|\n",(char *)(allNamedVariables[0].variableName + 1), variableName);
@@ -884,7 +884,7 @@ calcRegister_t findNamedVariable(const char *variableName) {
       break;
     }
   }
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
   return regist;
@@ -919,7 +919,7 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
 
 
 void fnDeleteVariable(uint16_t regist) {
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, "fnDeleteVariable",force);
   #endif //VERBOSE_REGISTERS
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
@@ -940,7 +940,7 @@ void fnDeleteVariable(uint16_t regist) {
   else {
     displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
-  #if defined VERBOSE_REGISTERS
+  #if defined(VERBOSE_REGISTERS)
     printStatus(0, " ",force);
   #endif //VERBOSE_REGISTERS
 }
@@ -1140,10 +1140,10 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       return REGISTER_LONG_INTEGER_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
     }
     case dtReal34Matrix: {
-      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     }
     case dtComplex34Matrix: {
-      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     }
     case dtShortInteger: {
       return SHORT_INTEGER_SIZE_IN_BLOCKS;

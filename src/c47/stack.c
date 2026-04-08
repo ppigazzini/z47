@@ -354,7 +354,9 @@ void undo(void) {
   const uint8_t lastErrorCodeMeM = lastErrorCode;
   lastErrorCode = ERROR_NONE;
   recallStatsMatrix();
-  if(lastErrorCode == ERROR_NONE) lastErrorCode = lastErrorCodeMeM;
+  if(lastErrorCode == ERROR_NONE) {
+    lastErrorCode = lastErrorCodeMeM;
+  }
 
   if(currentInputVariable != INVALID_VARIABLE) {
     if(currentInputVariable & 0x4000) {

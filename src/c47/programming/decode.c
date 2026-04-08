@@ -164,7 +164,7 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
       }
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));;
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -473,12 +473,16 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
     else {
       if(!GROUPRIGHT_DISABLED && digit < -1 && (abs(digit) % GROUPWIDTH_RIGHT) == 1) {
         *(strPtr++) = gapChar1Right[0];
-        if(gapChar1Right[1] !=1) *(strPtr++) = gapChar1Right[1];
+        if(gapChar1Right[1] !=1) {
+          *(strPtr++) = gapChar1Right[1];
+        }
       }
       *(strPtr++) = *(srcStr++);
       if(!GROUPLEFT_DISABLED && digit > 1 && (digit % GROUPWIDTH_LEFT) == 1) {
         *(strPtr++) = gapChar1Left[0];
-        if(gapChar1Left[1]!=1) *(strPtr++) = gapChar1Left[1];
+        if(gapChar1Left[1]!=1) {
+          *(strPtr++) = gapChar1Left[1];
+        }
       }
     }
     --digit;

@@ -137,25 +137,25 @@ saveForUndo();
 #define SPEEDUPEXPERIMENT
 //#undef SPEEDUPEXPERIMENT
 
-#ifdef SPEEDUPEXPERIMENT
+#if defined(SPEEDUPEXPERIMENT)
     real_t digits;
     uint8_t significantDigitsMem = significantDigits;
     int32_t digitsN = 0;
     WP34S_Ln(&acc, &digits, &ctxtReal39);
     realDivide(&digits, const_ln10, &digits, &ctxtReal39);
     digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
-    #ifdef PC_BUILD
+    #if defined(PC_BUILD)
       printRealToConsole(&digits, "digits: ","\n");
       printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN, smallerEpsilon);
       printRealToConsole(&acc, "acc: ","\n");
       printRealToConsole(&llim, "llim: ","\n");
       printRealToConsole(&ulim, "ulim: ","\n");
-    #endif
+    #endif // PC_BUILD
 
     if(digitsN == 6) {
-      #ifdef PC_BUILD
+      #if defined(PC_BUILD)
         printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n",digitsN+3);
-      #endif
+      #endif // PC_BUILD
       significantDigits = digitsN+3;
       ctxtReal4.digits  = 7;
       ctxtReal34.digits = digitsN+3;
@@ -180,9 +180,9 @@ saveForUndo();
       ctxtReal75.digits = 75;
     }
     else if(digitsN <= 10) {
-      #ifdef PC_BUILD
+      #if defined(PC_BUILD)
         printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
-      #endif
+      #endif // PC_BUILD
       significantDigits = digitsN+3;
       ctxtReal4.digits  = digitsN+3;
       ctxtReal34.digits = digitsN+3;
@@ -207,21 +207,21 @@ saveForUndo();
       ctxtReal75.digits = 75;
     }
     else {
-    #ifdef PC_BUILD
+    #if defined(PC_BUILD)
       printf("Temporary Debugging info. Can be deleted once done.\n");
       printRealToConsole(&llim, "llim:", "\n");
       printRealToConsole(&ulim, "ulim:", "\n");
       printRealToConsole(&acc, "acc:", "\n");
-    #endif //PC_BUILD
+    #endif // PC_BUILD
     integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-    #ifdef PC_BUILD
+    #if defined(PC_BUILD)
       printf("Temporary Debugging info. Can be deleted once done.\n");
       printRealToConsole(&res, "res:", "\n");
-    #endif //PC_BUILD
+    #endif // PC_BUILD
     }
-#else //SPEEDUPEXPERIMENT
+#else // !SPEEDUPEXPERIMENT
     integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-#endif //SPEEDUPEXPERIMENT
+#endif // SPEEDUPEXPERIMENT
 
 done:
     fnUndo(0);
@@ -440,7 +440,7 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
   real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
   showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
   displayFormatDigits = savedDisplayFormatDigits;
-  #if defined DMCP_BUILD
+  #if defined(DMCP_BUILD)
     lcd_refresh();
   #endif //DMCP_BUILD
 }
@@ -520,7 +520,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // here in the expsinh case ----------------
     const real_t *aa = a, *bb = b;
     if(realIsInfinite(b)) {
-      bb = a; aa = b; // now X is the finite limit
+      bb = a;
+      aa = b; // now X is the finite limit
     }
     if(realCompareGreaterThan(bb, aa)) { // finite limit > infinite one?
       left = true; // yes, left case
@@ -902,7 +903,8 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   real_t eps, tol, h;
   real_t t, w, r, fp;
   real_t fm, p, expt, u;
-  real_t ssp, ss, sslast; real_t x;
+  real_t ssp, ss, sslast;
+  real_t x;
 
   real_t tmp;
   int k, maxlevel, j, evals;
@@ -928,14 +930,14 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   // max level
   maxlevel = 7;
 
-  #ifdef PC_BUILD
+  #if defined(PC_BUILD)
     printf"Temporary Debugging info. Can be deleted once done.\n";
     printRealToConsole(acc, "acc:", "\n");
     printRealToConsole(&eps, "eps:", "\n");
     printf("digits %i\n",realContext->digits);
     printf("regist %u\n",regist);
     printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
-  #endif //PC_BUILD
+  #endif // PC_BUILD
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
@@ -1137,7 +1139,9 @@ static real_t* exp_sinh_opt_d(calcRegister_t regist, const real_t* a, const real
 
   DEI_xeq_user_adr(regist, a, d, const_2, &fl, &fr, &h2, realContext);
 
-  if(IS_INFINITE(&h2) || (realIsZero(&fl) && realIsZero(&fr))) return d;
+  if(IS_INFINITE(&h2) || (realIsZero(&fl) && realIsZero(&fr))) {
+    return d;
+  }
   // function undefined or zero - don't bother.
 
   uint16_t i = 1, j = 32; // j=32 is optimal to find r
@@ -1362,15 +1366,17 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
         realAdd(a, &x, &s1, realContext);
         if(realCompareGreaterThan(&s1, a)) { // if too close to a then reuse previous fp
           DEI_xeq_user(regist, &s1, &y, realContext);
-          if(!realIsInfinite(&y))
+          if(!realIsInfinite(&y)) {
             realCopy(&y, &fp);  // if f(x) is finite, add to local sum
+          }
         }
 
         realSubtract(b, &x, &s1, realContext);
         if(realCompareLessThan(&s1, b)) { // if too close to a then reuse previous fp
           DEI_xeq_user(regist, &s1, &y, realContext);
-          if(!realIsInfinite(&y))
+          if(!realIsInfinite(&y)) {
             realCopy(&y, &fm);  // if f(x) is finite, add to local sum
+          }
         }
 
         realAdd(&fp, &fm, &s1, realContext);

@@ -382,8 +382,9 @@ void defineCurrentProgramFromCurrentStep(void) {
 
 
 void scrollPemBackwards(void) {
-  if(firstDisplayedLocalStepNumber > 0)
+  if(firstDisplayedLocalStepNumber > 0) {
     --firstDisplayedLocalStepNumber;
+  }
   defineFirstDisplayedStep();
 }
 
@@ -1067,7 +1068,7 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
         *(tmpPtr - 1) = editingLiteralType;  // [DL] force literal type when editing angles
       }
       *tmpPtr++ = stringByteLength(numBuffer);
-      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
+      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
       if(doInsertInProgram) {
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + offset);
         --currentLocalStepNumber;
@@ -1195,10 +1196,12 @@ void pemCloseNumberInput(void) {
           }
           if(*imag == 'i') {
             if(imag > numBuffer && *(imag - 1) == '-') {
-              *imag = '-'; *(imag - 1) = 0;
+              *imag = '-';
+              *(imag - 1) = 0;
             }
             else if(imag > numBuffer && *(imag - 1) == '+') {
-              *imag = 0; *(imag - 1) = 0;
+              *imag = 0;
+              *(imag - 1) = 0;
               ++imag;
             }
             else {
@@ -1579,7 +1582,8 @@ void insertStepInProgram(const int16_t func) {
           }
           if(func == VAR_UX || func == VAR_LX) {
             tmpString[5] = 'X';
-          } else {
+          }
+          else {
             tmpString[5] = 'Y';
           }
           _insertInProgram((uint8_t *)tmpString, 6);

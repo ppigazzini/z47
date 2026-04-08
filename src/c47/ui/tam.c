@@ -1241,7 +1241,9 @@ printf("tam.value: %d\n", tam.value);
 
 
   void leaveTamModeIfEnabled(void) {
-    if(!tam.mode) return;
+    if(!tam.mode) {
+      return;
+    }
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
     }

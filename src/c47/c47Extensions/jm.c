@@ -8,29 +8,29 @@
 #if defined(PC_BUILD)
   #if defined(PC_BUILD_TELLTALE)
     static char * getCalcModeName1(uint16_t cm) {
-      if(cm == CM_NORMAL)                return "normal ";
-      if(cm == CM_AIM)                   return "aim    ";
-      if(cm == CM_EIM)                   return "eim    ";
-      if(cm == CM_PEM)                   return "pem    ";
-      if(cm == CM_NIM)                   return "nim    ";
-      if(cm == CM_ASSIGN)                return "assign ";
-      if(cm == CM_REGISTER_BROWSER)      return "reg.bro";
-      if(cm == CM_ASN_BROWSER)           return "asn.bro";
-      if(cm == CM_FLAG_BROWSER)          return "flg.bro";
-      if(cm == CM_FONT_BROWSER)          return "fnt.bro";
-      if(cm == CM_PLOT_STAT)             return "plot.st";
-      if(cm == CM_GRAPH)                 return "plot.gr";
-      if(cm == CM_ERROR_MESSAGE)         return "err.msg";
-      if(cm == CM_BUG_ON_SCREEN)         return "bug.scr";
-      if(cm == CM_MIM)                   return "mim    ";
-      if(cm == CM_EIM)                   return "eim    ";
-      if(cm == CM_TIMER)                 return "timer  ";
-      if(cm == CM_CONFIRMATION)          return "confirm";
-      if(cm == CM_LISTXY)                return "listxy ";    //JM
+      if(cm == CM_NORMAL)           return "normal ";
+      if(cm == CM_AIM)              return "aim    ";
+      if(cm == CM_EIM)              return "eim    ";
+      if(cm == CM_PEM)              return "pem    ";
+      if(cm == CM_NIM)              return "nim    ";
+      if(cm == CM_ASSIGN)           return "assign ";
+      if(cm == CM_REGISTER_BROWSER) return "reg.bro";
+      if(cm == CM_ASN_BROWSER)      return "asn.bro";
+      if(cm == CM_FLAG_BROWSER)     return "flg.bro";
+      if(cm == CM_FONT_BROWSER)     return "fnt.bro";
+      if(cm == CM_PLOT_STAT)        return "plot.st";
+      if(cm == CM_GRAPH)            return "plot.gr";
+      if(cm == CM_ERROR_MESSAGE)    return "err.msg";
+      if(cm == CM_BUG_ON_SCREEN)    return "bug.scr";
+      if(cm == CM_MIM)              return "mim    ";
+      if(cm == CM_EIM)              return "eim    ";
+      if(cm == CM_TIMER)            return "timer  ";
+      if(cm == CM_CONFIRMATION)     return "confirm";
+      if(cm == CM_LISTXY)           return "listxy ";    //JM
       return "???    ";
     }
 
-  static  char * getAlphaCaseName1(uint16_t ac) {
+    static char * getAlphaCaseName1(uint16_t ac) {
       if(ac == AC_LOWER) return "lower";
       if(ac == AC_UPPER) return "upper";
       return "???  ";
@@ -103,7 +103,8 @@ void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
     Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
     fnRefreshState();                                 //drJM
     fnClearFlag(FLAG_USER);
-  } else {
+  }
+  else {
     Norm_Key_00.used = false;
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -127,10 +128,11 @@ void flipPolar(void) {
 
   if(getComplexRegisterPolarMode(REGISTER_X) != amPolar) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);
-  } else {
+  }
+  else {
     fnToRect2(NOPARAM);
-//      setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-  //    setComplexRegisterAngularMode(REGISTER_X, amNone);
+    //setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+    //setComplexRegisterAngularMode(REGISTER_X, amNone);
   }
 }
 

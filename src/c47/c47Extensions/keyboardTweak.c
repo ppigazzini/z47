@@ -153,7 +153,8 @@ void resetKeytimers(void) {
       #if defined(PC_BUILD)
       if(situation == keypress_fff) {
         jm_show_calc_state("keyboardtweak.c: fg_processing_jm: openHOMEorMyM");
-      } else if(situation == keypress_long_f) {
+      }
+      else if(situation == keypress_long_f) {
         jm_show_calc_state("screen.c: Shft_handler: openHOMEorMyM");
       }
       #endif // PC_BUILD
@@ -588,14 +589,15 @@ void resetKeytimers(void) {
           break;
         }
 
-        default : {
+        default: {
           switch(*result) {
             case ITM_EXIT1    :                     // This is for modes not handles: ASSING, NORMAL, NIM, AIM, EIM handled above
               if(calcModel == USER_C47) {
                 longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
                 longpressDelayedkey2 = 0;
                 longpressDelayedkey3 = 0;
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = ITM_SNAP;
                 longpressDelayedkey2 = 0;
                 longpressDelayedkey3 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
@@ -785,7 +787,9 @@ void resetKeytimers(void) {
         exexute_double_g = false;
       }
       //PLACE ANY CONDITION PREVENTING DOUBLE CLICK HERE
-      //  old:if(softmenuStack[0].softmenuId == 0) exexute_double_g = false; //JM prevent double click from executing nothing and showing a line, if no menu is showing
+      //  old:if(softmenuStack[0].softmenuId == 0) {
+      //    exexute_double_g = false; //JM prevent double click from executing nothing and showing a line, if no menu is showing
+      //  }
     }
     else {
       FN_handle_timed_out_to_EXEC = true;

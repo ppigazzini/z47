@@ -172,12 +172,14 @@ void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, cons
 void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
   if(realContext->digits <= 75) {
     divComplexComplex75(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
-#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
-  } else
+  #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
+  }
+  else
   if(realContext->digits <= 159) {
     divComplexComplex159(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
-#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
-  } else {
+  #endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
+  }
+  else {
     sprintf(errorMessage, "Exceed digits :divComplexComplex: %d", (int)realContext->digits);
     displayBugScreen(errorMessage);
   }

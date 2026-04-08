@@ -186,7 +186,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   real34ToDisplayString(real34, amNone, tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, true, STD_SPACE_PUNCTUATION, true);
   grpGroupingRight = grpGroupingRightOld;
   grpGroupingLeft  = grpGroupingLeftOld;
-  //printf("**[DL]** _real34ToNim tmpString %s\n",tmpString);fflush(stdout);
+  //printf("**[DL]** _real34ToNim tmpString %s\n", tmpString);
+  //fflush(stdout);
 
   bool noDisplayExponent = true;
   for(i = 0; i < strlen(tmpString); i++) {
@@ -199,7 +200,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   real34ToString(real34, nimDisplay);
   grpGroupingRight = grpGroupingRightOld;
   grpGroupingLeft  = grpGroupingLeftOld;
-  //printf("**[DL]** _real34ToNim nimBufferDisplay %s\n",nimBufferDisplay);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimBufferDisplay %s\n", nimBufferDisplay);
+  //fflush(stdout);
   bool dotFound = false;
   if(noDisplayExponent) {                                // if no exponent in display string but exponent in real34ToString, use the display string
     for(i = 0; i < strlen(nimDisplay); i++) {
@@ -229,7 +231,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   else {
     strcpy(nimInput, nimDisplay);
   }
-  //printf("**[DL]** _real34ToNim nimInput %s\n",nimInput);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimInput %s\n", nimInput);
+  //fflush(stdout);
   bool exponentFound = false;
   dotFound = false;
   for(i = 0; i < strlen(nimInput); i++) {
@@ -251,7 +254,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   }
   strcpy(nimDisplay, STD_SPACE_HAIR);
   nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
-  //printf("**[DL]** _real34ToNim nimDisplay %s\n",nimDisplay+2);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimDisplay %s\n", nimDisplay+2);
+  //fflush(stdout);
   for(i=stringByteLength(nimDisplay) - 1; i>0; i--) {
     if(nimDisplay[i] == (char)0xab) {    //token
       nimDisplay[i] = SEPARATOR_LEFT[0];
@@ -300,7 +304,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
       char    varOrLblName[8];
     #endif
 
-    if(tam.mode != 0) goto err;
+    if(tam.mode != 0) {
+      goto err;
+    }
     switch(calcMode) {
       case CM_NORMAL :
         if(currentMenu() == -MNU_EQN || currentMenu() == -MNU_Sfdx || currentMenu() == -MNU_Solver_TOOL || currentMenu() == -MNU_Sf_TOOL || currentMenu() == -MNU_GRAPHS ||
@@ -352,7 +358,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 hexDigits = 0;
                 nimNumberPart = NP_INT_10;
                 //clearRegisterLine(NIM_REGISTER_LINE, true, true);
-                if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                if(!checkHP) {
+                  clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                }
                 xCursor = 1;
                 cursorEnabled = true;
                 cursorFont = &numericFont;
@@ -430,7 +438,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               //printf("**[DL]** AngularMode %d\n", getRegisterAngularMode(REGISTER_X));
               //fflush(stdout);
               hexDigits = 0;
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -528,7 +538,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
               //real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
               hexDigits = 0;
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -614,7 +626,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               freeRegisterData(REGISTER_X);
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
               setRegisterDataType(REGISTER_X, dtReal34, amNone);
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -635,7 +649,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         break;
 
       case CM_PEM : {
-        if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) return; // Don't try to edit step 000 or END or .END.
+        if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) {
+          return; // Don't try to edit step 000 or END or .END.
+        }
         //printf("**[DL]** currentLocalStepNumber %d\n", currentLocalStepNumber);
         //fflush(stdout);
         int16_t i = 0;
@@ -647,7 +663,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         }
         uint8_t opParam  = currentStep[i++];
         #if !defined(SAVE_SPACE_DM42_23_EDIT2)
-        uint8_t opParam2 = currentStep[i++];
+          uint8_t opParam2 = currentStep[i++];
           uint8_t opParam3 = currentStep[i];
         #endif
 
@@ -730,7 +746,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                   break;
                 case '+':
-                  if(chsNeeded)  pemAddNumber(ITM_CHS, false);  // '-' was already encountered, let's first negate the real part
+                  if(chsNeeded) {
+                    pemAddNumber(ITM_CHS, false);  // '-' was already encountered, let's first negate the real part
+                  }
                   chsNeeded = false;
                   if(opParam == BINARY_COMPLEX34) {
                     //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
@@ -747,7 +765,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                     }
                   }
                   else {
-                    if(chsNeeded) pemAddNumber(ITM_CHS, false);  // second time '-' is encountered, let's first negate the real part
+                    if(chsNeeded) {
+                      pemAddNumber(ITM_CHS, false);  // second time '-' is encountered, let's first negate the real part
+                    }
                     chsNeeded = true;
                     if(opParam == BINARY_COMPLEX34) {
                       //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
@@ -766,7 +786,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                   break;
                 case 'e':
-                  if(chsNeeded) pemAddNumber(ITM_CHS, false);           // change mantissa sign before entering exponent
+                  if(chsNeeded) {
+                    pemAddNumber(ITM_CHS, false);           // change mantissa sign before entering exponent
+                  }
                   chsNeeded = false;
                   pemAddNumber(ITM_EXPONENT, false);
                   break;
@@ -780,7 +802,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   //fflush(stdout);
                   if((tempBuffer[i] == STD_CROSS[1]) && (nimNumberPart != NP_COMPLEX_INT_PART)) {
                     i += 2; // Skip next character (STD_BASE_10)
-                    if(chsNeeded) pemAddNumber(ITM_CHS, false);         // change mantissa sign before entering exponent
+                    if(chsNeeded) {
+                      pemAddNumber(ITM_CHS, false);         // change mantissa sign before entering exponent
+                    }
                     chsNeeded = false;
                     pemAddNumber(ITM_EXPONENT, false);
                   }
@@ -798,8 +822,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   else if(tempBuffer[i] == STD_SUP_MINUS[1]) {
                     chsNeeded = true;
                   }
-                  else if(((tempBuffer[i] == STD_op_i[1]) || (tempBuffer[i] == STD_op_j[1])) &&
-                          (nimNumberPart != NP_COMPLEX_INT_PART)) {
+                  else if(((tempBuffer[i] == STD_op_i[1]) || (tempBuffer[i] == STD_op_j[1])) && (nimNumberPart != NP_COMPLEX_INT_PART)) {
                     //printf("**[DL]** fnEdit pemAddNumber ITM_op_j aimBuffer %s\n", aimBuffer);
                     //fflush(stdout);
                     pemAddNumber(ITM_CC, false);
@@ -834,7 +857,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               }
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
-            if(chsNeeded) pemAddNumber(ITM_CHS, false);
+            if(chsNeeded) {
+              pemAddNumber(ITM_CHS, false);
+            }
             switch(opParam) {
               case STRING_DATE:
               case STRING_TIME:
@@ -881,7 +906,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             case PARAM_SHUFFLE:              // Used only for "<>"
             case PARAM_MENU: {               // Used only for "OPENM"
               deleteStepsFromTo(currentStep, findNextStep(currentStep));
-              if(!pemCursorIsZerothStep) fnBst(NOPARAM);
+              if(!pemCursorIsZerothStep) {
+                fnBst(NOPARAM);
+              }
               tamEnterMode(func);
 
               uint8_t maxDigits = tam.max < 10 ? 1 : (tam.max < 100 ? 2 : (tam.max < 1000 ? 3 : (tam.max < 10000 ? 4 : 5)));
@@ -1014,7 +1041,7 @@ err:
 }
 
 
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   int32_t vol = 0;
@@ -1027,7 +1054,7 @@ err:
   _Buzz(100, 5);
   fnSetVolume((uint16_t)vol);
 }
-#endif //DMCP_BUILD
+#endif // DMCP_BUILD
 
 
 bool_t anyKeyWaiting(void) {
@@ -1061,7 +1088,9 @@ bool_t exitKeyWaiting(void) {
 int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
-    if(!anyKeyWaiting()) return -1;
+    if(!anyKeyWaiting()) {
+      return -1;
+    }
     if(displayWaitForRelease) {
       #if defined(VERBOSEKEYS_BUFFERED)
         showString("Key(s) buffered ...", &standardFont, 20, 40, vmNormal, false, false);
@@ -1079,7 +1108,7 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     int tmpz = -1;
     while(anyKeyWaiting()) {
       tmpz = key_pop();
-      if(tmpz > 0) tmpf = tmpz;                     //use the last key in the buffer
+      if(tmpz > 0)   tmpf = tmpz;                   //use the last key in the buffer
       if(tmpz == 44) signalToDoScreenDump = true;   //if any key in the buffer is 44
       if(tmpz == 33) signalToDoEXIT = true;
       if(tmpz == 36) signalToDoRS = true;
@@ -1413,7 +1442,9 @@ void fnMultiplySI(uint16_t multiplier) {
 #define forcedLiftTheStack true
 
 static void cpxToStk(const real_t *real1, const real_t *real2, const bool_t sl) {
-  if(sl == forcedLiftTheStack) setSystemFlag(FLAG_ASLIFT);
+  if(sl == forcedLiftTheStack) {
+    setSystemFlag(FLAG_ASLIFT);
+  }
   liftStack();
 //  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 //  realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
@@ -1589,7 +1620,8 @@ void fnConvertStkToMx(uint16_t constVector) {
   if(vecCreate[constVector].xdef < 2 || vecCreate[constVector].ydef < 2 || vecCreate[constVector].zdef < 2) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-  } else {
+  }
+  else {
     fnDrop(NOPARAM);
     if(elements > 2) {
       fnDrop(NOPARAM);
@@ -1615,7 +1647,8 @@ void fnConvertStkToMx(uint16_t constVector) {
 
   if(complexCoefs) {
     linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
-  } else {
+  }
+  else {
     linkToRealMatrixRegister(REGISTER_X,  &matrix);
   }
 
@@ -1657,7 +1690,8 @@ void fnConvertMxToStk(uint16_t param) {
 
   if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
     linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
-  } else {
+  }
+  else {
     linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
   }
 
@@ -1681,7 +1715,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
   if(calcMode == CM_NIM) {
     if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#')
         || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
-      #if defined (PC_BUILD)
+      #if defined(PC_BUILD)
         printf("Do not react when in NIM SI\n");
       #endif //PC_BUILD
       return;
@@ -1746,7 +1780,8 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
         (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = SIprefixes[exponent + 30];
         if(displayString[1] == 'u') {
-          displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1];
+          displayString[1] = STD_mu[0];
+          displayString[2] = STD_mu[1];
         }
       }
   }
@@ -2120,8 +2155,12 @@ void fnP_All_Regs(uint16_t option) {
       case PRN_ALL:
         stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
 
 
         //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
@@ -2141,11 +2180,15 @@ void fnP_All_Regs(uint16_t option) {
         break;
 
       case PRN_LOCALr:
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
         break;
 
       case PRN_NAMEDr:
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
         break;
 
       case PRN_Xr:
@@ -2826,7 +2869,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     //See if the multiplier to the constant has a whole denominator
 
 #define IRFRAC_ENGINE
-#ifndef IRFRAC_ENGINE
+#if !defined(IRFRAC_ENGINE)
     //* This section uses the standard fraction() to calculate the denominator
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
@@ -2835,11 +2878,10 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
     //printf("aaaaaaa: %i%llu + %llu / %llu \n", sign1, intPart, numer, denom);
     int32_t smallestDenom = denom;
-#endif //FRACT_ENGINE
-#ifdef IRFRAC_ENGINE
+#else // FRACT_ENGINE
     //* This section uses the new special demoninator search engine
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
-#endif //IRFRAC_ENGINE
+#endif // !IRFRAC_ENGINE
 
 
     //Create a new constant comprising the constant divided by the whole denominator
@@ -2966,7 +3008,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
-    } else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
+    }
+    else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
         if(smallestDenom == 1) {
           return false;   //unlikely
           //return false, to abort and use standard decimal instead of "1."
@@ -3447,9 +3490,9 @@ int16_t mm(int16_t id) {
     #define offs 1                                  // X-offset adjustment
     for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1]);
-      #ifdef DOUBLE
+      #if defined(DOUBLE)
         placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Duplicate row above for thickness
-      #endif
+      #endif // DOUBLE
     }
   }
 

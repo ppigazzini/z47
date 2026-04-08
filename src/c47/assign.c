@@ -1078,7 +1078,7 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      #ifdef PC_BUILD
+      #if defined(PC_BUILD)
       if(name == NULL) {
         abortf("The parameter name is NULL!\n");
       }
