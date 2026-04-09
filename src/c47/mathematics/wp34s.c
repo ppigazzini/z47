@@ -276,7 +276,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
@@ -536,7 +536,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }

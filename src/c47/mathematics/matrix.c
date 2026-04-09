@@ -384,7 +384,7 @@ bool_t saveStatsMatrix(void) {
 
   #if defined(DEBUGUNDO)
     printf(">>> saveStatsMatrix\n");
-    printRegisterToConsole(regStats, "...STATS:\n","\n");
+    printRegisterToConsole(regStats, "...STATS:\n", "\n");
     printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS, "...pre-save: TEMP_REGISTER_2_SAVED_STATS:\n", "\n");
   #endif // DEBUGUNDO
 
@@ -397,9 +397,9 @@ bool_t saveStatsMatrix(void) {
       if(initMatrixRegister(TEMP_REGISTER_2_SAVED_STATS, rows, cols, false)) {
         copySourceRegisterToDestRegister(regStats, TEMP_REGISTER_2_SAVED_STATS);
         #if defined(DEBUGUNDO)
-          printf(">>>saveStatsMatrix:    backing up STATS matrix containing %i rows and %i columns\n",rows, cols);
+          printf(">>>saveStatsMatrix:    backing up STATS matrix containing %i rows and %i columns\n", rows, cols);
           regStats = findNamedVariable("STATS");
-          printRegisterToConsole(regStats, "...STATS:\n","\n");
+          printRegisterToConsole(regStats, "...STATS:\n", "\n");
           printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS, "post save: ...TEMP_REGISTER_2_SAVED_STATS:\n", "\n");
         #endif // DEBUGUNDO
         return true; //backed up
@@ -447,12 +447,12 @@ bool_t recallStatsMatrix(void) {
       clearRegister(regStats);
 
       #if defined(DEBUGUNDO)
-        printf("Trying to initialize matrix: R=%d C=%d into register: %d\n",rows, cols, regStats);
+        printf("Trying to initialize matrix: R=%d C=%d into register: %d\n", rows, cols, regStats);
       #endif // DEBUGUNDO
       //Initialize Memory for Matrix
       if(initMatrixRegister(regStats, rows, cols, false)) {
         #if defined(DEBUGUNDO)
-          printf(">>>    restoring STATS matrix containing %i rows and %i columns\n",rows, cols);
+          printf(">>>    restoring STATS matrix containing %i rows and %i columns\n", rows, cols);
         #endif // DEBUGUNDO
         copySourceRegisterToDestRegister(TEMP_REGISTER_2_SAVED_STATS, regStats);
         clearRegister(TEMP_REGISTER_2_SAVED_STATS);
@@ -1308,7 +1308,7 @@ static void extractDiagonalToRowReal34Matrix(const real34Matrix_t *source, real3
     for(uint32_t i = 0; i < size; i++) {
       real34Plus(&source->matrixElements[i * size + i], &dest->matrixElements[i]);
       #if defined(EIGEN_TESTOUT)
-        real34ToString(&dest->matrixElements[i],ts);
+        real34ToString(&dest->matrixElements[i], ts);
         printf("%s%s", ts, (int32_t)i == (int32_t)(size-1) ? "" : ",");
       #endif //EIGEN_TESTOUT
     }
@@ -1336,9 +1336,9 @@ static void extractDiagonalToRowComplex34Matrix(const complex34Matrix_t *source,
       real34Plus(VARIABLE_REAL34_DATA(&source->matrixElements[i * size + i]), VARIABLE_REAL34_DATA(&dest->matrixElements[i]));
       real34Plus(VARIABLE_IMAG34_DATA(&source->matrixElements[i * size + i]), VARIABLE_IMAG34_DATA(&dest->matrixElements[i]));
       #if defined(EIGEN_TESTOUT)
-        real34ToString(VARIABLE_REAL34_DATA(&dest->matrixElements[i]),ts);
-        printf("%s",ts);
-        real34ToString(VARIABLE_IMAG34_DATA(&dest->matrixElements[i]),ts);
+        real34ToString(VARIABLE_REAL34_DATA(&dest->matrixElements[i]), ts);
+        printf("%s", ts);
+        real34ToString(VARIABLE_IMAG34_DATA(&dest->matrixElements[i]), ts);
         printf("i%s%s", ts, (int32_t)i == (int32_t)(size-1) ? "" : ",");
       #endif //EIGEN_TESTOUT
     }
@@ -5430,7 +5430,7 @@ static void solveEigenBlock(real_t *a, real_t *eig, uint16_t size, int first_unc
     real_t ev_im[3];
     // Dispatch correct solver
     if(n == 2) {
-        calculateEigenvalues22(block, 2, &ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],is_real_symmetric, realContext);
+        calculateEigenvalues22(block, 2, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], is_real_symmetric, realContext);
         #if defined(EIGENDEBUG)
            printf("Eigenvalues from 2x2 solver:\n");
            printRealToConsole(&ev_re[0], "  ev1 = ", " + ");
@@ -5440,7 +5440,7 @@ static void solveEigenBlock(real_t *a, real_t *eig, uint16_t size, int first_unc
         #endif
     }
     else if(n == 3) {
-        calculateEigenvalues33(block, 3, &ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],&ev_re[2], &ev_im[2],is_real_symmetric, realContext);
+        calculateEigenvalues33(block, 3, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], &ev_re[2], &ev_im[2], is_real_symmetric, realContext);
         #if defined(EIGENDEBUG)
            printf("Eigenvalues from 3x3 solver:\n");
            for(int i = 0; i < 3; i++) {
@@ -5605,7 +5605,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
       printRealToConsole(&tol, "calculateEigenvalues deep tolerance: ", " ");
       printf("called with realContext = %d digits, ", (int)(realContext->digits));
       printRealToConsole(&SumTolerance, "user tolerance + extra: ", "\n");
-      printf("significantDigits=%d\n",significantDigits);
+      printf("significantDigits=%d\n", significantDigits);
     #endif
 
     bool_t is_sym_tridiag = isSymmetricTridiagonal(a, size, realContext);
@@ -5683,7 +5683,7 @@ if(iteration % 20 == 0) {
           }
         }
         if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Exit while calculating");
@@ -5757,8 +5757,8 @@ if(iteration % 20 == 0) {
       QR_decomposition_householder(a, size, q, r, realContext);
                                                                                               #if defined(EIGENDEBUG)
                                                                                               if(iteration % 100 == 0 || iteration < 2) {
-                                                                                                printf("\n---iterationA %5d ",iteration);
-                                                                                                printRealToConsole(&tol, "\nTolA:",": \n");
+                                                                                                printf("\n---iterationA %5d ", iteration);
+                                                                                                printRealToConsole(&tol, "\nTolA:", ": \n");
                                                                                                 #if defined(EIGENDEBUG_QR)
                                                                                                 printComplexMatrix("Q matrix QQQ:", q, size, size, &ctxtReal4);
                                                                                                 printComplexMatrix("R matrix RRR:", r, size, size, &ctxtReal4);
@@ -6040,7 +6040,7 @@ if(iteration % 20 == 0) {
 
       #if defined(EIGENDEBUG1)
       if((iteration == 1000 || iteration == 1020)) {
-        printf("Deflation check at iter %d: position [%d][%d], mag=",iteration, i, i-1);
+        printf("Deflation check at iter %d: position [%d][%d], mag=", iteration, i, i-1);
         printRealToConsole(&subdiag_mag, "", ", threshold=");
         printRealToConsole(&threshold, "", ", deflate?");
         printf(" %d\n", realCompareLessThan(&subdiag_mag, &threshold));
@@ -6582,7 +6582,7 @@ if(iteration % 20 == 0) {
     clearSystemFlag(FLAG_SOLVING);
   }
   #if defined(PC_BUILD)
-    printf("End of EIGEN, %d iterations\n",iteration);
+    printf("End of EIGEN, %d iterations\n", iteration);
   #endif
 
 }

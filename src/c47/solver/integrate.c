@@ -125,7 +125,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
-    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
+    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
       realSetZero(&res);
       realSetZero(&acc);
       goto done;
@@ -145,16 +145,16 @@ saveForUndo();
     realDivide(&digits, const_ln10, &digits, &ctxtReal39);
     digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
     #if defined(PC_BUILD)
-      printRealToConsole(&digits, "digits: ","\n");
-      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN, smallerEpsilon);
-      printRealToConsole(&acc, "acc: ","\n");
-      printRealToConsole(&llim, "llim: ","\n");
-      printRealToConsole(&ulim, "ulim: ","\n");
+      printRealToConsole(&digits, "digits: ", "\n");
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n", digitsN, smallerEpsilon);
+      printRealToConsole(&acc, "acc: ", "\n");
+      printRealToConsole(&llim, "llim: ", "\n");
+      printRealToConsole(&ulim, "ulim: ", "\n");
     #endif // PC_BUILD
 
     if(digitsN == 6) {
       #if defined(PC_BUILD)
-        printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n",digitsN+3);
+        printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n", digitsN+3);
       #endif // PC_BUILD
       significantDigits = digitsN+3;
       ctxtReal4.digits  = 7;
@@ -181,7 +181,7 @@ saveForUndo();
     }
     else if(digitsN <= 10) {
       #if defined(PC_BUILD)
-        printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
+        printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n", digitsN+3);
       #endif // PC_BUILD
       significantDigits = digitsN+3;
       ctxtReal4.digits  = digitsN+3;
@@ -934,9 +934,9 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     printf"Temporary Debugging info. Can be deleted once done.\n";
     printRealToConsole(acc, "acc:", "\n");
     printRealToConsole(&eps, "eps:", "\n");
-    printf("digits %i\n",realContext->digits);
-    printf("regist %u\n",regist);
-    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
+    printf("digits %i\n", realContext->digits);
+    printf("regist %u\n", regist);
+    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n", currentSolverStatus, screenUpdatingMode);
   #endif // PC_BUILD
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length

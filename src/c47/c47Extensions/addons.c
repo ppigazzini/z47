@@ -1259,7 +1259,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
+          printf("\n ------- 003 >>>%s<<<\n", tmpString100_OUT);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -1699,11 +1699,11 @@ void fnConvertMxToStk(uint16_t param) {
   for(int i = 0; i < 3; i++) {
     uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]), REGISTER_REAL34_DATA(rg));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]), REGISTER_IMAG34_DATA(rg));
     }
     else {
-      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
+      real34Copy(&matrix.matrixElements[i], REGISTER_REAL34_DATA(rg));
     }
     adjustResult(rg, false, false, rg, -1, -1);
   }
@@ -2742,7 +2742,7 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     if(realIsSpecial(&xx)) {
       #if defined(PC_BUILD)
         errorf("Representation failure. Quitting fraction loop.");
-        printRealToConsole(&xx, "xx:","\n");
+        printRealToConsole(&xx, "xx:", "\n");
         fflush(stderr);
       #endif //PC_BUILD
       dd = 1;
@@ -3004,7 +3004,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           sprintf(resultingIntStr, "%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
-          sprintf(tmpstr, "%i%s",(int)multipleOfNewConstantInteger, PRODUCT_SIGN);
+          sprintf(tmpstr, "%i%s", (int)multipleOfNewConstantInteger, PRODUCT_SIGN);
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
@@ -3261,48 +3261,29 @@ int16_t mm(int16_t id) {
   void RB_CHECKED(uint32_t xx, uint32_t yy) {
     // BLACK pixels: outer ring + center dot (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
-      // Column 1: yy+3..yy+7
-      {1,3}, {1,4}, {1,5}, {1,6}, {1,7},
-      // Column 2: yy+2..yy+8
-      {2,2}, {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8},
-      // Column 3: yy+1..yy+3, yy+7..yy+9
-      {3,1}, {3,2}, {3,3}, {3,7}, {3,8}, {3,9},
-      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1}, {4,2}, {4,4}, {4,5}, {4,6}, {4,8}, {4,9},
-      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1}, {5,2}, {5,4}, {5,5}, {5,6}, {5,8}, {5,9},
-      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1}, {6,2}, {6,4}, {6,5}, {6,6}, {6,8}, {6,9},
-      // Column 7: yy+1..yy+3, yy+7..yy+9
-      {7,1}, {7,2}, {7,3}, {7,7}, {7,8}, {7,9},
-      // Column 8: yy+2..yy+8
-      {8,2}, {8,3}, {8,4}, {8,5}, {8,6}, {8,7}, {8,8},
-      // Column 9: yy+3..yy+7
-      {9,3}, {9,4}, {9,5}, {9,6}, {9,7}
+      {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},                   // Column 1: yy+3..yy+7
+      {2, 2},  {2, 3},  {2, 4},  {2, 5},  {2, 6},  {2, 7},  {2, 8}, // Column 2: yy+2..yy+8
+      {3, 1},  {3, 2},  {3, 3},  {3, 7},  {3, 8},  {3, 9},          // Column 3: yy+1..yy+3, yy+7..yy+9
+      {4, 1},  {4, 2},  {4, 4},  {4, 5},  {4, 6},  {4, 8},  {4, 9}, // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5, 1},  {5, 2},  {5, 4},  {5, 5},  {5, 6},  {5, 8},  {5, 9}, // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6, 1},  {6, 2},  {6, 4},  {6, 5},  {6, 6},  {6, 8},  {6, 9}, // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {7, 1},  {7, 2},  {7, 3},  {7, 7},  {7, 8},  {7, 9},          // Column 7: yy+1..yy+3, yy+7..yy+9
+      {8, 2},  {8, 3},  {8, 4},  {8, 5},  {8, 6},  {8, 7},  {8, 8}, // Column 8: yy+2..yy+8
+      {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7}                    // Column 9: yy+3..yy+7
     };
 
     // WHITE pixels: background borders and gaps creating ring shape
     TO_QSPI static const uint8_t rbWhite[][2] = {
-      // Column 0: yy+2..yy+8 (left border)
-      {0,2}, {0,3}, {0,4},  {0,5}, {0,6}, {0,7}, {0,8},
-      // Column 1: yy+1, yy+8, yy+9
-      {1,1}, {1,8}, {1,9},
-      // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0}, {2,1}, {2,9}, {2,10},
-      // Column 3: yy+0, yy+4..yy+6, yy+10
-      {3,0}, {3,4}, {3,5}, {3,6}, {3,10},
-      // Column 4: yy+0, yy+3, yy+7, yy+10
-      {4,0}, {4,3}, {4,7}, {4,10},
-      // Column 5: yy+0, yy+3, yy+7, yy+10
-      {5,0}, {5,3}, {5,7}, {5,10},
-      // Column 6: yy+0, yy+3, yy+7, yy+10
-      {6,0}, {6,3}, {6,7}, {6,10},
-      // Column 7: yy+0, yy+4..yy+6, yy+10
-      {7,0}, {7,4}, {7,5}, {7,6}, {7,10},
-      // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0}, {8,1}, {8,9}, {8,10},
-      // Column 9: yy+1, yy+8, yy+9
-      {9,1}, {9,8}, {9,9}
+      {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8}, // Column 0: yy+2..yy+8 (left border)
+      {1, 1},  {1, 8},  {1, 9},                                      // Column 1: yy+1, yy+8, yy+9
+      {2, 0},  {2, 1},  {2, 9},  {2, 10},                            // Column 2: yy+0, yy+1, yy+9, yy+10
+      {3, 0},  {3, 4},  {3, 5},  {3, 6},  {3, 10},                   // Column 3: yy+0, yy+4..yy+6, yy+10
+      {4, 0},  {4, 3},  {4, 7},  {4, 10},                            // Column 4: yy+0, yy+3, yy+7, yy+10
+      {5, 0},  {5, 3},  {5, 7},  {5, 10},                            // Column 5: yy+0, yy+3, yy+7, yy+10
+      {6, 0},  {6, 3},  {6, 7},  {6, 10},                            // Column 6: yy+0, yy+3, yy+7, yy+10
+      {7, 0},  {7, 4},  {7, 5},  {7, 6},  {7, 10},                   // Column 7: yy+0, yy+4..yy+6, yy+10
+      {8, 0},  {8, 1},  {8, 9},  {8, 10},                            // Column 8: yy+0, yy+1, yy+9, yy+10
+      {9, 1},  {9, 8},  {9, 9}                                       // Column 9: yy+1, yy+8, yy+9
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3313,48 +3294,29 @@ int16_t mm(int16_t id) {
   void RB_UNCHECKED(uint32_t xx, uint32_t yy) {
     // BLACK pixels: outer ring only (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
-      // Column 1: yy+3..yy+7
-      {1,3}, {1,4}, {1,5}, {1,6}, {1,7},
-      // Column 2: yy+2, yy+3, yy+7, yy+8
-      {2,2}, {2,3}, {2,7}, {2,8},
-      // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1}, {3,2}, {3,8}, {3,9},
-      // Column 4: yy+1, yy+9
-      {4,1}, {4,9},
-      // Column 5: yy+1, yy+9
-      {5,1}, {5,9},
-      // Column 6: yy+1, yy+9
-      {6,1}, {6,9},
-      // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1}, {7,2}, {7,8}, {7,9},
-      // Column 8: yy+2, yy+3, yy+7, yy+8
-      {8,2}, {8,3}, {8,7}, {8,8},
-      // Column 9: yy+3..yy+7
-      {9,3}, {9,4}, {9,5}, {9,6}, {9,7}
+      {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7}, // Column 1: yy+3..yy+7
+      {2, 2},  {2, 3},  {2, 7},  {2, 8},          // Column 2: yy+2, yy+3, yy+7, yy+8
+      {3, 1},  {3, 2},  {3, 8},  {3, 9},          // Column 3: yy+1, yy+2, yy+8, yy+9
+      {4, 1},  {4, 9},                            // Column 4: yy+1, yy+9
+      {5, 1},  {5, 9},                            // Column 5: yy+1, yy+9
+      {6, 1},  {6, 9},                            // Column 6: yy+1, yy+9
+      {7, 1},  {7, 2},  {7, 8},  {7, 9},          // Column 7: yy+1, yy+2, yy+8, yy+9
+      {8, 2},  {8, 3},  {8, 7},  {8, 8},          // Column 8: yy+2, yy+3, yy+7, yy+8
+      {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7}  // Column 9: yy+3..yy+7
     };
 
     // WHITE pixels: background borders, gaps, and hollow center
     TO_QSPI static const uint8_t rbWhite[][2] = {
-      // Column 0: yy+2..yy+8 (left border)
-      {0,2}, {0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8},
-      // Column 1: yy+1, yy+8, yy+9
-      {1,1}, {1,8}, {1,9},
-      // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0}, {2,1}, {2,9}, {2,10},
-      // Column 3: yy+0, yy+10
-      {3,0}, {3,10},
-      // Column 4: yy+0, yy+10
-      {4,0}, {4,10},
-      // Column 5: yy+0, yy+10
-      {5,0}, {5,10},
-      // Column 6: yy+0, yy+10
-      {6,0}, {6,10},
-      // Column 7: yy+0, yy+10
-      {7,0}, {7,10},
-      // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0}, {8,1}, {8,9}, {8,10},
-      // Column 9: yy+1, yy+8, yy+9
-      {9,1}, {9,8}, {9,9}
+      {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8}, // Column 0: yy+2..yy+8 (left border)
+      {1, 1},  {1, 8},  {1, 9},                                     // Column 1: yy+1, yy+8, yy+9
+      {2, 0},  {2, 1},  {2, 9},  {2, 10},                           // Column 2: yy+0, yy+1, yy+9, yy+10
+      {3, 0},  {3, 10},                                             // Column 3: yy+0, yy+10
+      {4, 0},  {4, 10},                                             // Column 4: yy+0, yy+10
+      {5, 0},  {5, 10},                                             // Column 5: yy+0, yy+10
+      {6, 0},  {6, 10},                                             // Column 6: yy+0, yy+10
+      {7, 0},  {7, 10},                                             // Column 7: yy+0, yy+10
+      {8, 0},  {8, 1},  {8, 9},  {8, 10},                           // Column 8: yy+0, yy+1, yy+9, yy+10
+      {9, 1},  {9, 8},  {9, 9}                                      // Column 9: yy+1, yy+8, yy+9
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3367,48 +3329,30 @@ int16_t mm(int16_t id) {
 
     // BLACK pixels: outer square + inner checkmark pattern
     TO_QSPI static const uint8_t cbBlack[][2] = {
-      // Column 1: yy+1..yy+9 (full)
-      {1,1}, {1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
-      // Column 2: yy+1..yy+9 (full)
-      {2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8}, {2,9},
-      // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1}, {3,2}, {3,8}, {3,9},
-      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1}, {4,2}, {4,4}, {4,5}, {4,6}, {4,8}, {4,9},
-      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1}, {5,2}, {5,4}, {5,5}, {5,6}, {5,8}, {5,9},
-      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1}, {6,2}, {6,4}, {6,5}, {6,6}, {6,8}, {6,9},
-      // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1}, {7,2}, {7,8}, {7,9},
-      // Column 8: yy+1..yy+9 (full)
-      {8,1}, {8,2}, {8,3}, {8,4}, {8,5}, {8,6}, {8,7}, {8,8}, {8,9},
-      // Column 9: yy+1..yy+9 (full)
-      {9,1}, {9,2}, {9,3}, {9,4}, {9,5}, {9,6}, {9,7}, {9,8}, {9,9}
+
+      {1, 1},  {1, 2},  {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},  {1, 8},  {1, 9}, // Column 1: yy+1..yy+9 (full)
+      {2, 1},  {2, 2},  {2, 3},  {2, 4},  {2, 5},  {2, 6},  {2, 7},  {2, 8},  {2, 9}, // Column 2: yy+1..yy+9 (full)
+      {3, 1},  {3, 2},  {3, 8},  {3, 9},                                              // Column 3: yy+1, yy+2, yy+8, yy+9
+      {4, 1},  {4, 2},  {4, 4},  {4, 5},  {4, 6},  {4, 8},  {4, 9},                   // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5, 1},  {5, 2},  {5, 4},  {5, 5},  {5, 6},  {5, 8},  {5, 9},                   // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6, 1},  {6, 2},  {6, 4},  {6, 5},  {6, 6},  {6, 8},  {6, 9},                   // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {7, 1},  {7, 2},  {7, 8},  {7, 9},                                              // Column 7: yy+1, yy+2, yy+8, yy+9
+      {8, 1},  {8, 2},  {8, 3},  {8, 4},  {8, 5},  {8, 6},  {8, 7},  {8, 8},  {8, 9}, // Column 8: yy+1..yy+9 (full)
+      {9, 1},  {9, 2},  {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7},  {9, 8},  {9, 9}  // Column 9: yy+1..yy+9 (full)
     };
 
     // WHITE pixels: background borders and hollow center area
     TO_QSPI static const uint8_t cbWhite[][2] = {
-      // Column 0: yy+0..yy+10 (left border)
-      {0,0}, {0,1},{0,2},{0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8}, {0,9}, {0,10},
-      // Column 1: yy+0, yy+10
-      {1,0}, {1,10},
-      // Column 2: yy+0, yy+10
-      {2,0}, {2,10},
-      // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {3,0}, {3,3}, {3,4}, {3,5}, {3,6}, {3,7}, {3,10},
-      // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {4,0}, {4,3}, {4,7}, {4,10},
-      // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {5,0}, {5,3}, {5,7}, {5,10},
-      // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {6,0}, {6,3}, {6,7}, {6,10},
-      // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {7,0}, {7,3}, {7,4}, {7,5}, {7,6}, {7,7}, {7,10},
-      // Column 8: yy+0, yy+10
-      {8,0}, {8,10},
-      // Column 9: yy+0, yy+10
-      {9,0}, {9,10}
+      {0, 0},  {0, 1},  {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8},  {0, 9},  {0, 10}, // Column 0: yy+0..yy+10 (left border)
+      {1, 0},  {1, 10},                                                                                  // Column 1: yy+0, yy+10
+      {2, 0},  {2, 10},                                                                                  // Column 2: yy+0, yy+10
+      {3, 0},  {3, 3},  {3, 4},  {3, 5},  {3, 6},  {3, 7},  {3, 10},                                     // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {4, 0},  {4, 3},  {4, 7},  {4, 10},                                                                // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {5, 0},  {5, 3},  {5, 7},  {5, 10},                                                                // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {6, 0},  {6, 3},  {6, 7},  {6, 10},                                                                // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {7, 0},  {7, 3},  {7, 4},  {7, 5},  {7, 6},  {7, 7},  {7, 10},                                     // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {8, 0},  {8, 10},                                                                                  // Column 8: yy+0, yy+10
+      {9, 0},  {9, 10}                                                                                   // Column 9: yy+0, yy+10
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3422,47 +3366,30 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer square only (hollow inside)
     TO_QSPI static const uint8_t cbBlack[][2] = {
       // Column 1: yy+1..yy+9 (full)
-      {1,1}, {1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
-      // Column 2: yy+1, yy+9 (top/bottom only)
-      {2,1}, {2,9},
-      // Column 3: yy+1, yy+9
-      {3,1}, {3,9},
-      // Column 4: yy+1, yy+9
-      {4,1}, {4,9},
-      // Column 5: yy+1, yy+9
-      {5,1}, {5,9},
-      // Column 6: yy+1, yy+9
-      {6,1}, {6,9},
-      // Column 7: yy+1, yy+9
-      {7,1}, {7,9},
-      // Column 8: yy+1, yy+9
-      {8,1}, {8,9},
-      // Column 9: yy+1..yy+9 (full)
-      {9,1}, {9,2}, {9,3}, {9,4}, {9,5}, {9,6}, {9,7}, {9,8}, {9,9}
+      {1, 1},  {1, 2},  {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},  {1, 8},  {1, 9},
+      {2, 1},  {2, 9},                                                              // Column 2: yy+1, yy+9 (top/bottom only)
+      {3, 1},  {3, 9},                                                              // Column 3: yy+1, yy+9
+      {4, 1},  {4, 9},                                                              // Column 4: yy+1, yy+9
+      {5, 1},  {5, 9},                                                              // Column 5: yy+1, yy+9
+      {6, 1},  {6, 9},                                                              // Column 6: yy+1, yy+9
+      {7, 1},  {7, 9},                                                              // Column 7: yy+1, yy+9
+      {8, 1},  {8, 9},                                                              // Column 8: yy+1, yy+9
+      {9, 1},  {9, 2},  {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7},  {9, 8}, {9, 9} // Column 9: yy+1..yy+9 (full)
     };
 
     // WHITE pixels: background borders
     TO_QSPI static const uint8_t cbWhite[][2] = {
       // Column 0: yy+0..yy+10 (left border)
-      {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {0,5}, {0,6}, {0,7}, {0,8}, {0,9}, {0,10},
-      // Column 1: yy+0, yy+10
-      {1,0}, {1,10},
-      // Column 2: yy+0, yy+10
-      {2,0}, {2,10},
-      // Column 3: yy+0, yy+10
-      {3,0}, {3,10},
-      // Column 4: yy+0, yy+10
-      {4,0}, {4,10},
-      // Column 5: yy+0, yy+10
-      {5,0}, {5,10},
-      // Column 6: yy+0, yy+10
-      {6,0}, {6,10},
-      // Column 7: yy+0, yy+10
-      {7,0}, {7,10},
-      // Column 8: yy+0, yy+10
-      {8,0}, {8,10},
-      // Column 9: yy+0, yy+10
-      {9,0}, {9,10}
+      {0, 0},  {0, 1},  {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8},  {0, 9},  {0, 10},
+      {1, 0},  {1, 10}, // Column 1: yy+0, yy+10
+      {2, 0},  {2, 10}, // Column 2: yy+0, yy+10
+      {3, 0},  {3, 10}, // Column 3: yy+0, yy+10
+      {4, 0},  {4, 10}, // Column 4: yy+0, yy+10
+      {5, 0},  {5, 10}, // Column 5: yy+0, yy+10
+      {6, 0},  {6, 10}, // Column 6: yy+0, yy+10
+      {7, 0},  {7, 10}, // Column 7: yy+0, yy+10
+      {8, 0},  {8, 10}, // Column 8: yy+0, yy+10
+      {9, 0},  {9, 10}  // Column 9: yy+0, yy+10
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3474,17 +3401,17 @@ int16_t mm(int16_t id) {
     // Diamond outline coordinates (x_offset, y_offset from xx, yy)
     // Forms diamond shape: top point → widest middle → bottom point
     TO_QSPI static const uint8_t diamond[][2] = {
-      {5,0},                                      // Top point
-      {4,1}, {6,1},                               // Row 1: 2 pixels
-      {3,2}, {7,2},                               // Row 2: 2 pixels
-      {2,3}, {8,3},                               // Row 3: 2 pixels
-      {1,4}, {9,4},                               // Row 4: 2 pixels
-      {0,5}, {10,5},                              // Row 5: widest point (2 pixels)
-      {1,6}, {9,6},                               // Row 6: 2 pixels
-      {2,7}, {8,7},                               // Row 7: 2 pixels
-      {3,8}, {7,8},                               // Row 8: 2 pixels
-      {4,9}, {6,9},                               // Row 9: 2 pixels
-      {5,10}                                      // Bottom point
+      {5, 0},           // Top point
+      {4, 1},  {6, 1},  // Row 1: 2 pixels
+      {3, 2},  {7, 2},  // Row 2: 2 pixels
+      {2, 3},  {8, 3},  // Row 3: 2 pixels
+      {1, 4},  {9, 4},  // Row 4: 2 pixels
+      {0, 5},  {10, 5}, // Row 5: widest point (2 pixels)
+      {1, 6},  {9, 6},  // Row 6: 2 pixels
+      {2, 7},  {8, 7},  // Row 7: 2 pixels
+      {3, 8},  {7, 8},  // Row 8: 2 pixels
+      {4, 9},  {6, 9},  // Row 9: 2 pixels
+      {5, 10}           // Bottom point
     };
     #define DOUBLE                                  // Draw double-width for visibility
     #define offs 1                                  // X-offset adjustment
@@ -3503,12 +3430,12 @@ int16_t mm(int16_t id) {
     // Diamond interior fill coordinates (x_offset, y_offset from xx, yy)
     // Fills center area to indicate checked state
     TO_QSPI static const uint8_t diamond[][2] = {
-      {5, 3},                                       // Row 3: 1 pixel
-      {4, 4}, {5, 4}, {6, 4},                       // Row 4: 3 pixels
-      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5},       // Row 5: 5 pixels (widest)
-      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6},       // Row 6: 5 pixels (widest)
-      {4, 7}, {5, 7}, {6, 7},                       // Row 7: 3 pixels
-      {5, 8}                                        // Row 8: 1 pixel
+      {5, 3},                                     // Row 3: 1 pixel
+      {4, 4},  {5, 4},  {6, 4},                   // Row 4: 3 pixels
+      {3, 5},  {4, 5},  {5, 5},  {6, 5},  {7, 5}, // Row 5: 5 pixels (widest)
+      {3, 6},  {4, 6},  {5, 6},  {6, 6},  {7, 6}, // Row 6: 5 pixels (widest)
+      {4, 7},  {5, 7},  {6, 7},                   // Row 7: 3 pixels
+      {5, 8}                                      // Row 8: 1 pixel
     };
     for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Match DOUBLE offset from outline

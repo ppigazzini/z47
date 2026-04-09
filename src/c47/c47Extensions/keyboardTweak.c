@@ -1001,11 +1001,11 @@ bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int1
 
 returnTrue:
     #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
-      printf("Translating upper/lower case: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+      printf("Translating upper/lower case: lowercaseselected=%i item=%i itemOut=%i\n", lowerCaseSelected, item, *itemOut);
       switch(id){
-        case 0: printf("keyboard.c processAimInput() %i\n",id); break;
-        case 1: printf("manage.c   pemAlpha()        %i\n",id); break;
-        case 2: printf("gtkGui.c   sendKey()         %i\n",id); break;
+        case 0: printf("keyboard.c processAimInput() %i\n", id); break;
+        case 1: printf("manage.c   pemAlpha()        %i\n", id); break;
+        case 2: printf("gtkGui.c   sendKey()         %i\n", id); break;
         default:;
       }
     #endif //VERBOSEKEYS || PAIMDEBUG
@@ -1013,7 +1013,7 @@ returnTrue:
 
 returnFalse:
     #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
-      printf("Translating upper/lower case: No translation: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+      printf("Translating upper/lower case: No translation: lowercaseselected=%i item=%i itemOut=%i\n", lowerCaseSelected, item, *itemOut);
     #endif //VERBOSEKEYS || PAIMDEBUG
     return false;
   }
@@ -1126,7 +1126,7 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
     if(buffer.data[(buffer.write - 1) & BUFFER_MASK] == byte) {
       #if defined(JMSHOWCODES_KB0)
         char aaa[16];
-        sprintf   (aaa, "%2d ",byte);
+        sprintf   (aaa, "%2d ", byte);
         showString(aaa, &standardFont, tmpxx++, 1, vmNormal, true, true);
       #endif // JMSHOWCODES_KB0
 
@@ -1352,7 +1352,7 @@ uint8_t outKeyBufferDoubleClick(void) {
     char line[50], line1[100];
     fnDisplayStack(2);
     sprintf(line1, "R%-1dW%-1d -1:%-5d -2:%-5d -3:%-5d -4:%-5d  ", (uint16_t)buffer.read, (uint16_t)buffer.write,
-      (uint16_t)buffer.time[(buffer.read-1) & BUFFER_MASK], (uint16_t)buffer.time[(buffer.read-2) & BUFFER_MASK],(uint16_t)buffer.time[(buffer.read-3) & BUFFER_MASK],(uint16_t)buffer.time[(buffer.read-4) & BUFFER_MASK]);
+      (uint16_t)buffer.time[(buffer.read-1) & BUFFER_MASK], (uint16_t)buffer.time[(buffer.read-2) & BUFFER_MASK], (uint16_t)buffer.time[(buffer.read-3) & BUFFER_MASK], (uint16_t)buffer.time[(buffer.read-4) & BUFFER_MASK]);
     showString(line1, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
     sprintf(line, "B-1:%d %d %d %d", (uint16_t)buffer.data[(buffer.read-1) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-2) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-3) & BUFFER_MASK], (uint16_t)buffer.data[(buffer.read-4) & BUFFER_MASK]);
     sprintf(line1, "%-16s   D1:%d D2:%d D3:%d    ", line, dTime_1, dTime_2, dTime_3);
@@ -1459,7 +1459,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_RIGHT_ARROW);
           while(ixx < 75 && (current_cursor_x >= current_cursor_x_old+5 || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_LEFT_ARROW);
-            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
           }
           break;
@@ -1471,7 +1471,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_LEFT_ARROW);
           while(ixx < 75 && (current_cursor_x+5 <= current_cursor_x_old || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_RIGHT_ARROW);
-            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
 
             //printf("###^^^ %d %d %d %d %d\n", ixx, current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);

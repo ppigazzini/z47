@@ -477,7 +477,7 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
             stringToASCII(labelName, labelName1);
             //printf("----X %6u ? old=%6u name=%30s  ",currentProgramNumber, oldCurrentProgramNumber, labelName1);
             if(currentProgramNumber != oldCurrentProgramNumber) {
-              printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n",label, currentProgramNumber, labelName1, labelName1);
+              printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n", label, currentProgramNumber, labelName1, labelName1);
               fflush(stdout);
               _saveProgram  (label, ioPathSaveAllPrograms);
               _exportProgram(label, ioPathExportRTFAllPrograms);

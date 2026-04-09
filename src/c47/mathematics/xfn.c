@@ -302,37 +302,37 @@ typedef struct {
 
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      { ITM_pi_XFN      ,FT_NILADIC, NOANG},
-      { ITM_TO_XFN      ,FT_SINGLEX, NOANG},  //special case where hte function drops one register
-      { ITM_DEG2_XFN    ,FT_MONADIC, NOANG},
-      { ITM_RAD2_XFN    ,FT_MONADIC, NOANG},
-      { ITM_sin_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_cos_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_tan_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_arcsin_XFN  ,FT_MONADIC, NOANG},
-      { ITM_arccos_XFN  ,FT_MONADIC, NOANG},
-      { ITM_arctan_XFN  ,FT_MONADIC, NOANG},
-      { ITM_LN_XFN      ,FT_MONADIC, NOANG},
-      { ITM_LOG_XFN     ,FT_MONADIC, NOANG},
-      { ITM_EXP_XFN     ,FT_MONADIC, NOANG},
-      { ITM_10X_XFN     ,FT_MONADIC, NOANG},
-      { ITM_SQRT_XFN    ,FT_MONADIC, NOANG},
-      { ITM_MODANG_XFN  ,FT_MONADIC, FORCEANG},
-      { ITM_1ONX_XFN    ,FT_MONADIC, NOANG},
-      { ITM_DRG_XFN     ,FT_MONADIC, NOANG},
-      { ITM_SQR_XFN     ,FT_MONADIC, NOANG},
-      { ITM_RDP_XFN     ,FT_MONADIC, NOANG},
-      { ITM_RSD_XFN     ,FT_MONADIC, NOANG},
-      { ITM_CHS_XFN     ,FT_MONADIC, NOANG},
-      { ITM_atan2_XFN   ,FT_DYADIC , NOANG},
-      { ITM_ADD_XFN     ,FT_DYADIC , NOANG},
-      { ITM_SUB_XFN     ,FT_DYADIC , NOANG},
-      { ITM_POWER_XFN   ,FT_DYADIC , NOANG},
-      { ITM_XTHROOT_XFN ,FT_DYADIC , NOANG},
-      { ITM_MULT_XFN    ,FT_DYADIC , NOANG},
-      { ITM_DIV_XFN     ,FT_DYADIC , NOANG},
-      { ITM_MOD_XFN     ,FT_DYADIC , NOANG},
-      { 0               ,0         , 0}
+      { ITM_pi_XFN     , FT_NILADIC, NOANG},
+      { ITM_TO_XFN     , FT_SINGLEX, NOANG},  //special case where hte function drops one register
+      { ITM_DEG2_XFN   , FT_MONADIC, NOANG},
+      { ITM_RAD2_XFN   , FT_MONADIC, NOANG},
+      { ITM_sin_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_cos_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_tan_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_arcsin_XFN , FT_MONADIC, NOANG},
+      { ITM_arccos_XFN , FT_MONADIC, NOANG},
+      { ITM_arctan_XFN , FT_MONADIC, NOANG},
+      { ITM_LN_XFN     , FT_MONADIC, NOANG},
+      { ITM_LOG_XFN    , FT_MONADIC, NOANG},
+      { ITM_EXP_XFN    , FT_MONADIC, NOANG},
+      { ITM_10X_XFN    , FT_MONADIC, NOANG},
+      { ITM_SQRT_XFN   , FT_MONADIC, NOANG},
+      { ITM_MODANG_XFN , FT_MONADIC, FORCEANG},
+      { ITM_1ONX_XFN   , FT_MONADIC, NOANG},
+      { ITM_DRG_XFN    , FT_MONADIC, NOANG},
+      { ITM_SQR_XFN    , FT_MONADIC, NOANG},
+      { ITM_RDP_XFN    , FT_MONADIC, NOANG},
+      { ITM_RSD_XFN    , FT_MONADIC, NOANG},
+      { ITM_CHS_XFN    , FT_MONADIC, NOANG},
+      { ITM_atan2_XFN  , FT_DYADIC , NOANG},
+      { ITM_ADD_XFN    , FT_DYADIC , NOANG},
+      { ITM_SUB_XFN    , FT_DYADIC , NOANG},
+      { ITM_POWER_XFN  , FT_DYADIC , NOANG},
+      { ITM_XTHROOT_XFN, FT_DYADIC , NOANG},
+      { ITM_MULT_XFN   , FT_DYADIC , NOANG},
+      { ITM_DIV_XFN    , FT_DYADIC , NOANG},
+      { ITM_MOD_XFN    , FT_DYADIC , NOANG},
+      { 0              , 0         , 0}
   };
 
 
@@ -489,7 +489,7 @@ typedef struct {
   }
 
   static bool getSingleParameter (int registerNo, real1071_t* combined, angularMode_t* angleMode, realContext_t* c) {
-printf("Dddd %d\n",registerNo);
+printf("Dddd %d\n", registerNo);
     *angleMode = registerIsNoAngle(registerNo) ? amNone : getRegisterAngularMode(registerNo);
 
     if(!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {                        //ignore anglemode, it is handled elsewhere
@@ -579,7 +579,7 @@ printf("Dddd %d\n",registerNo);
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Specified register numbers out of range: %d",registerNo);
+      sprintf(errorMessage, "Specified register numbers out of range: %d", registerNo);
       moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -820,7 +820,7 @@ printf("Dddd %d\n",registerNo);
             #if defined(DEBUG_XFN)
               realToString((real_t *)&paramX, tmpString);
               //tmpString[debugLongNumberLimit]=0;
-              printf(" ParamX reduced angle: %s\n",tmpString);
+              printf(" ParamX reduced angle: %s\n", tmpString);
             #endif //DEBUG_XFN
 
             real1071_t aa, bb;
@@ -971,7 +971,8 @@ printf("Dddd %d\n",registerNo);
     #if defined(DEBUG_XFN)
       printRegisterToConsole(REGISTER_X, "\nX:", "\n");
       realToString((real_t *)&paramX, tmpString);
-      tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
+      tmpString[debugLongNumberLimit]=0;
+      printf("Output: %s\n", tmpString);
     #endif //DEBUG_XFN
 
 

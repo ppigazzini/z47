@@ -1425,7 +1425,7 @@ void strPrepend(char*dest, char*prefix) {
     if((uint8_t)(displayString[gg] == 0)) {
       break;
     }
-    printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
+    printf("§%s§%c %u\n", displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
     gg++;
   }
   printf("\nImag:");
@@ -1434,7 +1434,7 @@ void strPrepend(char*dest, char*prefix) {
     if((uint8_t)(displayString2[gg] == 0)) {
       break;
     }
-    printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
+    printf("§%s§%c %u\n", displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
     gg++;
   }
   printf("\n");
@@ -3139,7 +3139,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
   int16_t Width_0 = stringWidth(SEP, fontToUse, true, true);
   #if defined(MONITOR_SHOW)
     printf("000: source=%d %d %d [%d] %d %d\n", *source, errorMessage[*source-2], errorMessage[*source-1], errorMessage[*source], errorMessage[*source+1], errorMessage[*source+2]);
-    printf("Width_0 = %d\n",Width_0);
+    printf("Width_0 = %d\n", Width_0);
   #endif //MONITOR_SHOW
 
   int16_t d;
@@ -3163,7 +3163,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
         tmpString[++*dest] = errorMessage[++*source];
         bytesToAdd = 2;
         #if defined(MONITOR_SHOW)
-          printf("(%u)\n",(uint8_t)((tmpString + (*dest))[0]));
+          printf("(%u)\n", (uint8_t)((tmpString + (*dest))[0]));
         #endif
       }
       tmpString[++*dest] = 0;
@@ -3185,7 +3185,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       #if defined(MONITOR_SHOW)
         printf("dCounter = %d, Width_0 =%d, %s : Width=%d <> %d\n", dCounter, Width_0, tmpString + dCounter, currentWidth, allowedWidth);
         printf("02--->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i??maxwid=%i <<:%u ", d, *startingLine, *last, *source, *dest, currentWidth, allowedWidth, *dest < TMP_STR_LENGTH - 6);
-        printf("03    ==>%c (%u)",((tmpString + (*dest-1))[0]), (uint8_t)((tmpString + (*dest-1))[0]));
+        printf("03    ==>%c (%u)", ((tmpString + (*dest-1))[0]), (uint8_t)((tmpString + (*dest-1))[0]));
         if(((uint8_t)((tmpString + (*dest-1))[0]) & 0x80) == 0) {
           printf("\n");
         }
@@ -3234,7 +3234,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
   *source = sourceReturn;
 
   #if defined(MONITOR_SHOW)
-    printf("###%s###\n",errorMessage + *dest);
+    printf("###%s###\n", errorMessage + *dest);
     printf("BBB: source=%d %d %d [%d] %d %d\n", (uint8_t)*source, (uint8_t)errorMessage[*source-2], (uint8_t)errorMessage[*source-1], (uint8_t)errorMessage[*source], (uint8_t)errorMessage[*source+1], (uint8_t)errorMessage[*source+2]);
     printf("BBB: dest  =%d %d %d [%d] %d %d\n", (uint8_t)*dest  , (uint8_t)tmpString[*dest  -2],    (uint8_t)tmpString[*dest  -1],    (uint8_t)tmpString[*dest  ],    (uint8_t)tmpString[*dest  +1],    (uint8_t)tmpString[*dest  +2]);
   #endif //MONITOR_SHOW
@@ -3401,7 +3401,7 @@ void fnC47Show(uint16_t fnShow_param) {
                  }
                }
                #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                 printf("R=%u TI=%u\n",showRegis, temporaryInformation);
+                 printf("R=%u TI=%u\n", showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
 
@@ -3427,7 +3427,7 @@ void fnC47Show(uint16_t fnShow_param) {
                  }
                }
                #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                 printf("R=%u TI=%u\n",showRegis, temporaryInformation);
+                 printf("R=%u TI=%u\n", showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
       case ITM_NOP:                                       //Allow fnView to enter a value into Show without changing the register number
@@ -3942,8 +3942,8 @@ goBreak1:
             *strw = 0;
             thereIsANextLine = true;
             #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
-              printf("^^^A %4u",tmp++);
-              printf("^^^^$$ %s %d\n",tmpString + offset, stringWidthC47(tmpString + offset, stdnumEnlarge, nocompress, false, true));
+              printf("^^^A %4u", tmp++);
+              printf("^^^^$$ %s %d\n", tmpString + offset, stringWidthC47(tmpString + offset, stdnumEnlarge, nocompress, false, true));
             #endif // VERBOSE_SCREEN && PC_BUILD
           }
           bytesProcessed += stringByteLength(tmpString + offset);
@@ -3978,8 +3978,8 @@ goBreak1:
             *remainingString = 0;
             thereIsANextLine = true;
             #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
-              printf("^^^B %4u %4u",tmp2, tmp++);
-              printf("^^^^$$ %s %d\n",tmpString + offset, stringWidth(tmpString + offset, &standardFont, false, true));
+              printf("^^^B %4u %4u", tmp2, tmp++);
+              printf("^^^^$$ %s %d\n", tmpString + offset, stringWidth(tmpString + offset, &standardFont, false, true));
             #endif // VERBOSE_SCREEN && PC_BUILD
           }
           #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
@@ -4028,7 +4028,7 @@ goBreak1:
     systemFlags1 = ssf1;
 
     #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
-      printf("SHOW:Done |%s|\n",tmpString);
+      printf("SHOW:Done |%s|\n", tmpString);
     #endif
 
 #else

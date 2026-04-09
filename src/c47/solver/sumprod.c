@@ -99,7 +99,7 @@
 
         loop--;
         if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
             showProgressReal(&resultR, &resultRi, changedOverToComplex);
           }
         }

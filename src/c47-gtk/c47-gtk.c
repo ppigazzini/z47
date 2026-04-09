@@ -203,8 +203,8 @@
         sprintf(sss, MODELTEXT " Sim " VERSION1 ", SHA %s.\n", ss);
         printf("C47/R47 info to be found on 47calc.com\n");
         printf("C47/R47 license GPL3, details on 47calc.com\n");
-        printf("\n%s",sss);
-        printf("Activated: %s\n\n",argv[arg]);
+        printf("\n%s", sss);
+        printf("Activated: %s\n\n", argv[arg]);
         printf("%s47 --background     : specify background picture\n", cc);
         printf("%s47 --functionkeys   : display function key labels\n\n", cc);
         printf("%s47 --landscape      : landscape orientation\n", cc);
@@ -266,7 +266,7 @@
     }
     if(calcModelNew != 255) {
       calcModel = calcModelNew; //set the initial mode if forced, override the default name from above
-      printf("calcModel A re-set to %d\n",calcModelNew);
+      printf("calcModel A re-set to %d\n", calcModelNew);
     }
 
     gtk_init(&argc, &argv);
@@ -289,7 +289,7 @@
     //set the calculator type again if it changes after loading the backup file
     if(calcModelNew != 255) {
       calcModel = calcModelNew;
-      printf("calcModel B re-set to %d\n",calcModelNew);
+      printf("calcModel B re-set to %d\n", calcModelNew);
       resetKeys = true;
     }
     if(CALCMODEL == USER_R47) {
@@ -345,7 +345,7 @@
       time(&rawTime);
       timeInfo = localtime(&rawTime);
       strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
-      printf("\n\nOutput file saved to: %s.\n\n",bmpFileName);
+      printf("\n\nOutput file saved to: %s.\n\n", bmpFileName);
       return 0;
     }
 

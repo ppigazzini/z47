@@ -364,7 +364,7 @@ void calcSigma(uint16_t maxOffset) {
         addSigma(&x, &y);
       }
     }
-    printStatus(0, " ",force);
+    printStatus(0, " ", force);
 }
 
 
@@ -419,7 +419,7 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "additional matrix line not added; rows = %i",rows);
+        sprintf(errorMessage, "additional matrix line not added; rows = %i", rows);
         moreInfoOnError("In function AddtoStatsMatrix:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
@@ -786,7 +786,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "additional matrix line not added; rows = %i",rows);
+        sprintf(errorMessage, "additional matrix line not added; rows = %i", rows);
         moreInfoOnError("In function initHistoMatrix:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }

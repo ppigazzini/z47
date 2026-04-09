@@ -172,7 +172,7 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
   while(glyphIndex) {
     if(32 <= charCode && charCode <= 0x7ffful) {
       #if defined(DEBUG)
-        printf("%u %04X \n",glyphIndex, (uint16_t)charCode);
+        printf("%u %04X \n", glyphIndex, (uint16_t)charCode);
       #endif
       charCodes[numberOfGlyphs++] = charCode;
     }

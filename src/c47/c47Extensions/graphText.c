@@ -404,9 +404,9 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/
   /*-DMCP-*/int16_t import_string_from_filename(char *line1,  char *dirname,  char *filename_short,  char *filename,  char *fallback, bool_t scanning) {
                 #if (VERBOSE_LEVEL >= 2)
-  /*-DMCP-*/      print_inlinestr("From dir:",false);
+  /*-DMCP-*/      print_inlinestr("From dir:", false);
   /*-DMCP-*/      print_inlinestr(dirname, false);
-  /*-DMCP-*/      print_inlinestr(", ",true);
+  /*-DMCP-*/      print_inlinestr(", ", true);
   /*-DMCP-*/    #endif
   /*-DMCP-*/
                 #if (VERBOSE_LEVEL >= 2)
@@ -435,7 +435,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    fr = f_open(&fil, dirfile, FA_READ);   // | FA_OPEN_EXISTING
   /*-DMCP-*/    if(fr != FR_OK) {
                   #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/        print_inlinestr("Not open. ",false);
+  /*-DMCP-*/        print_inlinestr("Not open. ", false);
                     #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/          if(fr == 4) {
   /*-DMCP-*/            sprintf(line, "%s%d ", IOMsgs[6].itemName,   fr); //Not found ID006 -->
@@ -476,7 +476,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        fr = f_open(&fil, dirfile, FA_READ );   //| FA_OPEN_EXISTING
   /*-DMCP-*/        if(fr != FR_OK) {
                       #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/            print_inlinestr("Not open. ",false);
+  /*-DMCP-*/            print_inlinestr("Not open. ", false);
                         #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/              if(fr == 4) {
   /*-DMCP-*/                sprintf(line, "%s%d ", IOMsgs[7].itemName,  fr); //No path ID007 -->
@@ -508,7 +508,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    }
   /*-DMCP-*/
                 #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/      print_inlinestr("reading...",false);
+  /*-DMCP-*/      print_inlinestr("reading...", false);
                 #endif
   /*-DMCP-*/
   /*-DMCP-*/    /* Read if open */
@@ -537,7 +537,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    uint32_t tmp__32;                                                 //JM_CSV
   /*-DMCP-*/
   /*-DMCP-*/    tmp__32 = getUptimeMs();                                      //KEEP PERSISTENT FILE NAME FOR A PERIOD
-  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
+  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9), fn, CMP_NAME) != 0)) {
   /*-DMCP-*/      //Create file name
   /*-DMCP-*/      check_create_dir("DATA");
   /*-DMCP-*/      make_date_filename(filename_csv, "DATA\\", fn);
@@ -851,7 +851,7 @@ void preventFilenameTimeout(void){
       struct tm *timeInfo;
 
       tmp__32 = getUptimeMs();                                          //KEEP PERSISTENT FILE NAME FOR A PERIOD
-      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
+      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9), fn, CMP_NAME) != 0)) {
         //Create file name
         time(&rawTime);
         timeInfo = localtime(&rawTime);

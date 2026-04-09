@@ -825,14 +825,14 @@ void fnTvmVar(uint16_t variable) {
 
           switch(variable) {
             case RESERVED_VARIABLE_PV: {
-              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),const34_1e_4)) {
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV), const34_1e_4)) {
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV), const34_2, &y);
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV), const34_1on2, &x);
               }
               break;
             }
             case RESERVED_VARIABLE_FV: {
-              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),const34_1e_4)) {
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV), const34_1e_4)) {
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV), const34_2, &y);
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV), const34_1on2, &x);
               }
@@ -895,7 +895,7 @@ void fnTvmVar(uint16_t variable) {
             #endif //PC_BUILD
             uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
             #if defined(PC_BUILD) && defined(TVMDEBUG2)
-              printf("Overall solve iteration: iter=%u/%u solveResult=%u\n",iter, nIter, solveResult);
+              printf("Overall solve iteration: iter=%u/%u solveResult=%u\n", iter, nIter, solveResult);
             #endif //PC_BUILD
             if(solveResult == SOLVER_RESULT_NORMAL) {
               #if defined(PC_BUILD)  && defined(TVMDEBUG2)

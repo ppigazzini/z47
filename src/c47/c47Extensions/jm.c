@@ -40,7 +40,7 @@
 
   void jm_show_calc_state(char comment[]) {
     #if defined(PC_BUILD_TELLTALE)
-      printf("\n%s--------------------------------------------------------------------------------\n",comment);
+      printf("\n%s--------------------------------------------------------------------------------\n", comment);
       printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n", getCalcModeName1(calcMode), getCalcModeName1(last_CM), getAlphaCaseName1(alphaCase), doRefreshSoftMenu, lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
       printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d temporaryInformation=%d currentSolverStatus=%d\n",
                  softmenuStack[0].softmenuId,        softmenu[softmenuStack[0].softmenuId].menuItem,   -MNU_ALPHA,   temporaryInformation, currentSolverStatus);
@@ -108,7 +108,7 @@ void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
     Norm_Key_00.used = false;
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnSigmaAssign: ", "the NRM key is not available.",NULL, NULL);
+      moreInfoOnError("In function fnSigmaAssign: ", "the NRM key is not available.", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 

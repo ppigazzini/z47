@@ -172,7 +172,7 @@ void fnSolve(uint16_t labelOrVariable) {
 }
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
-    printStatus(1, errorMessages[REAL_SOLVER],force);
+    printStatus(1, errorMessages[REAL_SOLVER], force);
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     const uint16_t nameLength = stringByteLength(var) + 1;
@@ -435,7 +435,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 retryLevel:
       if(--getOutOfLevel >= 0) {
         #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-          printf("Solver retry Level:%2i ",getOutOfLevel);
+          printf("Solver retry Level:%2i ", getOutOfLevel);
           printReal34ToConsole(&antiLevel34, " antiLevel34:", "\n");
         #endif //PC_BUILD
         real34Multiply(&antiLevel34, const34_153, &antiLevel34);  //increase it for the next round so long
@@ -579,7 +579,7 @@ retryLevel:
       }
 
       if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;

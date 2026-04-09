@@ -2163,7 +2163,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     else if(item != ITM_NOP) {
       #if defined(PC_BUILD) && defined(VERBOSE_MINIMUM)
-        printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
+        printf("addItemToNimBuffer: delayCloseNim=%u\n", delayCloseNim);
         fflush(stdout);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
