@@ -847,7 +847,7 @@ void graph_plotmem(void) {
 
       statnum = 0;
 
-      if((plotStatMx[0]=='S' ? statMxN() >= 2 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 2:false)) {
+      if((plotStatMx[0]=='S' ? statMxN() >= 2 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 2 : false)) {
         if(plotStatMx[0]=='S') {
           statnum = statMxN();  //          realToInt32(SIGMA_N, statnum);
         }

@@ -2022,8 +2022,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
-#define min(a, b)                            ((a)<(b)?(a):(b))
-#define max(a, b)                            ((a)>(b)?(a):(b))
+#define min(a, b)                            ((a)<(b) ? (a) : (b))
+#define max(a, b)                            ((a)>(b) ? (a) : (b))
 #define rmd(n, d)                            ((n)%(d))                                                       // rmd(n, d) = n - d*idiv(n, d)   where idiv is the division with decimal part truncature
 #define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n, d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
 //#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n, d) = rmd(n, d) (+ |d| if rmd(n, d)<0)  thus the result is always >= 0
@@ -2126,7 +2126,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define GROUPWIDTH_LEFT                      (grpGroupingLeft)
 #define GROUPWIDTH_LEFT1                     ((grpGroupingGr1Left        == 0 ? (uint16_t)grpGroupingLeft : (uint16_t)grpGroupingGr1Left))
 #define GROUPWIDTH_LEFT1X                    (grpGroupingGr1LeftOverflow)
-#define GROUP1_OVFL(digitCount, exp)         ( (grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1  ? grpGroupingGr1LeftOverflow:0 ) )
+#define GROUP1_OVFL(digitCount, exp)         ((grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1 ? grpGroupingGr1LeftOverflow : 0))
 #define GROUPWIDTH_RIGHT                     (grpGroupingRight)
 #define SEPARATOR_(digitCount)               (digitCount >= 0 ? SEPARATOR_LEFT : SEPARATOR_RIGHT)
 #define GROUPWIDTH_(digitCount)              (digitCount >= 0 ? GROUPWIDTH_LEFT : GROUPWIDTH_RIGHT)

@@ -705,7 +705,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           displayBugScreen(errorMessage);
         }
         else if(calcMode == CM_EIM) {
-          const char *addChar0 = item == ITM_EEXCHR               ? "E":                      //PRODUCT_SIGN "10^" :
+          const char *addChar0 = item == ITM_EEXCHR               ? "E" :                      //PRODUCT_SIGN "10^" :
                                  item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
                                  item == ITM_MAGNITUDE            ? "||" :
@@ -716,7 +716,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
                                  item == ITM_EXP                  ? STD_EulerE "^()" :
                                  item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :
                                  item == ITM_LG_SIGN              ? "LOG()" :
-                                 item == ITM_LN_SIGN              ? "LN()"  :
+                                 item == ITM_LN_SIGN              ? "LN()" :
                                  item == ITM_LOG2                 ? "LB()" :
                                  item == ITM_SIN_SIGN             ? "SIN()" :
                                  item == ITM_COS_SIGN             ? "COS()" :
@@ -769,7 +769,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           char *aimBottomPos = aimBuffer + stringByteLength(aimBuffer);
           uint32_t itemLen = stringByteLength(addChar);
           for(uint32_t i = 0; i < xCursor; ++i) {
-            aimCursorPos += (*aimCursorPos & 0x80) ? 2 :1;
+            aimCursorPos += (*aimCursorPos & 0x80) ? 2 : 1;
           }
           for(; aimBottomPos >= aimCursorPos; --aimBottomPos) {
             *(aimBottomPos + itemLen) = *aimBottomPos;
@@ -2668,8 +2668,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               return;
             }
 
-            for(i=aimBuffer[0] == '-' ? 1 :0; i<posHash; i++) {
-              if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 :aimBuffer[i] - '0') >= base) {
+            for(i=aimBuffer[0] == '-' ? 1 : 0; i<posHash; i++) {
+              if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 : aimBuffer[i] - '0') >= base) {
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   sprintf(errorMessage, "digit %c is not allowed in base %d!", aimBuffer[i], base);
@@ -2686,7 +2686,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             longIntegerInit(value);
             aimBuffer[posHash] = 0;
-            stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 :0), base, value);
+            stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 : 0), base, value);
 
             // maxVal = 2^shortIntegerWordSize
             longIntegerInit(maxVal);
@@ -2727,7 +2727,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
                 char strMin[22], strMax[22];
                 longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
                 longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));
-                sprintf(errorMessage, "For word size of %d bit%s and integer mode %s,", shortIntegerWordSize, shortIntegerWordSize>1 ? "s" :"", getShortIntegerModeName(shortIntegerMode));
+                sprintf(errorMessage, "For word size of %d bit%s and integer mode %s,", shortIntegerWordSize, shortIntegerWordSize>1 ? "s" : "", getShortIntegerModeName(shortIntegerMode));
                 sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "the entered number must be from %s to %s!", strMin, strMax);
                 moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2742,7 +2742,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             char strValue[22];
             longIntegerToAllocatedString(value, strValue, sizeof(strValue));
 
-            uint64_t val = strtoull(strValue + (longIntegerIsNegative(value) ? 1 :0), NULL, 10); // when value is negative:discard the minus sign
+            uint64_t val = strtoull(strValue + (longIntegerIsNegative(value) ? 1 : 0), NULL, 10); // when value is negative:discard the minus sign
 
             if(shortIntegerMode == SIM_UNSIGN) {
             }

@@ -130,10 +130,10 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
     if(savedContextDigits >= 1071) {
-      C47_WP34S_SinCosTanTaylor_temp1071((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp1071((real_t*)angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
     else {
-      C47_WP34S_SinCosTanTaylor_temp75((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp75((real_t*)angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
   }
 

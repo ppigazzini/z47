@@ -32,7 +32,7 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
 
   // Zeros are uninteresting so sort larger
   if(realIsZero(&v1a)) {
-    return realIsZero(&v2a)? 0 : 1;
+    return realIsZero(&v2a) ? 0 : 1;
   }
   if(realIsZero(&v2a)) {
     return -1;

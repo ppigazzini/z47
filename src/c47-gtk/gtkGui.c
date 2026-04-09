@@ -1264,10 +1264,10 @@ continueWithOldDetections:
         //ROW 0
         case GDK_KEY_Up:                                               //JM     // CursorUp //JM
           if(AlphaArrowsOffAndUpDn) {
-            btnClicked(w,  isR47FAM?"22":"17");   //Up
+            btnClicked(w, isR47FAM ? "22" : "17");   //Up
           }
           else if(calcMode == CM_EIM) {
-            btnClicked(w, isR47FAM?"22":"17");   //Up
+            btnClicked(w, isR47FAM ? "22" : "17");   //Up
           }
           else {
             if(!tam.mode) {
@@ -1277,10 +1277,10 @@ continueWithOldDetections:
           break;
         case GDK_KEY_Down:                                               //JM     // CursorDown //JM
           if(AlphaArrowsOffAndUpDn) {
-            btnClicked(w, isR47FAM?"27":"22");   //Up
+            btnClicked(w, isR47FAM ? "27" : "22");   //Up
           }
           else if(calcMode == CM_EIM) {
-            btnClicked(w, isR47FAM?"27":"22");   //Dn
+            btnClicked(w, isR47FAM ? "27" : "22");   //Dn
           }
           else {
             btnFnClicked(w, "2");  //F2
@@ -1715,7 +1715,7 @@ continueWithOldDetections:
         case GDK_KEY_Up: // CursorUp //JM
                                 //JM
           //printf("key pressed: <Up>\n"); //dr
-          btnClicked(w, isR47FAM?"22":"17");
+          btnClicked(w, isR47FAM ? "22" : "17");
           break;
 
         case 55:    // 7
@@ -1746,7 +1746,7 @@ continueWithOldDetections:
         case GDK_KEY_Down: // CursorDown //JM
                                   //JM
           //printf("key pressed: <Down>\n"); //dr
-          btnClicked(w, isR47FAM?"27":"22");
+          btnClicked(w, isR47FAM ? "27" : "22");
           break;
 
         case 52:    // 4
@@ -5376,7 +5376,7 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
 
       if(modelString[0] == 0) {
         strcpy(modelString, "res/");
-        strcat(modelString, isR47FAM?"R47":"C47");
+        strcat(modelString, isR47FAM ? "R47" : "C47");
         if(calcLandscape) {
           strcat(modelString, "short.png");
         }
@@ -5568,24 +5568,24 @@ int keyCntA = 0;
       btn24   = gtk_button_new();
       btn25   = gtk_button_new();
       btn26   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "a");  //vv dr
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "v");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "q");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "o");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "l");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "x");  //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "a");  //vv dr
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "v");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "q");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "o");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "l");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;    //  "x");  //^^
       btn21A  = gtk_button_new();                           //vv dr - new AIM
       btn22A  = gtk_button_new();
       btn23A  = gtk_button_new();
       btn24A  = gtk_button_new();
       btn25A  = gtk_button_new();
       btn26A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "A");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "B");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "C");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "D");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "E");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "F"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn21A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "A");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn22A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "B");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn23A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "C");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn24A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "D");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn25A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "E");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn26A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //   "F"); //^^
       lbl21F  = gtk_label_new("");
       lbl22F  = gtk_label_new("");
       lbl23F  = gtk_label_new("");
@@ -5730,24 +5730,24 @@ int keyCntA = 0;
       btn34   = gtk_button_new();
       btn35   = gtk_button_new();
       btn36   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "m");  //vv dr
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "r");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "d");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "s");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "c");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "t");  //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "m");  //vv dr
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "r");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "d");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "s");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "c");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "t");  //^^
       btn31A  = gtk_button_new();                           //vv dr - new AIM
       btn32A  = gtk_button_new();
       btn33A  = gtk_button_new();
       btn34A  = gtk_button_new();
       btn35A  = gtk_button_new();
       btn36A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "G");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "H");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "I");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "J");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "K");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "L"); //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn31A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "G");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn32A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "H");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn33A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "I");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn34A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "J");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn35A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "K");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn36A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;    //    "L"); //^^
       lbl31F  = gtk_label_new("");
       lbl32F  = gtk_label_new("");
       lbl33F  = gtk_label_new("");
@@ -5892,18 +5892,18 @@ int keyCntA = 0;
       btn43   = gtk_button_new();
       btn44   = gtk_button_new();
       btn45   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn41), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "Enter");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "w");  //vv dr
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "n");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "e");  //^^
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn45), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "Backspace");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn41), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "Enter");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "w");  //vv dr
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "n");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "e");  //^^
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn45), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;// "Backspace");
       btn42A  = gtk_button_new();
       btn43A  = gtk_button_new();
       btn44A  = gtk_button_new();
-                                                                              keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "M");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "N");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;keyCntA++;    //    "O"); //^^
+                                                                                keyCntA++;
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "M");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //    "N");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;keyCntA++;    //    "O"); //^^
       lbl41F  = gtk_label_new("");
       lbl42F  = gtk_label_new("");
       lbl43F  = gtk_label_new("");
@@ -6012,19 +6012,19 @@ int keyCntA = 0;
       btn53   = gtk_button_new();
       btn54   = gtk_button_new();
       btn55   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn51), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Up"); //JM
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "7");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "8");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "9");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "/");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn51), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Up"); //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "7");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "8");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "9");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "/");  //JM
       btn52A   = gtk_button_new();                          //vv dr - new AIM
       btn53A   = gtk_button_new();
       btn54A   = gtk_button_new();
-      btn55A   = gtk_button_new();                                            keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "P");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "Q");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "R");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "S"); //^^
+      btn55A   = gtk_button_new();                                              keyCntA++;
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn52A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "P");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn53A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "Q");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn54A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "R");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn55A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //     "S"); //^^
       lbl51F  = gtk_label_new("");
       lbl52F  = gtk_label_new("");
       lbl53F  = gtk_label_new("");
@@ -6135,19 +6135,19 @@ int keyCntA = 0;
       btn63   = gtk_button_new();
       btn64   = gtk_button_new();
       btn65   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn61), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Down"); //JM
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "4");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "5");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "6");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "*");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn61), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Down"); //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "4");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "5");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "6");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "*");  //JM
       btn62A  = gtk_button_new();                           //vv dr - new AIM
       btn63A  = gtk_button_new();
       btn64A  = gtk_button_new();
-      btn65A  = gtk_button_new();                                             keyCntA++;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "T");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "U");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "V");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "W"); //^^
+      btn65A  = gtk_button_new();                                               keyCntA++;
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn62A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "T");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn63A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "U");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn64A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "V");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn65A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "W"); //^^
       lbl61F  = gtk_label_new("");
       lbl62F  = gtk_label_new("");
       lbl63F  = gtk_label_new("");
@@ -6259,21 +6259,21 @@ int keyCntA = 0;
       btn73   = gtk_button_new();
       btn74   = gtk_button_new();
       btn75   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Shift"); //JM //jm shortcut
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "1");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "2");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "3");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "-");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Shift"); //JM //jm shortcut
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "1");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "2");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "3");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "-");  //JM
       btn71A  = gtk_button_new();                           //vv dr - new AIM
       btn72A   = gtk_button_new();                          //vv dr - new AIM
       btn73A   = gtk_button_new();
       btn74A   = gtk_button_new();
       btn75A   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "f/g");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "X");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Y");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Z");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "_"); //dr ^^^^ - new AIM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn71A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "f/g");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn72A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "X");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn73A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Y");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn74A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //      "Z");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn75A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "_"); //dr ^^^^ - new AIM
       lbl71F  = gtk_label_new("");
       lbl72F  = gtk_label_new("");
       lbl73F  = gtk_label_new("");
@@ -6390,19 +6390,19 @@ int keyCntA = 0;
       btn83   = gtk_button_new();
       btn84   = gtk_button_new();
       btn85   = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn81), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Esc");  //JM
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "0");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  ". ,");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "\\"); //JM Changed from Ctrl to backslash 92
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85), isR47FAM?shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "+");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn81), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "Esc");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "0");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  ". ,");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "\\"); //JM Changed from Ctrl to backslash 92
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85), isR47FAM ? shortCutString[keyCnt].R47 : shortCutString[keyCnt].C47); keyCnt++;//  "+");  //JM
       btn82A  = gtk_button_new();                           //vv dr - new AIM
       btn83A  = gtk_button_new();
       btn84A  = gtk_button_new();
-      btn85A  = gtk_button_new();                                             keyCntA++;              //
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ":");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ".");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "?");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "Space"); //^^
+      btn85A  = gtk_button_new();                                               keyCntA++;              //
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn82A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ":");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn83A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       ".");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn84A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "?");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(btn85A), isR47FAM ? shortCutString[keyCntA].R47A : shortCutString[keyCntA].C47A); keyCntA++;              //       "Space"); //^^
       lbl81F  = gtk_label_new("");
       lbl82F  = gtk_label_new("");
       lbl83F  = gtk_label_new("");
