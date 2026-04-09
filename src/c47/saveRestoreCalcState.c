@@ -199,12 +199,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
   //Old matrixes with rows or cols > 12 bits 0x0FFF will fail. It is however unreasonable to expect such large matrix dimensions of 2^12-1 = 4095.
   if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
     #if defined(PC_BUILD)
-      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n", regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
     #endif //PC_BUILD
     uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
     uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
     #if defined(PC_BUILD)
-      printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+      printf("----------------R%2u New matrix header: r=%i c=%i \n", regist, row, col);
     #endif //PC_BUILD
     REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
     REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
@@ -1705,7 +1705,7 @@ void fnSave(uint16_t saveMode) {
 }
 
 void doSave(uint16_t saveType) {
-  printStatus(0, errorMessages[SAVING_STATE_FILE],force);
+  printStatus(0, errorMessages[SAVING_STATE_FILE], force);
   ioFilePath_t path;
   char tmpString[3000];           //The concurrent use of the global tmpString
                                   //as target does not work while the source is at
@@ -2810,9 +2810,9 @@ int64_t stringToInt64(const char *str) {
       #if defined(LOADDEBUG)
         if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
           printf("Before loading programs:\n");
-          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
-          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
-          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n", *beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n", *firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n", *oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
           printf("\n  freeProgramBytes        = 16b %u\n", freeProgramBytes);
           printf("  numberOfBlocks          = 16b %u, on dot per block: ", numberOfBlocks);
         }
@@ -2838,9 +2838,9 @@ int64_t stringToInt64(const char *str) {
         if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
           printf("\n");
           printf("After loading programs:\n");
-          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
-          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
-          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n", *beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n", *firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n", *oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
         }
       #endif // LOADDEBUG
 
@@ -2932,7 +2932,7 @@ int64_t stringToInt64(const char *str) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
             char aa[333];
-            sprintf(aa, "B|%u|%s",i, aimBuffer);
+            sprintf(aa, "B|%u|%s", i, aimBuffer);
             debugPrintf(16, aa, tmpString);
           #endif //LOADDEBUG
 
@@ -2986,7 +2986,7 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "fgLN" ) == 0 || strcmp(aimBuffer, "jm_FG_LINE" ) == 0) {                                   // This section to deal with any old states containing the old FG system
-            fgLN = convert001090400T001090500(toUint8(tmpString),RBX_FGLNOFF);
+            fgLN = convert001090400T001090500(toUint8(tmpString), RBX_FGLNOFF);
             if(fgLN == RBX_FGLNOFF) {
               clearSystemFlag(FLAG_FGLNLIM);
               clearSystemFlag(FLAG_FGLNFUL);
@@ -3104,12 +3104,12 @@ int64_t stringToInt64(const char *str) {
               forceSystemFlag(FLAG_TOPHEX, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(toUint8(tmpString),BCDu); }
+          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(toUint8(tmpString), BCDu); }
           else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(toUint8(tmpString),RBX_M14); }                  //10000003
-          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(toUint8(tmpString),RBX_F14); }                  //10000003
-          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = toUint8(tmpString); }                  //10000004
+          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(toUint8(tmpString), RBX_M14); } //10000003
+          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(toUint8(tmpString), RBX_F14); } //10000003
+          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = toUint8(tmpString); }                                      //10000004
           else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
@@ -3184,7 +3184,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   int ret;
   #if defined(LOADDEBUG)
     char yy[1000];
-    sprintf(yy, "%d",loadMode);
+    sprintf(yy, "%d", loadMode);
     debugPrintf(-1, "LoadMode", yy);
   #endif // LOADDEBUG
 
@@ -3199,7 +3199,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   }
 
   #if defined(LOADDEBUG)
-    sprintf(yy, "%u",path);
+    sprintf(yy, "%u", path);
     debugPrintf(-1, "Path:", yy);
   #endif // LOADDEBUG
 
@@ -3406,7 +3406,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
 
 void fnLoad(uint16_t loadMode) {
-  printStatus(0, errorMessages[LOADING_STATE_FILE],force);
+  printStatus(0, errorMessages[LOADING_STATE_FILE], force);
   if(loadMode == LM_STATE_LOAD) {
     doLoad(LM_ALL, 0, 0, 0, stateLoad);
   }

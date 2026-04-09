@@ -862,7 +862,7 @@ int convertKeyCode(int key) {
                                 powerMarkerMsF(10, 1000);
                               #endif //DM42_POWERMARKS
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(max(sleepTime, 1),8000);
+                            powerMarkerMsF(max(sleepTime, 1), 8000);
                           #endif //DM42_POWERMARK_KEYPRESS
           sys_sleep();
                           #if defined(DM42_POWERMARK_KEYPRESS)
