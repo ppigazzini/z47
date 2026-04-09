@@ -323,7 +323,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
   }
 #endif // PC_BUILD || DMCP_BUILD                              //JMCSV
 
-#define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
+#define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50 : 0)
 
 char letteredRegisterName(calcRegister_t regist) {
   return registerFlagLetters[regist - FIRST_LETTERED_REGISTER];
@@ -592,7 +592,7 @@ void execTimerApp(uint16_t timerType) {
     if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || (!getSystemFlag(FLAG_FGLNFUL) && !getSystemFlag(FLAG_FGLNLIM))  ) {
       return;
     }
-    xSoftkeyMask &= (GRAPHMODE?0b000011u:0b111111u);
+    xSoftkeyMask &= (GRAPHMODE ? 0b000011u : 0b111111u);
     bool_t greyType = getSystemFlag(FLAG_FGGR);
     uint8_t lineCount, maxLine;
     lineCount = greyType ? SOFTMENU_HEIGHT - 3 : 3;
@@ -1165,7 +1165,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, max(0, yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0, yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy : 0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));

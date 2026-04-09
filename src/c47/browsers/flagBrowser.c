@@ -268,7 +268,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       extern int16_t menu_SYSFL[];
       uint16_t systemFlag;
       uint16_t param;
-      uint16_t x1, x2, y1, fOffset = currentFlgScr == SYSTEM_FLAGS_SCREEN_1?0:60;
+      uint16_t x1, x2, y1, fOffset = currentFlgScr == SYSTEM_FLAGS_SCREEN_1 ? 0 : 60;
       for(f=0; f<=59; f++) {
         if(f+fOffset > NUMBER_OF_SYSTEM_FLAGS - 1) {
           break;
@@ -324,7 +324,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
       else {
         // Local Registers
-        sprintf(tmpString, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s": "");
+        sprintf(tmpString, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s" : "");
         showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
         showString("Local flag status:", &standardFont, 1, 153, vmNormal, true, true);
 

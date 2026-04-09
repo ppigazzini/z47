@@ -216,7 +216,7 @@ void resetKeytimers(void) {
                   char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + 1);
                   setCurrentUserMenu(item, funcParam);
                 }
-                target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE)? -MNU_MyMenu : item);
+                target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE) ? -MNU_MyMenu : item);
                 showSoftmenu(target_HOME);
               }
               else {

@@ -876,10 +876,10 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 //                         1101
   #define STATE_exfr_abc 0b1110  //14
 //                         1111
-  #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8:0) +  \
-                         (getSystemFlag(FLAG_IRFRQ ) ? 4:0) +  \
-                         (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
-                         (getSystemFlag(FLAG_FRACT)  ? 1:0))
+  #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8 : 0) +  \
+                         (getSystemFlag(FLAG_IRFRQ ) ? 4 : 0) +  \
+                         (getSystemFlag(FLAG_PROPFR) ? 2 : 0) +  \
+                         (getSystemFlag(FLAG_FRACT)  ? 1 : 0))
   uint8_t state = STATE;
   //printf("%u ",state);
 

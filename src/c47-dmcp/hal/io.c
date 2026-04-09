@@ -37,23 +37,23 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
     case ioPathSaveStateFile:
       check_create_dir(STATE_DIR);
       ret = file_selection_screen("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathLoadStateFile:
       check_create_dir(STATE_DIR);
       ret = file_selection_screen("Load Calculator State", STATE_DIR, STATE_EXT, load_statefile, 0, 0, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathSaveProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Save Program", PROGRAMS_DIR, PRGM_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathExportRTFProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Export Program RTF", PROGRAMS_DIR, RTF_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathLoadProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Load Program", PROGRAMS_DIR, PRGM_EXT, load_programfile, 0, 0, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
   default:
       return FILE_ERROR;
   }
@@ -179,7 +179,7 @@ int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
     *errorNumber = result;
   }
   sys_disk_write_enable(0);
-  return (result == FR_OK? FILE_OK : FILE_ERROR);
+  return (result == FR_OK ? FILE_OK : FILE_ERROR);
 }
 
 //

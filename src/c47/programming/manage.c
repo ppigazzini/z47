@@ -543,7 +543,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if(getSystemFlag(FLAG_ALPHA)) {
           char tmpChar = tmpString[4];
           tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0 ? T_cursorPos + 4 : T_cursorPos);
           tmpString[4] = tmpChar;
           xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
           tmpString[2 + cursorInString    ] = STD_CURSOR[0];

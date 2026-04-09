@@ -206,7 +206,7 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   if(noDisplayExponent) {                                // if no exponent in display string but exponent in real34ToString, use the display string
     for(i = 0; i < strlen(nimDisplay); i++) {
       if((nimDisplay[i] == 'e') || (nimDisplay[i] == 'E')) {
-        strcpy(nimDisplay, tmpString + (tmpString[0] == '-'? 0 : 1));
+        strcpy(nimDisplay, tmpString + (tmpString[0] == '-' ? 0 : 1));
         break;
       }
       if(nimDisplay[i] == '.') {
@@ -701,7 +701,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               grpGroupingLeft  = grpGroupingLeftOld;
               strcpy(tempBuffer, tmpString);
             }
-            lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
+            lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2 : opParam == STRING_SHORT_INTEGER ? opParam2 : 0);
             //printf("**[DL]** fnEdit lastIntegerBase %d tempBuffer %s\n", lastIntegerBase, tempBuffer);
             //fflush(stdout);
             deleteStepsFromTo(currentStep, findNextStep(currentStep));
@@ -855,7 +855,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   //fflush(stdout);
                   break;
               }
-              lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
+              lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2 : opParam == STRING_SHORT_INTEGER ? opParam2 : 0);
             }
             if(chsNeeded) {
               pemAddNumber(ITM_CHS, false);

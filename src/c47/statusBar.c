@@ -390,7 +390,7 @@ void drawBattery(uint16_t voltage);
     if( aa || bb || reInstateIntegerModeDisplay) {
       reInstateIntegerModeDisplay = false;
       char statusMessage[10];
-      sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
+      sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL ? '1' : (shortIntegerMode==SIM_2COMPL ? '2' : (shortIntegerMode==SIM_UNSIGN ? 'u' : (shortIntegerMode==SIM_SIGNMT ? 's' : '?'))));
       strcat(statusMessage, " ");
       showStringAndClear(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, X_OVERFLOW_CARRY - X_INT_MX_TVM_MODE, 20, vmNormal, true, true);
       return true;
@@ -1032,7 +1032,7 @@ void drawBattery(uint16_t voltage) {
     x = showString(STD_ALMOST_EQUAL, &standardFont, ++x - 1, 0, vmNormal, true, false);
 
 
-    sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
+    sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL ? '1' : (shortIntegerMode==SIM_2COMPL ? '2' : (shortIntegerMode==SIM_UNSIGN ? 'u' : (shortIntegerMode==SIM_SIGNMT ? 's' : '?'))));
     x = showString(statusMessage, &standardFont, X_INT_MX_TVM_MODE, 0, vmNormal, true, true);
 
     x = X_INT_MX_TVM_MODE;

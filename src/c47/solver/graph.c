@@ -1587,7 +1587,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
         }
         copyComplex(&X2, &temp0);
         // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
-        if(iterationCounter==0 ||  (((oscillations >= 2)
+        if(iterationCounter==0 || (((oscillations >= 2)
               && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
               && (convergent <= 2)) )) {
           oscillationIterationCounter = 0;
@@ -1597,8 +1597,8 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
                                                   printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
                                           #endif // VERBOSE_SOLVER2
           double kick = 0.8123 * kicker * kicker * pow(2.0, kicker);
-          convertDoubleToReal( kicker%2?-kick:kick, &temp1.Real, ctxtSolver2);
-          convertDoubleToReal( kick, &temp1.Imag, ctxtSolver2);
+          convertDoubleToReal(kicker%2 ? -kick : kick, &temp1.Real, ctxtSolver2);
+          convertDoubleToReal(kick, &temp1.Imag, ctxtSolver2);
           addComplex(CPLX(temp1), CPLX(X0), CPLX(X2), ctxtSolver2);
                                           #if defined(PC_BUILD)
                                                   printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);

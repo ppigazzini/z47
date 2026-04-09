@@ -1215,7 +1215,7 @@ void clearRegister(calcRegister_t regist) {
     longIntegerInit(lgInt);
     uint16_t val =0;
     uInt32ToLongInteger(val, lgInt);
-    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, regist);
+    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, regist);
     longIntegerFree(lgInt);
   }                                                                             //JM defaults ^^
 }
