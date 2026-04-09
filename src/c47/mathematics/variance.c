@@ -267,10 +267,10 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
 
     #if defined(STATDEBUG) && defined(PC_BUILD)
       printf("##### processCurvefitSA:\n");
-      printRealToConsole(&RR2, "§§ RR^2: ","\n");
-      printRealToConsole(&MX2, "§§ MX^2: ","\n");
-      printRealToConsole(&SX2, "§§ SX^2: ","\n");
-      printRealToConsole(&SY2, "§§ SY^2: ","\n");
+      printRealToConsole(&RR2, "§§ RR^2: ", "\n");
+      printRealToConsole(&MX2, "§§ MX^2: ", "\n");
+      printRealToConsole(&SX2, "§§ SX^2: ", "\n");
+      printRealToConsole(&SY2, "§§ SY^2: ", "\n");
     #endif // STATDEBUG && PC_BUILD
 
 

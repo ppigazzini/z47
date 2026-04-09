@@ -48,7 +48,7 @@ void statGraphReset(void){
                                     char prefix[100];
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
-                                    printf("X: Reading from Matrix %s\n",prefix);
+                                    printf("X: Reading from Matrix %s\n", prefix);
                                   #endif // STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
@@ -76,7 +76,7 @@ void statGraphReset(void){
                                     char prefix[100];
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
-                                    printf("Y: Reading from Matrix %s\n",prefix);
+                                    printf("Y: Reading from Matrix %s\n", prefix);
                                   #endif // STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
@@ -201,13 +201,13 @@ void clearScreenPixels(void) {
 
 
 void plotcross(int16_t xn, int16_t yn) {              // Plots cross at xn, yn
-  plotline1(max((int16_t)xn-2, 0), max((int16_t)yn-2, 0),xn+2, yn+2);                       //   PLOT a cross
+  plotline1(max((int16_t)xn-2, 0), max((int16_t)yn-2, 0), xn+2, yn+2);                       //   PLOT a cross
   plotline1(max((int16_t)xn-2, 0), yn+2, xn+2, max((int16_t)yn-2, 0));
 }
 
 
 void plotplus(int16_t xn, int16_t yn) {              // Plots plus xn, yn
-  plotline1(max((int16_t)xn-3, 0),yn, xn+3, yn);          // PLOT a plus
+  plotline1(max((int16_t)xn-3, 0), yn, xn+3, yn);          // PLOT a plus
   plotline1(xn, yn+3, xn, max((int16_t)yn-3, 0));
 }
 
@@ -215,9 +215,9 @@ void plotplus(int16_t xn, int16_t yn) {              // Plots plus xn, yn
 void plotbox(int16_t xn, int16_t yn) {                // Plots line from xo, yo to xn, yn; uses temporary x1, y1
   plotline1   (max((int16_t)xn-2, 0), max((int16_t)yn-2, 0), max((int16_t)xn-2, 0), max((int16_t)yn-1, 0));                       //   PLOT a box
   placePixel  (max((int16_t)xn-1, 0), max((int16_t)yn-2, 0));
-  plotline1   (max((int16_t)xn-2, 0), yn+2, max((int16_t)xn-2, 0),yn+1);
+  plotline1   (max((int16_t)xn-2, 0), yn+2, max((int16_t)xn-2, 0), yn+1);
   placePixel  (max((int16_t)xn-1, 0), yn+2);
-  plotline1   (xn+2, max((int16_t)yn-2, 0),xn+1, max((int16_t)yn-2, 0));
+  plotline1   (xn+2, max((int16_t)yn-2, 0), xn+1, max((int16_t)yn-2, 0));
   placePixel  (xn+2, max((int16_t)yn-1, 0));
   plotline1   (xn+2, yn+2, xn+2, yn+1);
   placePixel  (xn+1, yn+2);
@@ -255,7 +255,7 @@ void plotline2(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {                
    //printf("From (%8d, %8d) to (%8d, %8d)\n", xo, yo, xn, yn);
    pixelline(xo, yo, xn, yn, 1);
    pixelline(max((int16_t)xo-1, 0), yo, max((int16_t)xn-1, 0), yn, 1);
-   pixelline(xo, max((int16_t)yo-1, 0), xn, max((int16_t)yn-1, 0),1);
+   pixelline(xo, max((int16_t)yo-1, 0), xn, max((int16_t)yn-1, 0), 1);
    //   pixelline(xo+1, yo, xn+1, yn, 1);   //Do not use the full doubling, without it give as nice profile if the slope changes
    //   pixelline(xo, yo+1, xn, yn+1, 1);
 }
@@ -453,7 +453,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
       for(int i = 1; i <= steps; i++) {
         float sx, sy;
         evalHermite((float)i / steps,    px[3], px[4], t1x, t2x,    py[3], py[4], t1y, t2y,    &sx, &sy);
-        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y),ROUND_F2I(sx), ROUND_F2I(sy));
+        plotline2(ROUND_F2I(prev_x), ROUND_F2I(prev_y), ROUND_F2I(sx), ROUND_F2I(sy));
 
         prev_x = sx;
         prev_y = sy;
@@ -472,7 +472,7 @@ void plotline3(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t first_time
 //Exhange the name of this routine with pixelline() above to try Bresenham
 void pixelline(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
-    printf("pixelline 1: xo,yo,  xn,yn: %d,%d    %d,%d \n",xo, yo, xn, yn);
+    printf("pixelline 1: xo,yo,  xn,yn: %d,%d    %d,%d \n", xo, yo, xn, yn);
   #endif // STATDEBUG_VERBOSE && PC_BUILD
 
   //Bresenham line drawing: Pauli's link. Also here: http://forum.6502.org/viewtopic.php?f=10&t=2247&start=555
@@ -543,7 +543,7 @@ void graphAxisDraw (void){
     while(cnt != SCREEN_WIDTH_GRAPH - 1) {
       setBlackPixel(cnt, yzero);
         #if defined(STATDEBUG) && defined(PC_BUILD)
-        printf("cnt=%d   \n",(int)cnt);
+        printf("cnt=%d   \n", (int)cnt);
         #endif // STATDEBUG && PC_BUILD
       cnt++;
     }
@@ -553,16 +553,16 @@ void graphAxisDraw (void){
    if(0<x_max && 0>x_min) {
      for(x=0; x<=x_max; x+=tick_int_x) {                           //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-         printf(">> x=%d   \n",(int)x);
+         printf(">> x=%d   \n", (int)x);
           #endif // STATDEBUG && PC_BUILD
        cnt = screen_window_x(x_min, x, x_max);
-       //printf(">>>>>A %f %d ",x, cnt);
+       //printf(">>>>>A %f %d ", x, cnt);
        setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1));    //tick
        setBlackPixel(cnt, max(yzero-1, minny));                    //tick
      }
      for(x=0; x>=x_min; x+=-tick_int_x) {                          //draw x ticks
        cnt = screen_window_x(x_min, x, x_max);
-       //printf(">>>>>B %f %d ",x, cnt);
+       //printf(">>>>>B %f %d ", x, cnt);
        setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1));    //tick
        setBlackPixel(cnt, max(yzero-1, minny));                    //tick
      }
@@ -584,16 +584,16 @@ void graphAxisDraw (void){
    else {
      for(x=x_min; x<=x_max; x+=tick_int_x) {                       //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>x=%d   \n",(int)x);
+          printf(">>>x=%d   \n", (int)x);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_x(x_min, x, x_max);
-        //printf(">>>>>A %f %d ",x, cnt);
+        //printf(">>>>>A %f %d ", x, cnt);
           setBlackPixel(cnt, min(yzero+1, SCREEN_HEIGHT_GRAPH-1)); //tick
           setBlackPixel(cnt, max(yzero-1, minny));                 //tick
        }
       for(x=x_min; x<=x_max; x+=tick_int_x*5) {                    //draw x ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>>x=%d   \n",(int)x);
+          printf(">>>>x=%d   \n", (int)x);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_x(x_min, x, x_max);
           setBlackPixel(cnt, min(yzero+2, SCREEN_HEIGHT_GRAPH-1)); //tick
@@ -626,7 +626,7 @@ void graphAxisDraw (void){
     if(0<y_max && 0>y_min) {
       for(y=0; y<=y_max; y+=tick_int_y) {                      //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>y=%d   \n",(int)y);
+          printf(">>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-1, 0), cnt);                    //tick
@@ -634,7 +634,7 @@ void graphAxisDraw (void){
       }
       for(y=0; y>=y_min; y+=-tick_int_y) {                      //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>y=%d   \n",(int)y);
+          printf(">>>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-1, 0), cnt);                    //tick
@@ -642,7 +642,7 @@ void graphAxisDraw (void){
       }
       for(y=0; y<=y_max; y+=tick_int_y*5) {                     //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>>y=%d   \n",(int)y);
+          printf(">>>>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-2, 0), cnt);                    //tick
@@ -652,7 +652,7 @@ void graphAxisDraw (void){
       }
       for(y=0; y>=y_min; y+=-tick_int_y*5) {                    //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>>>y=%d   \n",(int)y);
+          printf(">>>>>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-2, 0), cnt);                    //tick
@@ -664,7 +664,7 @@ void graphAxisDraw (void){
     else {
       for(y=y_min; y<=y_max; y+=tick_int_y) {                   //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>>>>>y=%d   \n",(int)y);
+          printf(">>>>>>>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-1, 0), cnt);                    //tick
@@ -672,7 +672,7 @@ void graphAxisDraw (void){
       }
       for(y=y_min; y<=y_max; y+=tick_int_y*5) {                 //draw y ticks
           #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf(">>>>>>>>y=%d   \n",(int)y);
+          printf(">>>>>>>>y=%d   \n", (int)y);
           #endif // STATDEBUG && PC_BUILD
         cnt = screen_window_y(y_min, y, y_max);
         setBlackPixel(max(xzero-2, 0), cnt);                    //tick
@@ -1160,7 +1160,7 @@ void graphPlotstat(uint16_t selection){
 currentKeyCode = 255;
 #if !defined(SAVE_SPACE_DM42_13GRF)
   #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n",selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
+    printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n", selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
   #endif // STATDEBUG && PC_BUILD
   uint16_t  cnt, ix, numberOfPlotPoints;
   int16_t  xo, xn, xN;
@@ -1181,7 +1181,7 @@ currentKeyCode = 255;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("graphPlotstat: numberOfPlotPoints n=%d\n",numberOfPlotPoints);
+      printf("graphPlotstat: numberOfPlotPoints n=%d\n", numberOfPlotPoints);
     #endif // STATDEBUG && PC_BUILD
 
 
@@ -1203,14 +1203,14 @@ currentKeyCode = 255;
       y_min = FLoatingMax;
       y_max = FLoatingMin;
       #if defined(STATDEBUG) && defined(PC_BUILD)
-        printf("Axis0: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        printf("Axis0: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
       #endif // STATDEBUG && PC_BUILD
 
 
     //#################################################### vvv SCALING LOOP  vvv
     for(cnt=0; (cnt < numberOfPlotPoints); cnt++) {
       #if defined(STATDEBUG) && defined(PC_BUILD)
-        printf("Axis0a: x: %f y: %f   \n",grf_x(cnt), grf_y(cnt));
+        printf("Axis0a: x: %f y: %f   \n", grf_x(cnt), grf_y(cnt));
       #endif // STATDEBUG && PC_BUILD
       if(grf_x(cnt) < x_min) {
         x_min = grf_x(cnt);
@@ -1225,7 +1225,7 @@ currentKeyCode = 255;
         y_max = grf_y(cnt);
       }
       #if defined(STATDEBUG) && defined(PC_BUILD)
-        printf("Axis0b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
       #endif // STATDEBUG && PC_BUILD
       if(exitKeyWaiting()) {
         return;
@@ -1233,7 +1233,7 @@ currentKeyCode = 255;
     }
     //##  ################################################## ^^^ SCALING LOOP ^^^
       #if defined(STATDEBUG) && defined(PC_BUILD)
-        printf("Axis1a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        printf("Axis1a: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
       #endif // STATDEBUG && PC_BUILD
 
       if(x_min <= FLoatingMin || x_max <= FLoatingMin || y_min <= FLoatingMin || y_max <= FLoatingMin) {
@@ -1275,7 +1275,7 @@ currentKeyCode = 255;
     xN = xn;
     yN = yn;
       #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Axis3c: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+      printf("Axis3c: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
       #endif // STATDEBUG && PC_BUILD
 
       int16_t colw = (int16_t) (
@@ -1315,7 +1315,7 @@ currentKeyCode = 255;
         }
         else {
             #if defined(PC_BUILD)
-            printf("Not plotted point: (%u %u) ",xN, yN);
+            printf("Not plotted point: (%u %u) ", xN, yN);
               if(xN >= SCREEN_WIDTH_GRAPH) {
                 printf("x>>%u ", SCREEN_WIDTH_GRAPH);
               }
@@ -1353,9 +1353,9 @@ currentKeyCode = 255;
       char ss[100], tt[100];
       char tmpbuf[PLOT_TMP_BUF_SIZE];
       int16_t index = -1;
-      real34ToReal(&loBinR ,&lBr);
-      real34ToReal(&hiBinR ,&hBr);
-      real34ToReal(&nBins  ,&nBr);
+      real34ToReal(&loBinR, &lBr);
+      real34ToReal(&hiBinR, &hBr);
+      real34ToReal(&nBins,  &nBr);
       realToFloat(&lBr, &lB);
       realToFloat(&hBr, &hB);
       realToFloat(&nBr, &nB);
@@ -1487,7 +1487,7 @@ void graphDrawLRline(uint16_t selection) {
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("drawline: n=%d\n",n);
+      printf("drawline: n=%d\n", n);
     #endif // STATDEBUG && PC_BUILD
 
     NN = (uint16_t) n;
@@ -1512,7 +1512,7 @@ void graphDrawLRline(uint16_t selection) {
       return;
     }
 
-    realToFloat(RR , &rr );
+    realToFloat(RR,  &rr );
     realToFloat(SMI, &smi);
     realToFloat(aa0, &a0 );
     realToFloat(aa1, &a1 );
@@ -1550,14 +1550,14 @@ void graphDrawLRline(uint16_t selection) {
           x = ix + intervalW / ((double)((uint16_t) 1 << xx));
           if(USEFLOATING == useREAL4) {
             //TODO create REAL from x (double) if REALS will be used
-            //snprintf(ss, 100, "%f",x);
+            //snprintf(ss, 100, "%f", x);
             //stringToReal(ss, &XX, &ctxtReal4);
             convertDoubleToReal(x, &XX, &ctxtReal4);
           }
           else {
             if(USEFLOATING == useREAL39) {
               //TODO create REAL from x (double) if REALS will be used
-              //snprintf(ss, 100, "%f",x);
+              //snprintf(ss, 100, "%f", x);
               //stringToReal(ss, &XX, &ctxtReal39);
               convertDoubleToReal(x, &XX, &ctxtReal39);
             }
@@ -1573,7 +1573,7 @@ void graphDrawLRline(uint16_t selection) {
         //printf("### iter:%u ix=%20lf xx=%i x=%lf y=%lf xN=%u yN=%u\n", iterations, ix, xx, x, y, xN, yN);
         if(iterations > 0) {  //Allow for starting values to accumulate in the registers at ix = 0
           #if defined(STATDEBUG) && defined(PC_BUILD)
-            printf("plotting graph: iter:%u ix:%f I.vals:%u ==>xmin:%f (x:%f) xmax:%f ymin:%f (y:%f) ymax:%f xN:%d yN:%d \n",iterations, ix, Intervals, x_min, x, x_max, y_min, y, y_max,  xN, yN);
+            printf("plotting graph: iter:%u ix:%f I.vals:%u ==>xmin:%f (x:%f) xmax:%f ymin:%f (y:%f) ymax:%f xN:%d yN:%d \n", iterations, ix, Intervals, x_min, x, x_max, y_min, y, y_max,  xN, yN);
           #endif // STATDEBUG && PC_BUILD
           #define tol 4
           if(xN<SCREEN_WIDTH_GRAPH && xN>minN_x && yN<SCREEN_HEIGHT_GRAPH-tol && yN>minN_y) {
@@ -1613,7 +1613,7 @@ void graphDrawLRline(uint16_t selection) {
         }
       }
       #if defined(PC_BUILD)
-        printf("Drawline: %u / 2000 iterations\n",iterations);
+        printf("Drawline: %u / 2000 iterations\n", iterations);
       #endif // PC_BUILD
     }
 
@@ -1640,7 +1640,7 @@ void graphDrawLRline(uint16_t selection) {
 
     if(isValidDraw) {
       if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT_SCATR) {
-        sprintf(ss, "%u",NN);
+        sprintf(ss, "%u", NN);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -2 +autoshift, vmNormal, false, false);
         sprintf(ss, STD_SPACE_PUNCTUATION STD_SPACE_PUNCTUATION "n=");
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
@@ -1807,7 +1807,7 @@ void fnPlotStat(uint16_t plotMode){
 
                                   #if defined(STATDEBUG) && defined(PC_BUILD)
                                   printf("fnPlotStat1: plotSelection = %u; Plotmode=%u\n", plotSelection, plotMode);
-                                  printf("#####>>> fnPlotStat1: plotSelection:%u:%s  Plotmode:%u lastplotmode:%u  lrSelection:%u lrChosen:%u plotStatMx:%s\n",plotSelection, getCurveFitModeName(plotSelection), plotMode, lastPlotMode, lrSelection, lrChosen, plotStatMx);
+                                  printf("#####>>> fnPlotStat1: plotSelection:%u:%s  Plotmode:%u lastplotmode:%u  lrSelection:%u lrChosen:%u plotStatMx:%s\n", plotSelection, getCurveFitModeName(plotSelection), plotMode, lastPlotMode, lrSelection, lrChosen, plotStatMx);
                                     if( (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
                                         (plotStatMx[0]=='D' && drawMxN() >= 2) ||
                                         (plotStatMx[0]=='H' && statMxN() >= 3) ) {
@@ -1818,7 +1818,7 @@ void fnPlotStat(uint16_t plotMode){
                                         case 'H': cnt = statMxN();                     break;
                                         default: ;
                                       }
-                                    printf("Stored values %i\n",cnt);
+                                    printf("Stored values %i\n", cnt);
                                   }
                                   #endif //STATDEBUG
 

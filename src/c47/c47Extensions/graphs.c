@@ -608,7 +608,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("PLOT_ZMY=%i  FLAG_SCALE=%i mode=%i\n", PLOT_ZMY, getSystemFlag(FLAG_SCALE), mode);
-    printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+    printf("Axis1b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 
 
@@ -801,7 +801,7 @@ void graph_plotmem(void) {
         uint16_t i;
         int16_t cnt1;
         cnt1 = drawMxN();
-        printf("Stored values n=%i of matrix:%s\n",cnt1, plotStatMx);
+        printf("Stored values n=%i of matrix:%s\n", cnt1, plotStatMx);
         for(i = 0; i < cnt1; ++i) {
           printf("i = %3u x = %9f; y = %9f\n", i, grf_x(i), grf_y(i));
         }
@@ -1126,7 +1126,7 @@ void graph_plotmem(void) {
 
         //Manipulate the obtained axes positions
         #if defined(STATDEBUG)
-          printf("Axis1a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+          printf("Axis1a: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
         #endif // STATDEBUG
 
 
@@ -1140,7 +1140,7 @@ void graph_plotmem(void) {
         }
 
         #if defined(STATDEBUG)
-          printf("Axis3b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+          printf("Axis3b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
         #endif // STATDEBUG
 
 
@@ -1158,7 +1158,7 @@ void graph_plotmem(void) {
         }
 
         #if defined(STATDEBUG)
-          printf("Axis3c: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+          printf("Axis3c: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
         #endif // STATDEBUG
 
         sx = 0;
@@ -1235,7 +1235,7 @@ void graph_plotmem(void) {
 
           #if defined(STATDEBUG)
             printf("\n         xN1 = %d : (x_min=%f,x=%f,x_max=%f) ", xN1, x_min, x, x_max);
-            printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y, y_max);
+            printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min, y, y_max);
             printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
             printf("   ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
@@ -1481,7 +1481,7 @@ void fnStatList() {
       print_linestr(tmpString, true);
 
                                   #if defined(STATDEBUG)
-                                    printf("Stat data %d - %d (%s)\n",statnum-1, max(0, statnum-1-6), tmpString );
+                                    printf("Stat data %d - %d (%s)\n", statnum-1, max(0, statnum-1-6), tmpString );
                                   #endif // STATDEBUG
 
       if(ListXYposition > 0) {
@@ -1495,13 +1495,13 @@ void fnStatList() {
         ixx = statnum - ix - 1 + ListXYposition;
         char tmpBuf[100];
 
-          sprintf(tmpstr1, "[%3d] x%4s%14s, ",ixx+1, "", formatCore(grf_x(ixx), 10, false, tmpBuf, 150));
+          sprintf(tmpstr1, "[%3d] x%4s%14s, ", ixx+1, "", formatCore(grf_x(ixx), 10, false, tmpBuf, 150));
           sprintf(tmpstr2, "y%4s%14s, ", "", formatCore(grf_y(ixx), 10, false, tmpBuf, 150));
         strcat(tmpstr1, tmpstr2);
 
         print_numberstr(tmpstr1, false);
         #if defined(STATDEBUG)
-          printf("%d:%s\n",ixx, tmpstr1);
+          printf("%d:%s\n", ixx, tmpstr1);
         #endif // STATDEBUG
       }
     }

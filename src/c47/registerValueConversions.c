@@ -762,7 +762,7 @@ void sci_fmt(char *buf, int n, double x) {
     #if defined(PC_BUILD)
       if(real34IsNaN(REGISTER_REAL34_DATA(destination))) {
         snprintf(buff, 100, "%.16e", x);
-        printf("ERROR in convertDoubleToReal34Register: %s\n",buff);
+        printf("ERROR in convertDoubleToReal34Register: %s\n", buff);
       }
     #endif // PC_BUILD
   }

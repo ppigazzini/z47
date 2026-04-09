@@ -17,7 +17,7 @@ void print_caller(const char *format, ...) {
   Dl_info infoA, infoB;
   dladdr(cs[1], &infoA);
   dladdr(cs[2], &infoB);
-  printf("%s%s%s called from: %s%-30s%s",COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
+  printf("%s%s%s called from: %s%-30s%s", COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
 
   if(format != NULL) {
     printf("| ");
@@ -166,7 +166,7 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
 
   if(x == 0 && y == 0 && dx == SCREEN_WIDTH && dy == SCREEN_HEIGHT) {  //JMTOCHECK is this needed?
     #if defined(MONITOR_CLRSCR)
-      printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n",calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
+      printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n", calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
     #endif
     // clear_ul(); //JMUL
   }
@@ -214,7 +214,7 @@ void _lcdRefresh(void) {              //called by force_refresh() and _printHalf
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
            #if defined(ANALYSE_REFRESH)
-            print_caller("y=%u, dy=%u\n",y, dy);
+            print_caller("y=%u, dy=%u\n", y, dy);
            #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);

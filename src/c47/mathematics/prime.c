@@ -1078,7 +1078,7 @@ void fnEvPFacts(uint16_t param) {
       }
       else {
         #if defined(PC_BUILD)
-          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);
+          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n", lastErrorCode);
         #endif
       }
       break;
@@ -1360,13 +1360,13 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           loopp++;
           if(checkHalfSec()) {
             keepFileNameAlive();
-            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, n);
               force_refresh(force);
             }
           }
           if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;
           }
@@ -1377,7 +1377,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
             PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
                           #if defined(MONITOR_FACTORS)
-                            printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                            printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r", loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
                             fflush(stdout);
                           #endif // MONITOR_FACTORS
             if(programRunStop == PGM_WAITING) {
@@ -1459,13 +1459,13 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           loopp++;
           if(checkHalfSec()) {
             keepFileNameAlive();
-            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, n);
               force_refresh(force);
             }
           }
           if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;
           }
@@ -1495,7 +1495,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
 
 Broken:
         if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           break;
         }
@@ -1637,7 +1637,7 @@ typedef struct FactorAdder {
                                               printRegisterToConsole(regist, "Matrix: ", "\n");
                                               printf("  Exponent Array: faddr->nExpons=%d\n", faddr->nExpons);
                                               for(int ii = 0; ii < faddr->nExpons; ii++) {
-                                                printf("%d:%d ",ii, faddr->expons[ii]);
+                                                printf("%d:%d ", ii, faddr->expons[ii]);
                                               }
                                               printf("\n");
                                               fflush(stdout);
@@ -1751,7 +1751,7 @@ typedef struct FactorAdder {
     }
     uint16_t wkgCols = faddr->nExpons;
                                             #if defined(MONITOR_FACTORS)
-                                              gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
+                                              gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n", factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
                                               fflush(stdout);
                                             #endif // MONITOR_FACTORS
     if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
@@ -1770,7 +1770,7 @@ typedef struct FactorAdder {
     uint16_t n = rows*counter;
     uint16_t c = n/2;
                                             #if defined(MONITOR_FACTORS)
-                                              printf("faddr->nExpons=%d n=%d c=%d\n",faddr->nExpons, n, c);
+                                              printf("faddr->nExpons=%d n=%d c=%d\n", faddr->nExpons, n, c);
                                               fflush(stdout);
                                             #endif // MONITOR_FACTORS
     real34_t factorR;
@@ -1784,7 +1784,7 @@ typedef struct FactorAdder {
     if(longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter, const34_1) ) {
       ++(faddr->expons[counter]);
                                               #if defined(MONITOR_FACTORS)
-                                                printf("--e:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
+                                                printf("--e:   use existing:  created expons %u at %u\n", faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
                                               #endif // MONITOR_FACTORS
     }
     else {
@@ -1961,14 +1961,14 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
         loopp++;
         if(checkHalfSec()) {
           keepFileNameAlive();
-          if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =", smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
             _showProgress(&lastAdded, currentNumber);
             dumpExponents(REGISTER_X, &faddr, 13);
             force_refresh(force);
           }
         }
         if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           break;
         }
@@ -2005,14 +2005,14 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
       loopp++;
       if(checkHalfSec()) {
         keepFileNameAlive();
-        if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =", multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           _showProgress(&lastAdded, currentNumber);
           dumpExponents(REGISTER_X, &faddr, 13);
           force_refresh(force);
         }
       }
       if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
         break;
       }
@@ -2022,7 +2022,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
         longIntegerToUInt32(currentNumber, n32);
         uint64_t kn = (uint64_t)k * (uint64_t)n32;
         #if defined(MONITOR_FACTORS)
-          printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+          printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n", n32, k, kn);
           fflush(stdout);
         #endif // MONITOR_FACTORS
         uint32_t root;
@@ -2069,7 +2069,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     longIntegerCopy(queue[queue_start], current);
     queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
                         #if defined(MONITOR_FACTORS)
-                          printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+                          printf("loopp=%d queue_start=%d queue_end=%d\n", loopp, queue_start, queue_end);
                           mpz_out_str(stdout, 10, current);
                           printf(" ");
                         #endif // MONITOR_FACTORS
@@ -2077,14 +2077,14 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     loopp++;
     if(checkHalfSec()) {
       keepFileNameAlive();
-      if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&lastAdded, current);
         dumpExponents(REGISTER_X, &faddr, 13);
         force_refresh(force);
       }
     }
     if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-      progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+      progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
       programRunStop = PGM_WAITING;
       break;
     }
@@ -2139,7 +2139,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
     if(next_next_end != queue_start) {
                         #if defined(MONITOR_FACTORS)
-                          printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
+                          printf("Enqueueing: %u -> %u : factor: ", queue_end, queue_start);
                           mpz_out_str(stdout, 10, factor);
                           printf(" quotient: ");
                           mpz_out_str(stdout, 10, quotient);
@@ -2340,7 +2340,7 @@ if(instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iterat
     for(int i = 0; i < steps; ++i) {
 // Might be needed if an exit key is not caugt in the main iteration. I doubt though. If no complaints, this can be deleted. 2026-03-07
 //      if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-//        progressHalfSecUpdate_Integer(force+1, "Interrupted1: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+//        progressHalfSecUpdate_Integer(force+1, "Interrupted1: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
 //        programRunStop = PGM_WAITING;
 //        break;
 //      }

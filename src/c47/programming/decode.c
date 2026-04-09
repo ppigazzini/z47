@@ -835,7 +835,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
         if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
-          sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
+          sprintf(nameOp, "%2i", op - FIRST_CONSTANT + 1);
           strcat(nameOp, " ");
           strcat(nameOp, indexOfItems[op].itemCatalogName);
           strcat(nameOp, " ");

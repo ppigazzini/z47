@@ -564,7 +564,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
       #if defined(VERBOSE_REGISTERS)
-        printStatus(0, "allocateLocalRegisters1",force);
+        printStatus(0, "allocateLocalRegisters1", force);
       #endif //VERBOSE_REGISTERS
 
       // All the new local registers are real34s initialized to 0.0
@@ -637,7 +637,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
     }
     else { // Ther number of local register decreases
       #if defined(VERBOSE_REGISTERS)
-       printStatus(0, "allocateLocalRegisters3",force);
+       printStatus(0, "allocateLocalRegisters3", force);
       #endif //VERBOSE_REGISTERS
       // free memory allocated to the data of the deleted local registers
       for(r=numberOfRegistersToAllocate; r<currentNumberOfLocalRegisters; r++) {
@@ -763,7 +763,7 @@ bool_t isUniqueMenuName(const char *name) {
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, "_findReservedVariable",force);
+    printStatus(0, "_findReservedVariable", force);
   #endif //VERBOSE_REGISTERS
 
   uint8_t len = stringGlyphLength(variableName);
@@ -773,7 +773,7 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
     return reg->reg;
 
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, " ",force);
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
 }
@@ -844,7 +844,7 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
   }
 
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, "allocateNamedVariable",force);
+    printStatus(0, "allocateNamedVariable", force);
   #endif //VERBOSE_REGISTERS
   len = stringByteLength(variableName);
   allNamedVariables[regist].variableName[0] = len;
@@ -856,7 +856,7 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
   setRegisterDataType(regist, dataType, amNone);
   setRegisterDataPointer(regist, allocC47Blocks(fullDataSizeInBlocks));
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, " ",force);
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
 }
 
@@ -875,7 +875,7 @@ calcRegister_t findNamedVariable(const char *variableName) {
   }
 
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, "findNamedVariable",force);
+    printStatus(0, "findNamedVariable", force);
   #endif //VERBOSE_REGISTERS
   //printf("|%20s|%20s|\n",(char *)(allNamedVariables[0].variableName + 1), variableName);
   for(int i = 0; i < numberOfNamedVariables; i++) {
@@ -885,7 +885,7 @@ calcRegister_t findNamedVariable(const char *variableName) {
     }
   }
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, " ",force);
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
   return regist;
 }
@@ -920,7 +920,7 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
 
 void fnDeleteVariable(uint16_t regist) {
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, "fnDeleteVariable",force);
+    printStatus(0, "fnDeleteVariable", force);
   #endif //VERBOSE_REGISTERS
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
     removeUserItemAssignments(ITM_RCL, (char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
@@ -941,7 +941,7 @@ void fnDeleteVariable(uint16_t regist) {
     displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
   #if defined(VERBOSE_REGISTERS)
-    printStatus(0, " ",force);
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
 }
 
@@ -1633,7 +1633,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     if((value == INVALID_VARIABLE) && (lastErrorCode != ERROR_ENTER_NEW_NAME)) {
       displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", REGISTER_STRING_DATA(regist),(tryAllocate? "true" : "false"));
+        sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", REGISTER_STRING_DATA(regist), (tryAllocate ? "true" : "false"));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return FAILED_INDIRECTION;
@@ -1774,7 +1774,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       linkToRealMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
         printf("ReMa %s", before);
-        printf("Row %3i: ",r);
+        printf("Row %3i: ", r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real34ToString(&mat.matrixElements[r * mat.header.matrixColumns + c], str);
           printf("%s ", str);
@@ -1789,7 +1789,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       linkToComplexMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
         printf("(compact CxMa): %s", before);
-        printf("Row %3i: ",r);
+        printf("Row %3i: ", r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real_t tmpr;
           char str[100];
@@ -1843,7 +1843,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
     else {
       printf("%s", before);
-      sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+      sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist , false, false));
       displayBugScreen(errorMessage);
     }
 
@@ -1864,12 +1864,12 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     }
     while(str[loop] != 0) {
       if(str[loop] & 0x80) {
-        printf(" %2x%2x",(uint8_t)(str[loop]),(uint8_t)(str[loop+1]));
+        printf(" %2x%2x", (uint8_t)(str[loop]), (uint8_t)(str[loop+1]));
         loop++;
         loop++;
       }
       else {
-        printf("   %2x",(uint8_t)(str[loop++]));
+        printf("   %2x", (uint8_t)(str[loop++]));
       }
     }
     printf("%s", after);

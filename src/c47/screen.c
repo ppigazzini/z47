@@ -1732,8 +1732,8 @@ return res;
 
 
   void incOffset(void) {             //C47 JM
-    if( (int32_t)stringWidthC47(aimBuffer + displayAIMbufferoffset, combinationFonts ,nocompress, true, true) -
-        (int32_t)stringWidthC47(aimBuffer + T_cursorPos, combinationFonts ,nocompress, true, true)
+    if( (int32_t)stringWidthC47(aimBuffer + displayAIMbufferoffset, combinationFonts, nocompress, true, true) -
+        (int32_t)stringWidthC47(aimBuffer + T_cursorPos, combinationFonts, nocompress, true, true)
         > SCREEN_WIDTH * multiEdLines - 45
         ) {
       displayAIMbufferoffset = stringNextGlyph(aimBuffer, displayAIMbufferoffset);
@@ -1745,7 +1745,7 @@ return res;
 
   static bool_t _force_refresh(uint8_t mode) {
     #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-      printf("# force = %i",mode == force);
+      printf("# force = %i", mode == force);
     #endif //ANALYSE_REFRESH
     uint16_t now = 0;
     bool_t itIsTime = false;
@@ -1885,7 +1885,7 @@ return res;
       }
     }
     if(exitKeyWaiting()) {
-      progressHalfSecUpdate_Integer(force+1, "Interrupted: ",*loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+      progressHalfSecUpdate_Integer(force+1, "Interrupted: ", *loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
       return true;
     }
     return false;
@@ -2601,7 +2601,7 @@ void createSubstrings(uint8_t number) {
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
         strcpy(prefix + allReservedVariables[variableNo].reservedVariableName[0], noo);
-        strcat(prefix + allReservedVariables[variableNo].reservedVariableName[0],&varDescr[variableNo].Desc[0]);
+        strcat(prefix + allReservedVariables[variableNo].reservedVariableName[0], &varDescr[variableNo].Desc[0]);
       }
       else {
         memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
@@ -3355,7 +3355,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+              sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode], errorMessage);
 
               showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
             }
@@ -3452,7 +3452,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             if(T_cursorPos < 0) { //Do range checking in case the cursor starts off outside of range
               T_cursorPos = tmplen;
             }
-            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
+            showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
 
             if(T_cursorPos == tmplen) {
               cursorEnabled = true;
@@ -5202,7 +5202,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
     void clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys) {  //clrStatusBar, clrRegisterLines, clrSoftkeys
                                         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                                          printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
+                                          printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n", calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
                                         #endif // PC_BUILD &&MONITOR_CLRSCR
                                         #if defined(ANALYSE_REFRESH)
                                           print_caller(NULL);
@@ -5234,7 +5234,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
     void clearScreenGraphs(uint8_t source, bool_t clearTextArea, bool_t clearGraphArea) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf("       clearScreenGraphs(%u) clearTextArea=%u, clearGraphArea=%u \n",source, clearTextArea, clearGraphArea);
+        printf("       clearScreenGraphs(%u) clearTextArea=%u, clearGraphArea=%u \n", source, clearTextArea, clearGraphArea);
       #endif // PC_BUILD &&MONITOR_CLRSCR
       uint8_t origCalcMode = calcMode;
       if(clearTextArea) {
@@ -5409,7 +5409,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         }
         else if(calcMode == CM_NIM) {
           #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-            printf(">>>>      _refreshNormalScreen NIM_LINE: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
+            printf(">>>>      _refreshNormalScreen NIM_LINE: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n", calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
           #endif // PC_BUILD &&MONITOR_CLRSCR
           if(!refreshNIMdone) {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)

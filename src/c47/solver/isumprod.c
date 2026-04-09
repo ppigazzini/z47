@@ -66,7 +66,7 @@
 
         loop--;
         if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
             _showProgress(resultLi);
           }
         }
@@ -81,7 +81,7 @@
         fnFillStack(NOPARAM);
 
         #if defined(VERBOSE_COUNTER)
-          printRegisterToConsole(REGISTER_X, "[f(",") ");
+          printRegisterToConsole(REGISTER_X, "[f(", ") ");
         #endif //VERBOSE_COUNTER
 
 

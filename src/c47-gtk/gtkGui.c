@@ -255,7 +255,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   static bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
 //      #if defined(VERBOSEKEYS)
-        printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
 //        #endif //VERBOSEKEYS
     }
 
@@ -294,8 +294,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       //Handle menus
       if(itemForRunFunction < 0) {
         #if defined(VERBOSEKEYS)
-        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-          printf("       shortCutCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutCommand: Handle menus: key:%i: showSoftmenu %i\n", keyCode, itemForRunFunction);
         #endif //VERBOSEKEYS
         showSoftmenu(itemForRunFunction);
         screenUpdatingMode = SCRUPD_AUTO;
@@ -306,14 +306,14 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {
         #if defined(VERBOSEKEYS)
-        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-          printf("       shortCutCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutCommand: Handle functions: key:%i: showSoftmenu %i\n", keyCode, itemForRunFunction);
         #endif //VERBOSEKEYS
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
           #if defined(VERBOSEKEYS)
-            printf("       shortCutCommand: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+            printf("       shortCutCommand: Handle key presses: key:%i: btnClicked %s\n", keyCode, keyForBtnClicked);
           #endif //VERBOSEKEYS
           if(shift[0] == 'f') {
             shiftF = true;
@@ -332,7 +332,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
         //Handle direct functions
         if(itemForRunFunction >= 0) {
           #if defined(VERBOSEKEYS)
-            printf("       shortCutCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+            printf("       shortCutCommand: Handle direct functions: key:%i: runFunction  %i\n", keyCode, itemForRunFunction);
           #endif //VERBOSEKEYS
           runFunction(itemForRunFunction);
           screenUpdatingMode = SCRUPD_AUTO;
@@ -352,7 +352,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   static bool_t shortCutFNCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
 //    #if defined(VERBOSEKEYS)
-        printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+        printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
 //    #endif //VERBOSEKEYS
     }
 
@@ -371,8 +371,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 //      //Handle menus
 //      if(itemForRunFunction < 0) {
-//        //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
-//        printf("       shortCutFNCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+//        //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+//        printf("       shortCutFNCommand: Handle menus: key:%i: showSoftmenu %i\n", keyCode, itemForRunFunction);
 //        showSoftmenu(itemForRunFunction);
 //        screenUpdatingMode = SCRUPD_AUTO;
 //        refreshScreen(4);
@@ -382,14 +382,14 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {
         #if defined(VERBOSEKEYS)
-          //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
-          printf("       shortCutFNCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+          //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n", disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutFNCommand: Handle functions: key:%i: showSoftmenu %i\n", keyCode, itemForRunFunction);
         #endif //VERBOSEKEYS
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
           #if defined(VERBOSEKEYS)
-            printf("                       Handle key presses: key:%i: btnClicked %s F=%i G=%i\n",keyCode, keyForBtnClicked, shiftF, shiftG);
+            printf("                       Handle key presses: key:%i: btnClicked %s F=%i G=%i\n", keyCode, keyForBtnClicked, shiftF, shiftG);
           #endif //VERBOSEKEYS
           if(shift[0] == 'f') {
             shiftF = true;
@@ -400,7 +400,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
             shiftG = true;
           }
           #if defined(VERBOSEKEYS)
-            printf("                       Handle key clicks: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+            printf("                       Handle key clicks: key:%i: btnClicked %s\n", keyCode, keyForBtnClicked);
           #endif //VERBOSEKEYS
           btnFnClicked(w, keyForBtnClicked);
           screenUpdatingMode = SCRUPD_AUTO;
@@ -411,7 +411,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 //        //Handle direct functions
 //        if(itemForRunFunction >= 0) {
-//          printf("       shortCutFNCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+//          printf("       shortCutFNCommand: Handle direct functions: key:%i: runFunction  %i\n", keyCode, itemForRunFunction);
 //          runFunction(itemForRunFunction);
 //          screenUpdatingMode = SCRUPD_AUTO;
 //          refreshScreen(6);
@@ -1006,7 +1006,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
 
     if(tam.mode == TM_STORCL) {
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
+        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n", event->keyval, GDK_KEY_Up);
       #endif
            if(shortCutCommand(w, event->keyval, GDK_KEY_Up    , shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED, "", "17", 0b01001, -1, 0))  { return false;}               //  [x]eq
       else if(shortCutCommand(w, event->keyval, GDK_KEY_Down  , shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0))  { return false;}               //  [x]eq
@@ -1082,7 +1082,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
     }
     else if((tamArrows) && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
+        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n", event->keyval, GDK_KEY_Up);
       #endif
            if(shortCutCommand(w, event->keyval, GDK_KEY_Up  , shortcutProfile == USER_C47                            , !EXITIFNIM, !DISABLED, "", "17", 0b01001, -1, 0)) {return false;} // [x]eq
       else if(shortCutCommand(w, event->keyval, GDK_KEY_Down, shortcutProfile == USER_C47                            , !EXITIFNIM, !DISABLED, "", "22", 0b01001, -1, 0)) {return false;} // [x]eq
@@ -1208,7 +1208,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 continueWithOldDetections:
     #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
-      printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
+      printf("   Continue with old key detection using event_keyval=%u\n\n", event_keyval);
       fflush(stdout);
     #endif
 
@@ -1930,49 +1930,49 @@ returnKeyPressedFalse:
     } shortCut_t;
 
     const shortCut_t shortCutString[] = {
-      {"a",        "A",  "Q",         "A"},  //00
-      {"v",        "B",  "q",         "B"},  //00
-      {"q",        "C",  "v",         "C"},  //00
-      {"o",        "D",  "Y",         "D"},  //00
-      {"l",        "E",  "o",         "E"},  //00
-      {"x",        "F",  "l",         "F"},  //00
+      {"a",         "A",  "Q",         "A"},  //00
+      {"v",         "B",  "q",         "B"},  //00
+      {"q",         "C",  "v",         "C"},  //00
+      {"o",         "D",  "Y",         "D"},  //00
+      {"l",         "E",  "o",         "E"},  //00
+      {"x",         "F",  "l",         "F"},  //00
 
-      {"m",        "G",  "m",         "G"},  //00
-      {"r",        "H",  "r",         "H"},  //00
-      {"d",        "I",  "d",         "I"},  //00
-      {"s",        "J",  ">",         "J"},  //00
-      {"c",        "K",  "" ,         "" },  //00
-      {"t",        "L",  "" ,         "" },  //00
+      {"m",         "G",  "m",         "G"},  //00
+      {"r",         "H",  "r",         "H"},  //00
+      {"d",         "I",  "d",         "I"},  //00
+      {"s",         "J",  ">",         "J"},  //00
+      {"c",         "K",  "" ,         "" },  //00
+      {"t",         "L",  "" ,         "" },  //00
 
-      {"Enter",    "",   "Enter",     "" },  //00
-      {"w",        "M",  "w",         "K"},  //00
-      {"n",        "N",  "n",         "L"},  //00
-      {"e",        "O",  "e",         "M"},  //00
-      {"Backspace","",   "Backspace", "" },  //00
+      {"Enter",     "",   "Enter",     "" },  //00
+      {"w",         "M",  "w",         "K"},  //00
+      {"n",         "N",  "n",         "L"},  //00
+      {"e",         "O",  "e",         "M"},  //00
+      {"Backspace", "",   "Backspace", "" },  //00
 
-      {"Up",       "",   "x",         ""},   //00
-      {"7" ,       "P",  "7",         "N"},  //00
-      {"8" ,       "Q",  "8",         "O"},  //00
-      {"9" ,       "R",  "9",         "P"},  //00
-      {"/" ,       "S",  "/" ,        "Q" }, //00
+      {"Up",        "",   "x",         ""},   //00
+      {"7" ,        "P",  "7",         "N"},  //00
+      {"8" ,        "Q",  "8",         "O"},  //00
+      {"9" ,        "R",  "9",         "P"},  //00
+      {"/" ,        "S",  "/" ,        "Q" }, //00
 
-      {"Dn",       "",   "Up",        ""},   //00
-      {"4" ,       "T",  "4",         "R"},  //00
-      {"5" ,       "U",  "5",         "S"},  //00
-      {"6" ,       "V",  "6",         "T"},  //00
-      {"x" ,       "W",  "x" ,        "U" }, //00
+      {"Dn",        "",   "Up",        ""},   //00
+      {"4" ,        "T",  "4",         "R"},  //00
+      {"5" ,        "U",  "5",         "S"},  //00
+      {"6" ,        "V",  "6",         "T"},  //00
+      {"x" ,        "W",  "x" ,        "U" }, //00
 
-      {"f/g",      "",   "Dn",        ""},   //00
-      {"1" ,       "X",  "1",         "V"},  //00
-      {"2" ,       "Y",  "2",         "W"},  //00
-      {"3" ,       "Z",  "3",         "X"},  //00
-      {"-" ,       "_",  "-" ,        "Y" }, //00
+      {"f/g",       "",   "Dn",        ""},   //00
+      {"1" ,        "X",  "1",         "V"},  //00
+      {"2" ,        "Y",  "2",         "W"},  //00
+      {"3" ,        "Z",  "3",         "X"},  //00
+      {"-" ,        "_",  "-" ,        "Y" }, //00
 
-      {"Esc",      "",   "Esc",       ""},   //00
-      {"0" ,       ":",  "0",         "Z"},  //00
-      {"." ,       ".",  ".",         ","},  //00
-      {"\\" ,      "?",  "\\",        "?"},  //00
-      {"+" ,     "Space","+" ,        "Space" } //00
+      {"Esc",       "",   "Esc",       ""},   //00
+      {"0" ,        ":",  "0",         "Z"},  //00
+      {"." ,        ".",  ".",         ","},  //00
+      {"\\" ,       "?",  "\\",        "?"},  //00
+      {"+" ,  "Space",    "+" ,    "Space" } //00
     };
 
 
@@ -3054,17 +3054,17 @@ bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t 
   if(key) {
     print_label_bytes(lbl, 16);
     if(showBtn&&btn) {
-      printf("     : key details - btn:=%s\n",get_button_name(btn));
+      printf("     : key details - btn:=%s\n", get_button_name(btn));
     }
-    printf("       key->primaryAim = %d ",key->primaryAim);
-    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "primaryAim AA:","\n");
-    printf("       key->fShiftedAim = %d ",key->fShiftedAim);
-    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "fShiftedAim AA:","\n");
-    printf("       key->gShiftedAim = %d ",key->gShiftedAim);
-    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "...itemSoftmenuName ="," ");
-    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "gShiftedAim AA:","\n\n");
+    printf("       key->primaryAim = %d ", key->primaryAim);
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "...itemSoftmenuName =", " ");
+    printStringToConsole(indexOfItems[key->primaryAim].itemSoftmenuName, "primaryAim AA:", "\n");
+    printf("       key->fShiftedAim = %d ", key->fShiftedAim);
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "...itemSoftmenuName =", " ");
+    printStringToConsole(indexOfItems[key->fShiftedAim].itemSoftmenuName, "fShiftedAim AA:", "\n");
+    printf("       key->gShiftedAim = %d ", key->gShiftedAim);
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "...itemSoftmenuName =", " ");
+    printStringToConsole(indexOfItems[key->gShiftedAim].itemSoftmenuName, "gShiftedAim AA:", "\n\n");
   }
   return true;
 }
@@ -3116,7 +3116,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     stringToUtf8(sstmp, lbl);
     if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
       if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
+        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6), lbl);
       }
     }
   }
@@ -3146,7 +3146,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       }
 
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-      //printf("--THIS IS NORMAL mode primary-position:   %s\n",lbl);
+      //printf("--THIS IS NORMAL mode primary-position:   %s\n", "bl);
 
       //if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
       //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
@@ -3202,7 +3202,7 @@ char sstmp[16];
   stringToUtf8(sstmp, lbl);
   if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1), lbl);
     }
   }
 
@@ -3224,7 +3224,7 @@ char sstmp[16];
   }
 
   gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
-  //printf("--THIS IS f-shifted:               %s\n",lbl);
+  //printf("--THIS IS f-shifted:               %s\n", "bl);
 
   if(R47LongpressColour) {
     gtk_widget_set_name(lblF, "letter");
@@ -3293,7 +3293,7 @@ char sstmp[16];
   stringToUtf8(sstmp, lbl);
   if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2), lbl);
     }
   }
 
@@ -3377,7 +3377,7 @@ char sstmp[16];
         R47LongpressColour = true;
       }
       else {
-          stringToUtf8(indexOfItems[numlockReplacements(4, max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK),true, false)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(4, max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK), true, false)].itemSoftmenuName, lbl);
       }
 
       if(lbl[0] == 32 && lbl[1]==0) {
@@ -3457,7 +3457,7 @@ char sstmp[16];
       }
 
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-      //printf("--THIS IS AIM primary face:               %s\n",lbl);
+      //printf("--THIS IS AIM primary face:               %s\n", "bl);
 
       //Specify the different categories of coloured zones
       if(key->keyLblAim == ITM_SHIFTf) {
@@ -3487,7 +3487,7 @@ char sstmp[16];
       }
 
       gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
-      //printf("--THIS IS AIM g-position:                 %s\n",lbl);
+      //printf("--THIS IS AIM g-position:                 %s\n", "bl);
 
       //GShift colours
       if(key->gShiftedAim < 0) {
@@ -5016,7 +5016,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       if(item == ITM_PROD_SIGN) {
         item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
       }
-      //printf("     gdkKey=%i deadKey=%i item=%i\n",gdkKey, deadKey, item);
+      //printf("     gdkKey=%i deadKey=%i item=%i\n", gdkKey, deadKey, item);
 
       if(item != 0) {
         if(deadKey != 0) {
