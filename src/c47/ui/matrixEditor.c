@@ -1158,7 +1158,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   const int16_t dspDigits = displayFormatDigits;
 
   begin:
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2), 0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }
@@ -1513,7 +1513,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   }
   cpxUnitWidth = stringWidth(tmpString, font, true, true);
 
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2), 0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }

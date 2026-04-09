@@ -605,7 +605,7 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
     kc[1] = (i % 10) + '0';
     kc[2] = 0;
     if(key->primary == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6), (uint8_t *)lbl);
       if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = false;
@@ -616,7 +616,7 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
       }
     }
     if(key->fShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1), (uint8_t *)lbl);
       if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = true;
         shiftG = false;
@@ -624,7 +624,7 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
       }
     }
     if(key->gShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2), (uint8_t *)lbl);
       if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = true;

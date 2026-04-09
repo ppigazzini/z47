@@ -292,7 +292,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM,32768+_gapr,    xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM, 32768+_gapr,   xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+ITM_WDOT,       49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
 
@@ -313,7 +313,7 @@ void Sett(int16_t grp) {
 
       #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
         if(Settings[ptr*(_numberOfGrps+2) + 0] >= 101 && Settings[ptr*(_numberOfGrps+2) + 0] <= 121) {
-          printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ",ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ", ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
         }
       #endif //PC_BUILD
       switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
@@ -351,8 +351,8 @@ void Sett(int16_t grp) {
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
-              printf("Sett1A Register %d = ",Settings[ptr*(_numberOfGrps+2) + 0]);
-              printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0]," : ","\n");
+              printf("Sett1A Register %d = ", Settings[ptr*(_numberOfGrps+2) + 0]);
+              printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0], " : ", "\n");
             #endif //PC_BUILD
             break;
           }
@@ -1993,7 +1993,7 @@ void fnKeysManagement(uint16_t choice) {
           Norm_Key_00.used = false;
           displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.",NULL, NULL);
+            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
 //      }
@@ -2015,7 +2015,7 @@ void fnKeysManagement(uint16_t choice) {
         Norm_Key_00.used = false;
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.",NULL, NULL);
+          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       break;
