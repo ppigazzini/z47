@@ -126,13 +126,13 @@
     realAdd(&p, mean, res, realContext);
   }
 
-  /* One parameter Poission distribution
+  /* One parameter Poisson distribution
    * Real parameter lambda in I.
    */
   void WP34S_Pdf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p, q, r;
 
-    if(realIsNegative(x) /* poission1_param */ || (!realIsAnInteger(x) /* pdf_poisson_xout */)) {
+    if(realIsNegative(x) /* poisson1_param */ || (!realIsAnInteger(x) /* pdf_poisson_xout */)) {
       realSetZero(res);
       return;
     }
@@ -148,7 +148,7 @@
   void WP34S_Cdfu_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
       realSetZero(res);
       return;
     }
@@ -168,7 +168,7 @@
   void WP34S_Cdf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
       realSetZero(res);
       return;
     }
@@ -196,7 +196,7 @@
   void WP34S_Qf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p, q;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
       realSetZero(res);
       return;
     }
