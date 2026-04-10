@@ -1,0 +1,428 @@
+% elliptical-appnote.ltx -- Application note for elliptical functions and integrals on the R47 calculator.
+
+\documentclass[canadian]{article}
+\usepackage{amsmath, amssymb, amsthm, graphics, setspace, enumerate, thmtools, tikz, url, parskip, fancyhdr, datetime2}
+\usetikzlibrary{angles,quotes}
+%\newdateformat{yyyymmdddate}{\THEYEAR\ --\twodigit{\THEMONTH}\ --\twodigit{\THEDAY}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{R47 Version 00.109.03.02}
+\fancyhead[C]{Ellip Fns AppNote}
+\fancyhead[R]{\today \ WGR}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+
+\part*{Application Note}
+
+    This document describes how elliptic integrals and functions are used in the R47 calculator.
+
+    In some cases there is an apparent discrepancy between values the R47 produces, and
+    values for the same elliptic functions you may find in tables in books.  This document attempts
+    to reconcile those differences.
+
+\section{Basics of Elliptical Functions and Integrals}
+
+    What are elliptic functions and integrals?
+
+    In some ways they are just solutions to differential equations that have no apparent bearing
+    on ellipses at all.
+
+    Here we will explore those issues and show simple examples of computations with elliptic functions
+    that you can try on an R47 or C47 calculator, or in Mathematica.
+
+    \subsection{Review:  Basic Geometry of an Ellipse}
+
+        Many people studied conic sections in high school.  See \cite{Rel01} for example.
+        A conic section is a geometrical
+        idea from ancient Greek mathematics.  Certain curves can be represented as a conic
+        section geometrically and also using analytical (Cartesian) geometry.  Examples:
+
+    \begin{table}[ht]
+        \caption{Examples of Conic Sections}
+        \centering
+        \begin{tabular}{c c c}
+            \hline\hline
+            Name & Equation & Eccentricity \\
+            \hline
+            Circle & $x^2+y^2=r^2$ & 0 \\
+            Parabola & $y^2=4 a x$ & 1 \\
+            Ellipse & $\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$ & $\sqrt{1-\frac{b^2}{a^2}}$ \\
+            Hyperbola & $\frac{x^2}{a^2}-\frac{y^2}{b^2}=1$ & $\sqrt{1+\frac{b^2}{a^2}}$ \\
+        \end{tabular}
+    \end{table}
+
+    Since we are interested in ellipses here, let us note that the ellipse has eccentricity
+    $e \in [0,1)$.  In the special case where an ellipse has eccentricity 0, it is actually
+    a circle.
+
+    \begin{tikzpicture}
+        \draw[thick,blue] (0,0) ellipse (2cm and 1cm);
+        \draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$};
+        \draw[->] (0,-1.5) -- (0,1.5) node[above] {$y$};
+        \draw[dashed,red] (0,0) -- (2,0) node[midway,below] {$a$};
+        \draw[dashed,red] (0,0) -- (0,1) node[midway,left] {$b$};
+        \fill[black] (0,0) circle (2pt) node[below left] {$0$};
+        \node[blue, font=\bfseries] at (1,0.5) {Ellipse};
+        \coordinate(O) at (0,0);
+        \coordinate(A) at (2,0);
+        \coordinate(B) at (30:2cm and 1cm);
+        \draw (O) -- (B);
+        \pic[draw, ->, "$\phi$", angle eccentricity=2.0 ]{angle = A--O--B};
+    \end{tikzpicture}
+
+    Besides the equation given above for an ellipse, it can also be represented parametrically:
+
+    $x = a \cos \theta, y = b \sin \theta, \theta \in [0, 2 \pi)$
+
+    \subsection{A Problem to Solve with an Ellipse:  Arc Length and Inverse}
+
+    One sees online comments, e.g. \cite{SE01}, about elliptic integrals and functions having their roots
+    in elliptic arc length, but when you dig into textbooks or online articles for
+    details, that is not so apparent.  Most of the applications for elliptic integrals
+    and functions go back to problems from specialized differential equations or engineering
+    problems.
+
+    I persisted in this question and found answers that tie back to the functions
+    in the R47 calculator.  Here are my findings.
+
+    First, there is the problem of notation and parameter names.
+    This is discussed in \cite{jdcook01}.  An elliptic function like
+    $sn(u,m)$ can be described with either $m$ or $k$ given as the second argument, and
+    sometimes the second argument is not mentioned at all.
+
+    Similarly, an elliptic integral can be described as $K(m)$ or $F(\phi,k)$ or $F(\phi,m)$,
+    with apparently $k$ and $m$ being different things.  And then, they are not obviously related
+    to geometric parameters that we know from simple conic descriptions, like $a$ or $b$ or
+    $e$.
+
+    The simple answer is, that when you see $k$ as a parameter, it is called the "modulus",
+    but actually it is equal to the eccentricity $e$ as seen in elementary conic section
+    terminology.  Some sources instead refer to $m$ as the modulus.
+
+    However, though $k$ is often favoured in mathematical treatments, you often
+    see in software such as the R47 or Mathematica a parameter called $m$.  Actually, this is
+    almost the same thing:  $m=k^2=e^2$.  This $m$ parameter is just the square of
+    eccentricity, if you want to track down elliptic arc length calculations.
+
+    Now, a typical second year calculus textbook for engineering students teaches how to
+    calculate arc length in two- or three- dimensional Euclidean space, using integration.
+    The Olmsted book, \cite{Olmsted01}, does a good job of this.
+
+    To paraphrase \cite{Olmsted01}:
+    If $C$ is an arc with parametrization functions $x = f(t), y = g(t)$, with continuous
+    derivatives on $[a,b]$, then $C$ is rectifiable with length
+
+    \[L = \int_{a}^{b}{\sqrt{(f'(t))^2+g'(t))^2} d t}\]
+
+    As an example of this, for the ellipse described above, we get (with a little
+    rearrangement):
+
+    The total arc length of the ellipse is \cite{Olmsted01}
+
+    \[4 a \int_{0}^{2 \pi}{\sqrt{1 - k^2 \sin^2{\theta}} d \theta}\]
+
+    This leads to the following:
+
+    Incomplete elliptic integral of the second kind:
+    \[E(\phi,m) = \int_{0}^{\phi}{\sqrt{1 - m \sin^2{\theta}} d \theta}\]
+
+    Complete elliptic integral of the second kind:
+    \[E(m) = \int_{0}^{2 \pi}{\sqrt{1 - m \sin^2{\theta}} d \theta}\]
+
+    Confusingly, in different parts of the literature, you will see this version:
+
+    Incomplete elliptic integral of the second kind:
+    \[E(\phi,k) = \int_{0}^{\phi}{\sqrt{1 - k^2 \sin^2{\theta}} d \theta}\]
+
+    Complete elliptic integral of the second kind:
+    \[E(k) = \int_{0}^{2 \pi}{\sqrt{1 - k^2 \sin^2{\theta}} d \theta}\]
+
+    Just understand that k is eccentricity of the ellipse, $m=k^2$, and that
+    for both you have the restriction $k \in [0,1), m \in [0,1)$.
+
+    So now we have an understandable application if you followed all the bits about
+    conic sections, eccentricity, and arc length.  We simply want to take an ellipse
+    and calculate its arc length.  The incomplete elliptic integral of the
+    second kind does this for arbitrary angle $\phi$, meaning we start at angle
+    $0$ and rotate counter-clockwise to $\phi$, measuring arc length as we go.
+    The complete elliptic integral of the second kind calculates it for the
+    whole ellipse, i.e. the perimeter of the ellipse.
+
+    Let us take an example and run it through both Mathematica and the R47.
+
+    Take $a=5, b=1$, so we have the ellipse $\frac{x^2}{5^2}+\frac{y^2}{1}=1$.
+
+    We have eccentricity $k=e=\sqrt{1-\frac{b^2}{a^2}}=\sqrt{24/25}$.  Both Mathematica
+    and the R47 use a parameter named $m$, so we use modulus $m=.96$.
+
+    In Mathematica, we can compute this:
+
+    \begin{verbatim}
+        EllipticE[.96]
+
+        --> 1.0505
+    \end{verbatim}
+
+    As a sanity check, we can also compute:
+
+    \begin{verbatim}
+        Integrate[Sqrt[1 - .96 (Sin[t])^2], {t, 0, Pi/2}]
+
+        --> 1.0505
+    \end{verbatim}
+
+    Also:
+
+    \begin{verbatim}
+        ArcLength[{5 Sin[t], Cos[t]}, {t, 0, Pi/2}] // N
+
+        --> 5.2525
+    \end{verbatim}
+    which is $5$ times the value above, also confirming our correctness.
+
+    If we want to calculate the partial arc length, say for an angle $\phi$ of $.2$ radians
+    and the same modulus,
+    we run
+
+    \begin{verbatim}
+        EllipticE[.2, .96]
+
+        --> 0.198723
+    \end{verbatim}
+
+    On the R47, we do this:
+    \begin{verbatim}
+        .96 E(m)
+
+        --> 1.0505
+    \end{verbatim}
+
+    For the partial angle:
+
+    \begin{verbatim}
+        .96 Enter .2 E(\phi,m)
+
+        --> .1987
+    \end{verbatim}
+
+    This confirms that elliptic integrals of the second kind give correct arc length
+    calculations.
+
+    Now let us look at the inverse problem.  For a given modulus and a given arc length,
+    we want to know what angle $\phi$ produces that arc length.
+
+    Unfortunately, my researches show that there is no such function in either the mathematical literature or the
+    software packages of Mathematica or R47.  We have to resort to other methods such as root
+    solving.  See \cite{SE03} for more on this issue.
+
+    In Mathematica, try this:
+
+    \begin{verbatim}
+        FindRoot[EllipticE[x, .96] == .198723, \{x, .5\}]
+        --> 0.2
+    \end{verbatim}
+    Correct answer.
+
+    In the R47, enter a program:
+
+    \begin{verbatim}
+        LBL EllE
+        MVAR 'x'
+        MVAR 'm'
+        MVAR 'u'
+        RCL 'm'
+        RCL 'x'
+        E(phi, m)
+        RCL- 'u'
+        END
+    \end{verbatim}
+
+    If you run this program \texttt{EllE} under
+
+    \begin{verbatim}
+        ADV > SOLVE
+    \end{verbatim}
+
+    with a modulus of $.96$ and a $u$ value of $.198723$, you will get an answer
+    of $0.2$.
+
+    This accounts for $E(m)$ and $E(\phi,m)$ on the R47, which are the Elliptic Integrals of the Second Kind.
+
+    \subsection{Elliptic Integrals of the First Kind}
+
+    The integrals of the first kind are $K(m)$ (complete) and $F(\phi, m)$ (incomplete).
+
+    Equations:
+
+    \[F(\phi, m) = \int_{0}^{\phi}{\frac{d \theta}{\sqrt{1-m \sin^2{\theta}}}}\]
+
+    \[K(m) = \int_{0}^{\pi/2}{\frac{d \theta}{\sqrt{1-m \sin^2{\theta}}}}\]
+
+    These also have a geometric interpretation, from Complex Analysis.  On constructing a conformal
+    map from an ellipse to a unit circle, the elliptic integral of the first kind
+    tells you the angular displacement needed
+    to map arc length in the ellipse to the corresponding point in the circle \cite{SE02}.
+
+    In this case, there is an inverse mapping.  $am(x)$, described below, is the inverse
+    of the incomplete elliptic integral of the first kind.
+
+    \subsection{Elliptic Integrals of the Third Kind and Jacobi Zeta}
+
+    $\Pi(n,m)$ is the incomplete Elliptic Integral of the third kind.  It has applications in Physics,
+    e.g. electrostatic potential.
+
+    In Mathematica, use $EllipticPi[n,m]$.  On the R47, use $\Pi(n,m)$.
+
+    Unfortunately, as of 6 Apr 2026, there is a discrepancy between them.  For instance:
+
+    \begin{verbatim}
+        EllipticPi[0.4,0.6]
+
+        --> 2.59092
+    \end{verbatim}
+
+    \begin{verbatim}
+        .6 ENT .4 Pi(n,m)
+
+        --> 2.5983
+    \end{verbatim}
+
+    The Jacobi Zeta function is found in Mathematica as $JacobiZeta[\phi,m)$ and on
+    the R47 as $Z(\phi,m)$.  It has applications in physics and in interpretation of
+    elliptic arc compared with circle.
+
+    Mathematica example:
+    \begin{verbatim}
+        JacobiZeta[2,.5]
+
+        --> -0.1178
+    \end{verbatim}
+
+    R47 Example:
+    \begin{verbatim}
+        .5 ENT 2 Z(\phi,m)
+
+        --> -0.1178
+    \end{verbatim}
+
+    These two match.
+
+    \subsection{Jacobi Elliptic Functions}
+
+    As a foundation to these functions, there are first the four Theta functions.  These arise as solutions
+    to a partial differential equation related to heat diffusion over a slab:
+
+    \[\kappa \nabla^{2} \theta = \frac{d \theta}{d t}\]
+
+    These give rise to functions
+    $\theta_{1}(z,q), \theta_{2}(z,q), \theta_{3}(z,q), \theta_{4}(z,q)$.
+
+    The R47 calculator does not implement these Theta functions, but Mathematica does:
+    $EllipticTheta[a,u,q]$.
+    These are used for the theory behind the following Elliptic functions, which also have applications in
+    the Elliptic integrals.
+
+    $sn(u,m), cn(u,m), dn(u,m)$.  These are rendered in Mathematica as
+    \begin{verbatim}
+        JacobiSN[u,m]
+        JacobiCN[u,m]
+        JacobiDN[u,m]
+    \end{verbatim}
+
+    These functions have some interesting identities.  For example:
+
+    $sn(u,m)^2+cn(u,m)^2=1$
+
+    $sn(u,0)=\sin(u)$ for $u$ in radians.
+
+    $cn(u,0)=\cos(u)$ for $u$ in radians.
+
+    We can test these.  For instance, on the R47:
+
+    \begin{verbatim}
+        0 Ent .2 sn(u,m) .2 sin
+    \end{verbatim}
+    should put matching values in the X and Y registers.
+
+    As an example of understanding how to use parameters, the book \cite{Lawden01} shows in
+    Table C that for $k=0.5$ and $x=0.8$, $sn(x,k)=0.70421$.
+
+    However, this calculation on the R47:
+
+    \begin{verbatim}
+        .5 Ent .8 sn(u,m)
+    \end{verbatim}
+
+    produces the number $.70685$:  a mismatch.  However, knowing that $m=k^2$, we
+    can recalculate on the R47 this way:
+
+    \begin{verbatim}
+        .5 x^2 .8 sn(u,m)
+    \end{verbatim}
+
+    and get the matching value of $7.0421$.
+
+    There is also the Jacobi amplitude function, represented in the R47 as $\psi(u,m)$
+    and in Mathematica as $JacobiAmplitude[u,m]$.
+    Here, $u$ is a parameter in radians, and $m$ is the modulus representing
+    the square of eccentricity, as before.
+
+    This function is the inverse of the elliptic integral of the first kind.  This is easily
+    tested on the R47.  It is not clear why this function is called $\psi(u,m)$ on the R47.
+
+    \subsection{Summary of R47 Elliptic Functions}
+
+    The following R47 functions have been described:
+
+    \begin{table}[ht]
+        \caption{R47 functions described under Ellipt}
+        \centering
+        \begin{tabular}{c c}
+            \hline\hline
+            R47 Name & Description \\
+            \hline
+            $\psi(u,m)$ & Jacobi Amplitude Function \\
+            $sn(u,m)$ & Jacobi sn Function \\
+            $cn(u,m)$ & Jacobi cn Function \\
+            $dn(u,m)$ & Jacobi dn Function \\
+            $K(m)$ & Complete Elliptic Integral of First Kind \\
+            $F(\phi,m)$ & Incomplete Elliptic Integral of First Kind \\
+            $E(m)$ & Complete Elliptic Integral of Second Kind \\
+            $E(\phi,m)$ & Incomplete Elliptic Integral of Second Kind \\
+            $\Pi(n,m)$ & Elliptic Integral of Third Kind \\
+            $Z(\phi,m)$ & Jacobi Zeta \\
+        \end{tabular}
+    \end{table}
+
+    \clearpage
+
+    \begin{thebibliography}{10}
+        \bibitem{Lawden01} Lawden, Derek F, \emph{Elliptic Functions and Applications}, Springer-Verlag, 1989
+        \bibitem{Olmsted01} Olmsted, John M H, \emph{Advanced Calculus}, Prentice-Hall, 1961
+        \bibitem{Rel01} Del Grande and Egsgard, \emph{Relations}, Gage Educational Publishing, 1972
+        \bibitem{SE01}
+            StackExchange: \emph{What even are elliptic functions?}.
+            \url{https://math.stackexchange.com/questions/3383769/what-even-are-elliptic-functions}
+            (Accessed:  April 2026).
+        \bibitem{jdcook01} Cook, J. D.,
+            \emph{Clearing up the confusion around Jacobi functions}
+            \url{https://www.johndcook.com/blog/2018/10/12/jacobi-function-nomenclature/}
+        \bibitem{SE02}
+            StackExchange: \emph{Elliptic integral of the first kind as conformal mapping}.
+            \url{https://math.stackexchange.com/questions/2341813/elliptic-integral-of-the-first-kind-as-conformal-mapping}
+        \bibitem{SE03}
+            StackExchange: \emph{Inverse of elliptic integral of second kind}.
+            \url{https://math.stackexchange.com/questions/1123360/inverse-of-elliptic-integral-of-second-kind}
+    \end{thebibliography}
+
+    \hfill \break
+
+    \subsection*{Author} William Gordon Rutherdale \\ \\
+    Copyright (C) 2026 The C47 Development Team. Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free
+    Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the
+    license can be downloaded from gnu.org.
+
+\end{document}
