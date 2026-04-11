@@ -1,0 +1,252 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    Jacobi Elliptic Function Audit       **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+
+; ============================================================
+; Elliptic result Audit of all functions
+; ============================================================
+
+; ╔════════╦══════════════════════════════╦════════════╦════════════╦════════════╦═══╦════════════════════════════════╗
+; ║ Func   ║ Wolfram Alpha call           ║  Input 1   ║  Input 2   ║  Result    ║ WA║ Note                           ║
+; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
+; ║ sn(u,m)║ JacobiSN[0.8, 0.5]           ║u=0.8000000 ║m=0.5000000 ║ 0.6909349  ║ ✓ ║ m is parameter k² (not modulus)║
+; ║ cn(u,m)║ JacobiCN[K[0.5], 0.5]        ║u=1.8540747 ║m=0.5000000 ║ 3.268E-35  ║ ✓ ║ cn=0 at quarter-period (u=K(m))║
+; ║ dn(u,m)║ JacobiDN[K[0.5], 0.5]        ║u=1.8540747 ║m=0.5000000 ║ 0.7071068  ║ ✓ ║ dn=√(1−m) at quarter-period    ║
+; ║ am(u,m)║ JacobiAmplitude[K[0.5], 0.5] ║u=1.8540747 ║m=0.5000000 ║ 1.5707963  ║ ✓ ║ am=π/2 rad at quarter-period   ║
+; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
+; ║ K(m)   ║ EllipticK[0.5]               ║m=0.5000000 ║     —      ║ 1.8540747  ║ ✓ ║ Complete; m is the parameter   ║
+; ║ K(m)   ║ EllipticK[0.6]               ║m=0.6000000 ║     —      ║ 1.9495677  ║ ✓ ║ Complete; m is the parameter   ║
+; ║ K(m)   ║ EllipticK[0.99]              ║m=0.9900000 ║     —      ║ 3.6956374  ║ ✓ ║ Near log singularity as m→1    ║
+; ║ E(m)   ║ EllipticE[0.5]               ║m=0.5000000 ║     —      ║ 1.3506439  ║ ✓ ║ Complete; m is the parameter   ║
+; ║ E(m)   ║ EllipticE[0.6]               ║m=0.6000000 ║     —      ║ 1.2984280  ║ ✓ ║ Complete; m is the parameter   ║
+; ║ E(m)   ║ EllipticE[0.99]              ║m=0.9900000 ║     —      ║ 1.0159935  ║ ✓ ║ Near singularity as m→1        ║
+; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
+; ║ F(φ,m) ║ EllipticF[π/2, 0.5]          ║φ=1.5707963 ║m=0.5000000 ║ 1.8540747  ║ ✓ ║ =K(m) exactly when φ=π/2       ║
+; ║ F(φ,m) ║ EllipticF[ArcSin[∗2/3], 0.6] ║φ=0.9553166 ║m=0.6000000 ║ 1.0466051  ║ ✓ ║ phi: ArcSin[Sqrt[2/3]]         ║
+; ║ F(φ,m) ║ EllipticF[2.0, 0.5]          ║φ=2.0000000 ║m=0.5000000 ║ 2.4443826  ║ ✓ ║ φ>π/2: multi-period reduction  ║
+; ║ F(φ,m) ║ EllipticF[3.0, 0.5]          ║φ=3.0000000 ║m=0.5000000 ║ 3.5663200  ║ ✓ ║ φ>π: two-period reduction      ║
+; ║ E(φ,m) ║ EllipticE[π/2, 0.5]          ║φ=1.5707963 ║m=0.5000000 ║ 1.3506439  ║ ✓ ║ =E(m) exactly when φ=π/2       ║
+; ║ E(φ,m) ║ EllipticE[ArcSin[∗2/3], 0.6] ║φ=0.9553166 ║m=0.6000000 ║ 0.8772330  ║ ✓ ║ phi: ArcSin[Sqrt[2/3]]         ║
+; ║ E(φ,m) ║ EllipticE[2.0, 0.5]          ║φ=2.0000000 ║m=0.5000000 ║ 1.6628951  ║ ✓ ║ φ>π/2: uses Carlson RF+RD      ║
+; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
+; ║ Π(n,m) ║ EllipticPi[0, 0.5]           ║n=0.0000000 ║m=0.5000000 ║ 1.8540747  ║ ✓ ║ =K(m) exactly when n=0         ║
+; ║ Π(n,m) ║ EllipticPi[0.25, 0]          ║n=0.2500000 ║m=0.0000000 ║ 1.8137994  ║ ✓ ║ m=0 degenerate case            ║
+; ║ Π(n,m) ║ EllipticPi[0.4, 0]           ║n=0.4000000 ║m=0.0000000 ║ 2.0278893  ║ ✓ ║ m=0 degenerate case            ║
+; ║ Π(n,m) ║ EllipticPi[0.4, 0.6]         ║n=0.4000000 ║m=0.6000000 ║ 2.5909212  ║ ✓ ║ n<m: _ellipticPi_1 branch      ║
+; ║ Π(n,m) ║ EllipticPi[0.59, 0.6]        ║n=0.5900000 ║m=0.6000000 ║ 3.2018658  ║ ✓ ║ n just below m boundary        ║
+; ║ Π(n,m) ║ EllipticPi[0.61, 0.6]        ║n=0.6100000 ║m=0.6000000 ║ 3.2920178  ║ ✓ ║ n just above m boundary        ║
+; ║ Π(n,m) ║ EllipticPi[-0.5, 0.5]        ║n=-0.500000 ║m=0.5000000 ║ 1.4878470  ║ ✓ ║ Negative n → _ellipticPi_4     ║
+; ║ Π(n,m) ║ EllipticPi[1.5, 0.5]         ║n=1.5000000 ║m=0.5000000 ║ -0.4567203 ║ ✓ ║ n>1 → _ellipticPi_2 path       ║
+; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
+; ║ Z(φ,m) ║ JacobiZeta[0, 0.5]           ║φ=0.0000000 ║m=0.5000000 ║ 0.0000000  ║ ✓ ║ Z=0 at φ=0 for all m           ║
+; ║ Z(φ,m) ║ JacobiZeta[π/2, 0.6]         ║φ=1.5707963 ║m=0.6000000 ║ 0.0000000  ║ ✓ ║ Z(π/2,m)=0 for all m (identity)║
+; ║ Z(φ,m) ║ JacobiZeta[0.5, 0.6]         ║φ=0.5000000 ║m=0.6000000 ║ 0.1463802  ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[asin(∗2/3), 0.6]  ║φ=0.9553166 ║m=0.6000000 ║ 0.1801854  ║ ✓ ║ phi: ArcSin[Sqrt[2/3]]         ║
+; ║ Z(φ,m) ║ JacobiZeta[0.7, 0.5]         ║φ=0.7000000 ║m=0.5000000 ║ 0.1422995  ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[0.9, 0.5]         ║φ=0.9000000 ║m=0.5000000 ║ 0.1454849  ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[1.0, 0.5]         ║φ=1.0000000 ║m=0.5000000 ║ 0.1382354  ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[1.2, 0.5]         ║φ=1.2000000 ║m=0.5000000 ║ 0.1060286  ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[1.4, 0.5]         ║φ=1.4000000 ║m=0.5000000 ║ 0.05376513 ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[1.5, 0.5]         ║φ=1.5000000 ║m=0.5000000 ║ 0.02277253 ║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[1.8, 0.5]         ║φ=1.8000000 ║m=0.5000000 ║ -0.07066488║ ✓ ║ φ is amplitude angle, not u    ║
+; ║ Z(φ,m) ║ JacobiZeta[2.5, 0.5]         ║φ=2.5000000 ║m=0.5000000 ║ -0.1372107 ║ ✓ ║ φ is amplitude angle, not u    ║
+; ╚════════╩══════════════════════════════╩════════════╩════════════╩════════════╩═══╩════════════════════════════════╝
+
+
+; ------------------------------------------------------------
+; Complete elliptic integrals K(m) and E(m)
+; ------------------------------------------------------------
+Func: fnEllipticK
+;EllipticK[0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"1.8540746773013719184338503471952600462175988235217669055859280450"
+Func: fnEllipticK
+;EllipticK[0.6]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.6" RX=Real:"1.9495677498060258826617707907288784073625584001190720239801573357"
+Func: fnEllipticK
+;EllipticK[0.99] — near singularity m->1
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.99"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.99" RX=Real:"3.6956373629898746778099541952625509848006720058191826156994748530"
+Func: fnEllipticE
+;EllipticE[0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"1.3506438810476755025201747353387258413495223669243545453232537088"
+Func: fnEllipticE
+;EllipticE[0.6]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.6" RX=Real:"1.2984280350469131675977316399424513763940023690873571188402092241"
+Func: fnEllipticE
+;EllipticE[0.99] — near singularity m->1
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.99"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.99" RX=Real:"1.0159935450252239356394482752954140947828263033626014850851481954"
+
+; ------------------------------------------------------------
+; Incomplete elliptic integral F(phi,m)
+; ------------------------------------------------------------
+Func: fnEllipticFphi
+;EllipticF[Pi/2, 0.5] = EllipticK[0.5] exactly
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.5707963267948966192313216916397514"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5707963267948966192313216916397514" RX=Real:"1.8540746773013719184338503471952600462175988235217669055859280450"
+Func: fnEllipticFphi
+;phi input: ArcSin[Sqrt[2/3]]; EllipticF[ArcSin[Sqrt[2/3]], 0.6]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.95531661812450927816385710251575775424341469501001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.95531661812450927816385710251575775424341469501001" RX=Real:"1.0466051494373176383756202546806005163825531938540524664999161335"
+Func: fnEllipticFphi
+;EllipticF[2.0, 0.5] — phi > pi/2, exercises K-F cancellation path in _ellipticF_5
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.0" RX=Real:"2.4443826360611187799214146876050854012639061547658665803015659644"
+Func: fnEllipticFphi
+;EllipticF[3.0, 0.5] — phi > pi, exercises multi-period reduction
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"3.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"3.5663200246807646707114287080128026456066511675851394539024423887"
+
+; ------------------------------------------------------------
+; Incomplete elliptic integral E(phi,m)
+; ------------------------------------------------------------
+Func: fnEllipticEphi
+;EllipticE[Pi/2, 0.5] = EllipticE[0.5] exactly
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.5707963267948966192313216916397514"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5707963267948966192313216916397514" RX=Real:"1.3506438810476755025201747353387258413495223669243545453232537088"
+Func: fnEllipticEphi
+;phi input: ArcSin[Sqrt[2/3]]; EllipticE[ArcSin[Sqrt[2/3]], 0.6]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.95531661812450927816385710251575775424341469501001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.95531661812450927816385710251575775424341469501001" RX=Real:"0.8772330153867992469142340649255319457151318182284641822767689583"
+Func: fnEllipticEphi
+;EllipticE[2.0, 0.5] — phi > pi/2
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.0" RX=Real:"1.6628951029536016738376836843289701990574627740848385498364494442"
+
+; ------------------------------------------------------------
+; Complete elliptic integral of the third kind Pi(n,m)
+; ------------------------------------------------------------
+Func: fnEllipticPi
+;EllipticPi[0, 0.5] = EllipticK[0.5] exactly (n=0 baseline)
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1.8540746773013719184338503471952600462175988235217669055859280450"
+Func: fnEllipticPi
+;EllipticPi[0.25, 0] — n!=0, m=0
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.25"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"1.8137993642342178505940782576421557322840662480927405755698849353"
+Func: fnEllipticPi
+;EllipticPi[0.4, 0] — n!=0, m=0
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.4" RX=Real:"2.0278893379868059484764803851489695249775045315868273339005028063"
+Func: fnEllipticPi
+;EllipticPi[0.4, 0.6] — n!=0, m!=0, exercises _ellipticPi_1
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.4" RX=Real:"2.5909211565552202930677921722956512368970204585464802660712104256"
+Func: fnEllipticPi
+;EllipticPi[0.59, 0.6] — n just below m, boundary _ellipticPi_1/_ellipticPi_3
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.59"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.59" RX=Real:"3.2018657790104620015425527493418397641506064607496270514905973446"
+Func: fnEllipticPi
+;EllipticPi[0.61, 0.6] — n just above m, boundary _ellipticPi_3/_ellipticPi_1
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.61"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.61" RX=Real:"3.2920177559507165953392402006021333668850209598584559148729441750"
+Func: fnEllipticPi
+;EllipticPi[-0.5, 0.5] — negative n, exercises _ellipticPi_4
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"1.4878469926687983852736473992742008384364149684541791596595838209"
+Func: fnEllipticPi
+;EllipticPi[1.5, 0.5] — n > 1, exercises _ellipticPi_2
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"-0.456720313452909897008464337082923880026483131320347682348613975"
+
+; ------------------------------------------------------------
+; Jacobi elliptic functions sn(u,m), cn(u,m), dn(u,m)
+; ------------------------------------------------------------
+Func: fnJacobiSn
+;JacobiSN[0.8, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0.8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.8" RX=Real:"0.6909348508664387612822570710999149"
+Func: fnJacobiSn
+;JacobiSN[2.5, 0.5] — u > K(m), tests correct period handling
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.5" RX=Real:"0.8906151882260943559473944250688473574877589893439795195838957882"
+Func: fnJacobiSn
+;JacobiSN[0.5, 0.99] — m near 1, near-tanh behaviour
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.99" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.4622893992991469172163555874850831822259435476521049834176717258"
+Func: fnJacobiCn
+;JacobiCN[EllipticK[0.5], 0.5] = 0 exactly (quarter period)
+;input: EllipticK[0.5] = 1.8540746773013719184338503471952600462175988235217669055859280450
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503471952600462175988235217669055859280450"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503471952600462175988235217669055859280450" RX=Real:"3.268280587232690793149014679635173E-35"
+Func: fnJacobiCn
+;JacobiCN[2.5, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.5" RX=Real:"-0.454757722860204454706625553821737075187228062168852398817245251"
+Func: fnJacobiDn
+;JacobiDN[EllipticK[0.5], 0.5] = Sqrt[0.5] exactly (quarter period: dn(K(m),m)=sqrt(1-m))
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503495318688"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688" RX=Real:"0.70710678118654752440084436210484904"
+
+; ------------------------------------------------------------
+; Jacobi amplitude am(u,m)
+; ------------------------------------------------------------
+Func: fnJacobiAmplitude
+;JacobiAmplitude[EllipticK[0.5], 0.5] = Pi/2 exactly (quarter period)
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503495318688"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688" RX=Real:"1.5707963267948966192313216916397514":RAD
+
+; ------------------------------------------------------------
+; Jacobi zeta Z(phi,m)
+; ------------------------------------------------------------
+Func: fnJacobiZeta
+;JacobiZeta[0, 0.5] = 0 exactly
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+Func: fnJacobiZeta
+;JacobiZeta[Pi/2, 0.6] = 0 exactly (Z(pi/2,m) = E(m) - E(m)/K(m)*K(m) = 0)
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"1.5707963267948966192313216916397514"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5707963267948966192313216916397514" RX=Real:"0"
+Func: fnJacobiZeta
+;JacobiZeta[0.5, 0.6]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.1463802162906410344074158575052571059287816179860567542754811997"
+Func: fnJacobiZeta
+;JacobiZeta[ArcSin[Sqrt[2/3]], 0.6]; phi input: ArcSin[Sqrt[2/3]]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.95531661812450927816385710251575775424341469501001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.95531661812450927816385710251575775424341469501001" RX=Real:"0.1801854427702095196312723565421622554246011333288637012185047868"
+Func: fnJacobiZeta
+;JacobiZeta[0.7, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0.7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.7" RX=Real:"0.1422994719057059103533338379779250301416535856133782810178120194"
+Func: fnJacobiZeta
+;JacobiZeta[0.9, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"0.1454849127173131306630379110012739871695117682996348388889825556"
+Func: fnJacobiZeta
+;JacobiZeta[1.0, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.0" RX=Real:"0.1382353967610470679082597109600336051560986444591757896282199961"
+Func: fnJacobiZeta
+;JacobiZeta[1.2, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.2" RX=Real:"0.1060285576060204625760816164515264757242643106894520484555063931"
+Func: fnJacobiZeta
+;JacobiZeta[1.4, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.4" RX=Real:"0.0537651318989881126822782953024934096154326977519051029069549819"
+Func: fnJacobiZeta
+;JacobiZeta[1.5, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"0.0227725287119465852258151045733311039610389683220573545313342911"
+Func: fnJacobiZeta
+;JacobiZeta[1.8, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8" RX=Real:"-0.0706648788547431186540031611020557079870752099739095145994051130"
+Func: fnJacobiZeta
+;JacobiZeta[2.5, 0.5]
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.5" RX=Real:"-0.1372107115300787950968015391801217709490216088764057227123024020"
+
+
+
