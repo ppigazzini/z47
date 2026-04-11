@@ -40,6 +40,7 @@
 #undef SAVE_SPACE_DM42_10
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12ELLIP
 #undef SAVE_SPACE_DM42_12PRIME
 #undef SAVE_SPACE_DM42_12BESSEL
 #undef SAVE_SPACE_DM42_12ORTHO
@@ -94,7 +95,8 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
+      #define SAVE_SPACE_DM42_12ELLIP  //       bytes // ELLIPTIC
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
       #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
@@ -141,6 +143,7 @@
   #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
@@ -156,6 +159,7 @@
   #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+      //  #define SAVE_SPACE_DM42_12ELLIP  // 12888 bytes // ELLIPTIC
       //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without X.FN BESSEL
       //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
@@ -172,6 +176,7 @@
   #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
     #define SAVE_SPACE_DM42_6              //  1352 bytes // Without ELEC functions
     #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
       //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
@@ -187,6 +192,7 @@
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
       //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
       //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
     #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
@@ -206,7 +212,7 @@
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
