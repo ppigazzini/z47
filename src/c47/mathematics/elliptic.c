@@ -9,6 +9,8 @@
 
 #define ELLIPTIC_N 16
 
+#ifdef SAVE_SPACE_DM42_12ELLIP
+
 static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t *u, const real_t *m, realContext_t *realContext) {
   real_t a, b, e, f, g;
   real_t *MU, *NU, *C, *D;
@@ -818,6 +820,7 @@ static void _ellipticE_fromZeta(const real_t *phi, const real_t *psi, const real
   realAdd(res, &z, res, realContext);
   realAdd(resi, &zi, resi, realContext);
 }
+
 void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *res, real_t *resi, realContext_t *realContext) {
   real_t phi1, phiQuotient, phiRemainder, psi1;
 
@@ -1712,3 +1715,27 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
+
+#else //SAVE_SPACE_DM42_12ELLIP
+  void jacobiElliptic(const real_t *u, const real_t *m, real_t *am, real_t *sn, real_t *cn, real_t *dn, realContext_t *realContext) {;}
+  void jacobiComplexAm(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
+  void jacobiComplexSn(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
+  void jacobiComplexCn(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
+  void jacobiComplexDn(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
+  void ellipticKE(const real_t *m, real_t *k, real_t *ki, real_t *e, real_t *ei, realContext_t *realContext) {;}
+  void ellipticF(const real_t *phi, const real_t *psi, const real_t *m, real_t *res, real_t *resi, realContext_t *realContext) {;}
+  void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *res, real_t *resi, realContext_t *realContext) {;}
+  void jacobiZeta(const real_t *phi, const real_t *psi, const real_t *m, real_t *res, real_t *resi, realContext_t *realContext) {;}
+  void ellipticPi(const real_t *n, const real_t *m, real_t *res, real_t *resi, realContext_t *realContext) {;}
+  void fnJacobiSn(uint16_t unusedButMandatoryParameter) {;}
+  void fnJacobiCn(uint16_t unusedButMandatoryParameter) {;}
+  void fnJacobiDn(uint16_t unusedButMandatoryParameter) {;}
+  void fnJacobiAmplitude(uint16_t unusedButMandatoryParameter) {;}
+  void fnEllipticK(uint16_t unusedButMandatoryParameter) {;}
+  void fnEllipticE(uint16_t unusedButMandatoryParameter) {;}
+  void fnEllipticPi(uint16_t unusedButMandatoryParameter) {;}
+  void fnEllipticFphi(uint16_t unusedButMandatoryParameter) {;}
+  void fnEllipticEphi(uint16_t unusedButMandatoryParameter) {;}
+  void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {;}
+#endif //SAVE_SPACE_DM42_12ELLIP
+

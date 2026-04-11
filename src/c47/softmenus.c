@@ -2389,6 +2389,20 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_SIGMApk:
     #endif //SAVE_SPACE_DM42_12PRIME
 
+    #ifdef SAVE_SPACE_DM42_12ELLIP
+      case -MNU_ELLIPT:
+      case ITM_sn:
+      case ITM_cn:
+      case ITM_dn:
+      case ITM_Kk:
+      case ITM_Ek:
+      case ITM_PInk:
+      case ITM_am:
+      case ITM_Fphik:
+      case ITM_Ephik:
+      case ITM_ZETAphik:
+    #endif //SAVE_SPACE_DM42_12ELLIP
+
     #ifdef SAVE_SPACE_DM42_16
       case -MNU_NORML :
       case ITM_NORMLP :      case ITM_NORML  :      case ITM_NORMLU :      case ITM_NORMLM1:
