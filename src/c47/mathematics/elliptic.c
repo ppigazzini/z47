@@ -1282,12 +1282,11 @@ void ellipticPi(const real_t *n, const real_t *m, real_t *res, real_t *resi, rea
     // Abramowitz & Stegun §17.7.20
     if(realCompareLessThan(n, const_1)) {
       //      lim       (Arctan(sqrt(1-n) tan(phi)) / sqrt(1-n))
-      //  phi->(pi/2)-0                                          = (pi/2) sqrt(1-n) / n
+      //  phi->(pi/2)-0
+      // fixed correct formula  correct formula (A&S §17.7.20) is: π / (2√(1−n))
       realSubtract(const_1, n, res, realContext);
       rcSqrt(res, res, resi, realContext);
-      divComplexComplex(res, resi, n, const_0, res, resi, realContext);
-      realMultiply(const_piOn2, res, res, realContext);
-      realMultiply(const_piOn2, resi, resi, realContext);
+      divComplexComplex(const_piOn2, const_0, res, resi, res, resi, realContext);
     }
     else if(realCompareGreaterThan(n, const_1)) {
       //      lim       (Arctanh(sqrt(n-1) tan(phi)) / sqrt(n-1))
