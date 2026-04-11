@@ -9,7 +9,7 @@
 
 #define ELLIPTIC_N 16
 
-#ifdef SAVE_SPACE_DM42_12ELLIP
+#if !defined(SAVE_SPACE_DM42_12ELLIP)
 
 static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t *u, const real_t *m, realContext_t *realContext) {
   real_t a, b, e, f, g;
