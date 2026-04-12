@@ -30,10 +30,10 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
     case ioModeRead:   filemode = "rb";  break;
     case ioModeWrite:  filemode = "wb";  break;
     case ioModeUpdate: filemode = "r+b"; break;
-    default: return FILE_ERROR;
+    default:           return FILE_ERROR;
   }
   _ioFileHandle = fopen(filename, filemode);
-  return (_ioFileHandle != NULL? FILE_OK : FILE_ERROR);
+  return (_ioFileHandle != NULL ? FILE_OK : FILE_ERROR);
 }
 
 
@@ -82,7 +82,7 @@ int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
   if(result == -1 && errorNumber != NULL) {
     *errorNumber = errno;
   }
-  return (result != -1? FILE_OK : FILE_ERROR);
+  return (result != -1 ? FILE_OK : FILE_ERROR);
 }
 
 

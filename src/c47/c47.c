@@ -605,7 +605,8 @@ int convertKeyCode(int key) {
     lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
-                                                    lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();
+                                                    lcd_putsAt(t24, 4, "Press the bottom left key.");
+                                                    lcd_refresh();
                                                     while(key != 33 && key != 37) {
                                                       key = key_pop();
                                                       while(key == -1) {
@@ -776,17 +777,17 @@ int convertKeyCode(int key) {
     //** ** ** MAIN LOOP START ** ** **
     while(!backToDMCP) {
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(1,1000);
+                            powerMarkerMsF(1, 1000);
                           #endif //DM42_POWERMARK_KEYPRESS
                                                //    char rrr[100];
                                                //    int ii = sys_auto_off_cnt();
                                                //    sprintf(rrr, "time left: %d",(uint16_t)ii);
-                                               //    print_linestr(rrr,true);
+                                               //    print_linestr(rrr, true);
 
       if(ST(STAT_PGM_END) && ST(STAT_SUSPENDED)) { // Already in off mode and suspended
         CLR_ST(STAT_RUNNING);
                             #if defined(DM42_POWERMARKS)
-                              powerMarkerMsF(15,1000);
+                              powerMarkerMsF(15, 1000);
                             #endif //DM42_POWERMARKS
         sys_sleep();
       }
@@ -821,11 +822,11 @@ int convertKeyCode(int key) {
           }
                                                   // char rrr[100];
                                                   // sprintf(rrr, "nextTimerRefresh: %lu",nextTimerRefresh);
-                                                  // print_linestr(rrr,true);
+                                                  // print_linestr(rrr, true);
                                                   // rrr[0]=0;
-                                                  // print_linestr(rrr,false);
+                                                  // print_linestr(rrr, false);
                                                   // sprintf(rrr, "timeoutTime: %lu",timeoutTime);
-                                                  // print_linestr(rrr,false);
+                                                  // print_linestr(rrr, false);
 
           if(fnTimerGetStatus(TO_KB_ACTV) == TMR_RUNNING) {
             timeoutTime = min(timeoutTime, 40);
@@ -848,7 +849,9 @@ int convertKeyCode(int key) {
                                                       strcat(snum, " ");
                                                       for(int8_t i = TMR_NUMBER -1; i>=0; i--) {
                                                         char digit[2] = "_";
-                                                        if(fnTimerGetStatus(i) == TMR_RUNNING) { itoa(i, digit, 16); }
+                                                        if(fnTimerGetStatus(i) == TMR_RUNNING) {
+                                                          itoa(i, digit, 16);
+                                                        }
                                                         strcat(snum, digit);
                                                       }
                                                       showString(snum, &standardFont, 20, 40, vmNormal, false, false);
@@ -856,14 +859,14 @@ int convertKeyCode(int key) {
                                                   #endif // TMR_OBSERVE
 
                               #if defined(DM42_POWERMARKS)
-                                powerMarkerMsF(10,1000);
+                                powerMarkerMsF(10, 1000);
                               #endif //DM42_POWERMARKS
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(max(sleepTime, 1),8000);
+                            powerMarkerMsF(max(sleepTime, 1), 8000);
                           #endif //DM42_POWERMARK_KEYPRESS
           sys_sleep();
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(1,1000);
+                            powerMarkerMsF(1, 1000);
                           #endif //DM42_POWERMARK_KEYPRESS
           sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         }
@@ -887,7 +890,7 @@ int convertKeyCode(int key) {
       // Externally forced LCD repaint
       if(ST(STAT_CLK_WKUP_FLAG)) {
                             #if defined(DM42_POWERMARKS)
-                              powerMarkerMsF(5,10000);
+                              powerMarkerMsF(5, 10000);
                             #endif //DM42_POWERMARKS
         if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
 
@@ -905,7 +908,7 @@ int convertKeyCode(int key) {
       }
       if(ST(STAT_POWER_CHANGE)) {
                             #if defined(DM42_POWERMARKS)
-                              powerMarkerMsF(7,10000);
+                              powerMarkerMsF(7, 10000);
                             #endif //DM42_POWERMARKS
         showHideUsbLowBattery();
         refreshLcd();
@@ -981,7 +984,12 @@ int convertKeyCode(int key) {
                                                     //sprintf(sysLastKeyCh, " %02d", key);
                                                     //showString(sysLastKeyCh, &standardFont, 0, 0, vmReverse, true, true);
                                                     //The line below to emit a beep
-                                                    //while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(220000); sys_delay(200); stop_buzzer();
+                                                    //while(get_beep_volume() < 11) {
+                                                    //  beep_volume_up();
+                                                    //}
+                                                    //start_buzzer_freq(220000);
+                                                    //sys_delay(200);
+                                                    //stop_buzzer();
                                                   #endif // NOKEYMAP
 
                                                   #if defined(AUTOREPEAT_WP43S)
@@ -1097,13 +1105,13 @@ int convertKeyCode(int key) {
                                                       telltale_pos = telltale_pos & 0x03;
                                                       char aaa[100];
                                                       #if defined(BUFFER_CLICK_DETECTION)
-                                                        sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                        sprintf   (aaa, "k=%d d=%ld  d=%ld", key, timeSpan_1, timeSpan_B);
                                                       #endif
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP_or_Executed, FN_state, sys_last_key(), FN_key_pressed);
+                                                      sprintf   (aaa, "Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ", FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP_or_Executed, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
                                                       #if defined(BUFFER_CLICK_DETECTION)
-                                                        sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                        sprintf   (aaa, "%4d(%4ld)(%4ld)<<", sys_last_key(), timeSpan_1, timeSpan_B);
                                                       #endif
                                                       showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
                                                     }
@@ -1111,7 +1119,7 @@ int convertKeyCode(int key) {
 
       if(38 <= key && key <=43) { // Function key
                             #if defined(DM42_POWERMARK_KEYPRESS)
-                              powerMarkerMsF(1,4000);
+                              powerMarkerMsF(1, 4000);
                             #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%c", key+11);
         btnFnPressed(charKey);
@@ -1122,7 +1130,7 @@ int convertKeyCode(int key) {
       }
       else if(1 <= key && key <= 37) { // Not a function key
                             #if defined(DM42_POWERMARK_KEYPRESS)
-                              powerMarkerMsF(1,4000);
+                              powerMarkerMsF(1, 4000);
                             #endif //DM42_POWERMARK_BEGIN_WHILE
         sprintf(charKey, "%02u", key - 1);
         btnPressed(charKey);
@@ -1152,7 +1160,7 @@ int convertKeyCode(int key) {
 
       else if(key == 0 && charKey[1] == 0) {            //JM, key=0 is release, therefore there must have been a press before that. If the press was a FN key, FN_key_pressed > 0 when it comes back here for release.
                             #if defined(DM42_POWERMARK_KEYPRESS)
-                              powerMarkerMsF(1,4000);
+                              powerMarkerMsF(1, 4000);
                             #endif //DM42_POWERMARK_BEGIN_WHILE
         btnFnReleased(charKey);                                //    in short, it can only execute FN release after there was a FN press.
                             #if defined(DM42_KEYCLICK)
@@ -1162,7 +1170,7 @@ int convertKeyCode(int key) {
       }
       else if(key == 0) {
                             #if defined(DM42_POWERMARK_KEYPRESS)
-                              powerMarkerMsF(1,4000);
+                              powerMarkerMsF(1, 4000);
                             #endif //DM42_POWERMARK_BEGIN_WHILE
         btnReleased(charKey);
                             #if defined(DM42_KEYCLICK)
@@ -1211,7 +1219,7 @@ int convertKeyCode(int key) {
       if(nextTimerRefresh != 0 && nextTimerRefresh <= now) {
         refreshTimer();                                     // Executes pending timer jobs
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(5,4000);
+                            powerMarkerMsF(5, 4000);
                           #endif //DM42_POWERMARK_KEYPRESS
       }
       now = sys_current_ms();
@@ -1222,7 +1230,7 @@ int convertKeyCode(int key) {
         }
         if((calcMode != CM_TIMER) || (fnTimerGetStatus(TO_TIMER_APP) != TMR_RUNNING)) {
                           #if defined(DM42_POWERMARK_KEYPRESS)
-                            powerMarkerMsF(10,1000);
+                            powerMarkerMsF(10, 1000);
                           #endif //DM42_POWERMARK_KEYPRESS
           refreshLcd();
           if(key >= 0) {

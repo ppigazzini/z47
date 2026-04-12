@@ -111,15 +111,15 @@ void fnOldMatrix(uint16_t unusedParamButMandatory) {
     cursorEnabled = false;
 
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-        if(openMatrixMIMPointer.realMatrix.matrixElements) {
-          realMatrixFree(&openMatrixMIMPointer.realMatrix);
-        }
+      if(openMatrixMIMPointer.realMatrix.matrixElements) {
+        realMatrixFree(&openMatrixMIMPointer.realMatrix);
+      }
       convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &openMatrixMIMPointer.realMatrix);
     }
     else {
-        if(openMatrixMIMPointer.complexMatrix.matrixElements) {
-          complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
-        }
+      if(openMatrixMIMPointer.complexMatrix.matrixElements) {
+        complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
+      }
       convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &openMatrixMIMPointer.complexMatrix);
     }
   }

@@ -27,7 +27,7 @@ void lcd_refresh_lines(uint8_t ln, uint8_t cnt){
 void refresh_gui(void) {
 }
 
-void 	LCD_write_line(uint8_t *line_buf) {
+void LCD_write_line(uint8_t *line_buf) {
 }
 
 void lcd_refresh(void) {

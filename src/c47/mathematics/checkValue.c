@@ -58,10 +58,12 @@ void fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
   const uint32_t t = getRegisterDataType(REGISTER_X);
 
-  if(t == dtReal34Matrix || t == dtComplex34Matrix)
+  if(t == dtReal34Matrix || t == dtComplex34Matrix) {
     SET_TI_TRUE_FALSE(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
-  else
+  }
+  else {
     compareTypeErrorX();
+  }
 }
 
 void fnCheckForZero(uint16_t mode) {
@@ -85,8 +87,10 @@ void fnCheckIsVect2d (uint16_t unusedButMandatoryParameter) {
     const matrixHeader_t *h = REGISTER_MATRIX_HEADER(REGISTER_X);
 
     SET_TI_TRUE_FALSE(isMatrix2dVector(h->matrixRows, h->matrixColumns));
-  } else
+  }
+  else {
     compareTypeErrorX();
+  }
 }
 
 void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
@@ -94,8 +98,10 @@ void fnCheckIsVect3d (uint16_t unusedButMandatoryParameter) {
     const matrixHeader_t *h = REGISTER_MATRIX_HEADER(REGISTER_X);
 
     SET_TI_TRUE_FALSE(isMatrix3dVector(h->matrixRows, h->matrixColumns));
-  } else
+  }
+  else {
     compareTypeErrorX();
+  }
 }
 
 
@@ -125,11 +131,12 @@ static void specialRealCheck(int (*checkFn)(const real34_t *)) {
       const real34_t *r = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
 
       elements = matrixXNumElem();
-      for(i = 0; i < elements; ++i)
+      for(i = 0; i < elements; ++i) {
         if(checkFn(r + i)) {
           check = 1;
           break;
         }
+      }
       break;
     }
 

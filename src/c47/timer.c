@@ -180,7 +180,7 @@ void fnTimerEndOfActivity(uint16_t param) {
 
 #if defined(DMCP_BUILD)
                                 #if defined(DM42_POWERMARKS)
-                                  powerMarkerMsF(1,10000);
+                                  powerMarkerMsF(1, 10000);
                                 #endif //DM42_POWERMARKS
 
   if(skippedStackLines) {       //update screen after 1 or 2 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
@@ -193,7 +193,7 @@ void fnTimerEndOfActivity(uint16_t param) {
     //}
   }
                                 #if defined(DM42_POWERMARKS)
-                                  powerMarkerMsF(1,15000);
+                                  powerMarkerMsF(1, 15000);
                                 #endif //DM42_POWERMARKS
 #endif // DMCP_BUILD
 }
@@ -459,10 +459,13 @@ bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
 void fnSetCountDownTimerApp(uint16_t regist) {
     bool_t overflow;
     uint32_t input;
-    if(!inputHelper(regist, &input, &overflow)) return;
+    if(!inputHelper(regist, &input, &overflow)) {
+      return;
+    }
     if(overflow){
       remainingMsecCountdown = 0;
-    } else {
+    }
+    else {
       fnResetTimerApp(NOPARAM);
       fnStopTimerApp();
       remainingMsecCountdown = input;
@@ -772,7 +775,9 @@ void fnDigitKeyTimerApp(uint16_t digit) {
 void fnRecallTimerApp(uint16_t regist) {
   bool_t overflow;
   uint32_t val;
-  if(!inputHelper(regist, &val, &overflow)) return;
+  if(!inputHelper(regist, &val, &overflow)) {
+    return;
+  }
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
