@@ -466,7 +466,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
 
 static void carlsonRF(const real_t *x0, const real_t *y0, const real_t *z0, real_t *res, realContext_t *realContext) {
   // Carlson RF via duplication, DLMF 19.26.17: RF(x,y,z) = 1/sqrt(A) at convergence
-  real_t x, y, z, sx, sy, sz, lam;
+  real_t x, y, z, sx, sy, sz, lam, lam4;
   const real_t *tol = (realContext->digits <= 39) ? const_1e_37 : const_1e_49;
   realCopy(x0, &x);
   realCopy(y0, &y);
@@ -476,14 +476,12 @@ static void carlsonRF(const real_t *x0, const real_t *y0, const real_t *z0, real
     realSquareRoot(&y, &sy, realContext);
     realSquareRoot(&z, &sz, realContext);
     realMultiply(&sx, &sy, &lam, realContext);
-    realFMA(&sy, &sz, &lam, &lam, realContext);
+    realFMA(&sy, &sz, &lam, &lam, realContext);             // lam = sqrt(xy)+sqrt(yz)+sqrt(zx)
     realFMA(&sz, &sx, &lam, &lam, realContext);
-    realAdd(&x, &lam, &x, realContext);
-    realAdd(&y, &lam, &y, realContext);
-    realAdd(&z, &lam, &z, realContext);
-    realMultiply(&x, const_1on4, &x, realContext);
-    realMultiply(&y, const_1on4, &y, realContext);
-    realMultiply(&z, const_1on4, &z, realContext);
+    realMultiply(&lam, const_1on4, &lam4, realContext);     // lam4 = lam/4
+    realFMA(&x, const_1on4, &lam4, &x, realContext);        // x = x/4 + lam/4
+    realFMA(&y, const_1on4, &lam4, &y, realContext);        // y = y/4 + lam/4
+    realFMA(&z, const_1on4, &lam4, &z, realContext);        // z = z/4 + lam/4
   } while(!WP34S_RelativeError(&x, &y, tol, realContext) || !WP34S_RelativeError(&x, &z, tol, realContext));
   realSquareRoot(&x, res, realContext);
   realDivide(const_1, res, res, realContext);
@@ -492,7 +490,7 @@ static void carlsonRF(const real_t *x0, const real_t *y0, const real_t *z0, real
 static void carlsonRD(const real_t *x0, const real_t *y0, const real_t *z0, real_t *res, realContext_t *realContext) {
   // Carlson RD via duplication algorithm, Carlson 1995 eq. 2.7
   // RD(x,y,z) = 3*sum_{k} fac_k/(sz_k*(z_k+lam_k)) + fac_n/A^(3/2)
-  real_t x, y, z, sx, sy, sz, lam, sum, fac, t;
+  real_t x, y, z, sx, sy, sz, lam, lam4, sum, fac, t;
   const real_t *tol = (realContext->digits <= 39) ? const_1e_37 : const_1e_49;
   realCopy(x0, &x);
   realCopy(y0, &y);
@@ -503,20 +501,18 @@ static void carlsonRD(const real_t *x0, const real_t *y0, const real_t *z0, real
     realSquareRoot(&x, &sx, realContext);
     realSquareRoot(&y, &sy, realContext);
     realSquareRoot(&z, &sz, realContext);
-    realMultiply(&sx, &sy, &lam, realContext);              // lam = sqrt(x*y)
-    realFMA(&sy, &sz, &lam, &lam, realContext);             // lam += sqrt(y*z)
-    realFMA(&sz, &sx, &lam, &lam, realContext);             // lam += sqrt(z*x)
+    realMultiply(&sx, &sy, &lam, realContext);
+    realFMA(&sy, &sz, &lam, &lam, realContext);             // lam = sqrt(xy)+sqrt(yz)+sqrt(zx)
+    realFMA(&sz, &sx, &lam, &lam, realContext);
     realAdd(&z, &lam, &t, realContext);                     // t = z + lam
     realMultiply(&t, &sz, &t, realContext);                 // t = sz*(z+lam)
     realDivide(&fac, &t, &t, realContext);                  // t = fac/(sz*(z+lam))
     realAdd(&sum, &t, &sum, realContext);                   // sum += fac/(sz*(z+lam))
-    realAdd(&x, &lam, &x, realContext);
-    realAdd(&y, &lam, &y, realContext);
-    realAdd(&z, &lam, &z, realContext);
-    realMultiply(&x, const_1on4, &x, realContext);
-    realMultiply(&y, const_1on4, &y, realContext);
-    realMultiply(&z, const_1on4, &z, realContext);
-    realMultiply(&fac, const_1on4, &fac, realContext);
+    realMultiply(&lam, const_1on4, &lam4, realContext);     // lam4 = lam/4
+    realFMA(&x, const_1on4, &lam4, &x, realContext);        // x = x/4 + lam/4
+    realFMA(&y, const_1on4, &lam4, &y, realContext);        // y = y/4 + lam/4
+    realFMA(&z, const_1on4, &lam4, &z, realContext);        // z = z/4 + lam/4
+    realMultiply(&fac, const_1on4, &fac, realContext);      // fac /= 4
   } while(!WP34S_RelativeError(&x, &y, tol, realContext) || !WP34S_RelativeError(&x, &z, tol, realContext));
   realSquareRoot(&x, &sx, realContext);                     // sx = sqrt(A)
   realMultiply(&x, &sx, res, realContext);                  // res = A^(3/2)
@@ -581,20 +577,22 @@ static void _ellipticF_3(const real_t *phi, const real_t *m, real_t *res, real_t
     realCopy(phi, res);
     realSetZero(resi);
   }
-  else if(realCompareGreaterThan(m, const_1)) {
+else if(realCompareGreaterThan(m, const_1)) {
     // Abramowitz & Stegun §17.4.15
+    // Use one precision level above caller to absorb cancellation in ArcsinComplex for |sqrt(m)*sin(phi)| > 1, which calculates complex theta with precision loss.
     real_t k, m_1, theta, thetai, a;
-
-    mod2Pi(phi, &theta, realContext);
-    C47_WP34S_Cvt2RadSinCosTan(&theta, amRadian, &a, NULL, NULL, realContext);
-    realSquareRoot(m, &k, realContext);
-    realDivide(const_1, m, &m_1, realContext);
-    realMultiply(&k, &a, &a, realContext);
-    ArcsinComplex(&a, const_0, &theta, &thetai, realContext);
-    ellipticF(&theta, &thetai, &m_1, res, resi, realContext); // recurses here
-    divComplexComplex(res, resi, &k, const_0, res, resi, realContext);
-  }
-  else if(realIsPositive(m)) {
+    realContext_t *hCtx = &ctxtReal75;
+    mod2Pi(phi, &theta, hCtx);
+    C47_WP34S_Cvt2RadSinCosTan(&theta, amRadian, &a, NULL, NULL, hCtx);
+    realSquareRoot(m, &k, hCtx);
+    realDivide(const_1, m, &m_1, hCtx);
+    realMultiply(&k, &a, &a, hCtx);
+    ArcsinComplex(&a, const_0, &theta, &thetai, hCtx);
+    ellipticF(&theta, &thetai, &m_1, res, resi, hCtx);           // recurses with m_1=1/m
+    divComplexComplex(res, resi, &k, const_0, res, resi, hCtx);
+    realPlus(res, res, realContext);                             // round back to caller precision
+    realPlus(resi, resi, realContext);
+  }  else if(realIsPositive(m)) {
     _ellipticF_2(phi, m, res, realContext);
     realSetZero(resi);
   }
@@ -1150,20 +1148,20 @@ static void _jacobiZeta_carlson(const real_t *phi, const real_t *m, real_t *res,
   C47_WP34S_Cvt2RadSinCosTan(phi, amRadian, &s, &c, NULL, realContext);
   realMultiply(&s, &s, &s2, realContext);                  // s2 = sin²phi
   realMultiply(&c, &c, &c2, realContext);                  // c2 = cos²phi
-  realMultiply(m, &s2, &y, realContext);
-  realSubtract(const_1, &y, &y, realContext);              // y = 1 - m*sin²phi
+  realFMA(m, &s2, const__1, &y, realContext);
+  realChangeSign(&y);                                      // y = 1 - m*sin²phi
   carlsonRF(&c2, &y, const_1, &rf, realContext);           // RF(cos²,1-m*sin²,1)
   carlsonRD(&c2, &y, const_1, &rd, realContext);           // RD(cos²,1-m*sin²,1)
   realMultiply(&s, &rf, &f_phi, realContext);              // F(phi|m) = sin*RF
   realMultiply(&s2, &s, &s2, realContext);                 // sin³
   realMultiply(m, &s2, &s2, realContext);
-  realMultiply(&s2, const_1on3, &s2, realContext);
-  realMultiply(&s2, &rd, &s2, realContext);                // (m/3)*sin³*RD
-  realSubtract(&f_phi, &s2, &e_phi, realContext);          // E(phi|m) = sin*RF - (m/3)*sin³*RD
+  realMultiply(&s2, const_1on3, &s2, realContext);         // (m/3)*sin³
+  realChangeSign(&s2);                                     // -(m/3)*sin³
+  realFMA(&s2, &rd, &f_phi, &e_phi, realContext);          // E(phi|m) = f_phi - (m/3)*sin³*RD
   ellipticKE(m, &ek, NULL, &em, NULL, realContext);        // ek=K(m), em=E(m), real for 0<=m<=1
   realDivide(&em, &ek, &em, realContext);                  // E(m)/K(m)
-  realMultiply(&em, &f_phi, &em, realContext);             // E(m)/K(m)*F(phi|m)
-  realSubtract(&e_phi, &em, res, realContext);             // Z = E(phi|m) - E(m)/K(m)*F(phi|m)
+  realChangeSign(&em);                                     // -E(m)/K(m)
+  realFMA(&em, &f_phi, &e_phi, res, realContext);          // Z = e_phi - E(m)/K(m)*F(phi|m)
   realSetZero(resi);
 }
 
