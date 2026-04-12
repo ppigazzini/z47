@@ -204,7 +204,9 @@ void composeJulianDay(const real34_t *year, const real34_t *month, const real34_
   real34_t fg, y, m, d;
 
   uInt32ToReal34(firstGregorianDay, &fg);
-  real34Copy(year, &y); real34Copy(month, &m); real34Copy(day, &d);
+  real34Copy(year, &y);
+  real34Copy(month, &m);
+  real34Copy(day, &d);
   composeJulianDay_g(&y, &m, &d, jd);
   if((firstGregorianDay > 0u) && real34CompareLessThan(jd, &fg)) {
     composeJulianDay_j(&y, &m, &d, jd);
@@ -965,7 +967,7 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDate(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
       tm_t timeInfo;
       dt_t dateInfo;
@@ -979,11 +981,11 @@ void fnSetDate(uint16_t unusedButMandatoryParameter) {
         dateInfo.day   = real34ToUInt32(&d);
         rtc_write(&timeInfo, &dateInfo);
       }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 void fnSetTime(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
     tm_t timeInfo;
     dt_t dateInfo;
@@ -1030,7 +1032,7 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 

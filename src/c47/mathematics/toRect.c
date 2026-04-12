@@ -57,23 +57,23 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
   dataTypeY = getRegisterDataType(REGISTER_Y);
   dataAtagY = getRegisterAngularMode(REGISTER_Y);
 
-  #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
-  #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
+  #define isAngle(typ, tag) (typ == dtReal34 && tag != amNone)
+  #define isRadius(typ, tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
 
   int8_t angleInY = 1;             //+1 = normal HP mode, HPRP=1
   if(!getSystemFlag(FLAG_HPRP)) {  //non-HP mode
     angleInY = -angleInY;
-    if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
+    if(isAngle(dataTypeX, dataAtagX) && isRadius(dataTypeY, dataAtagY)) {
     }
-    else if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+    else if(isAngle(dataTypeY, dataAtagY) && isRadius(dataTypeX, dataAtagX)) {
       angleInY = -angleInY;        //-1 is swapped
     }
   }
   else { //HP MODE
-    if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
+    if(isAngle(dataTypeX, dataAtagX) && isRadius(dataTypeY, dataAtagY)) {
       angleInY = -angleInY;
     }
-    else if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+    else if(isAngle(dataTypeY, dataAtagY) && isRadius(dataTypeX, dataAtagX)) {
     }
   }
 

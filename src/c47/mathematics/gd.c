@@ -92,7 +92,7 @@ uint8_t GudermannianComplex(const real_t *xReal, const real_t *xImag, real_t *re
    * Gd(x) = 2 * Arctan(Exp(x)) - PI/2
    */
   expComplex(xReal, xImag, resReal, resImag, realContext);
-  ArctanComplex(resReal, resImag, resReal,resImag, realContext);
+  ArctanComplex(resReal, resImag, resReal, resImag, realContext);
 
   realMultiply(resReal, const_2, resReal, realContext);
   realMultiply(resImag, const_2, resImag, realContext);

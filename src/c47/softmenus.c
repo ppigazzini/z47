@@ -1124,6 +1124,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 177 */  {.menuItem = -MNU_TAMNORM,     .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
 /* 178 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+
+
 };
 
 
@@ -1353,8 +1355,10 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
       menuName[lenInBytes++] = (uint8_t)(STD_CR[0]);
       menuName[lenInBytes++] = (uint8_t)(STD_CR[1]);
       menuName[lenInBytes] = 0;
-      _add_digitglyph(tmp, (firstItem / 18)+1); stringCopy(menuName + stringByteLength(menuName), tmp);
-      //_add_digitglyph(tmp, firstItem % 10); stringCopy(menuName + stringByteLength(menuName), tmp);
+      _add_digitglyph(tmp, (firstItem / 18)+1);
+      stringCopy(menuName + stringByteLength(menuName), tmp);
+      //_add_digitglyph(tmp, firstItem % 10);
+      //stringCopy(menuName + stringByteLength(menuName), tmp);
       lenInBytes = stringByteLength(menuName) + 1;
     }
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
@@ -1900,16 +1904,25 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   const char *w[4];
 
   if(getSystemFlag(FLAG_HPCONV)) {
-    t[0] = label1;         w[0] = label1;
-    t[1] = STD_LEFT_ARROW; w[1] = STD_LEFT_ARROW;
-    t[2] = label0;         w[2] = STD_RIGHT_ARROW;
-    t[3] = STD_RIGHT_ARROW;w[3] = label0;
+    t[0] = label1;
+    t[1] = STD_LEFT_ARROW;
+    t[2] = label0;
+    t[3] = STD_RIGHT_ARROW;
+    w[0] = label1;
+    w[1] = STD_LEFT_ARROW;
+    w[2] = STD_RIGHT_ARROW;
+    w[3] = label0;
     arrowSpace = 2;
-  } else {
-    t[0] = label0;         w[0] = label0;
-    t[1] = STD_RIGHT_ARROW;w[1] = STD_RIGHT_ARROW;
-    t[2] = label1;         w[2] = STD_LEFT_ARROW;
-    t[3] = STD_LEFT_ARROW; w[3] = label1;
+  }
+  else {
+    t[0] = label0;
+    t[1] = STD_RIGHT_ARROW;
+    t[2] = label1;
+    t[3] = STD_LEFT_ARROW;
+    w[0] = label0;
+    w[1] = STD_RIGHT_ARROW;
+    w[2] = STD_LEFT_ARROW;
+    w[3] = label1;
     arrowSpace = 10;
   }
   for(int i=0; i<4; i++) {
@@ -2390,8 +2403,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch(itemNr) {
-
-    #ifdef SAVE_SPACE_DM42_12ORTHO
+    #if defined(SAVE_SPACE_DM42_12ORTHO)
       case -MNU_ORTHOG:
       case ITM_HN     :
       case ITM_Lm     :
@@ -2402,16 +2414,16 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_HNP    :
     #endif //SAVE_SPACE_DM42_12ORTHO
 
-    #ifdef SAVE_SPACE_DM42_20_TIMER
+    #if defined(SAVE_SPACE_DM42_20_TIMER)
       case ITM_TIMER  :
     #endif //SAVE_SPACE_DM42_20_TIMER
 
-    #ifdef SAVE_SPACE_DM42_12BESSEL
+    #if defined(SAVE_SPACE_DM42_12BESSEL)
       case ITM_JYX    :
       case ITM_YYX    :
     #endif //SAVE_SPACE_DM42_12BESSEL
 
-    #ifdef SAVE_SPACE_DM42_12PRIME
+    #if defined(SAVE_SPACE_DM42_12PRIME)
       case ITM_NEXTP  :
       case ITM_PRIME  :
       case ITM_FACTORS:
@@ -2550,7 +2562,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_STDNORMLM1:
     #endif //SAVE_SPACE_DM42_16
 
-    #ifdef SAVE_SPACE_DM42_17
+    #if defined(SAVE_SPACE_DM42_17)
       case -MNU_F: case -MNU_BINOM: case -MNU_HYPER: case -MNU_POISS: case -MNU_GEOM:
       case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P:
       case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
@@ -2833,11 +2845,11 @@ void showSoftmenuCurrentPart(void) {
                   case MNU_MVAR: {
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
                     else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Solver_TOOL].itemSoftmenuName, CMP_NAME)) {
@@ -3094,21 +3106,21 @@ void showSoftmenuCurrentPart(void) {
 
                                          //JMvv    //triangle centre point  // Triangles indicating more menus
         #define t 5
-        #define t_o 1.6*t                                                             //offset
+        #define t_o (1.6*t)                                                        //offset
         #define tt_o 2                                                             //total offset
         lcd_fill_rect(0,(uint32_t)(yDotted-t), 20,t+1, 0);                         // (see screen.c: _selectiveClearScreen)
         uint32_t xx;
         for(xx=0; xx<=t; xx++) {
           if(!catalog) {
-            lcd_fill_rect(xx,       (uint32_t)(tt_o-t + yDotted-xx+t),   2*(t-xx), 1 ,true );
-            lcd_fill_rect(xx + t_o, (uint32_t)(tt_o-t + yDotted-t+xx+t), 2*(t-xx), 1 ,true );
+            lcd_fill_rect(xx,       (uint32_t)(tt_o-t + yDotted-xx+t),   2*(t-xx), 1, true );
+            lcd_fill_rect(xx + t_o, (uint32_t)(tt_o-t + yDotted-t+xx+t), 2*(t-xx), 1, true );
           }
           else {
             if(xx!=t) {
-              lcd_fill_rect(xx,                 (uint32_t)(tt_o-t + yDotted-xx+t),   2, 1 ,true );
-              lcd_fill_rect(xx+ 2*(t-xx)-1,     (uint32_t)(tt_o-t + yDotted-xx+t),   2, 1 ,true );
-              lcd_fill_rect(xx+ t_o,               (uint32_t)(tt_o-t + yDotted-t+xx+t),   2, 1 ,true );
-              lcd_fill_rect(xx+ t_o+ 2*(t-xx)-1,   (uint32_t)(tt_o-t + yDotted-t+xx+t),   2, 1 ,true );
+              lcd_fill_rect(xx,                  (uint32_t)(tt_o-t + yDotted-xx+t),   2, 1, true );
+              lcd_fill_rect(xx+ 2*(t-xx)-1,      (uint32_t)(tt_o-t + yDotted-xx+t),   2, 1, true );
+              lcd_fill_rect(xx+ t_o,             (uint32_t)(tt_o-t + yDotted-t+xx+t), 2, 1, true );
+              lcd_fill_rect(xx+ t_o+ 2*(t-xx)-1, (uint32_t)(tt_o-t + yDotted-t+xx+t), 2, 1, true );
             }
           }
                                                                             //JM ^^
@@ -3375,7 +3387,7 @@ void showSoftmenuCurrentPart(void) {
 
     for(i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for the user menu to remove from the stack
       #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
-        printf("*** Id %d item %d menuItem %d userMenuId %d\n",userMenuId,i,softmenu[softmenuStack[i].softmenuId].menuItem,softmenuStack[i].userMenuId);
+        printf("*** Id %d item %d menuItem %d userMenuId %d\n", userMenuId, i, softmenu[softmenuStack[i].softmenuId].menuItem, softmenuStack[i].userMenuId);
       #endif
       if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_DYNAMIC) {
         if((softmenuStack[i].userMenuId == userMenuId) || all==true) { // if found, remove it
@@ -3722,7 +3734,9 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
   uint16_t cnt = SOFTMENU_STACK_SIZE - 1;
   while((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyMenu && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) || (softmenu[softmenuStack[1].softmenuId].menuItem != -MNU_MyMenu)) {
     popSoftmenu();
-    if(cnt-- == 0) break;
+    if(cnt-- == 0) {
+      break;
+    }
   }
   softmenuStack[1].softmenuId = 0;
   popSoftmenu();
@@ -3884,7 +3898,7 @@ void fnDumpMenus(uint16_t newFilenameformat) {                      //JM
     while(softmenu[m].menuItem != 0) {
       n=0;
       while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
-        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n",m,n,m,softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
+        printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n", m, n, m, softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :

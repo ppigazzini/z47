@@ -334,7 +334,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
   }
 #endif // PC_BUILD || DMCP_BUILD                              //JMCSV
 
-#define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
+#define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50 : 0)
 
 char letteredRegisterName(calcRegister_t regist) {
   return registerFlagLetters[regist - FIRST_LETTERED_REGISTER];
@@ -359,7 +359,7 @@ char letteredRegisterName(calcRegister_t regist) {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
+    for(calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -544,10 +544,18 @@ void execTimerApp(uint16_t timerType) {
 
 
   void refreshFn(uint16_t timerType) {                        //vv dr - general timeout handler
-    if(timerType == TO_FG_LONG) Shft_handler();
-    if(timerType == TO_CL_LONG) LongpressKey_handler();
-    if(timerType == TO_FG_TIMR) Shft_stop();
-    if(timerType == TO_FN_LONG) FN_handler();
+    if(timerType == TO_FG_LONG) {
+      Shft_handler();
+    }
+    if(timerType == TO_CL_LONG) {
+      LongpressKey_handler();
+    }
+    if(timerType == TO_FG_TIMR) {
+      Shft_stop();
+    }
+    if(timerType == TO_FN_LONG) {
+      FN_handler();
+    }
     if(timerType == TO_ASM_ACTIVE) {
       if(catalog) {
         resetAlphaSelectionBuffer();
@@ -594,11 +602,11 @@ void execTimerApp(uint16_t timerType) {
     if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || (!getSystemFlag(FLAG_FGLNFUL) && !getSystemFlag(FLAG_FGLNLIM))  ) {
       return;
     }
-    xSoftkeyMask &= (GRAPHMODE?0b000011u:0b111111u);
+    xSoftkeyMask &= (GRAPHMODE ? 0b000011u : 0b111111u);
     bool_t greyType = getSystemFlag(FLAG_FGGR);
     uint8_t lineCount, maxLine;
     lineCount = greyType ? SOFTMENU_HEIGHT - 3 : 3;
-    if (yUnderlined <= 2) {
+    if(yUnderlined <= 2) {
       maxLine = 239 - SOFTMENU_HEIGHT * (yUnderlined);
       // reset display to the buffer without shade
       lcd_refresh_lines (maxLine-lineCount, lineCount);
@@ -611,21 +619,21 @@ void execTimerApp(uint16_t timerType) {
     uint16_t j, buff_bit, colIncrease = greyType ? 5 : 2;
     maxLine = 238 - SOFTMENU_HEIGHT * (ySoftkey);
     // Get current background from corner pixels
-    for (xIndex = 0;xIndex < 6; xIndex++) {
+    for(xIndex = 0;xIndex < 6; xIndex++) {
       buff_bit = getLine_buffer_bit(KEY_X[xIndex]+1);
       xBg[xIndex] = (lcd_buffer[52 * (maxLine+1) + buff_bit/8]>>mod(buff_bit,8)) & 1u;
     }
     // Draw shade pattern without changing lcd_buffer
-    for (line = maxLine - lineCount + 1; line <= maxLine; line++) {
+    for(line = maxLine - lineCount + 1; line <= maxLine; line++) {
       memcpy(temp_line, &lcd_buffer[52 * line] , LCD_LINE_BUF_SIZE);
-      for (xIndex = 0; xIndex < 6; xIndex++) {
-        if (xSoftkeyMask>>xIndex & 1u) {
+      for(xIndex = 0; xIndex < 6; xIndex++) {
+        if(xSoftkeyMask>>xIndex & 1u) {
           j = KEY_X[xIndex] + 1;
           j += greyType ? mod(2*line-j,5) : mod(j+line,2);
-          for (; j < KEY_X[xIndex + 1]; j += colIncrease) {
+          for(; j < KEY_X[xIndex + 1]; j += colIncrease) {
             buff_bit = getLine_buffer_bit(j);
             tempByte = temp_line[buff_bit / 8];
-            if (xBg[xIndex]){
+            if(xBg[xIndex]){
               tempByte = tempByte & ~(1u<<mod(buff_bit,8));
             } else {
               tempByte = tempByte | (1u<<mod(buff_bit,8));
@@ -1022,8 +1030,8 @@ void execTimerApp(uint16_t timerType) {
           fnTimerStop(TO_FN_LONG);
           if(calcMode == CM_AIM) {
             refreshRegisterLine(AIM_REGISTER_LINE);   //TO DISPLAY KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE
-          } else
-          if(calcMode == CM_EIM || tam.alpha) {
+          }
+          else if(calcMode == CM_EIM || tam.alpha) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
             refreshScreen(1312);
           }
@@ -1166,7 +1174,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy:0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0, yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy : 0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -1177,7 +1185,7 @@ return res;
     //x += xGlyph; //JM
 
     // Choose pencil
-    void (*setPixel)(uint32_t,uint32_t) = (videoMode == vmNormal)?&setBlackPixel:&setWhitePixel;
+    void (*setPixel)(uint32_t, uint32_t) = (videoMode == vmNormal) ? &setBlackPixel : &setWhitePixel;
     // Drawing the glyph
     for(row=0; row<glyph->rowsGlyph; row++, y++) {
       if(displaymode == numHalf) {
@@ -1187,7 +1195,7 @@ return res;
       }                           //JM REDUCE
       // Drawing the columns of the glyph
       for(col=0; col<glyph->colsGlyph; col++) {
-        if (!(col%8)) {
+        if(!(col%8)) {
           byte = *(data++);
           if(miniC!=0) {
             byte = (uint8_t)byte | (((uint8_t)byte) << 1);           //JMmini
@@ -1730,8 +1738,8 @@ return res;
 
 
   void incOffset(void) {             //C47 JM
-    if( (int32_t)stringWidthC47(aimBuffer + displayAIMbufferoffset, combinationFonts ,nocompress, true, true) -
-        (int32_t)stringWidthC47(aimBuffer + T_cursorPos, combinationFonts ,nocompress, true, true)
+    if( (int32_t)stringWidthC47(aimBuffer + displayAIMbufferoffset, combinationFonts, nocompress, true, true) -
+        (int32_t)stringWidthC47(aimBuffer + T_cursorPos, combinationFonts, nocompress, true, true)
         > SCREEN_WIDTH * multiEdLines - 45
         ) {
       displayAIMbufferoffset = stringNextGlyph(aimBuffer, displayAIMbufferoffset);
@@ -1856,7 +1864,7 @@ return res;
 
   bool_t checkHalfSec(void) {
     #if defined(PC_BUILD)
-      while (gtk_events_pending()) {
+      while(gtk_events_pending()) {
         gtk_main_iteration();
       }
     #endif //PC_BUILD
@@ -1925,7 +1933,7 @@ return res;
     if(reg == RESERVED_VARIABLE_UEST) {
       sprintf(prefix, "Upper =");
       strcpy(regS,name);
-    } else if (reg == RESERVED_VARIABLE_LEST) {
+    } else if(reg == RESERVED_VARIABLE_LEST) {
       sprintf(prefix, "Lower =");
       strcpy(regS,name);
     } else {
@@ -1953,16 +1961,16 @@ return res;
   #define PRIORITY_itemSoftmenuName false
   const char* pickValidItemFromItems(int16_t item, bool_t priority) {
     bool_t takeCat = false;
-    if (priority == PRIORITY_itemCatalogName) {
-      if ((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
+    if(priority == PRIORITY_itemCatalogName) {
+      if((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
         takeCat = true;
       }
     } else { // PRIORITY_itemSoftmenuName
-      if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
+      if((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
         takeCat = true;
       }
     }
-    if (takeCat) {
+    if(takeCat) {
       return indexOfItems[abs(item)].itemCatalogName;
     } else {
       return indexOfItems[abs(item)].itemSoftmenuName;
@@ -2004,14 +2012,18 @@ return res;
 
     #else //DEBUG_SHOWNAME
       if((item == ITM_XEQ) || (item == ITM_RCL)) {
-        if(arg != NULL) stringCopy(functionName, arg);
+        if(arg != NULL) {
+          stringCopy(functionName, arg);
+        }
         showFunctionNameArg = (char *)arg;                          // Needed when executing a program or a variable from a long pressed key
         if(functionName[0]==0) {
           stringCopy(functionName, indexOfItems[abs(item)].itemCatalogName);
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringCopy(functionName, arg);
+        if(arg != NULL) {
+          stringCopy(functionName, arg);
+        }
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
@@ -2051,8 +2063,10 @@ return res;
       clearShiftState();
       int xx = showString(padding, &standardFont, funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
       if(overLapPossible) {
-        plotrect(funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx,funcNameOffset_x + typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
-        if(xx < funcNameOffset_x + typWidth) lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, funcNameOffset_x + typWidth - xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
+        plotrect(funcNameOffset_x, Y_POSITION_OF_REGISTER_T_LINE + 6, max(xx, funcNameOffset_x + typWidth), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        if(xx < funcNameOffset_x + typWidth) {
+          lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, funcNameOffset_x + typWidth - xx, STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
+        }
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
@@ -2199,7 +2213,9 @@ void createSubstrings(uint8_t number) {
       tmpString[nn++] = 32;
       tmpString[nn  ] = 0;
       //printf("ZERO\n");
-      if(++counter == number) break;
+      if(++counter == number) {
+        break;
+      }
     }
     else if(tmpString[nn] & 0x80) {
       nn++;
@@ -2525,10 +2541,11 @@ void createSubstrings(uint8_t number) {
     iii = lastI;
     jji = lastJ;
     if(iii == 0xFFFF || jji == 0xFFFF) {
-      bb = getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr);
-      iii=realToUint32C47(&iir, NULL);
-      jji=realToUint32C47(&jjr, NULL);
-    } else {
+      bb  = getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr);
+      iii = realToUint32C47(&iir, NULL);
+      jji = realToUint32C47(&jjr, NULL);
+    }
+    else {
       bb = true;
     }
 
@@ -3067,7 +3084,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
     char prefix[200], lastBase[20];
 
-    #ifdef DMCP_BUILD
+    #if defined(DMCP_BUILD)
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( !skippedStackLines && (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X)&&// || regist == REGISTER_Y) &&
@@ -3349,7 +3366,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn <= 9) {
+              while(nn <= 9) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3366,7 +3383,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           case REGISTER_X:{
               clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
               int16_t nn = 0;
-              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+              while(nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               }
@@ -3381,7 +3398,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
             int16_t nn = 0;
-            while (nn<=5) {
+            while(nn<=5) {
               showDisp( nn * SHOWLineSize, nn);
               nn++;
             }
@@ -3611,7 +3628,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/') {
             char *lb = lastBase;
 
-            uint32_t iDigit = pow(10,(int)log10(lastDenominator)+1);
+            uint32_t iDigit = pow(10, (int)log10(lastDenominator) + 1);
             uint32_t iDigit1;
             while(iDigit >= 10) {
               iDigit1 = iDigit / 10;
@@ -3665,9 +3682,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           //JMCURSOR vv
           #if defined(TEXT_MULTILINE_EDIT)
             int16_t tmplen = stringByteLength(aimBuffer);
-            if(T_cursorPos > tmplen) {T_cursorPos = tmplen;}     //Do range checking in case the cursor starts off outside of range
-            if(T_cursorPos < 0)      {T_cursorPos = tmplen;}     //Do range checking in case the cursor starts off outside of range
-            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
+            if(T_cursorPos > tmplen) { //Do range checking in case the cursor starts off outside of range
+              T_cursorPos = tmplen;
+            }
+            if(T_cursorPos < 0) { //Do range checking in case the cursor starts off outside of range
+              T_cursorPos = tmplen;
+            }
+            showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
 
             if(T_cursorPos == tmplen) {
               cursorEnabled = true;
@@ -4125,7 +4146,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            #ifdef DISCRIMINANT
+            #if defined(DISCRIMINANT)
             if(regist == REGISTER_T) {
               strcpy(prefix,STD_UP_ARROW "  Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4138,23 +4159,28 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            #ifdef DISCRIMINANT
+            #if defined(DISCRIMINANT)
             if(regist == REGISTER_Z) {
               strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
           }
-         else if (temporaryInformation == TI_LR_A0) {
-            if(regist == REGISTER_X)
+          else if(temporaryInformation == TI_LR_A0) {
+            if(regist == REGISTER_X) {
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_0, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A1) {
-            if(regist == REGISTER_X)
+            }
+          }
+          else if(temporaryInformation == TI_LR_A1) {
+            if(regist == REGISTER_X) {
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_1, prefixPre, prefixPost, &prefixWidth);
-         } else if (temporaryInformation == TI_LR_A2) {
-            if(regist == REGISTER_X)
+            }
+          }
+          else if(temporaryInformation == TI_LR_A2) {
+            if(regist == REGISTER_X) {
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
-         }
+            }
+          }
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
             bool_t prefixPre = false;
@@ -4564,7 +4590,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            #ifdef DISCRIMINANT
+            #if defined(DISCRIMINANT)
             if(regist == REGISTER_T) {
               strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4576,7 +4602,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
-            #ifdef DISCRIMINANT
+            #if defined(DISCRIMINANT)
             if(regist == REGISTER_Z) {
               strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4813,7 +4839,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             prefix[0] = 0;
           }
 
-          if(DBASEMODE) displayBaseMode(regist);
+          if(DBASEMODE) {
+            displayBaseMode(regist);
+          }
 
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
@@ -5278,7 +5306,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
   void clearTamBuffer(void) {
-    if(temporaryInformation == TI_SHOWNOTHING) return; //to allow a matrix being dispayed without clearing the tam line through it
+    if(temporaryInformation == TI_SHOWNOTHING) {
+      return; //to allow a matrix being dispayed without clearing the tam line through it
+    }
 
     if(shiftF || shiftG) {
       //lcd_fill_rect(18, Y_POSITION_OF_TAM_LINE, 120, 32, LCD_SET_VALUE);
@@ -5555,7 +5585,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                 printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                                 print_caller(NULL);
                               #endif // PC_BUILD &&MONITOR_CLRSCR
-        if(calcMode != CM_NIM) refreshNIMdone = false;
+        if(calcMode != CM_NIM) {
+          refreshNIMdone = false;
+        }
 
         if(calcMode == CM_NORMAL && screenUpdatingMode != SCRUPD_AUTO && temporaryInformation == TI_SHOWNOTHING) {
           goto RETURN_NORMAL;
@@ -5741,13 +5773,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   #if defined(PC_BUILD)
     char* get_binary_bits(uint64_t n, int bits) {
       static char buffer[80]; // 64 bits + 15 spaces + null terminator
-      if (bits <= 0 || bits > 64) {
+      if(bits <= 0 || bits > 64) {
           return NULL;
       }
       int pos = 0;
-      for (int i = bits - 1; i >= 0; i--) {
+      for(int i = bits - 1; i >= 0; i--) {
           buffer[pos++] = (n & (1ULL << i)) ? '1' : '0';
-          if (i % 4 == 0 && i != 0) {
+          if(i % 4 == 0 && i != 0) {
               buffer[pos++] = ' ';
           }
       }
@@ -5786,11 +5818,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                strcpy(sss,get_binary_bits(screenUpdatingMode,8));
                                convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
                                shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false, noBaseOverride);
-                               stringToASCII(ttt,sss);
-                               strcpy(ttt,"");
-                               if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
-                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");
-                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");
+                               stringToASCII(ttt, sss);
+                               strcpy(ttt, "");
+                               if(screenUpdatingMode == 0) {
+                                strcat(ttt, "AUTO ");
+                               }
+                               else {
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt, "SkpMEN ");
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt, "SkpSTK ");
 
                                  if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");
                                  if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");
@@ -5807,7 +5842,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                   calcMode,
                                   screenUpdatingMode, sss, ttt,
                                   temporaryInformation,
-                                  (alphaCase == AC_LOWER)?"LO":"UP",
+                                  alphaCase == AC_LOWER ? "LO" : "UP",
                                   tam.mode,
                                   m, currentMenu(), uuu);
                                fflush(stdout);
@@ -5894,7 +5929,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
         ////printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
         //if(last_CM != calcMode) {
-        //  if(!SHOWMODE) screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
+        //  if(!SHOWMODE) {
+        //    screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
+        //  }
         //  screenUpdatingMode &= ~SCRUPD_MANUAL_STACK ;
         //  //printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
         //}
@@ -5974,9 +6011,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
-  #ifdef PC_BUILD
+  #if defined(PC_BUILD)
     printf("fnSNAP!\n");
-  #endif
+  #endif // PC_BUILD
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   refreshScreen(80);
 
@@ -5986,7 +6023,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
   #elif defined(DMCP_BUILD)
     standardScreenDump();
-  #endif
+  #endif // DMCP_BUILD
 
   char ss[TAM_BUFFER_LENGTH];
   xcopy(ss, tamBuffer, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot

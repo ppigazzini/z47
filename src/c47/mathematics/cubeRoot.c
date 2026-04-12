@@ -33,8 +33,9 @@ static void curtShoI(void) {
 void curtReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -345,12 +346,13 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
 void curtComplex(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   if(realContext->digits <= 75) {
     curtComplex75(zReal, zImag, resReal, resImag, realContext);
-#if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
-  } else
-  if(realContext->digits <= 159) {
+  #if defined(OPTION_CUBIC_159) || defined(OPTION_EIGEN_159)
+  }
+  else if(realContext->digits <= 159) {
     curtComplex159(zReal, zImag, resReal, resImag, realContext);
-#endif //OPTION_CUBIC_159) || OPTION_EIGEN_159
-  } else {
+  #endif //OPTION_CUBIC_159) || OPTION_EIGEN_159
+  }
+  else {
     sprintf(errorMessage, "Exceed digits :curtComplex159: %d", (int)(realContext->digits));
     displayBugScreen(errorMessage);
   }
