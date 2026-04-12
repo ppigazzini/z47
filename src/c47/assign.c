@@ -605,8 +605,8 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
     kc[1] = (i % 10) + '0';
     kc[2] = 0;
     if(key->primary == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = false;
         assignToKey(kc);
@@ -616,16 +616,16 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
       }
     }
     if(key->fShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = true;
         shiftG = false;
         assignToKey(kc);
       }
     }
     if(key->gShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = true;
         assignToKey(kc);
@@ -644,8 +644,8 @@ void fnDeleteMenu(uint16_t id) {
     return;
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName); // Remove assignments before deleting the user menu
-    removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
+    removeUserItemAssignments(-MNU_DYNAMIC, userMenus[id].menuName); // Remove assignments before deleting the user menu
+    removeUserMenuFromStack(id);                                     // Remove user menu from the stack before deleting it
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -675,8 +675,8 @@ void fnDeleteUserMenus(uint16_t confirmation) {
     setConfirmationMode(fnDeleteUserMenus);
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,""); // Remove all user menus assignments
-    removeUserMenuFromStack(numberOfUserMenus); // Remove all user menus from the stack before deleting them
+    removeUserItemAssignments(-MNU_DYNAMIC, ""); // Remove all user menus assignments
+    removeUserMenuFromStack(numberOfUserMenus);  // Remove all user menus from the stack before deleting them
     freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
     userMenus = NULL;
     numberOfUserMenus = 0;
@@ -802,7 +802,7 @@ void _assignItem(userMenuItem_t *menuItem) {
   else if(itemToBeAssigned >= ASSIGN_LABELS) {
     lblPtr                    = labelList[itemToBeAssigned - ASSIGN_LABELS].labelPointer;
     menuItem->item            = ITM_XEQ;
-    //printf("**[DL]** menuItem->item %d lblPtr %s\n",menuItem->item,lblPtr);fflush(stdout);
+    //printf("**[DL]** menuItem->item %d lblPtr %s\n", menuItem->item, lblPtr);fflush(stdout);
   }
   else if(itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
     lblPtr                    = allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName;
@@ -1078,7 +1078,7 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      #ifdef PC_BUILD
+      #if defined(PC_BUILD)
       if(name == NULL) {
         abortf("The parameter name is NULL!\n");
       }

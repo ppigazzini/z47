@@ -75,48 +75,48 @@
     //      A = Newline on previous line 0/1,
     //      B = Indented number of spaces on the current line,
     //      C = Indented number of spaces on the next line.
-    //"NNNNN", A, B, C
-    {"REM",    0, 0, 0 },
-    {"ENDP",   0, 0, 0 },
-    {STD_LEFT_SINGLE_QUOTE, 0,0,0},
+    //"NNNNN", A,  B,  C
+    {"REM",    0,  0,  0 },
+    {"ENDP",   0,  0,  0 },
+    {STD_LEFT_SINGLE_QUOTE, 0, 0, 0},
     //[TEST]
-    {"ENTRY?", 0, 0, +2},
-    {"KEY?",   0, 0, +2},
-    {"LBL?",   0, 0, +2},
-    {"STRI?",  0, 0, +2},
-    {"CONVG?", 0, 0, +2},
-    {"TOP?",   0, 0, +2},
-    {"INT?",   0, 0, +2},
-    {"EVEN?",  0, 0, +2},
-    {"ODD?",   0, 0, +2},
-    {"PRIME?", 0, 0, +2},
-    {"LEAP?",  0, 0, +2},
-    {"FP?",    0, 0, +2},
-    {"x* ?",   0, 0, +2},
-    {"x** ?",  0, 0, +2},
-    {"x=*0?",  0, 0, +2},
-    {"SPEC?",  0, 0, +2},
-    {"NaN?",   0, 0, +2},
-    {"M.SQR?", 0, 0, +2},
-    {"MATR?",  0, 0, +2},
-    {"CPX?",   0, 0, +2},
-    {"REAL?",  0, 0, +2},
+    {"ENTRY?", 0,  0, +2},
+    {"KEY?",   0,  0, +2},
+    {"LBL?",   0,  0, +2},
+    {"STRI?",  0,  0, +2},
+    {"CONVG?", 0,  0, +2},
+    {"TOP?",   0,  0, +2},
+    {"INT?",   0,  0, +2},
+    {"EVEN?",  0,  0, +2},
+    {"ODD?",   0,  0, +2},
+    {"PRIME?", 0,  0, +2},
+    {"LEAP?",  0,  0, +2},
+    {"FP?",    0,  0, +2},
+    {"x* ?",   0,  0, +2},
+    {"x** ?",  0,  0, +2},
+    {"x=*0?",  0,  0, +2},
+    {"SPEC?",  0,  0, +2},
+    {"NaN?",   0,  0, +2},
+    {"M.SQR?", 0,  0, +2},
+    {"MATR?",  0,  0, +2},
+    {"CPX?",   0,  0, +2},
+    {"REAL?",  0,  0, +2},
     //[LOOP]
-    {"DSE",    0, 0, +2},
-    {"DSZ",    0, 0, +2},
-    {"DSL",    0, 0, +2},
-    {"ISE",    0, 0, +2},
-    {"ISZ",    0, 0, +2},
-    {"ISG",    0, 0, +2},
+    {"DSE",    0,  0, +2},
+    {"DSZ",    0,  0, +2},
+    {"DSL",    0,  0, +2},
+    {"ISE",    0,  0, +2},
+    {"ISZ",    0,  0, +2},
+    {"ISG",    0,  0, +2},
     //[P.FN1]
-    {"LBL",    1,-2,  0},
-    {"GTO",    0,-2,  0},
-    {"XEQ",    0,-2,  0},
-    {"RTN",    0,-2,  0},
-    {"END",    0,-2,  0},
-    {".END.",  0,-2,  0},
+    {"LBL",    1, -2,  0},
+    {"GTO",    0, -2,  0},
+    {"XEQ",    0, -2,  0},
+    {"RTN",    0, -2,  0},
+    {"END",    0, -2,  0},
+    {".END.",  0, -2,  0},
 
-    {"",       0, 0,  0}
+    {"",       0,  0,  0}
     };
 
 
@@ -189,7 +189,7 @@ void fnPExport(void) {
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
-    int8_t  indent;;
+    int8_t  indent;
     bool_t  newLine;
     int8_t  addnextLineIndent = 0;
     int16_t lastCommandFound = 0;
@@ -477,11 +477,12 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
             stringToASCII(labelName, labelName1);
             //printf("----X %6u ? old=%6u name=%30s  ",currentProgramNumber, oldCurrentProgramNumber, labelName1);
             if(currentProgramNumber != oldCurrentProgramNumber) {
-              printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n",label, currentProgramNumber, labelName1, labelName1);
+              printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n", label, currentProgramNumber, labelName1, labelName1);
               fflush(stdout);
               _saveProgram  (label, ioPathSaveAllPrograms);
               _exportProgram(label, ioPathExportRTFAllPrograms);
-            } else {
+            }
+            else {
               printf("   Not saved: %s is not the first label in program %5u.\n", labelName1, currentProgramNumber);
               fflush(stdout);
             }
@@ -520,7 +521,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
       readLine(aimBuffer); // Format of program instructions (ignore now, there is only one format)
     }
     else {
-      sprintf(tmpString," \nThis is not a C47 program\n\nIt will not be loaded.");
+      sprintf(tmpString, " \nThis is not a C47 program\n\nIt will not be loaded.");
       show_warning(tmpString);
       ioFileClose();
       return;
@@ -539,7 +540,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     else {
       if(strcmp(aimBuffer, "WP43_program_file_version") == 0) {
         loadedVersion = stringToUint32(tmpString);
-        sprintf(tmpString," \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
+        sprintf(tmpString, " \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
         show_warning(tmpString);
       }
       else {
@@ -584,11 +585,11 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     ioFileClose();
 
     if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
-      sprintf(tmpString," \n"
-                        "   !!! Program version is too old !!!\n"
-                        "Not compatible with current version\n"
-                        " \n"
-                        "It will not be loaded.");
+      sprintf(tmpString, " \n"
+                         "   !!! Program version is too old !!!\n"
+                         "Not compatible with current version\n"
+                         " \n"
+                         "It will not be loaded.");
       show_warning(tmpString);
       return;
     }

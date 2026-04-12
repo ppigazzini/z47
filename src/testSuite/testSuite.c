@@ -381,7 +381,7 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
   }
 
   else {
-    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist, false, false));
   }
 }
 
@@ -3303,7 +3303,7 @@ void checkOneCatalogSorting(const int16_t *catalog, int16_t catalogId, const cha
     int32_t cmp;
     if((cmp = compareString(indexOfItems[abs(catalog[i - 1])].itemCatalogName, indexOfItems[abs(catalog[i])].itemCatalogName, CMP_EXTENSIVE)) >= 0) {
       printf("In catalog %s, element %d (item %d) should be after element %d (item %d). cmp = %d\n",
-                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i],cmp);
+                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i], cmp);
       //exit(1);
     }
   }

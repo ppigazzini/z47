@@ -48,8 +48,7 @@ void doDotCplx(void) {
   real_t xReal, xImag, yReal, yImag;
   real_t rReal;
 
-  if(getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
-          && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+  if(getRegisterAsComplex(REGISTER_X, &xReal, &xImag) && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
     dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
     convertRealToResultRegister(&rReal, REGISTER_X, amNone);
   }
@@ -158,27 +157,35 @@ void fnDot(uint16_t unusedButMandatoryParameter) {
         dotCpmaCpma();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else if(ty == dtReal34Matrix) {
+    }
+    else if(ty == dtReal34Matrix) {
       if(saveLastX()) {
         dotRemaCpma();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else
+    }
+    else {
       goto type_err;
-  } else if(tx == dtReal34Matrix) {
+    }
+  }
+  else if(tx == dtReal34Matrix) {
     if(ty == dtComplex34Matrix) {
       if(saveLastX()) {
         dotCpmaRema();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else if(ty == dtReal34Matrix) {
+    }
+    else if(ty == dtReal34Matrix) {
       if(saveLastX()) {
         dotRemaRema();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else
+    }
+    else {
       goto type_err;
-  } else if(ty == dtComplex34Matrix || ty == dtReal34Matrix) {
+    }
+  }
+  else if(ty == dtComplex34Matrix || ty == dtReal34Matrix) {
 type_err:
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
 
@@ -187,6 +194,8 @@ type_err:
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function fnDot:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  } else
+  }
+  else {
     processRealComplexDyadicFunction(&doDotReal, &doDotCplx);
+  }
 }
