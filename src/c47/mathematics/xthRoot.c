@@ -166,7 +166,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
         realAdd(&x, const_1, &r, realContext);
         realDivideRemainder(&r, const_2, &r, realContext);
         if(realIsZero(&r)) {                                        // negative base and odd exp
-          realDivide(const_1,&x, &x, realContext);
+          realDivide(const_1, &x, &x, realContext);
 
           realSetPositiveSign(&y);
           PowerReal(&y, &x, &x, realContext);

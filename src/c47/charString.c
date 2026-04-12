@@ -9,8 +9,8 @@
 
   /* Returns the character code from the first glyph of a string.
    *
-   * \param[in]     ch     String whose first glyph is to extract
-   * \param[in,out] offset Offset which is updated, or null if zero and no update
+   * \param[in]      ch     String whose first glyph is to extract
+   * \param[in, out] offset Offset which is updated, or null if zero and no update
    * \return Character code for that glyph
    */
   uint16_t charCodeFromString(const char *ch, uint16_t *offset) {
@@ -125,26 +125,33 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
   int16_t i = 0;
   int16_t jj = 0;
   char inStr[51];
-  xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
-  inStr[50]=0;
-  msg1[0]=0;
+  xcopy(inStr, msg1, min(50, stringByteLength(msg1)+1));
+  inStr[50] = 0;
+  msg1[0] = 0;
   while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km
     if('h' == inStr[i] && 'k' == inStr[i+1] && 'm' == inStr[i+2]) {    //test beyond end of string is ok, it will not test positive
-      msg1[jj++] = '1'; i++;
-      msg1[jj++] = '0'; i++;
-      msg1[jj++] = '0'; i++;
+      msg1[jj++] = '1';
+      i++;
+      msg1[jj++] = '0';
+      i++;
+      msg1[jj++] = '0';
+      i++;
       msg1[jj++] = 'k';
       msg1[jj++] = 'm';
     }
     else if('/' == inStr[i] && 'E' == inStr[i+1]) {
-      msg1[jj++] = '/'; i++;
-      msg1[jj++] = 'k'; i++;
+      msg1[jj++] = '/';
+      i++;
+      msg1[jj++] = 'k';
+      i++;
       msg1[jj++] = 'W';
       msg1[jj++] = 'h';
     }
     else if('E' == inStr[i] && '/' == inStr[i+1]) {
-      msg1[jj++] = 'k'; i++;
-      msg1[jj++] = 'W'; i++;
+      msg1[jj++] = 'k';
+      i++;
+      msg1[jj++] = 'W';
+      i++;
       msg1[jj++] = 'h';
       msg1[jj++] = '/';
     }
@@ -152,7 +159,7 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
       msg1[jj++]=inStr[i++];
     }
   }
-  msg1[jj++]=0;
+  msg1[jj++] = 0;
 }
 
 
@@ -160,9 +167,9 @@ void compressConversionName(char *msg1) {   // 2x16+1 character limit, rounded u
   int16_t i = 0;
   int16_t jj = 0;
   char inStr[51];
-  xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
-  inStr[50]=0;
-  msg1[0]=0;
+  xcopy(inStr, msg1, min(50, stringByteLength(msg1)+1));
+  inStr[50] = 0;
+  msg1[0] = 0;
   while(inStr[i] != 0) { //replace 100k with |ook; 100m with |oom; /kWh with /U; kWh/ with U/
     if('1' == inStr[i] && '0' == inStr[i+1] && '0' == inStr[i+2] && ('k' == inStr[i+3] || 'm' == inStr[i+3])) {    //test beyond end of string is ok, it will not test positive
       msg1[jj++] = STD_BINARY_ONE[0];
@@ -317,15 +324,21 @@ char *stringAfterPixels(const char *str, const font_t *font, int16_t width, bool
 
 int16_t stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos) {    //Not checking for beyond terminator. Use only if no risk for pos > length(str)
   int16_t posinc = 0;
-  if(str[pos] == 0) return pos;
+  if(str[pos] == 0) {
+    return pos;
+  }
 
   if(str[pos] & 0x80) {
     posinc = 2;
-    if(str[pos+2] == 0) return pos+2;
+    if(str[pos+2] == 0) {
+      return pos+2;
+    }
   }
   else {
     posinc = 1;
-    if(str[pos+1] == 0) return pos+1;
+    if(str[pos+1] == 0) {
+      return pos+1;
+    }
   }
 
   pos += posinc;
@@ -396,7 +409,7 @@ int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
   int16_t pos2 = pos;
 
   do {
-    pos2 = stringPrevGlyph(str,pos2);
+    pos2 = stringPrevGlyph(str, pos2);
 
     if(('0' <= str[pos2] && str[pos2] <= '9') || str[pos] == '.' || str[pos] == ',') {
       return pos2;
@@ -577,28 +590,29 @@ uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // C47 supp
 
 
 void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
-    printf("%s:", label);
-    printf("  Hex:   ");
-    for(size_t i = 0; i < max_len; i++) {
-        printf("%02X ", str[i]);
-    }
-    printf("; ");
+  printf("%s:", label);
+  printf("  Hex:   ");
+  for(size_t i = 0; i < max_len; i++) {
+    printf("%02X ", str[i]);
+  }
+  printf("; ");
 
-    printf("  Dec:   ");
-    for(size_t i = 0; i < max_len; i++) {
-        printf("%3d ", str[i]);
-    }
-    printf("; ");
+  printf("  Dec:   ");
+  for(size_t i = 0; i < max_len; i++) {
+    printf("%3d ", str[i]);
+  }
+  printf("; ");
 
-    printf("  Char:  ");
-    for(size_t i = 0; i < max_len; i++) {
-        if(str[i] >= 32 && str[i] < 127) {
-            printf(" %c  ", str[i]);
-        } else {
-            printf("    ");
-        }
+  printf("  Char:  ");
+  for(size_t i = 0; i < max_len; i++) {
+    if(str[i] >= 32 && str[i] < 127) {
+      printf(" %c  ", str[i]);
     }
-    printf("\n");
+    else {
+      printf("    ");
+    }
+  }
+  printf("\n");
 }
 
 
@@ -631,46 +645,49 @@ void stringToUtf8(const char *str, uint8_t *utf8) {
 
 //Alternative stringToUtf8
 //void stringToUtf8(const char *str, uint8_t *utf8) {
-//    //uint8_t *original_utf8 = utf8;
-//    //const char *original_str = str;
+//  //uint8_t *original_utf8 = utf8;
+//  //const char *original_str = str;
 //
-//    while(*str) {
-//        if((uint8_t)*str & 0x80) {
-//            uint16_t high = ((uint16_t)(uint8_t)(*str) & 0x7F);
-//            uint16_t low  = (uint8_t)str[1];
-//            uint16_t codepoint = (high << 8) | low;
-//            if(codepoint <= 0x7F) {
-//                *utf8++ = (uint8_t)codepoint;
-//            } else if(codepoint <= 0x7FF) {
-//                // FIX: use (cp >> 6) & 0x1F to avoid stray upper bits
-//                *utf8++ = 0xC0 | ((codepoint >> 6) & 0x1F);
-//                *utf8++ = 0x80 | (codepoint & 0x3F);
-//            } else {
-//                *utf8++ = 0xE0 | ((codepoint >> 12) & 0x0F);
-//                *utf8++ = 0x80 | ((codepoint >> 6) & 0x3F);
-//                *utf8++ = 0x80 | (codepoint & 0x3F);
-//            }
-//
-//            str += 2;
-//        } else {
-//            *utf8++ = (uint8_t)*str++;
+//  while(*str) {
+//    if((uint8_t)*str & 0x80) {
+//        uint16_t high = ((uint16_t)(uint8_t)(*str) & 0x7F);
+//        uint16_t low  = (uint8_t)str[1];
+//        uint16_t codepoint = (high << 8) | low;
+//        if(codepoint <= 0x7F) {
+//          *utf8++ = (uint8_t)codepoint;
 //        }
+//        else if(codepoint <= 0x7FF) {
+//          // FIX: use (cp >> 6) & 0x1F to avoid stray upper bits
+//          *utf8++ = 0xC0 | ((codepoint >> 6) & 0x1F);
+//          *utf8++ = 0x80 | (codepoint & 0x3F);
+//        }
+//        else {
+//          *utf8++ = 0xE0 | ((codepoint >> 12) & 0x0F);
+//          *utf8++ = 0x80 | ((codepoint >> 6) & 0x3F);
+//          *utf8++ = 0x80 | (codepoint & 0x3F);
+//        }
+//
+//        str += 2;
 //    }
+//    else {
+//      *utf8++ = (uint8_t)*str++;
+//    }
+//  }
 //
-//    *utf8 = 0;
+//  *utf8 = 0;
 //
-//    //printf("Original input: ");
-//    //size_t input_len = str - original_str + 1;
-//    //for(size_t i = 0; i < input_len; i++) {
-//    //    printf("%02X ", (unsigned char)original_str[i]);
-//    //}
-//    //printf("\n");
-//    //printf("UTF-8 output:   ");
-//    //size_t output_len = utf8 - original_utf8 + 1;
-//    //for(size_t i = 0; i < output_len; i++) {
-//    //    printf("%02X ", original_utf8[i]);
-//    //}
-//    //printf("\n");
+//  //printf("Original input: ");
+//  //size_t input_len = str - original_str + 1;
+//  //for(size_t i = 0; i < input_len; i++) {
+//  //  printf("%02X ", (unsigned char)original_str[i]);
+//  //}
+//  //printf("\n");
+//  //printf("UTF-8 output:   ");
+//  //size_t output_len = utf8 - original_utf8 + 1;
+//  //for(size_t i = 0; i < output_len; i++) {
+//  //  printf("%02X ", original_utf8[i]);
+//  //}
+//  //printf("\n");
 //}
 
 
@@ -877,13 +894,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %c%c %u %u : ",(uint8_t)a1,(uint8_t)a2,(uint8_t)a1,(uint8_t)a2);
+    //printf("_getText %c%c %u %u : ", (uint8_t)a1, (uint8_t)a2, (uint8_t)a1, (uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsASCII[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsASCII[i].item_in[1])) {
-        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]),indexOfStringsASCII[i].item_out);
-        stringAppend(str,indexOfStringsASCII[i].item_out);
+        //printf("(%u):%u %u %s\n", i, (uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]), indexOfStringsASCII[i].item_out);
+        stringAppend(str, indexOfStringsASCII[i].item_out);
         break;
       }
     }
@@ -891,13 +908,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 
   }
 
   static bool_t _getTextRTF(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getTextRTF %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getTextRTF %u %u : ", (uint8_t)a1, (uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsRTF);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsRTF[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsRTF[i].item_in[1])) {
-        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]),indexOfStringsRTF[i].item_out);
-        stringAppend(str,indexOfStringsRTF[i].item_out);
+        //printf("(%u):%u %u %s\n", i, (uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]), indexOfStringsRTF[i].item_out);
+        stringAppend(str, indexOfStringsRTF[i].item_out);
         break;
       }
     }
@@ -942,17 +959,17 @@ void stringToRTF(const char *str, char *ascii) {
 
       else
       //RANGE SUP/SUB/BASE TO BE PLAINTEXT OUTPUT
-      if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {supsub = +1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {supsub = +1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
-      if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {supsub = +1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);} else
-      if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {supsub = -1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {supsub = -1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);} else
-      if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {supsub = -1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);} else
-//  ssss    if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');} else
-//      if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
-//      if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
-
-      { sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
+           if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {supsub = +1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);}
+      else if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {supsub = +1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);}
+      else if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {supsub = +1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);}
+      else if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {supsub = -1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);}
+      else if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {supsub = -1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);}
+      else if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {supsub = -1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);}
+//      else if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');}
+//      else if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);}
+//      else if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);}
+      else {
+        sprintf(aa, "\\u%i?", ((a1 & 0x7F) << 8) | a2);
         //printf("§%s§\n",aa);
 
         int16_t j = 0;
@@ -963,12 +980,12 @@ void stringToRTF(const char *str, char *ascii) {
         ascii--;
       }
 
-
       if(bb[0] != 0) {
         if(supsub == +1) {
-          strcpy(aa,"\\super ");
-        } else if(supsub == -1) {
-          strcpy(aa,"\\sub ");
+          strcpy(aa, "\\super ");
+        }
+        else if(supsub == -1) {
+          strcpy(aa, "\\sub ");
         }
         int16_t j = 0;
         while(aa[j] != 0) {
@@ -981,7 +998,7 @@ void stringToRTF(const char *str, char *ascii) {
         ascii++;
 
 
-        strcpy(aa,"\\nosupersub ");
+        strcpy(aa, "\\nosupersub ");
         j = 0;
         while(aa[j] != 0) {
           *ascii = aa[j++];
@@ -1034,22 +1051,22 @@ void stringToASCII(const char *str, char *ascii) {
 
       else
       //RANGE SUP/SUB/BASE
-      if((a1==(uint8_t)(STD_SUP_0            [0]) && (a2>=(uint8_t)(STD_SUP_0            [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUP_a            [0]) && (a2>=(uint8_t)(STD_SUP_a            [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {*ascii = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
-      if((a1==(uint8_t)(STD_SUP_A            [0]) && (a2>=(uint8_t)(STD_SUP_A            [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {*ascii = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);} else
-      if((a1==(uint8_t)(STD_SUB_0            [0]) && (a2>=(uint8_t)(STD_SUB_0            [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUB_a            [0]) && (a2>=(uint8_t)(STD_SUB_a            [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {*ascii = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);} else
-      if((a1==(uint8_t)(STD_SUB_A            [0]) && (a2>=(uint8_t)(STD_SUB_A            [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {*ascii = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);} else
-      if((a1==(uint8_t)(STD_BASE_1           [0]) && (a2>=(uint8_t)(STD_BASE_1           [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
-      if((a1==(uint8_t)(STD_BASE_10          [0]) && (a2>=(uint8_t)(STD_BASE_10          [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
+           if((a1==(uint8_t)(STD_SUP_0            [0]) && (a2>=(uint8_t)(STD_SUP_0            [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);}
+      else if((a1==(uint8_t)(STD_SUP_a            [0]) && (a2>=(uint8_t)(STD_SUP_a            [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {*ascii = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);}
+      else if((a1==(uint8_t)(STD_SUP_A            [0]) && (a2>=(uint8_t)(STD_SUP_A            [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {*ascii = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);}
+      else if((a1==(uint8_t)(STD_SUB_0            [0]) && (a2>=(uint8_t)(STD_SUB_0            [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);}
+      else if((a1==(uint8_t)(STD_SUB_a            [0]) && (a2>=(uint8_t)(STD_SUB_a            [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {*ascii = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);}
+      else if((a1==(uint8_t)(STD_SUB_A            [0]) && (a2>=(uint8_t)(STD_SUB_A            [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {*ascii = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);}
+      else if((a1==(uint8_t)(STD_BASE_1           [0]) && (a2>=(uint8_t)(STD_BASE_1           [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);}
+      else if((a1==(uint8_t)(STD_BASE_10          [0]) && (a2>=(uint8_t)(STD_BASE_10          [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);}
       //RANGE INTERNATIONAL AND EXTENDED ASCII
-      if(a1>=0x81 && a1<=0x83) *ascii = '_'; else //All international characters use 0x00 which is not otherwise used in C47
+      else if(a1>=0x81 && a1<=0x83) *ascii = '_'; else //All international characters use 0x00 which is not otherwise used in C47
       //RANGE QUOTES
-      if(a1==(uint8_t)(STD_LEFT_SINGLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_SINGLE_QUOTE[1]) && a2<=(uint8_t)(STD_SINGLE_HIGH_QUOTE[1])) ) *ascii = '\''; else
-      if(a1==(uint8_t)(STD_LEFT_DOUBLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_DOUBLE_QUOTE[1]) && a2<=(uint8_t)(STD_DOUBLE_HIGH_QUOTE[1])) ) *ascii = '"'; else
-      {
-        #ifdef PC_BUILD
-          printf("Not decoded, replace with _: --a1=%u--a2=%u\n",a1,a2);
+           if(a1==(uint8_t)(STD_LEFT_SINGLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_SINGLE_QUOTE[1]) && a2<=(uint8_t)(STD_SINGLE_HIGH_QUOTE[1])) ) *ascii = '\'';
+      else if(a1==(uint8_t)(STD_LEFT_DOUBLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_DOUBLE_QUOTE[1]) && a2<=(uint8_t)(STD_DOUBLE_HIGH_QUOTE[1])) ) *ascii = '"';
+      else {
+        #if defined(PC_BUILD)
+          printf("Not decoded, replace with _: --a1=%u--a2=%u\n", a1, a2);
         #endif// PC_BUILD
         *ascii = 0x5F;    // underscore
       }

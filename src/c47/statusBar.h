@@ -9,7 +9,7 @@
 #if !defined(STATUSBAR_H)
   #define STATUSBAR_H
 
-   #if defined (PC_BUILD)
+   #if defined(PC_BUILD)
     void mockupSB(void);
   #endif //PC_BUILD
 

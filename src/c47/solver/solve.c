@@ -172,7 +172,7 @@ void fnSolve(uint16_t labelOrVariable) {
 }
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
-    printStatus(1, errorMessages[REAL_SOLVER],force);
+    printStatus(1, errorMessages[REAL_SOLVER], force);
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     const uint16_t nameLength = stringByteLength(var) + 1;
@@ -318,12 +318,16 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
-        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION & SOLVER_STATUS_USES_FORMULA)) == 0 && currentSolverNestingDepth == 1 ) { //} programRunStop != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION & SOLVER_STATUS_USES_FORMULA)) == 0 && currentSolverNestingDepth == 1 ) { // programRunStop != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
           uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
           if(real34CompareGreaterThan(a, b)) {
-            c = a;  a  = b;  b  = c;
-            c = fa; fa = fb; fb = c;
+            c = a;
+            a  = b;
+            b  = c;
+            c = fa;
+            fa = fb;
+            fb = c;
           }
 
           clearRegisterLine(REGISTER_Z, true, true);
@@ -339,7 +343,7 @@ static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_
           showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           displayFormatDigits = savedDisplayFormatDigits;
 
-        #if defined DMCP_BUILD
+        #if defined(DMCP_BUILD)
           lcd_refresh();
         #endif //DMCP_BUILD
       }
@@ -431,11 +435,11 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 retryLevel:
       if(--getOutOfLevel >= 0) {
         #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
-          printf("Solver retry Level:%2i ",getOutOfLevel);
-          printReal34ToConsole(&antiLevel34," antiLevel34:","\n");
+          printf("Solver retry Level:%2i ", getOutOfLevel);
+          printReal34ToConsole(&antiLevel34, " antiLevel34:", "\n");
         #endif //PC_BUILD
-        real34Multiply(&antiLevel34,const34_153,&antiLevel34);   //increase it for the next round so long
-        real34Minus(&antiLevel34,&antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
+        real34Multiply(&antiLevel34, const34_153, &antiLevel34);  //increase it for the next round so long
+        real34Minus(&antiLevel34, &antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
         real_t antiLevel;
         real34ToReal(&antiLevel34, &antiLevel);
         if(real34IsPositive(&antiLevel34)) {
@@ -471,8 +475,10 @@ retryLevel:
 
     // calculation
     _executeSolverReal(variable, &bb, &fbb, NULL);
-    //printRealToConsole(&bb1,"JJ2: f(&b1=",")  "); printRealToConsole(&fbb1,"","\n");
-    //printRealToConsole(&bb, "JJ2: f(&b=", ")  "); printRealToConsole(&fbb,"","\n");
+    //printRealToConsole(&bb1, "JJ2: f(&b1=",")  ");
+    //printRealToConsole(&fbb1, "", "\n");
+    //printRealToConsole(&bb, "JJ2: f(&b=", ")  ");
+    //printRealToConsole(&fbb, "", "\n");
 
     if(lastErrorCode != ERROR_NONE) {
       result = SOLVER_RESULT_BAD_GUESS;
@@ -495,8 +501,14 @@ retryLevel:
     }
 
     if(realCompareAbsLessThan(&faa, &fbb)) {
-      realCopy(&bb, &tmp); realCopy(&aa, &bb); realCopy(&tmp, &aa); realCopy(&tmp, &bb1);
-      realCopy(&fbb, &tmp); realCopy(&faa, &fbb); realCopy(&tmp, &faa); realCopy(&tmp, &fbb1);
+      realCopy(&bb, &tmp);
+      realCopy(&aa, &bb);
+      realCopy(&tmp, &aa);
+      realCopy(&tmp, &bb1);
+      realCopy(&fbb, &tmp);
+      realCopy(&faa, &fbb);
+      realCopy(&tmp, &faa);
+      realCopy(&tmp, &fbb1);
     }
 
     if(realIsZero(&faa) || realIsZero(&fbb)) { // already is a root?
@@ -554,18 +566,20 @@ retryLevel:
       loop++;
       if(checkHalfSec()) {
         char ss[10];
-        strcpy(ss,"Iter: ");
+        strcpy(ss, "Iter: ");
         ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
-        if(progressHalfSecUpdate_Integer(timed, ss,loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(progressHalfSecUpdate_Integer(timed, ss, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           real34_t a34, b34, fa34, fb34;
-          realToReal34(&aa, &a34); realToReal34(&bb, &b34);
-          realToReal34(&faa, &fa34); realToReal34(&fbb, &fb34);
+          realToReal34(&aa, &a34);
+          realToReal34(&bb, &b34);
+          realToReal34(&faa, &fa34);
+          realToReal34(&fbb, &fb34);
           _showProgress(&a34, &b34, &fa34, &fb34);
         }
       }
 
       if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
@@ -866,9 +880,14 @@ retryLevel:
           }
 
           if(realCompareAbsLessThan(&faa, &fbp1)) {
-            realCopy(bp1, &tmp); realCopy(&aa, bp1); realCopy(&tmp, &aa);
-            realCopy(&fbp1, &tmp); realCopy(&faa, &fbp1); realCopy(&tmp, &faa);
-            realCopy(&aa, &bb); realCopy(&faa, &fbb);
+            realCopy(bp1, &tmp);
+            realCopy(&aa, bp1);
+            realCopy(&tmp, &aa);
+            realCopy(&fbp1, &tmp);
+            realCopy(&faa, &fbp1);
+            realCopy(&tmp, &faa);
+            realCopy(&aa, &bb);
+            realCopy(&faa, &fbb);
           }
 
           if(bp1 == &ss) {
@@ -881,7 +900,8 @@ retryLevel:
           realCopy(&fbb, &fbb1);
           realCopy(bp1, &bb);
           realCopy(&fbp1, &fbb);
-          //printRealToConsole(&bb1,"PP: &b1=","  "); printRealToConsole(&bb,"&b=","\n");
+          //printRealToConsole(&bb1, "PP: &b1=", "  ");
+          //printRealToConsole(&bb, "&b=", "\n");
         }
 
         else if(originallyLevel && (realIsInfinite(&bb) || realIsInfinite(&aa))) {
@@ -911,10 +931,10 @@ retryLevel:
         }
 
         //printf("\nSOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
-        //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n",bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
-        //printRealToConsole(&bb,"  bb="," ");
-        //printRealToConsole(&fbb,"fbb="," ");
-        //printRealToConsole(&tolAlmostZero,"tolAlmostZero=","\n");
+        //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n", bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
+        //printRealToConsole(&bb, "  bb=", " ");
+        //printRealToConsole(&fbb, "fbb=", " ");
+        //printRealToConsole(&tolAlmostZero, "tolAlmostZero=", "\n");
 
         if(result != SOLVER_RESULT_NORMAL) {
           break;
@@ -932,8 +952,7 @@ retryLevel:
 
         break;
       }
-      if( !originallyLevel &&
-        ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
+      if(!originallyLevel && ((!extendRange && bb_bb1_converged) || b_b1_Equal || fbIsAlmostZero) ) {
         #if defined(OPTION_TVM_NEWTON)
           if(currentMethod == SOLVER_METHOD_BRENT &&
              (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) &&

@@ -665,7 +665,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
 
 
 static void _menuItem(int16_t item, char *bufPtr) {
-  xcopy(bufPtr,indexOfItems[item].itemSoftmenuName,stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
+  xcopy(bufPtr, indexOfItems[item].itemSoftmenuName, stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
   bufPtr[stringByteLength(indexOfItems[item].itemSoftmenuName)+1]=0;
   //  xcopy(bufPtr, "Calc", 5);
   //  bufPtr[5] = 0;
@@ -1088,7 +1088,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           bufPtr[0] = 0;
           if(((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER ) && var >= FIRST_RESERVED_VARIABLE) {
             displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-            xcopy(errorMessage,strPtr,stringByteLength(strPtr)+1);
+            xcopy(errorMessage, strPtr, stringByteLength(strPtr)+1);
             screenUpdatingMode = SCRUPD_AUTO;
             refreshRegisterLine(ERR_REGISTER_LINE);   //[DL] added to force error line refresh
             //refreshScreen(400); //This is the second step if screenUpdatingMode = SCRUPD_AUTO does not work, to force a refresh after screenUpdatingMode was set. It may not be needed depending the next normal refresh in the cycle
@@ -1332,7 +1332,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
             return;
           }
           else {
-            _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer,pointerInFormula);
+            _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer, pointerInFormula);
             bufPtr = buffer;
             buffer[0] = 0;
             pointerInFormula = strPtr;
@@ -1366,7 +1366,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         else if((bufPtr != buffer) && (*strPtr == '|')) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
           bufPtr = buffer;
           pointerInFormula = strPtr;
           numericCount = 0;
@@ -1384,7 +1384,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           // 'Euler e' (fancy e) as a function
           strcpy(buffer, "EXP");
           strPtr += 2;
-          _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer, pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
           pointerInFormula = strPtr;
@@ -1411,7 +1411,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         else if(bufPtr != buffer) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
           afterClosingParenthesis = (*strPtr == ')');
           unaryMinusCanOccur = false;
           afterSpace = false;
@@ -1424,11 +1424,11 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           buffer[0] = '-';
           buffer[1] = '1';
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_NUMERIC, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_NUMERIC, mvarBuffer, pointerInFormula);
           buffer[0] = PRODUCT_SIGN[0];
           buffer[1] = PRODUCT_SIGN[1];
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
           pointerInFormula = strPtr;
@@ -1497,7 +1497,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
         else {
           ++strPtr;
         }
-        _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
+        _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
         bufPtr = buffer;
         buffer[0] = 0;
         pointerInFormula = strPtr;
@@ -1509,7 +1509,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       default: {
         if(afterSpace) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
           bufPtr = buffer;
           pointerInFormula = strPtr;
           numericCount = 0;
@@ -1535,11 +1535,11 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
 
         if(compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0) {
           *(bufPtr++) = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
           buffer[0] = *(strPtr++);
           buffer[1] = *(strPtr++);
           buffer[2] = 0;
-          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer,pointerInFormula);
+          _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
           bufPtr = buffer;
           buffer[0] = 0;
           pointerInFormula = strPtr;
@@ -1565,7 +1565,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
   }
   if(bufPtr != buffer) {
     *(bufPtr++) = 0;
-    _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer,pointerInFormula);
+    _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
   }
 
   if(parseMode == EQUATION_PARSER_MVAR) {

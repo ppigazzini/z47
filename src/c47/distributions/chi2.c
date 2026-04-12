@@ -27,12 +27,13 @@
   }
 
   static bool_t checkParamChi2(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if( !getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i)) {
       goto err;
+    }
 
     if(!checkRegisterNoFP(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -200,14 +201,16 @@
 
     realCopy(x, &reg0);
     loops = 6;
-    int32ToReal(19, &p); p.exponent -= 1;
+    int32ToReal(19, &p);
+    p.exponent -= 1;
     realCopy(realCompareEqual(k, const_1) ? const_0 : k, &q);
     realChangeSign(&q);
     realPower(&p, &q, &p, realContext);
     realDivide(&p, const_pi, &p, realContext);
     if(realCompareGreaterEqual(&reg0, &p)) {
       WP34S_qf_q_est(&reg0, &q, NULL, realContext);
-      int32ToReal(222, &s); s.exponent -= 3;
+      int32ToReal(222, &s);
+      s.exponent -= 3;
       realDivide(&s, k, &s, realContext);
       realSquareRoot(&s, &r, realContext);
       realMultiply(&q, &r, &q, realContext);

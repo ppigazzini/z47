@@ -32,11 +32,13 @@ void fnPercent(uint16_t unusedButMandatoryParameter) {
   real_t xReal, yReal;
   real_t rReal;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal)) {
     return;
+  }
 
-  if(!saveLastX())
+  if(!saveLastX()) {
     return;
+  }
 
   percentReal(&xReal, &yReal, &rReal, &ctxtReal34);
 

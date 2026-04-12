@@ -181,10 +181,11 @@ static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[]
   const real_t *const fx = fxIn + MAX_ORDER - stencil->n;
 
   // Check if all f(x) are defined or not
-  for(i=0; i<maxi; i++)
+  for(i=0; i<maxi; i++) {
     if(stencil->coeff[i] != 0 && realIsSpecial(fx + i)) {
       return false;
     }
+  }
 
   // All values are defined where required so calculate the weighted sum
   realSetZero(&s);

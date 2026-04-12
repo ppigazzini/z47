@@ -26,8 +26,9 @@ void fnCb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX()) {
     return;
+  }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & ~((uint64_t)1 << bit);
@@ -54,8 +55,9 @@ void fnSb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX()) {
     return;
+  }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w | ((uint64_t)1 << bit);
@@ -82,8 +84,9 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX()) {
     return;
+  }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w ^ ((uint64_t)1 << bit);
@@ -108,8 +111,9 @@ void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL))
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, NULL)) {
     return;
+  }
   thereIsSomethingToUndo = false;
   SET_TI_TRUE_FALSE((w & ((uint64_t)1 << bit)) == 0);
 }
@@ -133,8 +137,9 @@ void fnBs(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL))
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, NULL)) {
     return;
+  }
   thereIsSomethingToUndo = false;
   SET_TI_TRUE_FALSE((w & ((uint64_t)1 << bit)) != 0);
 }

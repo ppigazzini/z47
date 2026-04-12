@@ -101,22 +101,29 @@ void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real
     return;
   }
 
-  realCopy(xReal, &reg6);  realCopy(xImag, &reg7);
-  realCopy(xReal, &reg10); realCopy(xImag, &reg11);
+  realCopy(xReal, &reg6);
+  realCopy(xImag, &reg7);
+  realCopy(xReal, &reg10);
+  realCopy(xImag, &reg11);
   if(realCompareGreaterEqual(xReal, const_1on2)) {
     zeta_calc_complex(&reg4, &reg5, &reg6, &reg7, realContext);
-    realCopy(&reg4, resReal); realCopy(&reg5, resImag);
+    realCopy(&reg4, resReal);
+    realCopy(&reg5, resImag);
   }
   else { // zeta_neg
     realSubtract(const_1, xReal, &reg6, realContext);
     realChangeSign(&reg7);
     zeta_calc_complex(&reg4, &reg5, &reg6, &reg7, realContext);
-    realSubtract(const_1, &reg10, &q, realContext); realSubtract(const_0, &reg11, &p, realContext);
-    realMultiply(&q, const_1on2, &q, realContext); realMultiply(&p, const_1on2, &p, realContext);
+    realSubtract(const_1, &reg10, &q, realContext);
+    realSubtract(const_0, &reg11, &p, realContext);
+    realMultiply(&q, const_1on2, &q, realContext);
+    realMultiply(&p, const_1on2, &p, realContext);
     WP34S_ComplexGamma(&q, &p, &s, &r, realContext);
     mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
-    realCopy(&reg10, &q); realCopy(&reg11, &p);
-    realMultiply(&q, const_1on2, &reg10, realContext); realMultiply(&p, const_1on2, &reg11, realContext);
+    realCopy(&reg10, &q);
+    realCopy(&reg11, &p);
+    realMultiply(&q, const_1on2, &reg10, realContext);
+    realMultiply(&p, const_1on2, &reg11, realContext);
     realSubtract(&q, const_1on2, &q, realContext);
     PowerComplex(const_pi, const_0, &q, &p, &s, &r, realContext);
     mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
