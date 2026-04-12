@@ -7896,9 +7896,9 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
       goto SPH_ret1;
     }
 
-    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    C47_WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
     realDivide(&z, r, &z, ctxtRealDisplay);
-    WP34S_Acos(&z, th2, ctxtRealDisplay);
+    C47_WP34S_Acos(&z, th2, ctxtRealDisplay);
 
 SPH_ret1:
     convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
@@ -7920,14 +7920,14 @@ SPH_ret1:
     convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
     convertAngleFromTo(&theta2, am, amRadian, ctxtRealDisplay);
     
-    WP34S_Cvt2RadSinCosTan(&theta2, amRadian, NULL,    &z,   NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta2, amRadian, NULL,    &z,   NULL, ctxtRealDisplay);
     realMultiply(r, &z, &z, ctxtRealDisplay);
-    WP34S_Cvt2RadSinCosTan(&theta2, amRadian, &sinTh2, NULL, NULL, ctxtRealDisplay);
-    WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL,    &x,   NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta2, amRadian, &sinTh2, NULL, NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL,    &x,   NULL, ctxtRealDisplay);
     realMultiply(r, &x, &x, ctxtRealDisplay);
     realMultiply(&x, &sinTh2, &x, ctxtRealDisplay);
     
-    WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y,      NULL, NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y,      NULL, NULL, ctxtRealDisplay);
     realMultiply(r, &y, &y, ctxtRealDisplay);
     realMultiply(&y, &sinTh2, &y, ctxtRealDisplay);
     
@@ -7948,7 +7948,7 @@ SPH_ret1:
     realAdd(&t, r, r, ctxtRealDisplay);
     realSquareRoot(r, r, ctxtRealDisplay);
 
-    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    C47_WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
 
     convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th1)) {
@@ -7963,10 +7963,10 @@ SPH_ret1:
     realCopy(th1, &theta1);
     convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
     
-    WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL, &x, NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL, &x, NULL, ctxtRealDisplay);
     realMultiply(r, &x, &x, ctxtRealDisplay);
     
-    WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y, NULL, NULL, ctxtRealDisplay);
+    C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y, NULL, NULL, ctxtRealDisplay);
     realMultiply(r, &y, &y, ctxtRealDisplay);
     
     realToReal34(&x, &matrix->matrixElements[0]);
@@ -7982,7 +7982,7 @@ SPH_ret1:
       real34ToReal(&matrix->matrixElements[0], &x);
       real34ToReal(&matrix->matrixElements[1], &y);
 
-      WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+      C47_WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
       convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
       if(realIsZero(th1)) {
         realSetZero(th1);
