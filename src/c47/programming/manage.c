@@ -187,7 +187,7 @@ static void _removeLabelsAssignments() {
       labelLength = labelList[i].labelPointer[0];
       xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
       label[labelLength]=0;
-      removeUserItemAssignments(ITM_XEQ,label);   // Remove label assignments
+      removeUserItemAssignments(ITM_XEQ, label);   // Remove label assignments
     }
   }
 }
@@ -200,7 +200,7 @@ void fnClPAll(uint16_t confirmation) {
   }
   else {
     // Remove assignments of all global labels, before deleting all programs
-    removeUserItemAssignments(ITM_XEQ,"");   // Remove all labels assignments
+    removeUserItemAssignments(ITM_XEQ, "");   // Remove all labels assignments
 
     bool_t wasInRam = (programList[currentProgramNumber - 1].step > 0);
     resizeProgramMemory(1); // 1 block for an empty program
@@ -382,8 +382,9 @@ void defineCurrentProgramFromCurrentStep(void) {
 
 
 void scrollPemBackwards(void) {
-  if(firstDisplayedLocalStepNumber > 0)
+  if(firstDisplayedLocalStepNumber > 0) {
     --firstDisplayedLocalStepNumber;
+  }
   defineFirstDisplayedStep();
 }
 
@@ -542,7 +543,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if(getSystemFlag(FLAG_ALPHA)) {
           char tmpChar = tmpString[4];
           tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0 ? T_cursorPos + 4 : T_cursorPos);
           tmpString[4] = tmpChar;
           xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
           tmpString[2 + cursorInString    ] = STD_CURSOR[0];
@@ -1081,7 +1082,7 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
         *(tmpPtr - 1) = editingLiteralType;  // [DL] force literal type when editing angles
       }
       *tmpPtr++ = stringByteLength(numBuffer);
-      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
+      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
       if(doInsertInProgram) {
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + offset);
         --currentLocalStepNumber;
@@ -1197,7 +1198,7 @@ void pemCloseNumberInput(void) {
       case NP_COMPLEX_FLOAT_PART:
       case NP_COMPLEX_EXPONENT: {
         if(aimBuffer[stringByteLength(aimBuffer)-1] == 'i') {
-          strcat(aimBuffer,"1");
+          strcat(aimBuffer, "1");
           inputLength++;
         }
 
@@ -1209,10 +1210,12 @@ void pemCloseNumberInput(void) {
           }
           if(*imag == 'i') {
             if(imag > numBuffer && *(imag - 1) == '-') {
-              *imag = '-'; *(imag - 1) = 0;
+              *imag = '-';
+              *(imag - 1) = 0;
             }
             else if(imag > numBuffer && *(imag - 1) == '+') {
-              *imag = 0; *(imag - 1) = 0;
+              *imag = 0;
+              *(imag - 1) = 0;
               ++imag;
             }
             else {
@@ -1593,7 +1596,8 @@ void insertStepInProgram(const int16_t func) {
           }
           if(func == VAR_UX || func == VAR_LX) {
             tmpString[5] = 'X';
-          } else {
+          }
+          else {
             tmpString[5] = 'Y';
           }
           _insertInProgram((uint8_t *)tmpString, 6);

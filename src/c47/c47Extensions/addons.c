@@ -186,7 +186,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   real34ToDisplayString(real34, amNone, tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, true, STD_SPACE_PUNCTUATION, true);
   grpGroupingRight = grpGroupingRightOld;
   grpGroupingLeft  = grpGroupingLeftOld;
-  //printf("**[DL]** _real34ToNim tmpString %s\n",tmpString);fflush(stdout);
+  //printf("**[DL]** _real34ToNim tmpString %s\n", tmpString);
+  //fflush(stdout);
 
   bool noDisplayExponent = true;
   for(i = 0; i < strlen(tmpString); i++) {
@@ -199,7 +200,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   real34ToString(real34, nimDisplay);
   grpGroupingRight = grpGroupingRightOld;
   grpGroupingLeft  = grpGroupingLeftOld;
-  //printf("**[DL]** _real34ToNim nimBufferDisplay %s\n",nimBufferDisplay);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimBufferDisplay %s\n", nimBufferDisplay);
+  //fflush(stdout);
   bool dotFound = false;
   if(noDisplayExponent) {                                // if no exponent in display string but exponent in real34ToString, use the display string
     for(i = 0; i < strlen(nimDisplay); i++) {
@@ -229,7 +231,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   else {
     strcpy(nimInput, nimDisplay);
   }
-  //printf("**[DL]** _real34ToNim nimInput %s\n",nimInput);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimInput %s\n", nimInput);
+  //fflush(stdout);
   bool exponentFound = false;
   dotFound = false;
   for(i = 0; i < strlen(nimInput); i++) {
@@ -251,7 +254,8 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   }
   strcpy(nimDisplay, STD_SPACE_HAIR);
   nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
-  //printf("**[DL]** _real34ToNim nimDisplay %s\n",nimDisplay+2);fflush(stdout);
+  //printf("**[DL]** _real34ToNim nimDisplay %s\n", nimDisplay+2);
+  //fflush(stdout);
   for(i=stringByteLength(nimDisplay) - 1; i>0; i--) {
     if(nimDisplay[i] == (char)0xab) {    //token
       nimDisplay[i] = SEPARATOR_LEFT[0];
@@ -300,7 +304,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
       char    varOrLblName[8];
     #endif
 
-    if(tam.mode != 0) goto err;
+    if(tam.mode != 0) {
+      goto err;
+    }
     switch(calcMode) {
       case CM_NORMAL :
         if(currentMenu() == -MNU_EQN || currentMenu() == -MNU_Sfdx || currentMenu() == -MNU_Solver_TOOL || currentMenu() == -MNU_Sf_TOOL || currentMenu() == -MNU_GRAPHS ||
@@ -341,7 +347,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
               // Test if long inter number display string will fit on two lines in standard font, if not do nothing (cannot edit)
               if(stringWidth(nimBufferDisplay, &standardFont, true, true) < (SCREEN_WIDTH * 2)  - 8) { // 8 is the standard font cursor width
-                //printf("**[DL]** aimBuffer %s \n nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+                //printf("**[DL]** aimBuffer %s \n nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+                //fflush(stdout);
                 calcMode = CM_NIM;
                 clearSystemFlag(FLAG_ALPHA);
                 freeRegisterData(REGISTER_X);
@@ -351,7 +358,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 hexDigits = 0;
                 nimNumberPart = NP_INT_10;
                 //clearRegisterLine(NIM_REGISTER_LINE, true, true);
-                if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                if(!checkHP) {
+                  clearRegisterLine(NIM_REGISTER_LINE, true, true);
+                }
                 xCursor = 1;
                 cursorEnabled = true;
                 cursorFont = &numericFont;
@@ -370,7 +379,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               grpGroupingRightOld = grpGroupingRight;
               angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
 
-              //printf("**[DL]** xangularMode %d\n",xangularMode);fflush(stdout);
+              //printf("**[DL]** xangularMode %d\n", xangularMode);
+              //fflush(stdout);
               memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
               memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
 
@@ -379,7 +389,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               }
 
               uint16_t lessEqualGreater = 0;
-              if (getSystemFlag(FLAG_FRACT)) {
+              if(getSystemFlag(FLAG_FRACT)) {
                 grpGroupingLeft  = 0;
                 grpGroupingRight = 0;
                 _fractionToString(REGISTER_X, aimBuffer, (int16_t *)&lessEqualGreater);
@@ -410,7 +420,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               else {  // display real34
                 _real34ToNim(REGISTER_REAL34_DATA(REGISTER_X), aimBuffer, nimBufferDisplay);
               }
-              //printf("**[DL]** dtReal34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              //printf("**[DL]** dtReal34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              //fflush(stdout);
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
@@ -424,9 +435,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 setRegisterDataType(REGISTER_X, dtReal34, xangularMode);
               }
               real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
-              //printf("**[DL]** AngularMode %d\n",getRegisterAngularMode(REGISTER_X));fflush(stdout);
+              //printf("**[DL]** AngularMode %d\n", getRegisterAngularMode(REGISTER_X));
+              //fflush(stdout);
               hexDigits = 0;
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -601,14 +615,17 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-              //printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              //printf("**[DL]** dtShortInteger aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              //fflush(stdout);
 
               calcMode = CM_NIM;
               clearSystemFlag(FLAG_ALPHA);
               freeRegisterData(REGISTER_X);
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
               setRegisterDataType(REGISTER_X, dtReal34, amNone);
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -629,8 +646,11 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         break;
 
       case CM_PEM : {
-        if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) return; // Don't try to edit step 000 or END or .END.
-        //printf("**[DL]** currentLocalStepNumber %d\n",currentLocalStepNumber);fflush(stdout);
+        if((pemCursorIsZerothStep) || isAtEndOfProgram(currentStep) || isAtEndOfPrograms(currentStep)) {
+          return; // Don't try to edit step 000 or END or .END.
+        }
+        //printf("**[DL]** currentLocalStepNumber %d\n", currentLocalStepNumber);
+        //fflush(stdout);
         int16_t i = 0;
         int16_t func = currentStep[i++];
         if(func & 0x80) {
@@ -644,7 +664,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           uint8_t opParam3 = currentStep[i];
         #endif
 
-        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n",func,opParam,opParam2,decodedLiteralType);fflush(stdout);
+        //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n", func, opParam, opParam2, decodedLiteralType);
+        //fflush(stdout);
 
         if((func == ITM_LITERAL || func == ITM_REM)) {
           memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
@@ -677,16 +698,18 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               grpGroupingLeft  = grpGroupingLeftOld;
               strcpy(tempBuffer, tmpString);
             }
-            lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
-            //printf("**[DL]** fnEdit lastIntegerBase %d tempBuffer %s\n",lastIntegerBase,tempBuffer);fflush(stdout);
+            lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2 : opParam == STRING_SHORT_INTEGER ? opParam2 : 0);
+            //printf("**[DL]** fnEdit lastIntegerBase %d tempBuffer %s\n", lastIntegerBase, tempBuffer);
+            //fflush(stdout);
             deleteStepsFromTo(currentStep, findNextStep(currentStep));
 
             uint16_t i;
             uint16_t iMax = strlen(tempBuffer);
             bool decimalflag = false;
             for(i = 0; i < iMax; i++) {
-              //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n",i,tempBuffer[i]&0xff,aimBuffer);fflush(stdout);
-              switch ((uint8_t) tempBuffer[i]) {
+              //printf("**[DL]** fnEdit tempBuffer[%2d] %02x aimBuffer %s\n", i, tempBuffer[i]&0xff, aimBuffer);
+              //fflush(stdout);
+              switch((uint8_t) tempBuffer[i]) {
                 case '0':
                 case '1':
                 case '2':
@@ -720,10 +743,13 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                   break;
                 case '+':
-                  if(chsNeeded)  pemAddNumber(ITM_CHS, false);  // '-' was already encountered, let's first negate the real part
+                  if(chsNeeded) {
+                    pemAddNumber(ITM_CHS, false);  // '-' was already encountered, let's first negate the real part
+                  }
                   chsNeeded = false;
                   if(opParam == BINARY_COMPLEX34) {
-                    //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n",aimBuffer);fflush(stdout);
+                    //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
+                    //fflush(stdout);
                     pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                   }
@@ -736,10 +762,13 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                     }
                   }
                   else {
-                    if(chsNeeded) pemAddNumber(ITM_CHS, false);  // second time '-' is encountered, let's first negate the real part
+                    if(chsNeeded) {
+                      pemAddNumber(ITM_CHS, false);  // second time '-' is encountered, let's first negate the real part
+                    }
                     chsNeeded = true;
                     if(opParam == BINARY_COMPLEX34) {
-                      //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n",aimBuffer);fflush(stdout);
+                      //printf("**[DL]** fnEdit pemAddNumber ITM_CC aimBuffer %s\n", aimBuffer);
+                      //fflush(stdout);
                       pemAddNumber(ITM_CC, false);
                       decimalflag = false;
                     }
@@ -754,7 +783,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                   break;
                 case 'e':
-                  if(chsNeeded) pemAddNumber(ITM_CHS, false);           // change mantissa sign before entering exponent
+                  if(chsNeeded) {
+                    pemAddNumber(ITM_CHS, false);           // change mantissa sign before entering exponent
+                  }
                   chsNeeded = false;
                   pemAddNumber(ITM_EXPONENT, false);
                   break;
@@ -764,10 +795,13 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   break;
                 case 0x80:
                   i++;
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   if((tempBuffer[i] == STD_CROSS[1]) && (nimNumberPart != NP_COMPLEX_INT_PART)) {
                     i += 2; // Skip next character (STD_BASE_10)
-                    if(chsNeeded) pemAddNumber(ITM_CHS, false);         // change mantissa sign before entering exponent
+                    if(chsNeeded) {
+                      pemAddNumber(ITM_CHS, false);         // change mantissa sign before entering exponent
+                    }
                     chsNeeded = false;
                     pemAddNumber(ITM_EXPONENT, false);
                   }
@@ -777,20 +811,22 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   break;
                 case 0xa1:
                   i++;
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   if((tempBuffer[i] >= STD_SUP_0[1]) && (tempBuffer[i] <= STD_SUP_9[1])) {
                     pemAddNumber(ITM_0 + tempBuffer[i] - STD_SUP_0[1], false);
                   }
                   else if(tempBuffer[i] == STD_SUP_MINUS[1]) {
                     chsNeeded = true;
                   }
-                  else if(((tempBuffer[i] == STD_op_i[1]) || (tempBuffer[i] == STD_op_j[1])) &&
-                          (nimNumberPart != NP_COMPLEX_INT_PART)) {
-                    //printf("**[DL]** fnEdit pemAddNumber ITM_op_j aimBuffer %s\n",aimBuffer);fflush(stdout);
+                  else if(((tempBuffer[i] == STD_op_i[1]) || (tempBuffer[i] == STD_op_j[1])) && (nimNumberPart != NP_COMPLEX_INT_PART)) {
+                    //printf("**[DL]** fnEdit pemAddNumber ITM_op_j aimBuffer %s\n", aimBuffer);
+                    //fflush(stdout);
                     pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                   }
-                  //printf("**[DL]** fnEdit pemAddNumber %02x aimBuffer %s\n",tempBuffer[i],aimBuffer);fflush(stdout);
+                  //printf("**[DL]** fnEdit pemAddNumber %02x aimBuffer %s\n", tempBuffer[i],aimBuffer);
+                  //fflush(stdout);
                   break;
                 case 0x81:
                 case 0x82:
@@ -808,16 +844,20 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 case 0xab:
                 case 0xac:
                   i++;   // Ignore non supported unicode characters, including base subscripts
-                  //printf("**[DL]**        tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]**        tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   break;
                 default:
-                  //printf("**[DL]** dflt   tempBuffer[%2d] %02x\n",i,tempBuffer[i]&0xff);fflush(stdout);
+                  //printf("**[DL]** dflt   tempBuffer[%2d] %02x\n", i, tempBuffer[i]&0xff);
+                  //fflush(stdout);
                   break;
               }
               lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
             }
-            if(chsNeeded) pemAddNumber(ITM_CHS, false);
-            switch (opParam) {
+            if(chsNeeded) {
+              pemAddNumber(ITM_CHS, false);
+            }
+            switch(opParam) {
               case STRING_DATE:
               case STRING_TIME:
               case STRING_ANGLE_RADIAN:
@@ -832,7 +872,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 editingLiteralType = 0;
             }
             pemAddNumber(ITM_NOP, true);    // to insert the resulting number in program
-            //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n",editingLiteralType,aimBuffer);fflush(stdout);
+            //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n", editingLiteralType, aimBuffer);
+            //fflush(stdout);
           }
 #endif // !SAVE_SPACE_DM42_23_EDIT2
           else {
@@ -849,7 +890,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
             varOrLblName[index] = 0;
           }
-          switch (paramMode) {
+          switch(paramMode) {
             case PARAM_DECLARE_LABEL:
             case PARAM_LABEL:
             case PARAM_REGISTER:
@@ -862,7 +903,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             case PARAM_SHUFFLE:              // Used only for "<>"
             case PARAM_MENU: {               // Used only for "OPENM"
               deleteStepsFromTo(currentStep, findNextStep(currentStep));
-              if(!pemCursorIsZerothStep) fnBst(NOPARAM);
+              if(!pemCursorIsZerothStep) {
+                fnBst(NOPARAM);
+              }
               tamEnterMode(func);
 
               uint8_t maxDigits = tam.max < 10 ? 1 : (tam.max < 100 ? 2 : (tam.max < 1000 ? 3 : (tam.max < 10000 ? 4 : 5)));
@@ -892,7 +935,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 }
               }
 
-              if ((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
+              if((paramMode == PARAM_FLAG) && opParam == SYSTEM_FLAG_NUMBER) {                 // System flag
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -900,7 +943,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
-              else if ((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
+              else if((paramMode == PARAM_COMPARE) && ((opParam == VALUE_0) ||(opParam == VALUE_1)))  {  // Comparison to 0 or 1
                 tam.digitsSoFar = 0;
                 tam.value = 0;
               }
@@ -936,7 +979,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar = 3;
                 tam.value = (opParam & 0X3F) + 0X1500;    // remove last shuffled register
               }
-              else if ((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
+              else if((paramMode == PARAM_NUMBER_8_16) && opParam == CNST_BEYOND_250) {         // Constant from 250 to 499
                 tam.digitsSoFar = maxDigits - 1;
                 tam.value = (opParam2 / 10) + 25;
               }
@@ -944,7 +987,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                 tam.digitsSoFar =  maxDigits - 1;
                 tam.value = opParam / 10;
               }
-              //printf("**[DL]** tamProcessInput func %d aimBuffer %s\n",func,aimBuffer);fflush(stdout);
+              //printf("**[DL]** tamProcessInput func %d aimBuffer %s\n", func, aimBuffer);
+              //fflush(stdout);
               tamProcessInput(func);
               //scrollPemBackwards();
               if(opParam == STRING_LABEL_VARIABLE) {      // Variable name : Label or  edit name string
@@ -994,7 +1038,7 @@ err:
 }
 
 
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   int32_t vol = 0;
@@ -1041,7 +1085,9 @@ bool_t exitKeyWaiting(void) {
 int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
-    if(!anyKeyWaiting()) return -1;
+    if(!anyKeyWaiting()) {
+      return -1;
+    }
     if(displayWaitForRelease) {
       #if defined(VERBOSEKEYS_BUFFERED)
         showString("Key(s) buffered ...", &standardFont, 20, 40, vmNormal, false, false);
@@ -1393,7 +1439,9 @@ void fnMultiplySI(uint16_t multiplier) {
 #define forcedLiftTheStack true
 
 static void cpxToStk(const real_t *real1, const real_t *real2, const bool_t sl) {
-  if(sl == forcedLiftTheStack) setSystemFlag(FLAG_ASLIFT);
+  if(sl == forcedLiftTheStack) {
+    setSystemFlag(FLAG_ASLIFT);
+  }
   liftStack();
 //  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 //  realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
@@ -1492,7 +1540,7 @@ void fn_cnst_op_A(uint16_t option) {
   realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
   realToReal34(!inverted ? &const_rt3on2  : &const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
 
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
     real34SetZero(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     if(i != 0) {
@@ -2390,8 +2438,12 @@ void fnP_All_Regs(uint16_t option) {
       case PRN_ALL:
         stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
 
 
         //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
@@ -2411,11 +2463,15 @@ void fnP_All_Regs(uint16_t option) {
         break;
 
       case PRN_LOCALr:
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
         break;
 
       case PRN_NAMEDr:
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
         break;
 
       case PRN_Xr:
@@ -2943,7 +2999,9 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
 
   /* loop finding terms until denom gets too big */
   while(m[1][0] *  ( ai = realToInt32C47(&xx, NULL) ) + m[1][1] <= maxden) {
-    //printf("  ai = %12i  condition:%8i<%6i ",ai, m[1][0] * ai + m[1][1], maxden ); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
+    //printf("  ai = %12i  condition:%8i<%6i ", ai, m[1][0] * ai + m[1][1], maxden );
+    //printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]);
+    //printRealToConsole(&xx, "  xx=", " + m[1][1] \n");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
     m[0][1] = m[0][0];
@@ -2953,8 +3011,10 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     m[1][0] = t;
 
     int32ToReal(ai, &temp);
-    realSubtract(&xx,&temp,&xx,&ctxtReal_denom_finder);
-    //printf("                                               "); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
+    realSubtract(&xx, &temp, &xx, &ctxtReal_denom_finder);
+    //printf("                                               ");
+    //printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]);
+    //printRealToConsole(&xx, "  xx=", " + m[1][1] \n");
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
@@ -3002,9 +3062,11 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
   realCompare(&err2, &err1, &cmpResult, &ctxtReal_integer_conversion_find_lowest_err_fraction);
   // cmpResult will hold -1 if err2 < err1, 0 if equal, 1 if err2 > err1
   // Check if err2 < err1 and swap output if needed
-  // printRealToConsole(&err1,"\nerr1: "," "); printf("%d/%d      ",m[0][0],m[1][0]);
-  // printRealToConsole(&err2,  "err2: "," "); printf("%d/%d\n",    m[0][1],m[1][1]);
-  if (realIsNegative(&cmpResult)) {
+  // printRealToConsole(&err1, "\nerr1: ", " ");
+  //printf("%d/%d      ", m[0][0], m[1][0]);
+  // printRealToConsole(&err2,  "err2: ", " ");
+  //printf("%d/%d\n", m[0][1], m[1][1]);
+  if(realIsNegative(&cmpResult)) {
       m[0][0] = m[0][1];
       m[1][0] = m[1][1];
   }
@@ -3090,7 +3152,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     //See if the multiplier to the constant has a whole denominator
 
 #define IRFRAC_ENGINE
-#ifndef IRFRAC_ENGINE
+#if !defined(IRFRAC_ENGINE)
     //* This section uses the standard fraction() to calculate the denominator
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
@@ -3099,8 +3161,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
     //printf("aaaaaaa: %i%llu + %llu / %llu \n",sign1,intPart,numer,denom);
     int32_t smallestDenom = denom;
-#endif //FRACT_ENGINE
-#ifdef IRFRAC_ENGINE
+#else // FRACT_ENGINE
     //* This section uses the new special demoninator search engine
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
 #endif //IRFRAC_ENGINE
@@ -3171,7 +3232,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
 //                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
 //                                char displayString1[200];
-//                                stringToASCII(resultingIntStr,displayString1); printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n",displayString1,(uint8_t)(displayString[0]),(uint8_t)(displayString[1]),(uint8_t)(displayString[2]),(uint8_t)(displayString[3]),(uint8_t)(displayString[4]),(uint8_t)(displayString[5]),(uint8_t)(displayString[6]),(uint8_t)(displayString[7]));
+//                                stringToASCII(resultingIntStr, displayString1);
+//                                printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n", displayString1, (uint8_t)(displayString[0]), (uint8_t)(displayString[1]), (uint8_t)(displayString[2]), (uint8_t)(displayString[3]), (uint8_t)(displayString[4]), (uint8_t)(displayString[5]), (uint8_t)(displayString[6]), (uint8_t)(displayString[7]));
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 
@@ -3481,48 +3543,29 @@ int16_t mm(int16_t id) {
   void RB_CHECKED(uint32_t xx, uint32_t yy) {
     // BLACK pixels: outer ring + center dot (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
-      // Column 1: yy+3..yy+7
-      {1,3},{1,4},{1,5},{1,6},{1,7},
-      // Column 2: yy+2..yy+8
-      {2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},
-      // Column 3: yy+1..yy+3, yy+7..yy+9
-      {3,1},{3,2},{3,3},{3,7},{3,8},{3,9},
-      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
-      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
-      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
-      // Column 7: yy+1..yy+3, yy+7..yy+9
-      {7,1},{7,2},{7,3},{7,7},{7,8},{7,9},
-      // Column 8: yy+2..yy+8
-      {8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},
-      // Column 9: yy+3..yy+7
-      {9,3},{9,4},{9,5},{9,6},{9,7}
+      {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},                   // Column 1: yy+3..yy+7
+      {2, 2},  {2, 3},  {2, 4},  {2, 5},  {2, 6},  {2, 7},  {2, 8}, // Column 2: yy+2..yy+8
+      {3, 1},  {3, 2},  {3, 3},  {3, 7},  {3, 8},  {3, 9},          // Column 3: yy+1..yy+3, yy+7..yy+9
+      {4, 1},  {4, 2},  {4, 4},  {4, 5},  {4, 6},  {4, 8},  {4, 9}, // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5, 1},  {5, 2},  {5, 4},  {5, 5},  {5, 6},  {5, 8},  {5, 9}, // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6, 1},  {6, 2},  {6, 4},  {6, 5},  {6, 6},  {6, 8},  {6, 9}, // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {7, 1},  {7, 2},  {7, 3},  {7, 7},  {7, 8},  {7, 9},          // Column 7: yy+1..yy+3, yy+7..yy+9
+      {8, 2},  {8, 3},  {8, 4},  {8, 5},  {8, 6},  {8, 7},  {8, 8}, // Column 8: yy+2..yy+8
+      {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7}                    // Column 9: yy+3..yy+7
     };
 
     // WHITE pixels: background borders and gaps creating ring shape
     TO_QSPI static const uint8_t rbWhite[][2] = {
-      // Column 0: yy+2..yy+8 (left border)
-      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
-      // Column 1: yy+1, yy+8, yy+9
-      {1,1},{1,8},{1,9},
-      // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0},{2,1},{2,9},{2,10},
-      // Column 3: yy+0, yy+4..yy+6, yy+10
-      {3,0},{3,4},{3,5},{3,6},{3,10},
-      // Column 4: yy+0, yy+3, yy+7, yy+10
-      {4,0},{4,3},{4,7},{4,10},
-      // Column 5: yy+0, yy+3, yy+7, yy+10
-      {5,0},{5,3},{5,7},{5,10},
-      // Column 6: yy+0, yy+3, yy+7, yy+10
-      {6,0},{6,3},{6,7},{6,10},
-      // Column 7: yy+0, yy+4..yy+6, yy+10
-      {7,0},{7,4},{7,5},{7,6},{7,10},
-      // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0},{8,1},{8,9},{8,10},
-      // Column 9: yy+1, yy+8, yy+9
-      {9,1},{9,8},{9,9}
+      {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8}, // Column 0: yy+2..yy+8 (left border)
+      {1, 1},  {1, 8},  {1, 9},                                      // Column 1: yy+1, yy+8, yy+9
+      {2, 0},  {2, 1},  {2, 9},  {2, 10},                            // Column 2: yy+0, yy+1, yy+9, yy+10
+      {3, 0},  {3, 4},  {3, 5},  {3, 6},  {3, 10},                   // Column 3: yy+0, yy+4..yy+6, yy+10
+      {4, 0},  {4, 3},  {4, 7},  {4, 10},                            // Column 4: yy+0, yy+3, yy+7, yy+10
+      {5, 0},  {5, 3},  {5, 7},  {5, 10},                            // Column 5: yy+0, yy+3, yy+7, yy+10
+      {6, 0},  {6, 3},  {6, 7},  {6, 10},                            // Column 6: yy+0, yy+3, yy+7, yy+10
+      {7, 0},  {7, 4},  {7, 5},  {7, 6},  {7, 10},                   // Column 7: yy+0, yy+4..yy+6, yy+10
+      {8, 0},  {8, 1},  {8, 9},  {8, 10},                            // Column 8: yy+0, yy+1, yy+9, yy+10
+      {9, 1},  {9, 8},  {9, 9}                                       // Column 9: yy+1, yy+8, yy+9
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3533,48 +3576,29 @@ int16_t mm(int16_t id) {
   void RB_UNCHECKED(uint32_t xx, uint32_t yy) {
     // BLACK pixels: outer ring only (visible parts)
     TO_QSPI static const uint8_t rbBlack[][2] = {
-      // Column 1: yy+3..yy+7
-      {1,3},{1,4},{1,5},{1,6},{1,7},
-      // Column 2: yy+2, yy+3, yy+7, yy+8
-      {2,2},{2,3},{2,7},{2,8},
-      // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1},{3,2},{3,8},{3,9},
-      // Column 4: yy+1, yy+9
-      {4,1},{4,9},
-      // Column 5: yy+1, yy+9
-      {5,1},{5,9},
-      // Column 6: yy+1, yy+9
-      {6,1},{6,9},
-      // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1},{7,2},{7,8},{7,9},
-      // Column 8: yy+2, yy+3, yy+7, yy+8
-      {8,2},{8,3},{8,7},{8,8},
-      // Column 9: yy+3..yy+7
-      {9,3},{9,4},{9,5},{9,6},{9,7}
+      {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7}, // Column 1: yy+3..yy+7
+      {2, 2},  {2, 3},  {2, 7},  {2, 8},          // Column 2: yy+2, yy+3, yy+7, yy+8
+      {3, 1},  {3, 2},  {3, 8},  {3, 9},          // Column 3: yy+1, yy+2, yy+8, yy+9
+      {4, 1},  {4, 9},                            // Column 4: yy+1, yy+9
+      {5, 1},  {5, 9},                            // Column 5: yy+1, yy+9
+      {6, 1},  {6, 9},                            // Column 6: yy+1, yy+9
+      {7, 1},  {7, 2},  {7, 8},  {7, 9},          // Column 7: yy+1, yy+2, yy+8, yy+9
+      {8, 2},  {8, 3},  {8, 7},  {8, 8},          // Column 8: yy+2, yy+3, yy+7, yy+8
+      {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7}  // Column 9: yy+3..yy+7
     };
 
     // WHITE pixels: background borders, gaps, and hollow center
     TO_QSPI static const uint8_t rbWhite[][2] = {
-      // Column 0: yy+2..yy+8 (left border)
-      {0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
-      // Column 1: yy+1, yy+8, yy+9
-      {1,1},{1,8},{1,9},
-      // Column 2: yy+0, yy+1, yy+9, yy+10
-      {2,0},{2,1},{2,9},{2,10},
-      // Column 3: yy+0, yy+10
-      {3,0},{3,10},
-      // Column 4: yy+0, yy+10
-      {4,0},{4,10},
-      // Column 5: yy+0, yy+10
-      {5,0},{5,10},
-      // Column 6: yy+0, yy+10
-      {6,0},{6,10},
-      // Column 7: yy+0, yy+10
-      {7,0},{7,10},
-      // Column 8: yy+0, yy+1, yy+9, yy+10
-      {8,0},{8,1},{8,9},{8,10},
-      // Column 9: yy+1, yy+8, yy+9
-      {9,1},{9,8},{9,9}
+      {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8}, // Column 0: yy+2..yy+8 (left border)
+      {1, 1},  {1, 8},  {1, 9},                                     // Column 1: yy+1, yy+8, yy+9
+      {2, 0},  {2, 1},  {2, 9},  {2, 10},                           // Column 2: yy+0, yy+1, yy+9, yy+10
+      {3, 0},  {3, 10},                                             // Column 3: yy+0, yy+10
+      {4, 0},  {4, 10},                                             // Column 4: yy+0, yy+10
+      {5, 0},  {5, 10},                                             // Column 5: yy+0, yy+10
+      {6, 0},  {6, 10},                                             // Column 6: yy+0, yy+10
+      {7, 0},  {7, 10},                                             // Column 7: yy+0, yy+10
+      {8, 0},  {8, 1},  {8, 9},  {8, 10},                           // Column 8: yy+0, yy+1, yy+9, yy+10
+      {9, 1},  {9, 8},  {9, 9}                                      // Column 9: yy+1, yy+8, yy+9
     };
 
     drawPixelArray(xx, yy, rbBlack, sizeof(rbBlack)/sizeof(rbBlack[0]), false);
@@ -3587,48 +3611,30 @@ int16_t mm(int16_t id) {
 
     // BLACK pixels: outer square + inner checkmark pattern
     TO_QSPI static const uint8_t cbBlack[][2] = {
-      // Column 1: yy+1..yy+9 (full)
-      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
-      // Column 2: yy+1..yy+9 (full)
-      {2,1},{2,2},{2,3},{2,4},{2,5},{2,6},{2,7},{2,8},{2,9},
-      // Column 3: yy+1, yy+2, yy+8, yy+9
-      {3,1},{3,2},{3,8},{3,9},
-      // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {4,1},{4,2},{4,4},{4,5},{4,6},{4,8},{4,9},
-      // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {5,1},{5,2},{5,4},{5,5},{5,6},{5,8},{5,9},
-      // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
-      {6,1},{6,2},{6,4},{6,5},{6,6},{6,8},{6,9},
-      // Column 7: yy+1, yy+2, yy+8, yy+9
-      {7,1},{7,2},{7,8},{7,9},
-      // Column 8: yy+1..yy+9 (full)
-      {8,1},{8,2},{8,3},{8,4},{8,5},{8,6},{8,7},{8,8},{8,9},
-      // Column 9: yy+1..yy+9 (full)
-      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+
+      {1, 1},  {1, 2},  {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},  {1, 8},  {1, 9}, // Column 1: yy+1..yy+9 (full)
+      {2, 1},  {2, 2},  {2, 3},  {2, 4},  {2, 5},  {2, 6},  {2, 7},  {2, 8},  {2, 9}, // Column 2: yy+1..yy+9 (full)
+      {3, 1},  {3, 2},  {3, 8},  {3, 9},                                              // Column 3: yy+1, yy+2, yy+8, yy+9
+      {4, 1},  {4, 2},  {4, 4},  {4, 5},  {4, 6},  {4, 8},  {4, 9},                   // Column 4: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {5, 1},  {5, 2},  {5, 4},  {5, 5},  {5, 6},  {5, 8},  {5, 9},                   // Column 5: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {6, 1},  {6, 2},  {6, 4},  {6, 5},  {6, 6},  {6, 8},  {6, 9},                   // Column 6: yy+1, yy+2, yy+4..yy+6, yy+8, yy+9
+      {7, 1},  {7, 2},  {7, 8},  {7, 9},                                              // Column 7: yy+1, yy+2, yy+8, yy+9
+      {8, 1},  {8, 2},  {8, 3},  {8, 4},  {8, 5},  {8, 6},  {8, 7},  {8, 8},  {8, 9}, // Column 8: yy+1..yy+9 (full)
+      {9, 1},  {9, 2},  {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7},  {9, 8},  {9, 9}  // Column 9: yy+1..yy+9 (full)
     };
 
     // WHITE pixels: background borders and hollow center area
     TO_QSPI static const uint8_t cbWhite[][2] = {
-      // Column 0: yy+0..yy+10 (left border)
-      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
-      // Column 1: yy+0, yy+10
-      {1,0},{1,10},
-      // Column 2: yy+0, yy+10
-      {2,0},{2,10},
-      // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {3,0},{3,3},{3,4},{3,5},{3,6},{3,7},{3,10},
-      // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {4,0},{4,3},{4,7},{4,10},
-      // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {5,0},{5,3},{5,7},{5,10},
-      // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
-      {6,0},{6,3},{6,7},{6,10},
-      // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
-      {7,0},{7,3},{7,4},{7,5},{7,6},{7,7},{7,10},
-      // Column 8: yy+0, yy+10
-      {8,0},{8,10},
-      // Column 9: yy+0, yy+10
-      {9,0},{9,10}
+      {0, 0},  {0, 1},  {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8},  {0, 9},  {0, 10}, // Column 0: yy+0..yy+10 (left border)
+      {1, 0},  {1, 10},                                                                                  // Column 1: yy+0, yy+10
+      {2, 0},  {2, 10},                                                                                  // Column 2: yy+0, yy+10
+      {3, 0},  {3, 3},  {3, 4},  {3, 5},  {3, 6},  {3, 7},  {3, 10},                                     // Column 3: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {4, 0},  {4, 3},  {4, 7},  {4, 10},                                                                // Column 4: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {5, 0},  {5, 3},  {5, 7},  {5, 10},                                                                // Column 5: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {6, 0},  {6, 3},  {6, 7},  {6, 10},                                                                // Column 6: yy+0, yy+3, yy+7, yy+10 (creates hollow)
+      {7, 0},  {7, 3},  {7, 4},  {7, 5},  {7, 6},  {7, 7},  {7, 10},                                     // Column 7: yy+0, yy+3..yy+7, yy+10 (creates hollow)
+      {8, 0},  {8, 10},                                                                                  // Column 8: yy+0, yy+10
+      {9, 0},  {9, 10}                                                                                   // Column 9: yy+0, yy+10
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3642,47 +3648,30 @@ int16_t mm(int16_t id) {
     // BLACK pixels: outer square only (hollow inside)
     TO_QSPI static const uint8_t cbBlack[][2] = {
       // Column 1: yy+1..yy+9 (full)
-      {1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},
-      // Column 2: yy+1, yy+9 (top/bottom only)
-      {2,1},{2,9},
-      // Column 3: yy+1, yy+9
-      {3,1},{3,9},
-      // Column 4: yy+1, yy+9
-      {4,1},{4,9},
-      // Column 5: yy+1, yy+9
-      {5,1},{5,9},
-      // Column 6: yy+1, yy+9
-      {6,1},{6,9},
-      // Column 7: yy+1, yy+9
-      {7,1},{7,9},
-      // Column 8: yy+1, yy+9
-      {8,1},{8,9},
-      // Column 9: yy+1..yy+9 (full)
-      {9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
+      {1, 1},  {1, 2},  {1, 3},  {1, 4},  {1, 5},  {1, 6},  {1, 7},  {1, 8},  {1, 9},
+      {2, 1},  {2, 9},                                                              // Column 2: yy+1, yy+9 (top/bottom only)
+      {3, 1},  {3, 9},                                                              // Column 3: yy+1, yy+9
+      {4, 1},  {4, 9},                                                              // Column 4: yy+1, yy+9
+      {5, 1},  {5, 9},                                                              // Column 5: yy+1, yy+9
+      {6, 1},  {6, 9},                                                              // Column 6: yy+1, yy+9
+      {7, 1},  {7, 9},                                                              // Column 7: yy+1, yy+9
+      {8, 1},  {8, 9},                                                              // Column 8: yy+1, yy+9
+      {9, 1},  {9, 2},  {9, 3},  {9, 4},  {9, 5},  {9, 6},  {9, 7},  {9, 8}, {9, 9} // Column 9: yy+1..yy+9 (full)
     };
 
     // WHITE pixels: background borders
     TO_QSPI static const uint8_t cbWhite[][2] = {
       // Column 0: yy+0..yy+10 (left border)
-      {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},
-      // Column 1: yy+0, yy+10
-      {1,0},{1,10},
-      // Column 2: yy+0, yy+10
-      {2,0},{2,10},
-      // Column 3: yy+0, yy+10
-      {3,0},{3,10},
-      // Column 4: yy+0, yy+10
-      {4,0},{4,10},
-      // Column 5: yy+0, yy+10
-      {5,0},{5,10},
-      // Column 6: yy+0, yy+10
-      {6,0},{6,10},
-      // Column 7: yy+0, yy+10
-      {7,0},{7,10},
-      // Column 8: yy+0, yy+10
-      {8,0},{8,10},
-      // Column 9: yy+0, yy+10
-      {9,0},{9,10}
+      {0, 0},  {0, 1},  {0, 2},  {0, 3},  {0, 4},  {0, 5},  {0, 6},  {0, 7},  {0, 8},  {0, 9},  {0, 10},
+      {1, 0},  {1, 10}, // Column 1: yy+0, yy+10
+      {2, 0},  {2, 10}, // Column 2: yy+0, yy+10
+      {3, 0},  {3, 10}, // Column 3: yy+0, yy+10
+      {4, 0},  {4, 10}, // Column 4: yy+0, yy+10
+      {5, 0},  {5, 10}, // Column 5: yy+0, yy+10
+      {6, 0},  {6, 10}, // Column 6: yy+0, yy+10
+      {7, 0},  {7, 10}, // Column 7: yy+0, yy+10
+      {8, 0},  {8, 10}, // Column 8: yy+0, yy+10
+      {9, 0},  {9, 10}  // Column 9: yy+0, yy+10
     };
 
     drawPixelArray(xx, yy, cbBlack, sizeof(cbBlack)/sizeof(cbBlack[0]), false);
@@ -3710,9 +3699,9 @@ int16_t mm(int16_t id) {
     #define offs 1                                  // X-offset adjustment
     for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1]);
-      #ifdef DOUBLE
+      #if defined(DOUBLE)
         placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Duplicate row above for thickness
-      #endif
+      #endif // DOUBLE
     }
   }
 

@@ -368,8 +368,12 @@ int8_t fnCbIsSet(int16_t item) {
                      //printf("^^^^*** activated %d\n", rb_param);
                      break;
 
-        case RB_HX:  if(lastIntegerBase != 0) rb_param = lastIntegerBase;
-                     else                     return result;
+        case RB_HX:  if(lastIntegerBase != 0) {
+                       rb_param = lastIntegerBase;
+                     }
+                     else {
+                      return result;
+                     }
                      break;
 
         case RB_FP:  rb_param = gapItemRight;
@@ -460,22 +464,25 @@ int8_t fnCbIsSet(int16_t item) {
                           case FLAG_MYM_TRIPLE:
                           case FLAG_HOME_TRIPLE:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE))
+                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) {
                               clearSystemFlag(FLAG_MYM_TRIPLE);
+                            }
                             break;
 
                           case FLAG_BASE_HOME:
                           case FLAG_BASE_MYM:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM))
+                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) {
                               clearSystemFlag(FLAG_BASE_HOME);
+                            }
                             break;
 
                           case FLAG_FGLNLIM:
                           case FLAG_FGLNFUL:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_FGLNLIM) && getSystemFlag(FLAG_FGLNFUL))
+                            if(getSystemFlag(FLAG_FGLNLIM) && getSystemFlag(FLAG_FGLNFUL)) {
                               clearSystemFlag(FLAG_FGLNLIM);
+                            }
                             break;
 
                           #if defined(INLINE_TEST)

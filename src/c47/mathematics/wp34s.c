@@ -35,7 +35,9 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
   angle180 = const_0;
 
   #if defined(DEBUGTAYLOR)
-   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Angle:   %s\n", tmpString);
+   realToString((real_t*)angle, tmpString);
+   //tmpString[80]=0;
+   printf("Angle:   %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // sin(-x) = -sin(x), cos(-x) = cos(x)
@@ -90,7 +92,9 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
   }
   #if defined(DEBUGTAYLOR)
-   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Reduced: %s\n", tmpString);
+   realToString((real_t*)angle, tmpString);
+   //tmpString[80]=0;
+   printf("Reduced: %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
@@ -126,10 +130,10 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     convertAngleFromTo((real_t*)angle, angularMode, amRadian, realContext);
     if(savedContextDigits >= 1071) {
-      C47_WP34S_SinCosTanTaylor_temp1071((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp1071((real_t*)angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
     else {
-      C47_WP34S_SinCosTanTaylor_temp75((real_t*)angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp75((real_t*)angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
   }
 
@@ -262,26 +266,28 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
     #endif //PC_BUILD
 
-    #ifdef DEBUGTAYLOR
+    #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
-        realToString((real_t*)sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
-        realToString((real_t*)cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
+        realToString((real_t*)sin, tmpString);
+        tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
+        realToString((real_t*)cos, tmpString);
+        tmpString[80]=0; printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
   }
@@ -520,27 +526,29 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent((real_t*)b));
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
     #endif //PC_BUILD
 
 
-    #ifdef DEBUGTAYLOR
+    #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
-        realToString((real_t*)angle, tmpString); tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
-        realToString((real_t*)b , tmpString); tmpString[80]=0; printf(" diff=%s\n", tmpString);
+        realToString((real_t*)angle, tmpString);
+        tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
+        realToString((real_t*)b , tmpString);
+        tmpString[80]=0; printf(" diff=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
     i++;
