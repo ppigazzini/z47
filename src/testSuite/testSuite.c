@@ -770,7 +770,7 @@ void setParameter(char *p) {
     }
   }
 
-  else if (strcmp(l, "FARG") == 0) {
+  else if(strcmp(l, "FARG") == 0) {
     functionParameter = atoi(r);
   }
 
@@ -1252,7 +1252,7 @@ var1:
 
       reallocateRegister(regist, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
-      convertReal34RegisterToDateRegister(regist, regist, !YYSystem);
+      convertReal34RegisterToDateRegister(regist, regist, false);  //no !YYsystem needed here
     }
     else if(strcmp(l, "REMA") == 0) {
       // remove beginning and ending " and removing leading spaces
@@ -1762,7 +1762,7 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
     }
     return false;
   }
-  if (real34IsZero(a) && real34IsZero(b))
+  if(real34IsZero(a) && real34IsZero(b))
     return real34IsNegative(a) == real34IsNegative(b);
 
   return real34CompareEqual(a, b);
@@ -2533,7 +2533,7 @@ var2:
       checkRegisterType(regist, letter, dtDate, amNone);
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);

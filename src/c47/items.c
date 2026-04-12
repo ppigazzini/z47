@@ -607,7 +607,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     if(programRunStop != PGM_RUNNING) {
       if(func == ITM_RCL && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        if (strcmp(varCatalogItem, "RCL") != 0) {
+        if(strcmp(varCatalogItem, "RCL") != 0) {
           calcRegister_t var = findNamedVariable(varCatalogItem);
           if(var != INVALID_VARIABLE) {
             if(calcMode == CM_PEM) {
@@ -629,7 +629,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       }
       if(func == ITM_XEQ && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        if (strcmp(varCatalogItem, "XEQ") != 0) {
+        if(strcmp(varCatalogItem, "XEQ") != 0) {
           calcRegister_t label = findNamedLabel(varCatalogItem);
           if(label != INVALID_VARIABLE) {
             if(calcMode == CM_PEM) {

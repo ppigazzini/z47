@@ -3000,23 +3000,23 @@ static bool is_valid_utf8(const char *s, size_t *error_offset);
 
 
 bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
-    if (!lbl) {
+    if(!lbl) {
         printf("GTK3 Setup utf issue: NULL label in %s\n", context);
         return 1;
     }
 
     // Calculate length safely (stop at 22 or null terminator)
     int len = 0;
-    while (lbl[len] != 0 && len < 22) {
+    while(lbl[len] != 0 && len < 22) {
         len++;
     }
 
-    if (len == 0) {
+    if(len == 0) {
         return 0; // Empty string is OK
     }
 
     size_t bad_pos = 0;
-    if (!is_valid_utf8((const char*)lbl, &bad_pos)) {
+    if(!is_valid_utf8((const char*)lbl, &bad_pos)) {
         printf("GTK3 Setup utf issue: Invalid UTF-8 at position %zu in %s: ",
                bad_pos, context);
         print_label_bytes(lbl, len);
@@ -3231,7 +3231,7 @@ char sstmp[16];
         if(getSystemFlag(FLAG_HOME_TRIPLE)) {
           strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
         }
-        else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
           strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
         }
       }
@@ -4983,48 +4983,48 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
 static bool is_valid_utf8(const char *s, size_t *error_offset) {
     const unsigned char *p = (const unsigned char *)s;
     size_t i = 0;
-    while (*p) {
-        if (*p < 0x80) {
+    while(*p) {
+        if(*p < 0x80) {
             p++; i++;
-        } else if ((*p & 0xE0) == 0xC0) {
-            if ((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
-                if (error_offset) *error_offset = i;
+        } else if((*p & 0xE0) == 0xC0) {
+            if((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
             p += 2; i += 2;
-        } else if ((*p & 0xF0) == 0xE0) {
-            if ((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
-                if (error_offset) *error_offset = i;
+        } else if((*p & 0xF0) == 0xE0) {
+            if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
             uint32_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
-            if (cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
-                if (error_offset) *error_offset = i;
+            if(cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
-            if (cp == 0xFFFE || cp == 0xFFFF) {
-                if (error_offset) *error_offset = i;
+            if(cp == 0xFFFE || cp == 0xFFFF) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
             p += 3; i += 3;
-        } else if ((*p & 0xF8) == 0xF0) {
-            if ((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
-                if (error_offset) *error_offset = i;
+        } else if((*p & 0xF8) == 0xF0) {
+            if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
             uint32_t cp = ((p[0] & 0x07) << 18) | ((p[1] & 0x3F) << 12) |
                           ((p[2] & 0x3F) << 6) | (p[3] & 0x3F);
-            if (cp < 0x10000 || cp > 0x10FFFF) {
-                if (error_offset) *error_offset = i;
+            if(cp < 0x10000 || cp > 0x10FFFF) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
-            if ((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
-                if (error_offset) *error_offset = i;
+            if((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
+                if(error_offset) *error_offset = i;
                 return false;
             }
             p += 4; i += 4;
         } else {
-            if (error_offset) *error_offset = i;
+            if(error_offset) *error_offset = i;
             return false;
         }
     }
@@ -5032,13 +5032,13 @@ static bool is_valid_utf8(const char *s, size_t *error_offset) {
 }
 
 static bool check_utf_string(const char *widget_name, const char *what, const char *s) {
-    if (!s) return false;
+    if(!s) return false;
     size_t bad_pos = 0;
-    if (!is_valid_utf8(s, &bad_pos)) {
+    if(!is_valid_utf8(s, &bad_pos)) {
         printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n",
                widget_name, what, bad_pos);
         printf("Corrupted string: ");
-        for (const char *p = s; *p; p++) {
+        for(const char *p = s; *p; p++) {
             printf("\\x%02x", (unsigned char)*p);
         }
         printf("\n");
@@ -5050,9 +5050,9 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
 #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 #define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do { \
     GtkWidget *widget = widget_var; \
-    if (!widget) { \
+    if(!widget) { \
         printf("Widget %s is NULL - skipping\n", widget_name); \
-    } else if (!GTK_IS_WIDGET(widget)) { \
+    } else if(!GTK_IS_WIDGET(widget)) { \
         printf("Widget %s (%p) is not a valid GTK widget - skipping\n", \
                widget_name, (void*)widget); \
     } else { \
@@ -5063,20 +5063,20 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
         consistency_found |= check_utf_string(widget_name, "tooltip markup", \
             gtk_widget_get_tooltip_markup(widget)); \
         \
-        if (GTK_IS_BUTTON(widget)) { \
+        if(GTK_IS_BUTTON(widget)) { \
             consistency_found |= check_utf_string(widget_name, "button label", \
                 gtk_button_get_label(GTK_BUTTON(widget))); \
         } \
-        if (GTK_IS_LABEL(widget)) { \
+        if(GTK_IS_LABEL(widget)) { \
             const char *text = gtk_label_get_text(GTK_LABEL(widget)); \
             consistency_found |= check_utf_string(widget_name, "label text", text); \
             const char *markup = gtk_label_get_label(GTK_LABEL(widget)); \
-            if (markup && markup != text) { \
+            if(markup && markup != text) { \
                 consistency_found |= check_utf_string(widget_name, "label markup", markup); \
             } \
         } \
         \
-        if (!consistency_found) { \
+        if(!consistency_found) { \
             if(false) printf("Checking %s: %p - OK\n", widget_name, (void*)widget); \
         } else { \
             abort(); \

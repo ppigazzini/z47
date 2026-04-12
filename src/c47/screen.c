@@ -4154,7 +4154,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
          } else if (temporaryInformation == TI_LR_A2) {
             if(regist == REGISTER_X)
               displayLRtemporaryInformation("y" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, ":" STD_SPACE_4_PER_EM, prefix, "a" STD_SUB_2, prefixPre, prefixPost, &prefixWidth);
-         } 
+         }
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
             bool_t prefixPre = false;

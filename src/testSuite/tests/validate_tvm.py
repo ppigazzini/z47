@@ -9,7 +9,7 @@ Loads test cases from tvm.txt and validates equation accuracy.
 # ======================
 #
 # Usgae: python3 validate_tvm.py tvm.txt
-# 
+#
 # PURPOSE:
 # This script validates that TVM (Time Value of Money) solutions satisfy the
 # fundamental equation to the required precision. It does NOT solve for variables;
@@ -28,7 +28,7 @@ Loads test cases from tvm.txt and validates equation accuracy.
 # TVM FUNDAMENTAL EQUATION:
 # The validator checks that all test cases satisfy:
 #   PV + PMT × annuity_factor × (1 + ip×p) + FV × (1 + ip)^(-N) ≈ 0
-# 
+#
 # Where:
 #   ip = effective interest rate per payment period, calculated from:
 #        - If pp/a = cp/a: ip = (I%/a / 100) / pp/a
@@ -47,7 +47,7 @@ Loads test cases from tvm.txt and validates equation accuracy.
 #
 # RELATIVE ERROR:
 # Relative error = |equation_error| / max(|PV_component|, |PMT_component|, |FV_component|)
-# 
+#
 # For 34-digit output precision with 51-digit internal arithmetic:
 # - Expected relative error: < 1e-32 (allows ~2 guard digits of error)
 # - Relative error of 1e-35 means 35+ correct digits
@@ -69,7 +69,7 @@ Loads test cases from tvm.txt and validates equation accuracy.
 #
 # EXPECTED RESULTS:
 # - Direct calculations (PMT, PV, FV): Should pass with ~35 digits accuracy
-# - Iterative solvers (I%, N): May show reduced accuracy depending on 
+# - Iterative solvers (I%, N): May show reduced accuracy depending on
 #   iteration convergence and termination criteria
 
 
@@ -97,18 +97,18 @@ def calculate_effective_rate(i_percent_per_year, compound_per_year, payment_per_
     """Calculate effective interest rate per payment period."""
     if i_percent_per_year == 0:
         return Decimal(0)
-    
+
     i_annual = Decimal(i_percent_per_year) / Decimal(100)
     c_per_y = Decimal(compound_per_year)
     p_per_y = Decimal(payment_per_year)
-    
+
     if c_per_y == p_per_y:
         ip = i_annual / p_per_y
     else:
         ic = i_annual / c_per_y
         exponent = c_per_y / p_per_y
         ip = (1 + ic) ** exponent - 1
-    
+
     return ip
 
 def validate_tvm(pv, fv, pmt, nper, i_percent, payment_per_year, compound_per_year, begin_mode):
@@ -120,13 +120,13 @@ def validate_tvm(pv, fv, pmt, nper, i_percent, payment_per_year, compound_per_ye
     fv = Decimal(str(fv))
     pmt = Decimal(str(pmt))
     nper = Decimal(str(nper))
-    
+
     # Calculate effective rate
     ip = calculate_effective_rate(i_percent, compound_per_year, payment_per_year)
-    
+
     # Payment timing factor
     p = Decimal(1) if begin_mode else Decimal(0)
-    
+
     # Calculate power term and annuity
     if abs(ip) < 1e-37:
         power_term = Decimal(1)
@@ -134,23 +134,23 @@ def validate_tvm(pv, fv, pmt, nper, i_percent, payment_per_year, compound_per_ye
     else:
         power_term = (1 + ip) ** (-nper)
         annuity_factor = (1 - power_term) / ip
-    
+
     # TVM equation components
     pv_component = pv
     pmt_component = pmt * annuity_factor * (1 + ip * p)
     fv_component = fv * power_term
-    
+
     # Total should equal zero
     total = pv_component + pmt_component + fv_component
-    
+
     # Find largest component for relative error
     max_component = max(abs(pv_component), abs(pmt_component), abs(fv_component))
-    
+
     if max_component == 0:
         relative_error = abs(total)
     else:
         relative_error = abs(total / max_component)
-    
+
     # A relative error of exactly zero is meaningless for 34-digit inputs.
     # Floor at 1e-34 (one ULP) to reflect the actual input precision limit.
     if relative_error == 0:
@@ -174,12 +174,12 @@ def parse_test_case(lines, start_idx, global_begin_mode):
     i = start_idx
     while i < len(lines):
         line = lines[i].strip()
-        
+
         # Skip blank lines and pure comments
         if not line or (line.startswith(';') and 'Func:' not in line):
             i += 1
             continue
-        
+
         # Check for Func: line (start of test)
         if line.startswith('Func: fnTvmVar('):
             # Extract test name from previous comment lines
@@ -188,14 +188,14 @@ def parse_test_case(lines, start_idx, global_begin_mode):
                 if lines[j].strip().startswith(';') and not lines[j].strip().startswith(';;'):
                     test_name = lines[j].strip()[1:].strip()
                     break
-            
+
             # Extract which variable is being solved
             match = re.search(r'fnTvmVar\((\d+)\)', line)
             if not match:
                 i += 1
                 continue
             solved_var = match.group(1)
-            
+
             # Check if there's an In: FL_ENDPMT line right before this Func: line
             # (within 2 lines back)
             test_specific_mode = None
@@ -206,7 +206,7 @@ def parse_test_case(lines, start_idx, global_begin_mode):
                     if flag is not None:
                         test_specific_mode = (flag == 0)  # 0 = BEGIN (True), 1 = END (False)
                         break
-            
+
             # Find In: line(s) and Out: line
             test_data = {
                 'name': test_name,
@@ -214,19 +214,19 @@ def parse_test_case(lines, start_idx, global_begin_mode):
                 'begin_mode': test_specific_mode if test_specific_mode is not None else global_begin_mode,
                 'values': {}
             }
-            
+
             i += 1
             first_in_line = True
             while i < len(lines):
                 line = lines[i].strip()
-                
+
                 # Check for FL_ENDPMT in first In: line after Func:
                 if first_in_line and line.startswith('In:') and 'FL_ENDPMT' in line:
                     flag = extract_endpmt_flag(line)
                     if flag is not None:
                         test_data['begin_mode'] = (flag == 0)
                     first_in_line = False
-                
+
                 # Parse In: lines
                 if line.startswith('In:'):
                     first_in_line = False
@@ -236,7 +236,7 @@ def parse_test_case(lines, start_idx, global_begin_mode):
                         match = re.search(pattern, line)
                         if match:
                             test_data['values'][var_code] = match.group(1)
-                
+
                 # Parse Out: line
                 if line.startswith('Out:'):
                     pattern = f'V{solved_var}=Real:"([^"]+)"'
@@ -245,17 +245,17 @@ def parse_test_case(lines, start_idx, global_begin_mode):
                         test_data['values'][solved_var] = match.group(1)
                     i += 1
                     break
-                
+
                 i += 1
-            
+
             # Check if we have all required values
             if all(k in test_data['values'] for k in ['2034', '2035', '2036', '2037', '2038', '2039', '2043']):
                 return test_data, i
-        
+
         # If we reach here, this line is not a test start - return immediately
         # so load_test_file can process it (e.g., mode-setting lines)
         return None, start_idx + 1
-    
+
     return None, len(lines)
 
 def load_test_file(filename):
@@ -266,14 +266,14 @@ def load_test_file(filename):
     except FileNotFoundError:
         print(f"Error: File '{filename}' not found")
         sys.exit(1)
-    
+
     tests = []
     i = 0
     begin_mode = False  # Track global BEGIN/END state (False = END, True = BEGIN)
-    
+
     while i < len(lines):
         line = lines[i].strip()
-        
+
         # Track FL_ENDPMT state globally from standalone In: lines
         # (lines that have FL_ENDPMT but no V2xxx variables or other data)
         if line.startswith('In:') and 'FL_ENDPMT' in line:
@@ -283,44 +283,44 @@ def load_test_file(filename):
                 flag = extract_endpmt_flag(line)
                 if flag is not None:
                     begin_mode = (flag == 0)  # 0 = BEGIN, 1 = END
-        
+
         test, new_i = parse_test_case(lines, i, begin_mode)
         if test:
             tests.append(test)
             i = new_i
         else:
             i += 1
-    
+
     return tests
 
 def main():
     filename = 'tvm.txt'
     if len(sys.argv) > 1:
         filename = sys.argv[1]
-    
+
     print("=" * 110)
     print(f"TVM VALIDATION TEST - Loading from {filename}")
     print("=" * 110)
     print()
-    
+
     tests = load_test_file(filename)
-    
+
     if not tests:
         print("No tests found in file!")
         return
-    
+
     print(f"Found {len(tests)} test cases")
     print()
     print(f"{'Test Name':<45} {'Mode':>6} {'Error':>15} {'Max Comp':>12} {'Rel Error':>12}")
     print("-" * 110)
-    
+
     passed = 0
     failed = 0
     max_rel_error = Decimal(0)
-    
+
     for test in tests:
         vals = test['values']
-        
+
         try:
             error, max_comp, rel_error = validate_tvm(
                 vals['2039'],  # PV
@@ -332,43 +332,43 @@ def main():
                 vals['2043'],  # cp/a
                 test['begin_mode']
             )
-            
+
             # Success threshold: relative error < 1e-32 (allows ~2 guard digits of error in 34-digit output)
             is_pass = rel_error < Decimal('1e-32')
-            
+
             status = "✓" if is_pass else "✗"
             passed += 1 if is_pass else 0
             failed += 0 if is_pass else 1
-            
+
             mode_str = "BEGIN" if test['begin_mode'] else "END"
             error_str = f"{float(error):.2e}"
             max_comp_str = f"{float(max_comp):.2e}"
             rel_error_str = f"{float(rel_error):.2e}"
-            
+
             # Truncate long test names
             name = test['name'][:43]
-            
+
             print(f"{status} {name:<43} {mode_str:>6} {error_str:>15} {max_comp_str:>12} {rel_error_str:>12}")
-            
+
             max_rel_error = max(max_rel_error, rel_error)
-            
+
         except Exception as e:
             print(f"✗ {test['name']:<43} ERROR: {str(e)}")
             failed += 1
-    
+
     print("-" * 110)
     print()
     print(f"Results: {passed} passed, {failed} failed")
     print(f"Maximum relative error: {float(max_rel_error):.2e}")
     print()
-    
+
     if max_rel_error < Decimal('1e-32'):
         print("✓ Excellent: All results accurate to 32+ digits")
     elif max_rel_error < Decimal('1e-28'):
         print("✓ Good: All results accurate to 28+ digits")
     else:
         print(f"⚠ Warning: Some results show reduced precision")
-    
+
     print("=" * 110)
 
 if __name__ == "__main__":

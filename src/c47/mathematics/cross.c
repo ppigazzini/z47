@@ -28,7 +28,7 @@ void crossCplx(void) {
   real_t xReal, xImag, yReal, yImag;
   real_t rReal, t;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
           || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag))
       return;
 
@@ -129,14 +129,14 @@ static void crossRemaCpma(void) {
 void fnCross(uint16_t unusedButMandatoryParameter) {
   uint32_t tx = getRegisterDataType(REGISTER_X), ty = getRegisterDataType(REGISTER_Y);
 
-  if (tx == dtComplex34Matrix) {
-    if (ty == dtComplex34Matrix) {
-      if (saveLastX()) {
+  if(tx == dtComplex34Matrix) {
+    if(ty == dtComplex34Matrix) {
+      if(saveLastX()) {
         crossCpmaCpma();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else if (ty == dtReal34Matrix) {
-      if (saveLastX()) {
+    } else if(ty == dtReal34Matrix) {
+      if(saveLastX()) {
         crossRemaCpma();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
@@ -144,20 +144,20 @@ void fnCross(uint16_t unusedButMandatoryParameter) {
       goto type_err;
   }
 
-  else if (tx == dtReal34Matrix) {
-    if (ty == dtComplex34Matrix) {
-      if (saveLastX()) {
+  else if(tx == dtReal34Matrix) {
+    if(ty == dtComplex34Matrix) {
+      if(saveLastX()) {
         crossCpmaRema();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
-    } else if (ty == dtReal34Matrix) {
-      if (saveLastX()) {
+    } else if(ty == dtReal34Matrix) {
+      if(saveLastX()) {
         crossRemaRema();
         adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
       }
     } else
       goto type_err;
-  } else if (ty == dtComplex34Matrix || ty == dtReal34Matrix) {
+  } else if(ty == dtComplex34Matrix || ty == dtReal34Matrix) {
 type_err:
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
 

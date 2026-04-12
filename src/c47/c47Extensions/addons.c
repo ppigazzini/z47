@@ -1932,6 +1932,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
 #endif //OPTION_VECTOR || OPTION_ELEC
 }
 
+
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
   if(calcMode == CM_NIM) {

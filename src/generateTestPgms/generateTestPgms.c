@@ -2513,7 +2513,7 @@ int main(int argc, char* argv[]) {
 
     int32_t item;
     for(item=1; item<LAST_ITEM; item++) {
-      switch (indexOfItems[item].status & PTP_STATUS) {
+      switch(indexOfItems[item].status & PTP_STATUS) {
         case PTP_NONE: {
           if(item != ITM_END) {
                                _insertItem(item);

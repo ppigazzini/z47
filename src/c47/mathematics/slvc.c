@@ -175,7 +175,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   }
 
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     if(realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
       convertRealToResultRegister(&x[i].r, REGISTER_X + i, amNone);
     }

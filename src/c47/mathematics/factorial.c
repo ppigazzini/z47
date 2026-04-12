@@ -121,7 +121,7 @@ static void factShoI(void) {
 static void factReal(void) {
   real_t x;
 
-  if (getRegisterAsReal(REGISTER_X, &x)) {
+  if(getRegisterAsReal(REGISTER_X, &x)) {
     WP34S_Factorial(&x, &x, &ctxtReal39);
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
@@ -132,7 +132,7 @@ static void factReal(void) {
 static void factCplx(void) {
   real_t zReal, zImag;
 
-  if (getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     realAdd(&zReal, const_1, &zReal, &ctxtReal39);
     WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
     convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
