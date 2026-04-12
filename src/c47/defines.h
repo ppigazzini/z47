@@ -237,7 +237,7 @@
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
 
-  //Large packages developed for DM42/DM42n. Could arguably work on DM42; was only tested on DM42 when the code was written. Interactions may stop them to work. Simply not tested.
+  //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
@@ -2064,11 +2064,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
-#define min(a,b)                             ((a)<(b)?(a):(b))
-#define max(a,b)                             ((a)>(b)?(a):(b))
-#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
-#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n,d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
-//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n,d) = rmd(n,d) (+ |d| if rmd(n,d)<0)  thus the result is always >= 0
+#define min(a, b)                            ((a)<(b) ? (a) : (b))
+#define max(a, b)                            ((a)>(b) ? (a) : (b))
+#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n, d) = n - d*idiv(n, d)   where idiv is the division with decimal part truncature
+#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n, d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
+//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n, d) = rmd(n, d) (+ |d| if rmd(n, d)<0)  thus the result is always >= 0
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
@@ -2143,21 +2143,21 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define checkHP                              (significantDigits <= 16 && displayStack == 1 && exponentLimit == 99 && Input_Default == ID_DP && (calcMode == CM_NORMAL || calcMode == CM_NIM))
 #define REPLACEFONT                          // Use HP 7-segment font
-#ifdef REPLACEFONT
+#if defined(REPLACEFONT)
   #define DOUBLING_A                         15u // 16=is double; 14 is 1.75*; 12=1.5*; 10=1.25* (8 is the per unit norm horizontal factor, A/B)
   #define DOUBLINGBASE_B                     8u
   #define REDUCT_A1                          4   // Reduction vertical ratio A/B
   #define REDUCT_B1                          4
   #define REDUCT_OFFSET1                     0   // Reduction vertical offset
   #define HPFONT1                            true
-#else
+#else // !REPLACEFONT
   #define DOUBLING_A                         14u // 16=is double; 14 is 1.75*; 12=1.5*; 10=1.25* (8 is the per unit norm horizontal factor, A/B)
   #define DOUBLINGBASE_B                     8u
   #define REDUCT_A1                          3   // Reduction ratio A/B
   #define REDUCT_B1                          4
   #define REDUCT_OFFSET1                     3   // Reduction offset
   #define HPFONT1                            false
-#endif
+#endif // REPLACEFONT
 #define DOUBLING                             (checkHP ? DOUBLING_A     : 6u)
 #define DOUBLINGBASEX                        (checkHP ? DOUBLINGBASE_B : 8u)
 #define REDUCT_A                             (checkHP ? REDUCT_A1      : 3)
@@ -2169,7 +2169,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define GROUPWIDTH_LEFT                      (grpGroupingLeft)
 #define GROUPWIDTH_LEFT1                     ((grpGroupingGr1Left        == 0 ? (uint16_t)grpGroupingLeft : (uint16_t)grpGroupingGr1Left))
 #define GROUPWIDTH_LEFT1X                    (grpGroupingGr1LeftOverflow)
-#define GROUP1_OVFL(digitCount, exp)         ( (grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1  ? grpGroupingGr1LeftOverflow:0 ) )
+#define GROUP1_OVFL(digitCount, exp)         ((grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1 ? grpGroupingGr1LeftOverflow : 0))
 #define GROUPWIDTH_RIGHT                     (grpGroupingRight)
 #define SEPARATOR_(digitCount)               (digitCount >= 0 ? SEPARATOR_LEFT : SEPARATOR_RIGHT)
 #define GROUPWIDTH_(digitCount)              (digitCount >= 0 ? GROUPWIDTH_LEFT : GROUPWIDTH_RIGHT)
@@ -2305,55 +2305,65 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_stop);
 // printf("Duration = %11.6fs\n", stopwatch_stop.tv_sec + stopwatch_stop.tv_nsec /1e9 - stopwatch_start.tv_sec - stopwatch_start.tv_nsec /1e9);
 
-#define TEST_REG(r, comment)                                                                                       \
-  do {                                                                                                             \
-    if(globalRegister[r].dataPointer >= 500) {                                                                     \
-      uint32_t a, b;                                                                                               \
-      a = 1;                                                                                                       \
-      b = 0;                                                                                                       \
-      printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-      globalRegister[r].dataType = a/b;                                                                            \
-    }                                                                                                              \
-    else {                                                                                                         \
-      printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-    }                                                                                                              \
-  } while(0)
+#if defined(PC_BUILD)
+  #define TEST_REG(r, comment)                                                                                       \
+    do {                                                                                                             \
+      if(globalRegister[r].dataPointer >= 500) {                                                                     \
+        uint32_t a, b;                                                                                               \
+        a = 1;                                                                                                       \
+        b = 0;                                                                                                       \
+        printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+        globalRegister[r].dataType = a/b;                                                                            \
+      }                                                                                                              \
+      else {                                                                                                         \
+        printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+      }                                                                                                              \
+    } while(0)
 
-#define PRINT_LI(lint, comment)                            \
-  do {                                                     \
-    int i;                                                 \
-    printf("\n%s", comment);                               \
-    if((lint)->_mp_size == 0) printf(" lint=0");           \
-    else if((lint)->_mp_size < 0) printf(" lint=-");       \
-    else printf(" lint=+");                                \
-    for(i=0; i<abs((lint)->_mp_size); i++) {               \
-      printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
-    }                                                      \
-    printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
-    printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
-    printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size));   \
-    printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
-    printf(" PCaddress=%p", (lint)->_mp_d);                \
-    printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d));  \
-    printf("\n");                                          \
-  } while(0)
+  #define PRINT_LI(lint, comment)                            \
+    do {                                                     \
+      int i;                                                 \
+      printf("\n%s", comment);                               \
+      if((lint)->_mp_size == 0) {                            \
+        printf(" lint=0");                                   \
+      }                                                      \
+      else if((lint)->_mp_size < 0) {                        \
+        printf(" lint=-");                                   \
+      }                                                      \
+      else printf(" lint=+");                                \
+      for(i=0; i<abs((lint)->_mp_size); i++) {               \
+        printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
+      }                                                      \
+      printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
+      printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
+      printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size));   \
+      printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
+      printf(" PCaddress=%p", (lint)->_mp_d);                \
+      printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d));  \
+      printf("\n");                                          \
+    } while(0)
 
 
-#define PRINT_LI_REG(reg, comment)                                                                   \
-  do {                                                                                               \
-    int i;                                                                                           \
-    mp_limb_t *p;                                                                                    \
-    printf("\n%s", comment);                                                                         \
-    if(getRegisterLongIntegerSign(reg) == LI_ZERO) printf("lint=0");                                 \
-    else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
-    else printf("lint=+");                                                                           \
-    for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
-      printf("%lu ", *p);                                                                            \
-    }                                                                                                \
-    printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg));                                         \
-    printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
-    printf("\n");                                                                                    \
-  } while(0)
+  #define PRINT_LI_REG(reg, comment)                                                                   \
+    do {                                                                                               \
+      int i;                                                                                           \
+      mp_limb_t *p;                                                                                    \
+      printf("\n%s", comment);                                                                         \
+      if(getRegisterLongIntegerSign(reg) == LI_ZERO) {                                                 \
+        printf("lint=0");                                                                              \
+      }                                                                                                \
+      else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
+      else {                                                                                           \
+        printf("lint=+");                                                                              \
+      }                                                                                                \
+      for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
+        printf("%lu ", *p);                                                                            \
+      }                                                                                                \
+      printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg));                                         \
+      printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
+      printf("\n");                                                                                    \
+    } while(0)
+#endif // PC_BUILD
 
 #if defined(DMCP_BUILD)
   /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */

@@ -30,15 +30,15 @@ TO_QSPI static const struct {
 
 
 } configSettings[] = {
-                /*                         gapl                     gprl  gpr1x  gpr1  gprr     gapr                                   */
-                /*   24  D M Y  Gregorian  GAP char                 GRP   GRPx   GRP1  FP.GRP   FP.GAP char               New Radix    */
-    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
-    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /*  1 Oct 1949 */
-    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0, ITM_WOY_ISO},    /* 15 Oct 1582 */
-    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_US},    /* 14 Sep 1752 */
-    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_US},    /*  1 Jan 1873 */
-    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
-    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
+                /*                           gapl                     gprl  gpr1x  gpr1  gprr     gapr                                   */
+                /*   24  D  M  Y  Gregorian  GAP char                 GRP   GRPx   GRP1  FP.GRP   FP.GAP char               New Radix    */
+    [CFG_DFLT  ] = {  1, 0, 0, 1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0, ITM_WOY_ISO},   /* 14 Sep 1752 */
+    [CFG_CHINA ] = {  1, 0, 0, 1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_ISO},   /*  1 Oct 1949 */
+    [CFG_EUROPE] = {  1, 1, 0, 0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0, ITM_WOY_ISO},   /* 15 Oct 1582 */
+    [CFG_INDIA ] = {  1, 1, 0, 0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_US},    /* 14 Sep 1752 */
+    [CFG_JAPAN ] = {  1, 0, 0, 1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_US},    /*  1 Jan 1873 */
+    [CFG_UK    ] = {  0, 1, 0, 0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_ISO},   /* 14 Sep 1752 */
+    [CFG_USA   ] = {  0, 0, 1, 0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
 };
 
 
@@ -294,7 +294,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM,32768+_gapr,    xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_SPACE_4_PER_EM, 32768+_gapr,   xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+ITM_WDOT,       49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
 
@@ -315,28 +315,28 @@ void Sett(int16_t grp) {
 
       #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
         if(Settings[ptr*(_numberOfGrps+2) + 0] >= 101 && Settings[ptr*(_numberOfGrps+2) + 0] <= 121) {
-          printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ",ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ", ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
         }
       #endif //PC_BUILD
       switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType
-        case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
-        case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits
-        case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits
-        case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
-        case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
-        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
-        case HIDE                 : {exponentHideLimit  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // HIDE
-        case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK
-        case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK
-        case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM
-        case IPGRP                : {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP
-        case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
-        case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
-        case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
-        case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
-        case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
+        case InputDefaultDataType : fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // InputDefaultDataType
+        case SigFigNumberOfDigits : fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SigFigNumberOfDigits
+        case AllNumberOfDigits    : fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // AllNumberOfDigits
+        case FixNumberOfDigits    : fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FixNumberOfDigits
+        case RNG                  : exponentLimit              = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // RNG
+        case SDIGS                : significantDigits          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SDIGS
+        case FDIGS                : fractionDigits             = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FDIGS
+        case HIDE                 : exponentHideLimit          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // HIDE
+        case DSTACK               : displayStack               = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DSTACK
+        case CACHEDDSTACK         : cachedDisplayStack         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // CACHEDDSTACK
+        case ADM                  : currentAngularMode         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // ADM
+        case IPGRP                : grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP
+        case FPGRP                : grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FPGRP
+        case IPGRP1               : grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1
+        case IPGRP1x              : grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1x
+        case DenMaX               : denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DenMaX
+        case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIKnown
+        case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIChanges
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
@@ -353,15 +353,15 @@ void Sett(int16_t grp) {
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
-              printf("Sett1A Register %d = ",Settings[ptr*(_numberOfGrps+2) + 0]);
-              printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0]," : ","\n");
+              printf("Sett1A Register %d = ", Settings[ptr*(_numberOfGrps+2) + 0]);
+              printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0], " : ", "\n");
             #endif //PC_BUILD
             break;
           }
 
         case 2 : {
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
-              printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+              printf("\nSett2:%5d:%5d\n", ptr, Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             #endif //PC_BUILD
             SetSetting(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             break;
@@ -369,7 +369,7 @@ void Sett(int16_t grp) {
 
         case 3: {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
-            printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            printf("\nSett3:%5d:%5d", ptr, Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
           forceSystemFlag(Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
           break;
@@ -377,7 +377,7 @@ void Sett(int16_t grp) {
 
         case 4: {
           #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
-            printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            printf("\nSett4:%5d:%5d", ptr, Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
           fnSetGapChar(Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           }
@@ -395,7 +395,7 @@ void Sett(int16_t grp) {
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
     #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
       getDateString(lastStateFileOpened);
-      strcat(lastStateFileOpened,": HP35 defaults");
+      strcat(lastStateFileOpened, ": HP35 defaults");
       fnKeyExit(0);                            //Clear pending key input
       fnClrMod(0);                             //Get out of NIM or BASE
       fnStoreConfig(35);                       //Store current config into R35
@@ -419,7 +419,7 @@ void Sett(int16_t grp) {
     fnSquare(0);
     resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
-    strcat(lastStateFileOpened,": Jaco defaults");
+    strcat(lastStateFileOpened, ": Jaco defaults");
 
     Sett(_JM);
 
@@ -450,7 +450,7 @@ void Sett(int16_t grp) {
   #if !defined(SAVE_SPACE_DM42_24_PROFILES)
     resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
-    strcat(lastStateFileOpened,": RJvM defaults");
+    strcat(lastStateFileOpened, ": RJvM defaults");
 
     Sett(_RJ);
 
@@ -468,7 +468,7 @@ void Sett(int16_t grp) {
       fnKeyExit(0);
       addItemToBuffer(ITM_EXIT1);
       getDateString(lastStateFileOpened);
-      strcat(lastStateFileOpened,": C47 defaults");
+      strcat(lastStateFileOpened, ": C47 defaults");
 
       Sett(_C47);
 
@@ -878,10 +878,10 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 //                         1101
   #define STATE_exfr_abc 0b1110  //14
 //                         1111
-  #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8:0) +  \
-                         (getSystemFlag(FLAG_IRFRQ ) ? 4:0) +  \
-                         (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
-                         (getSystemFlag(FLAG_FRACT)  ? 1:0))
+  #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8 : 0) +  \
+                         (getSystemFlag(FLAG_IRFRQ ) ? 4 : 0) +  \
+                         (getSystemFlag(FLAG_PROPFR) ? 2 : 0) +  \
+                         (getSystemFlag(FLAG_FRACT)  ? 1 : 0))
   uint8_t state = STATE;
   //printf("%u ",state);
 
@@ -975,7 +975,9 @@ void fnConfirmationYes(uint16_t unusedButMandatoryParameter) {
 
 void fnRange(uint16_t R) {
   exponentLimit = R;
-  if(exponentLimit < 99) exponentLimit = 99;
+  if(exponentLimit < 99) {
+    exponentLimit = 99;
+  }
 }
 
 
@@ -1186,7 +1188,7 @@ void restoreStats(void){
   if(lrSelection !=65535) {
     lrSelection = lrSelectionHistobackup;
   }
-  strcpy(statMx,"STATS");
+  strcpy(statMx, "STATS");
   lrSelectionHistobackup = 65535;
   lrChosenHistobackup = 65535;
   calcSigma(0);
@@ -1200,60 +1202,60 @@ void restoreStats(void){
     } numberstr;
 
     TO_QSPI const numberstr indexOfStrings[] = {
-      {0,10, "Reg 11,12 & 13 have: The 3 cubes = 3."},
-      {1,11, "569936821221962380720"},
-      {1,12, "-569936821113563493509"},
-      {1,13, "-472715493453327032"},
+      {0, 10, "Reg 11, 12 & 13 have: The 3 cubes = 3."},
+      {1, 11, "569936821221962380720"},
+      {1, 12, "-569936821113563493509"},
+      {1, 13, "-472715493453327032"},
 
-      {0,14, "Reg 15, 16 & 17 have: The 3 cubes = 42."},
-      {1,15, "-80538738812075974"},
-      {1,16, "80435758145817515"},
-      {1,17, "12602123297335631"},
+      {0, 14, "Reg 15, 16 & 17 have: The 3 cubes = 42."},
+      {1, 15, "-80538738812075974"},
+      {1, 16, "80435758145817515"},
+      {1, 17, "12602123297335631"},
 
-      {0,18, "37 digits of pi, Reg19 / Reg20."},
-      {1,19, "2646693125139304345"},
-      {1,20, "842468587426513207"},
+      {0, 18, "37 digits of pi, Reg19 / Reg20."},
+      {1, 19, "2646693125139304345"},
+      {1, 20, "842468587426513207"},
 
-      {0,21, "Primes: Carol"},
-      {1,22, "18014398241046527"},
+      {0, 21, "Primes: Carol"},
+      {1, 22, "18014398241046527"},
 
-      {0,23, "Primes: Kynea"},
-      {1,24, "18446744082299486207"},
+      {0, 23, "Primes: Kynea"},
+      {1, 24, "18446744082299486207"},
 
-      {0,25, "Primes: repunit"},
-      {1,26, "7369130657357778596659"},
+      {0, 25, "Primes: repunit"},
+      {1, 26, "7369130657357778596659"},
 
-      {0,27, "Primes: Woodal"},
-      {1,28, "195845982777569926302400511"},
+      {0, 27, "Primes: Woodal"},
+      {1, 28, "195845982777569926302400511"},
 
-      {0,29, "Primes: Woodal"},
-      {1,30, "4776913109852041418248056622882488319"},
+      {0, 29, "Primes: Woodal"},
+      {1, 30, "4776913109852041418248056622882488319"},
 
-      {0,31, "Primes: Woodal"},
-      {1,32, "225251798594466661409915431774713195745814267044878909733007331390393510002687"},
+      {0, 31, "Primes: Woodal"},
+      {1, 32, "225251798594466661409915431774713195745814267044878909733007331390393510002687"},
 
-      {0,33, "pi.(10^100) (101 digits) longinteger"},
-      {1,34, "31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170680"},
+      {0, 33, "pi.(10^100) (101 digits) longinteger"},
+      {1, 34, "31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170680"},
 
       //35 reserved for HP35/C47 swaps config save
 
-      {0,36, "100 primes' product 2x3x...x541"},
-      {1,37, "4711930799906184953162487834760260422020574773409675520188634839616415335845034221205289256705544681972439104097777157991804380284218315038719444943990492579030720635990538452312528339864352999310398481791730017201031090"},
+      {0, 36, "100 primes' product 2x3x...x541"},
+      {1, 37, "4711930799906184953162487834760260422020574773409675520188634839616415335845034221205289256705544681972439104097777157991804380284218315038719444943990492579030720635990538452312528339864352999310398481791730017201031090"},
 
-      {0,38, "Heart:16" STD_CROSS "(sin(t)^3)+i" STD_CROSS "(13" STD_CROSS "cos(t)-5" STD_CROSS "cos(2" STD_CROSS "t)-2" STD_CROSS "cos(3" STD_CROSS "t)-cos(4" STD_CROSS "t))"},
+      {0, 38, "Heart:16" STD_CROSS "(sin(t)^3)+i" STD_CROSS "(13" STD_CROSS "cos(t)-5" STD_CROSS "cos(2" STD_CROSS "t)-2" STD_CROSS "cos(3" STD_CROSS "t)-cos(4" STD_CROSS "t))"},
 
 //temporary test values
 
-//      {0,39, "Carmichael number 1"},
-//      {1,40, "2090544338452850336677669058614524913253916538940295276440923713893889746693477362455627182089820344446945934218698530379666521"},
+//      {0, 39, "Carmichael number 1"},
+//      {1, 40, "2090544338452850336677669058614524913253916538940295276440923713893889746693477362455627182089820344446945934218698530379666521"},
 //             // m = 117278425593238765610521319698123670218170
 //
-//      {0,41, "Carmichael number 2"},
-//      {1,42, "1114914577280124301342981138310574878929503042734089"},
+//      {0, 41, "Carmichael number 2"},
+//      {1, 42, "1114914577280124301342981138310574878929503042734089"},
 //             // m = 9510693751439811
 //
-//      {0,43, "Carmichael number 3"},
-//      {1,44, "3215031751"},
+//      {0, 43, "Carmichael number 3"},
+//      {1, 44, "3215031751"},
 //            // 151 × 21291601
 //            // 151 × 751 × 28351
 
@@ -1264,28 +1266,28 @@ void restoreStats(void){
 
 
     TO_QSPI const numberstr indexOfMsgs[] = {
-      {0,USER_C47,      "C47: Classic single shift (DM42/DM42n base)"  },
-      {0,USER_R47f_g,   "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g },
-      {0,USER_R47bk_fg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
-      {0,USER_R47fg_bk, "R47v1 L.Shift is " STD_fg  ", R.Shift is " STD_BOX},
-      {0,USER_R47fg_g,  "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
-      {0,USER_DM42,    "DM42: Final Compatibility layout"                },
-      {0,USER_HRESET,  "HOME menu reset to default"                      },
-      {0,USER_PRESET,  "P.FN menu reset to default"                      },
-      {0,USER_KRESET,  "Key assignments cleaned"                         },
-      {0,USER_MRESET,  "MyMenu menu cleaned"                             },
-      {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,ITM_RIBBON_ENG  , "MyMenu primary F-key engineering ribbon"     },
-      {0,ITM_RIBBON_FIN  , "MyMenu primary F-key financial ribbon"       },
-      {0,ITM_RIBBON_FIN2 , "MyMenu primary F-key financial ribbon 2"     },
-      {0,ITM_RIBBON_CPX  , "MyMenu primary F-key complex ribbon"         },
-      {0,ITM_RIBBON_SAV  , "MyMenu primary F-key save/load ribbon"       },
-      {0,ITM_RIBBON_SAV2 , "MyMenu primary F-key save/load ribbon 2"     },
-      {0,ITM_RIBBON_C47  , "MyMenu primary C47 F-key ribbon"             },
-      {0,ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"        },
-      {0,ITM_RIBBON_R47  , "MyMenu primary R47 F-key ribbon"             },
-      {0,ITM_RIBBON_R47PL, "MyMenu primary R47 Plus F-key ribbon"        },
-      {0,100,"Error List"}
+      {0, USER_C47,         "C47: Classic single shift (DM42/DM42n base)"      },
+      {0, USER_R47f_g,      "R47v0 L.Shift is " STD_f   ", R.Shift is " STD_g  },
+      {0, USER_R47bk_fg,    "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
+      {0, USER_R47fg_bk,    "R47v1 L.Shift is " STD_fg  ", R.Shift is " STD_BOX},
+      {0, USER_R47fg_g,     "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
+      {0, USER_DM42,        "DM42: Final Compatibility layout"                 },
+      {0, USER_HRESET,      "HOME menu reset to default"                       },
+      {0, USER_PRESET,      "P.FN menu reset to default"                       },
+      {0, USER_KRESET,      "Key assignments cleaned"                          },
+      {0, USER_MRESET,      "MyMenu menu cleaned"                              },
+      {0, USER_ARESET,      "My" STD_alpha " menu cleaned"                     },
+      {0, ITM_RIBBON_ENG,   "MyMenu primary F-key engineering ribbon"          },
+      {0, ITM_RIBBON_FIN,   "MyMenu primary F-key financial ribbon"            },
+      {0, ITM_RIBBON_FIN2,  "MyMenu primary F-key financial ribbon 2"          },
+      {0, ITM_RIBBON_CPX,   "MyMenu primary F-key complex ribbon"              },
+      {0, ITM_RIBBON_SAV,   "MyMenu primary F-key save/load ribbon"            },
+      {0, ITM_RIBBON_SAV2,  "MyMenu primary F-key save/load ribbon 2"          },
+      {0, ITM_RIBBON_C47,   "MyMenu primary C47 F-key ribbon"                  },
+      {0, ITM_RIBBON_C47PL, "MyMenu primary C47 Plus F-key ribbon"             },
+      {0, ITM_RIBBON_R47,   "MyMenu primary R47 F-key ribbon"                  },
+      {0, ITM_RIBBON_R47PL, "MyMenu primary R47 Plus F-key ribbon"             },
+      {0, 100,              "Error List"                                       }
     };
 
 
@@ -1823,7 +1825,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
 
 
-#ifdef DMCP_BUILD
+#if defined(DMCP_BUILD)
 
   void dmcpResetAutoOff(void) {
     // Key is ready -> clear auto off timer
@@ -1846,16 +1848,16 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         loop = 0;
       }
       else if(tmpVbat > vbatVIntegrated) {
-        #ifndef MONITOR_VOLTAGE_INTEGRATOR
+        #if !defined(MONITOR_VOLTAGE_INTEGRATOR)
           //During monitoring do not force a reset to normal and high voltage
           if(tmpVbat > 2900) {                                                           //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
           }
           else
-        #endif
+        #endif // !MONITOR_VOLTAGE_INTEGRATOR
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
-          vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
+          vbatVIntegrated = vbatVIntegrated + max(1, ((tmpVbat - vbatVIntegrated) >> 4)); //   (2500 - 2350) >> 4 = 9 increase every minute
         }
       }
     }
@@ -1864,12 +1866,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       loop = 0;
     }
 
-    #ifdef MONITOR_VOLTAGE_INTEGRATOR
+    #if defined(MONITOR_VOLTAGE_INTEGRATOR)
       //Monitoring for voltage integrator
       if(minutePulse) {
         char aaa[120];
-        sprintf(aaa,"         V=%i VI=%i loop=%i cnt=%i   ",tmpVbat, vbatVIntegrated, loop++, loop2++);
-        print_numberstr(aaa,true);
+        sprintf(aaa, "         V=%i VI=%i loop=%i cnt=%i   ", tmpVbat, vbatVIntegrated, loop++, loop2++);
+        print_numberstr(aaa, true);
         convertDoubleToReal34RegisterPush((double)vbatVIntegrated, REGISTER_X);
         uint8_t min = rtc_read_min();
         convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
@@ -1877,7 +1879,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         fnDrop(NOPARAM);
         fnDrop(NOPARAM);
       }
-    #endif
+    #endif // MONITOR_VOLTAGE_INTEGRATOR
 
     return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
@@ -1920,7 +1922,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       }
     }
   }
-#endif //DMCP_BUILD
+#endif // DMCP_BUILD
 
 /* not used anymore, replaced by DMCP and ActUSB
 */
@@ -1988,11 +1990,12 @@ void fnKeysManagement(uint16_t choice) {
           setUserKeyArgument(Norm_Key_00_key * 6 , Norm_Key_00.funcParam);
           fnRefreshState();
           fnSetFlag(FLAG_USER);
-        } else {
+        }
+        else {
           Norm_Key_00.used = false;
           displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.",NULL, NULL);
+            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
 //      }
@@ -2009,11 +2012,12 @@ void fnKeysManagement(uint16_t choice) {
         }
         fnRefreshState();
         fnClearFlag(FLAG_USER);
-      } else {
+      }
+      else {
         Norm_Key_00.used = false;
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.",NULL, NULL);
+          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       break;

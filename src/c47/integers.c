@@ -115,7 +115,7 @@ static int32_t WP34S_calc_overflow(uint64_t xv, uint64_t yv, int32_t neg) {
       // C doesn't expose the processor's status bits to us so we
       // break the addition down so we don't lose the overflow.
       u = (yv & (shortIntegerSignBit-1)) + (xv & (shortIntegerSignBit-1));
-      i = ((u & shortIntegerSignBit)?1:0) + ((xv & shortIntegerSignBit)?1:0) + ((yv & shortIntegerSignBit)?1:0);
+      i = ((u & shortIntegerSignBit) ? 1 : 0) + ((xv & shortIntegerSignBit) ? 1 : 0) + ((yv & shortIntegerSignBit) ? 1 : 0);
       if(i > 1) {
         break;
       }
@@ -240,8 +240,8 @@ uint64_t WP34S_intAdd(uint64_t y, uint64_t x) {
   }
 
   if(shortIntegerMode == SIM_SIGNMT) {
-    const uint64_t x2 = (x & shortIntegerSignBit)?-(x ^ shortIntegerSignBit):x;
-    const uint64_t y2 = (y & shortIntegerSignBit)?-(y ^ shortIntegerSignBit):y;
+    const uint64_t x2 = (x & shortIntegerSignBit) ? -(x ^ shortIntegerSignBit) : x;
+    const uint64_t y2 = (y & shortIntegerSignBit) ? -(y ^ shortIntegerSignBit) : y;
 
     if(overflow) {
       setSystemFlag(FLAG_CARRY);
@@ -619,7 +619,7 @@ uint64_t WP34S_intPower(uint64_t b, uint64_t e) {
   //  return 0;
   //}
 
-  powerSign = (baseSign && (exponent & 1))?1:0; // Determine the sign of the result
+  powerSign = (baseSign && (exponent & 1)); // Determine the sign of the result
   return WP34S_build_value(WP34S_int_power_helper(base, exponent, 0), powerSign);
 }
 
@@ -752,9 +752,9 @@ uint64_t WP34S_intLog10(uint64_t x) {
 
 /* Calculate (a . b) mod c taking care to avoid overflow */
 uint64_t WP34S_mulmod(const uint64_t a, uint64_t b, const uint64_t c) {
-#ifdef __SIZEOF_INT128__
+#if defined(__SIZEOF_INT128__)
   __uint128_t x = a * (__uint128_t)b;
-#else
+#else // !__SIZEOF_INT128__
   uint64_t x = 0, y = a % c;
   while(b > 0) {
     if((b & 1)) {
@@ -763,7 +763,7 @@ uint64_t WP34S_mulmod(const uint64_t a, uint64_t b, const uint64_t c) {
     y = (y + y) % c;
     b /= 2;
   }
-#endif
+#endif // __SIZEOF_INT128__
   return x % c;
 }
 
