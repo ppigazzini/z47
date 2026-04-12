@@ -1821,8 +1821,8 @@ bool_t maxfgLines(int16_t y) {
 
   void greyRect(int16_t x, int16_t y, int16_t dx, int16_t dy) {
     int16_t col, row;
-    for (row=y; row<dy+y; row++) {
-      for (col=x+mod(x+row,2); col<dx+x; col+=2) {
+    for(row=y; row<dy+y; row++) {
+      for(col=x+mod(x+row,2); col<dx+x; col+=2) {
         setBlackPixel(col, row);
       }
     }
@@ -2325,26 +2325,32 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                         break;
 
-      case ITM_YY_DFLT: *showValue = lastCenturyHighUsed & 0x3FFF;
+      case ITM_YY_DFLT: *showValue = lastCenturyHighUsed & (YY_MASK_TRACKING - 1);
                         showText[0] = 0;
-                        if(lastCenturyHighUsed & 0x8000) {
+                        if(lastCenturyHighUsed & YY_MASK_OFF) {
                           *showValue = NOVAL;
                           strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
                         }
-                        if(followYY()) {
+                        if(lastCenturyHighUsed & YY_MASK_TRACKING) {
                           strcat(showText,STD_SPACE_3_PER_EM STD_SUB_t);
                         }
                         break;
 
-      case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) stringCopy(showText + stringByteLength(showText), "\1\1");
-                        else stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
+      case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) {
+                          stringCopy(showText + stringByteLength(showText), "\1\1");
+                        } else {
+                          stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
+                        }
                         *showValue = NOVAL;
                         break;
       case ITM_GAP_RX : stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRadix].itemSoftmenuName);  //  gapCharRadix);
                         *showValue = NOVAL;
                         break;
-      case ITM_GAP_R  : if(gapItemRight == ITM_NULL) stringCopy(showText + stringByteLength(showText), "\1\1");
-                        else stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRight].itemSoftmenuName);  //  gapCharRight);
+      case ITM_GAP_R  : if(gapItemRight == ITM_NULL) {
+                          stringCopy(showText + stringByteLength(showText), "\1\1");
+                        } else {
+                          stringCopy(showText + stringByteLength(showText), indexOfItems[gapItemRight].itemSoftmenuName);  //  gapCharRight);
+                        }
                         *showValue = NOVAL;
                         break;
       case ITM_GRP_L  : *showValue = grpGroupingLeft;
@@ -2383,7 +2389,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
-  switch (itemNr) {
+  switch(itemNr) {
 
     #ifdef SAVE_SPACE_DM42_12ORTHO
       case -MNU_ORTHOG:

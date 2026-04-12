@@ -85,7 +85,7 @@ hash (register const char *str, register size_t len)
     };
   register unsigned int hval = 0;
 
-  switch (len)
+  switch(len)
     {
       default:
         hval += asso_values[(unsigned char)str[2]];
@@ -146,15 +146,15 @@ TO_QSPI static const struct reservedRegister wordlist[] =
 const struct reservedRegister *
 lookupReservedVariableName (register const char *str, register size_t len)
 {
-  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
+  if(len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
       register unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE)
+      if(key <= MAX_HASH_VALUE)
         {
           register const char *s = wordlist[key].name;
 
-          if (s && *str == *s && !strcmp (str + 1, s + 1))
+          if(s && *str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];
         }
     }

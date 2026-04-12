@@ -77,7 +77,7 @@ static void tenPowShoI(void) {
 void intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realContext)) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realIsSpecial(&x) && !getSystemFlag(FLAG_SPCRES)) {
@@ -100,7 +100,7 @@ static void tenPowReal(void) {
 void intPowCplx(const real_t *lnBase) {
   real_t a, b, factor;
 
-  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b))
     return;
 
   // ln(10) * (a + bi) --> (a + bi)

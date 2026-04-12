@@ -46,8 +46,8 @@ static void imagPartReal(void) {
  * \return void
  ***********************************************/
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter) {
-  if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if (saveLastX())
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    if(saveLastX())
       imagPartCxma();
   } else
     processRealComplexMonadicFunction(&imagPartReal, &imagPartCplx);

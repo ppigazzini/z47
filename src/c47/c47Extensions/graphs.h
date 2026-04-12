@@ -16,7 +16,7 @@
 #define statZoomRangeLo -3
 #define zoomRangeHi +16
 #define zoomRangeLo -16
-#define zoomOverride 18 
+#define zoomOverride 18
 
 
 //Graph functions

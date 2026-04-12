@@ -51,7 +51,7 @@ static void doParallelComplex(void) {
   real_t yImag, xImag, productImag, sumImag;
 
   // y || x = xy / (x + y)
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
           || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag))
       return;
 

@@ -20,7 +20,7 @@ void fnSint(uint16_t unusedButMandatoryParameter) {
 
   if(!saveLastX() || !getRegisterAsShortInt(REGISTER_X, &sign, &val, &overflow, &frac))
     return;
-  if (getRegisterDataType(REGISTER_X) != dtShortInteger)
+  if(getRegisterDataType(REGISTER_X) != dtShortInteger)
     convertUInt64ToShortIntegerRegister(sign, val, 10, REGISTER_X);
   forceSystemFlag(FLAG_CARRY, frac);
   forceSystemFlag(FLAG_OVERFLOW, overflow);

@@ -122,7 +122,7 @@ void drawBattery(uint16_t voltage);
   static void showRealComplexResult(void) {
     if(!(SBARUPD_ComplexResult)) return;
     int32_t x = X_REAL_COMPLEX;
-    if (didSystemFlagChange(FLAG_CPXRES)) {
+    if(didSystemFlagChange(FLAG_CPXRES)) {
       x = showGlyph(getSystemFlag(FLAG_CPXRES) ? STD_COMPLEX_C : STD_REAL_R, &standardFont, x, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
       lcd_fill_rect(x, 0, (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x, 20, LCD_SET_VALUE);
     }
@@ -132,7 +132,7 @@ void drawBattery(uint16_t voltage);
   static void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
     int32_t x =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
-    if (didSystemFlagChange(FLAG_POLAR)) {
+    if(didSystemFlagChange(FLAG_POLAR)) {
       x = showGlyph(getSystemFlag(FLAG_POLAR) ? STD_SUN : STD_RIGHT_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
       lcd_fill_rect(x, 0, X_ANGULAR_MODE - x, 20, LCD_SET_VALUE);
     }
@@ -386,7 +386,7 @@ void drawBattery(uint16_t voltage);
     bool_t aa = didSystemFlagChange(FLAG_OVERFLOW);    //note, separately to prevent compiler short circuiting second term
     bool_t bb = didSystemFlagChange(FLAG_CARRY);
     if(!(SBARUPD_OCCarryMode)) return false;
-    if (aa || bb || reInstateOCModeDisplay) {
+    if(aa || bb || reInstateOCModeDisplay) {
       reInstateOCModeDisplay = false;
       showStringAndClear(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, 6 /*X_ALPHA_MODE - X_OVERFLOW_CARRY*/, 20, vmNormal, true, true);
       if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
@@ -453,27 +453,27 @@ void drawBattery(uint16_t voltage);
           }
         }
 
-        if (getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
-          if (alphaCase == AC_UPPER) {
+        if(getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
+          if(alphaCase == AC_UPPER) {
                                                                         status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
-          } else if (alphaCase == AC_LOWER) {
+          } else if(alphaCase == AC_LOWER) {
                                                                         status =  6 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
           }
-        } else if (alphaCase == AC_LOWER && shiftF) {
+        } else if(alphaCase == AC_LOWER && shiftF) {
                                                                         status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0); //A
-        } else if (alphaCase == AC_UPPER && shiftF) {
+        } else if(alphaCase == AC_UPPER && shiftF) {
                                                                         status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0); //a
         } else { //at this point shiftF is false
-          if (alphaCase == AC_UPPER) { //UPPER
-            if (shiftG) {
+          if(alphaCase == AC_UPPER) { //UPPER
+            if(shiftG) {
                                                                         status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
-            } else if (!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) {
+            } else if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) {
                                                                         status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
             }
-          } else if (alphaCase == AC_LOWER) { //LOWER
-            if (shiftG) {
+          } else if(alphaCase == AC_LOWER) { //LOWER
+            if(shiftG) {
                                                                         status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
-            } else if (!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) {
+            } else if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) {
                                                                         status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1 : 0);
             }
           }

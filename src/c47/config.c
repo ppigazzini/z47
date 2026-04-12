@@ -318,7 +318,7 @@ void Sett(int16_t grp) {
           printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ",ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
         }
       #endif //PC_BUILD
-      switch (Settings[ptr*(_numberOfGrps+2) + 0]) {
+      switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
         case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType
         case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
         case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits

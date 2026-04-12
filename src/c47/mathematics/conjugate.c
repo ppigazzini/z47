@@ -12,7 +12,7 @@ static void conjRema(void) {
 
   convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
   if(getSystemFlag(FLAG_SPCRES))
-    for (uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i)
+    for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i)
       real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
   convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
 }
