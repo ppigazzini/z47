@@ -2999,7 +2999,7 @@ static void dispM(uint16_t regist, char * prefix) {
     real34Matrix_t matrix;
     linkToRealMatrixRegister(regist, &matrix);
     showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !regXp);
-    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
+    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString, prefix, prefixWidth, lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
     }
@@ -3014,7 +3014,7 @@ static void dispM(uint16_t regist, char * prefix) {
     complex34Matrix_t matrix;
     linkToComplexMatrixRegister(regist, &matrix);
     showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar, !regXp);
-    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
+    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n", tmpString, prefix, prefixWidth, lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
     }
