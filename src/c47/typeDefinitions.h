@@ -11,7 +11,7 @@ typedef bool bool_t;
 
 
 /**
- * \union multiplyDivide_t
+ * \enum multiplyDivide_t
    * Used for unit conversions.
    */
 typedef enum {
@@ -19,6 +19,16 @@ typedef enum {
   divide = 0x8000,
   invert = 0x4000
 } multiplyDivide_t;
+
+
+/**
+ * \enum trigType_t
+   * Used for trig functions.
+   */
+typedef enum {
+  trigSin,
+  trigCos
+} trigType_t;
 
 
 /**
