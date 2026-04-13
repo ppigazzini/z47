@@ -144,8 +144,8 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   uInt32ToReal(denMax, &factorOfOneOnDenMax);
 
   //check if the fraction is lower than 0.5/DMX
-  realDivide(const_1on2,&factorOfOneOnDenMax,&checkPoint,&ctxtReal39);
-  if(realCompareLessThan(&temp0,&checkPoint)) {
+  realDivide(const_1on2, &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
+  if(realCompareLessThan(&temp0, &checkPoint)) {
      *numer = 0;
      if(getSystemFlag(FLAG_DENANY)) {
        *denom = 1;
@@ -159,14 +159,14 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       *denom = 1;
       validResult = true;
     }
-    //printf("Forced Zero/DMX ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+    //printf("Forced Zero/DMX ------------------------- %llu/%llu %u\n",*numer, *denom, validResult);
   }
 
 
   if(!validResult) {
     //check if the fraction is lower than 1.5/DMX
-    realDivide(const_3on2,&factorOfOneOnDenMax,&checkPoint,&ctxtReal39);
-    if(realCompareLessThan(&temp0,&checkPoint)) {
+    realDivide(const_3on2, &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
+    if(realCompareLessThan(&temp0, &checkPoint)) {
       *numer = 1;
        if(getSystemFlag(FLAG_DENANY)) {
         // *denom = denMax;
@@ -180,17 +180,17 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
         *denom = denMax;
         validResult = true;
       }
-      //printf("Forced One/DMX ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+      //printf("Forced One/DMX ------------------------- %llu/%llu %u\n",*numer, *denom, validResult);
     }
   }
 
 
   if(!validResult) {
     //check if fraction is a simple integer/DMX, fast track, only integer GCD needed, not Farey fractions which run to n = DMX loops if the fraction is low
-    realDivide (const_1,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);
-    realDivide ( &temp0,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);             // printRealToConsole(&factorOfOneOnDenMax,"factorOfOneOnDenMax=","\n");
+    realDivide (const_1, &factorOfOneOnDenMax, &factorOfOneOnDenMax, &ctxtReal51);
+    realDivide ( &temp0, &factorOfOneOnDenMax, &factorOfOneOnDenMax, &ctxtReal51);           // printRealToConsole(&factorOfOneOnDenMax, "factorOfOneOnDenMax=","\n");
     real34_t factorOfOneOnDenMax34;
-    realToReal34(&factorOfOneOnDenMax,&factorOfOneOnDenMax34);                              // printReal34ToConsole(&factorOfOneOnDenMax34,"factorOfOneOnDenMax34=","\n");
+    realToReal34(&factorOfOneOnDenMax, &factorOfOneOnDenMax34);                              // printReal34ToConsole(&factorOfOneOnDenMax34, "factorOfOneOnDenMax34=","\n");
     uint32_t tt = 0;
     if(real34IsAnInteger(&factorOfOneOnDenMax34)) {
       tt = real34ToInt32(&factorOfOneOnDenMax34);
@@ -216,7 +216,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
         }
       }
     }
-    //printf("Forced Integer ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+    //printf("Forced Integer ------------------------- %llu/%llu %u\n", *numer, *denom, validResult);
   }
 
 
@@ -277,7 +277,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       }
       else {
         // h, k are num and den of continued fraction up to this point
-        // h_1,k_1 and h_2,k_2 are h,k for the two previous steps.
+        // h_1, k_1 and h_2, k_2 are h, k for the two previous steps.
         // Initialise:
         h_1 = 0;
         k_1 = 1;
@@ -481,7 +481,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       *denom = iPart[i];
       for(j=i; j>1; j--) {
         *numer += *denom * iPart[j-1];
-        ex = *numer; *numer = *denom; *denom = ex;
+        ex = *numer;
+        *numer = *denom;
+        *denom = ex;
       }
 
       if(*denom <= denMax) {
@@ -502,7 +504,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
       *denom = iPart[i] + 1;
       for(j=i; j>1; j--) {
         *numer += *denom * iPart[j-1];
-        ex = *numer; *numer = *denom; *denom = ex;
+        ex = *numer;
+        *numer = *denom;
+        *denom = ex;
       }
 
       if(*denom <= denMax) {
@@ -600,7 +604,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
 
 
   if( ((fractionDigits == 0 || fractionDigits == 34) && realIsZero(&f)) ||
-      ((fractionDigits >= 1 && fractionDigits <= 33) && realCompareAbsLessThan(&f,&roundingTolerance)) ) { //broaden the range for it to be deemed zero
+      ((fractionDigits >= 1 && fractionDigits <= 33) && realCompareAbsLessThan(&f, &roundingTolerance)) ) { //broaden the range for it to be deemed zero
 
     *lessEqualGreater = 0;
   }
@@ -620,6 +624,6 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     return true;
   }
   else {                                                             //Checks if within tolerance for FDIGS<=32
-    return realCompareAbsGreaterThan(&f,&roundingTolerance);           //return true to prepend tags, if actual fraction is outside of tolerance
+    return realCompareAbsGreaterThan(&f, &roundingTolerance);          //return true to prepend tags, if actual fraction is outside of tolerance
   }                                                                    //return false to not prepend tags, if actual fraction is within the tolerance
 }

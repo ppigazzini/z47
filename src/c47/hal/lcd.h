@@ -21,18 +21,18 @@ static inline void print_caller(const char *format, ...) {}
     lcd_forced_refresh();
   }
   static inline void _lcdSBRefresh(void) {
-    lcd_refresh_lines(0,20);
+    lcd_refresh_lines(0, 20);
   }
   static inline void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-    lcd_refresh_lines(y,dy);
+    lcd_refresh_lines(y, dy);
   }
   // lcd_fill_rect from dmcp.h
   // lcd_refresh   from dmcp.h
   // LCD_write_line from dmcp.h
 
 #else
-  #define 	LCD_LINE_SIZE   50
-  #define 	LCD_LINE_BUF_SIZE   (LCD_LINE_SIZE+4)
+  #define LCD_LINE_SIZE       50
+  #define LCD_LINE_BUF_SIZE   (LCD_LINE_SIZE+4)
   #define LCD_SET_VALUE   0   // Black pixel
   #define LCD_EMPTY_VALUE 255 // White (or empty) pixel
   typedef enum { BLT_OR = 0, BLT_ANDN = 1, BLT_XOR = 2 } blt_op_t;

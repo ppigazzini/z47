@@ -14,7 +14,7 @@
 #define ABS_SUMS           //DEFAULT  //use absulate value sums instead of sum of squares, to preserve the digits better
 
 //can change:
-  #if defined PC_BUILD
+  #if defined(PC_BUILD)
     #define maxEigenIter 10000
     #define EIGENDEBUG
     #undef  EIGENDEBUG1
@@ -45,7 +45,7 @@
     #define toleranceDigits       ((significantDigits == 0 ? 34 : significantDigits) + extraDigits)
   #endif
 
-  #define eigenTolerance          (min(70,toleranceDigits*2))
+  #define eigenTolerance          (min(70, toleranceDigits*2))
   #define blockDetectionTolerance 40
   #define POST_QR_RELATIVE_BLOCK_CHECK
   #define symmetricTolerance      30
@@ -384,8 +384,8 @@ bool_t saveStatsMatrix(void) {
 
   #if defined(DEBUGUNDO)
     printf(">>> saveStatsMatrix\n");
-    printRegisterToConsole(regStats,"...STATS:\n","\n");
-    printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS,"...pre-save: TEMP_REGISTER_2_SAVED_STATS:\n","\n");
+    printRegisterToConsole(regStats, "...STATS:\n", "\n");
+    printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS, "...pre-save: TEMP_REGISTER_2_SAVED_STATS:\n", "\n");
   #endif // DEBUGUNDO
 
   if(regStats != INVALID_VARIABLE) {
@@ -397,10 +397,10 @@ bool_t saveStatsMatrix(void) {
       if(initMatrixRegister(TEMP_REGISTER_2_SAVED_STATS, rows, cols, false)) {
         copySourceRegisterToDestRegister(regStats, TEMP_REGISTER_2_SAVED_STATS);
         #if defined(DEBUGUNDO)
-          printf(">>>saveStatsMatrix:    backing up STATS matrix containing %i rows and %i columns\n",rows, cols);
+          printf(">>>saveStatsMatrix:    backing up STATS matrix containing %i rows and %i columns\n", rows, cols);
           regStats = findNamedVariable("STATS");
-          printRegisterToConsole(regStats,"...STATS:\n","\n");
-          printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS,"post save: ...TEMP_REGISTER_2_SAVED_STATS:\n","\n");
+          printRegisterToConsole(regStats, "...STATS:\n", "\n");
+          printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS, "post save: ...TEMP_REGISTER_2_SAVED_STATS:\n", "\n");
         #endif // DEBUGUNDO
         return true; //backed up
       }
@@ -426,7 +426,7 @@ bool_t saveStatsMatrix(void) {
 bool_t recallStatsMatrix(void) {
   #if defined(DEBUGUNDO)
     printf(">>> recallStatsMatrix ...");
-    printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS,"From: recallStatsMatrix: TEMP_REGISTER_2_SAVED_STATS\n","");
+    printRegisterToConsole(TEMP_REGISTER_2_SAVED_STATS, "From: recallStatsMatrix: TEMP_REGISTER_2_SAVED_STATS\n", "");
   #endif //DEBUGUNDO
   uint32_t rows, cols;
 
@@ -447,12 +447,12 @@ bool_t recallStatsMatrix(void) {
       clearRegister(regStats);
 
       #if defined(DEBUGUNDO)
-        printf("Trying to initialize matrix: R=%d C=%d into register: %d\n",rows, cols, regStats);
+        printf("Trying to initialize matrix: R=%d C=%d into register: %d\n", rows, cols, regStats);
       #endif // DEBUGUNDO
       //Initialize Memory for Matrix
       if(initMatrixRegister(regStats, rows, cols, false)) {
         #if defined(DEBUGUNDO)
-          printf(">>>    restoring STATS matrix containing %i rows and %i columns\n",rows, cols);
+          printf(">>>    restoring STATS matrix containing %i rows and %i columns\n", rows, cols);
         #endif // DEBUGUNDO
         copySourceRegisterToDestRegister(TEMP_REGISTER_2_SAVED_STATS, regStats);
         clearRegister(TEMP_REGISTER_2_SAVED_STATS);
@@ -1302,14 +1302,14 @@ static void extractDiagonalToRowReal34Matrix(const real34Matrix_t *source, real3
   uint32_t size = source->header.matrixRows;
   #if defined(EIGEN_TESTOUT)
     char ts[100];
-    printf("\nReMa:\"M%1d,%1d[",1,size);
+    printf("\nReMa:\"M%1d, %1d[", 1, size);
   #endif //EIGEN_TESTOUT
   if(realMatrixInit(dest, 1, size)) {
     for(uint32_t i = 0; i < size; i++) {
       real34Plus(&source->matrixElements[i * size + i], &dest->matrixElements[i]);
       #if defined(EIGEN_TESTOUT)
-        real34ToString(&dest->matrixElements[i],ts);
-        printf("%s%s",ts,(int32_t)i == (int32_t)(size-1) ? "" : ",");
+        real34ToString(&dest->matrixElements[i], ts);
+        printf("%s%s", ts, (int32_t)i == (int32_t)(size-1) ? "" : ",");
       #endif //EIGEN_TESTOUT
     }
     #if defined(EIGEN_TESTOUT)
@@ -1329,17 +1329,17 @@ static void extractDiagonalToRowComplex34Matrix(const complex34Matrix_t *source,
   uint32_t size = source->header.matrixRows;
   #if defined(EIGEN_TESTOUT)
     char ts[100];
-    printf("\nCxMa:\"M%1d,%1d[",1,size);
+    printf("\nCxMa:\"M%1d, %1d[", 1, size);
   #endif //EIGEN_TESTOUT
   if(complexMatrixInit(dest, 1, size)) {
     for(uint32_t i = 0; i < size; i++) {
       real34Plus(VARIABLE_REAL34_DATA(&source->matrixElements[i * size + i]), VARIABLE_REAL34_DATA(&dest->matrixElements[i]));
       real34Plus(VARIABLE_IMAG34_DATA(&source->matrixElements[i * size + i]), VARIABLE_IMAG34_DATA(&dest->matrixElements[i]));
       #if defined(EIGEN_TESTOUT)
-        real34ToString(VARIABLE_REAL34_DATA(&dest->matrixElements[i]),ts);
-        printf("%s",ts);
-        real34ToString(VARIABLE_IMAG34_DATA(&dest->matrixElements[i]),ts);
-        printf("i%s%s",ts,(int32_t)i == (int32_t)(size-1) ? "" : ",");
+        real34ToString(VARIABLE_REAL34_DATA(&dest->matrixElements[i]), ts);
+        printf("%s", ts);
+        real34ToString(VARIABLE_IMAG34_DATA(&dest->matrixElements[i]), ts);
+        printf("i%s%s", ts, (int32_t)i == (int32_t)(size-1) ? "" : ",");
       #endif //EIGEN_TESTOUT
     }
     #if defined(EIGEN_TESTOUT)
@@ -1551,7 +1551,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
       case 1  : break;
       case 255: return;
-      default :
+      default:
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       ires.header.matrixRows = ires.header.matrixColumns = 0;
@@ -1604,7 +1604,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
       case 1  : break;
       case 255: return;
-      default :
+      default:
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       complexEigenvectors(&x, &res);
@@ -2639,7 +2639,8 @@ void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real
 void multiplyComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
   real_t _xr, _xi;
 
-  real34ToReal(xr, &_xr); real34ToReal(xi, &_xi);
+  real34ToReal(xr, &_xr);
+  real34ToReal(xi, &_xi);
   _multiplyComplexMatrix(matrix, &_xr, &_xi, res, &ctxtReal39);
 }
 
@@ -2871,14 +2872,20 @@ void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Ma
   real34ToReal(elementsX >= 3 ? &x->matrixElements[2] : const34_0, &b3);
 
   if(realMatrixInit(res, 1, 3)) {
-    realMultiply(&a2, &b3, &p, &ctxtReal39); realMultiply(&a3, &b2, &q, &ctxtReal39);
-    realSubtract(&p, &q, &p, &ctxtReal39); realToReal34(&p, &res->matrixElements[0]);
+    realMultiply(&a2, &b3, &p, &ctxtReal39);
+    realMultiply(&a3, &b2, &q, &ctxtReal39);
+    realSubtract(&p, &q, &p, &ctxtReal39);
+    realToReal34(&p, &res->matrixElements[0]);
 
-    realMultiply(&a3, &b1, &p, &ctxtReal39); realMultiply(&a1, &b3, &q, &ctxtReal39);
-    realSubtract(&p, &q, &p, &ctxtReal39); realToReal34(&p, &res->matrixElements[1]);
+    realMultiply(&a3, &b1, &p, &ctxtReal39);
+    realMultiply(&a1, &b3, &q, &ctxtReal39);
+    realSubtract(&p, &q, &p, &ctxtReal39);
+    realToReal34(&p, &res->matrixElements[1]);
 
-    realMultiply(&a1, &b2, &p, &ctxtReal39); realMultiply(&a2, &b1, &q, &ctxtReal39);
-    realSubtract(&p, &q, &p, &ctxtReal39); realToReal34(&p, &res->matrixElements[2]);
+    realMultiply(&a1, &b2, &p, &ctxtReal39);
+    realMultiply(&a2, &b1, &q, &ctxtReal39);
+    realSubtract(&p, &q, &p, &ctxtReal39);
+    realToReal34(&p, &res->matrixElements[2]);
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -2902,7 +2909,8 @@ void dotComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x, r
   real_t sumi, prodi, pi, qi;
 
   if((complexVectorSize(y) == 0) || (complexVectorSize(x) == 0) || (complexVectorSize(y) != complexVectorSize(x))) {
-    realToReal34(const_NaN, res_r); realToReal34(const_NaN, res_i); // Not a vector or mismatched
+    realToReal34(const_NaN, res_r);
+    realToReal34(const_NaN, res_i); // Not a vector or mismatched
     return;
   }
 
@@ -3887,7 +3895,8 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
 void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
   real_t _xr, _xi;
 
-  real34ToReal(xr, &_xr); real34ToReal(xi, &_xi);
+  real34ToReal(xr, &_xr);
+  real34ToReal(xi, &_xi);
   _divideComplexMatrix(matrix, &_xr, &_xi, res, &ctxtReal39);
 }
 
@@ -3895,7 +3904,8 @@ void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, co
 void divideByComplexMatrix(const real34_t *yr, const real34_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   real_t _yr, _yi;
 
-  real34ToReal(yr, &_yr); real34ToReal(yi, &_yi);
+  real34ToReal(yr, &_yr);
+  real34ToReal(yi, &_yi);
   _divideByComplexMatrix(&_yr, &_yi, matrix, res, &ctxtReal39);
 }
 
@@ -4293,7 +4303,9 @@ static bool_t isProblematicMatrix(const real_t *matrix, uint16_t size) {
       break;
     }
   }
-  if(!isCompanion) return false;
+  if(!isCompanion) {
+    return false;
+  }
 
   // Specific check for x^n - c = 0 (circulant companion matrices)
   // These have: bottom row = [c, 0, 0, ..., 0] where c ≠ 0
@@ -4669,10 +4681,14 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
   realSetZero((real_t *)&discrI);
 
   const real_t *ar, *ai, *br, *bi, *cr, *ci, *dr, *di;
-  ar = mat + ((size - 2) * size + (size - 2)) * 2; ai = ar + 1;
-  br = mat + ((size - 2) * size + (size - 1)) * 2; bi = br + 1;
-  cr = mat + ((size - 1) * size + (size - 2)) * 2; ci = cr + 1;
-  dr = mat + ((size - 1) * size + (size - 1)) * 2; di = dr + 1;
+  ar = mat + ((size - 2) * size + (size - 2)) * 2;
+  ai = ar + 1;
+  br = mat + ((size - 2) * size + (size - 1)) * 2;
+  bi = br + 1;
+  cr = mat + ((size - 1) * size + (size - 2)) * 2;
+  ci = cr + 1;
+  dr = mat + ((size - 1) * size + (size - 1)) * 2;
+  di = dr + 1;
 
   // determinant
   if(realIsZero(ai) && realIsZero(bi) && realIsZero(ci) && realIsZero(di)) {
@@ -4765,9 +4781,12 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
   #endif //OPTION_EIGEN_159
 
   {
-    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2; mr[2] = mr[1] + 2;
-    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2; mr[5] = mr[4] + 2;
-    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2; mr[7] = mr[6] + 2; mr[8] = mr[7] + 2;
+    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2;
+    mr[2] = mr[1] + 2;
+    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2;
+    mr[5] = mr[4] + 2;
+    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2; mr[7] = mr[6] + 2;
+    mr[8] = mr[7] + 2;
     for(int i = 0; i < 9; ++i) {
       mi[i] = mr[i] + 1;
     }
@@ -5011,9 +5030,12 @@ static void sortEigenvalues(real_t *eig, uint16_t size, uint16_t begin_a, uint16
     complexMagnitude(eig,     eig + 1, eig + 2, realContext);
     complexMagnitude(eig + 6, eig + 7, eig + 4, realContext);
     if(realCompareLessThan(eig + 2, eig + 4)) {
-      realCopy(eig,     eig + 2); realCopy(eig + 1, eig + 3);
-      realCopy(eig + 6, eig    ); realCopy(eig + 7, eig + 1);
-      realCopy(eig + 2, eig + 6); realCopy(eig + 1, eig + 7);
+      realCopy(eig,     eig + 2);
+      realCopy(eig + 1, eig + 3);
+      realCopy(eig + 6, eig    );
+      realCopy(eig + 7, eig + 1);
+      realCopy(eig + 2, eig + 6);
+      realCopy(eig + 1, eig + 7);
     }
   }
   else {
@@ -5372,9 +5394,11 @@ static void printEigenvaluesComparison(const char *heading, const real_t *a, con
 
 
 
-static void solveEigenBlock(real_t *a,real_t *eig,uint16_t size,int first_unconverged,int last_unconverged,bool_t is_real_symmetric,realContext_t *realContext) {
+static void solveEigenBlock(real_t *a, real_t *eig, uint16_t size, int first_unconverged, int last_unconverged, bool_t is_real_symmetric, realContext_t *realContext) {
     int n = last_unconverged - first_unconverged + 1;
-    if(n < 2 || n > 3) return;
+    if(n < 2 || n > 3) {
+      return;
+    }
 
     #if defined(EIGENDEBUG)
         printf("Solving %dx%d block from position %d to %d\n", n, n, first_unconverged, last_unconverged);
@@ -5406,17 +5430,17 @@ static void solveEigenBlock(real_t *a,real_t *eig,uint16_t size,int first_unconv
     real_t ev_im[3];
     // Dispatch correct solver
     if(n == 2) {
-        calculateEigenvalues22(block, 2,&ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],is_real_symmetric,realContext);
+        calculateEigenvalues22(block, 2, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], is_real_symmetric, realContext);
         #if defined(EIGENDEBUG)
            printf("Eigenvalues from 2x2 solver:\n");
-           printf("  ev1 = "); printRealToConsole(&ev_re[0], "", " + ");
+           printRealToConsole(&ev_re[0], "  ev1 = ", " + ");
            printRealToConsole(&ev_im[0], "", "i\n");
-           printf("  ev2 = "); printRealToConsole(&ev_re[1], "", " + ");
+           printRealToConsole(&ev_re[1], "  ev2 = ", " + ");
            printRealToConsole(&ev_im[1], "", "i\n");
         #endif
     }
     else if(n == 3) {
-        calculateEigenvalues33(block, 3,&ev_re[0], &ev_im[0],&ev_re[1], &ev_im[1],&ev_re[2], &ev_im[2],is_real_symmetric,realContext);
+        calculateEigenvalues33(block, 3, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], &ev_re[2], &ev_im[2], is_real_symmetric, realContext);
         #if defined(EIGENDEBUG)
            printf("Eigenvalues from 3x3 solver:\n");
            for(int i = 0; i < 3; i++) {
@@ -5581,7 +5605,7 @@ static void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, r
       printRealToConsole(&tol, "calculateEigenvalues deep tolerance: ", " ");
       printf("called with realContext = %d digits, ", (int)(realContext->digits));
       printRealToConsole(&SumTolerance, "user tolerance + extra: ", "\n");
-      printf("significantDigits=%d\n",significantDigits);
+      printf("significantDigits=%d\n", significantDigits);
     #endif
 
     bool_t is_sym_tridiag = isSymmetricTridiagonal(a, size, realContext);
@@ -5635,7 +5659,8 @@ if(iteration % 20 == 0) {
           realContext_t c;
           c = ctxtReal4;
 
-          char outSubStr1[32]; outSubStr1[0] = 0;
+          char outSubStr1[32];
+          outSubStr1[0] = 0;
           uint16_t eigenvalues_found = size - activeSize;
           //int progress_pct = (eigenvalues_found * 100) / size;
           //sprintf(outSubStr1, "%d/%d (%d%%)", eigenvalues_found, size, progress_pct);
@@ -5645,19 +5670,20 @@ if(iteration % 20 == 0) {
           c.digits = 4;
           real34_t progress_indicator34;
           bool_t boolNotUsed;
-          char outSubStr2[32]; outSubStr2[0] = 0;
+          char outSubStr2[32];
+          outSubStr2[0] = 0;
           realPlus(&progress_indicator, &progress_indicator, &c);
-          realToReal34(&progress_indicator,&progress_indicator34);
+          realToReal34(&progress_indicator, &progress_indicator34);
           formatDoubleWidth(&progress_indicator34, 6, "", &boolNotUsed, 100, outSubStr2, 80);
           //printf("-----outSubStr2:%s\n",outSubStr2);
 
           char outStr[32+32+3+16 + 5]; //5 spare
-          sprintf(outStr,"%s Tol: %s/1E%d Iter: ", outSubStr1, outSubStr2, - (toleranceDigits - extraDigits) );
+          sprintf(outStr, "%s Tol: %s/1E%d Iter: ", outSubStr1, outSubStr2, - (toleranceDigits - extraDigits) );
           if(progressHalfSecUpdate_Integer(timed, outStr, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           }
         }
         if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Exit while calculating");
@@ -5686,13 +5712,17 @@ if(iteration % 20 == 0) {
   #if defined(EIGENDEBUG1)
 if((iteration == 1000 || iteration == 1020)) {
   printf("Bottom 2x2 block at iter %d:\n", iteration);
-  printf("  [3][3] = "); printRealToConsole(a + (3*size+3)*2, "", " + ");
+  printf("  [3][3] = ");
+  printRealToConsole(a + (3*size+3)*2, "", " + ");
   printRealToConsole(a + (3*size+3)*2+1, "", "i\n");
-  printf("  [3][4] = "); printRealToConsole(a + (3*size+4)*2, "", " + ");
+  printf("  [3][4] = ");
+  printRealToConsole(a + (3*size+4)*2, "", " + ");
   printRealToConsole(a + (3*size+4)*2+1, "", "i\n");
-  printf("  [4][3] = "); printRealToConsole(a + (4*size+3)*2, "", " + ");
+  printf("  [4][3] = ");
+  printRealToConsole(a + (4*size+3)*2, "", " + ");
   printRealToConsole(a + (4*size+3)*2+1, "", "i\n");
-  printf("  [4][4] = "); printRealToConsole(a + (4*size+4)*2, "", " + ");
+  printf("  [4][4] = ");
+  printRealToConsole(a + (4*size+4)*2, "", " + ");
   printRealToConsole(a + (4*size+4)*2+1, "", "i\n");
 }
 #endif
@@ -5727,8 +5757,8 @@ if(iteration % 20 == 0) {
       QR_decomposition_householder(a, size, q, r, realContext);
                                                                                               #if defined(EIGENDEBUG)
                                                                                               if(iteration % 100 == 0 || iteration < 2) {
-                                                                                                printf("\n---iterationA %5d ",iteration);
-                                                                                                printRealToConsole(&tol,"\nTolA:",": \n");
+                                                                                                printf("\n---iterationA %5d ", iteration);
+                                                                                                printRealToConsole(&tol, "\nTolA:", ": \n");
                                                                                                 #if defined(EIGENDEBUG_QR)
                                                                                                 printComplexMatrix("Q matrix QQQ:", q, size, size, &ctxtReal4);
                                                                                                 printComplexMatrix("R matrix RRR:", r, size, size, &ctxtReal4);
@@ -5817,7 +5847,9 @@ if(iteration % 20 == 0) {
         real_t deltaChangeDiagonalSum;
         realSetZero(&deltaChangeDiagonalSum);
 
-        if(iteration == 1) sumOfSubSupDiagonalAll("Stagnation test init", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, true, &ctxtReal39);
+        if(iteration == 1) {
+          sumOfSubSupDiagonalAll("Stagnation test init", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, true, &ctxtReal39);
+        }
         sumOfSubSupDiagonalAll("\nStagnation test 1: determine if sufficient diagonal stagnation in growth is met for convergence", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &ctxtReal39);
                                                                     #if defined(EIGENDEBUG)|| defined(EIGENDEBUGMINIMAL)
                                                                       printRealToConsole(&changeDiagonalSum, "\n=== Diagonal change: ", "\n");
@@ -5905,7 +5937,7 @@ if(iteration % 20 == 0) {
         sumOfSubSupDiagonalAll("Off-diagonal stability test 2: allow convergence if off-diagonals are stable", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &ctxtReal75);
         realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &ctxtReal75);
                                         #if defined(EIGENDEBUG)
-                                          printRealToConsole(&changeOffDiagonalSum,"=== changeOffDiagonalSum: ","\n");
+                                          printRealToConsole(&changeOffDiagonalSum, "=== changeOffDiagonalSum: ", "\n");
                                         #endif
         // Check if off-diagonal sum is small enough
                                         #if defined(EIGENDEBUG)
@@ -5965,7 +5997,9 @@ if(iteration % 20 == 0) {
                                                                         printf("IterB %d: |Δ(sum diag)| = ", iteration);
                                                                         printRealToConsole(&changeDiagonalSum, "", ", tol = ");
                                                                         printRealToConsole(&SumTolerance, "", "\n");
-                                                                        if(converged) printf("CONVERGED: |Δ(sum diag)| < tolerance\n");
+                                                                        if(converged) {
+                                                                          printf("CONVERGED: |Δ(sum diag)| < tolerance\n");
+                                                                        }
                                                                       }
                                                                     #endif
 
@@ -6006,7 +6040,7 @@ if(iteration % 20 == 0) {
 
       #if defined(EIGENDEBUG1)
       if((iteration == 1000 || iteration == 1020)) {
-        printf("Deflation check at iter %d: position [%d][%d], mag=",iteration, i, i-1);
+        printf("Deflation check at iter %d: position [%d][%d], mag=", iteration, i, i-1);
         printRealToConsole(&subdiag_mag, "", ", threshold=");
         printRealToConsole(&threshold, "", ", deflate?");
         printf(" %d\n", realCompareLessThan(&subdiag_mag, &threshold));
@@ -6036,7 +6070,7 @@ if(iteration % 20 == 0) {
                     realCopy(eig + (pos_row * size + pos_col) * 2 + 1, temp_2x2 + (row * 2 + col) * 2 + 1);
                   }
                 }
-                solveEigenBlock(a,eig,size,i,i + 1,is_real_symmetric,realContext);
+                solveEigenBlock(a, eig, size, i, i + 1, is_real_symmetric, realContext);
               }
 
               activeSize = i;
@@ -6129,14 +6163,14 @@ if(iteration % 20 == 0) {
         complexMagnitude(eig + (i * size + (i-1)) * 2, eig + (i * size + (i-1)) * 2 + 1, &subdiag_mag, realContext);
         #if defined(EIGENDEBUG)
           //printf("iter=%10d ",iteration);
-          //printRealToConsole(&subdiag_mag,"subdiag_mag:","\n");
+          //printRealToConsole(&subdiag_mag, "subdiag_mag:", "\n");
         #endif //EIGENDEBUG
         if(realCompareLessThan(&subdiag_mag, &progress_indicator)) {
           realCopy(&subdiag_mag, &progress_indicator);
         }
       }
       #if defined(EIGENDEBUG)
-        //printRealToConsole(&progress_indicator,"TT:","\n");
+        //printRealToConsole(&progress_indicator, "TT:", "\n");
         //printf("converged? AA = %d, end of main  loop\n", converged);
       #endif //EIGENDEBUG
 
@@ -6263,8 +6297,7 @@ if(iteration % 20 == 0) {
       else if(block_size == 2) {
         // Single 2×2 block - safe to solve
         #if defined(EIGENDEBUG)
-        printf("Solving single 2x2 block at positions [%d,%d]\n",
-               first_unconverged, first_unconverged + 1);
+        printf("Solving single 2x2 block at positions [%d,%d]\n", first_unconverged, first_unconverged + 1);
         #endif
 
         // Extract 2×2 block
@@ -6299,7 +6332,7 @@ if(iteration % 20 == 0) {
 
         if(!is_conjugate_pair) {                                     //prevent destroying complex pairs
             // Solve using the unified block solver (writes into A only)
-            solveEigenBlock(a, eig, size,first_unconverged,first_unconverged + 1,is_real_symmetric,realContext);
+            solveEigenBlock(a, eig, size, first_unconverged, first_unconverged + 1, is_real_symmetric, realContext);
 
             // After solveEigenBlock(), copy eigenvalues from A to EIG
             for(int i = 0; i < 2; i++) {
@@ -6363,7 +6396,7 @@ if(iteration % 20 == 0) {
         #if defined(EIGENDEBUG)
           printf("  !!!! Found unconverged 3x3 block that scan missed, solving...\n");
         #endif
-        solveEigenBlock(a, eig, size,first_unconverged, last_unconverged,is_real_symmetric, realContext);
+        solveEigenBlock(a, eig, size, first_unconverged, last_unconverged, is_real_symmetric, realContext);
       }
       else if(block_size == 2) {
         #if defined(EIGENDEBUG)
@@ -6452,12 +6485,14 @@ if(iteration % 20 == 0) {
 
     #if defined(EIGENDEBUG)
       printf("\n=== CONDITION NUMBER CHECK ===\n");
-      printf("maxM: "); printRealToConsole(&maxM, "", ", tol: "); printRealToConsole(&tol, "", "\n");
+      printf("maxM: "); printRealToConsole(&maxM, "", ", tol: ");
+      printRealToConsole(&tol, "", "\n");
     #endif
     for(i = 1; i < size; i++) {
       complexMagnitude(eig + (i * size + i) * 2, eig + (i * size + i) * 2 + 1, &tmpM, realContext);
             #if defined(EIGENDEBUG)
-        printf("λ[%d] mag: ", i); printRealToConsole(&tmpM, "", "");
+        printf("λ[%d] mag: ", i);
+        printRealToConsole(&tmpM, "", "");
         printf(" (zero:%d, <tol:%d)\n", realIsZero(&tmpM), realCompareLessThan(&tmpM, &tol));
       #endif
       if(!realIsZero(&tmpM) && !realIsZero(&maxM) && realCompareLessThan(&tmpM, &tol)) {
@@ -6467,8 +6502,11 @@ if(iteration % 20 == 0) {
           for(j = 1; j < size; j++) {
             real_t tmpM_check;
             complexMagnitude(eig + (j * size + j) * 2, eig + (j * size + j) * 2 + 1, &tmpM_check, realContext);
-            printf("  λ[%d]: ", j); printRealToConsole(&tmpM_check, "", "");
-            if(realCompareLessThan(&tmpM_check, &minM)) printf(" -> ZERO");
+            printf("  λ[%d]: ", j);
+            printRealToConsole(&tmpM_check, "", "");
+            if(realCompareLessThan(&tmpM_check, &minM)) {
+              printf(" -> ZERO");
+            }
             printf("\n");
           }
         #endif
@@ -6544,7 +6582,7 @@ if(iteration % 20 == 0) {
     clearSystemFlag(FLAG_SOLVING);
   }
   #if defined(PC_BUILD)
-    printf("End of EIGEN, %d iterations\n",iteration);
+    printf("End of EIGEN, %d iterations\n", iteration);
   #endif
 
 }
@@ -7379,7 +7417,9 @@ void elementwiseCxmaShoI(void (*f)(void)) {
   elementwiseCxmaCplx(f);
 #else
   complex34Matrix_t y;
-  uint64_t x; uint32_t base; int16_t sign;
+  uint64_t x;
+  uint32_t base;
+  int16_t sign;
 
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
   convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &x);
