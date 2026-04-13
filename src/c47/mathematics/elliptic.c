@@ -11,6 +11,50 @@
 
 #if !defined(SAVE_SPACE_DM42_12ELLIP)
 
+
+void _ellipseE(void) {
+  real_t x, y;
+  if(!getRegisterAsReal(REGISTER_Y, &y) || !getRegisterAsReal(REGISTER_X, &x)) {
+    return;
+  }
+  if(!saveLastX()) {
+    return;
+  }
+  real_t reX, a, b;
+  // ensure a <= b: a is smaller, b is larger
+  if(realCompareGreaterThan(&x, &y)) {
+    realCopy(&y, &a);
+    realCopy(&x, &b);
+  }
+  else {
+    realCopy(&x, &a);
+    realCopy(&y, &b);
+  }
+  // eccentricity = sqrt(1 - (a/b)^2)
+  realDivide(&a, &b, &reX, &ctxtReal39);
+  realMultiply(&reX, &reX, &reX, &ctxtReal39);
+  realSubtract(const_1, &reX, &reX, &ctxtReal39);
+  realSquareRoot(&reX, &reX, &ctxtReal39);
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
+  adjustResult(REGISTER_X, false, false, -1, -1, -1);
+  temporaryInformation = TI_ELLIPSE_K;
+}
+
+void fnEllipse(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexDyadicFunction(&_ellipseE, NULL, &_ellipseE, &_ellipseE);
+}
+
+void fnKtoM(uint16_t unusedButMandatoryParameter) {
+  fnSquare(NOPARAM);
+  temporaryInformation = TI_ELLIPSE_M;
+}
+
+void fnMtoK(uint16_t unusedButMandatoryParameter) {
+  fnSquareRoot(NOPARAM);  
+  temporaryInformation = TI_ELLIPSE_K;
+}
+
+
 static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t *u, const real_t *m, realContext_t *realContext) {
   real_t a, b, e, f, g;
   real_t *MU, *NU, *C, *D;
@@ -221,6 +265,25 @@ static int jacobi_check_inputs(real_t *m, real_t *uReal, real_t *uImag, bool_t *
     return 0;
   }
   *realInput = !cmplx;
+  return 1;
+}
+
+
+
+static int jacobi_check_inputs_phi(real_t *m, real_t *phiReal, real_t *phiImag, bool_t *realInput) {
+  angularMode_t xAngularMode;
+  const real_t *angle45, *angle90, *angle180;
+  angle45  = const_0;
+  angle90  = const_0;
+  angle180 = const_0;
+  if(!getRegisterAsRealAngle(REGISTER_X, phiReal, &xAngularMode) || !getRegisterAsReal(REGISTER_Y, m) || !saveLastX()) {
+    return 0;
+  }
+
+  reduceAngleToRange(phiReal, &angle45, &angle90, &angle180, &xAngularMode, ctxtReal75.digits, &ctxtReal75);
+
+  realSetZero(phiImag);
+  *realInput = true;
   return 1;
 }
 
@@ -1623,7 +1686,7 @@ void fnEllipticFphi(uint16_t unusedButMandatoryParameter) {
   real_t m, uReal, uImag;
   real_t rReal, rImag;
 
-  if(!jacobi_check_inputs(&m, &uReal, &uImag, &realInput)) {
+  if(!jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput)) {
     return;
   }
 
@@ -1655,7 +1718,7 @@ void fnEllipticEphi(uint16_t unusedButMandatoryParameter) {
   real_t m, uReal, uImag;
   real_t rReal, rImag;
 
-  if(!jacobi_check_inputs(&m, &uReal, &uImag, &realInput)) {
+  if(!jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput)) {
     return;
   }
 
@@ -1687,7 +1750,7 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
   real_t m, uReal, uImag;
   real_t rReal, rImag;
 
-  if(!jacobi_check_inputs(&m, &uReal, &uImag, &realInput)) {
+  if(!jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput)) {
     return;
   }
 
@@ -1715,6 +1778,9 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
 }
 
 #else //SAVE_SPACE_DM42_12ELLIP
+  void fnEllipse(uint16_t unusedButMandatoryParameter) {;};
+  void fnKtoM(uint16_t unusedButMandatoryParameter) {;}
+  void fnMtoK(uint16_t unusedButMandatoryParameter) {;}
   void jacobiElliptic(const real_t *u, const real_t *m, real_t *am, real_t *sn, real_t *cn, real_t *dn, realContext_t *realContext) {;}
   void jacobiComplexAm(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
   void jacobiComplexSn(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
