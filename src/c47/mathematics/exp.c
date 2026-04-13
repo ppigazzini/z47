@@ -10,7 +10,8 @@
 bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero) {
   if(realIsSpecial(x)) {
     if(realIsInfinite(x)) {
-inf:  if(realIsPositive(x)) {
+inf:
+      if(realIsPositive(x)) {
         realSetPlusInfinity(res);
       }
       else {

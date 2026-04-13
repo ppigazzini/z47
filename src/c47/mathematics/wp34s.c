@@ -35,7 +35,9 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
   angle180 = const_0;
 
   #if defined(DEBUGTAYLOR)
-   realToString(angle, tmpString); /*tmpString[80]=0;*/ printf("Angle:   %s\n", tmpString);
+   realToString(angle, tmpString);
+   //tmpString[80]=0;
+   printf("Angle:   %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // sin(-x) = -sin(x), cos(-x) = cos(x)
@@ -90,7 +92,9 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
   }
   #if defined(DEBUGTAYLOR)
-   realToString(angle, tmpString); /*tmpString[80]=0;*/ printf("Reduced: %s\n", tmpString);
+   realToString(angle, tmpString);
+   //tmpString[80]=0;
+   printf("Reduced: %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
@@ -126,10 +130,10 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     }
     convertAngleFromTo(angle, angularMode, amRadian, realContext);
     if(savedContextDigits >= 1071) {
-      C47_WP34S_SinCosTanTaylor_temp1071(angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp1071(angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
     else {
-      C47_WP34S_SinCosTanTaylor_temp75(angle, *swap, (*swap)?cosOut:sinOut, (*swap)?sinOut:cosOut, tanOut, realContext); // angle in radian
+      C47_WP34S_SinCosTanTaylor_temp75(angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
     }
   }
 
@@ -265,7 +269,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
       sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
@@ -278,10 +282,12 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
       }
     #endif //PC_BUILD
 
-    #ifdef DEBUGTAYLOR
+    #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
-        realToString(sin, tmpString); tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
-        realToString(cos, tmpString); tmpString[80]=0; printf(" cos=%s\n", tmpString);
+        realToString(sin, tmpString);
+        tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
+        realToString(cos, tmpString);
+        tmpString[80]=0; printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
   }
@@ -364,7 +370,7 @@ static void C47_WP34S_Cvt2RadSinCosTan_1071temp(const real_t *an, angularMode_t 
    return;
   }
 
-  realCopy(an, (real_t *)&angle);
+  realCopy(an, (real_t*)&angle);
 
   int32_t savedContextDigits = realContext->digits;
 
@@ -388,13 +394,13 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
   real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
 
-  doTaylorIterations(a, (real_t *)&angle, (real_t *)&a2, (real_t *)&t, (real_t *)&j, (real_t *)&z, (real_t *)&sin, (real_t *)&cos, sinOut, cosOut, (real_t *)&epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
+  doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
 
   if(sinOut != NULL) {
-    realPlus((real_t *)&sin, sinOut, realContext);
+    realPlus((real_t*)&sin, sinOut, realContext);
   }
   if(cosOut != NULL) {
-    realPlus((real_t *)&cos, cosOut, realContext);
+    realPlus((real_t*)&cos, cosOut, realContext);
   }
   if(tanOut != NULL) {
     if(sinOut == NULL || cosOut == NULL) {
@@ -402,10 +408,10 @@ void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *si
     }
     else {
       if(swap) {
-        realDivide((real_t *)&cos, (real_t *)&sin, tanOut, realContext);
+        realDivide((real_t*)&cos, (real_t*)&sin, tanOut, realContext);
       }
       else {
-        realDivide((real_t *)&sin, (real_t *)&cos, tanOut, realContext);
+        realDivide((real_t*)&sin, (real_t*)&cos, tanOut, realContext);
       }
     }
   }
@@ -434,8 +440,8 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
     stringToReal(tmpEpsilon, epsilon, realContext);
     //-- create const_1on10 equivalent for 1071 precision, temporary use of z - up to for loop below
-    //uInt32ToReal(10, z);
-    //realDivide(const_1, z, z, realContext);
+    //uInt32ToReal(10, (real_t*)z);
+    //realDivide(const_1, (real_t*)z, (real_t*)z, realContext);
   }
 
 
@@ -520,10 +526,10 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent(b));
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)realGetExponent(b));
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
-        printf("%s%d\n",ss,epsilonDigits);
+        printf("%s%d\n", ss, epsilonDigits);
       #endif //DEBUGTAYLOR
       if(progressHalfSecUpdate_Integer(timed, ss, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
@@ -537,10 +543,12 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     #endif //PC_BUILD
 
 
-    #ifdef DEBUGTAYLOR
+    #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
-        realToString(angle, tmpString); tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
-        realToString(b , tmpString); tmpString[80]=0; printf(" diff=%s\n", tmpString);
+        realToString(angle, tmpString);
+        tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
+        realToString(b , tmpString);
+        tmpString[80]=0; printf(" diff=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
     i++;
