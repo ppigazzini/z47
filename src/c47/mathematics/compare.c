@@ -59,18 +59,22 @@ static void registerMinMax(calcRegister_t regist1, calcRegister_t regist2, calcR
     int8_t cmp;
     calcRegister_t rMin = regist1, rMax = regist2, where;
 
-    if (registerCmp(rMin, rMax, &cmp)) {
-      if (cmp == 0 && (dest == regist1 || dest == regist2))
+    if(registerCmp(rMin, rMax, &cmp)) {
+      if(cmp == 0 && (dest == regist1 || dest == regist2)) {
         return;
-      if (cmp > 0) {
+      }
+      if(cmp > 0) {
         rMin = regist2;
         rMax = regist1;
       }
       where = maximum ? rMax : rMin;
-      if (where != dest)
+      if(where != dest) {
         copySourceRegisterToDestRegister(where, dest);
-    } else
+      }
+    }
+    else {
       badTypeError(regist1);
+    }
 }
 
 void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest) {
@@ -98,18 +102,23 @@ static void compareMatrix01(uint16_t regist, uint8_t mode, uint32_t typeX) {
   /* Check for zero and identity matricies */
   if(typeX == dtReal34Matrix) {
     linkToRealMatrixRegister(REGISTER_X, &mReal);
-    for(i=k=0; i<mReal.header.matrixRows; i++)
-      for(j=0; j<mReal.header.matrixColumns; j++, k++)
-        if(!real34CompareEqual(&mReal.matrixElements[k], i==j ? r : const34_0))
+    for(i=k=0; i<mReal.header.matrixRows; i++) {
+      for(j=0; j<mReal.header.matrixColumns; j++, k++) {
+        if(!real34CompareEqual(&mReal.matrixElements[k], i==j ? r : const34_0)) {
           goto different;
+        }
+      }
+    }
   }
   else {
     linkToComplexMatrixRegister(REGISTER_X, &mCplx);
-    for(i=k=0; i<mCplx.header.matrixRows; i++)
-      for(j=0; j<mCplx.header.matrixColumns; j++, k++)
-        if(!real34CompareEqual(&mCplx.matrixElements[k].real, i==j ? r : const34_0)
-           || !real34IsZero((&mCplx.matrixElements[k].imag)))
+    for(i=k=0; i<mCplx.header.matrixRows; i++) {
+      for(j=0; j<mCplx.header.matrixColumns; j++, k++) {
+        if(!real34CompareEqual(&mCplx.matrixElements[k].real, i==j ? r : const34_0) || !real34IsZero((&mCplx.matrixElements[k].imag))) {
           goto different;
+        }
+      }
+    }
   }
   actualMode = COMPARE_MODE_EQUAL;
 
@@ -216,10 +225,11 @@ static inline bool is_local_register(uint16_t r) {
 static inline bool is_named_variable(uint16_t r) {
   /* Assumption: numberOfNamedVariables is a COUNT.
      If it is already an inclusive max index, adjust accordingly. */
-  if (numberOfNamedVariables == 0) return false;
+  if(numberOfNamedVariables == 0) {
+    return false;
+  }
   const uint16_t lo = FIRST_NAMED_VARIABLE;
-  const uint16_t hi =
-      (uint16_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+  const uint16_t hi = (uint16_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
   return in_range_inclusive(r, lo, hi);
 }
 
@@ -245,7 +255,7 @@ static inline bool is_comparable_register(uint16_t r) {
 
 static inline void compare_reals_to_temporaryInformation(real_t *a, real_t *b, uint8_t mode) {
   /* Real ordering/equality is invalid if any operand is NaN */
-  if (realIsNaN(a) || realIsNaN(b)) {
+  if(realIsNaN(a) || realIsNaN(b)) {
     temporaryInformation = TI_FALSE;
     return;
   }
@@ -263,13 +273,14 @@ static inline void compare_complex_to_temporaryInformation(real_t *aRe, real_t *
                                                        uint8_t mode,
                                                        uint16_t regist_for_error) {
   // Complex numbers do not have a total ordering; only == and != are supported
-  if (!mode_is_equality(mode)) {
+  if(!mode_is_equality(mode)) {
     compareTypeError(regist_for_error);
     return;
   }
   compare_reals_to_temporaryInformation(aRe, bRe, mode);
-  if (temporaryInformation!=TI_FALSE)
+  if(temporaryInformation!=TI_FALSE) {
     compare_reals_to_temporaryInformation(aIm, bIm, mode);
+  }
 }
 
 /* ============================================================================
@@ -277,7 +288,7 @@ static inline void compare_complex_to_temporaryInformation(real_t *aRe, real_t *
  * ========================================================================== */
 static void compareRegisters(uint16_t regist, uint8_t mode) {
   /* Precondition: only proceed for valid/comparable registers regardless types */
-  if (!is_comparable_register(regist)) {
+  if(!is_comparable_register(regist)) {
     // TODO: raiser a proper error
     return;
   }
@@ -288,7 +299,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
 
   real_t xReal, xImag, rReal, rImag;
 
-  switch (test) {
+  switch(test) {
 
     /* ------------------------------------------------------------------------
      * String vs String
@@ -305,7 +316,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
      * NOTE: memcmp is safe only if configs are canonical byte blobs (no padding).
      * ---------------------------------------------------------------------- */
     case type_pair_u8(dtConfig, dtConfig): {
-      if (!mode_is_equality(mode)) {
+      if(!mode_is_equality(mode)) {
         compareTypeError(regist);
         break;
       }
@@ -325,16 +336,17 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     /* Optional mixed matrix equality support (enable if compareMatrices supports it) */
     case type_pair_u8(dtReal34Matrix,    dtComplex34Matrix):
     case type_pair_u8(dtComplex34Matrix, dtReal34Matrix): {
-      if (!mode_is_equality(mode)) {
+      if(!mode_is_equality(mode)) {
         compareTypeError(regist);
         break;
       }
 
       /* TEMP_REGISTER_1 has a specialized path in the original code.
          If the matrix types differ, use the generic path (it receives both types). */
-      if (regist == TEMP_REGISTER_1 && xType == rType) {
+      if(regist == TEMP_REGISTER_1 && xType == rType) {
         compareMatrix01(regist, mode, xType);
-      } else {
+      }
+      else {
         compareMatrices(regist, mode, xType, rType);
       }
     } break;
@@ -351,11 +363,13 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       longInteger_t xInt;
       longInteger_t rInt;
 
-      if (!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
+      if(!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
         compareTypeError(REGISTER_X);
-      } else if (!getRegisterAsLongInt(regist, rInt, NULL)) {
+      }
+      else if(!getRegisterAsLongInt(regist, rInt, NULL)) {
         compareTypeError(regist);
-      } else {
+      }
+      else {
         cmpToResult(longIntegerCompare(xInt, rInt), mode);
       }
 
@@ -388,18 +402,19 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
 
       // Note: getRegisterAsComplexOrAnyReal sets isComplex to true or leaves it unchanged,
       // effectively implementing a logical OR.
-      if (!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &isComplex)) {
+      if(!getRegisterAsComplexOrAnyReal(REGISTER_X, &xReal, &xImag, &isComplex)) {
         compareTypeError(REGISTER_X);
         break;
       }
-      if (!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &isComplex)) {
+      if(!getRegisterAsComplexOrAnyReal(regist, &rReal, &rImag, &isComplex)) {
         compareTypeError(regist);
         break;
       }
 
-      if (isComplex) {
+      if(isComplex) {
         compare_complex_to_temporaryInformation(&xReal, &xImag, &rReal, &rImag, mode, regist);
-      } else {
+      }
+      else {
         compare_reals_to_temporaryInformation(&xReal, &rReal, mode);
       }
     } break;
@@ -515,39 +530,39 @@ static void almostEqualMatrix(uint16_t regist) {
     }
 }
 
-#define SNAPVAL(reg, s) switch(s.t = getRegisterDataType(reg)) \
-  { \
-  case dtComplex34: \
-    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34Copy(REGISTER_IMAG34_DATA(reg), &s.i); \
-    break; \
-  case dtReal34: \
-    real34Copy(REGISTER_REAL34_DATA(reg), &s.r); \
-    real34SetZero(&s.i); \
-    break; \
-  case dtLongInteger: \
-    getRegisterAsLongInt(REGISTER_X, s.li, NULL); \
-    break; \
-  case dtShortInteger: \
-    getRegisterAsRawShortInt(REGISTER_X, &s.siVal, &s.siBase); \
-    break; \
+#define SNAPVAL(reg, s)                                          \
+  switch(s.t = getRegisterDataType(reg)) {                       \
+    case dtComplex34:                                            \
+      real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
+      real34Copy(REGISTER_IMAG34_DATA(reg), &s.i);               \
+      break;                                                     \
+    case dtReal34:                                               \
+      real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
+      real34SetZero(&s.i);                                       \
+      break;                                                     \
+    case dtLongInteger:                                          \
+      getRegisterAsLongInt(REGISTER_X, s.li, NULL);              \
+      break;                                                     \
+    case dtShortInteger:                                         \
+      getRegisterAsRawShortInt(REGISTER_X, &s.siVal, &s.siBase); \
+      break;                                                     \
   }
 
-#define RESTOREVAL(reg, s) switch(s.t) \
-  { \
-  case dtComplex34: \
-    real34Copy(&s.i,REGISTER_IMAG34_DATA(reg)); \
-  case dtReal34: \
-    real34Copy(&s.r,REGISTER_REAL34_DATA(reg)); \
-    break; \
-  case dtLongInteger: \
-    convertLongIntegerToLongIntegerRegister(s.li,reg); \
-    longIntegerFree(s.li); \
-    break; \
-  case dtShortInteger: \
-    *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal; \
-    setRegisterShortIntegerBase(reg,s.siBase); \
-    break; \
+#define RESTOREVAL(reg, s)                                \
+  switch(s.t) {                                           \
+    case dtComplex34:                                     \
+      real34Copy(&s.i, REGISTER_IMAG34_DATA(reg));        \
+    case dtReal34:                                        \
+      real34Copy(&s.r, REGISTER_REAL34_DATA(reg));        \
+      break;                                              \
+    case dtLongInteger:                                   \
+      convertLongIntegerToLongIntegerRegister(s.li, reg); \
+      longIntegerFree(s.li);                              \
+      break;                                              \
+    case dtShortInteger:                                  \
+      *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal;        \
+      setRegisterShortIntegerBase(reg, s.siBase);         \
+      break;                                              \
   }
 
 

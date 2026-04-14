@@ -35,7 +35,9 @@
 
   void calcModeNormal(void) {
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeNormal"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeNormal");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
     calcMode = CM_NORMAL;
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {  //JM
@@ -57,7 +59,9 @@
 
   void calcModeAim(uint16_t unusedButMandatoryParameter) {
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeAim"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeAim");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
 
     alphaCase = CAPS_AIM_DEFAULT;
@@ -193,7 +197,9 @@
       }
     }
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### enterAsmMode catalog=%d",catalog); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### enterAsmMode catalog=%d", catalog);
+      jm_show_comment(tmp);
     #endif // PC_BUILD
 
     if(catalog) {
@@ -242,7 +248,9 @@
       printf(">>> saveForUndo from gui: calcModeNim\n");
     #endif // DEBUGUNDO
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeNim"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeNim");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
     saveForUndo();
     if(lastErrorCode == ERROR_RAM_FULL) {
@@ -263,7 +271,9 @@
     aimBuffer[0] = 0;
     hexDigits = 0;
 
-    if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+    if(!checkHP) {
+      clearRegisterLine(NIM_REGISTER_LINE, true, true);
+    }
     xCursor = 1;
     cursorEnabled = true;
     cursorFont = &numericFont;

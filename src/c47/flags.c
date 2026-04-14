@@ -173,7 +173,7 @@ bool_t didSystemFlagChange(int32_t sf) {
     returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
     systemFlags0Changed &= ~((uint64_t)1 << flag);
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
     systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
   }
@@ -190,7 +190,7 @@ void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_.
   if(flag < 64) {
     systemFlags0Changed |= ((uint64_t)1 << (flag-0));
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     systemFlags1Changed |= ((uint64_t)1 << (flag-64));
   }
   else {
@@ -664,7 +664,8 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
 
 
 void SetSetting(uint16_t jmConfig) {
-  for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: {config_clear, config_set, flag}
+
+  for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: (config_clear, config_set, flag)
     if(jmConfig == clearSetPairs[i].clearConfig) {
       fnClearFlag(clearSetPairs[i].flag);
       fnRefreshState();

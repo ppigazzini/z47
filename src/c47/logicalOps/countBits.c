@@ -18,8 +18,9 @@ void fnCountBits(uint16_t unusedButMandatoryParameter) {
   uint64_t w;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if(!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX()) {
     return;
+  }
 
 #if 0
   // https://en.wikipedia.org/wiki/Hamming_weight

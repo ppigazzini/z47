@@ -58,7 +58,7 @@ bool_t checkDateArgument(calcRegister_t regist, real34_t *jd) {
     case dtReal34: {
       if(getRegisterAngularMode(regist) == amNone) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone); // make sure TEMP_REGISTER_1 is not of dtDate type here
-        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, !YYSystem);
+        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, false);  //no !YYsystem needed here
         if(getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
           return false; // invalid date
         }
@@ -204,7 +204,9 @@ void composeJulianDay(const real34_t *year, const real34_t *month, const real34_
   real34_t fg, y, m, d;
 
   uInt32ToReal34(firstGregorianDay, &fg);
-  real34Copy(year, &y); real34Copy(month, &m); real34Copy(day, &d);
+  real34Copy(year, &y);
+  real34Copy(month, &m);
+  real34Copy(day, &d);
   composeJulianDay_g(&y, &m, &d, jd);
   if((firstGregorianDay > 0u) && real34CompareLessThan(jd, &fg)) {
     composeJulianDay_j(&y, &m, &d, jd);
@@ -400,7 +402,7 @@ uint32_t getWeekOfYear(real34_t *jd) {
   composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
 
   int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
-  if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
+  if(firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
     real34Add(&j1, const34_7, &j1);  // … skip to next week
   }
 
@@ -589,17 +591,12 @@ void fnGetFirstGregorianDay(uint16_t unusedButMandatoryParameter) {
 }
 
 
-//return true if bit 14 (16384 0x4000) is set, meaning that the YY default is updated from the last used full YYYY used.
-bool_t followYY(void) {
-  return lastCenturyHighUsed & 0x4000;
-}
-
 void fnYYDflt(uint16_t tmp) {
   if(tmp == YY_TRACKING) {
-    lastCenturyHighUsed = 0x4000;
+    lastCenturyHighUsed = YY_MASK_TRACKING;           //0x4000;
   }
   else if(tmp == YY_OFF) {
-    lastCenturyHighUsed = 0x8000;
+    lastCenturyHighUsed = YY_MASK_OFF;                //0x8000;
   }
   else if(tmp < 100) {                                //allow lowest range 0100 -> 0199
     lastCenturyHighUsed = 0;
@@ -625,7 +622,7 @@ void fnXToDate(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       if(getRegisterAngularMode(REGISTER_X) == amNone) {
-        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, !YYSystem);
+        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, false);     //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
         checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
         temporaryInformation = TI_DAY_OF_WEEK;
         if(lastErrorCode != 0) {
@@ -970,7 +967,7 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDate(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
       tm_t timeInfo;
       dt_t dateInfo;
@@ -984,11 +981,11 @@ void fnSetDate(uint16_t unusedButMandatoryParameter) {
         dateInfo.day   = real34ToUInt32(&d);
         rtc_write(&timeInfo, &dateInfo);
       }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 void fnSetTime(uint16_t unusedButMandatoryParameter) {
-  #ifdef DMCP_BUILD
+  #if defined(DMCP_BUILD)
     cancelFilename = true;
     tm_t timeInfo;
     dt_t dateInfo;
@@ -1035,7 +1032,7 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
-  #endif //!PC_BUILD
+  #endif // DMCP_BUILD
 }
 
 

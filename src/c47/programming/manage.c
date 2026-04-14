@@ -182,12 +182,12 @@ static void _removeLabelsAssignments() {
   int16_t i;
   char label[15];
   uint8_t labelLength;
-  for (i=0; i<numberOfLabels; i++) {
+  for(i=0; i<numberOfLabels; i++) {
     if((labelList[i].program == currentProgramNumber) && (labelList[i].step > 0)) {
       labelLength = labelList[i].labelPointer[0];
       xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
       label[labelLength]=0;
-      removeUserItemAssignments(ITM_XEQ,label);   // Remove label assignments
+      removeUserItemAssignments(ITM_XEQ, label);   // Remove label assignments
     }
   }
 }
@@ -200,7 +200,7 @@ void fnClPAll(uint16_t confirmation) {
   }
   else {
     // Remove assignments of all global labels, before deleting all programs
-    removeUserItemAssignments(ITM_XEQ,"");   // Remove all labels assignments
+    removeUserItemAssignments(ITM_XEQ, "");   // Remove all labels assignments
 
     bool_t wasInRam = (programList[currentProgramNumber - 1].step > 0);
     resizeProgramMemory(1); // 1 block for an empty program
@@ -382,8 +382,9 @@ void defineCurrentProgramFromCurrentStep(void) {
 
 
 void scrollPemBackwards(void) {
-  if(firstDisplayedLocalStepNumber > 0)
+  if(firstDisplayedLocalStepNumber > 0) {
     --firstDisplayedLocalStepNumber;
+  }
   defineFirstDisplayedStep();
 }
 
@@ -411,7 +412,7 @@ int32_t pemLeftOffset(int32_t y) {
 
 
 static bool_t _isAngleType(uint8_t literalType) {
-  switch (literalType) {
+  switch(literalType) {
     case STRING_ANGLE_RADIAN:
     case STRING_ANGLE_GRAD:
     case STRING_ANGLE_DEGREE:
@@ -542,7 +543,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if(getSystemFlag(FLAG_ALPHA)) {
           char tmpChar = tmpString[4];
           tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0 ? T_cursorPos + 4 : T_cursorPos);
           tmpString[4] = tmpChar;
           xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
           tmpString[2 + cursorInString    ] = STD_CURSOR[0];
@@ -1066,7 +1067,7 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
         *(tmpPtr - 1) = editingLiteralType;  // [DL] force literal type when editing angles
       }
       *tmpPtr++ = stringByteLength(numBuffer);
-      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
+      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
       if(doInsertInProgram) {
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + offset);
         --currentLocalStepNumber;
@@ -1182,7 +1183,7 @@ void pemCloseNumberInput(void) {
       case NP_COMPLEX_FLOAT_PART:
       case NP_COMPLEX_EXPONENT: {
         if(aimBuffer[stringByteLength(aimBuffer)-1] == 'i') {
-          strcat(aimBuffer,"1");
+          strcat(aimBuffer, "1");
           inputLength++;
         }
 
@@ -1194,10 +1195,12 @@ void pemCloseNumberInput(void) {
           }
           if(*imag == 'i') {
             if(imag > numBuffer && *(imag - 1) == '-') {
-              *imag = '-'; *(imag - 1) = 0;
+              *imag = '-';
+              *(imag - 1) = 0;
             }
             else if(imag > numBuffer && *(imag - 1) == '+') {
-              *imag = 0; *(imag - 1) = 0;
+              *imag = 0;
+              *(imag - 1) = 0;
               ++imag;
             }
             else {
@@ -1272,7 +1275,7 @@ static void _pemCloseDateInput(void) {
 
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(numBuffer, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       internalDateToJulianDay(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
 
       real34ToString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), tmpPtr + 1);
@@ -1303,10 +1306,10 @@ static void _pemCloseAngleInput(int item) {
             [ITM_RAD2]   = STRING_ANGLE_RADIAN
         };
         int id = -1;
-        if (item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
+        if(item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
             id = angle_ids[item];
         }
-        if (id != -1) {
+        if(id != -1) {
             *(tmpPtr++) = id;
         }
         *(tmpPtr++) = stringByteLength(numBuffer);
@@ -1377,7 +1380,7 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  else if ((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
+  else if((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
     editingLiteralType = 0;
     pemCloseNumberInput();
     aimBuffer[0] = '!';
@@ -1578,7 +1581,8 @@ void insertStepInProgram(const int16_t func) {
           }
           if(func == VAR_UX || func == VAR_LX) {
             tmpString[5] = 'X';
-          } else {
+          }
+          else {
             tmpString[5] = 'Y';
           }
           _insertInProgram((uint8_t *)tmpString, 6);

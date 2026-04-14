@@ -30,7 +30,6 @@ GtkWidget      *screen;
 calcKeyboard_t  calcKeyboard[43];
 int             currentBezel; // 0=normal, 1=AIM, 2=TAM
 int16_t         screenStride;
-int16_t         debugWindow;
 uint32_t       *screenData;
 bool_t          screenChange;
 
@@ -382,7 +381,7 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
   }
 
   else {
-    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist, false, false));
   }
 }
 
@@ -772,7 +771,7 @@ void setParameter(char *p) {
     }
   }
 
-  else if (strcmp(l, "FARG") == 0) {
+  else if(strcmp(l, "FARG") == 0) {
     functionParameter = atoi(r);
   }
 
@@ -1254,7 +1253,7 @@ var1:
 
       reallocateRegister(regist, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
-      convertReal34RegisterToDateRegister(regist, regist, !YYSystem);
+      convertReal34RegisterToDateRegister(regist, regist, false);  //no !YYsystem needed here
     }
     else if(strcmp(l, "REMA") == 0) {
       // remove beginning and ending " and removing leading spaces
@@ -1764,7 +1763,7 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
     }
     return false;
   }
-  if (real34IsZero(a) && real34IsZero(b))
+  if(real34IsZero(a) && real34IsZero(b))
     return real34IsNegative(a) == real34IsNegative(b);
 
   return real34CompareEqual(a, b);
@@ -2535,7 +2534,7 @@ var2:
       checkRegisterType(regist, letter, dtDate, amNone);
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);
@@ -3304,7 +3303,7 @@ void checkOneCatalogSorting(const int16_t *catalog, int16_t catalogId, const cha
     int32_t cmp;
     if((cmp = compareString(indexOfItems[abs(catalog[i - 1])].itemCatalogName, indexOfItems[abs(catalog[i])].itemCatalogName, CMP_EXTENSIVE)) >= 0) {
       printf("In catalog %s, element %d (item %d) should be after element %d (item %d). cmp = %d\n",
-                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i],cmp);
+                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i], cmp);
       //exit(1);
     }
   }

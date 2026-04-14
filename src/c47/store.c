@@ -212,7 +212,8 @@ void fnStore(uint16_t regist) {
     if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
       if(isStatsMatrixN(&rows, regist)) {
         calcSigma(0);
-      } else {
+      }
+      else {
         clearStatisticalSums();
       }
     }
@@ -225,7 +226,8 @@ void fn2Sto(uint16_t regist) {
     setSystemFlag(FLAG_ASLIFT);
     copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
     copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
-  } else {
+  }
+  else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
@@ -241,7 +243,8 @@ void fn3Sto(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
     copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
     copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
-  } else {
+  }
+  else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
