@@ -32,38 +32,46 @@ TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_
       nextStep = findNextStep(step);
       if(nextStep) {
         numberOfBytesInStep = (uint16_t)(nextStep - step);
-        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1); fflush(stdout);
+        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1);
+        fflush(stdout);
 
         for(i=0; i<numberOfBytesInStep; i++) {
-          printf(" %02x", *(step + i)); fflush(stdout);
+          printf(" %02x", *(step + i));
+          fflush(stdout);
           if(i == 3 && numberOfBytesInStep > 4) {
             decodeOneStep(step);
             stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
             if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-              printf("   "); fflush(stdout);
+              printf("   ");
+              fflush(stdout);
             }
 
-            printf("   %s", tmpString + 2000); fflush(stdout);
+            printf("   %s", tmpString + 2000);
+            fflush(stdout);
           }
 
           if(i%4 == 3 && i != numberOfBytesInStep - 1) {
-            printf("\n          "); fflush(stdout);
+            printf("\n          ");
+            fflush(stdout);
           }
         }
 
         if(numberOfBytesInStep <= 4) {
           for(i=1; i<=4 - ((numberOfBytesInStep - 1) % 4); i++) {
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
           decodeOneStep(step);
           stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
           if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
 
-          printf("%s", tmpString + 2000); fflush(stdout);
+          printf("%s", tmpString + 2000);
+          fflush(stdout);
         }
       }
 
@@ -157,7 +165,7 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
       }
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));;
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -466,12 +474,16 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
     else {
       if(!GROUPRIGHT_DISABLED && digit < -1 && (abs(digit) % GROUPWIDTH_RIGHT) == 1) {
         *(strPtr++) = gapChar1Right[0];
-        if(gapChar1Right[1] !=1) *(strPtr++) = gapChar1Right[1];
+        if(gapChar1Right[1] !=1) {
+          *(strPtr++) = gapChar1Right[1];
+        }
       }
       *(strPtr++) = *(srcStr++);
       if(!GROUPLEFT_DISABLED && digit > 1 && (digit % GROUPWIDTH_LEFT) == 1) {
         *(strPtr++) = gapChar1Left[0];
-        if(gapChar1Left[1]!=1) *(strPtr++) = gapChar1Left[1];
+        if(gapChar1Left[1]!=1) {
+          *(strPtr++) = gapChar1Left[1];
+        }
       }
     }
     --digit;
@@ -614,10 +626,10 @@ static void decodeLiteral(uint8_t *literalAddress) {
       getStringLabelOrVariableName(literalAddress);
       _decodeNumeral(tmpString, tmpStringLabelOrVariableName, false, NULL, NULL);
        switch(*(literalAddress - 1)) {
-          case STRING_ANGLE_RADIAN: strcat(tmpString,STD_SUP_r); break;
-          case STRING_ANGLE_GRAD:   strcat(tmpString,STD_SUP_g); break;
-          case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
-          case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
+          case STRING_ANGLE_RADIAN: strcat(tmpString, STD_SUP_r);   break;
+          case STRING_ANGLE_GRAD:   strcat(tmpString, STD_SUP_g);   break;
+          case STRING_ANGLE_DEGREE: strcat(tmpString, STD_DEGREE);  break;
+          case STRING_ANGLE_MULTPI: strcat(tmpString, STD_SUP_pir); break;
           default: break;
         }
       break;
@@ -823,14 +835,18 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
         if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
-          sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemCatalogName);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemSoftmenuName);
+          sprintf(nameOp, "%2i", op - FIRST_CONSTANT + 1);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemCatalogName);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemSoftmenuName);
         }
-        if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
-        else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
+        if(op == ITM_op_j) {
+          sprintf(nameOp, "op_%s", COMPLEX_UNIT);
+        }
+        else if(op == ITM_op_j_pol) {
+          sprintf(nameOp, "op_%s" STD_SUB_SUN, COMPLEX_UNIT);
+        }
         if(nameOp[0] == 0) {
           if(textVersion == MODE_ALIAS) {
           #if defined(IR_PRINTING)
@@ -841,8 +857,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
             strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
           }
         }
-
-        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
+        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
+          expandConversionName(nameOp);
+        }
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
       }
@@ -866,11 +883,11 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
 
       default: {
         if(op == ITM_INTEGRAL) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
         }
         else
         if(op == ITM_INTEGRAL_YX) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
           if(nameOp[0] == 0) {

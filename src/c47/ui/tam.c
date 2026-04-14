@@ -242,7 +242,8 @@
     bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
-    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
+    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n", item, tam.mode);
+    //fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -959,7 +960,7 @@ printf("tam.value: %d\n", tam.value);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
-        else if (calcMode != CM_PEM) {
+        else if(calcMode != CM_PEM) {
           reallyRunFunction(tamOperation(), value);
           leaveTamModeIfEnabled();
           return;
@@ -1093,7 +1094,7 @@ printf("tam.value: %d\n", tam.value);
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         resetShiftState();
         leaveTamModeIfEnabled();
-        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer,'#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
+        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer, '#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
           addItemToNimBuffer(ITM_BACKSPACE);
         }
         addItemToNimBuffer(func);
@@ -1267,7 +1268,9 @@ printf("tam.value: %d\n", tam.value);
 
 
   void leaveTamModeIfEnabled(void) {
-    if(!tam.mode) return;
+    if(!tam.mode) {
+      return;
+    }
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
     }

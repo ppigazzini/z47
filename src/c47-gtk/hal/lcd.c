@@ -17,9 +17,9 @@ void print_caller(const char *format, ...) {
   Dl_info infoA, infoB;
   dladdr(cs[1], &infoA);
   dladdr(cs[2], &infoB);
-  printf("%s%s%s called from: %s%-30s%s",COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
+  printf("%s%s%s called from: %s%-30s%s", COLOR_CYAN, infoA.dli_sname, COLOR_DEFAULT, COLOR_BLUE, infoB.dli_sname, COLOR_DEFAULT);
 
-  if (format != NULL) {
+  if(format != NULL) {
     printf("| ");
     va_start(ap, format);
     vprintf(format, ap);
@@ -42,7 +42,7 @@ uint8_t *lcd_line_addr(int row) {
 }
 
 
-void 	LCD_write_line(uint8_t *line_buf) {
+void LCD_write_line(uint8_t *line_buf) {
   if(line_buf[1] >= SCREEN_HEIGHT) {
     char tmp[1000];
     sprintf(tmp, "line_buf[1] = %" PRIu8 ", it should be >= 0 and < %" PRIi32 "!\n", line_buf[1], (int32_t)SCREEN_HEIGHT);
@@ -64,7 +64,7 @@ void 	LCD_write_line(uint8_t *line_buf) {
 }
 
 
-void 	lcd_clear_buf(void) {
+void lcd_clear_buf(void) {
   for(uint8_t row = 0; row < SCREEN_HEIGHT; row++) {
     uint8_t *line_buf = lcd_buffer + 52 * row;
     for(uint8_t c = 2; c < 52; c++) {
@@ -85,7 +85,7 @@ void lcd_refresh(void) {
     }
   }
   #if defined(FULLUPDATE) // (UGLY)
-  if (changed) {
+  if(changed) {
     refresh_gui();
   }
   #endif // FULLUPDATE (UGLY)
@@ -106,7 +106,7 @@ void lcd_refresh_lines(uint8_t ln, uint8_t cnt){
 
 
 
-void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill ) {
+void bitblt24(uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill ) {
   if(dx < 1 || dx > 24) {
     return;
   }
@@ -125,9 +125,10 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
   const uint32_t bytes_needed = (bit_off + dx + 7) / 8;  // Actual bytes to write (1-4), prevents overflow at line end
 
   uint32_t srcbits;
-  if (fill == BLT_SET && blt_op != BLT_XOR) {
+  if(fill == BLT_SET && blt_op != BLT_XOR) {
     srcbits = (blt_op == BLT_ANDN) ? lowmask << bit_off : 0u;
-  } else {
+  }
+  else {
     srcbits = (val & lowmask) << bit_off;
   }
   uint8_t srcbytes[4] = {
@@ -137,11 +138,23 @@ void bitblt24	(	uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, i
     (uint8_t)(srcbits >> 24),
   };
   uint8_t *j = &lcd_buffer[y * (LCD_LINE_SIZE + 2) + byte_i + 2];
-  switch (blt_op) {
-    case BLT_OR:   for (uint32_t i = 0; i < bytes_needed; i++) j[i] |=  srcbytes[i]; break;
-    case BLT_XOR:  for (uint32_t i = 0; i < bytes_needed; i++) j[i] ^=  srcbytes[i]; break;
-    case BLT_ANDN: for (uint32_t i = 0; i < bytes_needed; i++) j[i] &= ~srcbytes[i]; break;
-    default: return;
+  switch(blt_op) {
+    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] |=  srcbytes[i];
+                   }
+                   break;
+
+    case BLT_XOR:  for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] ^=  srcbytes[i];
+                   }
+                   break;
+
+    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) {
+                     j[i] &= ~srcbytes[i];
+                   }
+                   break;
+
+    default:       return;
   }
   lcd_buffer[y * (LCD_LINE_SIZE + 2)] = 1u; // Mark line dirty
 }
@@ -153,7 +166,7 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
 
   if(x == 0 && y == 0 && dx == SCREEN_WIDTH && dy == SCREEN_HEIGHT) {  //JMTOCHECK is this needed?
     #if defined(MONITOR_CLRSCR)
-      printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n",calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
+      printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n", calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
     #endif
     // clear_ul(); //JMUL
   }
@@ -162,13 +175,13 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
     #if defined(MONITOR_CLRSCR)
       printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
                                     #if defined(ANALYSE_REFRESH)
-                                      print_caller();
+                                      print_caller(NULL);
                                     #endif //ANALYSE_REFRESH
     #endif
     return;
   }
   int blt_op = val ? BLT_OR : BLT_ANDN;
-  for (col = x; col < endX; col += 24) {
+  for(col = x; col < endX; col += 24) {
     cols = min(24, endX - col);
     for(line = y; line < endY; line++) {
       bitblt24(col, cols, line, 0xFFFFFF, blt_op, BLT_NONE);
@@ -184,7 +197,9 @@ gboolean ui_is_active = FALSE;
 
 void refresh_gui(void) {
   while(gtk_events_pending()) {
-    if(ui_is_active) break;  // Exit if UI active - original W32 issue, but safer on all OS
+    if(ui_is_active) {
+      break;  // Exit if UI active - original W32 issue, but safer on all OS
+    }
     gtk_main_iteration();
   }
 }
@@ -199,7 +214,7 @@ void _lcdRefresh(void) {              //called by force_refresh() and _printHalf
 }
 void _lcdBandRefresh(uint32_t y, uint32_t dy) {
            #if defined(ANALYSE_REFRESH)
-            print_caller("y=%u, dy=%u\n",y, dy);
+            print_caller("y=%u, dy=%u\n", y, dy);
            #endif //ANALYSE_REFRESH
   lcd_refresh();
   // _lcdBandRefreshHelper(y, dy);

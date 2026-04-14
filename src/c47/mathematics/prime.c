@@ -75,8 +75,8 @@ uint16_t smallPrimeList(uint16_t index) {
 
 //To check if the list of small primes being split into two methods, are contimuous
 //void listAllPrimesInList(void) {
-//  for (uint i = 0; i < smallPrimeListNumber; i++) {
-//    printf("prime: %u : %u\n",i,smallPrimeList(i));
+//  for(uint i = 0; i < smallPrimeListNumber; i++) {
+//    printf("prime: %u : %u\n", i, smallPrimeList(i));
 //  }
 //}
 
@@ -230,7 +230,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
     }
 
     longIntegerInit(tmp);
-    longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+    longIntegerPowerUIntUInt(10, maximumPrime, tmp);
     longIntegerSubtract(primeCandidate, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
       badDomainError(REGISTER_X);
@@ -603,12 +603,12 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       clearRegisterLine(REGISTER_X, true, true);
       uint8_t savedDisplayFormatDigits = displayFormatDigits;
       displayFormatDigits = 0;
-      strcpy(tmpString,"Last:   ");
+      strcpy(tmpString, "Last:   ");
       real34ToDisplayString(ss, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
       convertLongIntegerToReal34(nextp, &rr);
 
-      strcpy(tmpString,"Test:   ");
+      strcpy(tmpString, "Test:   ");
       real34ToDisplayString(&rr, amNone, tmpString+5, &standardFont, 400-6*18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
       showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
 
@@ -634,7 +634,7 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
   longIntegerCopy(exponent, count);
 
   while(!longIntegerIsNegative(count)) {
-    //printLongIntegerToConsole(count,"  count:"," \n");
+    //printLongIntegerToConsole(count, "  count:", " \n");
     if(k == 0) {                                    // Divisor Count is the generalized sigma function, with k = 0
       uInt32ToLongInteger(0u, tmp);
     }
@@ -648,8 +648,8 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
     longIntegerPower(tmpbase, tmp, pwr);
     longIntegerCopy(pwr, tmp);
     longIntegerAdd(sum, tmp, sum);
-    //printLongIntegerToConsole(pwr,"  pwr:"," ");
-    //printLongIntegerToConsole(sum,"  sum:","\n");
+    //printLongIntegerToConsole(pwr, "  pwr:", " ");
+    //printLongIntegerToConsole(sum, "  sum:", "\n");
     longIntegerSubtractUInt(count, 1, count);
   }
 
@@ -722,18 +722,20 @@ static void _doFnEvPFacts     (uint16_t param) {
           if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
             convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
             convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
-            //printLongIntegerToConsole(p_li,"base:","  ");
-            //printLongIntegerToConsole(k_li,"exp:","\n");
+            //printLongIntegerToConsole(p_li, "base:", "  ");
+            //printLongIntegerToConsole(k_li, "exp:", "\n");
             switch(param){
-              case M_FACTORS: longIntegerPower(p_li, k_li, factor); break;
+              case M_FACTORS: longIntegerPower(p_li, k_li, factor);
+                              break;
               case M_SIGMA_0:
               case M_SIGMA_1:
-              case M_SIGMA_k: longIntegerSumPowers(p_li, k_li, pwr, factor); break;
+              case M_SIGMA_k: longIntegerSumPowers(p_li, k_li, pwr, factor);
+                              break;
               default:;
             }
             longIntegerFree(p_li);
             longIntegerFree(k_li);
-            //printLongIntegerToConsole(factor,"factor:","\n");
+            //printLongIntegerToConsole(factor, "factor:", "\n");
             longIntegerCopy(prod, tmp_prod);
             longIntegerMultiply(tmp_prod, factor, prod);
           }
@@ -850,7 +852,7 @@ static void doFnEvPFacts (uint16_t param) {
     longIntegerInit(tmp);
     int32ToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
-    longIntegerCopy(tmp,y);                                        // y is the number to be subtracted
+    longIntegerCopy(tmp, y);                                       // y is the number to be subtracted
     convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);    // restore matrix
 
     switch(param) {
@@ -900,7 +902,7 @@ static bool_t isRegisterMatrixFactors(calcRegister_t reg, bool_t *isNegative) {
     if(head->matrixRows != 2 || cols < 1) { // changed to allow single column, -1^1 or m^n
       return false;
     }
-    for (i = 0; i < cols; i++) {
+    for(i = 0; i < cols; i++) {
       real34ToReal(elems + i + 0 * cols, &x);
       if(!realIsAnInteger(&x)) {
         return false;
@@ -1076,7 +1078,7 @@ void fnEvPFacts(uint16_t param) {
       }
       else {
         #if defined(PC_BUILD)
-          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n",lastErrorCode);
+          printf("fnEvPFacts 07: Error passed through: lastErrorCode=%d\n", lastErrorCode);
         #endif
       }
       break;
@@ -1358,13 +1360,13 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           loopp++;
           if(checkHalfSec()) {
             keepFileNameAlive();
-            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, n);
               force_refresh(force);
             }
           }
           if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;
           }
@@ -1375,23 +1377,23 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           if(Factors_3_Pollard && (instruction == FACTORS_ITERATE || instruction == FACTORS_SETUP)) {
             PollardResult = pollard_step(&pollardData, pollardFactor, instruction, 10);
                           #if defined(MONITOR_FACTORS)
-                            printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r",loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
+                            printf("   Factor loops: %15d | Pollard steps: %10d | Attempts: %3d | Status: %4d     \r", loopp, PollardResult.total_iterations, PollardResult.attempts, PollardResult.status);
                             fflush(stdout);
-                          #endif //MONITOR_FACTORS
+                          #endif // MONITOR_FACTORS
             if(programRunStop == PGM_WAITING) {
               goto Broken;
             }
             if(PollardResult.status == FACTORS_DONE) {
                           #if defined(MONITOR_FACTORS)
                             gmp_printf("   Pollard found factor: %Zd                    \n", pollardFactor);
-                          #endif //MONITOR_FACTORS
+                          #endif // MONITOR_FACTORS
               longIntegerCopy(pollardFactor, result);
               goto cleanup;
             }
             else if(PollardResult.status == FACTORS_FAIL) {
                           #if defined(MONITOR_FACTORS)
                             printf("   Pollard failed after %d attempts.                \n", PollardResult.attempts);
-                          #endif //MONITOR_FACTORS
+                          #endif // MONITOR_FACTORS
             }
             instruction = PollardResult.status;
           }
@@ -1429,7 +1431,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
         #if defined(MONITOR_FACTORS)
           printf("\n");
           fflush(stdout);
-        #endif //MONITOR_FACTORS
+        #endif // MONITOR_FACTORS
 
         if(longIntegerCompare(ii, BB) >= 0) {
           continue;
@@ -1457,13 +1459,13 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
           loopp++;
           if(checkHalfSec()) {
             keepFileNameAlive();
-            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard" STD_UP_ARROW " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
               _showProgress(&lastAdded, n);
               force_refresh(force);
             }
           }
           if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
-            progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
             break;
           }
@@ -1493,7 +1495,7 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
 
 Broken:
         if(exitKeyWaiting()  || programRunStop == PGM_WAITING) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           break;
         }
@@ -1604,12 +1606,12 @@ typedef struct FactorAdder {
 
 //  static void initFactorCreateFromMatrix(FactorAdder_t *faddr) {
 //    faddr->nExpons = 0;
-//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0,const34_1)) {
+//    if(!real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0, const34_1)) {
 //      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
 //      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
 //      for(int j = cols-1-1; j >= 0 ; j--) {
 //        for(int i = rows-1; i >= 0; i--) {
-//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j,REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
+//          real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*cols+j, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+i*(cols)+j+1);
 //        }
 //      }
 //      real34Copy(const34_1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X)+0);
@@ -1630,16 +1632,16 @@ typedef struct FactorAdder {
       uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
       uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
 
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               printf("\ndumpExponents:\n");
-                                              printRegisterToConsole(regist,"Matrix: ","\n");
+                                              printRegisterToConsole(regist, "Matrix: ", "\n");
                                               printf("  Exponent Array: faddr->nExpons=%d\n", faddr->nExpons);
                                               for(int ii = 0; ii < faddr->nExpons; ii++) {
-                                                printf("%d:%d ",ii, faddr->expons[ii]);
+                                                printf("%d:%d ", ii, faddr->expons[ii]);
                                               }
                                               printf("\n");
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
 
     if(faddr->nExpons != cols || rows != 2 || getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -1649,16 +1651,16 @@ typedef struct FactorAdder {
        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        return;
     }
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               printf("dumpExponents:  fill exponents:  faddr->nExpons==%u dumpForFewerThan=%u\n", faddr->nExpons, dumpForFewerThan);
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
     for( uint16_t i = 0;  i < min(faddr->nExpons, dumpForFewerThan);  ++i ) {
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               printf("--b:  adding expon at faddr->nExpons==%u, i==%u, val %u, ind %u\n", faddr->nExpons, i, faddr->expons[i], faddr->nExpons+i);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
       uInt32ToReal34(faddr->expons[i], REGISTER_REAL34_MATRIX_ELEMENTS(regist) + faddr->nExpons+i);
     }
   }
@@ -1671,8 +1673,8 @@ typedef struct FactorAdder {
   }
 
 
-  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded,FactorAdder_t *faddr) {
-    //printLongIntegerToConsole(factor,"-->","\n");
+  static bool_t addFactor(longInteger_t factor, calcRegister_t regist, const real34_t *lastAdded, FactorAdder_t *faddr) {
+    //printLongIntegerToConsole(factor, "-->", "\n");
 
     if(addFactorsToTSV) {
       convertLongIntegerToLongIntegerRegister(factor, TEMP_REGISTER_1);
@@ -1681,39 +1683,41 @@ typedef struct FactorAdder {
 
     pushLongIntegerToJK(factor);
 
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               printf("--c:  addFactor()\n");
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
     if(getRegisterDataType(regist) != dtReal34Matrix) {
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 1:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
       //Initialize Memory for Matrix
       if(initMatrixRegister(regist, 2, 1, false)) {
-                                             #ifdef MONITOR_FACTORS
+                                             #if defined(MONITOR_FACTORS)
                                               uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 2:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
         setSystemFlag(FLAG_ASLIFT);
       }
       else {
-                                            #ifdef MONITOR_FACTORS
+                                            #if defined(MONITOR_FACTORS)
                                               uint16_t cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
                                               uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
                                               printf("addFactor 3:\n");
                                               printf("--a:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
 
-        if(lastErrorCode != 0) goto returnFalse;
+        if(lastErrorCode != 0) {
+          goto returnFalse;
+        }
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           uint16_t cols_ = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
@@ -1746,12 +1750,14 @@ typedef struct FactorAdder {
       faddr->expons[(faddr->nExpons)-1] = 1;
     }
     uint16_t wkgCols = faddr->nExpons;
-                                            #ifdef MONITOR_FACTORS
-                                              gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
+                                            #if defined(MONITOR_FACTORS)
+                                              gmp_printf("--d:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n", factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
     if(!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
-      if(lastErrorCode != 0) goto returnFalse;
+      if(lastErrorCode != 0) {
+        goto returnFalse;
+      }
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
@@ -1763,10 +1769,10 @@ typedef struct FactorAdder {
     int counter = faddr->nExpons;
     uint16_t n = rows*counter;
     uint16_t c = n/2;
-                                            #ifdef MONITOR_FACTORS
-                                              printf("faddr->nExpons=%d n=%d c=%d\n",faddr->nExpons, n, c);
+                                            #if defined(MONITOR_FACTORS)
+                                              printf("faddr->nExpons=%d n=%d c=%d\n", faddr->nExpons, n, c);
                                               fflush(stdout);
-                                            #endif //MONITOR_FACTORS
+                                            #endif // MONITOR_FACTORS
     real34_t factorR;
     convertLongIntegerToReal34(factor, &factorR);
     //search for existing factors
@@ -1775,20 +1781,20 @@ typedef struct FactorAdder {
     }
 
     //increment exponent if found
-    if( longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter,const34_1) ) {
+    if(longIntegerSign(factor) != 0 && counter >= 0 && !real34CompareAbsEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + counter, const34_1) ) {
       ++(faddr->expons[counter]);
-                                              #ifdef MONITOR_FACTORS
-                                                printf("--e:   use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
-                                              #endif //MONITOR_FACTORS
+                                              #if defined(MONITOR_FACTORS)
+                                                printf("--e:   use existing:  created expons %u at %u\n", faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
+                                              #endif // MONITOR_FACTORS
     }
     else {
-      bool_t incNExpons = real34CompareAbsEqual(&factorR,const34_1) ? false : true;
+      bool_t incNExpons = real34CompareAbsEqual(&factorR, const34_1) ? false : true;
       if( !incNExpons ) {
         c = 0;
       }
-                                              #ifdef MONITOR_FACTORS
+                                              #if defined(MONITOR_FACTORS)
                                                 printf("--f:   restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
-                                              #endif //MONITOR_FACTORS
+                                              #endif // MONITOR_FACTORS
       real34Copy(&factorR, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + c);
       real34Copy(&factorR, lastAdded);
       if( incNExpons ) {
@@ -1824,10 +1830,16 @@ typedef struct FactorAdder {
     dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
     refreshRegisterLine(REGISTER_X);
-    #if defined (PC_BUILD) //Note clear the correct number of lines to ensure no old register debris remains on screen. This is only required on SIM as the hardware clears the screen presumably
-      if(cachedDisplayStack <= 3) refreshRegisterLine(REGISTER_Y);
-      if(cachedDisplayStack <= 2) refreshRegisterLine(REGISTER_Z);
-      if(cachedDisplayStack <= 1) refreshRegisterLine(REGISTER_T);
+    #if defined(PC_BUILD) //Note clear the correct number of lines to ensure no old register debris remains on screen. This is only required on SIM as the hardware clears the screen presumably
+      if(cachedDisplayStack <= 3) {
+        refreshRegisterLine(REGISTER_Y);
+      }
+      if(cachedDisplayStack <= 2) {
+        refreshRegisterLine(REGISTER_Z);
+      }
+      if(cachedDisplayStack <= 1) {
+        refreshRegisterLine(REGISTER_T);
+      }
     #endif //PC_BUILD
 
     return true;
@@ -1852,7 +1864,7 @@ static void printTitles(longInteger_t input) {
     fnP_All_Regs(PRN_TMP);
 
     char filename[50];
-    strcpy(filename,"FACTORS:");
+    strcpy(filename, "FACTORS:");
     fnStrtoReg(filename, TEMP_REGISTER_1);
     fnP_All_Regs(PRN_TMP);
   }
@@ -1889,7 +1901,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     longIntegerSetPositiveSign(currentNumber);
   }
 
-  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerPowerUIntUInt(10, maximumPrime, tmp);
   longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
   if(longIntegerIsPositive(tmp)) {
     badDomainError(REGISTER_X);
@@ -1943,37 +1955,37 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
 
   if(Factors_1_SmallPrimes) {
     // first do a pre-run, to do small prime checking
-    for (uint16_t i = 0; i < smallPrimeListNumber; i++) {
+    for(uint16_t i = 0; i < smallPrimeListNumber; i++) {
       uint16_t smallP = smallPrimeList(i);
       while(mpz_divisible_ui_p(currentNumber, smallP)) {
         loopp++;
         if(checkHalfSec()) {
           keepFileNameAlive();
-          if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =",smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          if(progressHalfSecUpdate_Integer(timed, "Factors: Small prime trial: p =", smallP, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
             _showProgress(&lastAdded, currentNumber);
             dumpExponents(REGISTER_X, &faddr, 13);
             force_refresh(force);
           }
         }
         if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           break;
         }
                             #if defined(MONITOR_FACTORS)
                               printf("\nPrime factor: %u -> PrePrimeRun; Remaining currentNumber -> queue: ", smallP);
-                            #endif //MONITOR_FACTORS
+                            #endif // MONITOR_FACTORS
         mpz_divexact_ui(currentNumber, currentNumber, smallP);
                             #if defined(MONITOR_FACTORS)
                               mpz_out_str(stdout, 10, currentNumber);
-                            #endif //MONITOR_FACTORS
+                            #endif // MONITOR_FACTORS
         uInt32ToLongInteger((unsigned long)(smallP), tempPrePrimeRun);
         if(!addFactor(tempPrePrimeRun, REGISTER_X, &lastAdded, &faddr)) {
           goto cleanup;
         }
                             #if defined(MONITOR_FACTORS)
                               printf("\n");
-                            #endif //MONITOR_FACTORS
+                            #endif // MONITOR_FACTORS
       }
     } // end of small prime loop
   }
@@ -1993,14 +2005,14 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
       loopp++;
       if(checkHalfSec()) {
         keepFileNameAlive();
-        if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =",multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(progressHalfSecUpdate_Integer(timed, "Factors: Perfect Sq trial: p =", multipliers[i], halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           _showProgress(&lastAdded, currentNumber);
           dumpExponents(REGISTER_X, &faddr, 13);
           force_refresh(force);
         }
       }
       if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
         break;
       }
@@ -2010,9 +2022,9 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
         longIntegerToUInt32(currentNumber, n32);
         uint64_t kn = (uint64_t)k * (uint64_t)n32;
         #if defined(MONITOR_FACTORS)
-          printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n",n32, k, kn);
+          printf("Early squares trial: currentNumber: %" PRIu32 ", sqtest: %" PRIu32 " trial square: %" PRIu64 "\n", n32, k, kn);
           fflush(stdout);
-        #endif
+        #endif // MONITOR_FACTORS
         uint32_t root;
         if(is_perfect_square_uint32(kn, &root)) {
           // Skip trivial perfect square 1 * 1 = 1
@@ -2020,7 +2032,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
             #if defined(MONITOR_FACTORS)
               printf("Perfect square detected early: %u * %u = %" PRIu64 "\n", k, n32, kn);
               fflush(stdout);
-            #endif
+            #endif // MONITOR_FACTORS
             // Use gcd to extract non-trivial factor safely
             longInteger_t gcd;
             longIntegerInit(gcd);
@@ -2049,7 +2061,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
                             printf("Factorizing: ");
                             mpz_out_str(stdout, 10, currentNumber);
                             printf("\nFactors found: ");
-                          #endif //MONITOR_FACTORS
+                          #endif // MONITOR_FACTORS
 
   longInteger_t current;
   longIntegerInit(current);
@@ -2057,22 +2069,22 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     longIntegerCopy(queue[queue_start], current);
     queue_start = (queue_start + 1) % MAXIMUM_QUEUE_SIZE;
                         #if defined(MONITOR_FACTORS)
-                          printf("loopp=%d queue_start=%d queue_end=%d\n",loopp, queue_start, queue_end);
+                          printf("loopp=%d queue_start=%d queue_end=%d\n", loopp, queue_start, queue_end);
                           mpz_out_str(stdout, 10, current);
                           printf(" ");
-                        #endif //MONITOR_FACTORS
+                        #endif // MONITOR_FACTORS
 
     loopp++;
     if(checkHalfSec()) {
       keepFileNameAlive();
-      if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      if(progressHalfSecUpdate_Integer(timed, "Factors: Shanks/Pollard: n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&lastAdded, current);
         dumpExponents(REGISTER_X, &faddr, 13);
         force_refresh(force);
       }
     }
     if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-      progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+      progressHalfSecUpdate_Integer(force+1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
       programRunStop = PGM_WAITING;
       break;
     }
@@ -2082,7 +2094,7 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     if(longIntegerCompareUInt(current, 1) == 0) {
                         #if defined(MONITOR_FACTORS)
                           printf("Skip, current is 1\n");
-                        #endif //MONITOR_FACTORS
+                        #endif // MONITOR_FACTORS
       continue;
     }
 
@@ -2091,13 +2103,13 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
                       #if defined(MONITOR_FACTORS)
                         mpz_out_str(stdout, 10, current);
                         printf(" ");
-                      #endif //MONITOR_FACTORS
+                      #endif // MONITOR_FACTORS
       if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
         goto doneWhile;
       }
                       #if defined(MONITOR_FACTORS)
                         printf("Skip, current is prime\n");
-                      #endif //MONITOR_FACTORS
+                      #endif // MONITOR_FACTORS
       continue;
     }
 
@@ -2109,13 +2121,13 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
                         printf("SQUFOF failed; treat current as prime: ");
                         mpz_out_str(stdout, 10, current);
                         printf(" ");
-                      #endif //MONITOR_FACTORS
+                      #endif // MONITOR_FACTORS
       if(!addFactor(current, REGISTER_X, &lastAdded, &faddr)) {
         goto doneWhile;
       }
                       #if defined(MONITOR_FACTORS)
                         printf("current considered prime, next\n");
-                      #endif //MONITOR_FACTORS
+                      #endif // MONITOR_FACTORS
       continue;
     }
 
@@ -2127,19 +2139,21 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     int next_next_end = (next_end + 1) % MAXIMUM_QUEUE_SIZE;
     if(next_next_end != queue_start) {
                         #if defined(MONITOR_FACTORS)
-                          printf("Enqueueing: %u -> %u : factor: ",queue_end, queue_start);
+                          printf("Enqueueing: %u -> %u : factor: ", queue_end, queue_start);
                           mpz_out_str(stdout, 10, factor);
                           printf(" quotient: ");
                           mpz_out_str(stdout, 10, quotient);
                           printf("\n");
-                        #endif //MONITOR_FACTORS
+                        #endif // MONITOR_FACTORS
       longIntegerCopy(factor, queue[queue_end]);
       queue_end = next_end;
       longIntegerCopy(quotient, queue[queue_end]);
       queue_end = next_next_end;
     }
     else {
-      if(lastErrorCode != 0) break;
+      if(lastErrorCode != 0) {
+        break;
+      }
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
@@ -2210,7 +2224,7 @@ char* pollard_status(factors_status_t st) {
     case FACTORS_RESET:   return("RESET  "); break;
     case FACTORS_DONE:    return("DONE   "); break;
     case FACTORS_FAIL:    return("FAIL   "); break;
-    default:return("");break;
+    default:              return("");        break;
   }
 }
 /*
@@ -2326,7 +2340,7 @@ if(instruction == FACTORS_RESET || (instruction == FACTORS_SETUP && self->iterat
     for(int i = 0; i < steps; ++i) {
 // Might be needed if an exit key is not caugt in the main iteration. I doubt though. If no complaints, this can be deleted. 2026-03-07
 //      if(exitKeyWaiting() || programRunStop == PGM_WAITING) {
-//        progressHalfSecUpdate_Integer(force+1, "Interrupted1: ",loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+//        progressHalfSecUpdate_Integer(force+1, "Interrupted1: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
 //        programRunStop = PGM_WAITING;
 //        break;
 //      }

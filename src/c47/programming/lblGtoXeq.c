@@ -655,10 +655,12 @@ static void _putLiteral(uint8_t *literalAddress) {
         }
         if(*imag == 'i') {
           if(imag > tmpStringLabelOrVariableName && *(imag - 1) == '-') {
-            *imag = '-'; *(imag - 1) = 0;
+            *imag = '-';
+            *(imag - 1) = 0;
           }
           else if(imag > tmpStringLabelOrVariableName && *(imag - 1) == '+') {
-            *imag = 0; *(imag - 1) = 0;
+            *imag = 0;
+            *(imag - 1) = 0;
             ++imag;
           }
           else {
@@ -738,7 +740,7 @@ int16_t executeOneStep(uint8_t *step) {
   #endif //IR_PRINTING
     
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  executeOneStep: §%i§%s§%s§\n",op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
+      printf("   >>>  executeOneStep: §%i§%s§%s§\n", op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
     #endif // PC_BUILD
 
 

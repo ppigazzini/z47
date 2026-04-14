@@ -62,7 +62,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
           //printf(">>> graphVariable = %i\n", graphVariable);
           if(lastErrorCode != 0) {
             #if defined(VERBOSE_SOLVER00)
-            printf("ERROR CODE in initialize_functionA: %u\n",lastErrorCode);
+            printf("ERROR CODE in initialize_functionA: %u\n", lastErrorCode);
             #endif // VERBOSE_SOLVER00
             lastErrorCode = 0;
           }
@@ -72,7 +72,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
         #if defined(PC_BUILD)
           //printf(">>> graphVariable = %i\n", graphVariable);
           #if defined(VERBOSE_SOLVER00)
-            printf("ERROR CODE in initialize_functionB: %u\n",lastErrorCode);
+            printf("ERROR CODE in initialize_functionB: %u\n", lastErrorCode);
           #endif // VERBOSE_SOLVER00
         #endif //PC_BUILD
       }
@@ -83,7 +83,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
   static void execute_rpn_function(void){
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
       #if defined(PC_BUILD)
-        printf("Error: No graph variable %u\n",graphVariabl1);
+        printf("Error: No graph variable %u\n", graphVariabl1);
       #endif //PC_BUILD
       return;
     }
@@ -92,8 +92,8 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     if(regStats != INVALID_VARIABLE) {
       fnStore(regStats);                  //place X register into x
                                     #if defined(VERBOSE_SOLVER0)
-                                      printf("Graph variable x=%u: ",graphVariabl1);
-                                      printRegisterToConsole(graphVariabl1, " = ","\n");
+                                      printf("Graph variable x=%u: ", graphVariabl1);
+                                      printRegisterToConsole(graphVariabl1, " = ", "\n");
                                     #endif //VERBOSE_SOLVER0
 
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
@@ -101,13 +101,13 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
                                     #if defined(VERBOSE_SOLVER0)
                                       printf("Graph variable y ");
-                                      printRegisterToConsole(REGISTER_X, " = ","\n");
+                                      printRegisterToConsole(REGISTER_X, " = ", "\n");
                                     #endif //VERBOSE_SOLVER0
 
                                     #if defined(PC_BUILD)
                                       if(lastErrorCode != 0) {
                                         #if defined(VERBOSE_SOLVER00)
-                                        printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
+                                        printf("ERROR CODE in execute_rpn_function: %u\n", lastErrorCode);
                                         #endif // VERBOSE_SOLVER00
                                         lastErrorCode = 0;
                                       }
@@ -115,23 +115,23 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       fnRCL(regStats);
 
                                     #if defined(VERBOSE_SOLVER0)
-                                      printRegisterToConsole(REGISTER_X,">>> Calc x=","");
-                                      printRegisterToConsole(REGISTER_Y," y=","");
+                                      printRegisterToConsole(REGISTER_X, ">>> Calc x=", "");
+                                      printRegisterToConsole(REGISTER_Y, " y=", "");
                                     #endif // VERBOSE_SOLVER0
 
-                                    if (ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
-                                      copySourceRegisterToDestRegister(REGISTER_X,REGISTER_J);
-                                      copySourceRegisterToDestRegister(REGISTER_Y,REGISTER_K);
+                                    if(ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2) {
+                                      copySourceRegisterToDestRegister(REGISTER_X, REGISTER_J);
+                                      copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_K);
                                       fnP_All_Regs(PRN_XYr);
-                                      copySourceRegisterToDestRegister(REGISTER_J,REGISTER_X);
-                                      copySourceRegisterToDestRegister(REGISTER_K,REGISTER_Y);
+                                      copySourceRegisterToDestRegister(REGISTER_J, REGISTER_X);
+                                      copySourceRegisterToDestRegister(REGISTER_K, REGISTER_Y);
                                     }
 
     }
     else {
       #if defined(PC_BUILD)
         #if defined(VERBOSE_SOLVER00)
-        printf("ERROR in execute_rpn_function; invalid variable: %u\n",lastErrorCode);
+        printf("ERROR in execute_rpn_function; invalid variable: %u\n", lastErrorCode);
         #endif // VERBOSE_SOLVER00
         lastErrorCode = 0;
       #endif
@@ -151,7 +151,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     if(regStats == INVALID_VARIABLE) {
       return 0;
     }
-    if(isStatsMatrix(&rows,plotStatMx)) {
+    if(isStatsMatrix(&rows, plotStatMx)) {
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
       return stats.header.matrixRows;
@@ -163,9 +163,9 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
   void fnClDrawMx(uint8_t origin) {
-                                  #ifdef STATDEBUG
-                                    printf("Clearing Draw Matrix, from %d\n",origin);
-                                  #endif //STATDEBUG
+                                  #if defined(STATDEBUG)
+                                    printf("Clearing Draw Matrix, from %d\n", origin);
+                                  #endif // STATDEBUG
     PLOT_ZOOM = 0;
     calcRegister_t regStats = findNamedVariable("DrwMX");
     if(regStats != INVALID_VARIABLE) {
@@ -177,19 +177,19 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
   static void AddtoDrawMx() {
     real_t x, y;
     uint16_t rows = 0, cols;
-                                  #ifdef STATDEBUG
+                                  #if defined(STATDEBUG)
                                     char prefix[100];
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
-                                    printf("Adding to Draw Matrix %s\n",prefix);
-                                  #endif //STATDEBUG
+                                    printf("Adding to Draw Matrix %s\n", prefix);
+                                  #endif // STATDEBUG
     calcRegister_t regStats = regStatsXY;
-    if(!isStatsMatrixN(&rows,regStats)) {
+    if(!isStatsMatrixN(&rows, regStats)) {
       regStats = allocateNamedMatrix(plotStatMx, 1, 2);
       regStatsXY = regStats;
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
-      realMatrixInit(&stats,1,2);
+      realMatrixInit(&stats, 1, 2);
     }
     else {
       if(appendRowAtMatrixRegister(regStats)) {
@@ -210,16 +210,16 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
       realToReal34(&x, &stats.matrixElements[(rows-1) * cols    ]);
       realToReal34(&y, &stats.matrixElements[(rows-1) * cols + 1]);
 
-                                  #ifdef STATDEBUG
-                                    printf("[r,c] [%u,%u]=",rows,cols);
-                                    printRealToConsole(&x,"x:="," ");
-                                    printRealToConsole(&y,"y:=","\n");
-                                  #endif //STATDEBUG
+                                  #if defined(STATDEBUG)
+                                    printf("[r, c] [%u, %u]=", rows, cols);
+                                    printRealToConsole(&x, "x:=", " ");
+                                    printRealToConsole(&y, "y:=", "\n");
+                                  #endif // STATDEBUG
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "additional matrix line not added; rows = %i",rows);
+        sprintf(errorMessage, "additional matrix line not added; rows = %i", rows);
         moreInfoOnError("In function AddtoDrawMx:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
@@ -250,15 +250,15 @@ typedef struct {
 
 
 bool_t validateDiscontinuityResolution(PlotPoint *buffer, int count, double yBefore, double yAfter, double discontinuityThreshold) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("\nVALIDATING DISCONTINUITY RESOLUTION:");
     printf("\n  Points: %d, yBefore=%.6f, yAfter=%.6f, threshold=%.6f\n", count, yBefore, yAfter, discontinuityThreshold);
-  #endif
+  #endif // GRAPHDEBUG
 
   if(count < 3) {
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("  INVALID: Not enough points\n");
-    #endif
+    #endif // GRAPHDEBUG
     return false;
   }
 
@@ -270,15 +270,21 @@ bool_t validateDiscontinuityResolution(PlotPoint *buffer, int count, double yBef
   for(int i = 1; i < count; i++) {
     double jump = fabs(buffer[i].y - buffer[i-1].y);
     totalVariation += jump;
-    if(jump > maxJump) maxJump = jump;
+    if(jump > maxJump) {
+      maxJump = jump;
+    }
   }
 
   // Also check connection to endpoints
   double startJump = fabs(buffer[0].y - yBefore);
   double endJump = fabs(yAfter - buffer[count-1].y);
 
-  if(startJump > maxJump) maxJump = startJump;
-  if(endJump > maxJump) maxJump = endJump;
+  if(startJump > maxJump) {
+    maxJump = startJump;
+  }
+  if(endJump > maxJump) {
+    maxJump = endJump;
+  }
 
   // If the maximum jump in fine steps is still above threshold, discontinuity persists
   bool_t discontinuityResolved = (maxJump < discontinuityThreshold);
@@ -287,49 +293,47 @@ bool_t validateDiscontinuityResolution(PlotPoint *buffer, int count, double yBef
   double avgVariation = totalVariation / (count - 1);
   bool_t smoothTransition = (maxJump < 3.0 * avgVariation) || (maxJump < discontinuityThreshold * 0.5);
 
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("  maxJump=%.6f, avgVariation=%.6f\n", maxJump, avgVariation);
     printf("  startJump=%.6f, endJump=%.6f\n", startJump, endJump);
     printf("  discontinuityResolved=%d, smoothTransition=%d\n", discontinuityResolved, smoothTransition);
-  #endif
+  #endif // GRAPHDEBUG
   return discontinuityResolved && smoothTransition;
 }
 
 
 
 double calculateNewStepSize(int discontinuityDetected, double grad1, double grad2, bool_t grad2IncreaseDetected, double dx0) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("calculateNewStepSize: discontinuity=%d, grad1=%.6f, grad2=%.6f, increase=%d, dx0=%.6f\n", discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
-  #endif
+  #endif // GRAPHDEBUG
 
   if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
     double newDx = dJMP * dx0;
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("  -> Discontinuity mode: newDx=%.6f\n", newDx);
-    #endif
+    #endif // GRAPHDEBUG
     return newDx;
-  } else
-
-  if(grad2 == 0 || grad1 == 0) {
-    #ifdef GRAPHDEBUG
+  }
+  else if(grad2 == 0 || grad1 == 0) {
+    #if defined(GRAPHDEBUG)
       printf("  -> Zero gradient: keeping dx0=%.6f\n", dx0);
-    #endif
+    #endif // GRAPHDEBUG
     return dx0;
-  } else
-
-  if(grad2IncreaseDetected) {
+  }
+  else if(grad2IncreaseDetected) {
     double ratio1 = grad2/grad1;
     double ratio2 = grad1/grad2;
     double newDx = dx0 * ((ratio1 > SS1 || ratio2 > SS1) ? 0.5 : 1.0);
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("  -> Gradient increase: ratio1=%.3f, ratio2=%.3f, newDx=%.6f\n", ratio1, ratio2, newDx);
-    #endif
+    #endif // GRAPHDEBUG
     return newDx;
-  } else {
-
-    #ifdef GRAPHDEBUG
+  }
+  else {
+    #if defined(GRAPHDEBUG)
       printf("  -> No change: keeping dx0=%.6f\n", dx0);
-    #endif
+    #endif // GRAPHDEBUG
     return dx0;
   }
 }
@@ -337,9 +341,9 @@ double calculateNewStepSize(int discontinuityDetected, double grad1, double grad
 
 
 void enterHighResMode(bool_t *inHighResMode, int *highResCount, double *highResStartX, double *baselineCurvatureChange, double *cumulativeCurvatureChange, double x, double curvatureChange) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("*** ENTERING HIGH-RES MODE at x=%.6f, curvatureChange=%.6f ***\n", x, curvatureChange);
-  #endif
+  #endif // GRAPHDEBUG
   *inHighResMode = true;
   *highResCount = 0;
   *highResStartX = x;
@@ -350,13 +354,13 @@ void enterHighResMode(bool_t *inHighResMode, int *highResCount, double *highResS
 
 
 void commitHighResPointsInOrder(PlotPoint *buffer, int count) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("*** COMMITTING %d HIGH-RES POINTS ***\n", count);
     for(int i = 0; i < count; i++) {
       printf("  Point %d: x=%.6f, y=%.6f, grad=%.6f, stored=%d\n",
              i, buffer[i].x, buffer[i].y, buffer[i].grad, buffer[i].stored);
     }
-  #endif
+  #endif // GRAPHDEBUG
   for(int i = 0; i < count; i++) {
     if(!buffer[i].stored) {
       convertDoubleToReal34RegisterPush(buffer[i].x, REGISTER_X);
@@ -370,9 +374,9 @@ void commitHighResPointsInOrder(PlotPoint *buffer, int count) {
 
 
 void abandonHighResMode(int *highResCount, bool_t *inHighResMode) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("*** ABANDONING HIGH-RES MODE (discarding %d points) ***\n", *highResCount);
-  #endif
+  #endif // GRAPHDEBUG
   *highResCount = 0;
   *inHighResMode = false;
   // High-res points are simply discarded, not added to plot
@@ -381,9 +385,9 @@ void abandonHighResMode(int *highResCount, bool_t *inHighResMode) {
 
 
 void resetHighResTracking(int *highResCount, bool_t *inHighResMode, double *cumulativeCurvatureChange) {
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("*** RESETTING HIGH-RES TRACKING ***\n");
-  #endif
+  #endif // GRAPHDEBUG
   *highResCount = 0;
   *inHighResMode = false;
   *cumulativeCurvatureChange = 0;
@@ -397,7 +401,9 @@ bool_t detectTrueDiscontinuity(double y0, double y1, double y2, double grad0, do
       (real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))))) {
     return true;
   }
-  if(count < 4) return false;
+  if(count < 4) {
+    return false;
+  }
 
   bool_t extremeMagnitudeJump = (fabs(y2) > 100 * yAvg) && (fabs(y1) < 10 * yAvg);
   bool_t gradientDiscontinuity = false;
@@ -423,14 +429,14 @@ bool_t detectTrueDiscontinuity(double y0, double y1, double y2, double grad0, do
     }
   }
 
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("discontinuity check: extreme=%d, gradient=%d, oscillation=%d\n", extremeMagnitudeJump, gradientDiscontinuity, signOscillationInstability);
     if(gradientDiscontinuity) {
       double expectedGrad = grad1 + (grad1 - grad0);
       double gradientRatio = fabs(grad2) / (fabs(expectedGrad) + 1e-10);
       printf("  gradient details: expected=%.6f, actual=%.6f, ratio=%.3f\n", expectedGrad, grad2, gradientRatio);
     }
-  #endif
+  #endif // GRAPHDEBUG
   return extremeMagnitudeJump || gradientDiscontinuity || signOscillationInstability;
 }
 
@@ -455,18 +461,18 @@ typedef struct {
 #define ASYMPTOTE_SAMPLE_POINTS 5   // Points to sample on each side
 
 bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight, double yRight, double xGap, double gapWidth, AsymptoteInfo *asymptote) {
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("Checking asymptote at x=%.6f, gap=%.6f\n", xGap, gapWidth);
       printf("  Left: x=%.6f, y=%.6f\n", xLeft, yLeft);
       printf("  Right: x=%.6f, y=%.6f\n", xRight, yRight);
-    #endif
+    #endif // GRAPHDEBUG
 
     // Check if gap is significant enough
     double xRange = x_max - x_min;
     if(gapWidth < MIN_GAP_WIDTH_RATIO * xRange) {
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         printf("  Gap too small: %.6f < %.6f\n", gapWidth, MIN_GAP_WIDTH_RATIO * xRange);
-      #endif
+      #endif // GRAPHDEBUG
       return false;
     }
 
@@ -482,28 +488,34 @@ bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight,
       execute_rpn_function();
 
       // Skip if we get invalid results
-      if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) ||
-         real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
+      if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
         continue;
       }
 
       double sampleY = convertRegisterToDouble(REGISTER_Y);
-      if(sampleY > leftMaxY) leftMaxY = sampleY;
-      if(sampleY < leftMinY) leftMinY = sampleY;
+      if(sampleY > leftMaxY) {
+        leftMaxY = sampleY;
+      }
+      if(sampleY < leftMinY) {
+        leftMinY = sampleY;
+      }
 
       // Right side samples (approaching asymptote from right)
       sampleX = xGap + (xRight - xGap) * (0.2 * i / 2);
       convertDoubleToReal34RegisterPush(sampleX, REGISTER_X);
       execute_rpn_function();
 
-      if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) ||
-         real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
+      if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_Y))) {
         continue;
       }
 
       sampleY = convertRegisterToDouble(REGISTER_Y);
-      if(sampleY > rightMaxY) rightMaxY = sampleY;
-      if(sampleY < rightMinY) rightMinY = sampleY;
+      if(sampleY > rightMaxY) {
+        rightMaxY = sampleY;
+      }
+      if(sampleY < rightMinY) {
+        rightMinY = sampleY;
+      }
     }
 
     // Determine if we have a vertical asymptote based on extreme values
@@ -517,12 +529,12 @@ bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight,
 
     // Must have extreme behavior on at least one side
     if(!(leftGoesPositive || leftGoesNegative || rightGoesPositive || rightGoesNegative)) {
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         printf("  No extreme behavior detected\n");
         printf("    Left: max=%.3f, min=%.3f (need >%.3f or <%.3f)\n",
                leftMaxY, leftMinY, y_max + extremeThreshold, y_min - extremeThreshold);
         printf("    Right: max=%.3f, min=%.3f\n", rightMaxY, rightMinY);
-      #endif
+      #endif // GRAPHDEBUG
       return false;
     }
 
@@ -533,12 +545,12 @@ bool_t detectAndCharacterizeAsymptote(double xLeft, double yLeft, double xRight,
     asymptote->hasNegative = leftGoesNegative || rightGoesNegative;
     asymptote->maxHeight = yRange * ASYMPTOTE_HEIGHT_RATIO;
 
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("  ASYMPTOTE DETECTED at x=%.6f (memory efficient)\n", asymptote->x);
       printf("    Gap width: %.6f\n", asymptote->gapWidth);
       printf("    Goes positive: %d, negative: %d\n", asymptote->hasPositive, asymptote->hasNegative);
       printf("    Standard height: %.3f\n", asymptote->maxHeight);
-    #endif
+    #endif // GRAPHDEBUG
 
   return true;
 }
@@ -576,9 +588,9 @@ void renderAsymptote(AsymptoteInfo *asymptote) {
   double offset = 1e-3;  // Small x offset
   double asymptoteHeight = 10000.0;
 
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("Rendering asymptote at x=%.6f with clean 3-point vertical sequence\n", x_center);
-  #endif
+  #endif // GRAPHDEBUG
 
   const PointOffset* offsets = NULL;
 
@@ -601,9 +613,9 @@ void renderAsymptote(AsymptoteInfo *asymptote) {
       AddtoDrawMx();
     }
   }
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("Added 3 asymptote points in clean vertical sequence\n");
-  #endif
+  #endif // GRAPHDEBUG
 }
 
 
@@ -618,10 +630,10 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     double gapWidth = fabs(x2 - x0);
     double xGap = (x0 + x2) / 2.0;
 
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("Checking complex discontinuity for asymptote: x0=%.6f, x1=%.6f, x2=%.6f\n", x0, x1, x2);
       printf("  Gap center: %.6f, width: %.6f\n", xGap, gapWidth);
-    #endif
+    #endif // GRAPHDEBUG
 
     AsymptoteInfo candidateAsymptote;
 
@@ -633,20 +645,20 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
       // Render the asymptote immediately
       renderAsymptote(&candidateAsymptote);
 
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         printf("Complex asymptote detected and rendered\n");
-      #endif
+      #endif // GRAPHDEBUG
 
       // Return false to prevent normal discontinuity handling
       return false;
     }
   }
 
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     if(hasDiscontinuity) {
       printf("Regular discontinuity detected, not an asymptote\n");
     }
-  #endif
+  #endif // GRAPHDEBUG
 
   return hasDiscontinuity;
 }
@@ -685,18 +697,18 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     AsymptoteInfo asymptotes[MAX_ASYMPTOTES];
     int asymptoteCount = 0;
 
-  #ifdef GRAPHDEBUG
+  #if defined(GRAPHDEBUG)
     printf("\n=== GRAPH EQUATION DEBUG START ===\n");
     printf("Initial parameters: xMin=%.6f, xMax=%.6f, dx0=%.6f\n", x_min, x_max, dx0);
     printf("Screen width: %d, SS1=%.1f, SS2=%.1f\n", SCREEN_WIDTH_GRAPH, SS1, SS2);
-  #endif
+  #endif // GRAPHDEBUG
 
     if(graphVariabl1 < FIRST_NAMED_VARIABLE || graphVariabl1 > LAST_NAMED_VARIABLE) {
       regStatsXY = INVALID_VARIABLE;
       return;
     }
 
-  #if defined (LOW_GRAPH_ACC)
+  #if defined(LOW_GRAPH_ACC)
     //Change to SDIGS digit operation for graphs;
     if(significantDigitsForEqnGraphs <= 6) {
       ctxtReal34.digits = significantDigitsForEqnGraphs;
@@ -714,11 +726,11 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
     if(mode == initDrwMx) {
       fnClDrawMx(3);
-      strcpy(plotStatMx,"DrwMX");
+      strcpy(plotStatMx, "DrwMX");
       asymptoteCount = 0; // Reset asymptote tracking for new plot
     }
   #if defined(GRAPHDEBUG)
-    printf("dx0=%f discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, discontinuityDetected, grad2IncreaseDetected);
+    printf("dx0=%f discontinuityDetected:%u grad2IncreaseDetected:%u\n", dx0, discontinuityDetected, grad2IncreaseDetected);
   #endif // GRAPHDEBUG
 
     //Main loop, default is 40 x 6 point gaps, across the 240 wide screen
@@ -733,7 +745,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     double savedXBeforeHighres = 0;
     double savedDxBeforeHighres = dx0;
 
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       int cnt = 0;
       int cycleCount = 0;
       double lastSignChange = x_min;
@@ -741,7 +753,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     #endif //GRAPHDEBUG
 
     for(x = x_min; x <= x_max; x += STEP_OFFSET * dx) {
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         printf("\n###################################\n");
         printf("--- Iteration %d: x=%.6f, dx=%.6f ---\n", cnt, x, dx);
       #endif //GRAPHDEBUG
@@ -765,16 +777,16 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
       y02 = convertRegisterToDouble(REGISTER_Y);
 
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         printf("y02=%.6f\n", y02);
-      #endif
+      #endif // GRAPHDEBUG
 
       // Calculate gradient and detect anomalies
       if(count > 0) {
         dy = y02 - y01;
         grad2 = (x != x01) ? dy / (x - x01) : 0.0;
 
-        #ifdef GRAPHDEBUG
+        #if defined(GRAPHDEBUG)
           printf("dy=%.6f, grad2=%.6f\n", dy, grad2);
 
           // Track sign changes for cycle detection
@@ -792,7 +804,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
               }
             }
           }
-        #endif
+        #endif // GRAPHDEBUG
 
         // Update sign states
         ss0 = ss1;
@@ -801,10 +813,10 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
         grad0 = grad1;
         grad1 = grad2;
 
-        #ifdef GRAPHDEBUG
+        #if defined(GRAPHDEBUG)
           printf("Signs: ss0=%d, ss1=%d, ss2=%d\n", ss0, ss1, ss2);
           printf("Grads: grad0=%.6f, grad1=%.6f, grad2=%.6f\n", grad0, grad1, grad2);
-        #endif
+        #endif // GRAPHDEBUG
 
         // Detect gradient anomalies using improved logic
         if(grad1 != 0 && grad2 != 0) {
@@ -821,7 +833,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
           grad2IncreaseDetected = yRatioCheck1 || yRatioCheck2 || signOscillation1 || signOscillation2 || zeroCrossing1 || zeroCrossing2;
 
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("Gradient increase checks:\n");
             printf("  yRatio1(%.3f>1.01 && %.3f>%.1f): %d\n", fabs(y02/y01), fabs(grad2/grad1), SS2, yRatioCheck1);
             printf("  yRatio2(%.3f>1.01 && %.3f>%.1f): %d\n", fabs(y01/y02), fabs(grad1/grad2), SS2, yRatioCheck2);
@@ -830,25 +842,27 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
             printf("  zeroCross1(ss=%d->%d, y=%.3f->%.3f): %d\n", ss1, ss2, y01, y02, zeroCrossing1);
             printf("  zeroCross2(ss=%d->%d, y=%.3f->%.3f): %d\n", ss1, ss2, y01, y02, zeroCrossing2);
             printf("  => grad2IncreaseDetected: %d\n", grad2IncreaseDetected);
-          #endif
+          #endif // GRAPHDEBUG
 
-        } else {
+        }
+        else {
           grad2IncreaseDetected = false;
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("Zero gradient detected, no increase flagged\n");
-          #endif
+          #endif // GRAPHDEBUG
         }
 
         // Update running average
         if(count == 0) {
           yAvg += 2 * fabs(y02);
-        } else if(fabs(y02) > yAvg) {
+        }
+        else if(fabs(y02) > yAvg) {
           yAvg += fabs(y02) / count;
         }
 
-        #ifdef GRAPHDEBUG
+        #if defined(GRAPHDEBUG)
           printf("yAvg=%.6f\n", yAvg);
-        #endif
+        #endif // GRAPHDEBUG
 
         // Use improved discontinuity detection
         if(discontinuityDetected == 0) {
@@ -856,18 +870,18 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
           bool_t trueDiscontinuity = detectTrueDiscontinuityWithAsymptote(y00, y01, y02, grad0, grad1, grad2, yAvg, count, x00, x01, x, asymptotes, &asymptoteCount);
           if(trueDiscontinuity) {
             discontinuityDetected = FINE;
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("TRUE DISCONTINUITY DETECTED\n");
-            #endif
+            #endif // GRAPHDEBUG
           }
         }
 
         // Jump-back logic for discontinuities and gradient increases
         if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("JUMPING BACK: discontinuity=%d, gradIncrease=%d\n", discontinuityDetected, grad2IncreaseDetected);
             printf("  Before jump: x=%.6f, y=%.6f\n", x, y02);
-          #endif
+          #endif // GRAPHDEBUG
 
           // If in high-res mode, abandon it since we're jumping back anyway
           if(inHighResMode) {
@@ -890,13 +904,13 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
           ss1 = ss2;
           ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
 
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("  After jump: x=%.6f, y=%.6f, newGrad=%.6f\n", x, y02, grad2);
             printf("  Will evaluate %d fine-step points\n", FINE);
             if(wasDiscontinuity) {
               printf("  Discontinuity threshold: %.6f\n", discontinuityThreshold);
             }
-          #endif
+          #endif // GRAPHDEBUG
 
           // Sample the fine-stepped points
           PlotPoint jumpBackBuffer[FINE];
@@ -924,20 +938,22 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
               jumpBackBuffer, jumpBackCount, y01, jumpBackStartY, discontinuityThreshold);
 
             if(discontinuityResolved) {
-              #ifdef GRAPHDEBUG
+              #if defined(GRAPHDEBUG)
                 printf("  DISCONTINUITY RESOLVED: committing fine points\n");
-              #endif
+              #endif // GRAPHDEBUG
               shouldCommitPoints = true;
               discontinuityDetected = 0; // Clear discontinuity flag
-            } else {
-              #ifdef GRAPHDEBUG
+            }
+            else {
+              #if defined(GRAPHDEBUG)
                 printf("  DISCONTINUITY PERSISTS: abandoning fine points, but keeping original grid point\n");
-              #endif
+              #endif // GRAPHDEBUG
               discontinuityDetected = 0; // Clear flag
               shouldCommitPoints = false;
               // Don't skip the original grid point - restore to original position and let the normal flow handle plotting the original grid point
             }
-          } else {
+          }
+          else {
             // For gradient increase cases, evaluate if points add significant detail
             if(jumpBackCount >= 3) {
               // Calculate curvature variation in the jump-back region
@@ -963,17 +979,17 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
               // Points are useful if they show significant non-linear behavior
               bool_t jumpBackPointsUseful = (interpolationError > 0.1 * fabs(jumpBackStartY - y01)) || (maxCurvatureChange > fabs(linearSlope) * 0.5);
 
-              #ifdef GRAPHDEBUG
+              #if defined(GRAPHDEBUG)
                 printf("  Gradient increase evaluation: maxCurv=%.6f, interpError=%.6f, useful=%d\n", maxCurvatureChange, interpolationError, jumpBackPointsUseful);
-              #endif
+              #endif // GRAPHDEBUG
               shouldCommitPoints = jumpBackPointsUseful;
             }
           }
 
           if(shouldCommitPoints) { // fine points
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("  COMMITTING %d jump-back points\n", jumpBackCount);
-            #endif
+            #endif // GRAPHDEBUG
             for(int i = 0; i < jumpBackCount; i++) {
               convertDoubleToReal34RegisterPush(jumpBackBuffer[i].x, REGISTER_X);
               execute_rpn_function();
@@ -991,15 +1007,14 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
             dx = dx0; // Reset to original step size
             jumpedBack = false; // Clear flag since we've handled the plotting
 
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("  Continuing from original grid point: x=%.6f, y=%.6f\n", x, y02);
-            #endif
-
-          } else {  // not fine points
-
-            #ifdef GRAPHDEBUG
+            #endif // GRAPHDEBUG
+          }
+          else {  // not fine points
+            #if defined(GRAPHDEBUG)
               printf("  DISCARDING %d jump-back points, but preserving original grid flow\n", jumpBackCount);
-            #endif
+            #endif // GRAPHDEBUG
             // Restore to the original grid point and continue normal processing, ensures original grid point gets plotted in the normal flow
             x = jumpBackStartX;
             y02 = jumpBackStartY;
@@ -1012,10 +1027,10 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
             ss1 = ss2;
             ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
 
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("  Restored to original grid: x=%.6f, y=%.6f, grad=%.6f\n", x, y02, grad2);
               printf("  Original grid point will be plotted normally\n");
-            #endif
+            #endif // GRAPHDEBUG
           }
         }
 
@@ -1023,42 +1038,41 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
         double curvatureChange = 0;
         if(count > 1 && grad0 != 0 && grad1 != 0) {
           curvatureChange = fabs((grad2 - grad1) - (grad1 - grad0));
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("curvatureChange=%.6f = |(%f-%f)-(%f-%f)|\n", curvatureChange, grad2, grad1, grad1, grad0);
-          #endif
+          #endif // GRAPHDEBUG
         }
 
         // Determine new step size and resolution mode
         double newDx = calculateNewStepSize(discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
 
         // Check if we're entering high-resolution mode (only if not jumped back) and only trigger high-res for genuine curvature issues, not discontinuity-related step reductions
-        if(!jumpedBack && !inHighResMode && newDx < prevDx * REVERT_THRESHOLD &&
-           discontinuityDetected == 0 && curvatureChange > 0) {
+        if(!jumpedBack && !inHighResMode && newDx < prevDx * REVERT_THRESHOLD && discontinuityDetected == 0 && curvatureChange > 0) {
           savedXBeforeHighres = x01;  // Save the last good x position
           savedDxBeforeHighres = prevDx;
 
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("HIGH-RES TRIGGER: newDx(%.6f) < prevDx(%.6f) * threshold(%.2f) = %.6f\n", newDx, prevDx, REVERT_THRESHOLD, prevDx * REVERT_THRESHOLD);
             printf("Curvature-based trigger: discontinuity=%d, curvatureChange=%.6f\n", discontinuityDetected, curvatureChange);
             printf("Saving state: x=%.6f, dx=%.6f, cycle=%d\n", savedXBeforeHighres, savedDxBeforeHighres, cycleCount);
-          #endif
+          #endif // GRAPHDEBUG
 
           enterHighResMode(&inHighResMode, &highResCount, &highResStartX, &baselineCurvatureChange, &cumulativeCurvatureChange, x, curvatureChange);
         }
 
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             else if(!jumpedBack && !inHighResMode && newDx < prevDx * REVERT_THRESHOLD) {
                  printf("HIGH-RES BLOCKED: newDx(%.6f) < threshold but discontinuity=%d or curvatureChange=%.6f\n", newDx, discontinuityDetected, curvatureChange);
             }
-          #endif
+          #endif // GRAPHDEBUG
 
         // If in high-res mode, buffer the point and assess improvement
         if(inHighResMode && !jumpedBack) {
           cumulativeCurvatureChange += curvatureChange;
 
-          #ifdef GRAPHDEBUG
+          #if defined(GRAPHDEBUG)
             printf("HIGH-RES MODE: count=%d/%d, cumCurv=%.6f, baseline=%.6f\n", highResCount, HIGH_RES_SAMPLE_COUNT, cumulativeCurvatureChange, baselineCurvatureChange);
-          #endif
+          #endif // GRAPHDEBUG
 
           if(highResCount < HIGH_RES_SAMPLE_COUNT) { // Buffer high-res points in order
             highResBuffer[highResCount].x = x;
@@ -1066,26 +1080,28 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
             highResBuffer[highResCount].grad = grad2;
             highResBuffer[highResCount].stored = false;
             highResCount++;
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("  Buffered point %d: x=%.6f, y=%.6f\n", highResCount-1, x, y02);
-            #endif
-          } else {
+            #endif // GRAPHDEBUG
+          }
+          else {
             // Evaluate if high-res provided sufficient improvement
             double improvementRatio = (baselineCurvatureChange > 0) ? cumulativeCurvatureChange / (baselineCurvatureChange * HIGH_RES_SAMPLE_COUNT) : 1.0;
 
-            #ifdef GRAPHDEBUG
+            #if defined(GRAPHDEBUG)
               printf("EVALUATING HIGH-RES: improvementRatio=%.3f (need %.2f)\n", improvementRatio, MIN_IMPROVEMENT_RATIO);
               printf("  cumCurv=%.6f, baseline*count=%.6f\n", cumulativeCurvatureChange, baselineCurvatureChange * HIGH_RES_SAMPLE_COUNT);
-            #endif
+            #endif // GRAPHDEBUG
 
             if(improvementRatio >= MIN_IMPROVEMENT_RATIO) {            // High-res was beneficial, commit buffered points in sequence
               commitHighResPointsInOrder(highResBuffer, highResCount);
               resetHighResTracking(&highResCount, &inHighResMode, &cumulativeCurvatureChange);
               // Continue with current step size
-            } else {                                                   // High-res didn't help, abandon and continue from last good point with larger dx
-              #ifdef GRAPHDEBUG
+            }
+            else {                                                   // High-res didn't help, abandon and continue from last good point with larger dx
+              #if defined(GRAPHDEBUG)
                 printf("HIGH-RES FAILED: reverting to x=%.6f, dx=%.6f\n", savedXBeforeHighres, savedDxBeforeHighres);
-              #endif
+              #endif // GRAPHDEBUG
               abandonHighResMode(&highResCount, &inHighResMode);
               x = savedXBeforeHighres + savedDxBeforeHighres;
               dx = savedDxBeforeHighres;
@@ -1098,23 +1114,22 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
         prevDx = dx;
         dx = newDx;
 
-        #ifdef GRAPHDEBUG
+        #if defined(GRAPHDEBUG)
           printf("Step size: prevDx=%.6f -> dx=%.6f\n", prevDx, dx);
-        #endif
+        #endif // GRAPHDEBUG
       }
 
       // Add point to plot (skip if in high-res buffering mode or jumped back)
       if(!jumpedBack && dx >= 0 && !inHighResMode) {
-
-        #ifdef GRAPHDEBUG
+        #if defined(GRAPHDEBUG)
           printf("ADDING POINT TO PLOT: x=%.6f, y=%.6f\n", x, y02);
-        #endif
+        #endif // GRAPHDEBUG
         AddtoDrawMx();
-
-      } else {
-        #ifdef GRAPHDEBUG
+      }
+      else {
+        #if defined(GRAPHDEBUG)
           printf("SKIPPING PLOT: jumpedBack=%d, dx=%.6f, inHighRes=%d\n", jumpedBack, dx, inHighResMode);
-        #endif
+        #endif // GRAPHDEBUG
       }
 
       // Update state for next iteration
@@ -1125,19 +1140,23 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
       y01 = y02;
       x01 = x;
 
-      if(discontinuityDetected != 0) discontinuityDetected--;
+      if(discontinuityDetected != 0) {
+        discontinuityDetected--;
+      }
 
       count++;
-      if(count > 60) break;
+      if(count > 60) {
+        break;
+      }
 
       loop++;
       if(checkHalfSec()) {
-        progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
+        progressHalfSecUpdate_Integer(timed, "Iter: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
       }
 
       #if defined(DMCP_BUILD)
         if(exitKeyWaiting()) {
-          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
@@ -1146,12 +1165,12 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
         }
       #endif //DMCP_BUILD
 
-      #ifdef GRAPHDEBUG
+      #if defined(GRAPHDEBUG)
         cnt++;
       #endif //GRAPHDEBUG
     }
 
-    #ifdef GRAPHDEBUG
+    #if defined(GRAPHDEBUG)
       printf("\n=== GRAPH EQUATION DEBUG END ===\n");
       printf("Total iterations: %d\n", cnt);
       printf("Total sign changes: %d\n", signChangeCount);
@@ -1163,7 +1182,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
       abandonHighResMode(&highResCount, &inHighResMode);
     }
 
-    #if defined (LOW_GRAPH_ACC)
+    #if defined(LOW_GRAPH_ACC)
       //Change to SDIGS digit operation for fresh stack;
       ctxtReal34.digits = 34; //Change back to normal operation for stack;
       ctxtReal39.digits = 39; //Change back to 39 digit operation for stack;
@@ -1171,7 +1190,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
     fillStackWithReal0();
 
-    #if defined (LOW_GRAPH_ACC)
+    #if defined(LOW_GRAPH_ACC)
       //Change to SDIGS digit operation for screen graphs;
       if(significantDigitsForEqnGraphs <= 6) {
         ctxtReal34.digits = significantDigitsForScreen;
@@ -1187,7 +1206,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
     showHideHourGlass();
     refreshStatusBar();
     fnPlot(0);
-    #if defined (LOW_GRAPH_ACC)
+    #if defined(LOW_GRAPH_ACC)
       //Change to normal operation for graphs;
       ctxtReal34.digits = 34;
       ctxtReal39.digits = 39;
@@ -1202,7 +1221,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(double y0, double y1, double y2, dou
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
     saveForUndo();
-    strcpy(plotStatMx,"STATS");
+    strcpy(plotStatMx, "STATS");
 
     if(statMxN()) {
       lastPlotMode = PLOT_NOTHING;
@@ -1343,9 +1362,9 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
   execute_rpn_function();
   getRegisterAsComplex(REGISTER_Y, &to->Real, &to->Imag);
   complexMagnitude(&to->Real, &to->Imag, magnitude,  ctxtSolver2);
-  if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
+  if(realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
     copyComplex(from, &cpxSlvBestX);
-    if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
+    if(realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
       realCopy(magnitude, &cpxSlvBestMagnitudeY);
     }
     return true;
@@ -1353,10 +1372,10 @@ static bool_t execute_rpn_function_reals(const cplx_t *from, cplx_t *to, real_t 
   return false;
 }
 
-static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res) {
+static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *res) {
   cplx_t tmp;
   copyComplex(base, &tmp);
-  for (uint8_t i = 1; i<*exp; i++) {
+  for(uint8_t i = 1; i<*exp; i++) {
      mulComplexComplex(CPLX(tmp), &base->Real,  &base->Imag, CPLX(tmp), ctxtSolver2);
   }
   copyComplex(&tmp, res);
@@ -1370,7 +1389,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
     currentKeyCode = 255;
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
 #if defined(PC_BUILD) //PC_BUILD
-      printf("Error: No complex solver variable %u\n",graphVariabl1);
+      printf("Error: No complex solver variable %u\n", graphVariabl1);
 #endif //PC_BUILD
       return;
     }
@@ -1483,7 +1502,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
                                             execute_rpn_function_reals(&X2, &Y2, &magnitudeY);
-                                            printf("INIT:   iterationCounter=%d \n",iterationCounter);
+                                            printf("INIT:   iterationCounter=%d \n", iterationCounter);
                                             printComplexToConsole(CPLX(X0), "Init X0=", "\n");
                                             printComplexToConsole(CPLX(X1), "Init X1=", "\n");
                                             printComplexToConsole(CPLX(X2), "Init X2=", "\n");
@@ -1501,7 +1520,7 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                         #endif
       if(lastErrorCode != 0) {
                                         #if defined(PC_BUILD)
-                                                printf(">>> ERROR CODE INITIALLY NON-ZERO = %d <<<<<\n",lastErrorCode);
+                                                printf(">>> ERROR CODE INITIALLY NON-ZERO = %d <<<<<\n", lastErrorCode);
                                         #endif //PC_BUILD
         break;
       }
@@ -1517,29 +1536,30 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
         oscillations++;
       }
       else {
-        oscillations = max(0,oscillations-1);
+        oscillations = max(0, oscillations-1);
       }
 
       //If converging, increment convergence counter
-      if (realCompareLessThan(&magnitudeY, &oldMagnitudeY))// && realCompareLessThan(&temp0.Real, &temp0.Imag))
-      {
+      if(realCompareLessThan(&magnitudeY, &oldMagnitudeY)) { // && realCompareLessThan(&temp0.Real, &temp0.Imag))
         convergent++;
       }
       else {
-        if (Y2IsCloseToZero) Y2IsZero = true; // if close to solution stop if converge strike is over
-        else convergent = max(-3, convergent-2);
+        if(Y2IsCloseToZero) {
+          Y2IsZero = true; // if close to solution stop if converge strike is over
+        }
+        else {
+          convergent = max(-3, convergent-2);
+        }
       }
       realCopy(&magnitudeY, &oldMagnitudeY);
                                         #if defined(VERBOSE_SOLVER0)
-                                              printf("##### iterationCounter= %d osc= %d  conv= %d n\n",iterationCounter, oscillations, convergent);
+                                              printf("##### iterationCounter= %d osc= %d  conv= %d n\n", iterationCounter, oscillations, convergent);
                                         #endif // VERBOSE_SOLVER0
                                         #if defined(VERBOSE_SOLVER1)
-                                              printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n",iterationCounter, oscillations, convergent);
+                                              printf("################################### iterationCounter= %d osc= %d  conv= %d ###########################################\n", iterationCounter, oscillations, convergent);
                                         #endif //VERBOSE_SOLVER1
 
-      if(!Y2IsZero)
-        { // only do the convergence and oscillation checks if Y is not zero
-
+      if(!Y2IsZero) { // only do the convergence and oscillation checks if Y is not zero
         if(convergent > 6 && oscillations > 3) {
           convergent = 2;
           oscillations = 1;
@@ -1549,12 +1569,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                           #endif // VERBOSE_SOLVER0
         }
 
-        if (((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
+        if(((convergent <= -2 && kicker > yPower*3) || kicker > 8) && yPower < 5) {
           osc = 0;
           convergent = 0;
           oscillations = 0;
           kicker = 3;
-          if (yPower>1) {
+          if(yPower>1) {
             execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
             execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
           }
@@ -1562,12 +1582,12 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
           powCplxNat(&Y0, &yPower, &Y0);
           powCplxNat(&Y1, &yPower, &Y1);
   #if defined(PC_BUILD)
-          printf("-------- yPower: %u, iter: %u\n",yPower, iterationCounter);
+          printf("-------- yPower: %u, iter: %u\n", yPower, iterationCounter);
   #endif // PC_BUILD
         }
         copyComplex(&X2, &temp0);
         // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
-        if(iterationCounter==0 ||  (((oscillations >= 2)
+        if(iterationCounter==0 || (((oscillations >= 2)
               && (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
               && (convergent <= 2)) )) {
           oscillationIterationCounter = 0;
@@ -1577,8 +1597,8 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                   printComplexToConsole(CPLX(X2), "\n>>>>>>>>>> from ", "");
                                           #endif // VERBOSE_SOLVER2
           double kick = 0.8123 * kicker * kicker * pow(2.0, kicker);
-          convertDoubleToReal( kicker%2?-kick:kick, &temp1.Real, ctxtSolver2);
-          convertDoubleToReal( kick, &temp1.Imag, ctxtSolver2);
+          convertDoubleToReal(kicker%2 ? -kick : kick, &temp1.Real, ctxtSolver2);
+          convertDoubleToReal(kick, &temp1.Imag, ctxtSolver2);
           addComplex(CPLX(temp1), CPLX(X0), CPLX(X2), ctxtSolver2);
                                           #if defined(PC_BUILD)
                                                   printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);
@@ -1596,11 +1616,11 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       // if same as cpxSlvBestX we probably hit the precision limit for this equation?
       subComplex(CPLX(cpxSlvBestX), CPLX(X2), CPLX(temp1), ctxtSolver2);
       complexMagnitude(CPLX(temp1), &temp1.Real,  ctxtSolver2);
-      Y2IsCloseToZero = Y2IsCloseToZero || (realCompareLessThan(&cpxSlvBestMagnitudeY,const_1e_6) && realIsZero(&temp1.Real) && realIsZero(&temp1.Imag));
+      Y2IsCloseToZero = Y2IsCloseToZero || (realCompareLessThan(&cpxSlvBestMagnitudeY, const_1e_6) && realIsZero(&temp1.Real) && realIsZero(&temp1.Imag));
 
       iterAfterBest = execute_rpn_function_reals(&X2, &Y2N, &magnitudeY) ? 0 : iterAfterBest + 1;
       powCplxNat(&Y2N, &yPower, &Y2);
-      if (realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
+      if(realIsInfinite(&Y2.Real) || realIsInfinite(&Y2.Imag)) {
         // Revert kick
                                         #if defined(PC_BUILD)
                                                 printf("----- Inf.Y iter:%u  revert kick", iterationCounter);
@@ -1614,9 +1634,9 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
                                         #if defined(VERBOSE_SOLVER1)
-                                              printf("    :   iterationCounter=%d",iterationCounter);
-                                              printComplexToConsole(CPLX(X2)," X2="," ");
-                                              printComplexToConsole(CPLX(Y2N)," Y2=","\n");
+                                              printf("    :   iterationCounter=%d", iterationCounter);
+                                              printComplexToConsole(CPLX(X2), " X2=", " ");
+                                              printComplexToConsole(CPLX(Y2N), " Y2=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
       // check if an acceptable solution is found
@@ -1627,8 +1647,8 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
                                         #if defined(VERBOSE_SOLVER_ITERDATA)
-                                            float dbYr,dbYi;
-                                            char *arrows[8] = {"→","↗︎","↑","↖︎","←","↙︎","↓","↘︎"};
+                                            float dbYr, dbYi;
+                                            char *arrows[8] = {"→", "↗︎", "↑", "↖︎", "←", "↙︎", "↓", "↘︎"};
                                             realToFloat(&Y2N.Real, &dbYr);
                                             realToFloat(&Y2N.Imag, &dbYi);
                                             uint8_t ang = mod((int)(4.0 * (atan2((double)dbYi, (double)dbYr)) / M_PI+8.5), 8);
@@ -1641,23 +1661,23 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
                                                   iterAfterBest,
                                                   arrows[ang%8],
                                                   magn);
-                                                  printComplexToConsole(CPLX(X2),"X=","\n");
+                                                  printComplexToConsole(CPLX(X2), "X=", "\n");
                                         #endif // VERBOSE_SOLVER_ITERDATA
 
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                               if(checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero) {
                                                 printf("-->A Endflags zero: Y2r=0:%u Y2i=0:%u X2r=NaN:%u X2i=NaN:%u Y2r=NaN:%u Y2i=NaN%u \n",
-                                                (uint16_t)realIsZero(&Y2.Real),(uint16_t)realIsZero(&Y2.Imag),
-                                                (uint16_t)realIsNaN(&X2.Real),(uint16_t)realIsNaN(&X2.Imag),
-                                                (uint16_t)realIsNaN(&Y2.Real),(uint16_t)realIsNaN(&Y2.Imag)
+                                                (uint16_t)realIsZero(&Y2.Real), (uint16_t)realIsZero(&Y2.Imag),
+                                                (uint16_t)realIsNaN(&X2.Real), (uint16_t)realIsNaN(&X2.Imag),
+                                                (uint16_t)realIsNaN(&Y2.Real), (uint16_t)realIsNaN(&Y2.Imag)
                                                   );
                                               }
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
                                         #if defined(VERBOSE_SOLVER2)
-                                              printf("   iterationCounter=%d checkend=%d X2=",iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero);
-                                              printComplexToConsole(CPLX(X2),"","");
-                                              printComplexToConsole(CPLX(Y2),"Y2=","\n");
+                                              printf("   iterationCounter=%d checkend=%d X2=", iterationCounter, checkNaN || iterationCounter==NUMBERITERATIONS-1 || Y2IsZero);
+                                              printComplexToConsole(CPLX(X2), "", "");
+                                              printComplexToConsole(CPLX(Y2), "Y2=", "\n");
                                         #endif // VERBOSE_SOLVER2
 
       //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
@@ -1666,13 +1686,13 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
       // ---------- Modified 3 point Secant ------------
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                                printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d\n",iterationCounter, oscillations, convergent);
-                                                printComplexToConsole(CPLX(X0), "           X0=","\n");
-                                                printComplexToConsole(CPLX(Y0), "           Y0=","\n");
-                                                printComplexToConsole(CPLX(X1), "           X1=","\n");
-                                                printComplexToConsole(CPLX(Y1), "           Y1=","\n");
-                                                printComplexToConsole(CPLX(X2), "           X2=","\n");
-                                                printComplexToConsole(CPLX(Y2), "           Y2=","\n");
+                                                printf("%3i ---------- Modified 3 point Secant ------------ osc=%d conv=%d\n", iterationCounter, oscillations, convergent);
+                                                printComplexToConsole(CPLX(X0), "           X0=", "\n");
+                                                printComplexToConsole(CPLX(Y0), "           Y0=", "\n");
+                                                printComplexToConsole(CPLX(X1), "           X1=", "\n");
+                                                printComplexToConsole(CPLX(Y1), "           Y1=", "\n");
+                                                printComplexToConsole(CPLX(X2), "           X2=", "\n");
+                                                printComplexToConsole(CPLX(Y2), "           Y2=", "\n");
 
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
       if((iterationCounter == 0) || (!Y2IsZero && !dXdYIsZero && !checkNaN)) {
@@ -1682,60 +1702,60 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
         divFunctionComplex(CPLX(dY), CPLX(dX),  CPLX(temp0)); // dY/dX = temp0
 
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp0), " m1=","\n");
+                                                printComplexToConsole(CPLX(temp0), " m1=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
         subComplex(CPLX(Y2), CPLX(Y0), CPLX(temp3), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp3), " Y2-Y0=","\n");
+                                                printComplexToConsole(CPLX(temp3), " Y2-Y0=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
-        mulComplexComplex(CPLX(temp0),CPLX(temp3), CPLX(temp3), ctxtSolver2);
+        mulComplexComplex(CPLX(temp0), CPLX(temp3), CPLX(temp3), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp3), " term1 lower m1*(Y2-Y1)=","\n");
+                                                printComplexToConsole(CPLX(temp3), " term1 lower m1*(Y2-Y1)=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
         subComplex(CPLX(Y0), CPLX(Y1), CPLX(temp1), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp1), " dY2=","\n");
+                                                printComplexToConsole(CPLX(temp1), " dY2=", "\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(X0), CPLX(X1), CPLX(temp2), ctxtSolver2);
         divFunctionComplex(CPLX(temp1), CPLX(temp2), CPLX(temp1));
 
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp1), " m2=","\n");
+                                                printComplexToConsole(CPLX(temp1), " m2=", "\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(temp0), CPLX(temp1), CPLX(temp1), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp1)," m1-m2 diff=","\n");
-                                                printComplexToConsole(CPLX(Y2), " Y2=","\n");
+                                                printComplexToConsole(CPLX(temp1), " m1-m2 diff=", "\n");
+                                                printComplexToConsole(CPLX(Y2), " Y2=", "\n");
                                         #endif // VERBOSE_SOLVER1
         mulComplexComplex(CPLX(temp1), CPLX(Y2), CPLX(temp1), ctxtSolver2);
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp1), " term2 lower=","\n");
+                                                printComplexToConsole(CPLX(temp1), " term2 lower=", "\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(temp3), CPLX(temp1), CPLX(temp1), ctxtSolver2);
 
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp1), " lower diff=","\n");
+                                                printComplexToConsole(CPLX(temp1), " lower diff=", "\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(Y2), CPLX(Y0), CPLX(X2N), ctxtSolver2);
         //get the 1/slope
         divFunctionComplex(CPLX(X2N), CPLX(temp1), CPLX(X2N));
                                         #if defined(VERBOSE_SOLVER1)
-                                                printComplexToConsole(CPLX(temp0), " 1/slope=","\n");
+                                                printComplexToConsole(CPLX(temp0), " 1/slope=", "\n");
                                         #endif // VERBOSE_SOLVER1
         mulComplexComplex(CPLX(X2N), CPLX(Y1), CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
         // if converges slow without oscillating then accelerate.
-        if (convergent > 10) {
+        if(convergent > 10) {
           convertDoubleToReal(1.0 + convergent * 0.1, &f, ctxtSolver2); // factor ()
           mulComplexComplex(CPLX(X2N), &f, const_0, CPLX(X2N), ctxtSolver2); // increment to x is: y1 . DX/DY
         }
 
                                         #if defined(VERBOSE_SOLVER1)
-                                                printRealToConsole(&f, "    Factor=        ","\n");
-                                                printComplexToConsole(CPLX(X0),"    New X =        "," - (");
-                                                printComplexToConsole(CPLX(temp1),"",")\n");
+                                                printRealToConsole(&f, "    Factor=        ", "\n");
+                                                printComplexToConsole(CPLX(X0), "    New X =        ", " - (");
+                                                printComplexToConsole(CPLX(temp1), "", ")\n");
                                         #endif // VERBOSE_SOLVER1
         subComplex(CPLX(X1), CPLX(X2N), CPLX(X2N), ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n
       }
@@ -1744,11 +1764,15 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
                                         #if defined(VERBOSE_SOLVER1)
-                                              printComplexToConsole(&dX.Real,   &dX.Imag, "               DX=","");printComplexToConsole(CPLX(dY),"DY=","\n");
-                                              printComplexToConsole(&X0.Real,   &X0.Imag, "               X0=","");printComplexToConsole(CPLX(Y0),"Y0=","\n");
-                                              printComplexToConsole(CPLX(X2N),"   -------> newX2: ","\n");
-                                              printComplexToConsole(&X1.Real,   &X1.Imag, "               X1=","");printComplexToConsole(CPLX(Y1),"Y1=","\n");
-                                              printComplexToConsole(&X2.Real,   &X2.Imag, "               X2=","");printComplexToConsole(CPLX(Y2),"Y2=","\n");
+                                              printComplexToConsole(&dX.Real,   &dX.Imag, "               DX=", "");
+                                              printComplexToConsole(CPLX(dY), "DY=", "\n");
+                                              printComplexToConsole(&X0.Real,   &X0.Imag, "               X0=", "");
+                                              printComplexToConsole(CPLX(Y0), "Y0=", "\n");
+                                              printComplexToConsole(CPLX(X2N), "   -------> newX2: ", "\n");
+                                              printComplexToConsole(&X1.Real,   &X1.Imag, "               X1=", "");
+                                              printComplexToConsole(CPLX(Y1), "Y1=", "\n");
+                                              printComplexToConsole(&X2.Real,   &X2.Imag, "               X2=", "");
+                                              printComplexToConsole(CPLX(Y2), "Y2=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
       copyComplex(&Y1, &Y0); //old y1 copied to y0
@@ -1783,30 +1807,30 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
                                         #if defined(VERBOSE_SOLVER2)
                                               if(!checkNaN && !(iterationCounter==NUMBERITERATIONS) && !Y2IsZero) {
-                                                printf("END     iterationCounter=%d |DX|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dX.Real, &tol));
-                                                printComplexToConsole(CPLX(dX),"","\n");
-                                                printf("END     iterationCounter=%d |DY|<TOL:%d ",iterationCounter, realCompareAbsLessThan(&dY.Real, &tol));
-                                                printComplexToConsole(CPLX(dY),"","\n");
-                                                printComplexToConsole(CPLX(temp1),"END     DY=","\n");
+                                                printf("END     iterationCounter=%d |DX|<TOL:%d ", iterationCounter, realCompareAbsLessThan(&dX.Real, &tol));
+                                                printComplexToConsole(CPLX(dX), "", "\n");
+                                                printf("END     iterationCounter=%d |DY|<TOL:%d ", iterationCounter, realCompareAbsLessThan(&dY.Real, &tol));
+                                                printComplexToConsole(CPLX(dY), "", "\n");
+                                                printComplexToConsole(CPLX(temp1), "END     DY=", "\n");
                                               }
                                         #endif // VERBOSE_SOLVER2
 
                                         #if defined(VERBOSE_SOLVER1)
-                                              printComplexToConsole(CPLX(dX),">>> DX=","");
-                                              printComplexToConsole(CPLX(dY)," DY=","");
-                                              printComplexToConsole(CPLX(temp0)," 1/SLOPE=","\n");
+                                              printComplexToConsole(CPLX(dX), ">>> DX=", "");
+                                              printComplexToConsole(CPLX(dY), " DY=", "");
+                                              printComplexToConsole(CPLX(temp0), " 1/SLOPE=", "\n");
                                         #endif // VERBOSE_SOLVER1
 
 
       if(checkHalfSec()) {
-        if(progressHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(progressHalfSecUpdate_Integer(timed, "Iter: ", iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           showProgressReal(CPLX(X1), !realIsZero(&X1.Imag));
         }
       }
 
       if(exitKeyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
@@ -1814,8 +1838,8 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
       }
                                         #if defined(VERBOSE_SOLVER0)
                                               printf("iterationCounter = %i ", iterationCounter);
-                                              printComplexToConsole(CPLX(X1),"X = "," ");
-                                              printComplexToConsole(CPLX(Y1),"Y = ","\n");
+                                              printComplexToConsole(CPLX(X1), "X = ", " ");
+                                              printComplexToConsole(CPLX(Y1), "Y = ", "\n");
                                         #endif // VERBOSE_SOLVER0
 
       if(ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 1) {
@@ -1897,18 +1921,18 @@ static inline void powCplxNat(const cplx_t *base,const uint8_t *exp, cplx_t *res
 
 
   void fnComplexSolver(void) {
-    printStatus(1,errorMessages[COMPLEX_SOLVER],force);
+    printStatus(1, errorMessages[COMPLEX_SOLVER], force);
     saveForUndo();
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                           double higherXStartValue = convertRegisterToDouble(REGISTER_X);
                                           double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
-                                          printRegisterToConsole(REGISTER_Y,">>> lowerXStartValue=","");
-                                          printRegisterToConsole(REGISTER_X," higherXStartValue=","\n");
+                                          printRegisterToConsole(REGISTER_Y, ">>> lowerXStartValue=", "");
+                                          printRegisterToConsole(REGISTER_X, " higherXStartValue=", "\n");
                                           if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
                                             x_min = lowerXStartValue;
                                             x_max = higherXStartValue;
                                           }
-                                          printf("xmin:%f, xmax:%f\n",x_min,x_max);
+                                          printf("xmin:%f, xmax:%f\n", x_min, x_max);
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
     // initialize_function();
     complexSolver();
@@ -2026,11 +2050,11 @@ void fnEqSolvGraph (uint16_t func) {
           double higherXStartValue = convertRegisterToDouble(REGISTER_X);
           double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
           #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-            printf(">>> lowerXStartValue=%f  higherXStartValue=%f\n",lowerXStartValue, higherXStartValue);
+            printf(">>> lowerXStartValue=%f  higherXStartValue=%f\n", lowerXStartValue, higherXStartValue);
           #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
           fnClDrawMx(5);
-          strcpy(plotStatMx,"DrwMX");
+          strcpy(plotStatMx, "DrwMX");
 
           if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
             x_min = lowerXStartValue;
@@ -2051,7 +2075,7 @@ void fnEqSolvGraph (uint16_t func) {
             x_max = x_max + 0.1 * x_d;
           }
           #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
-            printf("xmin:%f, xmax:%f\n",x_min,x_max);
+            printf("xmin:%f, xmax:%f\n", x_min, x_max);
           #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
           initialize_function();

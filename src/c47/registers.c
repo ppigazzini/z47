@@ -563,8 +563,8 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
-      #if defined VERBOSE_REGISTERS
-        printStatus(0, "allocateLocalRegisters1",force);
+      #if defined(VERBOSE_REGISTERS)
+        printStatus(0, "allocateLocalRegisters1", force);
       #endif //VERBOSE_REGISTERS
 
       // All the new local registers are real34s initialized to 0.0
@@ -586,7 +586,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
         }
       }                                                   //JM defaults ^^
 
-    #if defined VERBOSE_REGISTERS
+    #if defined(VERBOSE_REGISTERS)
       printStatus(0, " ", force);
     #endif //VERBOSE_REGISTERS
 
@@ -625,7 +625,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
             return;
           }
         }
-        #if defined VERBOSE_REGISTERS
+        #if defined(VERBOSE_REGISTERS)
           printStatus(0, " ", force);
         #endif //VERBOSE_REGISTERS
       }
@@ -636,8 +636,8 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       }
     }
     else { // Ther number of local register decreases
-      #if defined VERBOSE_REGISTERS
-       printStatus(0, "allocateLocalRegisters3",force);
+      #if defined(VERBOSE_REGISTERS)
+       printStatus(0, "allocateLocalRegisters3", force);
       #endif //VERBOSE_REGISTERS
       // free memory allocated to the data of the deleted local registers
       for(r=numberOfRegistersToAllocate; r<currentNumberOfLocalRegisters; r++) {
@@ -649,7 +649,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
       currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
-      #if defined VERBOSE_REGISTERS
+      #if defined(VERBOSE_REGISTERS)
         printStatus(0, "", force);
       #endif //VERBOSE_REGISTERS
       return;
@@ -762,18 +762,18 @@ bool_t isUniqueMenuName(const char *name) {
 
 
 static calcRegister_t _findReservedVariable(const char *variableName) {
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, "_findReservedVariable",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, "_findReservedVariable", force);
   #endif //VERBOSE_REGISTERS
 
   uint8_t len = stringGlyphLength(variableName);
   const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
 
-  if (reg != NULL)
+  if(reg != NULL)
     return reg->reg;
 
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
   return INVALID_VARIABLE;
 }
@@ -843,8 +843,8 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
     }
   }
 
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, "allocateNamedVariable",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, "allocateNamedVariable", force);
   #endif //VERBOSE_REGISTERS
   len = stringByteLength(variableName);
   allNamedVariables[regist].variableName[0] = len;
@@ -855,8 +855,8 @@ void allocateNamedVariable(const char *variableName, dataType_t dataType, uint16
   regist += FIRST_NAMED_VARIABLE;
   setRegisterDataType(regist, dataType, amNone);
   setRegisterDataPointer(regist, allocC47Blocks(fullDataSizeInBlocks));
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
 }
 
@@ -874,8 +874,8 @@ calcRegister_t findNamedVariable(const char *variableName) {
     return regist;
   }
 
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, "findNamedVariable",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, "findNamedVariable", force);
   #endif //VERBOSE_REGISTERS
   //printf("|%20s|%20s|\n",(char *)(allNamedVariables[0].variableName + 1), variableName);
   for(int i = 0; i < numberOfNamedVariables; i++) {
@@ -884,8 +884,8 @@ calcRegister_t findNamedVariable(const char *variableName) {
       break;
     }
   }
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
   return regist;
 }
@@ -919,11 +919,11 @@ calcRegister_t findOrAllocateNamedVariable(const char *variableName) {
 
 
 void fnDeleteVariable(uint16_t regist) {
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, "fnDeleteVariable",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, "fnDeleteVariable", force);
   #endif //VERBOSE_REGISTERS
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
-    removeUserItemAssignments(ITM_RCL,(char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
+    removeUserItemAssignments(ITM_RCL, (char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
     freeRegisterData(regist);
     for(uint16_t i = (regist - FIRST_NAMED_VARIABLE); i < (numberOfNamedVariables - 1); ++i) {
       allNamedVariables[i] = allNamedVariables[i + 1];
@@ -940,8 +940,8 @@ void fnDeleteVariable(uint16_t regist) {
   else {
     displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
-  #if defined VERBOSE_REGISTERS
-    printStatus(0, " ",force);
+  #if defined(VERBOSE_REGISTERS)
+    printStatus(0, " ", force);
   #endif //VERBOSE_REGISTERS
 }
 
@@ -1140,10 +1140,10 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       return REGISTER_LONG_INTEGER_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
     }
     case dtReal34Matrix: {
-      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     }
     case dtComplex34Matrix: {
-      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     }
     case dtShortInteger: {
       return SHORT_INTEGER_SIZE_IN_BLOCKS;
@@ -1215,7 +1215,7 @@ void clearRegister(calcRegister_t regist) {
     longIntegerInit(lgInt);
     uint16_t val =0;
     uInt32ToLongInteger(val, lgInt);
-    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, regist);
+    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, regist);
     longIntegerFree(lgInt);
   }                                                                             //JM defaults ^^
 }
@@ -1539,8 +1539,10 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   int16_t value;
   bool_t isValidAlpha = false;
   #if defined(PC_BUILD)
-    printf("parameterType %u\n", parameterType); fflush(stdout);
-    printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags); fflush(stdout);
+    printf("parameterType %u\n", parameterType);
+    fflush(stdout);
+    printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags);
+    fflush(stdout);
   #endif   // PC_BUILD
 
   switch(parameterType) {
@@ -1631,7 +1633,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     if((value == INVALID_VARIABLE) && (lastErrorCode != ERROR_ENTER_NEW_NAME)) {
       displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", REGISTER_STRING_DATA(regist),(tryAllocate? "true" : "false"));
+        sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", REGISTER_STRING_DATA(regist), (tryAllocate ? "true" : "false"));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return FAILED_INDIRECTION;
@@ -1772,7 +1774,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       linkToRealMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
         printf("ReMa %s", before);
-        printf("Row %3i: ",r);
+        printf("Row %3i: ", r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real34ToString(&mat.matrixElements[r * mat.header.matrixColumns + c], str);
           printf("%s ", str);
@@ -1787,7 +1789,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       linkToComplexMatrixRegister(regist, &mat);
       for(r = 0; r < mat.header.matrixRows; ++r) {
         printf("(compact CxMa): %s", before);
-        printf("Row %3i: ",r);
+        printf("Row %3i: ", r);
         for(c = 0; c < mat.header.matrixColumns; ++c) {
           real_t tmpr;
           char str[100];
@@ -1824,7 +1826,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
               strcpy(tmp, str);
               char *p = tmp;
               char *q = str;
-              while ((p = strstr(p, "Infinity"))) {
+              while((p = strstr(p, "Infinity"))) {
                 *p = 0;
                 q += sprintf(q, "%s∞", tmp);
                 p += 8;
@@ -1841,7 +1843,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
     else {
       printf("%s", before);
-      sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+      sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist , false, false));
       displayBugScreen(errorMessage);
     }
 
@@ -1854,20 +1856,20 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     printf("%s", before);
     char s2[2000];
 
-    stringToASCII(str,s2);
-    printf("\"%s\"",s2);
+    stringToASCII(str, s2);
+    printf("\"%s\"", s2);
 
     for(int16_t ii=0; ii<stringByteLength(s2) && ii<40; ii++) {
       printf(" ");
     }
     while(str[loop] != 0) {
       if(str[loop] & 0x80) {
-        printf(" %2x%2x",(uint8_t)(str[loop]),(uint8_t)(str[loop+1]));
+        printf(" %2x%2x", (uint8_t)(str[loop]), (uint8_t)(str[loop+1]));
         loop++;
         loop++;
       }
       else {
-        printf("   %2x",(uint8_t)(str[loop++]));
+        printf("   %2x", (uint8_t)(str[loop++]));
       }
     }
     printf("%s", after);
@@ -2008,7 +2010,8 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
   if(getRegisterDataType(regist) != dataType || ((getRegisterDataType(regist) == dtString || getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) && getRegisterMaxDataLengthInBlocks(regist) != dataSizeWithoutDataLenBlocks)) {
     if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks)) {
       #if defined(PC_BUILD)
-        printf("In function reallocateRegister: required %" PRIu16 " blocks for register #%" PRId16 " but no data blocks with enough size are available!\n", dataSizeWithoutDataLenBlocks, regist); fflush(stdout);
+        printf("In function reallocateRegister: required %" PRIu16 " blocks for register #%" PRId16 " but no data blocks with enough size are available!\n", dataSizeWithoutDataLenBlocks, regist);
+        fflush(stdout);
       #endif // PC_BUILD
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       return;

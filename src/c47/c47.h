@@ -205,7 +205,6 @@
   extern char                   lastTemp[16];
 
   #if defined(PC_BUILD)
-    extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
@@ -215,17 +214,8 @@
     extern GtkWidget           *screen;
     extern GtkWidget           *frmCalc;
     extern int16_t              screenStride;
-    extern int16_t              debugWindow;
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
-    extern char                 debugString[10000];
-    #if (DEBUG_REGISTER_L == 1)
-      extern GtkWidget         *lblRegisterL1;
-      extern GtkWidget         *lblRegisterL2;
-    #endif // (DEBUG_REGISTER_L == 1)
-    #if (SHOW_MEMORY_STATUS == 1)
-      extern GtkWidget         *lblMemoryStatus;
-    #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
     extern int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
   #endif //PC_BUILD
@@ -234,7 +224,7 @@
   extern uint8_t calcModel;
 
   extern uint8_t             *lcd_buffer;
-  extern const int           KEY_X[7];
+  extern const int            KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
@@ -344,15 +334,15 @@
   extern registerHeader_t      *currentLocalRegisters;
 
   #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has 32Kb for global variables
-    extern registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-    extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+    extern registerHeader_t     globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
+    extern freeMemoryRegion_t   freeMemoryRegions[MAX_FREE_REGIONS];
   #else // The new HW has only 16 KB for global variables, so some of them have to be moved elsewhere.
-    extern registerHeader_t      *globalRegister;
-    extern freeMemoryRegion_t    *freeMemoryRegions;
+    extern registerHeader_t    *globalRegister;
+    extern freeMemoryRegion_t  *freeMemoryRegions;
   #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(DMCP_BUILD)
-    extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
+    extern freeMemoryRegion_t   allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
   #endif // !DMCP_BUILD
 
   extern pcg32_random_t         pcg32_global;
@@ -537,13 +527,13 @@
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
   #if (REAL34_WIDTH_TEST == 1)
-    extern uint16_t               largeur;
+    extern uint16_t             largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
   extern int32_t                numberOfFreeMemoryRegions;
 
   #if !defined(DMCP_BUILD)
-    extern int32_t                numberOfAllocatedMemoryRegions;
+    extern int32_t              numberOfAllocatedMemoryRegions;
   #endif // !DMCP_BUILD
 
   extern int32_t                lgCatalogSelection;
@@ -600,9 +590,9 @@
   extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
   extern  char                  fileNameSelected[stateFileNameVarLength];
 
-  extern char         filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
-  extern uint32_t     mem__32;                                          //JM_CSV
-  extern bool_t       cancelFilename;
+  extern char                   filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
+  extern uint32_t               mem__32;                                          //JM_CSV
+  extern bool_t                 cancelFilename;
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
@@ -614,14 +604,14 @@
   //#endif //IR_PRINTING
 
   #if defined(DMCP_BUILD)
-    extern bool_t              backToDMCP;
+    extern bool_t               backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
-    extern uint32_t            timeStampKey;                                      //dr - internal keyBuffer POC
+    extern uint32_t             timeStampKey;                                      //dr - internal keyBuffer POC
   #endif // BUFFER_CLICK_DETECTION
   //extern int                  keyAutoRepeat; // Key repetition
   //extern int16_t              previousItem;
-  extern uint32_t             nextTimerRefresh;
+  extern uint32_t               nextTimerRefresh;
 
-  int                         convertKeyCode(int key);
+  int                           convertKeyCode(int key);
   #endif // DMCP_BUILD
 #endif // !C47_H

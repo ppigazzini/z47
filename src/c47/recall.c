@@ -51,7 +51,8 @@ void fn2Rcl(uint16_t regist) {
     fnRecall(regist + 1);
     setSystemFlag(FLAG_ASLIFT);
     fnRecall(regist + 0);
-  } else {
+  }
+  else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
@@ -69,7 +70,8 @@ void fn3Rcl(uint16_t regist) {
     fnRecall(regist + 1);
     setSystemFlag(FLAG_ASLIFT);
     fnRecall(regist + 0);
-  } else {
+  }
+  else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
@@ -441,7 +443,7 @@ void fnRecallVElement(uint16_t ix) {
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t x;
       linkToRealMatrixRegister(REGISTER_X, &x);
-      //printf("ix:%u Rows:%u Cols:%u \n",ix,x.header.matrixRows, x.header.matrixColumns);
+      //printf("ix:%u Rows:%u Cols:%u \n", ix, x.header.matrixRows, x.header.matrixColumns);
       setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
       setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }

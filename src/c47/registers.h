@@ -271,8 +271,8 @@
 
   #define amPolarCYL 64  //  virtual bit, working in addition to the tag bit 4 = amPolar = 16; bit 5 usid by 32-bit pointer changes; real bits 6 & 7 spare. Real bits not used, in favour of these virtual logic bits,  as the register header also only has bits 0-4.
   #define amPolarSPH 128 //  virtual bit, see typeDefinitions.h, amPolar
-  #define isRegisterMatrix3dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
-  #define isRegisterMatrix2dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrix3dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows, REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrix2dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows, REGISTER_MATRIX_HEADER(reg)->matrixColumns))
   #define isRegisterMatrixVector(reg)            (isRegisterMatrix3dVector(reg) || isRegisterMatrix2dVector(reg))
   #define getVectorRegisterAngularMode(reg)      ((getRegisterDataType(reg) == dtReal34Matrix) ? (getTagAngularMode(getRegisterTag(reg)) & amAngleMask) : amNone) //maybe conditional on 2D 3D????
   #define setVectorRegisterAngularMode(reg, am)  (setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar)))                                      //note maybe conditional on Mx???

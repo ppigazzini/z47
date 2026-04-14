@@ -138,4 +138,4 @@ for v in range(nVal):
     print("\n", end='')
   print("%10d," % values[v], end='')
 print("\n};\n")
-  
+
