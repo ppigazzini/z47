@@ -282,6 +282,7 @@ static int jacobi_check_inputs_phi(real_t *m, real_t *phiReal, real_t *phiImag, 
 
   reduceAngleToRange(phiReal, &angle45, &angle90, &angle180, &xAngularMode, ctxtReal75.digits, &ctxtReal75);
 
+  convertAngleFromTo(phiReal, xAngularMode, amRadian, &ctxtReal75);
   realSetZero(phiImag);
   *realInput = true;
   return 1;
