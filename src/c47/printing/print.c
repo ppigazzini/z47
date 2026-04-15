@@ -1364,6 +1364,30 @@ void cmdprintwidth(enum nilop op)
 }
 */
 
+
+static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
+  uint16_t regist;
+  currentKeyCode = 255;
+  if(firstRegisterNo <= lastRegisterNo) {
+    for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
+      fnP_Regs (regist);
+      if(_exitKeyPressed()) {
+        return true;
+      }
+    }
+  }
+  else {
+    for(regist = firstRegisterNo; regist >= lastRegisterNo; regist--) {
+      fnP_Regs (regist);
+      if(_exitKeyPressed()) {
+        return true;
+      }
+    }
+  }
+  currentKeyCode = 255;
+  return false;
+}
+
 //
 //  Trace error function
 //
@@ -1402,7 +1426,13 @@ void printTraceError  (char *errorString) {
 //
 void printTraceX(uint16_t where) {
   if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
-    print_reg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
+    if(getSystemFlag(FLAG_TRACE)&& getSystemFlag(FLAG_NORM) && (where == LINE_FULL)) {
+      _printRegRange(getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T, REGISTER_X);  // Trace with stack
+      print_lf();
+    }
+    else {
+      print_reg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
+    }
 
     #if defined(PC_BUILD)
       printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
@@ -1892,30 +1922,6 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
     }
 
     return value;
-}
-
-
-static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
-  uint16_t regist;
-  currentKeyCode = 255;
-  if(firstRegisterNo <= lastRegisterNo) {
-    for(regist = firstRegisterNo; regist <= lastRegisterNo; regist++) {
-      fnP_Regs (regist);
-      if(_exitKeyPressed()) {
-        return true;
-      }
-    }
-  }
-  else {
-    for(regist = firstRegisterNo; regist >= lastRegisterNo; regist--) {
-      fnP_Regs (regist);
-      if(_exitKeyPressed()) {
-        return true;
-      }
-    }
-  }
-  currentKeyCode = 255;
-  return false;
 }
 #endif // IR_PRINTING
 
