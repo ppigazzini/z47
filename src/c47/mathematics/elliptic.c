@@ -54,14 +54,16 @@ void fnMtoK(uint16_t unusedButMandatoryParameter) {
   temporaryInformation = TI_ELLIPSE_K;
 }
 
-void fnKtoTheta(uint16_t unusedButMandatoryParameter) {
+void fnMtoTheta(uint16_t unusedButMandatoryParameter) {
+  fnSquareRoot(NOPARAM);  
   fnArcsin(NOPARAM);
   temporaryInformation = TI_ELLIPSE_Theta;
 }
 
-void fnThetatoK(uint16_t unusedButMandatoryParameter) {
+void fnThetatoM(uint16_t unusedButMandatoryParameter) {
   fnSin(NOPARAM);  
-  temporaryInformation = TI_ELLIPSE_K;
+  fnSquare(NOPARAM);
+  temporaryInformation = TI_ELLIPSE_M;
 }
 
 static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t *u, const real_t *m, realContext_t *realContext) {
