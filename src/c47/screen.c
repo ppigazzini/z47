@@ -4441,7 +4441,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w; //slighly incorrect if special characters are there as well.
               showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else {                                                                 //JM
+            else                                                                  //JM
           #endif // STACK_X_STR_LRG_FONT
 
           #if defined(STACK_X_STR_MED_FONT)
@@ -4450,7 +4450,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else {                                                                 //JM
+            else                                                                  //JM
           #endif //STACK_X_STR_MED_FONT
 
           #if defined(STACK_STR_MED_FONT)
@@ -4459,8 +4459,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else {                                                                 //JM
+            else                                                                  //JM
           #endif // STACK_STR_MED_FONT
+          {
             //JM ^^ large fonts
 
 
