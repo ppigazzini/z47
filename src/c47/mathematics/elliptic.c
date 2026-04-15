@@ -271,16 +271,20 @@ static int jacobi_check_inputs(real_t *m, real_t *uReal, real_t *uImag, bool_t *
 
 
 static int jacobi_check_inputs_phi(real_t *m, real_t *phiReal, real_t *phiImag, bool_t *realInput) {
+  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+    return jacobi_check_inputs(m, phiReal, phiImag, realInput);
+  }
   angularMode_t xAngularMode;
-  const real_t *angle45, *angle90, *angle180;
-  angle45  = const_0;
-  angle90  = const_0;
-  angle180 = const_0;
   if(!getRegisterAsRealAngle(REGISTER_X, phiReal, &xAngularMode) || !getRegisterAsReal(REGISTER_Y, m) || !saveLastX()) {
     return 0;
   }
 
-  reduceAngleToRange(phiReal, &angle45, &angle90, &angle180, &xAngularMode, ctxtReal75.digits, &ctxtReal75);
+     // const real_t *angle45, *angle90, *angle180;
+     // angle45  = const_0;
+     // angle90  = const_0;
+     // angle180 = const_0;
+     // reduceAngleToRange(phiReal, &angle45, &angle90, &angle180, &xAngularMode, ctxtReal75.digits, &ctxtReal75);
+     // Removed the angle reduction as the reduction is a lot more complcated than simplistic modulo 2𝝅
 
   convertAngleFromTo(phiReal, xAngularMode, amRadian, &ctxtReal75);
   realSetZero(phiImag);
