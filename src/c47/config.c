@@ -317,10 +317,10 @@ void Sett(int16_t grp) {
         }
       #endif //PC_BUILD
       switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case InputDefaultDataType : fnInDefault                   Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // InputDefaultDataType
-        case SigFigNumberOfDigits : fnDisplayFormatSigFig         Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // SigFigNumberOfDigits
-        case AllNumberOfDigits    : fnDisplayFormatAll            Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // AllNumberOfDigits
-        case FixNumberOfDigits    : fnDisplayFormatFix            Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FixNumberOfDigits
+        case InputDefaultDataType : fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);      break; // InputDefaultDataType
+        case SigFigNumberOfDigits : fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);      break; // SigFigNumberOfDigits
+        case AllNumberOfDigits    : fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);      break; // AllNumberOfDigits
+        case FixNumberOfDigits    : fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);      break; // FixNumberOfDigits
         case RNG                  : exponentLimit              =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // RNG
         case SDIGS                : significantDigits          =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // SDIGS
         case FDIGS                : fractionDigits             =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FDIGS
