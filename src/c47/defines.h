@@ -1690,6 +1690,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_LR_A2                                 126
 #define TI_ELLIPSE_K                             127
 #define TI_ELLIPSE_M                             128
+#define TI_ELLIPSE_Theta                         129
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
