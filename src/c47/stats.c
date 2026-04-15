@@ -101,7 +101,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     realDivide(const_1, &tmpReal1, &tmpReal2, realContext);
     if(!(*acc)(SIGMA_1onX2, &tmpReal2)) {
       goto toReturn;
-    Y
+    }
 
     // sigma y²
     realMultiply(y, y, &tmpReal1, realContext);
