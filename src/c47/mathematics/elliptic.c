@@ -710,7 +710,8 @@ static void _ellipticF_4(const real_t *phi, const real_t *psi, const real_t *m, 
     else {
       ellipticF(&lambda, &lambdaI, m, &b, &c, realContext); // recurses here
     }
-    realCopy(&b, res); realCopy(&c, resi);
+    realCopy(&b, res);
+    realCopy(&c, resi);
     if(realIsZero(&muI)) {
       _ellipticF_3(&mu, &m1, &b, &c, realContext);
     }
@@ -962,7 +963,8 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
     realSubtract(&a, &c, &a, realContext);
     realSubtract(&b, &d, &b, realContext);
 
-    realCopy(&a, resi); realCopy(&b, res);
+    realCopy(&a, resi);
+    realCopy(&b, res);
     realChangeSign(res);
   }
   else {
@@ -1020,7 +1022,8 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
       mulComplexComplex(SIN2_MU, SIN2_MU_I, B1, B1_I, B1, B1_I, realContext2);
       mulComplexComplex(COS_LAMBDA, COS_LAMBDA_I, B1, B1_I, B1, B1_I, realContext2);
       mulComplexComplex(SIN_LAMBDA, SIN_LAMBDA_I, B1, B1_I, B1, B1_I, realContext2);
-      realMultiply(m, B1, B1, realContext2); realMultiply(m, B1_I, B1_I, realContext2);
+      realMultiply(m, B1, B1, realContext2);
+      realMultiply(m, B1_I, B1_I, realContext2);
 
       realMultiply(M1, SIN2_MU, B3, realContext2);
       realMultiply(M1, SIN2_MU_I, B3_I, realContext2);
@@ -1452,7 +1455,8 @@ void ellipticPi(const real_t *n, const real_t *m, real_t *res, real_t *resi, rea
       divComplexComplex(const_0, const_1, res, resi, res, resi, realContext);
       realMultiply(const_piOn2, res, res, realContext);
       realMultiply(const_piOn2, resi, resi, realContext);
-      realChangeSign(res); realChangeSign(resi);
+      realChangeSign(res);
+      realChangeSign(resi);
     }
     else { // n = 1
       realSetNaN(res);

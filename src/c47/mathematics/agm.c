@@ -66,8 +66,10 @@ static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const 
   real_t cCoeff;
   int n = 0;
 
-  realCopy(ar, &aReal); realCopy(ai, &aImag);
-  realCopy(br, &bReal); realCopy(bi, &bImag);
+  realCopy(ar, &aReal);
+  realCopy(ai, &aImag);
+  realCopy(br, &bReal);
+  realCopy(bi, &bImag);
   if(mode==AGM_MODE_E) {
     realSetOne(&cCoeff);
   }
@@ -81,19 +83,21 @@ static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const 
   while(!WP34S_RelativeError(&aReal, &bReal, const_1e_37, realContext) || !WP34S_RelativeError(&aImag, &bImag, const_1e_37, realContext)) {
     if(mode==AGM_MODE_E) {
       realMultiply(&cCoeff, const_2, &cCoeff, realContext);
-      realSubtract(&aReal, &bReal, &cReal, realContext); realSubtract(&aImag, &bImag, &cImag, realContext);     // c = a - b
-      realMultiply(&cReal, const_1on2, &cReal, realContext); realMultiply(&cImag, const_1on2, &cImag, realContext); // c = (a - b) / 2
-      mulComplexComplex(&cReal, &cImag, &cReal, &cImag, &cReal, &cImag, realContext);     // c^2
+      realSubtract(&aReal, &bReal, &cReal, realContext);
+      realSubtract(&aImag, &bImag, &cImag, realContext);                              // c = a - b
+      realMultiply(&cReal, const_1on2, &cReal, realContext);
+      realMultiply(&cImag, const_1on2, &cImag, realContext);                          // c = (a - b) / 2
+      mulComplexComplex(&cReal, &cImag, &cReal, &cImag, &cReal, &cImag, realContext); // c^2
       realFMA(&cReal, &cCoeff, cr, cr, realContext);
       realFMA(&cImag, &cCoeff, ci, ci, realContext);
     }
 
     realRectangularToPolar(&aReal, &aImag, &cReal, &aArg, realContext);
     realRectangularToPolar(&bReal, &bImag, &cReal, &bArg, realContext);
-    realAdd(&aReal, &bReal, &cReal, realContext);                                   // c = a + b real part
-    realAdd(&aImag, &bImag, &cImag, realContext);                                   // c = a + b imag part
+    realAdd(&aReal, &bReal, &cReal, realContext);                                     // c = a + b real part
+    realAdd(&aImag, &bImag, &cImag, realContext);                                     // c = a + b imag part
 
-    mulComplexComplex(&aReal, &aImag, &bReal, &bImag, &bReal, &bImag, realContext); // b = a * b
+    mulComplexComplex(&aReal, &aImag, &bReal, &bImag, &bReal, &bImag, realContext);   // b = a * b
 
     // b = sqrt(a * b)
     sqrtComplex(&bReal, &bImag, &bReal, &bImag, realContext);
@@ -127,10 +131,12 @@ static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const 
   }
 
   if(mode==AGM_MODE_E) {
-    realMultiply(cr, const_1on2, cr, realContext); realMultiply(ci, const_1on2, ci, realContext);
+    realMultiply(cr, const_1on2, cr, realContext);
+    realMultiply(ci, const_1on2, ci, realContext);
   }
 
-  realCopy(&aReal, resr); realCopy(&aImag, resi);
+  realCopy(&aReal, resr);
+  realCopy(&aImag, resi);
   return n;
 }
 

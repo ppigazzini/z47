@@ -117,8 +117,9 @@ static real_t *getXvalues(uint16_t *n) {
   }
   linkToRealMatrixRegister(regStats, &stats);
   cols = stats.header.matrixColumns;
-  for(i=0; i<rows; i++)
+  for(i=0; i<rows; i++) {
     real34ToReal(stats.matrixElements + i * cols, data + i);
+  }
   *n = rows;
   return data;
 }
