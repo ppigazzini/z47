@@ -373,7 +373,7 @@ TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_
 
 TO_QSPI const int16_t menu_Ellipt[]      = { ITM_sn,                        ITM_cn,                     ITM_dn,                   ITM_Kk,                ITM_Ek,                      ITM_PInk,
                                              ITM_KtoM,                      ITM_MtoK,                   ITM_am,                   ITM_Fphik,             ITM_Ephik,                   ITM_ZETAphik,
-                                             ITM_KTOTH,                     ITM_THTOK,                  ITM_ELLIPSE,              ITM_DEG2,              ITM_DMS2,                    ITM_RAD2                      };
+                                             ITM_THTOM,                     ITM_MTOTH,                  ITM_ELLIPSE,              ITM_DEG2,              ITM_DMS2,                    ITM_RAD2                      };
 
 
 //XFCNS is different for C47hw, R47hw. Sim is not R47, therefore the C47 layout
