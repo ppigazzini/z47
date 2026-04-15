@@ -85,13 +85,15 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
   angle180 = const_0;
 
   #if defined(DEBUGTAYLOR)
-   realToString((real_t*)angle, tmpString); /*tmpString[80]=0;*/ printf("Angle:   %s\n", tmpString);
+   realToString(angle, tmpString);
+   //tmpString[80]=0;
+   printf("Angle:   %s\n", tmpString);
   #endif //DEBUGTAYLOR
 
   // sin(-x) = -sin(x), cos(-x) = cos(x)
-  if(realIsNegative((real_t*)angle)) {
+  if(realIsNegative(angle)) {
     *sinNeg = true;
-    realSetPositiveSign((real_t*)angle);
+    realSetPositiveSign(angle);
   }
 
   reduceAngleToRange(angle, &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
