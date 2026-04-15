@@ -126,7 +126,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     realCopy(&tmpReal1, &tmpReal3);
     if(!(*acc)(SIGMA_lnX, &tmpReal1)) {
       goto toReturn;
-    {}
+    }
 
     // sigma ln²(x)
     realMultiply(&tmpReal1, &tmpReal1, &tmpReal2, realContext);
