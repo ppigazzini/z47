@@ -1801,6 +1801,8 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
   void fnEllipse(uint16_t unusedButMandatoryParameter) {;};
   void fnKtoM(uint16_t unusedButMandatoryParameter) {;}
   void fnMtoK(uint16_t unusedButMandatoryParameter) {;}
+  void fnMtoTheta(uint16_t unusedButMandatoryParameter) {;}
+  void fnThetatoM(uint16_t unusedButMandatoryParameter) {;}
   void jacobiElliptic(const real_t *u, const real_t *m, real_t *am, real_t *sn, real_t *cn, real_t *dn, realContext_t *realContext) {;}
   void jacobiComplexAm(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
   void jacobiComplexSn(const real_t *ur, const real_t *ui, const real_t *m, real_t *rr, real_t *ri, realContext_t *realContext) {;}
