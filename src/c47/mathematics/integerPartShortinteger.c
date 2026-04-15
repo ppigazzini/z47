@@ -18,10 +18,12 @@ void fnSint(uint16_t unusedButMandatoryParameter) {
   bool_t sign, overflow, frac;
   uint64_t val;
 
-  if(!saveLastX() || !getRegisterAsShortInt(REGISTER_X, &sign, &val, &overflow, &frac))
+  if(!saveLastX() || !getRegisterAsShortInt(REGISTER_X, &sign, &val, &overflow, &frac)) {
     return;
-  if(getRegisterDataType(REGISTER_X) != dtShortInteger)
+  }
+  if(getRegisterDataType(REGISTER_X) != dtShortInteger) {
     convertUInt64ToShortIntegerRegister(sign, val, 10, REGISTER_X);
+  }
   forceSystemFlag(FLAG_CARRY, frac);
   forceSystemFlag(FLAG_OVERFLOW, overflow);
 }

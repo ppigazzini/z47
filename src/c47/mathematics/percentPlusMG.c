@@ -65,14 +65,17 @@ void fnPercentPlusMG(uint16_t unusedButMandatoryParameter) {
   real_t xReal, yReal;
   real_t rReal;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal)) {
     return;
+  }
 
-  if(!saveLastX())
+  if(!saveLastX()) {
     return;
+  }
 
-  if(!percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal34))
+  if(!percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal34)) {
     return;
+  }
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);

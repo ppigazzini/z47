@@ -27,7 +27,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
       case dtString:
       case dtShortInteger:
         copyRegisterToClipboardString(regist, clipboardString);
-        addChrBothSides(34,clipboardString);   //JMCSV
+        addChrBothSides(34, clipboardString);   //JMCSV
         break;
 
       case dtReal34Matrix: {
@@ -119,7 +119,7 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
       //printf(">>>: §%s§\n", tmp);
 
       #if (VERBOSE_LEVEL >= 1)
-        sprintf(tmpTmp,"-2d: len=%u:%s", (uint16_t)stringByteLength(tmpString), tmpString);
+        sprintf(tmpTmp, "-2d: len=%u:%s", (uint16_t)stringByteLength(tmpString), tmpString);
         print_linestr(tmpTmp, false);
       #endif // VERBOSE_LEVEL >= 1
 
