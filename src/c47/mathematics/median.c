@@ -37,8 +37,9 @@ static void computePercentileSorted(real_t *data, uint16_t n, const real_t *p, r
   realToIntegralValue(&t, &d, DEC_ROUND_DOWN, &ctxtReal39);
   k = realToInt32C47(&d, NULL);
 
-  if(k >= n)
+  if(k >= n) {
     realCopy(data + n - 1, percentile);
+  }
   else if(k < 1) {
     realCopy(data, percentile);
   }
@@ -259,8 +260,9 @@ void fnIQRXY(uint16_t unusedButMandatoryParameter) {
 void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
   real_t p;
 
-  if(!getRegisterAsReal(REGISTER_X, &p))
+  if(!getRegisterAsReal(REGISTER_X, &p)) {
     return;
+  }
 
   // Range saturate if out of scope and scale away percentage
   if(realIsNegative(&p)) {

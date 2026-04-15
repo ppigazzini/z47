@@ -68,8 +68,9 @@ void lnP1Complex(const real_t *real, const real_t *imag, real_t *lnReal, real_t 
 static void lnP1Real(void) {
   real_t arg, r, x;
 
-  if(!getRegisterAsReal(REGISTER_X, &arg))
+  if(!getRegisterAsReal(REGISTER_X, &arg)) {
     return;
+  }
 
   realAdd(&arg, const_1, &r, &ctxtReal39);
   if(realIsZero(&r)) {

@@ -317,24 +317,24 @@ void Sett(int16_t grp) {
         }
       #endif //PC_BUILD
       switch(Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case InputDefaultDataType : fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // InputDefaultDataType
-        case SigFigNumberOfDigits : fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SigFigNumberOfDigits
-        case AllNumberOfDigits    : fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // AllNumberOfDigits
-        case FixNumberOfDigits    : fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FixNumberOfDigits
-        case RNG                  : exponentLimit              = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // RNG
-        case SDIGS                : significantDigits          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // SDIGS
-        case FDIGS                : fractionDigits             = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FDIGS
-        case HIDE                 : exponentHideLimit          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // HIDE
-        case DSTACK               : displayStack               = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DSTACK
-        case CACHEDDSTACK         : cachedDisplayStack         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // CACHEDDSTACK
-        case ADM                  : currentAngularMode         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // ADM
-        case IPGRP                : grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP
-        case FPGRP                : grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // FPGRP
-        case IPGRP1               : grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1
-        case IPGRP1x              : grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // IPGRP1x
-        case DenMaX               : denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]); break;                     // DenMaX
-        case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIKnown
-        case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false; break; // TVMIChanges
+        case InputDefaultDataType : fnInDefault                   Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // InputDefaultDataType
+        case SigFigNumberOfDigits : fnDisplayFormatSigFig         Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // SigFigNumberOfDigits
+        case AllNumberOfDigits    : fnDisplayFormatAll            Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // AllNumberOfDigits
+        case FixNumberOfDigits    : fnDisplayFormatFix            Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FixNumberOfDigits
+        case RNG                  : exponentLimit              =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // RNG
+        case SDIGS                : significantDigits          =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // SDIGS
+        case FDIGS                : fractionDigits             =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FDIGS
+        case HIDE                 : exponentHideLimit          =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // HIDE
+        case DSTACK               : displayStack               =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // DSTACK
+        case CACHEDDSTACK         : cachedDisplayStack         =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // CACHEDDSTACK
+        case ADM                  : currentAngularMode         =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // ADM
+        case IPGRP                : grpGroupingLeft            =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // IPGRP
+        case FPGRP                : grpGroupingRight           =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FPGRP
+        case IPGRP1               : grpGroupingGr1Left         =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // IPGRP1
+        case IPGRP1x              : grpGroupingGr1LeftOverflow =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // IPGRP1x
+        case DenMaX               : denMax                     =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // DenMaX
+        case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIKnown
+        case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIChanges
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
