@@ -25,11 +25,11 @@ static void gdReal(bool_t gd) {
   real_t x;
   uint8_t errorCode;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
-  errorCode = gd ? GudermannianReal(&x, &x, &ctxtReal39)
-                 : InverseGudermannianReal(&x, &x, &ctxtReal39);
+  errorCode = gd ? GudermannianReal(&x, &x, &ctxtReal39) : InverseGudermannianReal(&x, &x, &ctxtReal39);
 
   if(errorCode != ERROR_NONE) {
     gdError(gd, errorCode);
@@ -43,8 +43,9 @@ static void gdCplx(bool_t gd) {
   real_t xReal, xImag;
   uint8_t errorCode;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
 
   errorCode = gd ? GudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39)
                  : InverseGudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39);
