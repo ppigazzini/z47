@@ -10,6 +10,8 @@
   void fnEllipse        (uint16_t unusedButMandatoryParameter);
   void fnKtoM           (uint16_t unusedButMandatoryParameter);
   void fnMtoK           (uint16_t unusedButMandatoryParameter);
+  void fnKtoTheta       (uint16_t unusedButMandatoryParameter);
+  void fnThetatoK       (uint16_t unusedButMandatoryParameter);
 
   void fnJacobiSn       (uint16_t unusedButMandatoryParameter);
   void fnJacobiCn       (uint16_t unusedButMandatoryParameter);

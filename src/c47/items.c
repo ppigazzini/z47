@@ -1005,6 +1005,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnEllipse                   (uint16_t unusedButMandatoryParameter) {}
   void fnKtoM                      (uint16_t unusedButMandatoryParameter) {}
   void fnMtoK                      (uint16_t unusedButMandatoryParameter) {}
+  void fnKtoTheta                  (uint16_t unusedButMandatoryParameter) {}
+  void fnThetatoK                  (uint16_t unusedButMandatoryParameter) {}
   void addItemToBuffer             (uint16_t unusedButMandatoryParameter) {}
   void fnOff                       (uint16_t unusedButMandatoryParameter) {}
   void fnAim                       (uint16_t unusedButMandatoryParameter) {}
@@ -4307,8 +4309,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2596 */  { itemToBeCoded,                 NOPARAM,                    "XFCNS",                                       "XFCNS",                                       (0 << TAM_MAX_BITS) |     0, S18_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2597 */  { itemToBeCoded,                 NOPARAM,                  "MULTSTK",                                     "MULTSTK",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
-/* 2598 */  { itemToBeCoded,                 NOPARAM,                    "2598",                                        "2598",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2599 */  { itemToBeCoded,                 NOPARAM,                    "2599",                                        "2599",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2598 */  { fnKtoTheta,                   NOPARAM,                     "k" STD_RIGHT_ARROW STD_theta_m,              "k" STD_RIGHT_ARROW STD_theta_m,                (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2599 */  { fnThetatoK,                   NOPARAM,                     STD_theta_m STD_RIGHT_ARROW "k",              STD_theta_m STD_RIGHT_ARROW "k",                (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
 /* 2600 */  { itemToBeCoded,                   NOPARAM,                     "Uniform:",                                    "Uniform:",                                    (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2601 */  { fnUniformP,                            0,                     "Unfm" STD_SUB_p,                              "Unfm" STD_SUB_p,                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

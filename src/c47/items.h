@@ -2679,8 +2679,8 @@
 
 #define MNU_XXFCNS                  2596
 #define MNU_MULTSTK                 2597
-#define ITM_2598                    2598
-#define ITM_2599                    2599
+#define ITM_KTOTH                   2598
+#define ITM_THTOK                   2599
 
 #define MNU_UNIFORM                 2600    // Uniform distributions
 #define ITM_UNIFORMP                2601
