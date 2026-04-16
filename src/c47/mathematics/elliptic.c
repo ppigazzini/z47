@@ -31,13 +31,14 @@ void _ellipseE(void) {
     realCopy(&y, &b);
   }
   // eccentricity = sqrt(1 - (a/b)^2)
+  // modulus = (1 - (a/b)^2)
   realDivide(&a, &b, &reX, &ctxtReal39);
   realMultiply(&reX, &reX, &reX, &ctxtReal39);
   realSubtract(const_1, &reX, &reX, &ctxtReal39);
-  realSquareRoot(&reX, &reX, &ctxtReal39);
+  //realSquareRoot(&reX, &reX, &ctxtReal39);
   convertRealToResultRegister(&reX, REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
-  temporaryInformation = TI_ELLIPSE_K;
+  temporaryInformation = TI_ELLIPSE_M;
 }
 
 void fnEllipse(uint16_t unusedButMandatoryParameter) {
