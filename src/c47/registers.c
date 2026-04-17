@@ -769,8 +769,9 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
   uint8_t len = stringGlyphLength(variableName);
   const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
 
-  if(reg != NULL)
+  if(reg != NULL) {
     return reg->reg;
+  }
 
   #if defined(VERBOSE_REGISTERS)
     printStatus(0, " ", force);
@@ -1481,8 +1482,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
     return;
   }
 
-  if(   getRegisterDataType(destRegister) != getRegisterDataType(sourceRegister)
-    || getRegisterFullSizeInBlocks(destRegister) != getRegisterFullSizeInBlocks(sourceRegister)) {
+  if(   getRegisterDataType(destRegister) != getRegisterDataType(sourceRegister) || getRegisterFullSizeInBlocks(destRegister) != getRegisterFullSizeInBlocks(sourceRegister)) {
     uint32_t sizeInBlocks;
 
     switch(getRegisterDataType(sourceRegister)) {
@@ -1796,8 +1796,9 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
           uint32_t offset = (r * mat.header.matrixRows + c) * 2;
           real34ToReal(&mat.matrixElements + offset, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Real part
-          if(realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50) {
             printf("[≈0 ");
+          }
           else {
             realToString(&tmpr, str);
             if(strstr(str, "Infinity")) {
@@ -1817,8 +1818,9 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
           }
           real34ToReal(&mat.matrixElements + offset + 1, &tmpr);
           realPlus(&tmpr, &tmpr, &ctxtReal4);       // Imag part
-          if(realGetExponent(&tmpr) < -50)
+          if(realGetExponent(&tmpr) < -50) {
             printf(" i≈0] ");
+          }
           else {
             realToString(&tmpr, str);
             if(strstr(str, "Infinity")) {
