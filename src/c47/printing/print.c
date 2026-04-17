@@ -1441,6 +1441,36 @@ void printTraceX(uint16_t where) {
 }
 
 //
+//  Trace a Matrix editing element
+//
+void printTraceMatElement(uint16_t where) {
+  if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
+    const int16_t i = getIRegisterAsInt(true);
+    const int16_t j = getJRegisterAsInt(true);
+
+    if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+      real34Matrix_t mat;
+      real34Matrix_t *matrix = &mat;
+      convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &mat);
+      reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+      real34Copy(&matrix->matrixElements[i * matrix->header.matrixColumns + j], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    }
+    else {
+      complex34Matrix_t mat;
+      complex34Matrix_t *matrix = &mat;
+      convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &mat);
+      reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+      complex34Copy(&matrix->matrixElements[i * matrix->header.matrixColumns + j], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+    }
+    print_reg(TEMP_REGISTER_1, NULL, false, where, false );  // Print temporary register 1 without name header
+
+    #if defined(PC_BUILD)
+      printf("**[DL]** printTraceMatElement where %d Trace: %s\n",where,tmpString);fflush(stdout);
+    #endif // PC_BUILD
+  }
+}
+
+//
 //  Trace a string
 //
 void printTraceString(char *string, uint16_t where) {
@@ -1452,7 +1482,7 @@ void printTraceString(char *string, uint16_t where) {
     print_reg(TEMP_REGISTER_1, NULL, false, where, false );  // Print register X without name header
 
     #if defined(PC_BUILD)
-      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+      printf("**[DL]** printTraceString Trace: %s\n",tmpString);fflush(stdout);
     #endif // PC_BUILD
   }
 }
