@@ -2,7 +2,7 @@
 
 \documentclass[canadian]{article}
 \usepackage{amsmath, amssymb, amsthm, graphics, setspace, enumerate, thmtools, tikz, url, parskip, fancyhdr, datetime2}
-\usepackage{listings, lastpage}
+\usepackage{listings, lastpage, xcolor}
 \usetikzlibrary{angles,quotes}
 
 \fancyhf{}
@@ -21,12 +21,20 @@
 
     This document describes how elliptic integrals and functions are used in the R47/C47 calculator.
 
-    In some cases there is an apparent discrepancy between values the R47/C47 produces, and
-    values for the same elliptic functions you may find in tables in books.  This document attempts
-    to reconcile those differences.
+    In some cases, elliptic function parameters are used differently depending on which
+    book or software package you are looking at.  This is a matter of slight differences in
+    terminology and notation across the elliptic function literature.  Especially notable is
+    the modulus parameter, interpreted differently and with the letter $k$ or $m$, with different
+    meaning.  When comparing computations from one place or another, the answers may appear to
+    disagree, but only because the parameter was used differently.
+
+    This document attempts to explain those differences so that you can get consistent
+    results.  If parameters are mapped properly from one usage to another, the answers
+    should come out well.
 
     Numerical results are given to 5 digits to the right of the decimal point where possible,
-    for consistency in comparison.  The text \cite{Lawden01} uses that precision.
+    for consistency in comparisons.  The text \cite{Lawden01} uses that precision,
+    which is easily set on the R47/C47 with \texttt{FIX 5}.
 
 \section{Basics of Elliptical Functions and Integrals}
 
@@ -50,7 +58,7 @@
         \centering
         \begin{tabular}{c c c}
             \hline\hline
-            Name & Equation & Eccentricity \\
+            Name & Equation & Eccentricity, $e$ \\
             \hline
             Circle & $x^2+y^2=r^2$ & 0 \\
             Parabola & $y^2=4 a x$ & 1 \\
@@ -64,7 +72,8 @@
     a circle.
 
     \begin{tikzpicture}
-        \draw[thick,blue] (0,0) ellipse (2cm and 1cm);
+        \draw[thick,green,-latex] ((0:2cm and 1cm) arc (0:30:2cm and 1cm);
+        \draw[thick,blue] ((30:2cm and 1cm) arc (30:360:2cm and 1cm);
         \draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$};
         \draw[->] (0,-1.5) -- (0,1.5) node[above] {$y$};
         \draw[dashed,red] (0,0) -- (2,0) node[midway,below] {$a$};
@@ -74,7 +83,7 @@
         \coordinate(O) at (0,0);
         \coordinate(A) at (2,0);
         \coordinate(B) at (30:2cm and 1cm);
-        \draw (O) -- (B);
+        \draw [green] (O) -- (B);
         \pic[draw, ->, "$\phi$", angle eccentricity=2.0 ]{angle = A--O--B};
     \end{tikzpicture}
 
@@ -84,9 +93,9 @@
 
     \subsection{A Problem to Solve with an Ellipse:  Arc Length and Inverse}
 
-    One sees online comments, e.g. \cite{SE01}, about elliptic integrals and functions having their roots
-    in elliptic arc length, but when you dig into textbooks or online articles for
-    details, that is not so apparent.  Most of the applications for elliptic integrals
+    One sees online comments, e.g. \cite{SE01}, about elliptic integrals and functions
+    deriving from arc length problems, but actual examples are hard to find.
+    Most of the applications for elliptic integrals
     and functions go back to problems from specialized differential equations or engineering
     problems.
 
@@ -110,7 +119,7 @@
     However, though $k$ is often favoured in mathematical treatments, you often
     see in software such as the R47/C47 or Mathematica a parameter called $m$.  Actually, this is
     almost the same thing:  $m=k^2=e^2$.  This $m$ parameter is just the square of
-    eccentricity, if you want to track down elliptic arc length calculations.
+    eccentricity.
 
     Now, a typical second year calculus textbook for engineering students teaches how to
     calculate arc length in two- or three- dimensional Euclidean space, using integration.
@@ -132,18 +141,18 @@
     This leads to the following:
 
     Incomplete elliptic integral of the second kind:
-    \[E(\phi,m) = \int_{0}^{\phi}{\sqrt{1 - m \sin^2{\theta}} d \theta}\]
+    \[E(\phi,\textcolor{red}{m}) = \int_{0}^{\phi}{\sqrt{1 - \textcolor{red}{m} \sin^2{\theta}} d \theta}\]
 
     Complete elliptic integral of the second kind:
-    \[E(m) = \int_{0}^{2 \pi}{\sqrt{1 - m \sin^2{\theta}} d \theta}\]
+    \[E(\textcolor{red}{m}) = \int_{0}^{\pi / 2}{\sqrt{1 - \textcolor{red}{m} \sin^2{\theta}} d \theta}\]
 
     Confusingly, in different parts of the literature, you will see this version:
 
     Incomplete elliptic integral of the second kind:
-    \[E(\phi,k) = \int_{0}^{\phi}{\sqrt{1 - k^2 \sin^2{\theta}} d \theta}\]
+    \[E(\phi,\textcolor{red}{k}) = \int_{0}^{\phi}{\sqrt{1 - \textcolor{red}{k}^2 \sin^2{\theta}} d \theta}\]
 
     Complete elliptic integral of the second kind:
-    \[E(k) = \int_{0}^{2 \pi}{\sqrt{1 - k^2 \sin^2{\theta}} d \theta}\]
+    \[E(\textcolor{red}{k}) = \int_{0}^{\pi / 2}{\sqrt{1 - \textcolor{red}{k}^2 \sin^2{\theta}} d \theta}\]
 
     See also \cite{WI01}.
 
@@ -155,8 +164,8 @@
     and calculate its arc length.  The incomplete elliptic integral of the
     second kind does this for arbitrary angle $\phi$, meaning we start at angle
     $0$ and rotate counter-clockwise to $\phi$, measuring arc length as we go.
-    The complete elliptic integral of the second kind calculates it for the
-    whole ellipse, i.e. the perimeter of the ellipse.
+    The complete elliptic integral of the second kind calculates
+    the perimeter of the ellipse.
 
     Let us take an example and run it through both Mathematica and the R47/C47.
 
@@ -435,7 +444,7 @@
     Apart from this issue for $sn()$,
     there is also the Jacobi amplitude function, represented in the R47/C47 as $am(u,m)$
     and in Mathematica as $JacobiAmplitude[u,m]$.
-    Here, $u$ is a parameter in radians, and $m$ is the modulus representing
+    Here, $m$ is the modulus representing
     the square of eccentricity, as before.
 
     This function is the inverse of the elliptic integral of the first kind.
@@ -479,7 +488,7 @@
             $Z(\phi,m)$ & Jacobi Zeta \\
         \end{tabular}
     \end{table}
-    In each case except for $\Pi(n,m)$, the $u$ or $\phi$ parameter is an angle in radians, and the
+    In each case except for $\Pi(n,m)$, the $u$ or $\phi$ parameter is the primary argument, and the
     $m$ parameter is the square of eccentricity of the ellipse.
     For $\Pi(n,m)$, $n$ is the characteristic and $m$ is the square of eccentricity.
 
