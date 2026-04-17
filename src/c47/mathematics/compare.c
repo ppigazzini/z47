@@ -670,44 +670,43 @@ void fnXAlmostEqual(uint16_t regist) {
   const uint8_t xType = (uint8_t)getRegisterDataType(REGISTER_X);
   const uint8_t rType = (uint8_t)getRegisterDataType(regist);
   const uint16_t test = type_pair_u8(xType, rType);
-  switch(test)
-  {
-  case type_pair_u8(dtReal34Matrix, dtReal34Matrix):
-  case type_pair_u8(dtReal34Matrix, dtComplex34Matrix):
-  case type_pair_u8(dtComplex34Matrix, dtReal34Matrix):
-  case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
-    almostEqualMatrix(regist);
-    break;
+  switch(test) {
+    case type_pair_u8(dtReal34Matrix, dtReal34Matrix):
+    case type_pair_u8(dtReal34Matrix, dtComplex34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtReal34Matrix):
+    case type_pair_u8(dtComplex34Matrix, dtComplex34Matrix):
+      almostEqualMatrix(regist);
+      break;
 
-  case type_pair_u8(dtComplex34, dtComplex34):
-  case type_pair_u8(dtComplex34, dtReal34):
-  case type_pair_u8(dtComplex34, dtShortInteger):
-  case type_pair_u8(dtComplex34, dtLongInteger):
+    case type_pair_u8(dtComplex34, dtComplex34):
+    case type_pair_u8(dtComplex34, dtReal34):
+    case type_pair_u8(dtComplex34, dtShortInteger):
+    case type_pair_u8(dtComplex34, dtLongInteger):
 
-  case type_pair_u8(dtReal34, dtComplex34):
-  case type_pair_u8(dtReal34, dtReal34):
-  case type_pair_u8(dtReal34, dtShortInteger):
-  case type_pair_u8(dtReal34, dtLongInteger):
+    case type_pair_u8(dtReal34, dtComplex34):
+    case type_pair_u8(dtReal34, dtReal34):
+    case type_pair_u8(dtReal34, dtShortInteger):
+    case type_pair_u8(dtReal34, dtLongInteger):
 
-  case type_pair_u8(dtShortInteger, dtComplex34):
-  case type_pair_u8(dtShortInteger, dtReal34):
-  case type_pair_u8(dtLongInteger, dtComplex34):
-  case type_pair_u8(dtLongInteger, dtReal34):
-  case type_pair_u8(dtTime, dtTime):
-    almostEqualScalar(regist, test);
-    break;
+    case type_pair_u8(dtShortInteger, dtComplex34):
+    case type_pair_u8(dtShortInteger, dtReal34):
+    case type_pair_u8(dtLongInteger, dtComplex34):
+    case type_pair_u8(dtLongInteger, dtReal34):
+    case type_pair_u8(dtTime, dtTime):
+      almostEqualScalar(regist, test);
+      break;
 
-  case type_pair_u8(dtShortInteger, dtShortInteger):
-  case type_pair_u8(dtShortInteger, dtLongInteger):
-  case type_pair_u8(dtLongInteger, dtShortInteger):
-  case type_pair_u8(dtLongInteger, dtLongInteger):
-    // No need to round
-    compareRegisters(regist, COMPARE_MODE_EQUAL);
-    break;
+    case type_pair_u8(dtShortInteger, dtShortInteger):
+    case type_pair_u8(dtShortInteger, dtLongInteger):
+    case type_pair_u8(dtLongInteger, dtShortInteger):
+    case type_pair_u8(dtLongInteger, dtLongInteger):
+      // No need to round
+      compareRegisters(regist, COMPARE_MODE_EQUAL);
+      break;
 
-  default:
-    compareTypeError(regist);
-    break;
+    default:
+      compareTypeError(regist);
+      break;
   }
 }
 
